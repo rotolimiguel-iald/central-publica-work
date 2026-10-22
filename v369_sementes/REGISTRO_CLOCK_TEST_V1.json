@@ -1,0 +1,93 @@
+{
+ "protocol": "CLOCK_TEST_V1",
+ "protocol_hash": "ec7323546c4d54f0",
+ "registered_at": "2026-09-19 11:35:45",
+ "fn_sha256": "28b257f9e7df32f6b207c33e1da127f287f7e207d36baf198886a6d3f0068518",
+ "operator_verbatim_sha256": "316f9dec3c0cd7aa75b80794f2999378c1a6bf9114d8b649ff018a6143aa1f42",
+ "not_blind": "NAO-CEGO, dito sem atenuar: a literatura foi lida (19/09/2026); o ruido do LIGO foi medido pela gerencia (rascunho das 08:55 e teste_p2.py das 09:19) e pelos ceticos; a funcao FINAL deste rito (e suas versoes anteriores) foi executada inteira em ensaio ANTES deste registro; as perguntas ao operador foram feitas sem lhe revelar o veredito da leitura por modo, que a gerencia ja conhecia. O hash do protocolo trava as REGRAS (lei, leituras, estimadores, parametros executados, matriz de vereditos), o sha256 da literatura embutida e o pino do dado; o CODIGO inteiro e travado por fn_sha256 (conferido na incorporacao e na verificacao) -- nada disso trava cegueira. Nome do arquivo: REGISTRO (nao PRE_REGISTRO), porque o resultado veio antes. Hora local autodeclarada; a ancora externa e a custodia do um.py (e o git da Central, se o operador fizer o commit).",
+ "record": {
+  "version": "CLOCK_TEST_V1",
+  "status": "REGISTERED_AFTER_FULL_DRY_EVALUATION__NOT_BLIND_TO_LITERATURE_AND_TO_LIGO_NOISE",
+  "law": "Gamma_omega = (1/2) beta tau_star omega^2 ; beta = alpha_CODATA2018 sqrt(e) em runtime ; tau_star = t_Planck [PRINCIPLED IDENTIFICATION]",
+  "equivalence": "forma de Milburn (PRA 44, 5401, 1991), com o TEMPO beta*tau_star no papel do inverso da taxa gamma de Milburn: d rho/dt = -(beta tau_star/(2 hbar^2)) [H,[H,rho]]",
+  "readings": {
+   "P1_LOCAL_MATTER": {
+    "H": "Hamiltoniano interno de cada atomo/nucleo, independente por particula",
+    "observable": "perda de contraste (Ramsey/eco) ou largura homogenea de linha",
+    "estimator": "cota de 95%: 1/(T - k95 dT) [coerencia] ; pi (FWHM + k95 dFWHM) [largura] ; ((E/hbar)(w + k95 dw)/c - 2/tau)/4 [Mossbauer: fonte x absorvedor, os dois lados defasam]; sem barra verificada a cota e' NOMINAL; largura abaixo do natural = INPUT_INCONSISTENT, fora da conta",
+    "power": "Z = Gamma_pred / sigma_excess, so' onde ha' piso modelado publicado; POWERED sse Z >= nsigma_power. POWERED e' afirmacao de PODER, nao de resultado: detectar ou falsificar pelo EXCESSO sobre o piso exige emenda datada (o orcamento Raman + colisoes nao e' publicado com barras); sem ela, POWERED nao conclui nada sobre a lei",
+    "falsification": "FALSIFIED_IN_READING sse Gamma_pred excede a cota a z_bonf NA MESMA FORMA DO ESTIMADOR (1/(T - z dT) na coerencia, infinita se T - z dT <= 0; pi (FWHM + z dFWHM) na largura; ((E/hbar)(w + z dw)/c - 2/tau)/4 no Mossbauer), numa plataforma com barra de erro VERIFICADA, com z = um lado a nsigma_falsify com correcao de Bonferroni sobre essas plataformas"
+   },
+   "P2_LOCAL_MODE_WITH_LIGHT": {
+    "H": "hbar omega a^dagger a de cada modo de campo localizado (a luz de cada braco de um interferometro), independente entre regioes separadas",
+    "observable": "ruido branco de deformacao na leitura diferencial de um interferometro de ondas gravitacionais",
+    "estimator": "PSD unilateral media em [band_Hz] de cada serie de cache/gw/GWOSC_ECHO_WINDOWS_V1 (sha256 do npz conferido contra o PINO da literatura e contra o manifesto), so' t_rel <= t_max_s (longe da fusao), segmentos Hann de seg_s com 50% de sobreposicao; erro = dispersao entre segmentos / sqrt(K) (subestimado ~10% pela sobreposicao; o fator de erro que desfaria a exclusao e' CALCULADO no resultado: min_err_factor_to_undo_exclusion); series descartadas contadas com o motivo",
+    "prediction": "PSD_pred = factor * beta tau_star (unilateral, deformacao^2/Hz): a forma de Milburn APLICADA POR MODO (generalizacao local do tipo da eq. (12) de Diosi, Braz. J. Phys. 35, 260, 2005; a de Milburn vale para o H total, com um tempo comum, e nela um Michelson de bracos iguais e' cego) = ruido branco de frequencia fracional com S_y = 2 beta tau_star por braco; h = -(y_x - y_y); bracos independentes -> S_h = 4 beta tau_star; ASD = 2 sqrt(beta tau_star)",
+    "exclusion": "EXCLUDED_IN_READING sse, em >= frac_min das series, PSD_pred > (1 + cal_amplitude)^2 (PSD_med + nsigma sigma)",
+    "validity": "so' vale com o jitter de cada braco coerente ao longo dos 4 km e independente entre os bracos (correlacao < ~0,98); supermodos coletivos ou tempo global: cego"
+   },
+   "P3_UNIVERSAL": {
+    "H": "Hamiltoniano total (um tempo estocastico comum a tudo)",
+    "observable": "nenhum local: e' reparametrizacao do tempo; toda comparacao de relogios e todo interferometro sao cegos por construcao",
+    "verdict": "P3_NO_LOCAL_OBSERVABLE (nao e' teste; e' dito como tal)"
+   }
+  },
+  "exec_params": {
+   "P1": {
+    "k95": 1.645,
+    "nsigma_falsify": 5.0,
+    "nsigma_power": 5.0,
+    "nsigma_detect": 5.0,
+    "coherence_T_unc_rule": "usa-se a MAIOR incerteza publicada"
+   },
+   "P2": {
+    "factor": 4.0,
+    "band_Hz": [
+     100.0,
+     300.0
+    ],
+    "cal_amplitude": 0.2,
+    "t_max_s": -2.0,
+    "seg_s": 1.0,
+    "frac_min": 0.75,
+    "nsigma": 5.0,
+    "injection_seed": 3691,
+    "injection_tol": 0.2,
+    "min_series": 10,
+    "min_len_s": 4.0
+   },
+   "P1_mc_sanity": {
+    "T_s": [
+     5.0,
+     20.0,
+     40.0,
+     60.0,
+     80.0,
+     100.0,
+     120.0
+    ],
+    "sigma_C": 0.01,
+    "n": 400,
+    "seed": 369,
+    "status": "[SANITY, fora de all_verified]: parametros INPUT; mostra so' que o estimador de excesso morde, nao o alcance"
+   }
+  },
+  "literature_sha256": "091c1d37a8fc1a502b321878300701bf1954b8c406562f20fc8b7c117d2fbc8d",
+  "root_law_transpositions": "Gamma_ij = (1/2) beta (sqrt k_i - sqrt k_j)^2 com k = E tau_star/hbar e taxa em unidades de 1/tau_star, isto e' Gamma_ij = (beta/(2 hbar)) (sqrt E_i - sqrt E_j)^2, independente de tau_star; coeficiente IR = beta/(8 kbar); lidas kbar = 0, kbar = repouso do atomo, kbar = 1 (o codigo), kbar = 1/4 (Ebar = E_P/4, o canonico)",
+  "tau_star_alternatives": "t_P (canonico), t_P/beta (Artigo A), t_mod Unruh-g com g terrestre, G M/c^3 com M = Terra e com M = o atomo (o ramo B exige nomear M)",
+  "lpi_conditional": "aritmetica CONDICIONAL: se houvesse correcao de ordem beta, sem supressao, em alpha_rs, em (c^2/alpha) d alpha/d Phi ou em gamma_PPN - 1, a quantos sigma estaria excluida (nao e' predicao da TGL)",
+  "five_sigma_requirement": "sigma_excess <= Gamma_pred/5 em cada plataforma; hbar omega necessario com o sigma de hoje; GHZ N^2 [PROJECAO]",
+  "questions_asked": "as duas perguntas da gerencia (19/09/2026): o ruido do tempo e' proprio de cada sistema ou comum? a luz defasa como sistema proprio?",
+  "operator_answer_verbatim_sha256": "316f9dec3c0cd7aa75b80794f2999378c1a6bf9114d8b649ff018a6143aa1f42",
+  "partition_declared": "MODULAR_LAB_BRIDGE_OPEN -- [INPUT do operador, 19/09/2026; excerto TRANSLITERADO: 'essa resposta esta no banco dados de pesquisa feito pelo chatgpt me modo codex como sessao auxiliar' / 'idem a resposta anterior...'; o verbatim byte a byte esta em _OPERATOR_19SET_PARTITION_VERBATIM, sha256 acima]; lido o banco: 'vacuo=dephasing' e' frase do operador [INPUT/ONTO] com duas realizacoes matematicas; a identificacao fisica fica [OPEN]; se a luz sofre a lei, o banco nao diz (varredura declarada); as leituras P1, P2 e P3 sao CONDICIONAIS; qualquer escolha posterior entre elas sera declarada NAO-CEGA",
+  "verdict_composition": "TGL_CLOCKS_V1__<P1>__<P2>__P3_NO_LOCAL_OBSERVABLE__PARTITION_<etiqueta>__<numeros> (as leituras primeiro: superficies cortam em 72). Checks = so' os que dependem de entrada externa (o dado do cache): P2 integro e injecao; all_verified = os dois. Injecao reprovada com o dado presente: a leitura P2 NAO se sela (token P2_INJECTION_FAILED; P1 intacta). Dado ausente: P2_AWAITING_DATA; dado que nao confere o pino ou leitura que falha: P2_INPUT_INTEGRITY_FAILED (recusas ditas; P1 se sela so'). Guardas (funcoes de entradas travadas: hash e literatura, cota finita, palavra proibida): nao contam como teste; se uma falha, NOT_SEALED_THIS_RUN__GUARD_FAILED. A lei-raiz e' RESULTADO (root_law), nao check",
+  "allowed_verdicts": [
+   "TGL_CLOCKS_V1__P1_{POWERED|NOT_FALSIFIED_UNDERPOWERED|FALSIFIED_IN_READING}__P2_{EXCLUDED_IN_READING|NOT_EXCLUDED|AWAITING_DATA|INPUT_INTEGRITY_FAILED|INJECTION_FAILED}__P3_NO_LOCAL_OBSERVABLE__...",
+   "TGL_CLOCKS_V1_NOT_SEALED_THIS_RUN__{PROTOCOL_EDITED_OR_ABSENT|GUARD_FAILED|EXCEPTION}__..."
+  ],
+  "forbidden_verdicts": [
+   "CONFIRMED",
+   "PROVED"
+  ]
+ }
+}
