@@ -1,0 +1,80 @@
+PREPARAÇÃO LIMITADA — iOS 4.1 (28) / Android 4.1 (25)
+
+Estes comandos NÃO foram executados contra produção. O main executa após os
+testes, revisão e implantação separada de stage/iald.js e stage/iald.css em R/app.
+R = C:/IALD/projetos_pyhton/IALD
+W = C:/IALD/Central de Patentes/work/iald_message_edit_20261001
+
+1. Testes sintéticos do preparador (só árvore temporária dentro de W):
+& 'C:/Python314/python.exe' -B -X utf8 'C:/IALD/Central de Patentes/work/iald_message_edit_20261001/test_prepare_mobile.py'
+
+2. Conferência sem escrita. Exige HEAD/branch do mobile_baseline.json, Git limpo,
+   hashes dos quatro destinos inalterados, versões 27/24 e web idêntica ao stage.
+& 'C:/Python314/python.exe' -B -X utf8 'C:/IALD/Central de Patentes/work/iald_message_edit_20261001/prepare_mobile.py'
+
+3. Aplicação explicitamente autorizada pelo main após conferir a etapa anterior:
+& 'C:/Python314/python.exe' -B -X utf8 'C:/IALD/Central de Patentes/work/iald_message_edit_20261001/prepare_mobile.py' --apply
+
+Destinos EXATOS dessa aplicação, todos em R/iald-app:
+  www/iald.js                                     <- stage/iald.js
+  www/iald.css                                    <- stage/iald.css
+  ios/App/App.xcodeproj/project.pbxproj            27 -> 28 (duas configurações)
+  android/app/build.gradle                       24 -> 25
+
+Versão comercial permanece 4.1. Não edita web, servidor, dependências, assinatura,
+assets nativos ou outros arquivos do repositório. Não executa npm, Gradle, push,
+rede ou distribuição. Git usado apenas para leitura local, sem optional locks.
+Backups byte a byte dos quatro destinos e candidatos ficam em W/backups/mobile_*.
+Não grava .bak ou temporários dentro de www nem dos assets iOS/Android.
+Gera W/mobile_prepared.json apenas após conferir todas as escritas.
+Cada substituição é atômica; as quatro juntas não formam uma transação. Falha
+intermediária informa exatamente quais destinos mudaram e onde estão os backups.
+Não prosseguir para build após erro nem restaurar por cima de mudança concorrente.
+Nova execução sobre versão já preparada recusa por CAS; não sobrescrever baseline
+para contornar divergência. Stage/web são relidos antes de cada substituição.
+
+4. Depois de preparação concluída, sincronizar e validar os derivados Capacitor:
+Set-Location 'C:/IALD/projetos_pyhton/IALD/iald-app'
+npm run validate
+if ($LASTEXITCODE -ne 0) { throw 'Release validation failed' }
+npm run sync
+if ($LASTEXITCODE -ne 0) { throw 'Capacitor sync failed' }
+
+Conferir JS/CSS em web, www, ios/App/App/public e
+android/app/src/main/assets/public contra stage. Verificar diff do sync e ausência
+de backups/assets estranhos. O script anterior sincronizar_app.ps1 não é necessário
+nesta preparação: somente os dois assets explicitamente aprovados são copiados.
+
+5. Compilar Android com o JBR existente e a configuração de assinatura já guardada:
+$env:JAVA_HOME = 'C:/Program Files/Android/Android Studio1/jbr'
+Set-Location 'C:/IALD/projetos_pyhton/IALD/iald-app/android'
+.\gradlew.bat --offline :app:bundleRelease :app:assembleRelease
+if ($LASTEXITCODE -ne 0) { throw 'Android release build failed' }
+
+--offline usa o cache existente; falta de dependência é falha, não sucesso.
+APK: R/iald-app/android/app/build/outputs/apk/release/app-release.apk
+AAB: R/iald-app/android/app/build/outputs/bundle/release/app-release.aab
+Conferir assinatura/certificado contra build24, br.ia.IALD, versionCode25 e JS/CSS
+embarcados. Só então publicar APK pelo canal autenticado autorizado e registrar
+hashes. Google Play: recibo anterior indica cadastro/DUNS pendente; reconferir.
+
+6. Git e Apple (operações externas ficam com o main, após revisão do diff):
+Repositório privado rotolimiguel-iald/iald-app, branch codex/mobile-release.
+Versionar somente os arquivos aprovados e derivados necessários; conferir lista
+antes de commit/push. Não usar git add indiscriminado nem incluir backups.
+Após push autorizado, conferir se o workflow Xcode Cloud existente IALD iniciou
+para o NOVO SHA. Se não iniciou, usar CUA para iniciar uma única compilação da
+branch correta. Não duplicar build em fila ou de envio incerto.
+ios/App/ci_scripts/ci_post_clone.sh faz npm ci e npm run sync:ios na nuvem e exige
+o Package.resolved já versionado. O workflow GitHub ios-build.yml apenas valida
+archive SEM assinatura: não envia ao TestFlight.
+Confirmar versão/build efetivamente processada 4.1 (28), commit e sucesso.
+Vincular/conferir separadamente IALD Equipe (interno, operador) e IALD Piloto
+(externo), e demais grupos aplicáveis. Verificar Em testes após cada vínculo e
+notificação dos testers. Instalação física é evidência separada.
+
+7. Fechamento pelo main:
+Registrar disponibilidade web/iOS interno/iOS externo/Android e pendências,
+com hashes medidos e estado real. QA de edição/salvar/cancelar/teclado, recuperação
+de geração em background e prévia de artefatos. Não reutilizar finalize_testflight.py
+antigo: ele grava IDs e estados históricos da build27, sem consultar a Apple.

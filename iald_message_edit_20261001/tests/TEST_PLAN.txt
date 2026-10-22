@@ -1,0 +1,56 @@
+Auditoria independente — editor de mensagem IALD — 01/10/2026
+
+Escopo: apenas esta pasta tests. Produção e stage são entradas somente de leitura.
+Sem chamadas a modelos, login real, credenciais, instalação ou implantação.
+
+Achado na versão inicialmente lida:
+editarMensagem usa textarea.conv-nome-edit dentro da bolha de usuário.
+button/input/textarea/select herdam color; a bolha define --txt-bolha-user;
+conv-nome-edit define background:var(--bg-elevado), sem cor própria.
+No tema claro, ambos os tokens são #FFFFFF: texto e fundo coincidem.
+Fonte inline 15px e ausência de autosize/gestão específica de visualViewport
+são observações adicionais; reprodução física no iPhone ainda é necessária.
+
+Contrato informado pelo implementador:
+.msg-edicao-texto e .msg-edicao-acoes; linha.dataset.editando;
+cor e -webkit-text-fill-color explícitas, fonte 16px;
+ajustarEdicaoMensagem preserva scrollTop interno e limita a altura a
+max(72,min(320,conversa.clientHeight-140)); rolagem externa somente quando
+necessária, com margem de 16px acima e 24px abaixo;
+focus({preventScroll:true}), input/visualViewport/window.resize ajustam editor;
+rolarSePerto não altera rolagem durante edição;
+Enter insere nova linha; Ctrl/Cmd+Enter envia; IME nunca envia;
+envio revalida geração, pedido pendente e conversa; cancelar não altera histórico;
+compositor normal mantém funcionamento, margem ao teclado passa a 16px.
+
+Testes Node com funções reais extraídas do JS, DOM/viewport sintéticos:
+1. Texto multilinha, Unicode e marcação permanecem dados literais no textarea.
+2. Avisos/linhas pendentes não deslocam o índice da mensagem editada.
+3. Geração ativa/pedido pendente bloqueiam edição. Parar é cancelamento explícito;
+   edição só fica disponível após terminar geração e pendência.
+4. Cancelar/Escape conservam histórico, rascunho do compositor e anexos.
+5. Enter/Shift+Enter não enviam; Ctrl/Cmd+Enter enviam uma vez;
+   isComposing/keyCode229 impedem envio; texto vazio não destrói histórico.
+6. Reenvio descarta somente a mensagem editada e as seguintes; conserva prefixo.
+   Mudança de conversa, geração ou pendência posterior bloqueiam o handler antigo.
+7. Autosize cresce/encolhe nos limites, preserva valor/seleção/scrollTop interno.
+8. Ajuste externo não desloca editor já visível; corrige acima/abaixo sem seguir fim.
+9. Eventos visualViewport resize/scroll direcionam ajuste ao editor; fluxo normal
+   e cenário sem visualViewport continuam funcionais.
+
+Inspeção visual sob responsabilidade do implementador, na fixture DEMO via CUA:
+CSS/JS reais; dados sintéticos; nenhuma chamada a modelo.
+Temas claro/escuro; mensagem curta/longa; editar/cancelar/reenviar; geometria reduzida.
+Medir computedStyle de color/background/-webkit-text-fill-color/font-size,
+contraste calculado e retângulos. Abrir apenas com ferramenta de navegador.
+Esta suíte independente mede tokens/regras CSS; não simula pintura real do browser.
+Chrome/IAB com viewport sintético não prova pintura/teclado no WKWebView.
+
+Aceite físico posterior pelo responsável (fora dos testes Node):
+iPhone em Safari e app nativo; claro/escuro, retrato/paisagem, fonte ampliada;
+gerar → parar → aguardar confirmação → editar → digitar → Enter → reenviar;
+colar texto longo, rolar dentro do editor, esconder/reabrir teclado;
+verificar valor visível, cursor e botões acima do teclado sem salto ao fim.
+
+Evidência final deve distinguir testes executados, falhas reais, limitações da
+fixture e cenários manuais não executados. Hashes sempre lidos dos arquivos.
