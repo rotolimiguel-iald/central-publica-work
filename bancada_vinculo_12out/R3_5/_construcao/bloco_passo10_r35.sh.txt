@@ -1,0 +1,15 @@
+if quer 10; then
+echo "== 10. B(n) da Bancada, ENSAIO pos-selo, SALTO v392 -> v394, esboco R3.5 (nada e' gravado na Bancada; o servico pode estar no ar) $(date +%T)"
+b3_prepara 10
+SAIDA_E="$PK/bancada_B3_ensaio_$(date +%Y%m%d_%H%M%S)"
+set +e
+$PY "$W_ESB" --bancada 'C:\IALD\Bancada_Um' --producao --nos "$W_NOS" --versao v394 --fase pos_selo --modo ensaio --bateria "$W_BAT" --bateria-sha256 "$BAT" \
+    --cadeia-de-selos "$W_CAD" --cadeia-de-selos-sha256 "$CAD" \
+    --recibo-pre-selo "$W_RPS" --recibo-pre-selo-sha256 "$RPS" --selo-anterior "$W_SELO" --kernel-manifesto-anterior "$W_KMAN" \
+    --kernel-recibo "$W_KR" --kernel-recibo-sha256 "$KRSHA" --criterios "$W_CRI" --criterios-sha256 "$CRI" \
+    --saida "$(cygpath -w "$SAIDA_E")" > "$SEL/b3_ensaio_out.txt" 2>&1; b3=$?
+set -e
+tail -4 "$SEL/b3_ensaio_out.txt" | cut -c1-400
+[ "$b3" = "0" ] || parar "o B(n) ENSAIO reprovou (rc=$b3): saida inteira em $SEL/b3_ensaio_out.txt"
+$PY "$SEL/b3_recibo_v394.py" "$(cygpath -w "$SEL/b3_ensaio_out.txt")" ensaio "$CAD" || parar "o recibo do B(n) ENSAIO nao confere"
+fi

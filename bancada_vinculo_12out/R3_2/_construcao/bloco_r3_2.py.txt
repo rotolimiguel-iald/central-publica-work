@@ -1,0 +1,373 @@
+
+# ================================================================ R3.2: os achados da reauditoria a721b706 (R31-1 a R31-6 e o item 3 da 12-ter)
+# Cada achado: o caso EXATO do auditor (ATAQUES_R3_1_AUDITOR.json) e pelo menos uma variante; contraprovas onde ha forma valida.
+AT32 = RAIZ / "aud32"
+AT32.mkdir(exist_ok=True)
+M32 = AT32 / "marcas"
+M32.mkdir(exist_ok=True)
+
+
+def _marcas32():
+    out_ = {m_.name: m_.read_text(encoding="utf-8", errors="replace")[:300] for m_ in sorted(M32.iterdir())}
+    for m_ in list(M32.iterdir()):
+        m_.unlink()
+    return out_
+
+
+# --- R31-1 (MEDIA): o esboco exige python -I -B -X utf8; um json.py (e um argparse.py) AO LADO do esboco nao chega a ser importado
+ESB32 = AT32 / "esboco_com_vizinhos"
+ESB32.mkdir()
+shutil.copyfile(SYNC, ESB32 / "sincronizar_bancada.py")
+_m32 = json.dumps(M32.as_posix())
+# o json.py do auditor (art_a721b706/ataques_r3_1.py): deixa a marca e devolve o json verdadeiro (o esboco seguiria funcionando)
+(ESB32 / "json.py").write_text(
+    "import os, sys, importlib\n"
+    "open(%s + '/json_sombra_%%d.txt' %% os.getpid(), 'w').write(repr(sys.orig_argv))\n"
+    "_d = os.path.normcase(os.path.dirname(os.path.abspath(__file__)))\n"
+    "sys.path[:] = [p for p in sys.path if os.path.normcase(os.path.abspath(p or '.')) != _d]\n"
+    "del sys.modules['json']\n"
+    "_r = importlib.import_module('json')\n"
+    "sys.modules['json'] = _r\n" % _m32, encoding="utf-8")
+(ESB32 / "argparse.py").write_text(
+    "import os, sys, importlib\n"
+    "open(%s + '/argparse_sombra_%%d.txt' %% os.getpid(), 'w').write(repr(sys.orig_argv))\n"
+    "_d = os.path.normcase(os.path.dirname(os.path.abspath(__file__)))\n"
+    "sys.path[:] = [p for p in sys.path if os.path.normcase(os.path.abspath(p or '.')) != _d]\n"
+    "del sys.modules['argparse']\n"
+    "_r = importlib.import_module('argparse')\n"
+    "sys.modules['argparse'] = _r\n" % _m32, encoding="utf-8")
+(ESB32 / "sitecustomize.py").write_text("import os, sys\nopen(%s + '/sitecustomize_esb_%%d.txt' %% os.getpid(), 'w').write(repr(sys.orig_argv))\n" % _m32, encoding="utf-8")
+assert sha(ESB32 / "sincronizar_bancada.py") == sha(SYNC)
+_ARGS_R311 = ["--bancada", B2, "--nos", NOS, "--versao", "v392", "--bateria", bt_min, "--bateria-sha256", bt_min_sha, "--sandbox", "--modo", "ensaio", "--fase", "pos_selo"]
+_ = _marcas32()
+MARCAS_R32 = {}
+
+
+def _r311_recusa(nome):
+    def f_(j, r):
+        m_ = MARCAS_R32[nome] = _marcas32()
+        return j.get("recibo") is None and not m_ and "nada importado alem de sys" in str(j.get("recusa"))
+    return f_
+
+
+run("R32_R31_1_exato_json_sombra_ao_lado_chamado_com_s", _ARGS_R311, 2, "INTERPRETADOR_NAO_ISOLADO", bancada=B2, sync=ESB32 / "sincronizar_bancada.py",
+    flags=("-s", "-B", "-X", "utf8"), extra_ok=_r311_recusa("R32_R31_1_exato_json_sombra_ao_lado_chamado_com_s"),
+    nota="R31-1 (o caso EXATO do auditor): o json.py do ataque ao lado do esboco, chamado com -s como mandava a remissao R3.1-0; na R3.1 executava no processo que "
+         "grava a producao; na R3.2 a guarda do topo (antes de qualquer import alem de sys) recusa: rc 2, nenhuma marca, nada gravado")
+run("R32_R31_1_variante_com_I_a_sombra_nao_executa_e_o_esboco_roda", _ARGS_R311, 0, veredito_esp="REPINADA_B3__ENSAIO", bancada=B2, sync=ESB32 / "sincronizar_bancada.py",
+    flags=("-I", "-B", "-X", "utf8"),
+    extra_ok=lambda j, r: (lambda m_: not m_ and recibo_de(j)["python_isolado"]["isolated"] is True and recibo_de(j)["python_isolado"]["safe_path"] is True)(
+        MARCAS_R32.setdefault("R32_R31_1_variante_com_I", _marcas32())),
+    nota="R31-1: o mesmo esboco com json.py, argparse.py e sitecustomize.py ao lado, chamado como a remissao R3.2-0 manda (-I -B -X utf8): roda (ensaio), nenhuma marca")
+run("R32_R31_1_variante_s_P_tambem_recusado", _ARGS_R311, 2, "INTERPRETADOR_NAO_ISOLADO", bancada=B2, sync=ESB32 / "sincronizar_bancada.py",
+    flags=("-s", "-P", "-B", "-X", "utf8"), extra_ok=_r311_recusa("R32_R31_1_variante_s_P_tambem_recusado"),
+    nota="R31-1 [INPUT da gerencia]: -s -P tambem cortaria o sys.path[0], mas a regra e uma so: -I (isolated); sem ele, recusa")
+run("R32_R31_1_variante_I_sem_B", _ARGS_R311, 2, "INTERPRETADOR_NAO_ISOLADO", bancada=B2, flags=("-I", "-X", "utf8"),
+    extra_ok=lambda j, r: j.get("recibo") is None and "-B" in str(j.get("recusa")) and not tem_pycache(B2))
+run("R32_R31_1_variante_I_sem_X_utf8", _ARGS_R311, 2, "INTERPRETADOR_NAO_ISOLADO", bancada=B2, flags=("-I", "-B"),
+    extra_ok=lambda j, r: j.get("recibo") is None and "-X utf8" in str(j.get("recusa")))
+run("R32_R31_1_variante_E_s_B_X_sem_I", _ARGS_R311, 2, "INTERPRETADOR_NAO_ISOLADO", bancada=B2, flags=("-E", "-s", "-B", "-X", "utf8"),
+    extra_ok=lambda j, r: j.get("recibo") is None and "-P" in str(j.get("recusa")))
+
+
+class _FlagsFalsas:
+    isolated = 0
+    ignore_environment = 1
+    safe_path = 1
+    no_user_site = 1
+    dont_write_bytecode = 1
+    utf8_mode = 1
+
+
+decoy("R32_R31_1_variante_em_processo_main_confere_de_novo", 2, "INTERPRETADOR_NAO_ISOLADO", patches_extra=dict(_flags_do_interpretador=lambda: _FlagsFalsas),
+      extra_ok=lambda j, a, d: pd_intocado(j, a, d) and j.get("recibo") is None,
+      nota="R31-1: main() chamada em processo (decoy de producao) com um interpretador simulado sem isolated: recusa antes de ler argumento, nada gravado")
+checar("R32_R31_1_sob_I_o_site_do_usuario_segue_sombreavel",
+       lambda: bool(sys.flags.isolated) and "numpy" in MOD.sombreaveis() and MOD.site_do_usuario_real() is not None,
+       nota="R31-1 (achado da 1a rodada da R3.2, controle N5_modulo_sombra_ao_lado_da_fonte): sob -I o site do usuario nao entra no sys.path do esboco, "
+            "mas os testes o recebem como caminho; os modulos dele (numpy) seguem na lista dos sombreaveis (o numpy.py ao lado de fonte pinada e recusado)")
+_src_topo = SYNC.read_text(encoding="utf-8")
+checar("R32_R31_1_guarda_antes_de_qualquer_import",
+       lambda: [l_ for l_ in _src_topo[:_src_topo.index("_falta = _flags_que_faltam()")].splitlines() if l_.startswith(("import ", "from "))] == ["import sys"]
+       and _src_topo.index("_falta = _flags_que_faltam()") < _src_topo.index("import argparse") < _src_topo.index("import json"),
+       nota="R31-1: no codigo, a unica importacao antes da guarda e `import sys` (embutido; nao se sombreia); json, argparse e o resto vem depois")
+
+# --- R31-2: mudanca do manifesto entre o os.replace e o recibo (a 6a sonda) -- recusa, rollback e sonda depois do rollback
+R312 = {}
+
+
+def _sonda_que_muta_na(n_alvo, no_ar_depois=False):
+    estado_ = {"i": 0}
+
+    def f_(porta=None):
+        estado_["i"] += 1
+        if estado_["i"] == n_alvo:
+            R312["sha"], R312["tamanho_igual"], R312["mtime_igual"] = _mutar_mesmo_tamanho_e_mtime(PD / "canonical_contracts.json")
+        return bool(no_ar_depois and estado_["i"] > n_alvo)
+    return f_
+
+
+def _r312_ok(prefixo_causa):
+    def f_(j, a, d):
+        rec_ = recibo_de(j)
+        ap_ = rec_.get("aplicacao") or {}
+        ev_ = (ap_.get("manifesto_estranho") or {})
+        est_ = sorted((PD / "estado" / "sincronizacao").glob("RECIBO_SINCRONIZACAO_*.json")) if (PD / "estado" / "sincronizacao").exists() else []
+        return (_so_backup_novo(j, a, d) and prefixo_causa in str(j.get("recusa")) and ev_.get("sha256") == R312.get("sha") and Path(ev_.get("evidencia", "")).is_file()
+                and sha(ev_["evidencia"]) == R312.get("sha") and not est_ and R312.get("tamanho_igual") is True and R312.get("mtime_igual") is True
+                and rec_["sondagens_do_servico"][-1]["momento"] == "apos_rollback")
+    return f_
+
+
+R312.clear()
+decoy("R32_R31_2_exato_mudanca_do_manifesto_durante_a_sexta_sonda", 2, "APLICACAO_REVERTIDA: MANIFESTO_MUDOU_APOS_A_TROCA",
+      patches_extra=dict(servico_responde=_sonda_que_muta_na(6)), extra_ok=_r312_ok("MANIFESTO_MUDOU_APOS_A_TROCA"),
+      nota="R31-2 (o caso EXATO do auditor): a mudanca do manifesto (mesmo tamanho e mtime) durante a 6a sonda, antes_do_recibo_em_estado; na R3.1 terminava rc 0 "
+           "APLICADA com o disco diferente do declarado; na R3.2: recusa, os bytes estranhos ficam em --saida com sha, nenhum recibo em estado, rollback ao ANTERIOR "
+           "e a sonda depois do rollback")
+R312.clear()
+_orig_gravar_novo = MOD.gravar_novo
+
+
+def _gravar_e_mutar(p_, data_):
+    r_ = _orig_gravar_novo(p_, data_)
+    if Path(p_).parent.name == "sincronizacao" and Path(p_).parent.parent.name == "estado" and Path(p_).parent.parent.parent == PD:
+        R312["sha"], R312["tamanho_igual"], R312["mtime_igual"] = _mutar_mesmo_tamanho_e_mtime(PD / "canonical_contracts.json")
+        R312["recibo_em_estado_existia"] = Path(p_).exists()
+    return r_
+
+
+decoy("R32_R31_2_variante_mudanca_logo_depois_do_recibo_em_estado", 2, "APLICACAO_REVERTIDA: MANIFESTO_MUDOU_APOS_O_RECIBO_EM_ESTADO",
+      patches_extra=dict(gravar_novo=_gravar_e_mutar),
+      extra_ok=lambda j, a, d: _r312_ok("MANIFESTO_MUDOU_APOS_O_RECIBO_EM_ESTADO")(j, a, d) and R312.get("recibo_em_estado_existia") is True
+      and (recibo_de(j)["aplicacao"].get("recibo_em_estado_retirado") or {}).get("sha256") is not None,
+      nota="R31-2: a mudanca logo DEPOIS de gravar o recibo em estado/sincronizacao: a 2a conferencia ve, o recibo em estado (que dizia APLICADA) sai, rollback")
+R312.clear()
+decoy("R32_R31_2_variante_servico_no_ar_depois_do_rollback", 2, "SERVICO_NO_AR_APOS_ROLLBACK__REINICIO_OBRIGATORIO",
+      patches_extra=dict(servico_responde=_sonda_que_muta_na(6, no_ar_depois=True)),
+      extra_ok=lambda j, a, d: _so_backup_novo(j, a, d) and "MANIFESTO_MUDOU_APOS_A_TROCA" in str(j.get("recusa"))
+      and recibo_de(j)["aplicacao_revertida"]["servico_no_ar_apos_rollback"] is True,
+      nota="R31-2 + N3a: se o servico responde depois desse rollback, o codigo e o proprio (reinicio com recibo de identidade, 10-ter); a causa fica no texto")
+decoy("R32_R31_2_contraprova_aplica_com_as_duas_conferencias", 0, veredito_esp="REPINADA_B3__APLICADA",
+      extra_ok=lambda j, a, d: (lambda rec: [c_["momento"] for c_ in rec["aplicacao"]["conferencia_pos_troca"]] == ["depois_da_ultima_sonda_antes_do_recibo", "depois_do_recibo_em_estado"]
+                                and all(c_["igual_ao_novo"] is True and c_["manifesto_em_disco_sha256"] == rec["manifesto_novo"]["sha256"] for c_ in rec["aplicacao"]["conferencia_pos_troca"])
+                                and sha(PD / "canonical_contracts.json") == rec["manifesto_novo"]["sha256"] and Path(rec["aplicacao"]["copia_do_recibo"]).exists()
+                                and "manifesto_estranho" not in rec["aplicacao"])(recibo_de(j)),
+      nota="contraprova: sem mudanca alheia, as duas conferencias (antes e depois do recibo em estado) dao o manifesto novo e a producao-decoy e aplicada")
+_src_main = _inspect.getsource(MOD.main)
+checar("R32_R31_2_ordem_sonda_confere_recibo_confere_no_codigo",
+       lambda: _src_main.index('guarda_servico("antes_do_recibo_em_estado")') < _src_main.index("if disco != novo_bytes") < _src_main.index("gravar_novo(est_rec, est_bytes)")
+       < _src_main.index("if disco2 != novo_bytes"),
+       nota="R31-2: no codigo do main, depois da ultima sonda vem a releitura do manifesto, o recibo em estado, e outra releitura")
+decoy_reset()
+
+# --- R31-3: o pino do manifesto do kernel do recibo pre-selo vem do SELO ANTERIOR (fonte externa), nunca de campo do proprio recibo
+ANT_PD = MOD.estado_anterior(PD, MOD.carregar_canonical(PD)[0])
+
+
+def _pre32(nome, mut, base):
+    rj_ = json.loads(Path(base).read_bytes())
+    mut(rj_)
+    p_ = AT32 / ("PRE_%s.json" % nome)
+    p_.write_bytes(json.dumps(rj_, ensure_ascii=False).encode("utf-8"))
+    return p_
+
+
+_falso_k = sha_b(b"manifesto do kernel de outro rito")
+_p_r313 = _pre32("selo_certo_kernel_declarado_pelo_proprio_recibo", lambda r: (
+    r["nos"]["selo"].update(tgl_kernel_proof_manifest_sha256=_falso_k), r["nos"]["kernel"].update(
+        sha256=_falso_k, raiz_sha256=sha_b(b"outra raiz"), audit_sha256=sha_b(b"outro audit"), impressao_formal=sha_b(b"outra impressao"))), R_PD)
+unit("R32_R31_3_exato_selo_certo_kernel_do_proprio_recibo", lambda: _conferir_pre(_p_r313, ANT_PD, PD, False, sha(_p_r313)), "RECIBO_PRE_SELO_NAO_CORRESPONDE",
+     nota="R31-3 (o caso EXATO do auditor, sobre o recibo pre-selo do decoy): selo.sha256 verdadeiro; selo.tgl_kernel_proof_manifest_sha256, kernel.sha256, raiz, Audit e "
+          "impressao forjados de forma CONSISTENTE no proprio recibo; na R3.1 era aceito; na R3.2 o pino vem do selo anterior (custodia) e recusa")
+decoy("R32_R31_3_exato_no_decoy_de_producao", 2, "RECIBO_PRE_SELO_NAO_CORRESPONDE", pre=_p_r313, extra_ok=pd_intocado,
+      nota="R31-3: o mesmo recibo forjado (com o sha dele, como se vNNN_pins o pinasse) pelo caminho inteiro da producao-decoy: recusa antes da bateria")
+_p_r313b = _pre32("kernel_sha_verdadeiro_raiz_e_impressao_forjadas", lambda r: r["nos"]["kernel"].update(
+    raiz_sha256=sha_b(b"outra raiz"), audit_sha256=sha_b(b"outro audit"), impressao_formal=sha_b(b"outra impressao")), R_PD)
+unit("R32_R31_3_variante_pino_verdadeiro_raiz_audit_impressao_forjados", lambda: _conferir_pre(_p_r313b, ANT_PD, PD, False, sha(_p_r313b)), "RECIBO_PRE_SELO_NAO_CORRESPONDE",
+     nota="R31-3: o pino do kernel e o verdadeiro, mas raiz, Audit e impressao do ANTES sao forjados: recalculados do manifesto do kernel que o selo anterior pina, recusa")
+_selo_forj = AT32 / "selo_anterior_forjado.json"
+_sj = json.loads(SELO_ANT.read_bytes())
+_sj["sha256"]["tgl_kernel_proof_manifest.json"] = _falso_k
+_selo_forj.write_bytes(json.dumps(_sj, ensure_ascii=False, indent=1).encode("utf-8"))
+unit("R32_R31_3_variante_selo_anterior_forjado", lambda: MOD.conferir_recibo_pre_selo(_p_r313, ANT_PD, PD, False, sha(_p_r313), _selo_forj, KMAN_ANT),
+     "SELO_ANTERIOR_NAO_E_O_PINADO", nota="R31-3: um --selo-anterior escrito a mao (com o pino do kernel forjado) nao e o selo pinado no manifesto da Bancada")
+unit("R32_R31_3_variante_kernel_manifesto_anterior_de_outro_rito", lambda: MOD.conferir_recibo_pre_selo(R_PD, ANT_PD, PD, False, sha(R_PD), SELO_ANT, NOS392 / "tgl_kernel_proof_manifest.json"),
+     "KERNEL_MANIFESTO_ANTERIOR_NAO_E_O_DO_SELO", nota="R31-3: o manifesto do kernel dado como anterior e o v392 sintetico: nao e o que o selo anterior pina")
+unit("R32_R31_3_variante_sem_selo_anterior", lambda: MOD.conferir_recibo_pre_selo(R_PD, ANT_PD, PD, False, sha(R_PD)), "SELO_ANTERIOR_AUSENTE",
+     nota="R31-3: sem --selo-anterior e --kernel-manifesto-anterior o recibo pre-selo nao se cruza (fail-closed)")
+SEM_SELO_ANT.update({"R32_R31_3_sub_sem_selo_anterior"})
+run("R32_R31_3_sub_sem_selo_anterior", ["--bancada", B2, "--nos", NOS, "--versao", "v392", "--bateria", bt_min, "--bateria-sha256", bt_min_sha, "--sandbox", "--modo", "aplicar",
+                                        "--fase", "pos_selo", "--evento", "SANDBOX:R31-3", "--kernel-recibo", K_OK, "--kernel-recibo-sha256", K_OK_SHA,
+                                        "--recibo-pre-selo", R1B, "--recibo-pre-selo-sha256", sha(R1B)], 2, "SELO_ANTERIOR_AUSENTE", bancada=B2,
+    nota="R31-3 pelo caminho inteiro (subprocesso): o recibo pre-selo VERDADEIRO sem o selo anterior e recusado antes da bateria")
+run("R32_R31_3_sub_selo_anterior_sem_recibo_pre_selo", ["--bancada", B2, "--nos", NOS, "--versao", "v392", "--bateria", bt_min, "--bateria-sha256", bt_min_sha, "--sandbox",
+                                                        "--modo", "ensaio", "--fase", "pos_selo", "--selo-anterior", SELO_ANT, "--kernel-manifesto-anterior", KMAN_ANT], 2,
+    "SELO_ANTERIOR_SEM_RECIBO_PRE_SELO", bancada=B2, nota="R31-3: flag sem efeito nao e aceita em silencio")
+_ant_k = dict(ANT_B2, _man=dict(ANT_B2["_man"], sincronizacao=dict(kernel_manifesto_sha256="e" * 64)))
+
+
+def _recusa_com(fn, prefixo, contem):
+    try:
+        fn()
+        return False
+    except MOD.Recusa as exc:
+        return str(exc).startswith(prefixo) and contem in str(exc)
+
+
+checar("R32_R31_3_variante_manifesto_da_bancada_registra_outro_kernel",
+       lambda: _recusa_com(lambda: _conferir_pre(R1B, _ant_k, B2, False, sha(R1B)), "RECIBO_PRE_SELO_NAO_CORRESPONDE", "registra o manifesto do kernel"),
+       nota="R31-3 (B4 em diante): o manifesto vigente gravado por um B(n) R3.2 registra o manifesto do kernel; se nao e o que o selo anterior pina, recusa")
+checar("R32_R31_3_exato_a_recusa_vem_do_selo_anterior",
+       lambda: _recusa_com(lambda: _conferir_pre(_p_r313, ANT_PD, PD, False, sha(_p_r313)), "RECIBO_PRE_SELO_NAO_CORRESPONDE", "SELO ANTERIOR")
+       and _recusa_com(lambda: _conferir_pre(_p_r313b, ANT_PD, PD, False, sha(_p_r313b)), "RECIBO_PRE_SELO_NAO_CORRESPONDE", "SELO ANTERIOR"),
+       nota="R31-3: as duas recusas acima vem da comparacao com o manifesto do kernel que o SELO ANTERIOR pina (fonte externa), nao das conferencias internas da R3.1")
+unit("R32_R31_3_contraprova_recibo_1b_com_o_selo_anterior", lambda: (lambda r_: r_["kernel_cruzado_com_o_selo_anterior"]["kernel_manifesto_anterior"]["sha256"] == sha(KMAN_ANT)
+                                                                       and r_["kernel_manifesto_anterior_sha256"] == sha(KMAN_ANT))(_conferir_pre(R1B, ANT_B2, B2, False, sha(R1B))) or
+     (_ for _ in ()).throw(MOD.Recusa("CONTRAPROVA_FALHOU")), None, nota="contraprova: o recibo do run 1b cruza com o selo anterior da custodia do sandbox")
+
+# --- R31-4: o build log plausivel (as linhas do lake) e o log do Audit por nome de declaracao distinto
+_ku("R32_R31_4_exato_build_log_com_um_caractere", _kr("r32_build_um_caractere", lambda k: k.update(build_full_log=_blog("r32_um_caractere", b"x\n"))),
+    "LOG_DE_BUILD_IMPLAUSIVEL", nota="R31-4 (o caso EXATO do auditor): um build log de 1 caractere era aceito na R3.1")
+_ksub("R32_R31_4_sub_build_log_com_um_caractere", _kr("r32_build_um_caractere_sub", lambda k: k.update(build_full_log=_blog("r32_um_caractere_sub", b"x\n"))),
+      "LOG_DE_BUILD_IMPLAUSIVEL", nota="R31-4 pelo caminho inteiro do aplicar: o T17 FALHA e nada se grava")
+_ku("R32_R31_4_variante_so_a_linha_final", _kr("r32_build_so_final", lambda k: k.update(build_full_log=_blog("r32_so_final", b"Build completed successfully (4 jobs).\n"))),
+    "LOG_DE_BUILD_IMPLAUSIVEL", nota="R31-4: a linha final sem os jobs das pedras, da raiz e do Audit")
+_ku("R32_R31_4_variante_sem_a_linha_final", _kr("r32_build_sem_final", lambda k: k.update(build_full_log=_blog("r32_sem_final", LB.replace(b"Build completed successfully (4 jobs).\n", b"")))),
+    "Build completed successfully", nota="R31-4: os jobs sem a linha final do lake")
+_ku("R32_R31_4_variante_falta_o_job_de_uma_pedra", _kr("r32_build_sem_pedra_b", lambda k: k.update(build_full_log=_blog("r32_sem_pedra_b", b"".join(
+    l_ for l_ in LB.splitlines(keepends=True) if b"PedraSinteticaB" not in l_)))), "TGLExt.PedraSinteticaB", nota="R31-4: falta o job de uma pedra listada")
+# o caso exato do A2-novo: Audit.lean pinado com 5 #print axioms (2 das pedras + 3 antigas) e o log com uma linha repetida 3 vezes
+_arv5 = AT32 / "arv_audit_maior"
+copiar_sem_juncao(FX / "kernel_src", _arv5)
+_aud5 = (_arv5 / "TGL" / "Audit.lean").read_bytes() + b"".join(b"#print axioms TGLExt.Velha.k%d\n" % i_ for i_ in range(3))
+(_arv5 / "TGL" / "Audit.lean").write_bytes(_aud5)
+_ni5 = nos_ataque("r32_audit_maior", lambda m: m["formal_files_sha256"].update({"TGL/Audit.lean": sha_b(_aud5)}))
+_rep = b"'TGLExt.PedraSinteticaA.um' depends on axioms: [propext, Classical.choice, Quot.sound]\n"
+
+
+def _k_audit5(nome, log_a):
+    return _kr(nome, lambda k: (k.update(arvore=str(_arv5), audit_log=_blog(nome, log_a)), k["audit"].update(sha256_depois=sha_b(_aud5))))
+
+
+_ku("R32_R31_4_exato_audit_log_com_linhas_repetidas", _k_audit5("r32_audit_repetido", LA + _rep * 3), "LOG_DO_AUDIT_CURTO", ni=_ni5,
+    nota="R31-4 (o caso EXATO do auditor): o Audit.lean de 5 #print axioms e o log que repete 3 vezes a linha de uma pedra (5 linhas >= 5); na R3.1 era aceito; "
+         "na R3.2 contam as declaracoes DISTINTAS (2 < 5)")
+_ku("R32_R31_4_contraprova_do_auditor_audit_maior_log_curto", _k_audit5("r32_audit_curto", LA), "LOG_DO_AUDIT_CURTO", ni=_ni5,
+    nota="a contraprova do auditor (o log sem repeticao) segue recusada")
+_ku("R32_R31_4_variante_nomes_distintos_mas_um_nao_e_do_Audit", _kr("r32_audit_nome_estranho", lambda k: k.update(audit_log=_blog("r32_audit_nome_estranho",
+    b"'TGLExt.PedraSinteticaA.um' depends on axioms: [propext, Classical.choice, Quot.sound]\n'TGLExt.Outra.x' does not depend on any axioms\n"))),
+    "LOG_DO_AUDIT_CURTO", nota="R31-4: 2 nomes distintos (o minimo) mas um deles nao e impresso pelo Audit.lean pinado: o nome que falta e nomeado")
+_ku("R32_R31_4_variante_a_mesma_declaracao_duas_vezes", _kr("r32_audit_dup", lambda k: k.update(audit_log=_blog("r32_audit_dup", _rep * 2))),
+    "LOG_DO_AUDIT_CURTO", nota="R31-4: 2 linhas, 1 declaracao distinta, contra 2 #print axioms")
+# o formato REAL (custodia v390, so leitura): as regras da R31-4 valem no build e no Audit reais
+_CUST390 = Path("C:/IALD/Artigo/the_boundary_BACKUPS/um_v390_0f5154bcc2f931cb")
+_real_b = MOD.normalizar_log((_CUST390 / "rodadas" / "tgl_kernel_build_capture.txt").read_bytes())[0]
+_real_a = MOD.normalizar_log((_CUST390 / "rodadas" / "tgl_kernel_audit_capture.txt").read_bytes())[0]
+_real_aud = (_CUST390 / "Lean" / "tgl_kernel" / "TGL" / "Audit.lean").read_text(encoding="utf-8")
+_real_jobs = set(MOD.RE_LAKE_JOB.findall(_real_b))
+_real_print = {x.lstrip("@") for x in MOD.RE_PRINT_AXIOMS_NOME.findall(_real_aud)}
+_real_decl = {m_.group(1).lstrip("@") for m_ in MOD.RE_LOG_DECL.finditer(_real_a)}
+checar("R32_R31_4_formato_real_v390_build_e_audit",
+       lambda: {"TGLExt", "TGL.Audit", "TGLExt.Fundacao"} <= _real_jobs and MOD.RE_LAKE_FIM.search(_real_b) is not None and len(_real_print) == len(_real_decl) == 8523
+       and not (_real_print - _real_decl) and MOD.contar_sorry(_real_b)[0] == 0 and MOD.contar_sorry(_real_a)[0] == 0,
+       nota="R31-4 no formato REAL (custodia v390, so leitura): os 3 arquivos formais mudados na v390 (TGLExt, TGL.Audit, TGLExt.Fundacao) tem linha Built no build "
+            "log; a linha final existe; o Audit.lean imprime 8523 nomes distintos e o log os traz todos; nenhum sorry nas tres formas de busca",
+       jobs_no_build_real=len(_real_jobs), print_distintos=len(_real_print), decl_distintas_no_log=len(_real_decl),
+       fontes=[str(_CUST390 / "rodadas" / "tgl_kernel_build_capture.txt"), str(_CUST390 / "rodadas" / "tgl_kernel_audit_capture.txt"),
+               str(_CUST390 / "Lean" / "tgl_kernel" / "TGL" / "Audit.lean")])
+
+# --- R31-5: o aviso de sorry partido entre linhas e o escapado em JSON
+_pre_real, _ = LINHA_REAL.rstrip(b"\r").split(b"declaration uses")
+_ku("R32_R31_5_exato_quebra_entre_declaration_e_uses", _kr("r32_quebra_decl_uses", lambda k: k.update(build_full_log=_blog("r32_quebra_decl_uses",
+    LB + _pre_real + b"declaration\nuses `sorry`\n"))), "ocorrencia(s) de sorry",
+    nota="R31-5 (o caso EXATO do auditor): o aviso real partido entre 'declaration' e 'uses' (captura com largura fixa); na R3.1 era aceito")
+_ku("R32_R31_5_exato_json_com_crase_escapada", _kr("r32_json_crase", lambda k: k.update(build_full_log=_blog("r32_json_crase",
+    LB + b'{"severity":"warning","data":"declaration uses \\u0060sorry\\u0060"}\n'))), "ocorrencia(s) de sorry",
+    nota="R31-5 (o caso EXATO do auditor): a saida em JSON com a crase escapada \\u0060; na R3.1 era aceita")
+_ksub("R32_R31_5_sub_json_com_crase_escapada", _kr("r32_json_crase_sub", lambda k: k.update(build_full_log=_blog("r32_json_crase_sub",
+      LB + b'{"severity":"warning","data":"declaration uses \\u0060sorry\\u0060"}\n'))), "ocorrencia(s) de sorry")
+_ku("R32_R31_5_variante_varias_quebras_e_recuo_CRLF", _kr("r32_quebras_crlf", lambda k: k.update(build_full_log=_blog("r32_quebras_crlf",
+    LB + _pre_real + b"declaration\r\n      uses\r\n  `sorry`\r\n"))), "ocorrencia(s) de sorry", nota="R31-5: quebras CRLF e recuo entre as tres partes")
+_ku("R32_R31_5_variante_json_com_quebra_escapada_e_aspas_escapadas", _kr("r32_json_quebra", lambda k: k.update(build_full_log=_blog("r32_json_quebra",
+    LB + b'{"data":"declaration\\nuses \\u0027sorry\\u0027","pos":{"line":3}}\n'))), "ocorrencia(s) de sorry",
+    nota="R31-5: no JSON, a quebra escapada (barra-n) entre as palavras e as aspas como \\u0027")
+_ku("R32_R31_5_variante_sorryAx_escapado_em_JSON_no_log_do_Audit", _kr("r32_json_sorryax", lambda k: k.update(audit_log=_blog("r32_json_sorryax",
+    LA + b'{"data":"\'TGLExt.X.y\' depends on axioms: [propext, sorry\\u0041x]"}\n'))), "sorry",
+    nota="R31-5: sorryAx com uma letra escapada numa linha JSON do log do Audit")
+_ku("R32_R31_5_contraprova_palavras_soltas_sem_sorry_aceito", _kr("r32_palavras_soltas", lambda k: k.update(build_full_log=_blog("r32_palavras_soltas",
+    LB + b"info: declaration ok\nuses no axiom; the word sorry alone is not a warning\n"))), None, aceita=True,
+    nota="contraprova: 'declaration', 'uses' e 'sorry' soltos, sem o aviso (sem delimitador), nao contam")
+checar("R32_R31_5_contagem_no_log_real_do_Nos_igual_nas_tres_formas",
+       lambda: (lambda n_, por_: por_[0] == AMOSTRA["n_avisos_crase_no_arquivo"] + AMOSTRA["n_avisos_aspas_no_arquivo"] + _N_SORRYAX and n_ == max(por_))(*MOD.contar_sorry(_am_txt)),
+       nota="R31-5: no log REAL do Nos (so lido), a forma normalizada conta o mesmo que a R3.1; as outras formas nao reduzem a contagem", por_forma=MOD.contar_sorry(_am_txt)[1])
+
+# --- R31-6: chave duplicada no CRITERIOS (e no recibo do kernel) e a X19 cruzada com as pedras
+_txt_crit = CRIT.read_text(encoding="utf-8")
+assert '"j1_declaracoes": 2,' in _txt_crit and '"x19": "nao",' in _txt_crit
+_c_dup = AT32 / "CRITERIOS_dup.json"
+_c_dup.write_text(_txt_crit.replace('"j1_declaracoes": 2,', '"j1_declaracoes": 159,\n  "j1_declaracoes": 2,', 1), encoding="utf-8")
+unit("R32_R31_6_exato_chave_duplicada_em_esperados", lambda: MOD.carregar_criterios(_c_dup, sha(_c_dup), "v392"), "CRITERIOS_CHAVE_DUPLICADA",
+     nota="R31-6 (o caso EXATO do auditor): 'j1_declaracoes' duas vezes (159 e 2); na R3.1 o json.loads ficava com o ultimo (2)")
+_c_dup2 = AT32 / "CRITERIOS_dup_x19.json"
+_c_dup2.write_text(_txt_crit.replace('"x19": "nao",', '"x19": "sim",\n "x19": "nao",', 1), encoding="utf-8")
+unit("R32_R31_6_variante_x19_duplicada_no_topo", lambda: MOD.carregar_criterios(_c_dup2, sha(_c_dup2), "v392"), "CRITERIOS_CHAVE_DUPLICADA",
+     nota="R31-6: a decisao X19 escrita duas vezes ('sim' e depois 'nao')")
+run("R32_R31_6_sub_chave_duplicada", _BASE_A3 + ["--criterios", _c_dup, "--criterios-sha256", sha(_c_dup)], 2, "CRITERIOS_CHAVE_DUPLICADA", bancada=B2,
+    nota="R31-6 pelo caminho inteiro: recusa antes da bateria, rc 2")
+_k_dup = AT32 / "KR_chave_duplicada.json"
+_k_dup.write_text(K_OK.read_text(encoding="utf-8").replace('"rc": 0,', '"rc": 1,\n "rc": 0,', 1), encoding="utf-8")
+assert _k_dup.read_text(encoding="utf-8").count('"rc"') == 2
+_ku("R32_R31_6_variante_recibo_do_kernel_com_chave_duplicada", _k_dup, "KERNEL_RECIBO_CHAVE_DUPLICADA", nota="R31-6: 'rc' 1 e depois 0 no recibo do kernel")
+_c_x19 = AT32 / "CRITERIOS_x19_sim.json"
+_cj = json.loads(_txt_crit)
+_cj["x19"] = "sim"
+_c_x19.write_text(json.dumps(_cj, ensure_ascii=False, indent=1), encoding="utf-8")
+_CRIT_X19 = MOD.carregar_criterios(_c_x19, sha(_c_x19), "v392")
+_ku("R32_R31_6_exato_x19_sim_sem_a_pedra_BGL", K_OK, "X19_NAO_CONFERE_COM_AS_PEDRAS", criterios=_CRIT_X19,
+    nota="R31-6 (o caso EXATO do auditor): x19='sim' no CRITERIOS pinado e nenhuma pedra LightNetStandardWedgeDataBGL no recibo; na R3.1 era aceito")
+_ku("R32_R31_6_variante_x19_nao_com_a_pedra_BGL", _kr("r32_x19_nao_com_bgl", lambda k: k["pedras"].append(dict(path="TGLExt/" + MOD.X19_PEDRA, sha256=sha_b(b"bgl"),
+                                                                                                               declaracoes=["TGLExt.LightNetStandardWedgeDataBGL.x"]))),
+    "X19_NAO_CONFERE_COM_AS_PEDRAS", nota="R31-6: x19='nao' e o recibo traz a pedra X19")
+run("R32_R31_6_sub_x19_sim_sem_a_pedra", ["--bancada", B2, "--nos", NOS, "--versao", "v392", "--bateria", bt_min, "--bateria-sha256", bt_min_sha, "--sandbox", "--modo", "aplicar",
+                                          "--fase", "pos_selo", "--evento", "SANDBOX:R31-6", "--kernel-recibo", K_OK, "--kernel-recibo-sha256", K_OK_SHA,
+                                          "--criterios", _c_x19, "--criterios-sha256", sha(_c_x19)], 3, veredito_esp="REPINADA_B3__BATERIA_FALHOU__NADA_GRAVADO", bancada=B2,
+    extra_ok=lambda j, r: "X19_NAO_CONFERE_COM_AS_PEDRAS" in testes(j)["T17_LEAN_KERNEL"]["detalhe"], nota="R31-6 pelo caminho inteiro: o T17 FALHA e nada se grava")
+# contraprova X19 = 'sim' com a pedra presente e coerente em tudo (arvore, manifesto re-pinado pelo selo, logs, pedras == diff formal)
+_arvx = AT32 / "arv_x19"
+copiar_sem_juncao(FX / "kernel_src", _arvx)
+_bgl_b = b"-- SINTETICO (sandbox R3.2): a pedra X19\nnamespace TGLExt.LightNetStandardWedgeDataBGL\ntheorem tres : 3 = 3 := rfl\nend TGLExt.LightNetStandardWedgeDataBGL\n"
+(_arvx / "TGLExt" / MOD.X19_PEDRA).write_bytes(_bgl_b)
+_audx = (_arvx / "TGL" / "Audit.lean").read_bytes() + b"#print axioms TGLExt.LightNetStandardWedgeDataBGL.tres\n"
+(_arvx / "TGL" / "Audit.lean").write_bytes(_audx)
+_nix = nos_ataque("r32_x19_sim", lambda m: (m["formal_files_sha256"].update({"TGL/Audit.lean": sha_b(_audx), "TGLExt/" + MOD.X19_PEDRA: sha_b(_bgl_b)}),
+                                            m["axiom_report"].update({"TGLExt.LightNetStandardWedgeDataBGL.tres": []})))
+_kx = _kr("r32_x19_sim_coerente", lambda k: (
+    k.update(arvore=str(_arvx), build_full_log=_blog("r32_x19_build", LB.replace(b"Build completed", "\u2714 [5/5] Built TGLExt.LightNetStandardWedgeDataBGL (1s)\nBuild completed".encode("utf-8"))),
+             audit_log=_blog("r32_x19_audit", LA + b"'TGLExt.LightNetStandardWedgeDataBGL.tres' does not depend on any axioms\n")),
+    k["audit"].update(sha256_depois=sha_b(_audx)), k["varredura_tokens"].update(arquivos_lean=k["varredura_tokens"]["arquivos_lean"] + 1),
+    k["pedras"].append(dict(path="TGLExt/" + MOD.X19_PEDRA, sha256=sha_b(_bgl_b), declaracoes=["TGLExt.LightNetStandardWedgeDataBGL.tres"]))))
+_ku("R32_R31_6_contraprova_x19_sim_com_a_pedra_coerente_aceito", _kx, None, ni=_nix, criterios=_CRIT_X19, aceita=True,
+    nota="contraprova: x19='sim' com a pedra X19 na arvore, no manifesto pinado pelo selo, nos dois logs e nas pedras do recibo: aceito")
+
+# --- 12-ter item 3 do plano: a varredura de tokens recursiva (inclui TGLExt/O16), recontada pelo B(n)
+_ku("R32_T3_exato_varredura_nao_recursiva", _kr("r32_tokens_nao_recursiva", lambda k: k["varredura_tokens"].update(
+    arquivos_lean=sum(1 for q_ in (FX / "kernel_src").glob("*.lean")) + sum(1 for q_ in (FX / "kernel_src").glob("*/*.lean")), arquivos_lean_em_TGLExt_O16=0)),
+    "TOKENS_VARREDURA_NAO_RECURSIVA",
+    nota="12-ter item 3 (o defeito do um.py v391, l.134690, aqui no recibo): a contagem NAO recursiva (sem TGLExt/O16) declarada; o B(n) reconta recursivamente e recusa")
+_ksub("R32_T3_sub_varredura_nao_recursiva", _kr("r32_tokens_nao_recursiva_sub", lambda k: k["varredura_tokens"].update(arquivos_lean=4, arquivos_lean_em_TGLExt_O16=0)),
+      "TOKENS_VARREDURA_NAO_RECURSIVA")
+_ku("R32_T3_variante_recursiva_false", _kr("r32_tokens_recursiva_false", lambda k: k["varredura_tokens"].update(recursiva=False)), "TOKENS_VARREDURA_NAO_RECURSIVA")
+_ku("R32_T3_variante_campo_ausente", _kr("r32_tokens_ausente", lambda k: k.pop("varredura_tokens")), "sem os campos")
+_ku("R32_T3_variante_contagem_em_texto", _kr("r32_tokens_texto", lambda k: k["varredura_tokens"].update(arquivos_lean="5")), "TOKENS_VARREDURA_NAO_RECURSIVA")
+_arvj = AT32 / "arv_com_juncao"
+copiar_sem_juncao(FX / "kernel_src", _arvj)
+juncao(_arvj / "TGLExt" / "O16" / "j", FX / "kernel_src")
+_ku("R32_T3_variante_juncao_dentro_da_arvore", _kr("r32_arvore_juncao", lambda k: k.update(arvore=str(_arvj))), "ARVORE_COM_JUNCAO_OU_LINK",
+    nota="12-ter item 3: a varredura recursiva nao segue juncao; uma juncao na arvore do build e recusada (desfeita no fecho, nunca seguida)")
+_n_rec, _n_o16, _lk = MOD.contar_lean_recursivo(_CUST390 / "Lean" / "tgl_kernel")
+_n_nao_rec = sum(1 for q_ in (_CUST390 / "Lean" / "tgl_kernel" / "TGLExt").glob("*.lean"))
+checar("R32_T3_formato_real_v390_a_recursao_importa",
+       lambda: _n_o16 > 0 and not _lk and _n_rec > _n_nao_rec,
+       nota="12-ter item 3 no formato REAL (custodia v390, so leitura): a arvore tem .lean em TGLExt/O16 que uma varredura de TGLExt/*.lean nao ve",
+       arquivos_lean_recursivo=_n_rec, arquivos_lean_em_TGLExt_O16=_n_o16, TGLExt_nao_recursivo=_n_nao_rec)

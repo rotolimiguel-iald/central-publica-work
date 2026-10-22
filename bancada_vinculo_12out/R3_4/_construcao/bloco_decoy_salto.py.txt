@@ -1,0 +1,76 @@
+# --- S: o salto na PRODUCAO-DECOY (em processo; PRODUCAO, EVENTOS_QUADRO e a sonda do servico trocados): a composicao exata do B(n) da v394 -- producao + aplicar + salto + evento da cadeia + servico
+PD2, PD2_PRIST, NOSD = RAIZ / "pd_salto", RAIZ / "pd_salto_pristino", RAIZ / "nosd_salto"
+NOSD.mkdir()
+
+
+def nosd_com(origem):
+    """o 'Nos' do decoy do salto (o caminho que o manifesto pina) passa a ter os bytes de `origem` (o 'selo' do sandbox, feito a mao e so dentro do sandbox)."""
+    for f_ in ("um.py", "um_absoluto_selo.json", "um_absoluto.json", "tgl_kernel_proof_manifest.json"):
+        shutil.copyfile(origem / f_, NOSD / f_)
+
+
+nosd_com(NOS392)
+copiar_sem_juncao(B2, PD2)
+_m_pd2 = json.loads((PD2 / "canonical_contracts.json").read_bytes())
+_m_pd2["canonical"]["script"]["path"] = str(NOSD / "um.py")
+_m_pd2["canonical"]["seal"]["path"] = str(NOSD / "um_absoluto_selo.json")
+(PD2 / "canonical_contracts.json").write_bytes(json.dumps(_m_pd2, ensure_ascii=False, indent=1).encode("utf-8"))
+copiar_sem_juncao(PD2, PD2_PRIST)
+MAN_PD2 = sha(PD2_PRIST / "canonical_contracts.json")
+
+
+def pd2_reset():
+    apagar_arvore(PD2)
+    copiar_sem_juncao(PD2_PRIST, PD2)
+
+
+d_dps, j_dps = inproc("R34_S_decoy_pre_selo_salto_na_producao", ["--bancada", PD2, "--producao", "--nos", NOSD, "--versao", "v392", "--fase", "pre_selo", "--modo", "ensaio", "--bateria", bt_min_pre,
+                                                                 "--bateria-sha256", bt_min_pre_sha, "--cadeia-de-selos", CH_392, "--cadeia-de-selos-sha256", CH_392_SHA, "--saida", S / "R34_S_decoy_pre_selo"], 0,
+                      veredito_esp="REPINADA_B3__SALTO_v391_v392__ENSAIO", patches=dict(PRODUCAO=PD2, EVENTOS_QUADRO=EV_SB, servico_responde=sonda_seq([False])), bancada=PD2,
+                      extra_ok=lambda j, a, d: a == d and sha(PD2 / "canonical_contracts.json") == MAN_PD2 and recibo_de(j)["producao"] is True and recibo_de(j)["salto"]["versoes_puladas"] == ["v392"]
+                      and [s["no_ar"] for s in recibo_de(j)["sondagens_do_servico"]] == [],
+                      nota="S: o ensaio pre_selo do salto contra a PRODUCAO-DECOY (--producao, PRODUCAO trocada para a copia): REPINADA_B3__SALTO_v391_v392, nada gravado; e o recibo que o B(n) pos_selo do decoy consome")
+R_PD2 = sorted((S / "R34_S_decoy_pre_selo").glob("RECIBO_SINCRONIZACAO_*.json"))[-1]
+nosd_com(NOS393)               # o 'selo' do decoy do salto: o caminho pinado passa a ter a v393 sintetica (a Bancada fica pinada na v391: PIN_CHANGED)
+
+
+def pd2_args(saida, recibo, cadeia=CH_392, cadeia_sha=CH_392_SHA, evento="decoy_salto", extra=()):
+    a_ = ["--bancada", PD2, "--producao", "--nos", NOSD, "--versao", "v393", "--bateria", bt_min, "--bateria-sha256", bt_min_sha, "--modo", "aplicar", "--fase", "pos_selo", "--saida", saida,
+          "--evento", ELOS[evento]["seq"], "--evento-hash", ELOS[evento]["hash16"], "--recibo-pre-selo", recibo, "--recibo-pre-selo-sha256", sha(recibo), "--selo-anterior", SELO_392,
+          "--kernel-manifesto-anterior", KMAN_392, "--kernel-recibo", K393, "--kernel-recibo-sha256", K393_SHA, "--criterios", CRIT393, "--criterios-sha256", CRIT393_SHA]
+    if cadeia:
+        a_ += ["--cadeia-de-selos", cadeia, "--cadeia-de-selos-sha256", cadeia_sha]
+    return a_ + list(extra)
+
+
+def pd2(nome, rc_esp, recusa_esp=None, veredito_esp=None, sondas=(False,), extra_ok=None, nota="", **kw):
+    pd2_reset()
+    return inproc(nome, pd2_args(S / nome, **kw), rc_esp, recusa_esp, veredito_esp, patches=dict(PRODUCAO=PD2, EVENTOS_QUADRO=EV_SB, servico_responde=sonda_seq(list(sondas))), bancada=PD2,
+                  extra_ok=extra_ok, nota=nota)
+
+
+def pd2_intocado(j, a, d):
+    return a == d and sha(PD2 / "canonical_contracts.json") == MAN_PD2
+
+
+pd2("R34_S_decoy_salto_servico_no_ar_no_inicio", 2, "SERVICO_NO_AR", sondas=(True,), extra_ok=pd2_intocado, recibo=R_PD2, nota="S: o servico no ar no inicio do B(n) do salto: recusa, nada gravado")
+pd2("R34_S_decoy_salto_servico_volta_durante_a_bateria", 2, "SERVICO_VOLTOU_ANTES_DE_GRAVAR", sondas=(False, True), extra_ok=pd2_intocado, recibo=R_PD2,
+    nota="S: o servico sobe durante a bateria do salto: a sonda imediatamente antes de gravar recusa (nada gravado)")
+pd2("R34_S_decoy_salto_sem_a_cadeia_recusa", 2, "RECIBO_PRE_SELO_SALTO_SEM_CADEIA", extra_ok=pd2_intocado, recibo=R_PD2, cadeia=None, cadeia_sha=None,
+    nota="S: na producao-decoy, o recibo pre-selo de um salto sem a cadeia nao se confere")
+pd2("R34_S_decoy_salto_evento_de_outra_versao_recusa", 2, "EVENTO_NAO_NOMEIA_A_VERSAO", extra_ok=pd2_intocado, recibo=R_PD2, evento="decoy",
+    nota="S: o evento c1 do decoy NORMAL (versao v392) nao autoriza o salto a v393")
+pd2("R34_S_decoy_salto_cadeia_adulterada_recusa", 2, "CADEIA_DE_SELOS_COPIA_DIVERGE", extra_ok=pd2_intocado, recibo=R_PD2, cadeia=FX / "CADEIA_deriv_copia_do_um_py_com_um_byte_mudado.json",
+    cadeia_sha=sha(FX / "CADEIA_deriv_copia_do_um_py_com_um_byte_mudado.json"), nota="S: a cadeia com uma copia adulterada recusa tambem na producao-decoy")
+d_dpa, j_dpa = pd2("R34_S_decoy_salto_aplica_na_producao_decoy", 0, veredito_esp="REPINADA_B3__SALTO_v391_v393__APLICADA__SERVICO_DEVE_SER_REINICIADO_COM_RECIBO", recibo=R_PD2,
+                   extra_ok=lambda j, a, d: (lambda rec, man: rec["producao"] is True and rec["evento_c1"]["verificado"] is True and rec["evento_c1"]["evento"] == ELOS["decoy_salto"]["seq"]
+                                             and testes(j)["T17_LEAN_KERNEL"]["resultado"] == "PASSA" and [s["no_ar"] for s in rec["sondagens_do_servico"]] == [False] * 6
+                                             and man["sincronizacao"]["salto"]["versoes_puladas"] == ["v392"] and man["sincronizacao"]["salto"]["de"]["versao"] == "v391"
+                                             and man["canonical"]["version"] == "v393" and sha(PD2 / "canonical_contracts.json") == rec["manifesto_novo"]["sha256"]
+                                             and rec["manifesto_novo"]["recibo_pre_selo_sha256_encadeado"] == sha(R_PD2) and Path(rec["aplicacao"]["copia_do_recibo"]).exists()
+                                             and sha(rec["aplicacao"]["backup"]) == MAN_PD2 and (PD2 / "CONTRATO_CANONICO_B3.md").is_file())(
+                       recibo_de(j), json.loads((PD2 / "canonical_contracts.json").read_bytes())),
+                   nota="S (a composicao do B(n) da v394): producao-decoy + aplicar + salto + recibo pre-selo do salto + cadeia + evento c1 encadeado (hash conferido) + servico parado nas 6 sondagens + T17 pelo "
+                        "recibo do kernel R3_4 com o modulo de auditoria: aplicada; o manifesto novo registra o salto; o backup e o manifesto anterior")
+pd2_reset()
+nosd_com(NOS392)

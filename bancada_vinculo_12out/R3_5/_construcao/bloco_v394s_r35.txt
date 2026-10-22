@@ -1,0 +1,22 @@
+
+# R3.5: o stand-in do Nos v394 e a Bancada pinada nele, para ensaiar o B(n) da v394 com o um.py CANDIDATO REAL (d19, o instalado): o um.py e o do candidato (bytes lidos da pasta v394, so leitura);
+# o selo e SINTETICO (o selo v393 da custodia com um_version e sha256[um.py] trocados -- o selo real da v394 so nasce no fim do rito); o core e o manifesto do kernel sao os da v393. Vive so em <raiz>.
+CANDIDATO_V394 = Path("C:/IALD/Central de Patentes/work/cadeia_de_selo/v394/um_v394_candidato_d19.py")
+um394 = CANDIDATO_V394.read_bytes()
+mv394 = re.search(r'^UM_VERSION\s*=\s*["\x27]([^"\x27]+)', um394.decode("utf-8-sig"), re.M)
+assert mv394 and mv394.group(1) == "v394", mv394
+selo394 = json.loads(json.dumps(selo_real))
+selo394["um_version"] = "v394"
+selo394["sha256"]["um.py"] = sha(um394)
+selo394["SINTETICO_SANDBOX"] = ("NAO E O SELO DA v394: fixture do ensaio (R3.5, 19/10/2026): o selo v393 da custodia (%s) com um_version e sha256[um.py] trocados pelos do candidato d19 (%s); o core e o manifesto do kernel "
+                                "sao os da v393; vive so em %s" % (sha(nos_real["um_absoluto_selo.json"])[:16], sha(um394)[:16], RAIZ))
+selo394_raw = json.dumps(selo394, ensure_ascii=False, indent=1).encode("utf-8")
+rec["nos_v394s"] = dict(um_py=gravar_novo(RAIZ / "nos_v394s" / "um.py", um394), selo=gravar_novo(RAIZ / "nos_v394s" / "um_absoluto_selo.json", selo394_raw),
+                        core=gravar_novo(RAIZ / "nos_v394s" / "um_absoluto.json", nos_real["um_absoluto.json"]),
+                        kernel_manifest=gravar_novo(RAIZ / "nos_v394s" / "tgl_kernel_proof_manifest.json", nos_real["tgl_kernel_proof_manifest.json"]), versao="v394",
+                        origem_do_um_py=str(CANDIDATO_V394))
+man394s_raw = manifesto_b1(RAIZ / "nos_v394s", "o stand-in nos_v394s/ (o candidato d19 com selo sintetico)", selo394_raw, um394, "B3-SANDBOX-b1v394s-v394-R1")
+rec["b1v394s"].append(gravar_novo(RAIZ / "b1v394s" / "canonical_contracts.json", man394s_raw))
+(RAIZ / "b1v394s" / "estado").mkdir()
+rec["manifesto_b1v394s_sha256"] = sha(man394s_raw)
+rec["manifesto_b1real_sha256"] = sha(man1r_raw)

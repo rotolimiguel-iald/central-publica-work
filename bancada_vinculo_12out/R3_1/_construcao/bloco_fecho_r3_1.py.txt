@@ -1,0 +1,49 @@
+R3_RES = json.loads((R3 / "CONTROLES_NEGATIVOS_R3.json").read_bytes())
+R3_NOMES = [c["controle"] for c in R3_RES["controles"]]
+faltam_r3 = sorted(set(R3_NOMES) - set(nomes))
+NOVOS = [x for x in nomes if x not in set(R3_NOMES)]
+FIXTURE_R3_1 = ("a fixture-base do recibo do kernel passou do contrato KERNEL_RECIBO_R3 para KERNEL_RECIBO_R3_1 (toolchain em lista, pedras com declaracoes, "
+                "formal_files_antes, criterios so com o medido) e a verificacao recebe o CRITERIOS sintetico pinado; o recibo invalido e derivado da fixture nova; "
+                "o codigo de recusa esperado nao mudou")
+MUDARAM = {}
+for x in sorted(set(INJETADOS)):
+    if x in R3_NOMES:
+        MUDARAM.setdefault(x, []).append("A3: o comando ganhou --criterios/--criterios-sha256 (o CRITERIOS sintetico pinado), porque o B(n) R3.1 exige os esperados "
+                                         "pinados sempre que ha --kernel-recibo; o resto do comando e a recusa esperada nao mudaram")
+for x in R3_NOMES:
+    if x.startswith(("N1_unit_kernel_recibo_", "A1_kernel_recibo_invalido_", "N1_sub_kernel_recibo_", "N1_unit_")) and x in nomes:
+        MUDARAM.setdefault(x, []).append(FIXTURE_R3_1)
+for x, motivo in (("N1_sub_kernel_recibo_log_com_sorry", "A1: o controle antigo acrescentava o aviso no formato de ASPAS SIMPLES, o mesmo da regex da R3 -- confirmava-se "
+                                                         "a si mesmo; agora acrescenta a linha VERBATIM do aviso real do Lean 4.31 (crases), lida de um log do Nos (so leitura)"),
+                  ("N1_unit_kernel_recibo_log_com_sorry", "A1: idem (a linha real com crases); o formato de aspas ficou no controle novo N1_unit_kernel_recibo_log_com_sorry_aspas"),
+                  ("N1_unit_kernel_recibo_toolchain_diverge", "N1m: a toolchain divergente do recibo agora e uma LISTA (o formato do contrato R3_1); na R3 era texto"),
+                  ("N1_unit_manifesto_toolchain_diverge", "N1m: a toolchain divergente do manifesto agora e uma LISTA; na R3 era texto"),
+                  ("N3_decoy_servico_volta_antes_do_recibo_em_estado", "N3a: com o servico ainda no ar depois do rollback (a sonda simulada repete o ultimo valor), o "
+                                                                       "codigo passa de APLICACAO_REVERTIDA para o proprio SERVICO_NO_AR_APOS_ROLLBACK__REINICIO_OBRIGATORIO"),
+                  ("N5_PYTHONPATH_injetado_nao_chega_ao_teste", "A4: o teste de ambiente T00_AMBIENTE mudou de formato: na R3 exigia PYTHONPATH ausente; na R3.1 o esboco "
+                                                                "poe PYTHONPATH = o site do usuario REAL para os netos (so caminho), e o teste exige -s, APPDATA vazio, "
+                                                                "nenhum usercustomize e o neto com o site do usuario desligado; o controle confere que o PYTHONPATH e o real, "
+                                                                "nao o do ataque"),
+                  ("RUN_1a_pre_selo_b1_nos_real", "A4: isolado() exige -E -P -s, o lancador pinado e APPDATA vazio por teste (o run foi refeito)"),
+                  ("RUN_1b_pre_selo_b2_nos_copia", "A4: idem"),
+                  ("RUN_2_pos_selo_aplicar_b2", "A4: idem; e o T17 pelo contrato KERNEL_RECIBO_R3_1 com o CRITERIOS pinado")):
+    if x in nomes:
+        MUDARAM.setdefault(x, []).append(motivo)
+out = dict(quando=datetime.datetime.now().isoformat(timespec="seconds"), revisao="R3.1 (13/10/2026)", raiz=str(RAIZ), script_sha256=sha(SYNC), bateria_sha256=BAT_SHA,
+           gerar_canais_sha256=sha(GER), montar_sandbox_sha256=sha(AQUI / "montar_sandbox.py"), controles_sha256=sha(Path(__file__)), segundos=round(time.time() - T0, 1),
+           criterios_sintetico=dict(path=str(CRIT), sha256=CRIT_SHA), criterios_modelo=dict(path=str(CRIT_MODELO), sha256=sha(CRIT_MODELO)),
+           amostra_real_do_sorry=AMOSTRA, site_do_usuario_real=SITE_REAL, lancador_sha256=MOD.LANCADOR_SHA256,
+           n=len(RES), passam=n_pass, n_da_R3=len(R3_NOMES), da_R3_presentes=len(R3_NOMES) - len(faltam_r3), da_R3_ausentes=faltam_r3, n_novos_R3_1=len(NOVOS),
+           novos_R3_1=NOVOS, controles_da_R3_que_mudaram_de_formato=[dict(controle=k, motivos=v) for k, v in sorted(MUDARAM.items())],
+           n_controles_da_R3_que_mudaram_de_formato=len(MUDARAM),
+           producao_intocada=dict(lista_igual=True, manifesto_sha256=sha(PROD / "canonical_contracts.json")), nos_real_intocado=True, eventos_jsonl_real_sha256=EV_REAL_SHA_ANTES,
+           eventos_jsonl_real=dict(sha256_antes=EV_REAL_SHA_ANTES, sha256_depois=sha_b(EV_REAL_BYTES_DEPOIS), so_cresceu=True, linhas_antes=EV_N_ANTES, linhas_depois=EV_N_DEPOIS,
+                                   elos_novos_de_outras_sessoes=[dict(seq=e.get("seq"), tipo=e.get("tipo"), quem=e.get("quem")) for e in EV_NOVOS],
+                                   nota="o livro e vivo; este script nunca o abre para escrita; confere-se que so cresceu (prefixo de bytes) e que nenhum elo de sincronizacao nasceu"),
+           juncoes_criadas=[str(jj) for jj in JUNCOES], juncoes_restantes=juncoes_restantes,
+           controles=RES, veredito=("TODOS_OS_CONTROLES_NEGATIVOS_RECUSAM_COMO_ESPERADO" if n_pass == len(RES) and not faltam_r3 and not juncoes_restantes else "ALGUM_CONTROLE_NAO_RECUSOU"),
+           nota="NOT_FALSIFIED nunca e creditacao; nada aqui move o gate; nenhum dado observado; a producao, o Nos e o livro de eventos real foram so lidos (do Nos, alem "
+                "da copia do sandbox, um log do bancada_corpus como amostra real do aviso de sorry); a producao foi simulada por decoy EM PROCESSO numa copia (pd/)")
+texto = json.dumps(out, ensure_ascii=False, indent=1, default=str)
+assert not MOD.contem_palavra(texto), "a palavra guardada apareceu no resultado dos controles"
+(AQUI / "CONTROLES_NEGATIVOS_R3_1.json").write_bytes(texto.encode("utf-8"))

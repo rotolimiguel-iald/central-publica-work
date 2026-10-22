@@ -1,0 +1,165 @@
+# -*- coding: utf-8 -*-
+"""montar_sandbox.py (R2, 13/10/2026) -- monta o sandbox do vinculo em RAIZ CURTA (limite de caminho do Windows, T16), SO dentro de <raiz>:
+  b1\\        COPIA byte a byte da Bancada Um instalada (B2): codigo (32) + fontes relativas (56) conferidos contra canonical_contracts.json,
+             mais o proprio manifesto (que pina o Nos REAL). Serve ao ensaio pre_selo com o Nos real v391 e aos controles negativos.
+  nos\\       COPIA do Nos v391 real (um.py, um_absoluto_selo.json, um_absoluto.json), conferida contra o selo.
+  b2\\        a mesma copia da Bancada, com o manifesto RE-APONTADO para nos\\ (so os caminhos script.path e seal.path mudam; bytes e sha256
+             iguais). E a Bancada de ensaio do elo B(n): o manifesto NAO pina o Nos real, logo --sandbox e admitido (A2).
+  nos_v392\\  o Nos SINTETICO v392: o um.py v391 com a linha de coluna 0 UM_VERSION trocada para "v392" (mesmo comprimento), selo derivado
+             (marcado SINTETICO) e core copiado. O "selo" do sandbox e: copiar nos_v392\\* por cima de nos\\ (rodar_sandbox_r2.sh).
+  fx\\        fixtures: recibos sinteticos do kernel (valido e invalidos), livro de eventos de ensaio (copia do real + elos encadeados).
+A producao e o Nos sao SO lidos. Nada e um selo do rito. uso: montar_sandbox.py <raiz curta, ex. C:\\t\\vb> [versao sintetica=v392]"""
+import sys
+sys.dont_write_bytecode = True
+import hashlib, json, re, datetime, shutil
+from pathlib import Path
+AQUI = Path(__file__).resolve().parent
+PROD = Path(r"C:\IALD\Bancada_Um")
+NOS = Path(r"C:\IALD\Artigo\Haja_Luz\A Ponte e o Um\Nós")
+EVENTOS = Path(r"C:\IALD\PROGRAMA_IALD\eventos.jsonl")
+RAIZ = Path(sys.argv[1]).resolve()
+VERSAO_SINTETICA = sys.argv[2] if len(sys.argv) > 2 else "v392"
+assert str(RAIZ).lower().startswith("c:\\t\\"), "raiz curta obrigatoria (C:\\t\\...)"
+assert not str(RAIZ).lower().startswith(str(PROD).lower()) and not str(RAIZ).lower().startswith(str(NOS).lower())
+
+
+def sha(b):
+    return hashlib.sha256(b).hexdigest()
+
+
+def gravar_novo(dst, raw):
+    dst = Path(dst)
+    dst.parent.mkdir(parents=True, exist_ok=True)
+    if dst.exists():
+        if dst.read_bytes() != raw:
+            raise SystemExit("DUPLICATA COM BYTES DIFERENTES: " + str(dst))
+        return dict(path=str(dst), sha256=sha(raw), bytes=len(raw), duplicata_de_pino=True)
+    with open(dst, "xb") as f:
+        f.write(raw)
+    assert dst.read_bytes() == raw, dst
+    return dict(path=str(dst), sha256=sha(raw), bytes=len(raw))
+
+
+rec = dict(quando=datetime.datetime.now().isoformat(timespec="seconds"), raiz=str(RAIZ), b1=[], b2=[], nos={}, nos_v392={}, fx={})
+for sub in ("b1", "b2", "nos", "nos_v392", "fx"):
+    if (RAIZ / sub).exists():
+        raise SystemExit("sandbox ja montado: apague antes (so dentro de %s)" % RAIZ)
+man_raw = (PROD / "canonical_contracts.json").read_bytes()
+man = json.loads(man_raw)
+assert man["canonical"]["script"]["path"] == str(NOS / "um.py") and man["canonical"]["seal"]["path"] == str(NOS / "um_absoluto_selo.json"), man["canonical"]
+# nos\ = copia do Nos v391 real, conferida contra o selo
+um = (NOS / "um.py").read_bytes()
+selo_raw = (NOS / "um_absoluto_selo.json").read_bytes()
+selo = json.loads(selo_raw)
+core = (NOS / "um_absoluto.json").read_bytes()
+assert selo["sha256"]["um.py"] == sha(um) and selo["sha256"]["um_absoluto.json"] == sha(core) and selo["um_version"] == "v391"
+assert man["canonical"]["script"]["sha256"] == sha(um) and man["canonical"]["seal"]["sha256"] == sha(selo_raw)
+rec["nos"] = dict(um_py=gravar_novo(RAIZ / "nos" / "um.py", um), selo=gravar_novo(RAIZ / "nos" / "um_absoluto_selo.json", selo_raw),
+                  core=gravar_novo(RAIZ / "nos" / "um_absoluto.json", core))
+# b1\ (manifesto original) e b2\ (manifesto re-apontado para nos\)
+man2 = json.loads(man_raw)
+man2["canonical"]["script"]["path"] = str(RAIZ / "nos" / "um.py")
+man2["canonical"]["seal"]["path"] = str(RAIZ / "nos" / "um_absoluto_selo.json")
+man2["sandbox_R2"] = "copia de ensaio (13/10/2026): so script.path e seal.path re-apontados para %s; bytes e sha256 identicos ao manifesto B2 %s" % (RAIZ / "nos", sha(man_raw)[:16])
+man2_raw = json.dumps(man2, ensure_ascii=False, indent=1).encode("utf-8")
+rec["b1"].append(gravar_novo(RAIZ / "b1" / "canonical_contracts.json", man_raw))
+rec["b2"].append(gravar_novo(RAIZ / "b2" / "canonical_contracts.json", man2_raw))
+for e in man["code"] + [s for s in man["sources"] if not Path(s["path"]).is_absolute()]:
+    assert ".." not in Path(e["path"]).parts and not Path(e["path"]).is_absolute(), e["path"]
+    raw = (PROD / e["path"]).read_bytes()
+    if sha(raw) != e["sha256"] or len(raw) != e["bytes"]:
+        raise SystemExit("PIN MISMATCH na producao: " + e["path"])
+    rec["b1"].append(gravar_novo(RAIZ / "b1" / e["path"], raw))
+    rec["b2"].append(gravar_novo(RAIZ / "b2" / e["path"], raw))
+(RAIZ / "b1" / "estado").mkdir()
+(RAIZ / "b2" / "estado").mkdir()
+# nos_v392\ = o Nos sintetico
+txt = um.decode("utf-8-sig")
+mv = re.search(r'^UM_VERSION\s*=\s*["\x27]([^"\x27]+)', txt, re.M)
+assert mv and mv.group(1) == "v391", mv
+velha = mv.group(0).encode("utf-8")
+nova = velha.replace(b"v391", VERSAO_SINTETICA.encode("utf-8"), 1)
+assert um.count(velha) == 1
+um_sin = um.replace(velha, nova, 1)
+assert len(um_sin) == len(um) and um_sin != um
+t2 = um_sin.decode("utf-8-sig")
+assert re.search(r'^UM_VERSION\s*=\s*["\x27]([^"\x27]+)', t2, re.M).group(1) == VERSAO_SINTETICA
+assert len(re.findall(r"^ALPHA_FINE_CODATA_2018[ \t]*=", t2, re.M)) == len(re.findall(r"^ALPHA_FINE_CODATA_2018[ \t]*=", txt, re.M)) == 1
+assert len(re.findall(r"^UM_VERSION[ \t]*=", t2, re.M)) == 1
+selo_sin = dict(selo)
+selo_sin["um_version"] = VERSAO_SINTETICA
+selo_sin["sha256"] = dict(selo["sha256"])
+selo_sin["sha256"]["um.py"] = sha(um_sin)
+selo_sin["SINTETICO_SANDBOX"] = ("NAO E UM SELO DO RITO: fixture do ensaio do vinculo Bancada-um.py (R2, 13/10/2026); deriva do selo v391 real "
+                                 "trocando so um_version e sha256[um.py]; vive so em %s" % RAIZ)
+selo_sin["SINTETICO_SANDBOX_derivado_do_selo_v391_sha256"] = sha(selo_raw)
+selo_b = json.dumps(selo_sin, ensure_ascii=False, indent=1).encode("utf-8")
+rec["nos_v392"] = dict(um_py=gravar_novo(RAIZ / "nos_v392" / "um.py", um_sin), selo=gravar_novo(RAIZ / "nos_v392" / "um_absoluto_selo.json", selo_b),
+                       core=gravar_novo(RAIZ / "nos_v392" / "um_absoluto.json", core), versao=VERSAO_SINTETICA,
+                       um_py_real=dict(sha256=sha(um), bytes=len(um)), bytes_trocados=len(velha), linha_trocada=txt[:mv.start()].count("\n") + 1)
+gravar_novo(RAIZ / "nos_v392" / "LEIA-ME_SINTETICO.txt", ("Fixture sintetica (R2, 13/10/2026): um.py v391 real com UM_VERSION trocada para %s na linha %d; selo derivado; "
+                                                         "core copiado. NAO e versao selada. So para ensaiar o re-pino da Bancada no sandbox.\n"
+                                                         % (VERSAO_SINTETICA, rec["nos_v392"]["linha_trocada"])).encode("utf-8"))
+# fx\ = recibos sinteticos do kernel (A1): um valido (campos completos, log sintetico por hash) e dois invalidos
+log = ("build_full.log SINTETICO (fixture R2 13/10/2026): nenhum kernel foi construido aqui; este log existe para que o recibo nomeie um arquivo "
+       "e o seu sha256 seja conferido. Lean build: (simulado) rc=0; sorry: 0\n").encode("utf-8")
+rec["fx"]["log"] = gravar_novo(RAIZ / "fx" / "build_full_SINTETICO.log", log)
+k_ok = dict(versao=VERSAO_SINTETICA, rc=0, sorry=0, build_full_log=str(RAIZ / "fx" / "build_full_SINTETICO.log"), build_full_log_sha256=sha(log),
+            um_py_sha256=sha(um_sin), nota="FIXTURE SINTETICA do recibo do build do kernel (etapa 2 da cadeia): nenhum kernel construido aqui; so para o T17 do sandbox")
+k_sorry = dict(k_ok, sorry=1, nota="FIXTURE INVALIDA: sorry=1")
+k_versao = dict(k_ok, versao="v391", nota="FIXTURE INVALIDA: versao errada")
+k_log = dict(k_ok, build_full_log_sha256="0" * 64, nota="FIXTURE INVALIDA: o log nao bate com o sha declarado")
+k_umpy = dict(k_ok, um_py_sha256=sha(um), nota="FIXTURE INVALIDA: nomeia outro um.py")
+for nome, k in (("KERNEL_RECIBO_v392_SINTETICO_VALIDO.json", k_ok), ("KERNEL_RECIBO_INVALIDO_sorry.json", k_sorry), ("KERNEL_RECIBO_INVALIDO_versao.json", k_versao),
+                ("KERNEL_RECIBO_INVALIDO_log.json", k_log), ("KERNEL_RECIBO_INVALIDO_um_py.json", k_umpy)):
+    rec["fx"][nome] = gravar_novo(RAIZ / "fx" / nome, json.dumps(k, ensure_ascii=False, indent=1).encode("utf-8"))
+# fx\eventos_sandbox.jsonl = copia do livro real (so lido) + elos ENCADEADOS de ensaio (a mesma regra de iald.py evento()); o real nao e tocado
+linhas = [l for l in EVENTOS.read_text(encoding="utf-8").splitlines() if l.strip()]
+ult = json.loads(linhas[-1])
+seq, ant = ult["seq"], ult["hash"]
+
+
+def elo(tipo, quem, dados):
+    global seq, ant
+    e = {"seq": seq + 1, "quando": datetime.datetime.now().astimezone().isoformat(timespec="seconds"), "tipo": tipo, "quem": quem, "dados": dados, "anterior": ant}
+    e["hash"] = hashlib.sha256(json.dumps({k: v for k, v in e.items() if k != "hash"}, ensure_ascii=False, sort_keys=True).encode("utf-8")).hexdigest()
+    seq, ant = e["seq"], e["hash"]
+    return e
+
+
+b2 = str(RAIZ / "b2")
+elos = dict(
+    valido=elo("SINCRONIZACAO_BANCADA", "claude-c1", dict(versao=VERSAO_SINTETICA, bancada=b2, acao="sincronizacao", um_py=sha(um_sin)[:16], selo=sha(selo_b)[:16],
+                                                         gravacoes=["canonical_contracts.json", "CONTRATO_CANONICO_B3.md", "estado\\sincronizacao\\RECIBO_*.json"],
+                                                         unidade="F0.6", nota="ENSAIO R2 em sandbox (copia b2); o quadro real segue intocado")),
+    outra_sessao=elo("SINCRONIZACAO_BANCADA", "claude-c2", dict(versao=VERSAO_SINTETICA, bancada=b2, acao="sincronizacao", um_py=sha(um_sin)[:16], selo=sha(selo_b)[:16])),
+    negacao=elo("SINCRONIZACAO_BANCADA", "claude-c1", dict(versao=VERSAO_SINTETICA, bancada=b2, acao="sincronizacao", um_py=sha(um_sin)[:16], selo=sha(selo_b)[:16],
+                                                          nota="NAO sincronizar a Bancada ate o operador decidir")),
+    outro_programa=elo("SINCRONIZACAO_BANCADA", "claude-c1", dict(versao=VERSAO_SINTETICA, bancada=b2, acao="sincronizacao", um_py="deadbeefdeadbeef", selo="feedfacefeedface")),
+    outra_versao=elo("SINCRONIZACAO_BANCADA", "claude-c1", dict(versao="v393", bancada=b2, acao="sincronizacao", um_py=sha(um_sin)[:16], selo=sha(selo_b)[:16])),
+    outra_bancada=elo("SINCRONIZACAO_BANCADA", "claude-c1", dict(versao=VERSAO_SINTETICA, bancada=str(RAIZ / "b1"), acao="sincronizacao", um_py=sha(um_sin)[:16], selo=sha(selo_b)[:16])),
+    tipo_errado=elo("anotar", "claude-c1", dict(versao=VERSAO_SINTETICA, bancada=b2, acao="sincronizacao", um_py=sha(um_sin)[:16], selo=sha(selo_b)[:16])),
+    sem_acao=elo("SINCRONIZACAO_BANCADA", "claude-c1", dict(versao=VERSAO_SINTETICA, bancada=b2, um_py=sha(um_sin)[:16], selo=sha(selo_b)[:16])),
+    reparo=elo("SINCRONIZACAO_BANCADA", "claude-c1", dict(versao="v391", bancada=b2, acao="sincronizacao", um_py=sha(um_sin)[:16], selo=sha(selo_b)[:16], reparo=True,
+                                                         nota="ENSAIO A8: reparo de pino nomeado (sandbox)")),
+)
+ok_lines = linhas + [json.dumps(e, ensure_ascii=False) for e in elos.values()]
+rec["fx"]["eventos_sandbox"] = gravar_novo(RAIZ / "fx" / "eventos_sandbox.jsonl", ("\n".join(ok_lines) + "\n").encode("utf-8"))
+# o mesmo livro com elos FORJADOS (sem cadeia): um c1 completo mas sem encadear; um seq duplicado encadeado
+forj_sem_cadeia = dict(elos["valido"], seq=90001, anterior="ff" * 32, hash="00" * 32)
+forj_dup = elo("SINCRONIZACAO_BANCADA", "claude-c1", dict(elos["valido"]["dados"], nota="seq duplicado encadeado"))
+forj_dup["seq"] = elos["valido"]["seq"]
+forj_dup["hash"] = hashlib.sha256(json.dumps({k: v for k, v in forj_dup.items() if k != "hash"}, ensure_ascii=False, sort_keys=True).encode("utf-8")).hexdigest()
+rec["fx"]["eventos_forjado_sem_cadeia"] = gravar_novo(RAIZ / "fx" / "eventos_forjado_sem_cadeia.jsonl", ("\n".join(ok_lines + [json.dumps(forj_sem_cadeia, ensure_ascii=False)]) + "\n").encode("utf-8"))
+rec["fx"]["eventos_forjado_seq_duplicado"] = gravar_novo(RAIZ / "fx" / "eventos_forjado_seq_duplicado.jsonl", ("\n".join(ok_lines + [json.dumps(forj_dup, ensure_ascii=False)]) + "\n").encode("utf-8"))
+rec["fx"]["elos_de_ensaio"] = {k: dict(seq=e["seq"], hash16=e["hash"][:16]) for k, e in elos.items()}
+rec["fx"]["elos_forjados"] = dict(sem_cadeia_seq=forj_sem_cadeia["seq"], duplicado_seq=forj_dup["seq"])
+rec["fx"]["eventos_reais_copiados"] = len(linhas)
+rec["fx"]["ultimo_seq_real"] = ult["seq"]
+rec["n_b1"], rec["n_b2"] = len(rec["b1"]), len(rec["b2"])
+rec["manifesto_b2_sha256"] = sha(man2_raw)
+rec["manifesto_producao_sha256"] = sha(man_raw)
+p = RAIZ / "SANDBOX_MANIFEST_R2.json"
+p.write_text(json.dumps(rec, ensure_ascii=False, indent=1), encoding="utf-8")
+print(json.dumps(dict(n_b1=rec["n_b1"], n_b2=rec["n_b2"], nos=rec["nos"]["um_py"]["sha256"][:16], nos_v392=rec["nos_v392"]["um_py"]["sha256"][:16],
+                      manifesto_b2=rec["manifesto_b2_sha256"][:16], elos=rec["fx"]["elos_de_ensaio"], manifest=str(p)), ensure_ascii=False, indent=1))

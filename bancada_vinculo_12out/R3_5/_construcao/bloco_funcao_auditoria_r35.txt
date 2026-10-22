@@ -1,0 +1,129 @@
+def _aud_texto(linha, p):
+    """R3.5 (M): o literal de texto que comeca em linha[p] == '"'. Escapes admitidos: barra-t, barra-n, barra-barra e barra-aspas. Interpolacao `{x}` so de um LOCAL da lista (o throwError
+    interpola `{...}` com termos). Devolve (posicao depois do fecho, motivo|None)."""
+    q = p + 1
+    barra = chr(92)
+    while q < len(linha):
+        ch = linha[q]
+        if ch == barra:
+            if q + 1 >= len(linha) or linha[q + 1] not in ("t", "n", barra, '"'):
+                return q, "escape fora da lista no literal de texto"
+            q += 2
+        elif ch == '"':
+            return q + 1, None
+        elif ch == "{":
+            r = linha.find("}", q)
+            if r < 0 or linha[q + 1:r] not in AUD_CORPO_LOCAIS:
+                return q, "interpolacao {...} que nao e um local da lista"
+            q = r + 1
+        elif ch == "}":
+            return q, "chave solta no literal de texto"
+        else:
+            q += 1
+    return q, "literal de texto sem fechamento na linha"
+
+
+def _aud_corpo(linha):
+    """R3.5 (M): confere UMA linha do corpo de um run_cmd contra a lista de permissao estrita: palavra, local, funcao global, campo/metodo, nome com crase, numero, literal de texto ou sinal da lista;
+    qualquer outra coisa (identificador qualificado fora da lista, `Lean.addDecl`, `writeFile`, `;`, `$`, comentario na linha, caractere nao ASCII fora de texto...) e recusa. Devolve (motivo|None, n_tokens)."""
+    p, n, tam = 0, 0, len(linha)
+    while p < tam:
+        ch = linha[p]
+        if ch in " \t":
+            p += 1
+            continue
+        if ch == '"':
+            q, mot = _aud_texto(linha, p)
+            if mot:
+                return "%s (col %d)" % (mot, p + 1), n
+            p, n = q, n + 1
+            continue
+        if ch == "`":
+            m = RE_AUD_TOK_NOME.match(linha, p)
+            if not m:
+                return "nome com crase mal formado (col %d)" % (p + 1), n
+            nome = m.group(0)[1:]
+            if nome not in AUD_CORPO_NOMES and nome.split(".")[0] not in AUD_CORPO_PREFIXOS_DE_NOME:
+                return "nome com crase fora da lista: %r (col %d)" % (nome, p + 1), n
+            p, n = m.end(), n + 1
+            continue
+        m = RE_AUD_TOK_NUM.match(linha, p)
+        if m:
+            p, n = m.end(), n + 1
+            continue
+        m = RE_AUD_TOK_ID.match(linha, p)
+        if m:
+            tok = m.group(0)
+            partes = tok.split(".")
+            if tok in AUD_CORPO_PALAVRAS or tok in AUD_CORPO_GLOBAIS or (partes[0] in AUD_CORPO_LOCAIS and all(x in AUD_CORPO_METODOS for x in partes[1:])):
+                p, n = m.end(), n + 1
+                continue
+            return "identificador fora da lista de permissao: %r (col %d)" % (tok, p + 1), n
+        m = RE_AUD_TOK_CAMPO.match(linha, p)
+        if m:
+            if m.group(0)[1:] in AUD_CORPO_METODOS:
+                p, n = m.end(), n + 1
+                continue
+            return "campo fora da lista de permissao: %r (col %d)" % (m.group(0), p + 1), n
+        for sinal in AUD_CORPO_PONTUACAO:
+            if linha.startswith(sinal, p):
+                p, n = p + len(sinal), n + 1
+                break
+        else:
+            return "caractere fora da lista de permissao: %r (col %d)" % (ch, p + 1), n
+    return None, n
+
+
+def auditar_fonte_de_auditoria(texto):
+    """R3.5 (M): a fonte de um modulo de auditoria (listado em modulos_de_auditoria do recibo do kernel) so pode ter comandos de auditoria, por LISTA DE PERMISSAO ESTRITA: `import` so de Lean/TGLExt/TGL,
+    `open` so de Lean, `#print axioms X`, `run_cmd` (com o corpo indentado, conferido token a token contra o vocabulario fechado AUD_CORPO_*). Linha de topo de outra forma, indentada fora de um corpo de
+    run_cmd, comentario de bloco, caractere de controle ou de formato, ou, no corpo, qualquer token fora da lista (qualificado ou nao): recusa. Exige ao menos um #print ou run_cmd (um modulo listado que
+    nao audita nada e recusado). Devolve dict(ok, motivo, contagem). O corpo do run_cmd e codigo executado na compilacao: este script confere a FORMA (comandos de topo e vocabulario fechado); NAO prova a
+    inocuidade semantica do corpo (residuo declarado)."""
+    cont = dict(import_=0, open_=0, print_axioms=0, run_cmd=0, corpo=0, comentario=0, branco=0, tokens=0)
+    for ch in texto:
+        cat = unicodedata.category(ch)
+        if (cat == "Cc" and ch not in "\n\r\t") or cat == "Cf":
+            return dict(ok=False, motivo="caractere de controle ou de formato U+%04X" % ord(ch), contagem=cont)
+    if "/-" in texto:
+        return dict(ok=False, motivo="comentario de bloco (/-) nao se admite", contagem=cont)
+    corpo = False
+    for i, linha in enumerate(texto.replace("\r\n", "\n").replace("\r", "\n").split("\n"), 1):
+        l_ = linha.rstrip(" \t")
+        if not l_.strip():
+            cont["branco"] += 1
+            continue
+        if l_.lstrip().startswith("--"):
+            cont["comentario"] += 1
+            continue
+        if l_[0] in " \t":
+            if not corpo:
+                return dict(ok=False, motivo="l.%d: linha indentada fora de um corpo de run_cmd: %r" % (i, l_[:60]), contagem=cont)
+            mot, nt = _aud_corpo(l_)
+            if mot:
+                return dict(ok=False, motivo="l.%d: palavra proibida no corpo do run_cmd (fora da lista de permissao estrita, R3.5): %s" % (i, mot), contagem=cont)
+            cont["corpo"] += 1
+            cont["tokens"] += nt
+            continue
+        corpo = False
+        if RE_AUD_IMPORT.match(l_):
+            cont["import_"] += 1
+        elif RE_AUD_OPEN.match(l_):
+            nomes = l_.split()[1:]
+            if nomes and nomes[-1] == "in":
+                nomes = nomes[:-1]
+            if not nomes or any(x not in AUD_OPEN_PERMITIDOS for x in nomes):
+                return dict(ok=False, motivo="l.%d: open fora da lista de permissao estrita (so %s): %r" % (i, ", ".join(sorted(AUD_OPEN_PERMITIDOS)), l_[:60]), contagem=cont)
+            cont["open_"] += 1
+        elif RE_AUD_PRINT.match(l_):
+            cont["print_axioms"] += 1
+        elif RE_AUD_RUNCMD.match(l_):
+            cont["run_cmd"] += 1
+            corpo = True
+        else:
+            return dict(ok=False, motivo="l.%d: comando de topo fora da lista (import de Lean/TGLExt/TGL, open de Lean, #print axioms, run_cmd): %r" % (i, l_[:60]), contagem=cont)
+    if cont["print_axioms"] + cont["run_cmd"] == 0:
+        return dict(ok=False, motivo="nenhum #print axioms nem run_cmd: o modulo listado nao audita nada", contagem=cont)
+    return dict(ok=True, motivo=None, contagem=cont)
+
+

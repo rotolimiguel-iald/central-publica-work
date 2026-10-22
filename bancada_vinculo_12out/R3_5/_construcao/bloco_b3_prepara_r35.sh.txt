@@ -1,0 +1,32 @@
+b3_prepara() {
+  # R3.5 (19/10/2026): o B(n) da v394 e' o SALTO v392 -> v394 (a Bancada de producao pina a v392; o elo da v393 nunca rodou) com o esboco R3.5, pela §7 do RESULTADO_R3_4.md. Os pinos vem de PINOS_BN_v394.json (lidos na hora;
+  # hash nunca de memoria), FUNDIDO com o que e' da R3.4/R3.5 (R3_5/_construcao/fundir_pinos_bn_r35.py): o esboco R3.5, a cadeia de selos v392->v393, o recibo pre_selo (R3.4, gerado antes da instalacao), o recibo do kernel
+  # R3_4 (modulos_de_auditoria), o selo e o manifesto do kernel da v393 (custodia), o driver, o gerador e a base R2 da bateria. A bateria da v394 e' GERADA aqui, por script, depois do selo (bateria por versao).
+  for k in criterios esboco_R3_5 gerador_bateria driver_t12_t14 bateria_base_R2 cadeia_de_selos kernel_recibo candidato esperados pins_do_candidato recibo_pre_selo selo_anterior_v393 kernel_manifesto_anterior_v393; do
+    tem_pino "$k" || aguarda "o PINO $k nao esta em PINOS_BN_v394.json: a fusao da R3.4/R3.5 no PINOS_BN nao foi feita (ato da gerencia: rodar R3_5/_construcao/fundir_pinos_bn_r35.py) e retomar com CHAIN_DE=$1"
+    p=$(pinop "$k"); a=$(pino "$k"); b=$(sha256f "$p"); [ "$a" = "$b" ] || parar "o pino $k diverge do arquivo (pino $a != arquivo $b)"
+  done
+  [ "$(pino candidato)" = "$(sha256f "$(cygpath -w "$NOS/um.py")")" ] || parar "o um.py do Nos nao e o candidato pinado em PINOS_BN (candidato $(pino candidato))"
+  CRI=$(pino criterios); RPS=$(pino recibo_pre_selo); CAD=$(pino cadeia_de_selos)
+  W_NOS=$(cygpath -w "$NOS"); W_ESB=$(cygpath -w "$(pinop esboco_R3_5)"); W_CRI=$(cygpath -w "$(pinop criterios)"); W_RPS=$(cygpath -w "$(pinop recibo_pre_selo)"); W_CAD=$(cygpath -w "$(pinop cadeia_de_selos)")
+  W_SELO=$(cygpath -w "$(pinop selo_anterior_v393)"); W_KMAN=$(cygpath -w "$(pinop kernel_manifesto_anterior_v393)")
+  # o recibo do kernel do pos_selo e' o pino kernel_recibo (R3_4: contrato KERNEL_RECIBO_R3_4 + modulos_de_auditoria); o KERNEL_RECIBO_v394.json (R3_2) nao passa na N1k dos 3 modulos de auditoria
+  W_KR=$(cygpath -w "$(pinop kernel_recibo)"); KRSHA=$(sha256f "$W_KR"); [ "$KRSHA" = "$(pino kernel_recibo)" ] || parar "o recibo do kernel diverge do pino"; echo "  recibo do kernel (R3_4, sha256 LIDO NA HORA, igual ao pino): $KRSHA"
+  $PY -c "import json,os,sys;sys.exit(0 if os.path.isdir(json.load(open(sys.argv[1],encoding='utf-8'))['arvore']) else 1)" "$W_KR" || aguarda "a arvore so-fontes do recibo do kernel (campo arvore) nao existe mais: refazer a arvore (refazer_arvore_v394_pos_selo.py, sem build; ato da gerencia) e retomar com CHAIN_DE=$1"
+  # a bateria da v394: GERADA UMA vez, depois do selo, a partir dos pinos da cadeia (PINOS_BN: candidato == o um.py do Nos); o que o ensaio (10) usa e' o que o aplicar (10b) usa (pino ao lado, gravado na geracao)
+  BATD="$PK/bateria_pos_selo"
+  if [ ! -e "$BATD/BATERIA_VINCULO_v394.json" ]; then
+    mkdir -p "$BATD"
+    $PY "$(cygpath -w "$(pinop gerador_bateria)")" --base "$(cygpath -w "$(pinop bateria_base_R2)")" --base-sha256 "$(pino bateria_base_R2)" --versao v394 --nos "$W_NOS" \
+        --driver "$(cygpath -w "$(pinop driver_t12_t14)")" --pinos-bn "$(cygpath -w "$PK/PINOS_BN_v394.json")" \
+        --pino-saida "$(cygpath -w "$BATD/PINO_UM_PY_v394.json")" --saida "$(cygpath -w "$BATD/BATERIA_VINCULO_v394.json")" > "$SEL/gerar_bateria_v394_out.txt" 2>&1 \
+      || { cut -c1-300 "$SEL/gerar_bateria_v394_out.txt"; parar "gerar_bateria_r3_4.py recusou: o Nos nao e o candidato pinado em PINOS_BN, ou o selo nao pina o um.py (saida inteira em $SEL/gerar_bateria_v394_out.txt)"; }
+    $PY -c "import hashlib,json,sys;h=lambda p:hashlib.sha256(open(p,'rb').read()).hexdigest();b,p,o=sys.argv[1:4];open(o,'x',encoding='utf-8').write(json.dumps({'bateria':{'path':b,'sha256':h(b)},'pino_um_py':{'path':p,'sha256':h(p)},'nota':'pino ao lado da bateria da v394, gravado quando o chain a gerou (R3.5)'},indent=1))" \
+        "$(cygpath -w "$BATD/BATERIA_VINCULO_v394.json")" "$(cygpath -w "$BATD/PINO_UM_PY_v394.json")" "$(cygpath -w "$BATD/PINOS_BATERIA_v394.json")" || parar "nao gravei o pino ao lado da bateria da v394"
+    echo "  bateria da v394 GERADA por script em $BATD (pino ao lado: PINOS_BATERIA_v394.json)"
+  fi
+  [ -f "$BATD/PINOS_BATERIA_v394.json" ] || parar "a bateria da v394 existe sem o pino ao lado ($BATD/PINOS_BATERIA_v394.json): nao se sabe quem a gerou"
+  W_BAT=$(cygpath -w "$BATD/BATERIA_VINCULO_v394.json"); BAT=$(sha256f "$W_BAT")
+  [ "$BAT" = "$($PY -c "import json,sys;print(json.load(open(sys.argv[1],encoding='utf-8'))['bateria']['sha256'])" "$(cygpath -w "$BATD/PINOS_BATERIA_v394.json")")" ] || parar "a bateria da v394 em disco diverge do pino gravado quando foi gerada"
+  echo "  bateria da v394 (sha256 LIDO NA HORA, igual ao pino ao lado): $BAT"
+}

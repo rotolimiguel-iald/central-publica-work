@@ -1,0 +1,70 @@
+# --- R3.1 no DECOY de producao: A1, A3, N2c, N3a, N4b (em processo; PRODUCAO, EVENTOS_QUADRO e a sonda do servico trocados)
+decoy("R31_A1_decoy_sorry_real_nao_aplica", 3, veredito_esp="REPINADA_B3__BATERIA_FALHOU__NADA_GRAVADO", kernel=KP_SORRY_REAL,
+      extra_ok=lambda j, a, d: pd_intocado(j, a, d) and "ocorrencia(s) de sorry" in testes(j)["T17_LEAN_KERNEL"]["detalhe"],
+      nota="A1 na producao-decoy: o recibo do kernel com o aviso REAL do Lean 4.31 no log nao aplica")
+decoy("R31_A3_decoy_criterio_autodeclarado_nao_aplica", 3, veredito_esp="REPINADA_B3__BATERIA_FALHOU__NADA_GRAVADO", kernel=KP_AUTODECL,
+      extra_ok=lambda j, a, d: pd_intocado(j, a, d) and "CRITERIO_AUTODECLARADO" in testes(j)["T17_LEAN_KERNEL"]["detalhe"],
+      nota="A3 na producao-decoy: o recibo com esperado = medido = 7 nao aplica")
+decoy("R31_A3_decoy_sem_criterios", 2, "CRITERIOS_AUSENTES", sem_criterios=True, extra_ok=pd_intocado,
+      nota="A3 na producao-decoy: com --kernel-recibo e sem --criterios, recusa antes da bateria")
+_pre_n2c = _pre("decoy_selo_e_kernel_trocados", lambda r: (r["nos"]["selo"].update(sha256=sha_b(b"selo de outro rito"), tgl_kernel_proof_manifest_sha256=sha_b(b"km de outro rito")),
+                                                           r["nos"]["kernel"].update(sha256=sha_b(b"km de outro rito"), raiz_sha256=sha_b(b"raiz de outro rito"))), base=R_PD)
+decoy("R31_N2c_decoy_selo_e_kernel_de_outro_rito", 2, "RECIBO_PRE_SELO_NAO_CORRESPONDE", pre=_pre_n2c, extra_ok=pd_intocado,
+      nota="N2c (o ataque da reauditoria) na producao-decoy: o pino do recibo pre-selo forjado em vNNN_pins (sha do forjado) nao basta: o selo dele nao e o do manifesto anterior")
+N4B = {}
+
+
+def _mutar_mesmo_tamanho_e_mtime(p_):
+    p_ = Path(p_)
+    st_ = p_.stat()
+    b_ = p_.read_bytes()
+    i_ = b_.index(b'"sha256": "') + len(b'"sha256": "')
+    b2_ = b_[:i_] + (b"1" if b_[i_:i_ + 1] != b"1" else b"2") + b_[i_ + 1:]
+    p_.write_bytes(b2_)
+    os.utime(p_, ns=(st_.st_atime_ns, st_.st_mtime_ns))
+    return sha_b(b2_), len(b2_) == len(b_), p_.stat().st_mtime_ns == st_.st_mtime_ns
+
+
+def _sonda_que_muta_na_quinta():
+    estado_ = {"i": 0}
+
+    def f_(porta=None):
+        estado_["i"] += 1
+        if estado_["i"] == 5:          # 5 = imediatamente_antes_da_troca (inicio, antes_do_backup, antes_do_contrato, antes_do_temporario, ...)
+            N4B["sha"], N4B["tamanho_igual"], N4B["mtime_igual"] = _mutar_mesmo_tamanho_e_mtime(PD / "canonical_contracts.json")
+        return False
+    return f_
+
+
+def _n4b_ok(j, a, d):
+    baks = [n_ for n_ in d if ".bak_B3_" in n_]
+    return (sha(PD / "canonical_contracts.json") == N4B.get("sha") != MAN_PD and N4B.get("tamanho_igual") is True and N4B.get("mtime_igual") is True
+            and not (PD / "CONTRATO_CANONICO_B3.md").exists() and not any(n_.startswith("canonical_contracts.json.tmp") for n_ in d)
+            and len(baks) == 1 and sha(PD / baks[0]) == MAN_PD)
+
+
+decoy("R31_N4b_decoy_mudanca_durante_a_ultima_sonda", 2, "MANIFESTO_MUDOU_DESDE_A_LEITURA", patches_extra=dict(servico_responde=_sonda_que_muta_na_quinta()),
+      extra_ok=_n4b_ok,
+      nota="N4b (o ataque da reauditoria): a mudanca concorrente (mesmo tamanho, mesmo mtime) feita DURANTE a sonda imediatamente antes da troca; na R3 era "
+           "sobrescrita e nao ficava no .bak; na R3.1 a comparacao vem depois da sonda: recusa, a mudanca fica, nenhum contrato nem temporario, o .bak guarda o lido no passo 3")
+import inspect as _inspect
+_src_ap = _inspect.getsource(MOD.aplicar_na_bancada)
+checar("R31_N4b_ordem_sonda_compara_troca_no_codigo",
+       lambda: _src_ap.index('guarda_servico("imediatamente_antes_da_troca")') < _src_ap.rindex("man_p.read_bytes() != antes_esperado") < _src_ap.index("os.replace(tmp, man_p)"),
+       nota="N4b: no codigo do aplicar a ultima comparacao de bytes fica entre a ultima sonda e o os.replace")
+decoy("R31_N3a_decoy_servico_subiu_no_os_replace", 2, "SERVICO_NO_AR_APOS_ROLLBACK__REINICIO_OBRIGATORIO", sondas=(False, False, False, False, False, True, True),
+      extra_ok=lambda j, a, d: _so_backup_novo(j, a, d) and (lambda rec: rec["aplicacao_revertida"]["servico_no_ar_apos_rollback"] is True
+                                                             and rec["aplicacao_revertida"]["manifesto_em_disco_sha256"] == MAN_PD
+                                                             and rec["aplicacao_revertida"]["manifesto_novo_sha256"] not in (None, MAN_PD)
+                                                             and rec["sondagens_do_servico"][-1]["momento"] == "apos_rollback"
+                                                             and rec["aplicacao_revertida"]["nota"] == MOD.N3A_NOTA)(recibo_de(j)),
+      nota="N3a (o ataque da reauditoria): o servico que sobe no instante do os.replace fica com o manifesto NOVO em RAM; o rollback devolve o VELHO ao disco; "
+           "a sonda depois do rollback ve o servico no ar e recusa com codigo proprio; o recibo diz os dois sha e a nota")
+decoy("R31_N3a_decoy_rollback_com_o_servico_ja_fora", 2, "APLICACAO_REVERTIDA", sondas=(False, False, False, False, False, True, False),
+      extra_ok=lambda j, a, d: _so_backup_novo(j, a, d) and (lambda rec: rec["aplicacao_revertida"]["servico_no_ar_apos_rollback"] is False
+                                                             and not str(rec["recusa"]).startswith("SERVICO_NO_AR_APOS_ROLLBACK"))(recibo_de(j)),
+      nota="N3a: se o servico ja nao responde depois do rollback, o codigo segue APLICACAO_REVERTIDA (e o recibo traz a nota da RAM)")
+decoy("R31_N3a_contraprova_recibo_documenta_a_ram", 0, veredito_esp="REPINADA_B3__APLICADA",
+      extra_ok=lambda j, a, d: (lambda rec: rec["servico_e_manifesto_em_ram"] == MOD.N3A_NOTA and Path(rec["aplicacao"]["copia_do_recibo"]).exists()
+                                and json.loads(Path(rec["aplicacao"]["copia_do_recibo"]).read_bytes())["servico_e_manifesto_em_ram"] == MOD.N3A_NOTA)(recibo_de(j)),
+      nota="N3a: o recibo do aplicar (e a copia dele em estado/sincronizacao) documenta que o servico religado tem de ser conferido (10-ter)")

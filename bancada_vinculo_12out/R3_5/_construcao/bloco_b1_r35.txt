@@ -1,0 +1,38 @@
+# R3.5: o Nos REAL esta no meio do rito da v394 (o um.py v394 ja foi instalado; o selo, o core e o manifesto do kernel ainda sao os da v393): o "Nos real v393" dos controles vem da CUSTODIA
+# (copia de bytes tirada antes da instalacao: cadeia_de_selo/v394/base_v393), conferida pelos sha256 que o recibo pre_selo REAL da R3.4 registra (salto.ate). b1 = a producao ATUAL (B3, codigo e
+# fontes lidos e conferidos) com o manifesto re-pinado para o stand-in nos_real/ (a copia da custodia, dentro do sandbox) -> JA_SINCRONIZADA em v393; b1real = o mesmo com o manifesto pinando o
+# caminho REAL do Nos (so para os controles da guarda A2: SANDBOX_COM_MANIFESTO_QUE_PINA_O_NOS_REAL, que recusa antes de qualquer conteudo do Nos importar).
+CUSTODIA_V393 = Path("C:/IALD/Central de Patentes/work/cadeia_de_selo/v394/base_v393")
+PINO_R34 = Path(__file__).resolve().parent / "PINO_RECIBO_PRE_SELO_v394_R3_4.json"
+salto_r34 = json.loads(PINO_R34.read_bytes())["salto"]["ate"]
+nos_real = {n_: (CUSTODIA_V393 / n_).read_bytes() for n_ in ("um.py", "um_absoluto_selo.json", "um_absoluto.json", "tgl_kernel_proof_manifest.json")}
+assert (sha(nos_real["um.py"]) == salto_r34["um_py_sha256"] and sha(nos_real["um_absoluto_selo.json"]) == salto_r34["selo_sha256"]
+        and sha(nos_real["tgl_kernel_proof_manifest.json"]) == salto_r34["kernel_manifesto_sha256"]), "a custodia v393 nao e o Nos v393 que o recibo pre_selo real registra"
+selo_real = json.loads(nos_real["um_absoluto_selo.json"])
+assert selo_real["sha256"]["um.py"] == sha(nos_real["um.py"]) and selo_real["sha256"]["tgl_kernel_proof_manifest.json"] == sha(nos_real["tgl_kernel_proof_manifest.json"]), "o selo v393 da custodia nao pina a custodia"
+NOS_STAND = RAIZ / "nos_real"
+rec["nos_real_standin"] = {n_: gravar_novo(NOS_STAND / n_, b_) for n_, b_ in nos_real.items()}
+
+
+def manifesto_b1(dir_nos, rotulo, selo_raw_, um_raw_, deployment):
+    """o manifesto da producao ATUAL (B3) com canonical re-pinado para a pasta `dir_nos` (so canonical.version/script/seal e deployment_id mudam)."""
+    m_ = json.loads(man_prod_raw)
+    m_["canonical"] = dict(version=json.loads(selo_raw_)["um_version"],
+                           script=dict(path=str(dir_nos / "um.py"), bytes=len(um_raw_), sha256=sha(um_raw_)),
+                           seal=dict(path=str(dir_nos / "um_absoluto_selo.json"), bytes=len(selo_raw_), sha256=sha(selo_raw_)))
+    m_["deployment_id"] = deployment
+    m_["sandbox_R3_5"] = ("copia de ensaio (19/10/2026): a producao B3 (%s) com canonical re-pinado para %s; codigo e fontes iguais aos da producao" % (sha(man_prod_raw)[:16], rotulo))
+    return json.dumps(m_, ensure_ascii=False, indent=1).encode("utf-8")
+
+
+man1_raw = manifesto_b1(NOS_STAND, "o stand-in nos_real/ (copia de bytes do Nos v393 da custodia)", nos_real["um_absoluto_selo.json"], nos_real["um.py"], "B3-SANDBOX-b1-" + selo_real["um_version"] + "-R1")
+man1r_raw = manifesto_b1(NOS, "o caminho REAL do Nos (guarda A2; o Nos real esta no meio do rito da v394)", nos_real["um_absoluto_selo.json"], nos_real["um.py"],
+                         "B3-SANDBOX-b1real-" + selo_real["um_version"] + "-R1")
+rec["nos_real"] = dict(versao=selo_real["um_version"], um_py=dict(sha256=sha(nos_real["um.py"]), bytes=len(nos_real["um.py"])), selo=dict(sha256=sha(nos_real["um_absoluto_selo.json"]), bytes=len(nos_real["um_absoluto_selo.json"])),
+                       core=dict(sha256=sha(nos_real["um_absoluto.json"]), bytes=len(nos_real["um_absoluto.json"])),
+                       kernel_manifest=dict(sha256=sha(nos_real["tgl_kernel_proof_manifest.json"]), bytes=len(nos_real["tgl_kernel_proof_manifest.json"])),
+                       kernel=dict(raiz_sha256=json.loads(nos_real["tgl_kernel_proof_manifest.json"])["formal_files_sha256"]["TGLExt.lean"]),
+                       origem="custodia cadeia_de_selo/v394/base_v393 (copia de bytes do Nos v393 antes da instalacao da v394; conferida pelo recibo pre_selo real da R3.4)")
+rec["b1"].append(gravar_novo(RAIZ / "b1" / "canonical_contracts.json", man1_raw))
+rec["b1real"].append(gravar_novo(RAIZ / "b1real" / "canonical_contracts.json", man1r_raw))
+rec["b2"].append(gravar_novo(RAIZ / "b2" / "canonical_contracts.json", man2_raw))

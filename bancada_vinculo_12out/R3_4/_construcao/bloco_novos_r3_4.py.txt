@@ -1,0 +1,787 @@
+# ================================================================ R3.4: os tres consertos da gerencia c1 (F0.6) -- S (salto), P (bateria por versao), M (modulos de auditoria)
+# Prefixos: R34_S_ (salto: a Bancada pinada numa versao anterior a do Nos, com a cadeia de selos verificada por hash), R34_P_ (a bateria regenerada por script em cada versao, pinada,
+# com o pino do um.py lido dos pinos da cadeia), R34_M_ (o modulo de auditoria sem declaracoes so passa em lista explicita e com a fonte conferida por script).
+NOS393 = RAIZ / "nos_v393s"                          # o Nos sintetico SEGUINTE ao v392 sintetico (camada v393 do montar_sandbox R3.4)
+CS = FX / "cadeia_de_selo"                           # a pasta cadeia_de_selo de ENSAIO (base_vJ + registros do instalador + backups de bytes)
+AT34 = RAIZ / "aud34"
+AT34.mkdir(exist_ok=True)
+CADEIA_REAL = AQUI / "CADEIA_DE_SELOS_v394.json"     # a cadeia REAL v392 -> v393, gerada pelo gerador contra a pasta real cadeia_de_selo
+CRIT393 = FX / "CRITERIOS_v393_SINTETICO.json"
+CRIT393_SHA = sha(CRIT393)
+CRIT393_OBJ = MOD.carregar_criterios(CRIT393, CRIT393_SHA, "v393")
+K393 = FX / "KERNEL_RECIBO_v393s_SINTETICO_VALIDO.json"
+K393_SHA = sha(K393)
+NI393 = MOD.ler_nos(NOS393, "v393")
+K393_OBJ = json.loads(K393.read_bytes())
+
+
+def gerar_cadeia(nome, de, ate, cadeia=CS):
+    """roda o gerador REAL (gerar_cadeia_de_selos.py) contra uma pasta cadeia_de_selo; devolve (arquivo, sha256)."""
+    saida = FX / ("CADEIA_%s.json" % nome)
+    r = subprocess.run([PY, "-I", "-B", "-X", "utf8", str(GERAR_CADEIA), "--cadeia", str(cadeia), "--de", de, "--ate", ate, "--saida", str(saida)],
+                       capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=300, stdin=subprocess.DEVNULL)
+    assert r.returncode == 0, r.stdout + r.stderr
+    return saida, sha(saida)
+
+
+CH_392, CH_392_SHA = gerar_cadeia("391_392", "v391", "v392")
+CH_393, CH_393_SHA = gerar_cadeia("391_393", "v391", "v393")
+CH_392_393, CH_392_393_SHA = gerar_cadeia("392_393", "v392", "v393")
+
+
+def cadeia_derivada(nome, mutar, base=CH_392):
+    """uma copia da cadeia gerada com `mutar(dict)` aplicado (e gravada ao lado); devolve (arquivo, sha256)."""
+    c = json.loads(Path(base).read_bytes())
+    mutar(c)
+    p = FX / ("CADEIA_%s.json" % nome)
+    p.write_bytes(json.dumps(c, ensure_ascii=False, indent=1).encode("utf-8"))
+    return p, sha(p)
+
+
+def copia_adulterada(origem, nome, mut):
+    """copia (byte a byte, exceto `mut(bytes)`) de um arquivo da cadeia para fx/cadeia_adulterada/<nome>/; devolve o caminho."""
+    d = FX / "cadeia_adulterada" / nome
+    d.mkdir(parents=True, exist_ok=True)
+    p = d / Path(origem).name
+    p.write_bytes(mut(Path(origem).read_bytes()))
+    return str(p)
+
+
+def bancada_copia(nome, mut=None):
+    d = RAIZ / nome
+    copiar_sem_juncao(B2, d)
+    if mut:
+        m_ = json.loads((d / "canonical_contracts.json").read_bytes())
+        mut(m_)
+        (d / "canonical_contracts.json").write_bytes(json.dumps(m_, ensure_ascii=False, indent=1).encode("utf-8"))
+    return d
+
+
+def args_pre(bancada, cadeia=None, cadeia_sha=None, nos=NOS, versao="v392", bateria=None, extra=()):
+    b_ = bateria or (bt_min_pre, bt_min_pre_sha)
+    return (["--bancada", bancada, "--nos", nos, "--versao", versao, "--fase", "pre_selo", "--modo", "ensaio", "--sandbox", "--bateria", b_[0], "--bateria-sha256", b_[1]]
+            + (["--cadeia-de-selos", cadeia] if cadeia else []) + (["--cadeia-de-selos-sha256", cadeia_sha] if cadeia_sha else []) + list(extra))
+
+
+SELO_392, KMAN_392 = NOS392 / "um_absoluto_selo.json", NOS392 / "tgl_kernel_proof_manifest.json"
+
+
+def args_pos(bancada, recibo, cadeia=None, cadeia_sha=None, nos=NOS393, versao="v393", modo="aplicar", kernel=True, extra=()):
+    a_ = ["--bancada", bancada, "--nos", nos, "--versao", versao, "--fase", "pos_selo", "--modo", modo, "--sandbox", "--bateria", bt_min, "--bateria-sha256", bt_min_sha,
+          "--recibo-pre-selo", recibo, "--recibo-pre-selo-sha256", sha(recibo), "--selo-anterior", SELO_392, "--kernel-manifesto-anterior", KMAN_392]
+    if modo == "aplicar":
+        a_ += ["--evento", "SANDBOX:R34"]
+    if kernel:
+        a_ += ["--kernel-recibo", K393, "--kernel-recibo-sha256", K393_SHA, "--criterios", CRIT393, "--criterios-sha256", CRIT393_SHA]
+    if cadeia:
+        a_ += ["--cadeia-de-selos", cadeia, "--cadeia-de-selos-sha256", cadeia_sha]
+    return a_ + list(extra)
+
+
+# --- S01: o salto aceito (a Bancada pina v391, o Nos tem v392; a cadeia de selos v391 -> v392 verifica por hash)
+b2sa = bancada_copia("b2sa")
+d_s1, j_s1 = run("R34_S_pre_selo_salto_aceito", args_pre(b2sa, CH_392, CH_392_SHA), 0, veredito_esp="REPINADA_B3__SALTO_v391_v392__ENSAIO", bancada=b2sa, saida=S / "R34_S_pre_selo_salto",
+                 extra_ok=lambda j, r: (lambda rec: rec["salto"]["versoes_puladas"] == ["v392"] and rec["salto"]["de"]["versao"] == "v391" and rec["salto"]["ate"]["versao"] == "v392"
+                                        and rec["salto"]["proxima_a_selar"] == "v393" and rec["cadeia_de_selos"]["n_elos"] == 2 and rec["cadeia_de_selos"]["sha256"] == CH_392_SHA
+                                        and rec["salto"]["cadeia"]["sha256"] == CH_392_SHA and rec["bateria_resultado"]["falha"] == 0 and rec["manifesto_anterior"]["version"] == "v391"
+                                        and rec["manifesto_novo"]["deployment_id"].startswith("B3-v392-") and rec["manifesto_anterior"]["estado_do_contrato_instalado"] == "PIN_CHANGED"
+                                        and rec["salto"]["de"]["manifesto_da_bancada_sha256"] == rec["manifesto_anterior"]["sha256"]
+                                        and rec["cadeia_de_selos"]["ligacoes"][0]["registro_sha256"] == rec["salto"]["cadeia"]["ligacoes"][0]["registro_sha256"])(recibo_de(j)),
+                 nota="S: a Bancada pinada em v391 contra o Nos v392 (um passo atras): a cadeia de selos (2 elos: copias de bytes, selo pina o um.py e o kernel, registro do instalador com os "
+                      "backups de bytes) e verificada por hash; o recibo declara o salto, as versoes puladas e o veredito REPINADA_B3__SALTO_v391_v392__ENSAIO; a copia da Bancada fica intocada")
+R_SALTO = sorted((S / "R34_S_pre_selo_salto").glob("RECIBO_SINCRONIZACAO_*.json"))[-1]
+R_SALTO_SHA = sha(R_SALTO)
+
+# --- S02-S07: a cadeia ausente, sem pino, com pino errado, sem o arquivo; flag sem efeito; Bancada a frente
+run("R34_S_atrasada_sem_cadeia_recusa", args_pre(b2sa), 2, "BANCADA_ATRASADA_SEM_CADEIA_DE_SELOS", bancada=b2sa,
+    nota="S (o conserto pedido): sem cadeia verificavel o salto e recusado -- era a v394 sem saida (BATERIA_FALHOU + versao_alvo diferente da pinada)")
+run("R34_S_cadeia_sem_sha_recusa", args_pre(b2sa, CH_392, None), 2, "CADEIA_DE_SELOS_SHA_AUSENTE", bancada=b2sa, nota="S: uma cadeia sem pino em vNNN_pins nao vale")
+run("R34_S_cadeia_sha_divergente_recusa", args_pre(b2sa, CH_392, "5" * 64), 2, "CADEIA_DE_SELOS_SHA_DIVERGE", bancada=b2sa)
+run("R34_S_sha_da_cadeia_sem_o_arquivo", args_pre(b2sa, None, CH_392_SHA), 2, "CADEIA_DE_SELOS_AUSENTE", bancada=b2sa, nota="S: --cadeia-de-selos-sha256 sem --cadeia-de-selos nao e aceito em silencio")
+run("R34_S_cadeia_inexistente_recusa", args_pre(b2sa, FX / "CADEIA_que_nao_existe.json", CH_392_SHA), 2, "CADEIA_DE_SELOS_AUSENTE", bancada=b2sa)
+b2_a_frente = bancada_copia("b2_a_frente", lambda m: m["canonical"].update(version="v393"))
+run("R34_S_bancada_a_frente_do_nos_recusa", args_pre(b2_a_frente, CH_392, CH_392_SHA), 2, "BANCADA_A_FRENTE_DO_NOS", bancada=b2_a_frente,
+    nota="S: a Bancada pina v393 e o Nos tem v392: um salto so vai para a frente")
+NOS391 = CS / "v392" / "base_v391"                    # a copia completa do Nos v391 (um.py, selo, core e manifesto do kernel) que a cadeia de ensaio guarda
+b2_em_dia = RAIZ / "b2_em_dia"
+copiar_sem_juncao(B2, b2_em_dia)
+m_ed = json.loads((b2_em_dia / "canonical_contracts.json").read_bytes())
+m_ed["canonical"]["script"]["path"] = str(NOS391 / "um.py")
+m_ed["canonical"]["seal"]["path"] = str(NOS391 / "um_absoluto_selo.json")
+(b2_em_dia / "canonical_contracts.json").write_bytes(json.dumps(m_ed, ensure_ascii=False, indent=1).encode("utf-8"))
+run("R34_S_contraprova_bancada_em_dia_sem_cadeia_ja_sincronizada", ["--bancada", b2_em_dia, "--nos", NOS391, "--versao", "v391", "--fase", "pre_selo", "--modo", "ensaio",
+                                                                  "--bateria", bt_min_pre, "--bateria-sha256", bt_min_pre_sha], 0, veredito_esp="JA_SINCRONIZADA__ENSAIO", bancada=b2_em_dia,
+    extra_ok=lambda j, r: "salto" not in recibo_de(j) or recibo_de(j)["salto"] is None, nota="contraprova: a Bancada em dia (pinada na versao do Nos) segue JA_SINCRONIZADA, sem cadeia e sem salto no recibo")
+run("R34_S_cadeia_com_a_bancada_em_dia_recusa", ["--bancada", b2_em_dia, "--nos", NOS391, "--versao", "v391", "--fase", "pre_selo", "--modo", "ensaio", "--bateria", bt_min_pre,
+                                                  "--bateria-sha256", bt_min_pre_sha, "--cadeia-de-selos", CH_392, "--cadeia-de-selos-sha256", CH_392_SHA], 2, "CADEIA_DE_SELOS_SEM_SALTO", bancada=b2_em_dia,
+    nota="S: a flag sem efeito (a Bancada ja pina a versao do Nos) nao e aceita em silencio")
+
+# --- S08-S20: a cadeia adulterada de todas as formas (cada uma deriva a cadeia boa e muda UMA coisa)
+um_392_adulterado = copia_adulterada(json.loads(CH_392.read_bytes())["elos"][1]["um_py"]["path"], "um_392_um_byte", lambda b: b[:-1] + bytes([b[-1] ^ 1]))
+
+
+def _mut_um_byte(c):
+    c["elos"][1]["um_py"]["path"] = um_392_adulterado         # o sha pinado e o do arquivo bom
+
+
+def _mut_selo_outra_versao(c):
+    c["elos"][1]["selo"] = dict(c["elos"][0]["selo"])         # o selo da v391 no lugar do da v392 (copia boa de outra versao)
+
+
+def _mut_selo_nao_pina_o_um_py(c):
+    p_ = json.loads(Path(c["elos"][1]["selo"]["path"]).read_bytes())
+    p_["sha256"]["um.py"] = sha_b(b"outro um.py")
+    novo_ = copia_adulterada(c["elos"][1]["selo"]["path"], "selo_nao_pina", lambda b: json.dumps(p_, ensure_ascii=False, indent=1).encode("utf-8"))
+    c["elos"][1]["selo"] = _pinar(novo_)
+
+
+def _mut_selo_nao_pina_o_kernel(c):
+    p_ = json.loads(Path(c["elos"][1]["selo"]["path"]).read_bytes())
+    p_["sha256"]["tgl_kernel_proof_manifest.json"] = sha_b(b"outro kernel")
+    novo_ = copia_adulterada(c["elos"][1]["selo"]["path"], "selo_nao_pina_kernel", lambda b: json.dumps(p_, ensure_ascii=False, indent=1).encode("utf-8"))
+    c["elos"][1]["selo"] = _pinar(novo_)
+
+
+def _mut_um_py_de_outra_versao(c):
+    c["elos"][1]["um_py"] = dict(c["elos"][0]["um_py"])       # o um.py v391 no elo v392 (copia boa de outra versao)
+
+
+def _mut_registro_de_outra_troca(c):
+    c3_ = json.loads(CH_393.read_bytes())
+    c["elos"][0]["substituido_na_instalacao_por"]["registro"] = c3_["elos"][1]["substituido_na_instalacao_por"]["registro"]   # o registro da troca v392 -> v393
+
+
+def _mut_backup_de_outro_conteudo(c):
+    c["elos"][0]["substituido_na_instalacao_por"]["backup_um_py"] = c["elos"][1]["um_py"]     # o backup do um.py de v391 e (na verdade) o da v392
+
+
+def _mut_backup_um_byte(c):
+    c["elos"][0]["substituido_na_instalacao_por"]["backup_um_py"]["path"] = copia_adulterada(c["elos"][0]["substituido_na_instalacao_por"]["backup_um_py"]["path"], "backup_um_byte",
+                                                                                          lambda b: b[:-1] + bytes([b[-1] ^ 1]))
+
+
+def _mut_sem_instalacao(c):
+    c["elos"][0].pop("substituido_na_instalacao_por")
+
+
+def _mut_ultimo_elo_com_instalacao(c):
+    c["elos"][1]["substituido_na_instalacao_por"] = dict(c["elos"][0]["substituido_na_instalacao_por"])
+
+
+def _mut_registro_outra_versao_declarada(c):
+    c["elos"][0]["substituido_na_instalacao_por"]["versao"] = "v399"
+
+
+def _mut_contrato(c):
+    c["contrato"] = "CADEIA_DE_SELOS_R3"
+
+
+def _mut_chave_extra(c):
+    c["chave_extra"] = 1
+
+
+def _mut_elo_chave_extra(c):
+    c["elos"][0]["autorizado_por"] = "qualquer"
+
+
+def _mut_caminho_relativo(c):
+    c["elos"][1]["um_py"]["path"] = "um.py"
+
+
+def _mut_copia_ausente(c):
+    c["elos"][1]["kernel_manifesto"]["path"] = str(FX / "nao_existe_km.json")
+
+
+def _mut_sha_maiusculo(c):
+    c["elos"][1]["um_py"]["sha256"] = c["elos"][1]["um_py"]["sha256"].upper()
+
+
+def _mut_um_elo_so(c):
+    c["elos"] = c["elos"][1:]
+
+
+def _mut_reordenada(c):
+    c["elos"] = [c["elos"][1], c["elos"][0]]
+
+
+def _mut_versao_repetida(c):
+    c["elos"][1]["versao"] = "v391"
+
+
+def _mut_versao_invalida(c):
+    c["elos"][1]["versao"] = "versao392"
+
+
+CASOS_S = (("copia_do_um_py_com_um_byte_mudado", _mut_um_byte, "CADEIA_DE_SELOS_COPIA_DIVERGE"),
+           ("selo_de_outra_versao", _mut_selo_outra_versao, "CADEIA_DE_SELOS_SELO_DE_OUTRA_VERSAO"),
+           ("selo_que_nao_pina_o_um_py", _mut_selo_nao_pina_o_um_py, "CADEIA_DE_SELOS_SELO_NAO_PINA_O_UM_PY"),
+           ("selo_que_nao_pina_o_manifesto_do_kernel", _mut_selo_nao_pina_o_kernel, "CADEIA_DE_SELOS_SELO_NAO_PINA_O_KERNEL"),
+           ("um_py_de_outra_versao", _mut_um_py_de_outra_versao, "CADEIA_DE_SELOS_UM_PY_DE_OUTRA_VERSAO"),
+           ("registro_do_instalador_de_outra_troca", _mut_registro_de_outra_troca, "CADEIA_DE_SELOS_ELO_QUEBRADO"),
+           ("backup_de_bytes_de_outro_conteudo", _mut_backup_de_outro_conteudo, "CADEIA_DE_SELOS_ELO_QUEBRADO"),
+           ("backup_de_bytes_com_um_byte_mudado", _mut_backup_um_byte, "CADEIA_DE_SELOS_COPIA_DIVERGE"),
+           ("elo_sem_a_instalacao_que_o_substituiu", _mut_sem_instalacao, "CADEIA_DE_SELOS_ELO_QUEBRADO"),
+           ("ultimo_elo_com_instalacao", _mut_ultimo_elo_com_instalacao, "CADEIA_DE_SELOS_ELO_FINAL_COM_INSTALACAO"),
+           ("instalacao_diz_outra_versao_seguinte", _mut_registro_outra_versao_declarada, "CADEIA_DE_SELOS_ELO_QUEBRADO"),
+           ("contrato_errado", _mut_contrato, "CADEIA_DE_SELOS_CONTRATO_INVALIDO"),
+           ("chave_a_mais_na_raiz", _mut_chave_extra, "CADEIA_DE_SELOS_ILEGIVEL"),
+           ("chave_a_mais_no_elo", _mut_elo_chave_extra, "CADEIA_DE_SELOS_ELO_INVALIDO"),
+           ("caminho_relativo", _mut_caminho_relativo, "CADEIA_DE_SELOS_CAMINHO_NAO_ABSOLUTO"),
+           ("copia_ausente", _mut_copia_ausente, "CADEIA_DE_SELOS_COPIA_AUSENTE"),
+           ("sha_em_maiuscula", _mut_sha_maiusculo, "CADEIA_DE_SELOS_ARQUIVO_INVALIDO"),
+           ("um_elo_so", _mut_um_elo_so, "CADEIA_DE_SELOS_ILEGIVEL"),
+           ("elos_fora_de_ordem", _mut_reordenada, "CADEIA_DE_SELOS_NAO_CONSECUTIVA"),
+           ("versao_do_elo_diferente_do_um_py_da_copia", _mut_versao_repetida, "CADEIA_DE_SELOS_UM_PY_DE_OUTRA_VERSAO"),
+           ("versao_mal_formada", _mut_versao_invalida, "VERSAO_INVALIDA"))
+for nome_, mut_, esp_ in CASOS_S:
+    p_, h_ = cadeia_derivada("deriv_" + nome_, mut_)
+    run("R34_S_cadeia_%s" % nome_, args_pre(b2sa, p_, h_), 2, esp_, bancada=b2sa, nota="S: a cadeia boa com UMA coisa mudada (%s): recusa %s, antes de qualquer bateria; a copia da Bancada fica intocada" % (nome_, esp_))
+# o caso 'elo_final com instalacao' tambem nao deixa passar a chave duplicada
+c_dup = FX / "CADEIA_chave_duplicada.json"
+c_dup.write_text(CH_392.read_text(encoding="utf-8").replace('"contrato": "CADEIA_DE_SELOS_R3_4",', '"contrato": "CADEIA_DE_SELOS_R3_4",\n "contrato": "CADEIA_DE_SELOS_R3_4",', 1), encoding="utf-8")
+assert c_dup.read_text(encoding="utf-8").count('"contrato"') == 2
+run("R34_S_cadeia_com_chave_duplicada", args_pre(b2sa, c_dup, sha(c_dup)), 2, "CADEIA_DE_SELOS_CHAVE_DUPLICADA", bancada=b2sa, nota="S: o json.loads ficaria com a ultima; a cadeia pinada nao pode dizer duas coisas (R31-6)")
+
+# --- S: a cadeia que nao parte da Bancada, nao chega ao Nos, ou pula uma versao
+run("R34_S_cadeia_que_nao_parte_da_bancada", args_pre(b2sa, CH_392_393, CH_392_393_SHA, nos=NOS393, versao="v393"), 2, "CADEIA_DE_SELOS_NAO_PARTE_DA_BANCADA", bancada=b2sa,
+    nota="S: a cadeia v392 -> v393 contra uma Bancada que pina v391: o primeiro elo tem de ser o que a Bancada pina")
+run("R34_S_cadeia_que_nao_chega_ao_nos", args_pre(b2sa, CH_392, CH_392_SHA, nos=NOS393, versao="v393"), 2, "CADEIA_DE_SELOS_NAO_CHEGA_AO_NOS", bancada=b2sa,
+    nota="S: a cadeia v391 -> v392 contra um Nos que tem v393: o ultimo elo tem de ser o Nos lido agora")
+c_pula = FX / "CADEIA_pula_uma_versao.json"
+c_pula_o = json.loads(CH_393.read_bytes())
+c_pula_o["elos"] = [c_pula_o["elos"][0], c_pula_o["elos"][2]]
+c_pula.write_bytes(json.dumps(c_pula_o, ensure_ascii=False, indent=1).encode("utf-8"))
+run("R34_S_cadeia_que_pula_uma_versao_sem_elo", args_pre(b2sa, c_pula, sha(c_pula), nos=NOS393, versao="v393"), 2, "CADEIA_DE_SELOS_NAO_CONSECUTIVA", bancada=b2sa,
+    nota="S: v391 e v393 sem o elo da v392: nenhuma versao pode ficar sem elo (as 'versoes puladas' sao as que a cadeia lista, todas com copias e instalador)")
+
+# --- S: tres elos (dois passos perdidos): v391 -> v392 -> v393, o Nos tem v393
+d_s3, j_s3 = run("R34_S_pre_selo_salto_de_tres_elos_aceito", args_pre(b2sa, CH_393, CH_393_SHA, nos=NOS393, versao="v393"), 0, veredito_esp="REPINADA_B3__SALTO_v391_v393__ENSAIO", bancada=b2sa,
+                 extra_ok=lambda j, r: (lambda rec: rec["salto"]["versoes_puladas"] == ["v392", "v393"] and rec["salto"]["proxima_a_selar"] == "v394" and rec["cadeia_de_selos"]["n_elos"] == 3
+                                        and [l["de"] + ">" + l["para"] for l in rec["cadeia_de_selos"]["ligacoes"]] == ["v391>v392", "v392>v393"])(recibo_de(j)),
+                 nota="S: a recuperacao de atraso vale para qualquer k: a Bancada em v391, o Nos em v393 (2 versoes sem elo B(n)), a cadeia de 3 elos")
+
+# --- S: o pos_selo com o recibo pre-selo de um salto (negativos primeiro: a Bancada b2sa ainda esta intocada)
+run("R34_S_pos_selo_recibo_de_salto_sem_cadeia_recusa", args_pos(b2sa, R_SALTO, None, None, modo="ensaio", kernel=False), 2, "RECIBO_PRE_SELO_SALTO_SEM_CADEIA", bancada=b2sa,
+    nota="S: o recibo pre-selo de um salto sem a cadeia (--cadeia-de-selos) nao se confere")
+run("R34_S_pos_selo_recibo_em_dia_com_cadeia_recusa", ["--bancada", B2, "--nos", NOS, "--versao", "v392", "--bateria", bt_min, "--bateria-sha256", bt_min_sha, "--sandbox", "--modo", "ensaio",
+                                                       "--fase", "pos_selo", "--recibo-pre-selo", R1B, "--recibo-pre-selo-sha256", sha(R1B), "--cadeia-de-selos", CH_392,
+                                                       "--cadeia-de-selos-sha256", CH_392_SHA], 2, "CADEIA_DE_SELOS_SEM_SALTO", bancada=B2,
+    nota="S: o recibo pre-selo de uma Bancada em dia (JA_SINCRONIZADA) com cadeia: flag sem efeito, recusada")
+run("R34_S_pos_selo_cadeia_sem_recibo_pre_selo", ["--bancada", B2, "--nos", NOS, "--versao", "v392", "--bateria", bt_min, "--bateria-sha256", bt_min_sha, "--sandbox", "--modo", "ensaio",
+                                                  "--fase", "pos_selo", "--cadeia-de-selos", CH_392, "--cadeia-de-selos-sha256", CH_392_SHA], 2, "CADEIA_DE_SELOS_SEM_SALTO", bancada=B2)
+_rj = json.loads(R_SALTO.read_bytes())
+_rj["salto"]["versoes_puladas"] = []
+_p_dout = FX / "PRE_salto_versoes_puladas_apagadas.json"
+_p_dout.write_bytes(json.dumps(_rj, ensure_ascii=False).encode("utf-8"))
+run("R34_S_pos_selo_recibo_com_o_salto_adulterado", args_pos(b2sa, _p_dout, CH_392, CH_392_SHA, modo="ensaio", kernel=False), 2, "RECIBO_PRE_SELO_NAO_CORRESPONDE", bancada=b2sa,
+    extra_ok=lambda j, r: "o salto que o recibo declara nao e o que a cadeia" in str(j.get("recusa")),
+    nota="S: o recibo (com o sha dele pinado, como se vNNN_pins o pinasse) declara versoes_puladas vazias; a cadeia diz [v392]: recusa")
+_rj2 = json.loads(R_SALTO.read_bytes())
+_rj2["veredito"] = "JA_SINCRONIZADA__ENSAIO__NADA_GRAVADO_NA_BANCADA"
+_p_ver = FX / "PRE_salto_com_veredito_em_dia.json"
+_p_ver.write_bytes(json.dumps(_rj2, ensure_ascii=False).encode("utf-8"))
+run("R34_S_pos_selo_recibo_de_salto_com_veredito_de_bancada_em_dia", args_pos(b2sa, _p_ver, CH_392, CH_392_SHA, modo="ensaio", kernel=False), 2, "RECIBO_PRE_SELO_NAO_CORRESPONDE", bancada=b2sa,
+    extra_ok=lambda j, r: "REPINADA_B3__SALTO_v391_v392__ENSAIO" in str(j.get("recusa")), nota="S: o veredito do recibo de um salto tem de dizer o salto")
+_rj3 = json.loads(R_SALTO.read_bytes())
+_rj3["bateria_resultado"]["veredito"] = "BATERIA_FALHOU"
+_p_bat = FX / "PRE_salto_bateria_falhou.json"
+_p_bat.write_bytes(json.dumps(_rj3, ensure_ascii=False).encode("utf-8"))
+run("R34_S_pos_selo_recibo_de_salto_com_bateria_que_falhou", args_pos(b2sa, _p_bat, CH_392, CH_392_SHA, modo="ensaio", kernel=False), 2, "RECIBO_PRE_SELO_INVALIDO", bancada=b2sa)
+# o recibo e de uma Bancada que mudou entre o pre_selo e o B(n): outro manifesto, mesmo recibo -> o salto declarado nao confere
+b2sd = bancada_copia("b2sd")
+run("R34_S_pre_selo_da_bancada_que_depois_mudou", args_pre(b2sd, CH_392, CH_392_SHA), 0, veredito_esp="REPINADA_B3__SALTO_v391_v392__ENSAIO", bancada=b2sd, saida=S / "R34_S_pre_selo_b2sd")
+R_SALTO_D = sorted((S / "R34_S_pre_selo_b2sd").glob("RECIBO_SINCRONIZACAO_*.json"))[-1]
+(b2sd / "canonical_contracts.json").write_bytes((b2sd / "canonical_contracts.json").read_bytes() + b"\n")      # a Bancada muda depois do recibo (o JSON segue valido)
+run("R34_S_pos_selo_bancada_mudou_depois_do_pre_selo_recusa", args_pos(b2sd, R_SALTO_D, CH_392, CH_392_SHA, modo="ensaio", kernel=False), 2, "RECIBO_PRE_SELO_NAO_CORRESPONDE", bancada=b2sd,
+    extra_ok=lambda j, r: "o salto que o recibo declara nao e o que a cadeia" in str(j.get("recusa")),
+    nota="S: o salto carrega o sha do manifesto da Bancada de quando o recibo foi feito; se a Bancada mudou, o recibo nao serve")
+# versao nao consecutiva: o recibo termina em v392 e se sela v394
+NOS394 = AT34 / "nos_v394s"
+NOS394.mkdir(parents=True)
+for f_ in ("um_absoluto.json", "tgl_kernel_proof_manifest.json"):
+    shutil.copyfile(NOS393 / f_, NOS394 / f_)
+_um3 = (NOS393 / "um.py").read_bytes()
+_um4 = _um3.replace(b'UM_VERSION = "v393', b'UM_VERSION = "v394', 1)
+assert _um4 != _um3 and len(_um4) == len(_um3)
+(NOS394 / "um.py").write_bytes(_um4)
+_selo4 = json.loads((NOS393 / "um_absoluto_selo.json").read_bytes())
+_selo4["um_version"] = "v394"
+_selo4["sha256"]["um.py"] = sha_b(_um4)
+(NOS394 / "um_absoluto_selo.json").write_bytes(json.dumps(_selo4, ensure_ascii=False, indent=1).encode("utf-8"))
+run("R34_S_pos_selo_versao_nao_consecutiva_recusa", args_pos(b2sa, R_SALTO, CH_392, CH_392_SHA, nos=NOS394, versao="v394", modo="ensaio", kernel=False), 2, "SALTO_VERSAO_NAO_CONSECUTIVA", bancada=b2sa,
+    nota="S: o recibo termina em v392 (a seguinte e v393) e a versao a sincronizar e v394: nenhuma versao pode ficar fora da cadeia")
+
+# --- S: o pos_selo APLICA o salto (v391 -> v393 sintetica, com T17 pelo recibo do kernel R3_4 com o modulo de auditoria) e a re-execucao e idempotente
+d_s21, j_s21 = run("R34_S_pos_selo_salto_aplica", args_pos(b2sa, R_SALTO, CH_392, CH_392_SHA, modo="aplicar", kernel=True), 0,
+                   veredito_esp="REPINADA_B3__SALTO_v391_v393__APLICADA__SERVICO_DEVE_SER_REINICIADO_COM_RECIBO", saida=S / "R34_S_pos_selo_salto",
+                   extra_ok=lambda j, r: (lambda rec, man: rec["bateria_resultado"]["falha"] == 0 and testes(j)["T17_LEAN_KERNEL"]["resultado"] == "PASSA"
+                                          and "cruzado com o recibo pre-selo" in testes(j)["T17_LEAN_KERNEL"]["detalhe"] and "1 modulo(s) de auditoria" in testes(j)["T17_LEAN_KERNEL"]["detalhe"]
+                                          and man["sincronizacao"]["salto"]["versoes_puladas"] == ["v392"] and man["sincronizacao"]["salto"]["de"]["versao"] == "v391"
+                                          and man["sincronizacao"]["salto"]["ate"]["versao"] == "v392" and man["sincronizacao"]["salto"]["proxima_a_selar"] == "v393"
+                                          and man["sincronizacao"]["salto"] == rec["salto"] == recibo_de(j)["recibo_pre_selo"]["salto"] == json.loads(R_SALTO.read_bytes())["salto"]
+                                          and man["canonical"]["version"] == "v393" and man["sincronizacao"]["anterior"]["version"] == "v391"
+                                          and man["sincronizacao"]["anterior"]["kernel_manifesto_sha256"] == sha(KMAN_ANT) and man["sincronizacao"]["recibo_pre_selo_sha256"] == R_SALTO_SHA
+                                          and man["sincronizacao"]["kernel_manifesto_sha256"] == sha(NOS393 / "tgl_kernel_proof_manifest.json")
+                                          and "## Salto (R3.4)" in (b2sa / "CONTRATO_CANONICO_B3.md").read_text(encoding="utf-8")
+                                          and rec["aplicacao"]["pos_conferencia"]["ok"] is True and rec["aplicacao"]["pos_conferencia"]["canonical_version"] == "v393")(
+                       recibo_de(j), json.loads((b2sa / "canonical_contracts.json").read_bytes())),
+                   nota="S: o elo B(n) pos_selo aceita o recibo pre-selo de um SALTO no lugar do JA_SINCRONIZADA (cadeia v391 -> v392 conferida contra a Bancada e contra o recibo; o selo anterior e o "
+                        "do FIM da cadeia; T17 cruzado com o kernel do v392); grava o manifesto B3 com sincronizacao.salto (de v391, puladas [v392], ate v392, proxima v393) e o contrato com a secao do salto")
+d_s22, j_s22 = run("R34_S_pos_selo_salto_idempotente", args_pos(b2sa, R_SALTO, CH_392, CH_392_SHA, modo="aplicar", kernel=True), 0, veredito_esp="JA_SINCRONIZADA__NADA_A_GRAVAR", bancada=b2sa,
+                   nota="S: repetir o B(n) do salto ja aplicado: a referencia do recibo pre-selo vem do bloco sincronizacao.salto do manifesto; nada se grava")
+run("R34_S_pos_selo_salto_idempotente_sem_a_cadeia", args_pos(b2sa, R_SALTO, None, None, modo="aplicar", kernel=True), 0, veredito_esp="JA_SINCRONIZADA__NADA_A_GRAVAR", bancada=b2sa,
+    nota="S: na re-execucao a cadeia e opcional (o manifesto registra o salto); se vier, tem de ser a registrada")
+run("R34_S_pos_selo_salto_idempotente_com_outra_cadeia_recusa", args_pos(b2sa, R_SALTO, CH_393, CH_393_SHA, modo="aplicar", kernel=True), 2, "CADEIA_DE_SELOS_NAO_E_A_DO_SALTO_REGISTRADO", bancada=b2sa,
+    nota="S: a cadeia de 3 elos nao e a que o manifesto registra")
+_m_applied = json.loads((b2sa / "canonical_contracts.json").read_bytes())
+_m_sem_salto = RAIZ / "b2sa_sem_salto"
+copiar_sem_juncao(b2sa, _m_sem_salto)
+_ms = json.loads((_m_sem_salto / "canonical_contracts.json").read_bytes())
+_ms["sincronizacao"].pop("salto")
+(_m_sem_salto / "canonical_contracts.json").write_bytes(json.dumps(_ms, ensure_ascii=False, indent=1).encode("utf-8"))
+_rj_ms = json.loads(R_SALTO.read_bytes())
+_rj_ms["bancada"]["dir"] = str(_m_sem_salto)
+_p_ms = FX / "PRE_salto_em_bancada_sem_salto_registrado.json"
+_p_ms.write_bytes(json.dumps(_rj_ms, ensure_ascii=False).encode("utf-8"))
+run("R34_S_reexecucao_recibo_de_salto_em_manifesto_sem_salto_recusa", args_pos(_m_sem_salto, _p_ms, None, None, modo="aplicar", kernel=True), 2, "RECIBO_PRE_SELO_NAO_CORRESPONDE", bancada=_m_sem_salto,
+    extra_ok=lambda j, r: "nao registra sincronizacao.salto" in str(j.get("recusa")), nota="S: o recibo declara salto e o manifesto (ja sincronizado) nao o registra")
+apagar_arvore(_m_sem_salto)
+
+# --- S: o gerador da cadeia contra a pasta REAL cadeia_de_selo (v392 -> v393) e a cadeia real contra a producao e o Nos reais (so lidos)
+_real_out = FX / "CADEIA_REAL_regerada.json"
+_r_real = subprocess.run([PY, "-I", "-B", "-X", "utf8", str(GERAR_CADEIA), "--cadeia", str(WORK / "cadeia_de_selo"), "--de", "v392", "--ate", "v393", "--saida", str(_real_out)],
+                         capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=300, stdin=subprocess.DEVNULL)
+_a_real, _b_real = json.loads(_real_out.read_bytes()), json.loads(CADEIA_REAL.read_bytes())
+for _x in (_a_real, _b_real):
+    _x.pop("gerada_em_utc")
+checar("R34_S_gerador_regera_a_cadeia_real_v392_v393", lambda: _r_real.returncode == 0 and _a_real == _b_real,
+       nota="S: o gerador, rodado de novo contra a pasta REAL work/cadeia_de_selo (base_v392, base_v393 e o registro APLICADO_AO_CANONICO da v393, com os backups .bak_ do Nos), "
+            "reproduz a cadeia entregue (R3_4/CADEIA_DE_SELOS_v394.json) exceto o carimbo de hora", cadeia_real=_pinar(CADEIA_REAL))
+_cad_real = MOD.carregar_cadeia_de_selos(CADEIA_REAL, sha(CADEIA_REAL))
+_ant_prod = MOD.estado_anterior(PROD, MOD.carregar_canonical(PROD)[0])
+_ni_real = MOD.ler_nos(NOS_REAL, VR)
+
+
+def _cadeia_real_confere():
+    MOD.conferir_cadeia_com_a_bancada(_cad_real, _ant_prod)
+    MOD.conferir_cadeia_com_o_fim(_cad_real, VR, _ni_real["um_py"]["sha256"], _ni_real["selo"]["sha256"], _ni_real["kernel"]["sha256"], "o Nos real lido agora")
+    return _cad_real["versoes"] == ["v392", "v393"] and _ant_prod["version"] == "v392" and _cad_real["ligacoes"][0]["de"] == "v392"
+
+
+checar("R34_S_cadeia_real_confere_com_a_producao_e_o_nos_reais", _cadeia_real_confere,
+       nota="S: a cadeia REAL: o primeiro elo e o que a Bancada de PRODUCAO pina (v392, B3) e o ultimo e o Nos REAL de hoje (v393); 2 elos, 1 ligacao (registro do instalador da v393 com os backups "
+            "de bytes); producao e Nos so lidos", versoes=_cad_real["versoes"], ligacoes=_cad_real["ligacoes"])
+checar("R34_S_o_selo_nao_pina_o_selo_anterior_medido", lambda: all(
+    ("50bd1be10f9293e7" not in Path(NOS_REAL / f_).read_text(encoding="utf-8", errors="replace") and "b590c0aa80055e2a" not in Path(NOS_REAL / f_).read_text(encoding="utf-8", errors="replace"))
+    for f_ in ("um_absoluto_selo.json", "tgl_kernel_proof_manifest.json")),
+       nota="S (medida que fundamenta o desenho): o selo da v393 e o manifesto do kernel dele NAO contem o sha16 do selo nem do um.py da v392 -- 'cada selo pina o anterior' nao e literal; "
+            "a ligacao entre versoes vem do registro do instalador (APLICADO_AO_CANONICO) e dos backups de bytes, que a cadeia pina")
+
+# --- S: o gerador recusa o que nao pode gerar (arvores minimas, arquivos pequenos: o gerador so le caminhos e sha)
+MIN = AT34 / "min"
+
+
+def arvore_minima(nome, registros=None, sem_base=False, sem_backup=False, dup=False):
+    raiz_ = MIN / nome
+    for v_ in ("v391", "v392"):
+        proxima_ = "v%d" % (int(v_[1:]) + 1)
+        if sem_base and v_ == "v392":
+            continue
+        d_ = raiz_ / proxima_ / ("base_" + v_)
+        d_.mkdir(parents=True)
+        for n_, c_ in (("um.py", "um " + v_), ("um_absoluto_selo.json", "selo " + v_), ("tgl_kernel_proof_manifest.json", "km " + v_)):
+            (d_ / n_).write_text(c_, encoding="utf-8")
+    bak_ = raiz_ / "_nos"
+    bak_.mkdir(parents=True)
+    (bak_ / "um.py.bak_1").write_text("um v391", encoding="utf-8")
+    (bak_ / "selo.bak_1").write_text("selo v391", encoding="utf-8")
+    um391, um392 = b"um v391", b"um v392"
+    def reg_(ts, novo_sha16):
+        return dict(ts=ts, backups={"um.py": dict(backup=str(bak_ / "um.py.bak_1"), bytes=len(um391), sha16=sha_b(um391)[:16]),
+                                    "um_absoluto_selo.json": dict(backup=str(bak_ / "selo.bak_1"), bytes=9, sha16=sha_b(b"selo v391")[:16])},
+                    um_py_novo=dict(bytes=len(um392), sha16=novo_sha16))
+    regs_ = registros if registros is not None else ([reg_("1", sha_b(um392)[:16])] + ([reg_("2", sha_b(um392)[:16])] if dup else []))
+    (raiz_ / "v392").mkdir(parents=True, exist_ok=True)
+    for i_, r_ in enumerate(regs_):
+        (raiz_ / "v392" / ("APLICADO_AO_CANONICO_%d.json" % i_)).write_text(json.dumps(r_), encoding="utf-8")
+    if sem_backup:
+        (bak_ / "um.py.bak_1").unlink()
+    return raiz_
+
+
+def gerador_rc(raiz_):
+    r_ = subprocess.run([PY, "-I", "-B", "-X", "utf8", str(GERAR_CADEIA), "--cadeia", str(raiz_), "--de", "v391", "--ate", "v392", "--saida", str(raiz_ / "saida.json")],
+                        capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=120, stdin=subprocess.DEVNULL)
+    return r_.returncode, (r_.stdout + r_.stderr)
+
+
+MIN.mkdir(parents=True)
+rc_ok, out_ok = gerador_rc(arvore_minima("ok"))
+checar("R34_S_gerador_arvore_minima_boa_gera", lambda: rc_ok == 0 and json.loads((MIN / "ok" / "saida.json").read_bytes())["contrato"] == "CADEIA_DE_SELOS_R3_4",
+       nota="contraprova do gerador: uma arvore minima com tudo no lugar gera a cadeia", saida_do_gerador=out_ok[:200])
+for nome_, kw_, esp_ in (("sem_registro_do_instalador", dict(registros=[]), "REGISTRO_DO_INSTALADOR: 0 registro"), ("dois_registros_que_conferem", dict(dup=True), "REGISTRO_DO_INSTALADOR: 2 registro"),
+                         ("so_a_tentativa_revertida", dict(registros=[dict(ts="0", backups={"um.py": dict(backup="x", bytes=1, sha16="0" * 16)}, um_py_novo=dict(bytes=1, sha16="0" * 16))]),
+                          "REGISTRO_DO_INSTALADOR: 0 registro"), ("sem_a_pasta_base", dict(sem_base=True), "BASE_AUSENTE"), ("backup_de_bytes_ausente", dict(sem_backup=True), "ARQUIVO_AUSENTE")):
+    rc_, out_ = gerador_rc(arvore_minima("g_" + nome_, **kw_))
+    checar("R34_S_gerador_recusa_%s" % nome_, (lambda rc_=rc_, out_=out_, esp_=esp_: rc_ != 0 and esp_ in out_), nota="o gerador recusa (rc != 0, %s) e nao escreve a cadeia" % esp_, saida_do_gerador=out_[:240])
+    assert not (MIN / ("g_" + nome_) / "saida.json").exists()
+checar("R34_S_versao_seguinte_e_numero", lambda: MOD.versao_seguinte("v393") == "v394" and MOD.versao_seguinte("v099") == "v100" and MOD.versao_numero("v1000") == 1000,
+       nota="unitario: versao_seguinte mantem a largura (v099 -> v100)")
+unit("R34_S_versao_numero_recusa_mal_formada", lambda: MOD.versao_numero("393"), "VERSAO_INVALIDA")
+unit("R34_S_versao_seguinte_recusa_mal_formada", lambda: MOD.versao_seguinte("v39"), "VERSAO_INVALIDA")
+checar("R34_S_o_atrasado_exige_a_cadeia_no_codigo", lambda: 'raise Recusa("BANCADA_ATRASADA_SEM_CADEIA_DE_SELOS' in _inspect.getsource(MOD.main) and
+       _inspect.getsource(MOD.main).index("conferir_cadeia_com_a_bancada(cadeia, anterior)") < _inspect.getsource(MOD.main).index("regenerar(bancada"),
+       nota="unitario: no codigo do main, a cadeia e conferida (contra a Bancada e contra o Nos) ANTES do regenerar e do staging")
+
+# ================================================================ R3.4 (P): a bateria por versao
+# --- P: o que o gerador entregou para o Nos real de hoje (v393)
+_bat_real = json.loads(BAT_REAL.read_bytes())
+_t12 = next(t for t in _bat_real["testes"] if t["id"] == "T12_T13_T14_ATRATOR")
+checar("R34_P_bateria_gerada_para_o_nos_real_pina_a_versao_instalada", lambda: _bat_real["pinos_da_versao"]["versao"] == VR and _bat_real["pinos_da_versao"]["um_py_sha256"] == SBM["nos_real"]["um_py"]["sha256"]
+       and _bat_real["pinos_da_versao"]["um_py_bytes"] == SBM["nos_real"]["um_py"]["bytes"] and _bat_real["pinos_da_versao"]["selo_sha256"] == SBM["nos_real"]["selo"]["sha256"]
+       and _bat_real["pinos_da_versao"]["fonte_dos_pinos"]["pinos_bn"]["candidato_sha256"] == SBM["nos_real"]["um_py"]["sha256"]
+       and _bat_real["pinos_da_versao"]["fonte_dos_pinos"]["pinos_bn"]["sha256"] == sha(PINOS_BN_REAL) and _bat_real["contrato_bateria"] == "BATERIA_R3_4",
+       nota="P: pinos_da_versao da bateria gerada == o Nos real lido (um.py, bytes, selo) e == o candidato que os PINOS_BN da cadeia (v393) pinam; fonte dos pinos registrada",
+       pinos=_bat_real["pinos_da_versao"])
+checar("R34_P_so_o_T12_pina_o_um_py_e_aponta_o_driver_R3_4", lambda: [t["id"] for t in _bat_real["testes"] if t.get("pina_o_um_py")] == ["T12_T13_T14_ATRATOR"]
+       and Path(_t12["fontes"][0]["path"]) == DRV_BAT.resolve() and Path(_t12["fontes"][-1]["path"]).name == "PINO_UM_PY_real_%s.json" % VR and "{um_py_sha256}" in _t12["comando"]
+       and "{nos}" in _t12["comando"] and not any(Path(f_["path"]).name == "t12_t14_atrator.py" for f_ in _t12["fontes"]),
+       nota="P: o driver R2 (que pinava o um.py v391 no pre-registro) saiu do T12; entrou o driver R3.4 e o pino da cadeia como fonte pinada; o comando recebe o um.py MEDIDO pelo esboco")
+checar("R34_P_testes_sha256_confere_em_todos_os_testes", lambda: all(_bat_real["testes_sha256"][t["id"]] == MOD.sha_teste(t) for t in _bat_real["testes"]) and len(_bat_real["testes_sha256"]) == len(_bat_real["testes"]),
+       nota="P: o pino por teste da bateria gerada confere (o esboco o exige na carga)")
+DET = FX / "det"
+DET.mkdir(exist_ok=True)
+_r_det = subprocess.run([PY, "-I", "-B", "-X", "utf8", str(GEN_BAT), "--base", str(BAT), "--base-sha256", sha(BAT), "--versao", VR, "--nos", str(NOS_REAL), "--driver", str(DRV_BAT), "--pinos-bn", str(PINOS_BN_REAL),
+                         "--pino-saida", str(DET / PINO_REAL.name), "--saida", str(DET / BAT_REAL.name)], capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=300, stdin=subprocess.DEVNULL)
+
+
+def _sem_o_caminho_do_pino(p_):
+    j_ = json.loads(Path(p_).read_bytes())
+    t_ = next(t for t in j_["testes"] if t["id"] == "T12_T13_T14_ATRATOR")
+    t_["fontes"][-1] = None                               # o unico campo que depende da pasta de saida: o caminho (e o sha do teste, que o contem)
+    j_["testes_sha256"].pop("T12_T13_T14_ATRATOR")
+    j_["gerado_por_r3_4"]["pino"] = None
+    return j_
+
+
+checar("R34_P_gerador_e_determinista_mesma_entrada_mesma_bateria", lambda: _r_det.returncode == 0 and PINO_REAL.read_bytes() == (DET / PINO_REAL.name).read_bytes()
+       and _sem_o_caminho_do_pino(BAT_REAL) == _sem_o_caminho_do_pino(DET / BAT_REAL.name) and sha(PINO_REAL) == sha(DET / PINO_REAL.name),
+       nota="P: regenerar a bateria com a mesma entrada (em outra pasta de saida) da o MESMO pino (bytes iguais) e a mesma bateria, a menos do caminho do arquivo do pino: a bateria e "
+            "'regenerada por script em cada versao e pinada'")
+unit("R34_P_pinos_conferem_com_o_nos_lido", lambda: MOD.conferir_pinos_da_versao(_bat_real, _ni_real, VR)["conferidos_contra_o_nos_lido"], None)
+
+
+def _pv(mut):
+    b_ = json.loads(json.dumps(_bat_real))
+    mut(b_)
+    return b_
+
+
+for nome_, mut_, esp_ in (("versao_velha", lambda b: b["pinos_da_versao"].update(versao="v391"), "BATERIA_COM_PINO_VELHO"),
+                          ("um_py_sha256_velho", lambda b: b["pinos_da_versao"].update(um_py_sha256=SBM["nos"]["um_py"]["sha256"]), "BATERIA_COM_PINO_VELHO"),
+                          ("um_py_bytes_diferente", lambda b: b["pinos_da_versao"].update(um_py_bytes=SBM["nos"]["um_py"]["bytes"]), "BATERIA_COM_PINO_VELHO"),
+                          ("selo_sha256_velho", lambda b: b["pinos_da_versao"].update(selo_sha256=SBM["nos"]["selo"]["sha256"]), "BATERIA_COM_PINO_VELHO"),
+                          ("sem_o_bloco_com_teste_marcado", lambda b: b.pop("pinos_da_versao"), "BATERIA_SEM_PINOS_DA_VERSAO"),
+                          ("bloco_sem_um_campo", lambda b: b["pinos_da_versao"].pop("selo_sha256"), "BATERIA_PINOS_DA_VERSAO_INVALIDOS"),
+                          ("bloco_com_campo_a_mais", lambda b: b["pinos_da_versao"].update(autorizado_por="qualquer"), "BATERIA_PINOS_DA_VERSAO_INVALIDOS"),
+                          ("sha_mal_formado", lambda b: b["pinos_da_versao"].update(um_py_sha256="abc"), "BATERIA_PINOS_DA_VERSAO_INVALIDOS"),
+                          ("bytes_em_texto", lambda b: b["pinos_da_versao"].update(um_py_bytes="35606254"), "BATERIA_PINOS_DA_VERSAO_INVALIDOS"),
+                          ("versao_mal_formada", lambda b: b["pinos_da_versao"].update(versao="393"), "BATERIA_PINOS_DA_VERSAO_INVALIDOS"),
+                          ("bloco_nao_objeto", lambda b: b.update(pinos_da_versao=[1]), "BATERIA_PINOS_DA_VERSAO_INVALIDOS")):
+    unit("R34_P_unit_%s" % nome_, (lambda mut_=mut_: MOD.conferir_pinos_da_versao(_pv(mut_), _ni_real, VR)), esp_,
+         nota="P (unitario): a bateria gerada com UMA coisa mudada nos pinos_da_versao e recusada: %s" % esp_)
+checar("R34_P_unit_bateria_sem_teste_marcado_e_sem_bloco_segue_aceita", lambda: MOD.conferir_pinos_da_versao(json.loads(BAT.read_bytes()), _ni_real, VR) == dict(declarados=False, testes_que_pinam_o_um_py=[]),
+       nota="P: a bateria R2 (sem teste marcado, sem bloco) segue aceita como antes (compatibilidade); o pino velho dela aparece no teste (ver R34_P_bateria_R2_T12_contra_o_nos_atual_falha)")
+
+# --- P: pelo caminho inteiro (subprocesso)
+_bat_v391_real_ns = BAT_V391        # a bateria gerada para a copia v391 do sandbox, usada contra o Nos real v393
+run("R34_P_pino_velho_bateria_v391_contra_o_nos_v393_recusa", ["--bancada", B1, "--versao", VR, "--bateria", BAT_V391, "--bateria-sha256", BAT_V391_SHA, "--modo", "ensaio", "--fase", "pre_selo"], 2,
+    "BATERIA_COM_PINO_VELHO", bancada=B1, nota="P (o conserto pedido): a bateria gerada para a v391 contra o Nos que tem v393: recusa ANTES de qualquer teste (era: T12 FALHA dentro da bateria)")
+run("R34_P_bateria_gerada_para_outra_versao_recusa_mesmo_com_o_sha_certo", ["--bancada", B2, "--nos", NOS, "--versao", "v392", "--bateria", BAT_V391, "--bateria-sha256", BAT_V391_SHA, "--sandbox",
+                                                                           "--modo", "ensaio", "--fase", "pos_selo"], 2, "BATERIA_COM_PINO_VELHO", bancada=B2,
+    nota="P: o sha da bateria esta certo (pinado), mas ela foi gerada para v391 e o Nos tem v392")
+bt_marc, bt_marc_sha = mini_bateria("P_marcado_sem_bloco", ids=("T01_IDENTIDADE", "T15_SONDAS"), mutar=lambda b: b["testes"][0].update(pina_o_um_py=True))
+run("R34_P_teste_marcado_sem_pinos_da_versao_recusa", ["--bancada", B2, "--nos", NOS, "--versao", "v392", "--bateria", bt_marc, "--bateria-sha256", bt_marc_sha, "--sandbox", "--modo", "ensaio",
+                                                       "--fase", "pos_selo"], 2, "BATERIA_SEM_PINOS_DA_VERSAO", bancada=B2, nota="P: pina_o_um_py=true e nenhum pinos_da_versao na bateria")
+bt_marc2, bt_marc2_sha = mini_bateria("P_marcador_texto", ids=("T01_IDENTIDADE", "T15_SONDAS"), mutar=lambda b: b["testes"][0].update(pina_o_um_py="sim"))
+run("R34_P_marcador_pina_o_um_py_nao_booleano_recusa", ["--bancada", B2, "--nos", NOS, "--versao", "v392", "--bateria", bt_marc2, "--bateria-sha256", bt_marc2_sha, "--sandbox", "--modo", "ensaio",
+                                                        "--fase", "pos_selo"], 2, "BATERIA_TESTE_PINA_O_UM_PY_NAO_BOOLEANO", bancada=B2)
+run("R34_P_bateria_R2_sem_bloco_segue_aceita_e_o_recibo_diz", ["--bancada", B2, "--nos", NOS, "--versao", "v392", "--bateria", BAT, "--bateria-sha256", BAT_SHA, "--sandbox", "--modo", "ensaio",
+                                                               "--fase", "pos_selo", "--sem-bateria"], 0, veredito_esp="REPINADA_B3__ENSAIO", bancada=B2,
+    extra_ok=lambda j, r: recibo_de(j)["bateria"]["pinos_da_versao"]["declarados"] is False, nota="P: compatibilidade: a bateria R2 (sem teste marcado) e aceita; o recibo diz declarados=false")
+# o problema medido: o T12 da R2 contra o Nos real de hoje (o pre-registro congelado pina o um.py v391 no caminho real)
+_t12_r2 = next(t for t in json.loads(BAT.read_bytes())["testes"] if t["id"] == "T12_T13_T14_ATRATOR")
+bt_t12_r2, bt_t12_r2_sha = mini_bateria("P_T12_da_R2", ids=("T01_IDENTIDADE",), extra=[_t12_r2])
+d_p9, j_p9 = run("R34_P_bateria_R2_T12_contra_o_nos_atual_falha", ["--bancada", B1, "--versao", VR, "--bateria", bt_t12_r2, "--bateria-sha256", bt_t12_r2_sha, "--modo", "ensaio", "--fase", "pre_selo"], 3,
+                 veredito_esp="JA_SINCRONIZADA__BATERIA_FALHOU", bancada=B1,
+                 extra_ok=lambda j, r: testes(j)["T12_T13_T14_ATRATOR"]["resultado"] == "FALHA" and testes(j)["T01_IDENTIDADE"]["resultado"] == "PASSA"
+                 and "Source pin changed" in "".join(p_.read_text(encoding="utf-8", errors="replace") for p_ in (S / "R34_P_bateria_R2_T12_contra_o_nos_atual_falha").rglob("*.vinculo.log")),
+                 nota="P (o defeito que motivou o conserto, reproduzido): o T12 da bateria R2 contra o Nos real v393 FALHA -- o pre-registro congelado pina o um.py v391 (Source pin changed)")
+# o replay repinado, dentro do run 1a (Nos real v393) e do run 1b (copia v391)
+_t12_1a = json.loads(Path(S / "1a" / "recibos" / "T12_T13_T14_ATRATOR.json").read_bytes())
+_t12_1b = json.loads(Path(S / "1b" / "recibos" / "T12_T13_T14_ATRATOR.json").read_bytes())
+checar("R34_P_run_1a_T12_repinado_so_o_pino_do_um_py_e_o_resto_identico_ao_arquivado", lambda: _t12_1a["veredito"] == "PASSA" and _t12_1a["adendo_de_pino"]["caminhos_que_diferem"] == ["$.source_pins[9].bytes", "$.source_pins[9].sha256"]
+       and _t12_1a["adendo_de_pino"]["entrada_do_um_py"]["depois"]["sha256"] == SBM["nos_real"]["um_py"]["sha256"] and _t12_1a["adendo_de_pino"]["entrada_do_um_py"]["antes"]["sha256"] == SBM["nos"]["um_py"]["sha256"]
+       and all(r_["passa"] and r_["n_mismatch"] == 0 for r_ in _t12_1a["runs"].values())
+       and sorted(_t12_1a["runs"]["T12_optical_r3"]["campos_trocados_no_arquivado"]) == ["$.alpha_assignment_line", "$.preregister_sha256", "$.um_sha256"]
+       and sorted(_t12_1a["runs"]["T13_adendo1_r1"]["campos_trocados_no_arquivado"]) == ["$.alpha_source.line", "$.alpha_source.sha256", "$.sources_after[16].sha256", "$.sources_before[16].sha256"],
+       nota="P: no run 1a (Nos REAL v393) o pre-registro do atrator difere do congelado SO em bytes e sha256 da entrada do um.py; os 3 runners passam com 0 divergencias; so 3 (T12) e 4 (T13) campos do "
+            "resultado arquivado foram trocados por valores independentes (sha do pre-registro-copia, sha do um.py, linha de alpha)", adendo=_t12_1a["adendo_de_pino"]["entrada_do_um_py"])
+checar("R34_P_run_1b_T12_repinado_na_copia_v391_so_o_caminho", lambda: _t12_1b["veredito"] == "PASSA" and _t12_1b["adendo_de_pino"]["caminhos_que_diferem"] == ["$.source_pins[9].path"]
+       and Path(_t12_1b["adendo_de_pino"]["entrada_do_um_py"]["depois"]["path"]) == NOS / "um.py" and all(r_["passa"] and r_["n_mismatch"] == 0 for r_ in _t12_1b["runs"].values()),
+       nota="P: no run 1b (copia v391 do Nos no sandbox) o pino do um.py (mesmo sha, mesmos bytes que o congelado) so muda de CAMINHO: aponta a copia")
+# o driver sozinho (subprocesso, -I): pino velho; pre-registro com dois pinos do um.py; runner alterado; resultado arquivado adulterado
+SRC_ATR = TUNEL_ATR = Path("C:/IALD/Central de Patentes/Chatgpt/TUNEL/DO_CHATGPT/ORDEM_019/F1.ATRATOR")
+ATR_ARQ = ("PREREGISTRO_R1.json", "numerical/run_optical_r3.py", "numerical/RUN_MANIFEST_R3.json", "numerical/RESULTADOS_NUMERICOS_R3.json", "ADENDO1/PREREGISTRO_ADENDO1_R1.json",
+           "ADENDO1/numerical/run_adendo1_r1.py", "ADENDO1/numerical/RUN_MANIFEST_R1.json", "ADENDO1/numerical/RESULTADOS_ADENDO1_R1.json", "review/verify_affine_control_r1.py",
+           "review/ADENDO_CONTROLE_AFIM_R1.json")
+DRV_N = {"n": 0}
+
+
+def src_atrator(nome, mut=None):
+    d_ = FX / "atrator_src" / nome
+    for rel_ in ATR_ARQ:
+        (d_ / rel_).parent.mkdir(parents=True, exist_ok=True)
+        (d_ / rel_).write_bytes((TUNEL_ATR / rel_).read_bytes())
+    if mut:
+        mut(d_)
+    return d_
+
+
+def pino_arquivo(nome, versao, sha_, bytes_):
+    p_ = FX / ("PINO_UM_PY_%s.json" % nome)
+    p_.write_bytes(json.dumps(dict(contrato="PINO_UM_PY_R3_4", versao=versao, um_py=dict(sha256=sha_, bytes=bytes_), selo_sha256="0" * 64, fonte_dos_pinos=dict(origem="controle"))).encode("utf-8"))
+    return p_
+
+
+def driver(nome, src, pino, nos_dir=NOS_REAL, sha_=None, bytes_=None):
+    DRV_N["n"] += 1
+    dst, out_ = FX / "atrator_dst" / ("%s_%d" % (nome, DRV_N["n"])), FX / "atrator_dst" / ("%s_%d.json" % (nome, DRV_N["n"]))
+    dst.parent.mkdir(parents=True, exist_ok=True)
+    r_ = subprocess.run([PY, "-I", "-B", "-X", "utf8", str(DRV_BAT), str(src), str(dst), str(out_), str(pino), str(nos_dir), sha_ or SBM["nos_real"]["um_py"]["sha256"],
+                         str(bytes_ or SBM["nos_real"]["um_py"]["bytes"])], capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=900, stdin=subprocess.DEVNULL)
+    res_ = json.loads(out_.read_bytes()) if out_.exists() else None
+    return r_.returncode, res_, dst
+
+
+_pino_ok = pino_arquivo("ok", VR, SBM["nos_real"]["um_py"]["sha256"], SBM["nos_real"]["um_py"]["bytes"])
+rc_d, res_d, dst_d = driver("ok", src_atrator("ok"), _pino_ok)
+checar("R34_P_driver_sozinho_contraprova_passa_com_o_pino_certo", lambda: rc_d == 0 and res_d["veredito"] == "PASSA" and res_d["adendo_de_pino"]["caminhos_que_diferem"] == ["$.source_pins[9].bytes", "$.source_pins[9].sha256"],
+       nota="P: o driver R3.4 sozinho (contra o Nos real) com o pino da cadeia certo: PASSA")
+_pino_velho = pino_arquivo("velho", "v391", SBM["nos"]["um_py"]["sha256"], SBM["nos"]["um_py"]["bytes"])
+rc_d, res_d, dst_d = driver("pino_velho", src_atrator("pv"), _pino_velho)
+checar("R34_P_driver_pino_velho_na_fonte_recusa_sem_rodar_runner", lambda: rc_d == 1 and res_d["veredito"] == "FALHA" and res_d["motivo"].startswith("PINO_VELHO") and not (dst_d / "numerical").exists()
+       and not (dst_d / "PREREGISTRO_R1.json").exists(), nota="P (o conserto pedido, no teste): o pino da cadeia diz v391 e o esboco mediu v393: o driver FALHA com PINO_VELHO antes de copiar ou rodar qualquer runner")
+rc_d, res_d, dst_d = driver("sha_medido_errado", src_atrator("sme"), _pino_ok, sha_="9" * 64)
+checar("R34_P_driver_marcador_diverge_do_pino_recusa", lambda: rc_d == 1 and res_d["motivo"].startswith("PINO_VELHO") and not (dst_d / "numerical").exists(),
+       nota="P: o {um_py_sha256} que o esboco mediu nao e o do pino da cadeia: PINO_VELHO")
+rc_d, res_d, dst_d = driver("um_py_mudou", src_atrator("umm"), pino_arquivo("falso", VR, "9" * 64, 1), sha_="9" * 64, bytes_=1)
+checar("R34_P_driver_um_py_do_disco_diferente_do_medido_recusa", lambda: rc_d == 1 and res_d["motivo"].startswith("UM_PY_MUDOU_DEPOIS_DA_MEDIDA") and not (dst_d / "numerical").exists(),
+       nota="P: o pino e o marcador concordam, mas o um.py em disco nao e esse: o driver confere o arquivo de verdade")
+
+
+def _dois_pinos_do_um_py(d_):
+    p_ = d_ / "PREREGISTRO_R1.json"
+    j_ = json.loads(p_.read_bytes())
+    j_["source_pins"].append(dict(next(x for x in j_["source_pins"] if Path(x["path"]).name == "um.py")))
+    p_.write_bytes(json.dumps(j_, indent=2).encode("utf-8"))
+
+
+rc_d, res_d, dst_d = driver("dois_pinos", src_atrator("dp", _dois_pinos_do_um_py), _pino_ok)
+checar("R34_P_driver_preregistro_com_dois_pinos_do_um_py_recusa", lambda: rc_d == 1 and res_d["motivo"].startswith("PREREGISTRO_SEM_PINO_UNICO_DO_UM_PY") and not (dst_d / "numerical").exists(),
+       nota="P: o repino so e feito num pre-registro com UM pino do um.py")
+
+
+def _runner_alterado(d_):
+    p_ = d_ / "numerical" / "run_optical_r3.py"
+    p_.write_bytes(p_.read_bytes() + b"\n# alterado\n")
+
+
+rc_d, res_d, dst_d = driver("runner_alterado", src_atrator("ra", _runner_alterado), _pino_ok)
+checar("R34_P_driver_runner_congelado_alterado_falha", lambda: rc_d == 1 and res_d["veredito"] == "FALHA" and res_d["runs"]["T12_optical_r3"]["passa"] is False and res_d["runs"]["T12_optical_r3"]["exit"] != 0,
+       nota="P: o runner congelado alterado (um comentario a mais) e recusado pelo proprio RUN_MANIFEST (script_sha256): o repino do pre-registro nao enfraquece a integridade do runner")
+
+
+def _arquivado_adulterado(d_):
+    p_ = d_ / "numerical" / "RESULTADOS_NUMERICOS_R3.json"
+    j_ = json.loads(p_.read_bytes())
+    j_["lambda"] = j_["lambda"] * 1.000001
+    p_.write_bytes(json.dumps(j_, indent=2).encode("utf-8"))
+
+
+rc_d, res_d, dst_d = driver("arquivado_adulterado", src_atrator("aa", _arquivado_adulterado), _pino_ok)
+checar("R34_P_driver_resultado_arquivado_adulterado_falha", lambda: rc_d == 1 and res_d["runs"]["T12_optical_r3"]["passa"] is False and res_d["runs"]["T12_optical_r3"]["n_mismatch"] >= 1
+       and res_d["runs"]["T13_adendo1_r1"]["passa"] is True, nota="P: a comparacao com o arquivado e real (nao vacua): um numero do arquivado mudado de 1e-6 relativo reprova o T12")
+
+
+def _arquivado_com_sha_do_um_py_errado(d_):
+    p_ = d_ / "numerical" / "RESULTADOS_NUMERICOS_R3.json"
+    j_ = json.loads(p_.read_bytes())
+    j_["alpha_assignment_line"] = 1
+    p_.write_bytes(json.dumps(j_, indent=2).encode("utf-8"))
+
+
+rc_d, res_d, dst_d = driver("linha_de_alpha_errada", src_atrator("la", _arquivado_com_sha_do_um_py_errado), _pino_ok)
+checar("R34_P_driver_o_campo_trocado_vem_do_valor_independente_nao_do_arquivado", lambda: rc_d == 0 and res_d["veredito"] == "PASSA" and res_d["um_py_medido"]["linha_de_alpha"] == 5584
+       and "$.alpha_assignment_line" in res_d["runs"]["T12_optical_r3"]["campos_trocados_no_arquivado"],
+       nota="P: o campo alpha_assignment_line do arquivado e SUBSTITUIDO pela linha de alpha do um.py MEDIDO (calculada pelo driver, regex dos runners): um arquivado com outra linha nao muda o "
+            "veredito; o que o driver exige e que o runner NOVO escreva essa linha (o runner le o um.py de verdade)")
+
+# ================================================================ R3.4 (M): os modulos de auditoria (NetworkProofAuditR3/R7/R8 da v394)
+PRE393 = dict(kernel_anterior=dict(raiz_sha256=NI392["kernel"]["raiz_sha256"], audit_sha256=NI392["kernel"]["audit_sha256"], impressao_formal=NI392["kernel"]["impressao_formal"]))
+
+
+def _k3(nome, mut):
+    k_ = copy.deepcopy(K393_OBJ)
+    mut(k_)
+    p_ = FX / ("KERNEL_RECIBO_R34_%s.json" % nome)
+    p_.write_bytes(json.dumps(k_, ensure_ascii=False, indent=1).encode("utf-8"))
+    return p_
+
+
+def _ku3(nome, kp, contem, ni=None, aceita=False, pre=PRE393, nota="", sandbox=False):
+    passa_, det_, pino_ = MOD.verificar_kernel_recibo(kp, "v393", ni or NI393, sha(kp), pre, sandbox, CRIT393_OBJ)
+    ok_ = (passa_ is True) if aceita else (passa_ is False and contem in det_)
+    _registrar(dict(controle=nome, nivel="unitario", detalhe=det_[:400], esperado_no_detalhe=contem, aceita_esperado=aceita, recibo=str(kp), recibo_sha256=sha(kp), nota=nota), ok_)
+    return pino_ or {}
+
+
+PINO_M = _ku3("R34_M_recibo_R3_4_com_modulo_de_auditoria_listado_e_fonte_so_de_comandos_aceito", K393, None, aceita=True,
+              nota="M: o recibo no contrato KERNEL_RECIBO_R3_4: a pedra C (com declaracao) e o modulo de auditoria (so import + run_cmd, sem declaracoes) listado em modulos_de_auditoria; "
+                   "o ANTES cruzado com o recibo pre-selo; aceito")
+checar("R34_M_o_pino_registra_o_modulo_de_auditoria_e_a_contagem", lambda: PINO_M["modulos_de_auditoria"]["lista"] == ["TGLExt/AuditoriaSinteticaC.lean"] and PINO_M["modulos_de_auditoria"]["fontes_conferidas_por_script"] is True
+       and PINO_M["modulos_de_auditoria"]["contagem_de_comandos"]["TGLExt/AuditoriaSinteticaC.lean"]["run_cmd"] == 1 and PINO_M["contrato"] == "KERNEL_RECIBO_R3_4" and PINO_M["n_declaracoes_das_pedras"] == 1,
+       nota="M: o pino do recibo do kernel registra o modulo, os comandos contados e o limite declarado", modulos=PINO_M.get("modulos_de_auditoria"))
+_ku3("R34_M_sem_a_lista_o_modulo_sem_declaracoes_e_recusado_pela_N1k", _k3("sem_lista", lambda k: k.pop("modulos_de_auditoria")), "exige declaracoes",
+     nota="M (o conserto): sem o modulo em modulos_de_auditoria a N1k segue valendo (era o defeito da v394: 3 pedras so com run_cmd recusavam o recibo)")
+_ku3("R34_M_contrato_R3_2_sem_lista_o_modulo_e_recusado", _k3("contrato_r32", lambda k: (k.update(contrato="KERNEL_RECIBO_R3_2"), k.pop("modulos_de_auditoria"))), "exige declaracoes",
+     nota="M: o contrato antigo (R3_2) segue admitido, com a N1k de sempre")
+_ku3("R34_M_contrato_R3_2_com_a_lista_e_recusado", _k3("contrato_r32_com_lista", lambda k: k.update(contrato="KERNEL_RECIBO_R3_2")), "so existe no contrato", nota="M: a lista so existe no contrato R3_4")
+_ku3("R34_M_contrato_desconhecido_e_recusado", _k3("contrato_desconhecido", lambda k: k.update(contrato="KERNEL_RECIBO_R3_3")), "contrato=", nota="M: so R3_2 e R3_4")
+_ku3("R34_M_lista_nao_e_lista", _k3("lista_texto", lambda k: k.update(modulos_de_auditoria="TGLExt/AuditoriaSinteticaC.lean")), "MODULOS_DE_AUDITORIA_INVALIDOS")
+_ku3("R34_M_lista_vazia", _k3("lista_vazia", lambda k: k.update(modulos_de_auditoria=[])), "MODULOS_DE_AUDITORIA_INVALIDOS")
+_ku3("R34_M_lista_com_repeticao", _k3("lista_repetida", lambda k: k.update(modulos_de_auditoria=["TGLExt/AuditoriaSinteticaC.lean"] * 2)), "MODULOS_DE_AUDITORIA_INVALIDOS")
+_ku3("R34_M_lista_com_item_que_nao_e_texto", _k3("lista_item_numero", lambda k: k.update(modulos_de_auditoria=[1])), "MODULOS_DE_AUDITORIA_INVALIDOS")
+_ku3("R34_M_lista_nomeia_arquivo_que_nao_e_pedra_do_recibo", _k3("lista_fora_das_pedras", lambda k: k.update(modulos_de_auditoria=["TGLExt/AuditoriaSinteticaC.lean", "TGLExt/Outro.lean"])),
+     "MODULO_DE_AUDITORIA_FORA_DAS_PEDRAS")
+_ku3("R34_M_modulo_listado_traz_declaracoes", _k3("auditoria_com_declaracoes", lambda k: next(p for p in k["pedras"] if p["path"].endswith("AuditoriaSinteticaC.lean")).update(declaracoes=["TGLExt.PedraSinteticaC.tres"])),
+     "MODULO_DE_AUDITORIA_COM_DECLARACOES", nota="M: um modulo de auditoria nao declara nada (se declarasse seria pedra comum): ambiguidade recusada")
+_ku3("R34_M_pedra_com_declaracao_listada_como_auditoria_para_fugir_da_N1k", _k3("pedra_comum_listada", lambda k: (k.update(modulos_de_auditoria=["TGLExt/AuditoriaSinteticaC.lean", "TGLExt/PedraSinteticaC.lean"]),
+                                                                                                              next(p for p in k["pedras"] if p["path"].endswith("PedraSinteticaC.lean")).pop("declaracoes"))),
+     "MODULO_DE_AUDITORIA_FORA_DA_LISTA_DE_COMANDOS", nota="M: listar uma pedra que DECLARA (theorem) como auditoria, tirando-lhe as declaracoes, nao a dispensa: a fonte tem `theorem` e a varredura recusa")
+_ku3("R34_M_pedra_comum_sem_declaracoes_fora_da_lista_recusada", _k3("pedra_sem_declaracoes", lambda k: (k.update(modulos_de_auditoria=["TGLExt/AuditoriaSinteticaC.lean"]),
+                                                                                                    next(p for p in k["pedras"] if p["path"].endswith("PedraSinteticaC.lean")).pop("declaracoes"))),
+     "exige declaracoes", nota="M: so o que esta na lista e dispensado; a outra pedra sem declaracoes segue recusada pela N1k")
+
+
+def variante_auditoria(nome, texto):
+    """(recibo, nos) com a fonte do modulo de auditoria trocada por `texto` (a arvore, o manifesto do kernel re-pinado no selo e o recibo seguem coerentes)."""
+    arv_ = AT34 / ("arv_" + nome)
+    copiar_sem_juncao(FX / "kernel_src_v393s", arv_)
+    b_ = texto.encode("utf-8")
+    (arv_ / "TGLExt" / "AuditoriaSinteticaC.lean").write_bytes(b_)
+    d_ = AT34 / ("nos_" + nome)
+    d_.mkdir(parents=True)
+    for f_ in ("um.py", "um_absoluto.json"):
+        shutil.copyfile(NOS393 / f_, d_ / f_)
+    man_ = json.loads((NOS393 / "tgl_kernel_proof_manifest.json").read_bytes())
+    man_["formal_files_sha256"]["TGLExt/AuditoriaSinteticaC.lean"] = sha_b(b_)
+    mb_ = json.dumps(man_, ensure_ascii=False, indent=1).encode("utf-8")
+    (d_ / "tgl_kernel_proof_manifest.json").write_bytes(mb_)
+    selo_ = json.loads((NOS393 / "um_absoluto_selo.json").read_bytes())
+    selo_["sha256"]["tgl_kernel_proof_manifest.json"] = sha_b(mb_)
+    (d_ / "um_absoluto_selo.json").write_bytes(json.dumps(selo_, ensure_ascii=False, indent=1).encode("utf-8"))
+    kp_ = _k3("fonte_" + nome, lambda k: (k.update(arvore=str(arv_)), next(p for p in k["pedras"] if p["path"].endswith("AuditoriaSinteticaC.lean")).update(sha256=sha_b(b_))))
+    return kp_, MOD.ler_nos(d_, "v393")
+
+
+AUD_BASE = (FX / "kernel_src_v393s" / "TGLExt" / "AuditoriaSinteticaC.lean").read_text(encoding="utf-8")
+_kp, _ni = variante_auditoria("base_identica", AUD_BASE)
+_ku3("R34_M_variante_base_identica_aceita", _kp, None, ni=_ni, aceita=True, nota="M: contraprova do helper: a fonte inalterada passa pelo mesmo caminho das variantes")
+VARIANTES_AUD = (
+    ("theorem_no_topo", AUD_BASE + "\ntheorem escondido : 1 = 1 := rfl\n", "comando de topo fora da lista"),
+    ("theorem_indentado_depois_do_corpo", AUD_BASE + "  theorem escondido : 1 = 1 := rfl\n", "palavra proibida no corpo"),
+    ("def_no_topo", AUD_BASE + "def x := 1\n", "comando de topo fora da lista"),
+    ("axiom_no_corpo", AUD_BASE.replace("  let mut n := 0\n", "  let mut n := 0\n  axiom perigo : False\n"), "palavra proibida no corpo"),
+    ("sorry_no_corpo", AUD_BASE.replace("  let mut n := 0\n", "  let mut n := sorry\n"), "palavra proibida no corpo"),
+    ("addDecl_no_corpo", AUD_BASE.replace("  let mut n := 0\n", "  let mut n := 0\n  addDecl (.axiomDecl default)\n"), "palavra proibida no corpo"),
+    ("escrita_de_arquivo_no_corpo", AUD_BASE.replace("  let mut n := 0\n", "  let mut n := 0\n  IO.FS.writeFile \"x\" \"y\"\n"), "palavra proibida no corpo"),
+    ("processo_no_corpo", AUD_BASE.replace("  let mut n := 0\n", "  let mut n := 0\n  let _ \u2190 IO.Process.output { cmd := \"calc\" }\n"), "palavra proibida no corpo"),
+    ("comentario_de_bloco", AUD_BASE.replace("import Lean\n", "/- theorem escondido -/\nimport Lean\n"), "comentario de bloco"),
+    ("comando_desconhecido_example", AUD_BASE + "example : True := trivial\n", "comando de topo fora da lista"),
+    ("namespace", AUD_BASE + "namespace X\n", "comando de topo fora da lista"),
+    ("set_option", AUD_BASE.replace("import Lean\n", "import Lean\nset_option maxRecDepth 100000\n"), "comando de topo fora da lista"),
+    ("caractere_invisivel", AUD_BASE.replace("import Lean\n", "import Le\u200ban\n"), "caractere de controle ou de formato"),
+    ("linha_indentada_fora_do_corpo", AUD_BASE.replace("import Lean\n", "import Lean\n  theorem escondido : 1 = 1 := rfl\n"), "linha indentada fora de um corpo"),
+    ("so_imports_nenhum_comando_de_auditoria", "import TGLExt.PedraSinteticaC\nimport Lean\n", "nao audita nada"),
+    ("import_com_lixo", AUD_BASE.replace("import Lean\n", "import Lean; theorem x : True := trivial\n"), "comando de topo fora da lista"),
+)
+for nome_, texto_, contem_ in VARIANTES_AUD:
+    _kp, _ni = variante_auditoria(nome_, texto_)
+    _ku3("R34_M_fonte_%s_recusada" % nome_, _kp, contem_, ni=_ni, nota="M: a fonte do modulo de auditoria com UMA coisa a mais (%s): a varredura por script recusa (MODULO_DE_AUDITORIA_FORA_DA_LISTA_DE_COMANDOS)" % nome_)
+# a varredura sozinha (pura): aceita as formas validas, recusa as invalidas
+_okp = MOD.auditar_fonte_de_auditoria
+checar("R34_M_varredura_aceita_import_open_print_axioms_e_run_cmd", lambda: _okp("import A.B\nopen Lean in\nrun_cmd do\n  IO.println \"x\"\n#print axioms A.B.c\n-- comentario\n\n")["ok"]
+       and _okp("#print axioms X\n")["contagem"]["print_axioms"] == 1, nota="M (unitario): as formas validas")
+checar("R34_M_varredura_recusa_texto_vazio_e_so_comentario", lambda: not _okp("")["ok"] and not _okp("-- so comentario\n")["ok"], nota="M (unitario): nada a auditar = recusa")
+checar("R34_M_varredura_palavras_dentro_de_nome_nao_sao_a_palavra", lambda: _okp("run_cmd do\n  let defaults := 1\n  let instances := 2\n  let theorem_count := 3\n")["ok"],
+       nota="M (unitario): `defaults`, `instances`, `theorem_count` no corpo nao sao as palavras proibidas (a lista olha a palavra inteira)")
+checar("R34_M_varredura_CRLF_e_tab", lambda: _okp("import A\r\nrun_cmd do\r\n\tIO.println \"x\"\r\n")["ok"] and not _okp("import A\r\nrun_cmd do\r\n\ttheorem x : True := trivial\r\n")["ok"],
+       nota="M (unitario): CRLF e tab nao escondem nem acusam")
+# as fontes REAIS dos tres modulos da v394 (so lidas) passam na varredura, e o recibo real da v394 tem exatamente esses tres sem declaracoes
+V394 = WORK / "cadeia_de_selo" / "v394"
+KR394 = json.loads((V394 / "kernel" / "KERNEL_RECIBO_v394.json").read_bytes())
+SEM_DECL = sorted(p["path"] for p in KR394["pedras"] if not p.get("declaracoes"))
+FONTES_AUD_REAIS = {p: Path(KR394["arvore"]) / p for p in SEM_DECL}
+checar("R34_M_recibo_real_v394_tem_exatamente_tres_pedras_sem_declaracoes", lambda: SEM_DECL == ["TGLExt/F1Fecho394/NetworkProofAuditR3.lean", "TGLExt/F1Fecho394/NetworkProofAuditR7.lean",
+                                                                                              "TGLExt/F1Fecho394/NetworkProofAuditR8.lean"] and len(KR394["pedras"]) == 189,
+       nota="M (dado real): no KERNEL_RECIBO_v394 (so lido) as pedras sem declaracoes sao exatamente as 3 de auditoria (de 189)", pedras_sem_declaracoes=SEM_DECL, contrato=KR394["contrato"])
+for rel_, caminho_ in FONTES_AUD_REAIS.items():
+    pedra_ = next(p for p in KR394["pedras"] if p["path"] == rel_)
+    checar("R34_M_fonte_real_%s_confere_com_o_recibo_e_passa_na_varredura" % Path(rel_).stem,
+           (lambda caminho_=caminho_, pedra_=pedra_: caminho_.is_file() and sha(caminho_) == pedra_["sha256"] and _okp(caminho_.read_text(encoding="utf-8"))["ok"]),
+           nota="M (dado real): a fonte REAL %s (sha256 igual ao do recibo da v394) so tem comandos de auditoria" % rel_, fonte=str(caminho_),
+           contagem=(_okp(caminho_.read_text(encoding="utf-8"))["contagem"] if caminho_.is_file() else None))
+
+# --- M: o derivador do recibo R3_4 a partir do R3_2 (derivar_recibo_kernel_r3_4.py)
+DERIV = AQUI / "derivar_recibo_kernel_r3_4.py"
+
+
+def derivar(nome, recibo):
+    saida = FX / ("KERNEL_RECIBO_derivado_%s.json" % nome)
+    r_ = subprocess.run([PY, "-I", "-B", "-X", "utf8", str(DERIV), "--recibo", str(recibo), "--saida", str(saida)], capture_output=True, text=True, encoding="utf-8", errors="replace",
+                        timeout=300, stdin=subprocess.DEVNULL)
+    return r_.returncode, r_.stdout + r_.stderr, saida
+
+
+rc_dv, out_dv, sd_dv = derivar("real_v394", V394 / "kernel" / "KERNEL_RECIBO_v394.json")
+checar("R34_M_derivador_a_partir_do_recibo_real_v394_lista_as_tres_e_so_muda_isso", lambda: rc_dv == 0 and json.loads(sd_dv.read_bytes())["modulos_de_auditoria"] == SEM_DECL
+       and json.loads(sd_dv.read_bytes())["contrato"] == "KERNEL_RECIBO_R3_4"
+       and {k_: v_ for k_, v_ in json.loads(sd_dv.read_bytes()).items() if k_ not in ("contrato", "modulos_de_auditoria", "derivado_de")} == {k_: v_ for k_, v_ in KR394.items() if k_ != "contrato"}
+       and json.loads(sd_dv.read_bytes())["derivado_de"]["sha256"] == sha(V394 / "kernel" / "KERNEL_RECIBO_v394.json"),
+       nota="M (dado real): o derivador, sobre o KERNEL_RECIBO_v394 (R3_2, so lido), lista exatamente as 3 pedras sem declaracoes (fontes conferidas pelo sha do recibo e pela varredura) e NADA mais muda "
+            "(logs, hashes, criterios, pedras); o recibo derivado (contrato R3_4) e a proposta para a gerencia pinar", saida=out_dv[:300])
+rc_dv2, out_dv2, _ = derivar("sem_pedra_sem_declaracoes", K_OK)
+checar("R34_M_derivador_recusa_recibo_sem_pedra_sem_declaracoes", lambda: rc_dv2 != 0 and "NENHUMA_PEDRA_SEM_DECLARACOES" in out_dv2, nota="o recibo sintetico v392 (todas as pedras declaram): nada a listar", saida=out_dv2[:200])
+rc_dv3, out_dv3, _ = derivar("ja_tem_a_lista", K393)
+checar("R34_M_derivador_recusa_recibo_que_ja_e_R3_4", lambda: rc_dv3 != 0 and ("CONTRATO_DE_ORIGEM" in out_dv3 or "JA_TEM_MODULOS_DE_AUDITORIA" in out_dv3), nota="o recibo ja esta no contrato R3_4", saida=out_dv3[:200])
+_kp_t, _ni_t = variante_auditoria("deriv_teorema", AUD_BASE + "\ntheorem escondido : 1 = 1 := rfl\n")
+_k_t = json.loads(_kp_t.read_bytes())
+_k_t["contrato"] = "KERNEL_RECIBO_R3_2"
+_k_t.pop("modulos_de_auditoria")
+_kp_t2 = FX / "KERNEL_RECIBO_R32_com_teorema_no_modulo.json"
+_kp_t2.write_bytes(json.dumps(_k_t, ensure_ascii=False, indent=1).encode("utf-8"))
+rc_dv4, out_dv4, _ = derivar("modulo_com_teorema", _kp_t2)
+checar("R34_M_derivador_recusa_pedra_sem_declaracoes_que_nao_e_so_de_auditoria", lambda: rc_dv4 != 0 and "PEDRA_SEM_DECLARACOES_QUE_NAO_E_DE_AUDITORIA" in out_dv4,
+       nota="a pedra sem declaracoes registradas cuja fonte TEM um theorem nao e listada: o derivador recusa (nao se lista o que declara)", saida=out_dv4[:240])
+_arv_f = AT34 / "arv_deriv_fonte_diferente"
+copiar_sem_juncao(FX / "kernel_src_v393s", _arv_f)
+(_arv_f / "TGLExt" / "AuditoriaSinteticaC.lean").write_bytes((_arv_f / "TGLExt" / "AuditoriaSinteticaC.lean").read_bytes() + b"-- mudado\n")
+_k_f = copy.deepcopy(K393_OBJ)
+_k_f["contrato"] = "KERNEL_RECIBO_R3_2"
+_k_f.pop("modulos_de_auditoria")
+_k_f["arvore"] = str(_arv_f)
+_kp_f = FX / "KERNEL_RECIBO_R32_fonte_diferente.json"
+_kp_f.write_bytes(json.dumps(_k_f, ensure_ascii=False, indent=1).encode("utf-8"))
+rc_dv5, out_dv5, _ = derivar("fonte_diferente", _kp_f)
+checar("R34_M_derivador_recusa_fonte_que_nao_e_a_do_recibo", lambda: rc_dv5 != 0 and "FONTE_NAO_E_A_DO_RECIBO" in out_dv5, nota="a arvore tem outra fonte (um comentario a mais): o sha do recibo nao confere", saida=out_dv5[:200])

@@ -1,0 +1,97 @@
+# --- A4 (R3.1, residuo): um APPDATA de ATAQUE (site do usuario com .pth e usercustomize que deixam marcas) no ambiente do esboco
+A4M = FX / "a4_MARCADORES"
+A4M.mkdir()
+APPDATA_ATAQUE = FX / "a4_appdata_ataque"
+_sp_ataque = APPDATA_ATAQUE / "Python" / ("Python" + sys.winver.replace(".", "")) / "site-packages"
+_sp_ataque.mkdir(parents=True)
+_marca = json.dumps(A4M.as_posix())
+(_sp_ataque / "a4_ataque.pth").write_text("import os, sys; open(%s + '/pth_%%d.txt' %% os.getpid(), 'w').write(repr(sys.argv))\n" % _marca, encoding="utf-8")
+(_sp_ataque / "usercustomize.py").write_text("import os, sys\nopen(%s + '/usercustomize_%%d.txt' %% os.getpid(), 'w').write(repr(sys.argv))\n" % _marca, encoding="utf-8")
+
+
+def _marcas_e_limpa():
+    """as marcas deixadas (nome -> argv do processo que executou o .pth/usercustomize); apaga-as (so dentro do sandbox)."""
+    out_ = {}
+    for m_ in sorted(A4M.iterdir()):
+        out_[m_.name] = m_.read_text(encoding="utf-8")
+        m_.unlink()
+    return out_
+
+
+T_AMB_A4 = t_extra("T00_AMBIENTE", amb, ["{py}", "-B", "-X", "utf8", "{fonte:0}", "{recibos}/T00_AMBIENTE.json"],
+                   dict(tipo="json_igual", arquivo="{recibos}/T00_AMBIENTE.json", campos=dict(veredito="PASSA")))
+bt_a4, bt_a4_sha = mini_bateria("A4_appdata_de_ataque", ids=("T01_IDENTIDADE", "T15_SONDAS"), extra=[T_AMB_A4])
+_ARGS_A4 = ["--bancada", B2, "--nos", NOS, "--versao", "v392", "--bateria", bt_a4, "--bateria-sha256", bt_a4_sha, "--sandbox", "--modo", "ensaio", "--fase", "pos_selo"]
+MARCAS_A4 = {}
+
+
+def _amb_json(nome):
+    return json.loads(Path(S / nome / "recibos" / "T00_AMBIENTE.json").read_text(encoding="utf-8"))
+
+
+def _a4_ok(nome, j, esboco_com_s):
+    rec_, ts_, amb_ = recibo_de(j), testes(j), _amb_json(nome)
+    marcas_ = MARCAS_A4[nome] = _marcas_e_limpa()
+    prep_ = rec_["bateria_resultado"]["isolamento"]["preparado"]
+    de_teste = {k_: v_ for k_, v_ in marcas_.items() if "sincronizar_bancada.py" not in v_}
+    return (ts_["T00_AMBIENTE"]["resultado"] == "PASSA" and ts_["T01_IDENTIDADE"]["resultado"] == "PASSA" and not de_teste
+            and (not marcas_ if esboco_com_s else len(marcas_) >= 1)
+            and amb_["pythonpath"] == SITE_REAL and amb_["neto"].get("pythonpath") == SITE_REAL and amb_["numpy_no_filho"] is True and amb_["neto"].get("numpy") is True
+            and Path(amb_["appdata"]).parent == S / nome / "appdata_vazio" and amb_["neto"].get("appdata") == amb_["appdata"]
+            and prep_["site_do_usuario"]["path"] == SITE_REAL and prep_["site_do_usuario"]["iguais"] is False
+            and rec_["python_no_user_site"] is esboco_com_s and isolado(rec_, S / nome))
+
+
+run("R31_A4_appdata_de_ataque_esboco_com_s", _ARGS_A4, 0, veredito_esp="REPINADA_B3__ENSAIO", bancada=B2, flags=("-s", "-B", "-X", "utf8"),
+    env_extra=dict(APPDATA=str(APPDATA_ATAQUE)), extra_ok=lambda j, r: _a4_ok("R31_A4_appdata_de_ataque_esboco_com_s", j, True),
+    nota="A4 (o N5b da reauditoria): APPDATA de ataque no ambiente do esboco chamado com -s; os testes rodam com -E -P -s pelo lancador, APPDATA vazio e o site do "
+         "usuario REAL (pasta conhecida) so como caminho: nenhuma marca de .pth nem de usercustomize em processo nenhum; numpy segue importavel no filho e no neto")
+run("R31_A4_appdata_de_ataque_esboco_sem_s_residuo_so_no_esboco", _ARGS_A4, 0, veredito_esp="REPINADA_B3__ENSAIO", bancada=B2, flags=("-B", "-X", "utf8"),
+    env_extra=dict(APPDATA=str(APPDATA_ATAQUE)), extra_ok=lambda j, r: _a4_ok("R31_A4_appdata_de_ataque_esboco_sem_s_residuo_so_no_esboco", j, False),
+    nota="A4 (o N5a da reauditoria): o esboco SEM -s executa o .pth e o usercustomize do APPDATA dele (residuo declarado: a cadeia chama com -s); nenhum processo de "
+         "TESTE executa (na R3: 4 marcas em processos -E -P)")
+_lanc_dir = FX / "a4_lancador_adulterado"
+(_lanc_dir / "lancador").mkdir(parents=True)
+(_lanc_dir / "lancador" / MOD.LANCADOR_NOME).write_bytes(MOD.LANCADOR_FONTE.encode("utf-8") + b"import os\n")
+unit("R31_A4_lancador_adulterado_recusado", lambda: MOD.preparar_isolamento(_lanc_dir), "LANCADOR_ALTERADO")
+_site_cust = FX / "a4_site_com_customize"
+_site_cust.mkdir()
+(_site_cust / "sitecustomize.py").write_text("X = 1\n", encoding="utf-8")
+_site_sombra = FX / "a4_site_sombra"
+_site_sombra.mkdir()
+(_site_sombra / "json.py").write_text("X = 1\n", encoding="utf-8")
+
+
+def _com_site(dirp, fn):
+    antigo_ = MOD.site_do_usuario_real
+    MOD.site_do_usuario_real = lambda: str(dirp)
+    try:
+        return fn()
+    finally:
+        MOD.site_do_usuario_real = antigo_
+
+
+unit("R31_A4_site_do_usuario_com_sitecustomize_recusado", lambda: _com_site(_site_cust, lambda: MOD.preparar_isolamento(FX / "a4_p1")), "SITE_DO_USUARIO_COM_CUSTOMIZE",
+     nota="A4: um sitecustomize no site do usuario rodaria nos netos pelo PYTHONPATH")
+unit("R31_A4_site_do_usuario_que_sombreia_a_stdlib_recusado", lambda: _com_site(_site_sombra, lambda: MOD.preparar_isolamento(FX / "a4_p2")), "SITE_DO_USUARIO_SOMBREIA_A_STDLIB")
+ISO_A4 = MOD.preparar_isolamento(FX / "a4_p0")[0]
+
+
+def _residuo_independente():
+    import site as site_, sysconfig as sc_
+    dirs_ = []
+    for d_ in list(site_.getsitepackages()) + [sc_.get_paths().get(x_) for x_ in ("stdlib", "platstdlib", "purelib", "platlib")]:
+        if d_ and os.path.isdir(d_) and not any(os.path.normcase(d_) == os.path.normcase(y_) for y_ in dirs_):
+            dirs_.append(d_)
+    return [sha(os.path.join(d_, n_)) for d_ in dirs_ for n_ in sorted(os.listdir(d_)) if os.path.isfile(os.path.join(d_, n_))
+            and (n_.lower().endswith(".pth") or n_.split(".")[0].lower() in ("sitecustomize", "usercustomize"))]
+
+
+_pth_usuario = sorted(n_ for n_ in os.listdir(SITE_REAL) if n_.lower().endswith(".pth")) if SITE_REAL and os.path.isdir(SITE_REAL) else []
+checar("R31_A4_residuo_declarado_confere_com_medida_independente",
+       lambda: [e_["sha256"] for e_ in ISO_A4["residuo_declarado"]["pth_e_customize_do_site_do_sistema_que_executam"]] == _residuo_independente()
+       and [Path(e_["path"]).name for e_ in ISO_A4["site_do_usuario"]["pth_que_NAO_executam_mais"]] == _pth_usuario
+       and all(sha(e_["path"]) == e_["sha256"] for e_ in ISO_A4["site_do_usuario"]["pth_que_NAO_executam_mais"])
+       and ISO_A4["lancador"]["sha256"] == sha(Path(ISO_A4["lancador"]["path"])) == MOD.LANCADOR_SHA256,
+       nota="A4: o recibo lista, com sha256, os .pth/customize do site do SISTEMA que ainda executam (medida independente aqui) e os .pth do site do usuario que "
+            "deixaram de executar (so lidos; o site do usuario real nao e tocado)", residuo=ISO_A4["residuo_declarado"], site_do_usuario=ISO_A4["site_do_usuario"])

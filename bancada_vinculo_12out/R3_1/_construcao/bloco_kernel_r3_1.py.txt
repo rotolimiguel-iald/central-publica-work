@@ -1,0 +1,247 @@
+
+# ================================================================ R3.1: A1, A1b, A2, A3, N1k, N1l, N1m, N2c -- no formato REAL
+def _kr(nome, mut):
+    """um recibo do kernel derivado do valido (contrato KERNEL_RECIBO_R3_1); devolve o caminho."""
+    return kfix("R31_" + nome, mut)
+
+
+def _ku(nome, kp, contem, ni=None, pre=None, sandbox=True, criterios="auto", nota="", aceita=False):
+    """controle unitario de verificar_kernel_recibo: recusa com `contem` no detalhe (ou aceita, na contraprova)."""
+    passa_ret, det, pino_ = MOD.verificar_kernel_recibo(kp, "v392", ni or NI392, sha(kp), pre, sandbox, CRIT_OBJ if criterios == "auto" else criterios)
+    ok = (passa_ret is True) if aceita else (passa_ret is False and contem in det)
+    _registrar(dict(controle=nome, nivel="unitario", detalhe=det[:400], esperado_no_detalhe=contem, aceita_esperado=aceita, recibo=str(kp), recibo_sha256=sha(kp),
+                    nota=nota), ok)
+    return pino_ or {}
+
+
+def _ksub(nome, kp, contem, nota=""):
+    """o caminho inteiro do aplicar (subprocesso, sandbox, b2): o T17 FALHA com o motivo e nada se grava."""
+    run(nome, ["--bancada", B2, "--nos", NOS, "--versao", "v392", "--bateria", bt_min, "--bateria-sha256", bt_min_sha, "--sandbox", "--modo", "aplicar",
+               "--fase", "pos_selo", "--evento", "SANDBOX:R3.1", "--kernel-recibo", kp, "--kernel-recibo-sha256", sha(kp)], 3,
+        veredito_esp="REPINADA_B3__BATERIA_FALHOU__NADA_GRAVADO", bancada=B2,
+        extra_ok=lambda j, r, contem=contem: (lambda t: t["resultado"] == "FALHA" and contem in t["detalhe"])(testes(j)["T17_LEAN_KERNEL"]), nota=nota)
+
+
+def _blog(nome, b):
+    p_ = KL / ("R31_%s.log" % nome)
+    p_.write_bytes(b)
+    return dict(path=str(p_), sha256=sha(p_))
+
+
+LB, LA = (KL / "build_full_SINTETICO.log").read_bytes(), (KL / "audit_SINTETICO.log").read_bytes()
+
+# --- A1: o aviso REAL do Lean 4.31 (crases), verbatim de um log do Nos (so lido)
+checar("R31_A1_regex_pega_crase_e_aspas", lambda: len(MOD.RE_LOG_SORRY.findall(LINHA_REAL.decode("utf-8"))) == 1
+       and len(MOD.RE_LOG_SORRY.findall("x.lean:1:1: warning: declaration uses 'sorry'")) == 1 and len(MOD.RE_LOG_SORRY.findall("declaration uses sorry")) == 0,
+       nota="A1: a linha verbatim do log real (crases) e a forma de aspas simples casam; sem delimitador nao casa", linha_real=LINHA_REAL.decode("utf-8"), fonte=AMOSTRA)
+_am_txt, _am_cod = MOD.normalizar_log(Path(AMOSTRA["path"]).read_bytes())
+# rodada 1 da R3.1: este controle esqueceu os sorryAx das linhas de #print axioms do mesmo log (o esboco os conta, como a R3 ja contava);
+# o esperado agora soma os tres, medidos por bytes no arquivo real
+import re as _re
+_am_bytes = Path(AMOSTRA["path"]).read_bytes()
+_N_SORRYAX = len(_re.findall(rb"\bsorryAx\b", _am_bytes))
+checar("R31_A1_contagem_no_log_real_do_Nos",
+       lambda: len(MOD.RE_LOG_SORRY.findall(_am_txt)) == AMOSTRA["n_avisos_crase_no_arquivo"] + AMOSTRA["n_avisos_aspas_no_arquivo"] + _N_SORRYAX
+       and AMOSTRA["n_avisos_crase_no_arquivo"] > 0
+       and len(MOD.RE_LOG_SORRY.findall(_am_txt.replace("`sorry`", "x"))) == AMOSTRA["n_avisos_aspas_no_arquivo"] + _N_SORRYAX,
+       nota="A1: no log REAL inteiro (so lido; CRLF), a contagem do esboco R3.1 == o medido por bytes: %d avisos com crase + %d com aspas + %d sorryAx "
+            "nas linhas de axiomas; tirando as crases, sobram so aspas + sorryAx (a regex da R3 nao via os avisos com crase)"
+            % (AMOSTRA["n_avisos_crase_no_arquivo"], AMOSTRA["n_avisos_aspas_no_arquivo"], _N_SORRYAX), fonte=AMOSTRA, codificacao=_am_cod, sorryAx_por_bytes=_N_SORRYAX)
+KP_SORRY_REAL = _kr("sorry_real_crase", lambda k: k.update(build_full_log=_blog("sorry_real_crase", LB + LINHA_REAL + b"\n")))
+_ku("R31_A1_unit_sorry_real_lean431_crase", KP_SORRY_REAL, "ocorrencia(s) de sorry",
+    nota="A1 (o N1a da reauditoria): a linha REAL do Lean 4.31 (crases) no build log; na R3 o recibo era aceito com sorry=0")
+_ksub("R31_A1_sub_sorry_real_lean431_crase", KP_SORRY_REAL, "ocorrencia(s) de sorry", nota="A1 pelo caminho inteiro do aplicar: T17 FALHA e nada se grava")
+_ku("R31_A1_unit_sorry_aspas_simples", _kr("sorry_aspas", lambda k: k.update(build_full_log=_blog("sorry_aspas", LB + b"warning: TGLExt/PedraSinteticaA.lean:3:8: declaration uses 'sorry'\n"))),
+    "ocorrencia(s) de sorry", nota="A1: o formato de aspas simples continua contado")
+_ku("R31_A1_unit_sorry_real_no_audit_log", _kr("sorry_real_audit", lambda k: k.update(audit_log=_blog("sorry_real_audit", LA + LINHA_REAL + b"\n"))),
+    "ocorrencia(s) de sorry", nota="A1: o aviso real no log do Audit tambem conta")
+_ku("R31_A1_unit_sorry_real_declarado_1", _kr("sorry_real_declarado", lambda k: k.update(sorry=1, build_full_log=_blog("sorry_real_declarado", LB + LINHA_REAL + b"\n"))),
+    "sorry=1", nota="A1: declarar sorry=1 (a contagem certa) nao salva: sorry tem de ser 0")
+
+# --- A1b: a normalizacao do log antes de contar
+KP_UTF16_SEM_BOM = _kr("utf16_sem_bom", lambda k: k.update(build_full_log=_blog("utf16_sem_bom", LB + "warning: TGLExt/PedraSinteticaA.lean:3:8: declaration uses `sorry`\n".encode("utf-16-le"))))
+_ku("R31_A1b_UTF16LE_sem_BOM_anexado", KP_UTF16_SEM_BOM, "LOG_COM_CARACTERE_DE_CONTROLE",
+    nota="A1b (o N1b da reauditoria): UTF-16LE sem BOM no meio de um log UTF-8; na R3 o sorry escondido passava")
+_ksub("R31_A1b_sub_UTF16LE_sem_BOM_anexado", KP_UTF16_SEM_BOM, "LOG_COM_CARACTERE_DE_CONTROLE")
+_ku("R31_A1b_sorry_real_em_log_UTF16_com_BOM", _kr("utf16_bom_sorry", lambda k: k.update(build_full_log=_blog("utf16_bom_sorry", (LB + LINHA_REAL + b"\n").decode("utf-8").encode("utf-16")))),
+    "ocorrencia(s) de sorry", nota="A1b: o log inteiro em UTF-16 com BOM (o que o PowerShell 5.1 grava com >) e decodificado e o sorry real e contado")
+_ku("R31_A1b_contraprova_log_UTF16_com_BOM_limpo_aceito", _kr("utf16_bom_limpo", lambda k: k.update(build_full_log=_blog("utf16_bom_limpo", LB.decode("utf-8").encode("utf-16")))),
+    None, aceita=True, nota="contraprova: um build log UTF-16 com BOM, sem sorry nem erro, passa")
+_ku("R31_A1b_contraprova_log_UTF8_com_BOM_limpo_aceito", _kr("utf8_bom_limpo", lambda k: k.update(build_full_log=_blog("utf8_bom_limpo", b"\xef\xbb\xbf" + LB))),
+    None, aceita=True, nota="contraprova: UTF-8 com BOM passa")
+_ku("R31_A1b_sorry_real_com_quebra_so_CR", _kr("cr_sorry", lambda k: k.update(build_full_log=_blog("cr_sorry", LB + b"\r" + LINHA_REAL.rstrip(b"\r") + b"\r"))),
+    "ocorrencia(s) de sorry", nota="A1b: CR sozinho como quebra")
+_ku("R31_A1b_erro_com_quebra_so_CR", _kr("cr_erro", lambda k: k.update(build_full_log=_blog("cr_erro", LB + b"\rerror: TGLExt/PedraSinteticaA.lean:3:8: unknown identifier 'x'\rerror: build failed\r"))),
+    "linha(s) de erro", nota="A1b (o N1d da reauditoria): na R3 os erros com CR sozinho nao eram contados")
+_ku("R31_A1b_erro_com_cor_ANSI", _kr("ansi_erro", lambda k: k.update(build_full_log=_blog("ansi_erro", LB + b"\x1b[31merror:\x1b[0m TGLExt/PedraSinteticaA.lean:3:8: unknown identifier 'x'\n"))),
+    "linha(s) de erro", nota="A1b (o N1e da reauditoria): a cor ANSI escondia o erro")
+_ku("R31_A1b_sorry_com_cor_ANSI", _kr("ansi_sorry", lambda k: k.update(build_full_log=_blog("ansi_sorry", LB + b"warning: x.lean:1:1: declaration uses \x1b[1m`sorry`\x1b[0m\n"))),
+    "ocorrencia(s) de sorry")
+_ku("R31_A1b_sorry_com_espaco_de_largura_zero", _kr("zw_sorry", lambda k: k.update(build_full_log=_blog("zw_sorry", LB + "warning: x.lean:1:1: declaration uses `so​rry`\n".encode("utf-8")))),
+    "ocorrencia(s) de sorry")
+_ku("R31_A1b_log_que_nao_decodifica", _kr("utf8_invalido", lambda k: k.update(build_full_log=_blog("utf8_invalido", LB + b"\xc3(\n"))), "LOG_NAO_DECODIFICA")
+_ku("R31_A1b_ESC_solto_no_log_do_Audit", _kr("esc_solto", lambda k: k.update(audit_log=_blog("esc_solto", LA + b"\x1b\n"))), "LOG_COM_CARACTERE_DE_CONTROLE")
+
+# --- A2: logs vazios ou curtos demais
+KP_BUILD_VAZIO = _kr("build_vazio", lambda k: k.update(build_full_log=_blog("build_vazio", b"")))
+_ku("R31_A2_build_log_vazio", KP_BUILD_VAZIO, "build_full_log vazio", nota="A2 (o N1f da reauditoria): na R3 um build log vazio era aceito")
+_ksub("R31_A2_sub_build_log_vazio", KP_BUILD_VAZIO, "build_full_log vazio")
+_ku("R31_A2_build_log_so_brancos", _kr("build_brancos", lambda k: k.update(build_full_log=_blog("build_brancos", b" \r\n\t\n"))), "build_full_log vazio")
+_ku("R31_A2_audit_log_com_uma_linha", _kr("audit_uma_linha", lambda k: k.update(audit_log=_blog("audit_uma_linha", b"'TGLExt.PedraSinteticaA.um' depends on axioms: [propext, Classical.choice, Quot.sound]\n"))),
+    "LOG_DO_AUDIT_CURTO", nota="A2: o Audit.lean pinado tem 2 #print axioms; um log com 1 linha e recusado")
+_ku("R31_A2_audit_log_do_ataque_N1g", _kr("audit_ataque_n1g", lambda k: k.update(audit_log=_blog("audit_ataque_n1g", b"'X' does not depend on any axioms\n"))),
+    "LOG_DO_AUDIT_CURTO", nota="A2 (o N1g da reauditoria, a mesma linha): na R3 era aceito")
+PINO_OK = _ku("R31_A2_contraprova_audit_log_com_as_2_linhas_aceito", K_OK, None, aceita=True, nota="contraprova: o log do Audit com as 2 linhas do Audit.lean pinado passa")
+checar("R31_A2_o_minimo_vem_do_Audit_lean_pinado", lambda: PINO_OK["logs"]["print_axioms_no_audit_pinado"] == 2 and PINO_OK["logs"]["linhas_de_axiomas"] == 2,
+       nota="A2: o pino do recibo do kernel registra o minimo (os #print axioms do Audit.lean pinado) e o que o log trouxe", logs=PINO_OK.get("logs"))
+
+# --- A3: os esperados nao vem do recibo
+KP_AUTODECL = _kr("criterio_autodeclarado", lambda k: k["criterios"].update(j1_declaracoes=dict(esperado=7, medido=7), audit_entradas_antigas_identicas=dict(esperado=1, medido=1)))
+_ku("R31_A3_esperado_autodeclarado_no_recibo", KP_AUTODECL, "CRITERIO_AUTODECLARADO",
+    nota="A3 (o N1h da reauditoria): esperado = medido = 7 no proprio recibo era aceito na R3; agora o esperado so vem do CRITERIOS pinado")
+_ksub("R31_A3_sub_esperado_autodeclarado_no_recibo", KP_AUTODECL, "CRITERIO_AUTODECLARADO")
+_ku("R31_A3_medido_contra_o_esperado_pinado", _kr("criterio_medido_7", lambda k: k["criterios"].update(j1_declaracoes=dict(medido=7))),
+    "criterio j1_declaracoes: medido 7 != esperado 2", nota="A3: o medido 7 (sem esperado no recibo) contra o esperado 2 do CRITERIOS pinado")
+_ku("R31_A3_criterio_com_chave_extra", _kr("criterio_chave_extra", lambda k: k["criterios"]["j1_declaracoes"].update(nota="x")), "so 'medido'")
+_ku("R31_A3_criterio_fora_do_contrato", _kr("criterio_fora", lambda k: k["criterios"].update(outro=dict(medido=1))), "criterios fora do contrato")
+_ku("R31_A3_sem_criterios_pinados", K_OK, "CRITERIOS_AUSENTES", criterios=None, nota="A3: sem o CRITERIOS pinado nem o recibo valido passa")
+
+
+def _crit(nome, mut):
+    c_ = json.loads(CRIT.read_bytes())
+    mut(c_)
+    p_ = FX / ("R31_CRIT_%s.json" % nome)
+    p_.write_bytes(json.dumps(c_, ensure_ascii=False, indent=1).encode("utf-8"))
+    return p_
+
+
+for nome_, mut_, esp_ in (("x19_nulo", lambda c: c.update(x19=None), "CRITERIOS_SEM_DECISAO_X19"),
+                          ("x19_texto_livre", lambda c: c.update(x19="talvez"), "CRITERIOS_SEM_DECISAO_X19"),
+                          ("nao_preenchido", lambda c: c.update(preenchido=False), "CRITERIOS_NAO_PREENCHIDOS"),
+                          ("preenchido_texto", lambda c: c.update(preenchido="true"), "CRITERIOS_NAO_PREENCHIDOS"),
+                          ("outra_versao", lambda c: c.update(versao="v391"), "CRITERIOS_DE_OUTRA_VERSAO"),
+                          ("contrato_errado", lambda c: c.update(contrato="CRITERIOS_R3"), "CRITERIOS_CONTRATO_INVALIDO"),
+                          ("esperado_nulo", lambda c: c["esperados"].update(j1_declaracoes=None), "CRITERIOS_ESPERADO_INVALIDO"),
+                          ("esperado_float", lambda c: c["esperados"].update(j1_teoremas=2.0), "CRITERIOS_ESPERADO_INVALIDO"),
+                          ("esperado_texto", lambda c: c["esperados"].update(tokens_proibidos="0"), "CRITERIOS_ESPERADO_INVALIDO"),
+                          ("esperado_bool_onde_int", lambda c: c["esperados"].update(j1_fora_do_trio=False), "CRITERIOS_ESPERADO_INVALIDO"),
+                          ("esperado_int_onde_bool", lambda c: c["esperados"].update(r1_ausente=1), "CRITERIOS_ESPERADO_INVALIDO"),
+                          ("esperado_negativo", lambda c: c["esperados"].update(j1_declaracoes=-1), "CRITERIOS_ESPERADO_INVALIDO"),
+                          ("chave_a_menos", lambda c: c["esperados"].pop("r1_ausente"), "CRITERIOS_CHAVES_DIVERGEM"),
+                          ("chave_a_mais", lambda c: c["esperados"].update(extra=1), "CRITERIOS_CHAVES_DIVERGEM"),
+                          ("sem_esperados", lambda c: c.pop("esperados"), "CRITERIOS_SEM_ESPERADOS")):
+    _p = _crit(nome_, mut_)
+    unit("R31_A3_criterios_%s" % nome_, (lambda _p=_p: MOD.carregar_criterios(_p, sha(_p), "v392")), esp_, nota="A3: o arquivo de criterios mal formado e recusado na carga")
+_pl = FX / "R31_CRIT_lista.json"
+_pl.write_bytes(b"[1, 2]")
+unit("R31_A3_criterios_nao_objeto", lambda: MOD.carregar_criterios(_pl, sha(_pl), "v392"), "CRITERIOS_ILEGIVEIS")
+unit("R31_A3_criterios_sha_divergente", lambda: MOD.carregar_criterios(CRIT, "0" * 64, "v392"), "CRITERIOS_SHA_DIVERGE")
+unit("R31_A3_criterios_sem_sha", lambda: MOD.carregar_criterios(CRIT, None, "v392"), "CRITERIOS_SHA_AUSENTE")
+unit("R31_A3_modelo_da_gerencia_recusado", lambda: MOD.carregar_criterios(CRIT_MODELO, sha(CRIT_MODELO), "v392"), "CRITERIOS_NAO_PREENCHIDOS",
+     nota="o modelo R3_1/CRITERIOS_V392.json (preenchido=false; x19 e esperados nulos) nao vale ate a gerencia preencher na derivacao")
+unit("R31_A3_contraprova_criterios_sintetico_aceito", lambda: MOD.carregar_criterios(CRIT, CRIT_SHA, "v392")["x19"], None, nota="contraprova")
+_BASE_A3 = ["--bancada", B2, "--nos", NOS, "--versao", "v392", "--bateria", bt_min, "--bateria-sha256", bt_min_sha, "--sandbox", "--modo", "aplicar", "--fase", "pos_selo",
+            "--evento", "SANDBOX:R3.1-A3", "--kernel-recibo", K_OK, "--kernel-recibo-sha256", K_OK_SHA]
+run("R31_A3_sub_kernel_recibo_sem_criterios", _BASE_A3, 2, "CRITERIOS_AUSENTES", bancada=B2, sem_criterios=True,
+    nota="A3: com --kernel-recibo e sem --criterios o B(n) recusa antes da bateria (rc 2)")
+run("R31_A3_sub_criterios_sem_sha", _BASE_A3 + ["--criterios", CRIT], 2, "CRITERIOS_SHA_AUSENTE", bancada=B2)
+run("R31_A3_sub_criterios_sha_divergente", _BASE_A3 + ["--criterios", CRIT, "--criterios-sha256", "2" * 64], 2, "CRITERIOS_SHA_DIVERGE", bancada=B2)
+run("R31_A3_sub_sha_sem_arquivo_de_criterios", _BASE_A3 + ["--criterios-sha256", CRIT_SHA], 2, "CRITERIOS_AUSENTES", bancada=B2)
+run("R31_A3_sub_modelo_da_gerencia_recusado", _BASE_A3 + ["--criterios", CRIT_MODELO, "--criterios-sha256", sha(CRIT_MODELO)], 2, "CRITERIOS_NAO_PREENCHIDOS", bancada=B2)
+
+# --- N1k, N1l, N1m: o manifesto do kernel pinado pelo selo, alterado e RE-PINADO num Nos de ataque (o caminho inteiro por ler_nos)
+AT31 = RAIZ / "aud31"
+AT31.mkdir(exist_ok=True)
+
+
+def nos_ataque(nome, mut_man):
+    d_ = AT31 / ("nos_" + nome)
+    d_.mkdir(parents=True)
+    for f_ in ("um.py", "um_absoluto.json"):
+        shutil.copyfile(NOS392 / f_, d_ / f_)
+    man_ = json.loads((NOS392 / "tgl_kernel_proof_manifest.json").read_bytes())
+    mut_man(man_)
+    mb_ = json.dumps(man_, ensure_ascii=False, indent=1).encode("utf-8")
+    (d_ / "tgl_kernel_proof_manifest.json").write_bytes(mb_)
+    selo_ = json.loads((NOS392 / "um_absoluto_selo.json").read_bytes())
+    selo_["sha256"]["tgl_kernel_proof_manifest.json"] = sha_b(mb_)
+    (d_ / "um_absoluto_selo.json").write_bytes(json.dumps(selo_, ensure_ascii=False, indent=1).encode("utf-8"))
+    return MOD.ler_nos(d_, "v392")
+
+
+_ni = nos_ataque("ax_ausente", lambda m: [m["axiom_report"].pop(x) for x in [n for n in list(m["axiom_report"]) if "PedraSintetica" in n]])
+_ku("R31_N1k_axiom_report_sem_as_declaracoes_das_pedras", K_OK, "nao tem entrada no axiom_report", ni=_ni,
+    nota="N1k (o ataque da reauditoria): as declaracoes das pedras saem do axiom_report do manifesto pinado; na R3 o mesmo recibo passava")
+_ku("R31_N1k_pedra_sem_declaracoes", _kr("pedra_sem_declaracoes", lambda k: k["pedras"][0].pop("declaracoes")), "exige declaracoes")
+_ku("R31_N1k_declaracoes_repetidas", _kr("declaracoes_repetidas", lambda k: k["pedras"][0].update(declaracoes=["TGLExt.PedraSinteticaA.um"] * 2)), "exige declaracoes")
+_ku("R31_N1k_declaracoes_vazias", _kr("declaracoes_vazias", lambda k: k["pedras"][1].update(declaracoes=[])), "exige declaracoes")
+_ku("R31_N1k_declaracao_sem_entrada_no_axiom_report", _kr("declaracao_inventada", lambda k: k["pedras"][0]["declaracoes"].append("TGLExt.PedraSinteticaA.inventada")),
+    "nao tem entrada no axiom_report")
+AR_VELHA = next(n for n in km["axiom_report"] if not n.startswith("TGLExt.PedraSintetica"))
+_ku("R31_N1k_declaracao_nao_impressa_no_log_do_Audit", _kr("declaracao_fora_do_log", lambda k: k["pedras"][0]["declaracoes"].append(AR_VELHA)),
+    "nao foi impressa no log do Audit", nota="N1k: uma declaracao que existe no axiom_report (%s) mas nao no log do Audit" % AR_VELHA)
+_ku("R31_N1k_declaracao_nao_nomeada_na_fonte_da_pedra",
+    _kr("declaracao_fora_da_fonte", lambda k: (k["pedras"][0]["declaracoes"].append(AR_VELHA),
+                                               k.update(audit_log=_blog("audit_com_velha", LA + ("'%s' depends on axioms: [propext]\n" % AR_VELHA).encode("utf-8"))))),
+    "nao e nomeada na fonte da pedra", nota="N1k: a declaracao esta no axiom_report e no log, mas a pedra que a reclama nao a define")
+_ni = nos_ataque("pedra_oculta", lambda m: m["formal_files_sha256"].update({"TGLExt/PedraOculta.lean": sha_b(b"theorem oculto : True := sorry\n")}))
+_ku("R31_N1l_pedra_selada_nao_listada_no_recibo", K_OK, "NAO listada", ni=_ni,
+    nota="N1l (o ataque da reauditoria): uma pedra a mais no manifesto pinado pelo selo, fora do recibo; na R3 passava")
+_fa2 = dict(K["formal_files_antes"])
+_fa2["TGLExt/PedraSinteticaB.lean"] = K["pedras"][1]["sha256"]
+_imp2 = MOD.impressao_formal(_fa2)
+_ku("R31_N1l_pedra_do_recibo_que_nao_e_nova", _kr("pedra_nao_nova", lambda k: (k.update(formal_files_antes=_fa2), k["nos_kernel_impressao"].update(antes=_imp2, depois=_imp2))),
+    "nao sao novas nem mudadas", nota="N1l: sandbox sem recibo pre-selo, para chegar a regra (com o pre-selo o ANTES ja recusaria)")
+_ku("R31_N1l_formal_files_antes_nao_bate_com_a_impressao", _kr("antes_impressao_diverge", lambda k: k["formal_files_antes"].update({"TGLExt/Inventado.lean": "a" * 64})),
+    "impressao de formal_files_antes")
+_ku("R31_N1l_formal_files_antes_sem_a_raiz_do_antes", _kr("antes_sem_raiz", lambda k: (k["formal_files_antes"].update({"TGLExt.lean": "c" * 64}),
+                                                                                         k["nos_kernel_impressao"].update(antes=MOD.impressao_formal(k["formal_files_antes"]),
+                                                                                                                          depois=MOD.impressao_formal(k["formal_files_antes"])))),
+    "nao traz a raiz e o Audit do ANTES")
+_ni = nos_ataque("arquivo_removido", lambda m: m["formal_files_sha256"].pop(next(c for c in m["formal_files_sha256"] if c.startswith("TGLExt/") and "PedraSintetica" not in c)))
+_ku("R31_N1l_arquivo_formal_removido", K_OK, "ausente(s) no manifesto", ni=_ni)
+_ni = nos_ataque("mudado_fora", lambda m: m["formal_files_sha256"].update(
+    {next(c for c in m["formal_files_sha256"] if not c.startswith("TGLExt/") and c not in ("TGLExt.lean", "TGL/Audit.lean")): "b" * 64}))
+_ku("R31_N1l_arquivo_mudado_fora_de_TGLExt", K_OK, "fora de TGLExt/", ni=_ni)
+_ku("R31_N1l_recibo_sem_formal_files_antes", _kr("sem_formal_files_antes", lambda k: k.pop("formal_files_antes")), "formal_files_antes")
+_ku("R31_N1l_contraprova_com_pre_selo_aceito", K_OK, None, pre=PRE, sandbox=False, aceita=True, nota="contraprova: com o recibo pre-selo do run 1b, a cobertura e o ANTES passam")
+_ni = nos_ataque("sem_toolchain", lambda m: [m.pop("lean_version"), m.pop("lake_version")])
+_ku("R31_N1m_manifesto_e_recibo_sem_toolchain", _kr("toolchain_vazia", lambda k: k.update(toolchain={})), "toolchain", ni=_ni,
+    nota="N1m (o ataque da reauditoria): na R3 a ausencia nos dois lados passava")
+_ni = nos_ataque("toolchain_texto", lambda m: m.update(lean_version="Lean (version 9.9.9)", lake_version="Lake 9"))
+_ku("R31_N1m_manifesto_toolchain_texto_nao_lista", _kr("toolchain_L", lambda k: k.update(toolchain=dict(lean_version="L", lake_version="L"))), "nao e LISTA", ni=_ni,
+    nota="N1m (o ataque da reauditoria): texto no manifesto e 'L' no recibo (o [0] da R3 pegava a primeira letra)")
+_ku("R31_N1m_recibo_toolchain_em_texto_formato_R3", _kr("toolchain_texto_R3", lambda k: k.update(toolchain=dict(lean_version=k["toolchain"]["lean_version"][0],
+                                                                                                              lake_version=k["toolchain"]["lake_version"][0]))),
+    "como LISTA", nota="N1m: o formato da R3 (texto) nao vale mais")
+_ku("R31_N1m_recibo_toolchain_listas_vazias", _kr("toolchain_listas_vazias", lambda k: k.update(toolchain=dict(lean_version=[], lake_version=[]))), "como LISTA")
+_ku("R31_N1m_recibo_toolchain_com_elemento_a_mais", _kr("toolchain_a_mais", lambda k: k["toolchain"]["lean_version"].append("Lean (version 4.31.0) outra")), "toolchain do build")
+_ku("R31_N1m_recibo_toolchain_sem_lake", _kr("toolchain_sem_lake", lambda k: k["toolchain"].pop("lake_version")), "como LISTA")
+
+# --- N2c: o recibo pre-selo cruzado com o selo pinado no manifesto anterior da Bancada (b2 ainda pina a v391 aqui)
+ANT_B2 = MOD.estado_anterior(B2, MOD.carregar_canonical(B2)[0])
+
+
+def _pre(nome, mut, base=None):
+    rj_ = json.loads(Path(base or R1B).read_bytes())
+    mut(rj_)
+    p_ = FX / ("R31_PRE_%s.json" % nome)
+    p_.write_bytes(json.dumps(rj_, ensure_ascii=False, indent=1).encode("utf-8"))
+    return p_
+
+
+_p = _pre("selo_e_kernel_trocados", lambda r: (r["nos"]["selo"].update(sha256=sha_b(b"selo de outro rito"), tgl_kernel_proof_manifest_sha256=sha_b(b"km de outro rito")),
+                                               r["nos"]["kernel"].update(sha256=sha_b(b"km de outro rito"), raiz_sha256=sha_b(b"raiz de outro rito"))))
+unit("R31_N2c_selo_e_kernel_de_outro_rito", lambda: MOD.conferir_recibo_pre_selo(_p, ANT_B2, B2, False, sha(_p)), "RECIBO_PRE_SELO_NAO_CORRESPONDE",
+     nota="N2c (o ataque da reauditoria): mesma versao e mesmo um.py, selo e kernel de outro rito; na R3 era aceito com o pino forjado")
+_p2 = _pre("so_selo_trocado", lambda r: r["nos"]["selo"].update(sha256=sha_b(b"outro selo")))
+unit("R31_N2c_so_o_selo_trocado", lambda: MOD.conferir_recibo_pre_selo(_p2, ANT_B2, B2, False, sha(_p2)), "RECIBO_PRE_SELO_NAO_CORRESPONDE")
+_p3 = _pre("kernel_que_o_selo_nao_pina", lambda r: r["nos"]["kernel"].update(sha256=sha_b(b"outro manifesto do kernel")))
+unit("R31_N2c_kernel_que_o_selo_dele_nao_pina", lambda: MOD.conferir_recibo_pre_selo(_p3, ANT_B2, B2, False, sha(_p3)), "RECIBO_PRE_SELO_NAO_CORRESPONDE")
+_p4 = _pre("selo_ausente", lambda r: r["nos"].pop("selo"))
+unit("R31_N2c_recibo_sem_selo", lambda: MOD.conferir_recibo_pre_selo(_p4, ANT_B2, B2, False, sha(_p4)), "RECIBO_PRE_SELO_NAO_CORRESPONDE")
+unit("R31_N2c_contraprova_recibo_1b_aceito", lambda: MOD.conferir_recibo_pre_selo(R1B, ANT_B2, B2, False, sha(R1B))["selo_cruzado_com_o_manifesto_anterior"], None,
+     nota="contraprova: o recibo do run 1b, lido contra a v391 copiada, cruza o selo")
+run("R31_N2c_sub_selo_e_kernel_de_outro_rito", ["--bancada", B2, "--nos", NOS, "--versao", "v392", "--bateria", bt_min, "--bateria-sha256", bt_min_sha, "--sandbox", "--modo", "aplicar",
+                                                "--fase", "pos_selo", "--evento", "SANDBOX:N2c", "--kernel-recibo", K_OK, "--kernel-recibo-sha256", K_OK_SHA,
+                                                "--recibo-pre-selo", _p, "--recibo-pre-selo-sha256", sha(_p)], 2, "RECIBO_PRE_SELO_NAO_CORRESPONDE", bancada=B2)

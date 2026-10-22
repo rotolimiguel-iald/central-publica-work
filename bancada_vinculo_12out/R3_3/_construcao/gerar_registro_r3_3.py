@@ -1,0 +1,37 @@
+# -*- coding: utf-8 -*-
+import json
+from pathlib import Path
+A = Path(__file__).resolve().parent.parent
+W = str(Path(__file__).resolve().parent.parent) + chr(92)
+arts = ["sincronizar_bancada.py", "montar_sandbox.py", "controles_negativos_r3_3.py", "CONTROLES_NEGATIVOS_R3_3.json", "CRITERIOS_V392.json", "DIFF_R3_2_R3_3.patch",
+        "VERIFICACAO_DIFF_R3_3.json", "ERRATA_R3_3.md", "RESULTADO_R3_3.md", "PINOS_R3_3.json"]
+for a in arts:
+    assert (A / a).is_file(), a
+d = {
+ "tipo": "RESULTADO",
+ "rota_id": "infra.bancada_um.sincronizacao_vnnn",
+ "dominio": "INFRA",
+ "titulo": "R3.3 do esboco sincronizar_bancada.py: R32-A (-i recusado, orig_argv no recibo) e R32-B (ROLLBACK_DIVERGE retira o contrato, roda o pos_rollback e grava o sha do disco) fechados; 401/401 controles com python -I -B -X utf8",
+ "pergunta": "A R3.3 fecha as duas falhas BAIXAS da reauditoria final a70d70d5 da R3.2 (R32-A: a guarda aceitava -i e o PYTHONSTARTUP herdado executava depois do main(); R32-B: o caminho ROLLBACK_DIVERGE deixava o contrato no decoy, nao rodava o pos_rollback e nao gravava o sha do disco), cada uma com o caso exato do auditor como controle negativo, sem regredir os 399 controles da R3.2?",
+ "dados": [
+  "reauditoria final da R3.2: AUDITORIA_F0_6_C1_a70d70d5.md e art_a70d70d5/ataques_novos_r3_2.py (casos R32-A e F3/R32-B refeitos nos controles R33_)",
+  "sandbox C:\t\vb9 (raiz curta; nenhuma juncao restante; apagado)",
+  "decoy de producao EM PROCESSO numa copia (pd); servico simulado pela sonda trocada; os.replace trocado so durante o controle R33_R32_B e restaurado",
+  "Nos v391 (so lido: copia do sandbox e um log do bancada_corpus); custodia v390 (so lida) pelos controles herdados da R3.2"
+ ],
+ "metodo": "copia da R3.2 pinada (a408d49292f55008) com patch: _flags_que_faltam recusa sys.flags.inspect/interactive (topo e main), recusa por -i sai por os._exit(2) do os ja carregado (SystemExit entraria no REPL), recibo grava python_isolado.orig_argv/inspect/interactive; reverter_aplicacao retira o contrato mesmo quando o rollback diverge e depois levanta ROLLBACK_DIVERGE; main() roda o pos_rollback tambem apos ROLLBACK_DIVERGE (sha do manifesto em disco em aplicacao_revertida); 2 controles novos com os casos exatos do auditor; bateria inteira dos controles com python -I -B -X utf8",
+ "resultado": "TODOS_OS_CONTROLES_NEGATIVOS_RECUSAM_COMO_ESPERADO 401/401 em 637 s (R3.2 399/399 presentes e passando, R3.1 337/337, R3 235/235, 2 novos R33_); R33_R32_A_exato_I_B_X_utf8_com_i_e_PYTHONSTARTUP: rc 2, INTERPRETADOR_NAO_ISOLADO (sem -i), nenhuma marca do startup, sem recibo; R33_R32_B_exato_mudanca_logo_depois_do_os_replace_do_rollback: rc 2, ROLLBACK_DIVERGE, contrato B3 ausente, ultima sonda apos_rollback, sha do disco no recibo igual aos bytes alheios; DIFF_R3_2_R3_3 reproduz a R3.3 bit a bit com core.autocrlf=false; livro de eventos 726 linhas antes e depois, producao e Nos intocados",
+ "veredito": "R3_3_ENTREGUE__R32_A_E_R32_B_FECHADOS",
+ "estatuto": "REAL",
+ "status": "EXAMINADA",
+ "olhou_dados": False,
+ "defeito": "residuos declarados da R3.2 seguem (ver ERRATA_R3_3.md): o site do sistema executa tambem sob -I; codigo hostil antes da guarda falseia sys.flags (o recibo mostra orig_argv); a 2a gravacao alheia nao fica em --saida e a posterior a 2a releitura e invisivel (o 10-ter e a ultima prova); no ROLLBACK_DIVERGE o manifesto em disco fica nos bytes alheios; selo v391 na custodia [OPEN]; tokens; kernel real, producao real, links e corrida em caminho_canonico nao medidos",
+ "nao_refazer": "nao refazer R32-A nem R32-B nem os 399 controles da R3.2; nenhum achado ALTO ou MEDIO aberto, os BAIXOS restantes sao residuo declarado",
+ "proximo_passo": "gerencia: aplicar as remissoes R3 + R3.1 + R3.2 + ERRATA_R3_3 ao lado no plano; derivar o esboco R3.3 para <V> antes da etapa 1; registrar no mapa e no ACOM; operador: X19, B3, 10-bis-a, 10-ter (tambem apos ROLLBACK_DIVERGE)",
+ "onde": W[:-1],
+ "artefatos": [W + a for a in arts],
+ "refs": [],
+ "nota": "F0.6 R3.3, construtor Sonnet da gerencia c1, apos a reauditoria a70d70d5 (APROVA_COM_RESSALVAS). Registro preparado e NAO registrado (ato da gerencia). Incidente do construtor declarado em RESULTADO_R3_3.md secao 4. NOT_FALSIFIED nunca e creditacao; gate NONE."
+}
+(A / "registro_mapa_F0.6_R3_3.json").write_bytes(json.dumps(d, ensure_ascii=False, indent=1).encode("utf-8"))
+print("ok", len(d["artefatos"]))

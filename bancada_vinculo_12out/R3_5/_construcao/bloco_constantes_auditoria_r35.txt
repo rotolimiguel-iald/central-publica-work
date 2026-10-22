@@ -1,0 +1,21 @@
+# R3.5 (M): a LISTA DE PERMISSAO ESTRITA do modulo de auditoria. A R3.4 recusava por LISTA DE PROIBICAO (palavras proibidas no corpo do run_cmd, com um lookbehind que excluia o ponto): passavam
+# `Lean.addDecl`, `Lean.modifyEnv` e `Lean.Meta.evalExpr` qualificados, `open IO.FS in` + `writeFile` e `open IO in` + `Process.output` (achado B-M da revisao independente de 19/10/2026).
+# Agora so passa o que esta EXPLICITAMENTE listado aqui: os comandos de topo (import so de Lean/TGLExt/TGL, open so de Lean, #print axioms, run_cmd) e, no corpo do run_cmd (codigo EXECUTADO na
+# compilacao), um vocabulario FECHADO de palavras, locais, funcoes, metodos e nomes -- o das fontes reais NetworkProofAuditR7/R8 da v394 e o da fixture sintetica do sandbox. Fora da lista = recusa,
+# qualificado ou nao, aberto por `open` ou nao. O script confere a FORMA; nao prova a inocuidade semantica do corpo (residuo declarado).
+RE_AUD_IMPORT = re.compile(r"^import[ \t]+(?:Lean|(?:TGLExt|TGL)(?:\.[A-Za-z_][A-Za-z0-9_']*)+)[ \t]*$")
+AUD_OPEN_PERMITIDOS = frozenset(("Lean",))
+RE_AUD_OPEN = re.compile(r"^open(?:[ \t]+[A-Za-z_][A-Za-z0-9_.']*)+[ \t]*$")
+RE_AUD_PRINT = re.compile(r"^#print[ \t]+axioms[ \t]+[^\W\d][\w.']*[ \t]*$")
+RE_AUD_RUNCMD = re.compile(r"^run_cmd(?:[ \t]+do)?[ \t]*$")
+AUD_CORPO_PALAVRAS = frozenset(("let", "mut", "for", "in", "do", "if", "then", "else", "unless", "match", "with", "fun", "some", "pure", "_"))
+AUD_CORPO_LOCAIS = frozenset(("env", "count", "n", "ci", "idx", "mod", "axs", "a", "c", "i", "m"))
+AUD_CORPO_GLOBAIS = frozenset(("Elab.Command.liftCoreM", "getEnv", "collectAxioms", "throwError", "IO.println", "toString", "String.intercalate", "Name.toString"))
+AUD_CORPO_METODOS = frozenset(("toList", "getModuleIdxFor?", "header", "moduleNames", "constants", "toString", "map", "all", "isPrefixOf", "axiomInfo"))
+AUD_CORPO_NOMES = frozenset(("propext", "Classical.choice", "Quot.sound"))
+AUD_CORPO_PREFIXOS_DE_NOME = ("TGLExt", "TGL")
+AUD_CORPO_PONTUACAO = ("←", ":=", "=>", "==", "||", "++", "(", ")", "[", "]", ",", "|", "+", "!")
+RE_AUD_TOK_NOME = re.compile(r"`[A-Za-z_][A-Za-z0-9_']*(?:\.[A-Za-z_][A-Za-z0-9_']*)*")
+RE_AUD_TOK_ID = re.compile(r"[A-Za-z_][A-Za-z0-9_']*(?:\.[A-Za-z_][A-Za-z0-9_']*)*\??")
+RE_AUD_TOK_CAMPO = re.compile(r"\.[A-Za-z_][A-Za-z0-9_']*\??")
+RE_AUD_TOK_NUM = re.compile(r"[0-9]+")

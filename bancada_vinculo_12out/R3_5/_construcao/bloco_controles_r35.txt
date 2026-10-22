@@ -1,0 +1,169 @@
+# ================================================================ R3.5 (M): a lista de PERMISSAO estrita do modulo de auditoria -- cada evasao da revisao independente de 19/10 (B-M) e as minhas
+# cada controle monta a fonte do modulo (a fixture sintetica + UMA coisa a mais), re-pina o recibo e o selo do sandbox e chama verificar_kernel_recibo (o caminho real do B(n)): recusa com o token nomeado
+AUD_PERM = "palavra proibida no corpo"
+EVASOES_AUD = (
+    # as cinco da revisao independente (EXAME_DELTA_E_R3_4.md, B-M), exatas
+    ("Lean_addDecl_qualificado", AUD_BASE + "  Lean.addDecl (.axiomDecl default)\n", "'Lean.addDecl'"),
+    ("Lean_modifyEnv_qualificado", AUD_BASE + "  Lean.modifyEnv (fun e => e)\n", "'Lean.modifyEnv'"),
+    ("Lean_Meta_evalExpr_qualificado", AUD_BASE + "  let _ \u2190 Lean.Meta.evalExpr Nat (mkConst `Nat) (mkConst `Nat)\n", "'Lean.Meta.evalExpr'"),
+    ("open_IO_FS_in_mais_writeFile", AUD_BASE.replace("open Lean in", "open IO.FS in") + "  writeFile \"x\" \"y\"\n", "open fora da lista de permissao"),
+    ("open_IO_in_mais_Process_output", AUD_BASE.replace("open Lean in", "open IO in") + "  let _ \u2190 Process.output { cmd := \"calc\" }\n", "open fora da lista de permissao"),
+    # as mesmas, com o `open` permitido: o corpo sozinho recusa
+    ("writeFile_com_open_Lean", AUD_BASE + "  writeFile \"x\" \"y\"\n", "'writeFile'"),
+    ("Process_output_com_open_Lean", AUD_BASE + "  let _ \u2190 Process.output { cmd := \"calc\" }\n", "'Process.output'"),
+    ("addDecl_nu_com_open_Lean", AUD_BASE + "  addDecl (.axiomDecl default)\n", "'addDecl'"),
+    ("modifyEnv_nu_com_open_Lean", AUD_BASE + "  modifyEnv (fun e => e)\n", "'modifyEnv'"),
+    # variantes de qualificacao, metodo e campo
+    ("root_Lean_addDecl", AUD_BASE + "  _root_.Lean.addDecl (.axiomDecl default)\n", "'_root_.Lean.addDecl'"),
+    ("IO_FS_writeFile_completo", AUD_BASE + "  IO.FS.writeFile \"x\" \"y\"\n", "'IO.FS.writeFile'"),
+    ("IO_Process_spawn", AUD_BASE + "  let _ \u2190 IO.Process.spawn { cmd := \"calc\" }\n", "'IO.Process.spawn'"),
+    ("System_FilePath", AUD_BASE + "  let _ := System.FilePath.mk \"x\"\n", "'System.FilePath.mk'"),
+    ("env_addDecl_como_metodo_do_local", AUD_BASE + "  let _ := env.addDecl\n", "'env.addDecl'"),
+    ("campo_depois_de_parenteses", AUD_BASE + "  let _ := (env).modifyEnv\n", "'.modifyEnv'"),
+    ("campo_no_inicio_da_linha", AUD_BASE + "  .writeFile\n", "campo fora da lista de permissao"),
+    ("tab_como_indentacao_nao_esconde", AUD_BASE + "\tLean.addDecl 1\n", "'Lean.addDecl'"),
+    # sintaxe: o que nao e palavra, local, funcao, metodo, nome, numero, texto ou sinal da lista
+    ("interpolacao_de_termo_em_throwError", AUD_BASE + "  throwError \"x {IO.FS.readFile n}\"\n", "interpolacao"),
+    ("dois_comandos_na_linha_com_ponto_e_virgula", AUD_BASE + "  let n := 1; let m := 2\n", "caractere fora da lista de permissao: ';'"),
+    ("antiquotacao_cifrao", AUD_BASE + "  let n := $m\n", "caractere fora da lista de permissao: '$'"),
+    ("comentario_no_fim_da_linha", AUD_BASE + "  let n := 1 -- IO.FS.writeFile\n", "caractere fora da lista de permissao: '-'"),
+    ("include_str", AUD_BASE + "  let n := include_str \"/etc/hosts\"\n", "'include_str'"),
+    ("unsafe", AUD_BASE + "  unsafe pure ()\n", "'unsafe'"),
+    ("nome_com_crase_fora_da_lista", AUD_BASE + "  let n := `Foo.bar\n", "nome com crase fora da lista"),
+    ("homoglifo_cirilico_no_identificador", AUD_BASE + "  L\u0435an.addDecl 1\n", AUD_PERM),
+    ("local_fora_da_lista", AUD_BASE + "  let defaults := 1\n", "'defaults'"),
+    ("numero_colado_a_identificador", AUD_BASE + "  let n := 1addDecl\n", "'addDecl'"),
+    ("escape_fora_da_lista_no_texto", AUD_BASE + "  IO.println \"\\x41\"\n", "escape fora da lista"),
+    ("texto_sem_fechamento", AUD_BASE + "  IO.println \"abc\n", "literal de texto sem fechamento"),
+    # comandos de topo: open so de Lean, import so de Lean/TGLExt/TGL, nada na mesma linha
+    ("open_Lean_Meta_in", AUD_BASE.replace("open Lean in", "open Lean.Meta in"), "open fora da lista de permissao"),
+    ("open_Lean_IO_dois_namespaces", AUD_BASE.replace("open Lean in", "open Lean IO in"), "open fora da lista de permissao"),
+    ("open_IO_sem_in", AUD_BASE.replace("open Lean in", "open IO"), "open fora da lista de permissao"),
+    ("import_Mathlib", AUD_BASE.replace("import Lean\n", "import Mathlib\n"), "comando de topo fora da lista"),
+    ("import_Lean_Elab_Command_qualificado", AUD_BASE.replace("import Lean\n", "import Lean.Elab.Command\n"), "comando de topo fora da lista"),
+    ("run_cmd_com_comando_na_mesma_linha", AUD_BASE.replace("run_cmd do\n", "run_cmd IO.FS.writeFile \"x\" \"y\"\n"), "comando de topo fora da lista"),
+    ("open_Lean_in_com_theorem_na_mesma_linha", AUD_BASE.replace("open Lean in\n", "open Lean in theorem x : True := trivial\n"), "comando de topo fora da lista"),
+)
+for nome_, texto_, contem_ in EVASOES_AUD:
+    _kp, _ni = variante_auditoria("r35_" + nome_, texto_)
+    _ku3("R35_M_evasao_%s_recusada" % nome_, _kp, contem_, ni=_ni,
+         nota="M (R3.5, lista de PERMISSAO estrita): a fonte do modulo de auditoria com a evasao %s: o B(n) recusa (MODULO_DE_AUDITORIA_FORA_DA_LISTA_DE_COMANDOS) e o detalhe nomeia o token" % nome_)
+_kp, _ni = variante_auditoria("r35_contraprova_base", AUD_BASE)
+_ku3("R35_M_contraprova_a_fixture_inalterada_passa_pelo_mesmo_caminho", _kp, None, ni=_ni, aceita=True, nota="M: a contraprova do helper das evasoes: a fixture sem a evasao passa pela lista de permissao")
+_fr = {n_: (SNAP_FONTES / "TGLExt" / "F1Fecho394" / ("NetworkProofAudit%s.lean" % n_)).read_text(encoding="utf-8") for n_ in ("R3", "R7", "R8")}
+_cr = {n_: _okp(t_) for n_, t_ in _fr.items()}
+checar("R35_M_as_tres_fontes_reais_passam_na_lista_de_permissao_e_a_contagem_confere",
+       lambda: all(c_["ok"] for c_ in _cr.values()) and _cr["R3"]["contagem"]["print_axioms"] == 936 and _cr["R3"]["contagem"]["tokens"] == 0
+       and _cr["R7"]["contagem"]["run_cmd"] == 1 and _cr["R8"]["contagem"]["run_cmd"] == 1 and _cr["R7"]["contagem"]["tokens"] == _cr["R8"]["contagem"]["tokens"] > 100
+       and _cr["R7"]["contagem"]["open_"] == 1 and _cr["R8"]["contagem"]["open_"] == 1,
+       nota="M (dado real): as tres fontes REAIS (NetworkProofAuditR3/R7/R8, copias de bytes em evidencias/) passam na lista de permissao estrita: R3 so #print axioms; R7 e R8 um run_cmd com o mesmo corpo",
+       contagens={n_: c_["contagem"] for n_, c_ in _cr.items()})
+checar("R35_M_o_vocabulario_do_corpo_e_fechado_e_pequeno", lambda: len(MOD.AUD_CORPO_GLOBAIS) == 8 and len(MOD.AUD_CORPO_LOCAIS) == 11 and MOD.AUD_OPEN_PERMITIDOS == frozenset(("Lean",))
+       and not (MOD.AUD_CORPO_GLOBAIS | MOD.AUD_CORPO_PALAVRAS | MOD.AUD_CORPO_METODOS) & {"addDecl", "modifyEnv", "evalExpr", "writeFile", "Process", "output", "spawn", "include_str", "unsafe", "sorry", "axiom"},
+       nota="M: a lista de permissao tem so 8 funcoes globais, 11 locais e o namespace Lean; nenhum nome de escrita de ambiente, de arquivo, de processo, de avaliacao ou de axioma entra nela",
+       globais=sorted(MOD.AUD_CORPO_GLOBAIS), locais=sorted(MOD.AUD_CORPO_LOCAIS), metodos=sorted(MOD.AUD_CORPO_METODOS))
+# o derivador tambem usa a lista de permissao: nao lista (nem aceita) o modulo com a evasao
+for nome_, texto_ in (("Lean_addDecl_qualificado", AUD_BASE + "  Lean.addDecl (.axiomDecl default)\n"), ("open_IO_FS_mais_writeFile", AUD_BASE.replace("open Lean in", "open IO.FS in") + "  writeFile \"x\" \"y\"\n")):
+    _kp_d, _ = variante_auditoria("r35d_" + nome_, texto_)
+    _kd = json.loads(_kp_d.read_bytes())
+    _kd["contrato"] = "KERNEL_RECIBO_R3_2"
+    _kd.pop("modulos_de_auditoria")
+    _kp_d2 = FX / ("KERNEL_RECIBO_R35_deriv_%s.json" % nome_)
+    _kp_d2.write_bytes(json.dumps(_kd, ensure_ascii=False, indent=1).encode("utf-8"))
+    rc_x, out_x, _ = derivar("r35_" + nome_, _kp_d2)
+    checar("R35_M_derivador_recusa_%s" % nome_, lambda rc_x=rc_x, out_x=out_x: rc_x != 0 and "PEDRA_SEM_DECLARACOES_QUE_NAO_E_DE_AUDITORIA" in out_x,
+           nota="M: o derivador (derivar_recibo_kernel_r3_4.py) usa a mesma lista de permissao: a pedra sem declaracoes cuja fonte tem a evasao %s NAO e listada em modulos_de_auditoria" % nome_, saida=out_x[:240])
+
+# ================================================================ R3.5 (V): o recibo pre_selo REAL da R3.4 (gerado ANTES da instalacao da v394) continua valendo sob a R3.5
+REC_REAL = AQUI / "recibo_pre_selo_v394" / "RECIBO_SINCRONIZACAO_v393_20261019_134158.json"
+PINO_REC = json.loads((AQUI / "PINO_RECIBO_PRE_SELO_v394_R3_4.json").read_bytes())
+CAD_V = AQUI / "CADEIA_DE_SELOS_v394.json"
+BASE393 = WORK / "cadeia_de_selo" / "v394" / "base_v393"
+BASE392 = WORK / "cadeia_de_selo" / "v393" / "base_v392"
+_cad_v = MOD.carregar_cadeia_de_selos(CAD_V, sha(CAD_V))
+_ant_prod2 = MOD.estado_anterior(PROD, MOD.carregar_canonical(PROD)[0])
+
+
+def _conf_real(rec=REC_REAL, ant=None, sha_=None, selo=None, kman=None, cad="padrao"):
+    """o MESMO caminho que o B(n) pos_selo usa: conferir_recibo_pre_selo contra a Bancada de PRODUCAO (so leitura), o selo e o manifesto do kernel da v393 (custodia) e a cadeia."""
+    return MOD.conferir_recibo_pre_selo(rec, ant or _ant_prod2, MOD.PRODUCAO, False, sha_ or sha(rec), selo or (BASE393 / "um_absoluto_selo.json"),
+                                        kman or (BASE393 / "tgl_kernel_proof_manifest.json"), _cad_v if cad == "padrao" else cad)
+
+
+def _lendo(fn):
+    """roda fn() registrando todo caminho aberto por Path.read_bytes/Path.read_text/open (para provar o que a conferencia NAO le)."""
+    import builtins
+    lidos = []
+    rb, rt, op = Path.read_bytes, Path.read_text, builtins.open
+
+    def _rb(self, *a, **k):
+        lidos.append(str(self))
+        return rb(self, *a, **k)
+
+    def _rt(self, *a, **k):
+        lidos.append(str(self))
+        return rt(self, *a, **k)
+
+    def _op(f, *a, **k):
+        lidos.append(str(f))
+        return op(f, *a, **k)
+    Path.read_bytes, Path.read_text, builtins.open = _rb, _rt, _op
+    try:
+        r_ = fn()
+    finally:
+        Path.read_bytes, Path.read_text, builtins.open = rb, rt, op
+    return r_, lidos
+
+
+_r_real, _lidos_real = _lendo(_conf_real)
+_rec_real = json.loads(REC_REAL.read_bytes())
+checar("R35_V_recibo_pre_selo_real_da_R3_4_e_aceito_pela_R3_5",
+       lambda: _r_real["veredito"] == PINO_REC["veredito"] and _r_real["salto"]["de"]["versao"] == "v392" and _r_real["salto"]["ate"]["versao"] == "v393" and _r_real["salto"]["versoes_puladas"] == ["v393"]
+       and _r_real["salto"]["proxima_a_selar"] == "v394" and _r_real["sha256"] == PINO_REC["sha256"] == sha(REC_REAL) and _r_real["bateria"]["falha"] == 0
+       and _rec_real["script_sha256"] == sha(R34 / "sincronizar_bancada.py") and _rec_real["script_sha256"] != sha(SYNC) and _r_real["versao"] == "v393",
+       nota="V (o requisito): o recibo pre_selo REAL gerado pela R3.4 antes da instalacao da v394 (salto v392 a v393, proxima a selar v394, bateria passou) e aceito, SEM mudar um byte, pela conferencia da R3.5 "
+            "contra a Bancada de PRODUCAO real (so lida); o recibo traz o script_sha256 do esboco R3.4, diferente do da R3.5", veredito=_r_real["veredito"], salto=_r_real["salto"],
+       script_do_recibo=_rec_real["script_sha256"][:16], script_da_r35=sha(SYNC)[:16])
+checar("R35_V_a_conferencia_do_recibo_real_nao_le_o_nos_vivo_nem_escreve", lambda: not any(str(NOS_REAL).lower() in x_.lower() for x_ in _lidos_real) and len(_lidos_real) > 0,
+       nota="V: a conferencia do recibo real nao abre nenhum arquivo do Nos REAL (hoje no meio do rito da v394): ela depende da producao, do recibo, da cadeia e das copias de custodia", n_arquivos_lidos=len(_lidos_real),
+       amostra=sorted(set(Path(x_).name for x_ in _lidos_real))[:12])
+
+
+def _recusa_conf(**kw):
+    try:
+        _conf_real(**kw)
+        return None
+    except MOD.Recusa as exc:
+        return str(exc)
+
+
+_rc1 = _recusa_conf(cad=None)
+checar("R35_V_recibo_pre_selo_real_sem_a_cadeia_e_recusado", lambda: _rc1 is not None and _rc1.startswith("RECIBO_PRE_SELO_SALTO_SEM_CADEIA"), nota="V: o recibo de salto sem a cadeia nao se confere", recusa=_rc1)
+_adulterado = FX / "RECIBO_REAL_com_um_byte_mudado.json"
+_b_ = bytearray(REC_REAL.read_bytes())
+_b_[100] ^= 1
+_adulterado.write_bytes(bytes(_b_))
+_rc2 = _recusa_conf(rec=_adulterado, sha_=sha(REC_REAL))
+checar("R35_V_recibo_pre_selo_real_com_um_byte_mudado_e_recusado", lambda: _rc2 is not None and "RECIBO_PRE_SELO" in _rc2, nota="V: um byte mudado no recibo real: o sha pinado nao confere e a conferencia recusa", recusa=_rc2)
+_rc3 = _recusa_conf(ant=MOD.estado_anterior(B1, MOD.carregar_canonical(B1)[0]))
+checar("R35_V_recibo_pre_selo_real_contra_outra_bancada_e_recusado", lambda: _rc3 is not None and _rc3.startswith(("RECIBO_PRE_SELO", "CADEIA_DE_SELOS_NAO_PARTE_DA_BANCADA")),
+       nota="V: contra uma Bancada que pina v393 (e nao a v392 do recibo), a conferencia recusa (a cadeia nao parte dessa Bancada, ou o recibo nao corresponde a ela)", recusa=_rc3)
+_rc4 = _recusa_conf(selo=BASE392 / "um_absoluto_selo.json", kman=BASE392 / "tgl_kernel_proof_manifest.json")
+checar("R35_V_recibo_pre_selo_real_com_o_selo_anterior_errado_e_recusado", lambda: _rc4 is not None, nota="V: o selo e o manifesto do kernel da v392 no lugar dos da v393 (o fim da cadeia): a conferencia recusa", recusa=_rc4)
+
+# ================================================================ R3.5 (P): a bateria da v394 contra o um.py CANDIDATO REAL (d19, o instalado), por stand-in (o selo e sintetico; o Nos real esta no meio do rito)
+CAND_V394 = WORK / "cadeia_de_selo" / "v394" / "um_v394_candidato_d19.py"
+BAT_394S, BAT_394S_SHA, PINO_394S = gerar_bateria_r34("v394s", "v394", NOS394S)
+d_v394, j_v394 = run("R35_P_run_bateria_inteira_contra_o_um_py_v394_candidato", ["--bancada", B1S394, "--nos", NOS394S, "--versao", "v394", "--bateria", BAT_394S, "--bateria-sha256", BAT_394S_SHA,
+                                                                                   "--modo", "ensaio", "--fase", "pre_selo"], 0, veredito_esp="JA_SINCRONIZADA__ENSAIO", bancada=B1S394, saida=S / "v394s",
+                     extra_ok=lambda j, r: (lambda rec: rec["bateria_resultado"]["falha"] == 0 and rec["bateria_resultado"]["passa"] == 13 and testes(j)["T12_T13_T14_ATRATOR"]["resultado"] == "PASSA"
+                                            and rec["bateria"]["pinos_da_versao"]["versao"] == "v394" and rec["bateria"]["pinos_da_versao"]["conferidos_contra_o_nos_lido"] is True
+                                            and rec["nos"]["um_py"]["sha256"] == sha(CAND_V394) and isolado(rec, S / "v394s"))(recibo_de(j)),
+                     nota="P (a bateria da v394): gerada por script (gerar_bateria_r3_4.py --versao v394) para o stand-in do Nos v394 (o um.py CANDIDATO REAL d19, selo sintetico) e rodada INTEIRA contra a Bancada pinada nele: "
+                          "13 PASSA, 0 FALHA, T12/T13/T14 repinados para o um.py v394, pinos da versao conferidos; o T17 so roda no pos_selo")
+_t12_v394 = json.loads(Path(S / "v394s" / "recibos" / "T12_T13_T14_ATRATOR.json").read_bytes())
+checar("R35_P_o_replay_do_atrator_passa_com_o_um_py_v394_e_a_linha_de_alpha_e_medida", lambda: _t12_v394["veredito"] == "PASSA" and all(r_["passa"] and r_["n_mismatch"] == 0 for r_ in _t12_v394["runs"].values())
+       and _t12_v394["adendo_de_pino"]["entrada_do_um_py"]["depois"]["sha256"] == sha(CAND_V394) and _t12_v394["um_py_medido"]["linha_de_alpha"] == 5584,
+       nota="P: o replay dos runners congelados da F1.ATRATOR com o um.py v394 (o candidato real): 3 runners, 0 divergencias; o pino do um.py do pre-registro e repinado na copia para o v394; a linha da atribuicao de alpha e MEDIDA",
+       adendo=_t12_v394["adendo_de_pino"]["entrada_do_um_py"], linha_de_alpha=_t12_v394["um_py_medido"]["linha_de_alpha"])
+

@@ -1,0 +1,15 @@
+# --- N2c (R3.1) na re-execucao: o manifesto B3 gravado registra o selo da geracao anterior; sem ele, a referencia falta e recusa
+checar("R31_N2c_manifesto_B3_registra_o_selo_anterior",
+       lambda: json.loads((B2 / "canonical_contracts.json").read_bytes())["sincronizacao"]["anterior"]["seal_sha_pinado"] == SBM["nos"]["selo"]["sha256"],
+       nota="N2c: o bloco sincronizacao.anterior do manifesto B3 (gravado pelo run 2) traz o seal_sha_pinado da v391 copiada; e por ele que o RUN_2bis cruzou o recibo pre-selo")
+b2s = RAIZ / "b2s"
+copiar_sem_juncao(B2, b2s)
+_ms = json.loads((b2s / "canonical_contracts.json").read_bytes())
+_ms["sincronizacao"]["anterior"].pop("seal_sha_pinado")
+(b2s / "canonical_contracts.json").write_bytes(json.dumps(_ms, ensure_ascii=False, indent=1).encode("utf-8"))
+run("R31_N2c_reexecucao_sem_selo_anterior_no_manifesto", ["--bancada", b2s, "--nos", NOS, "--versao", "v392", "--bateria", bt_min, "--bateria-sha256", bt_min_sha, "--sandbox",
+                                                          "--modo", "aplicar", "--fase", "pos_selo", "--evento", "SANDBOX:N2c", "--recibo-pre-selo", R1B,
+                                                          "--recibo-pre-selo-sha256", sha(R1B), "--kernel-recibo", K_OK, "--kernel-recibo-sha256", K_OK_SHA], 2,
+    "RECIBO_PRE_SELO_SEM_REFERENCIA", bancada=b2s,
+    nota="N2c: um manifesto ja sincronizado sem o seal_sha_pinado da geracao anterior (ex.: gravado por uma revisao antiga) nao serve de referencia: recusa")
+apagar_arvore(b2s)

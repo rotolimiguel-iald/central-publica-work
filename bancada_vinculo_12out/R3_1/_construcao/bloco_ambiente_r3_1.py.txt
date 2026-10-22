@@ -1,0 +1,32 @@
+# R3.1 (A4): o teste de ambiente mudou de formato. Na R3 exigia PYTHONPATH ausente; na R3.1 o esboco poe PYTHONPATH = o site do usuario
+# (achado pela pasta conhecida do Windows) para os NETOS, e o teste exige: -E, -P, -s no filho; APPDATA numa pasta vazia; nenhum
+# usercustomize; o neto com o site do usuario desligado (PYTHONNOUSERSITE) e sem usercustomize. O controle confere o PYTHONPATH.
+AMB_FONTE = '''import os, sys, json, subprocess
+import importlib.util
+from pathlib import Path
+cwd = os.getcwd()
+vazio = os.listdir(cwd) == []
+aqui = os.path.normcase(str(Path(__file__).resolve().parent))
+appdata = os.environ.get('APPDATA') or ''
+appdata_vazia = bool(appdata) and os.path.isdir(appdata) and os.listdir(appdata) == []
+codigo_neto = ('import json, os, site, sys, importlib.util; print(json.dumps(dict(user_site=bool(site.ENABLE_USER_SITE), '
+               'usercustomize=("usercustomize" in sys.modules), numpy=importlib.util.find_spec("numpy") is not None, '
+               'pythonpath=os.environ.get("PYTHONPATH"), appdata=os.environ.get("APPDATA"))))')
+neto = subprocess.run([sys.executable, '-c', codigo_neto], capture_output=True, text=True)
+try:
+    n = json.loads(neto.stdout.strip().splitlines()[-1])
+except Exception:
+    n = dict(erro=(neto.stderr or '')[-300:])
+r = dict(cwd=cwd, cwd_vazio_no_inicio=vazio, ignore_environment=bool(sys.flags.ignore_environment), safe_path=bool(sys.flags.safe_path),
+         no_user_site=bool(sys.flags.no_user_site), appdata=appdata, appdata_vazia=appdata_vazia, pythonpath=os.environ.get('PYTHONPATH'),
+         usercustomize_carregado=('usercustomize' in sys.modules),
+         pasta_do_script_no_sys_path=any(os.path.normcase(os.path.abspath(p or cwd)) == aqui for p in sys.path),
+         sitecustomize_do_ataque=bool(getattr(sys.modules.get('sitecustomize'), 'MARCA_N5', False)),
+         numpy_no_filho=importlib.util.find_spec('numpy') is not None, neto=n)
+ok = (r['cwd_vazio_no_inicio'] and r['ignore_environment'] and r['safe_path'] and r['no_user_site'] and r['appdata_vazia'] and not r['usercustomize_carregado']
+      and not r['pasta_do_script_no_sys_path'] and not r['sitecustomize_do_ataque'] and n.get('user_site') is False and n.get('usercustomize') is False)
+r['veredito'] = 'PASSA' if ok else 'FALHA'
+Path(sys.argv[1]).write_text(json.dumps(r), encoding='utf-8')
+print(json.dumps(r))
+'''
+amb = fixture_py("n5e", "teste_ambiente.py", AMB_FONTE)

@@ -1,0 +1,20 @@
+if quer 10b; then
+echo "== 10-bis. B(n) APLICAR, SALTO v392 -> v394, esboco R3.5 (grava o manifesto B4 na Bancada de producao: backup de bytes, rollback se falhar) $(date +%T)"
+[ "$B3_AUTORIZADO" = "sim" ] || aguarda "a B(n) nao esta autorizada: ato da gerencia sob evento c1 (SINCRONIZACAO_BANCADA, que nomeia a v394) + autorizacao do operador. Definir B3_AUTORIZADO=sim, EVENTO=<seq> e EVENTO_HASH=<hash16 do retorno de iald.py anotar>, com o servico parado (10-bis-a) e o recibo da parada, e retomar com CHAIN_DE=10b"
+[ -n "$EVENTO" ] && [ -n "$EVENTO_HASH" ] || aguarda "faltam EVENTO e EVENTO_HASH (o elo do evento c1 nomeando a gravacao)"
+[ -f "$PK/bancada_B3_servico/RECIBO_PARADA_v394.json" ] || aguarda "sem o recibo da parada do servico (10-bis-a)"
+b3_prepara 10b
+SAIDA_B3="$PK/bancada_B3"; k=1; while [ -e "$SAIDA_B3" ]; do k=$((k+1)); SAIDA_B3="$PK/bancada_B3_$k"; done
+echo "  saida do B(n): $SAIDA_B3 (pasta nova)"
+set +e
+$PY "$W_ESB" --bancada 'C:\IALD\Bancada_Um' --producao --nos "$W_NOS" --versao v394 --fase pos_selo --modo aplicar --bateria "$W_BAT" --bateria-sha256 "$BAT" \
+    --cadeia-de-selos "$W_CAD" --cadeia-de-selos-sha256 "$CAD" \
+    --evento "$EVENTO" --evento-hash "$EVENTO_HASH" \
+    --recibo-pre-selo "$W_RPS" --recibo-pre-selo-sha256 "$RPS" --selo-anterior "$W_SELO" --kernel-manifesto-anterior "$W_KMAN" \
+    --kernel-recibo "$W_KR" --kernel-recibo-sha256 "$KRSHA" --criterios "$W_CRI" --criterios-sha256 "$CRI" \
+    --saida "$(cygpath -w "$SAIDA_B3")" > "$SEL/b3_aplicar_out.txt" 2>&1; b3=$?
+set -e
+tail -4 "$SEL/b3_aplicar_out.txt" | cut -c1-400
+[ "$b3" = "0" ] || parar "o B(n) APLICAR reprovou (rc=$b3): saida inteira em $SEL/b3_aplicar_out.txt; NADA foi restaurado por esta cadeia (o esboco faz o seu rollback)"
+$PY "$SEL/b3_recibo_v394.py" "$(cygpath -w "$SEL/b3_aplicar_out.txt")" aplicar "$CAD" || parar "o recibo do B(n) APLICAR nao confere"
+fi
