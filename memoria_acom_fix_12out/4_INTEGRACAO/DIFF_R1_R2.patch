@@ -1,0 +1,183 @@
+diff --git a/IALD/MEMORIA_IALD/lib/iald_memory/guard.py b/IALD/MEMORIA_IALD/lib/iald_memory/guard.py
+index 0ca403e..8c630b4 100644
+--- a/IALD/MEMORIA_IALD/lib/iald_memory/guard.py
++++ b/IALD/MEMORIA_IALD/lib/iald_memory/guard.py
+@@ -35,7 +35,7 @@ __all__ = [
+     'IDENTITY_ROOTS', 'RULE_NAMES',
+ ]
+ 
+-GUARD_VERSION = 'iald-memory-guard/2026-10-12'
++GUARD_VERSION = 'iald-memory-guard/2026-10-13-r2'
+ 
+ # Folders whose real confidential files feed the identity registry (stat only).
+ IDENTITY_ROOTS = (
+@@ -186,18 +186,50 @@ _CONTENT_RULES = (
+     ('psion_name', re.compile(r'iald_psion_state', re.I)),
+     ('stack_name', re.compile(r'iald_stack_v\d', re.I)),
+     ('dotenv_name', re.compile(r'(?:\A|[\\/\s"\'`(\[{=:,;])\.env(?:\.[A-Za-z0-9_.\-]+)?(?=\Z|[\s"\'`)\]}:;,])', re.I)),
+-    ('key_pem_name', re.compile(r'\b[\w\-]+\.(?:key|pem)\b', re.I)),
++    ('key_pem_name', None),   # R2: linear scanner _key_pem_name (the regex was quadratic on '-'-joined words)
+ )
+ # Escritório as a PATH (drive, UNC or slash-delimited component), never the loose word.
+-_ESCRITORIO_PATH = re.compile(r'(?:\b[a-z]:[\\/]+(?:[^\\/\s]+[\\/]+)*|\\\\[^\\/\s]+[\\/]+(?:[^\\/\s]+[\\/]+)*|[\\/])escritorio')
++# R2 (13/10/2026, review finding 2): the R1 pattern
++#   (?:\b[a-z]:[\\/]+(?:[^\\/\s]+[\\/]+)*|\\\\[^\\/\s]+[\\/]+(?:[^\\/\s]+[\\/]+)*|[\\/])escritorio
++# re-scanned the rest of the text from every drive letter (quadratic: 240 KB of compact JSON with 4,000
++# Windows paths took 71 s inside the app lock). Its first two alternatives always end in a slash right
++# before `escritorio`, so the whole pattern has the same truth value as `[\\/]escritorio`. R2 keeps that and
++# adds two path forms R1 missed: drive-relative `c:escritorio` and percent-encoded separators (`%5c`, `%2f`).
++# Every alternative has a fixed length, so the search is linear in the text.
++_ESCRITORIO_PATH = re.compile(r'(?:[\\/]|%5c|%2f|\b[a-z]:)escritorio')
++_KEY_PEM_EXT = re.compile(r'\.(?:key|pem)\b', re.I)
++_WORD_CHAR = re.compile(r'\w')
+ RULE_NAMES = tuple(name for name, _ in _CONTENT_RULES) + ('escritorio_path',)
+ 
+ 
++def _key_pem_name(text):
++    r"""Same truth value as r'\b[\w\-]+\.(?:key|pem)\b' (re.I), in linear time.
++
++    That pattern matches iff the maximal run of [\w-] right before some `.key`/`.pem` (followed by a word
++    boundary) contains a word character. Walk back from each extension over hyphens only: every walk stops
++    at the first word character (match) or at the first character outside the run, so the walks are disjoint.
++    """
++    for m in _KEY_PEM_EXT.finditer(text):
++        i = m.start() - 1
++        while i >= 0:
++            ch = text[i]
++            if _WORD_CHAR.match(ch):
++                return True
++            if ch != '-':
++                break
++            i -= 1
++    return False
++
++
+ def scan_text(text):
+-    """Names of the rules matched by `text` (never the matched spans)."""
++    """Names of the rules matched by `text` (never the matched spans). Linear time in len(text) (R2)."""
+     if not isinstance(text, str):
+         text = json.dumps(text, ensure_ascii=False, sort_keys=True, default=str)
+-    rules = [name for name, pattern in _CONTENT_RULES if pattern.search(text)]
++    rules = []
++    for name, pattern in _CONTENT_RULES:
++        hit = _key_pem_name(text) if pattern is None else pattern.search(text) is not None
++        if hit:
++            rules.append(name)
+     if _ESCRITORIO_PATH.search(fold(text)):
+         rules.append('escritorio_path')
+     return rules
+diff --git a/IALD/MEMORIA_IALD/lib/iald_memory/journal.py b/IALD/MEMORIA_IALD/lib/iald_memory/journal.py
+index b8c9d14..4978495 100644
+--- a/IALD/MEMORIA_IALD/lib/iald_memory/journal.py
++++ b/IALD/MEMORIA_IALD/lib/iald_memory/journal.py
+@@ -44,7 +44,11 @@ def line_digest(previous, fields):
+ 
+ 
+ def path_for(journal_dir, context_id):
+-    name = quote(context_id, safe='-_.')  # ':' is a valid identifier character, not a valid NTFS one
++    # ':' is a valid identifier character, not a valid NTFS one. R2 (13/10/2026, review B, case collision):
++    # NTFS compares names case-insensitively, so 'CtxCase' and 'ctxcase' shared one journal and both
++    # contexts failed verify. ASCII upper-case letters are percent-escaped as well ('A' -> '%41'): every
++    # remaining letter is lower-case or a hex digit inside an escape, so the name is unique up to case.
++    name = ''.join('%%%02X' % ord(c) if 'A' <= c <= 'Z' else quote(c, safe='-_.') for c in context_id)
+     if name.split('.')[0].upper() in _RESERVED:
+         name = '_' + name
+     return Path(journal_dir) / (name + '.events.jsonl')
+diff --git a/IALD/MEMORIA_IALD/session_memory.py b/IALD/MEMORIA_IALD/session_memory.py
+index 1d49365..e8eb5f8 100644
+--- a/IALD/MEMORIA_IALD/session_memory.py
++++ b/IALD/MEMORIA_IALD/session_memory.py
+@@ -17,6 +17,13 @@ MAX_INPUT_BYTES = 2 * 1024 * 1024
+ OPS = {"init", "get", "project", "transition", "verify"}
+ ALLOWED_ACTORS = {"model", "agent"}
+ GUARD_LOG_NAME = "guard_refusals.jsonl"
++# R2 (13/10/2026, review finding 4): a reference file is read only through the guard and only these keys are
++# accepted. Anything else in the file (e.g. a confidential JSON that happens to carry the identity keys) is a
++# visible refusal; nothing from such a file is ever echoed back.
++REFERENCE_KEYS = frozenset({"protocol", "store", "context_id", "scope", "objective_sha256", "source",
++                            "request_id", "authority"})
++REFERENCE_SOURCE_KEYS = frozenset({"path", "sha256", "bytes"})
++MAX_REFERENCE_BYTES = 64 * 1024
+ 
+ class ProtocolError(ValueError):
+     pass
+@@ -42,6 +49,40 @@ def read_allowed_file(raw_path, log_path=None):
+         raise ProtocolError("source_too_large")
+     return path, path.read_bytes()
+ 
++def guarded_reference_path(raw_path, log_path=None, where="write_reference"):
++    """Refuse (before exists/read/create) a reference path the guard classifies as confidential."""
++    reason = _guard().is_confidential_path(raw_path, log_path=log_path, where=where)
++    if reason:
++        raise ProtocolError("source_path_not_allowed:" + reason)  # same code as every guarded read
++    return Path(raw_path)
++
++def load_reference(raw_path, log_path=None, where="reference"):
++    """Read a reference through the guard; accept only the protocol keys; return a clean copy."""
++    reason = _guard().is_confidential_path(raw_path, log_path=log_path, where=where)
++    if reason:
++        raise ProtocolError("source_path_not_allowed:" + reason)  # same code as every guarded read
++    path = Path(raw_path).resolve(strict=True)
++    if not path.is_file():
++        raise ProtocolError("reference_is_not_file")
++    if path.stat().st_size > MAX_REFERENCE_BYTES:
++        raise ProtocolError("reference_too_large")
++    try:
++        ref = json.loads(path.read_bytes().decode("utf-8"))
++    except (UnicodeDecodeError, ValueError):
++        raise ProtocolError("reference_not_json") from None
++    if not isinstance(ref, dict):
++        raise ProtocolError("reference_not_object")
++    unexpected = set(ref) - REFERENCE_KEYS
++    if unexpected:
++        # Key NAMES are not echoed either: only their count.
++        raise ProtocolError("reference_unexpected_keys:%d" % len(unexpected))
++    source = ref.get("source")
++    if source is not None and (not isinstance(source, dict) or set(source) - REFERENCE_SOURCE_KEYS):
++        raise ProtocolError("reference_source_unexpected_keys")
++    # Defence in depth: the accepted keys are scanned like any text that leaves the process.
++    _guard().assert_clean_text(json.dumps(ref, ensure_ascii=False, sort_keys=True), where + ".content", log_path=log_path)
++    return dict(ref)
++
+ def create_reference(path, data):
+     """References are immutable: publish complete bytes without overwrite."""
+     path = Path(path).resolve()
+@@ -75,8 +116,7 @@ def actor_for(request):
+ def reference_for(request, store_root, log_path=None):
+     raw = request.get("reference")
+     if raw:
+-        _, data = read_allowed_file(raw, log_path)
+-        ref = json.loads(data.decode("utf-8"))
++        ref = load_reference(raw, log_path, where="reference")
+         if ref.get("protocol") != PROTOCOL:
+             raise ProtocolError("unsupported_reference_protocol")
+         if Path(ref["store"]).resolve() != store_root:
+@@ -117,8 +157,12 @@ def dispatch(request, store_root, MemoryStore):
+         context_id = request.get("context_id") or str(uuid.uuid5(uuid.NAMESPACE_URL, "iald-memory-session:" + identity))
+         # Rebinding a session must not replace the original inscription actor.
+         # A reference already bound to another identity is rejected before writes.
+-        if request.get("write_reference") and Path(request["write_reference"]).exists():
+-            existing = json.loads(Path(request["write_reference"]).read_text(encoding="utf-8"))
++        write_reference = request.get("write_reference")
++        if write_reference:
++            # R2: the guard decides BEFORE exists/read/create (finding 4: a confidential-named JSON was read and echoed).
++            write_reference = guarded_reference_path(write_reference, log_path)
++        if write_reference and write_reference.exists():
++            existing = load_reference(write_reference, log_path, where="write_reference")
+             expected = {"protocol": PROTOCOL, "store": str(store_root), "context_id": context_id,
+                         "scope": scope, "objective_sha256": actual, "request_id": request_id}
+             if any(existing.get(k) != value for k, value in expected.items()):
+@@ -154,10 +198,10 @@ def dispatch(request, store_root, MemoryStore):
+             "source": {"path": str(source), "sha256": actual, "bytes": len(raw)},
+             "request_id": request_id,
+             "authority": "local_os_access_only_not_external_identity_authentication"}
+-        if request.get("write_reference"):
+-            ref_path = Path(request["write_reference"]).resolve()
++        if write_reference:
++            ref_path = guarded_reference_path(Path(write_reference).resolve(), log_path)
+             if ref_path.exists():
+-                existing = json.loads(ref_path.read_text(encoding="utf-8"))
++                existing = load_reference(ref_path, log_path, where="write_reference")
+                 if any(existing.get(k) != ref.get(k) for k in ("protocol", "store", "context_id", "scope", "objective_sha256", "request_id")):
+                     raise ProtocolError("existing_reference_identity_mismatch")
+                 ref = existing  # Preserve the first reference and its source provenance.

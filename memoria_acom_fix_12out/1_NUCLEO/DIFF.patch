@@ -1,0 +1,3038 @@
+# DIFF.patch -- FRENTE NUCLEO, conserto ACOM 12/10 (gerado 13/10/2026 por tests/make_diff_and_manifest.py)
+# a/originais_arvore/ = originais (byte-iguais a C:\IALD\MEMORIA_IALD e ao core de 10/10, conferido por cmp);
+# b/copia/MEMORIA_IALD/ = a arvore v2 desta frente, espelhando C:\IALD\MEMORIA_IALD; b/tests/ = os testes.
+# Arquivos novos aparecem como adicoes integrais. Este e um diff de REVISAO entre duas arvores (prefixos a/ e b/
+# apontam para pastas diferentes): a instalacao (passo M3, ato da gerencia) e a copia byte a byte de
+# copia/MEMORIA_IALD/* sobre C:\IALD\MEMORIA_IALD/* com .bak_<data> de cada arquivo tocado, nunca git apply.
+
+diff --git a/originais_arvore/MEMORIA_IALD/CORE.md b/copia/MEMORIA_IALD/CORE.md
+index 7da6d11..d9ee02b 100644
+--- a/originais_arvore/MEMORIA_IALD/CORE.md
++++ b/copia/MEMORIA_IALD/CORE.md
+@@ -95,3 +95,17 @@ Leitura e contrato atuais: todos os registros `fact`, `decision`, `contradiction
+ O campo `required_chars` passa a medir âncora + restrições + fluxo + estado obrigatório completo. Se esse conjunto não cabe, `project` lança `ProjectionOverflow`; não devolve uma projeção utilizável que tenha perdido steering, contradição, pendência ou fato consolidado. Somente candidatos opcionais podem aparecer em `omitted_record_ids`. O resultado ganhou `required_record_ids` para auditoria. `meta` deve ser objeto JSON e `meta.required`, se presente, booleano.
+ 
+ A validação atual compreende **20 testes aprovados**, incluindo casos negativos de mudança de rota, todos os tipos de estado consolidado, candidato explicitamente obrigatório e correção com ancestral candidato. O registro histórico dos 17 testes acima permanece como retrato da primeira entrega; esta correção foi feita somente na cópia de staging e aguarda reavaliação independente. Integrações devem tipar decisões/instruções posteriores como estado obrigatório; não devem escondê-las como candidatos opcionais.
++
++## Correção ao lado — 12–13/10/2026, esquema v2: estado por delta, diário e instantâneos (frente NÚCLEO; instalação é ato da gerência)
++
++[INPUT — decisões D1 e D2 da gerência c1 por delegação do operador («resolva a questão da memória», sha16 `78ef70e6f9868281`)] A seção «Persistência e limites» acima descreve a v1 e fica como registro. O que ela diz de «backup completo antes de escrita» e «replay integral e snapshots completos por evento» deixa de valer no esquema v2; o restante (SQLite em DELETE, `BEGIN IMMEDIATE`, FULL, CAS, guardas contra UPDATE/DELETE, verificação integral da âncora e da cadeia em toda leitura) permanece.
++
++**Estado por delta (D1).** Cada transição grava só as mudanças (`changes_json`) e o SHA-256 do estado resultante; `state_json` é `''` nos eventos escritos pela v2. O estado corrente de cada contexto fica materializado em `context_state` (tabela mutável; UPDATE com CAS de revisão na mesma transação; gatilho contra DELETE). A cada 256 revisões um estado integral entra em `snapshots` (só-acréscimo). A leitura verifica a âncora, o envelope da inscrição e a **cadeia inteira de hashes**: o digest de cada evento é recomputado a partir do JSON canônico armazenado (`_event_hash_stored`, a mesma fórmula da v1 sem desserializar e reserializar; se o JSON armazenado não for canônico, decide a fórmula completa `_event_hash`, de modo que o conjunto de linhas aceitas é exatamente o da v1), pelo índice de cobertura `events_chain_idx`, sem tocar nos `state_json` legados; só a âncora e os deltas posteriores ao último `snapshots` são desserializados e aplicados; o digest do estado replayado tem de ser igual ao do evento de cabeça **e** ao da linha materializada. `verify(deep=True)` reserializa ainda cada estado legado e cada linha de `snapshots`, com a fórmula completa em todo evento. Eventos v1 (com `state_json`) ficam como estão; a fórmula do hash de evento não mudou, logo legado e delta encadeiam. Um banco v1 é recusado com `SchemaMigrationRequired` (subclasse de `IntegrityError`): a migração é explícita (`migrar_para_delta.py`, dry-run por padrão, backup integral conferido antes, uma transação, verificação profunda depois, idempotente).
++
++**Diário e instantâneos (D2).** Toda mutação é acrescentada, encadeada por hash e sincronizada (fsync) em `state\journal\<contexto>.events.jsonl` **antes** do commit; linhas nunca são reescritas nem apagadas — uma linha cuja mutação não chegou ao commit é anulada por uma linha `void` na mutação seguinte. A linha `anchor` carrega escopo, âncora e a inscrição original (base64): o diário sozinho reconstrói o contexto (`migrar_para_delta.py --rebuild-from-journal`). O rabo do diário é lido em modo só-leitura e o acréscimo em modo só-acréscimo (nesta máquina `open('r+b')` custa ~4–5 ms e reabrir um arquivo recém-modificado ~4,6 ms, contra 0,03 ms de `stat`; `evidencias\perfil\custo_io_13out.txt`); cada instância guarda em memória o rabo do seu último acréscimo **confirmado** e só o reutiliza quando `stat` devolve o mesmo tamanho e o mesmo `mtime_ns` — um acerto errado quebraria a cadeia do diário de forma visível em `verify`, nunca o banco. O banco inteiro é copiado por bytes em `state\snapshots\` a cada 50 mutações ou 60 minutos (contados desde o último instantâneo; avaliado na mutação, sob o lock, antes da primeira escrita), com SHA-256 relido e sidecar `.sha256`. **O contador da política mora no próprio banco** (tabela `snapshot_policy`, uma linha, gatilho contra DELETE; nasce na primeira mutação ou na migração), lida antes da cópia e atualizada depois dela, na transação da mutação: conta mutações **confirmadas** e não custa I/O de arquivo (a especificação de 12/10 previa `state\snapshot_policy.json`; a troca foi decisão da frente, medida: 2,2–2,7 ms a menos por transição e nenhum arquivo rasgado capaz de bloquear mutações). Ficam 3 instantâneos em C: e os anteriores são **movidos** (copiar, conferir, apagar, manifesto) para `D:\IALD_ARQUIVO\MEMORIA_IALD\snapshots\`; arquivo indisponível ou cópia divergente → nada local é apagado e um aviso visível fica em `state\snapshots\AVISOS.jsonl`. Os `memory.sqlite3.bak_*` da v1 são movidos pelo mesmo procedimento por `mover_backups_antigos.py` (mantém os 3 mais recentes; nunca apaga sem cópia conferida). O esquema v2 tem 10 gatilhos (6 da v1 + `context_state_no_delete`, `snapshots_no_update`, `snapshots_no_delete`, `snapshot_policy_no_delete`).
++
++**Contrato público inalterado.** Assinaturas de `ensure_context/get/receipt/project/transition/verify`, exceções e campos de snapshot, recibo e projeção são os mesmos; `MemoryStore(root)` segue valendo (`snapshot_archive_dir` é opcional). `verify` preserva `ok`, `event_count`, `objective_bytes`, `receipt`, `validation_scope` e ganha chaves aditivas: `schema_version`, `deep`, `replay_from_revision`, `legacy_events`, `delta_events`, `snapshot_rows`, `journal_ok`, `journal_lines`, `journal_voided`, `journal_orphans`, `journal_missing_events`, `journal_malformed_lines`. `ok` só é falso quando o diário não cobre todos os eventos do contexto; inconsistência do banco continua a levantar `IntegrityError`. Método aditivo só-leitura: `snapshot_policy()` devolve a linha da política (contador, janela, último instantâneo) ou `None` antes da primeira mutação.
++
++**Custos medidos em cópia, 13/10/2026 [REAL — `evidencias\crescimento_n300.json`].** Um contexto com 300 candidatos de ~1,35 KB (`changes_json` médio 1.354,9 B): banco 0,99 → 1,92 → 3,22 MB em N = 100/200/300 (expoente 1,07; a auditoria mediu 1,87 na v1, que extrapola ≈ 54,8 MB em N = 300); diário 608 KB (expoente 1,00; +3,5 % sobre a estimativa N×(|changes|+600 B)); 6 instantâneos de bytes, 3 locais (7,5 MB) e 3 arquivados (2,9 MB), total 10,4 MB (a v1 extrapola ≈ 5,19 GB de backups por mutação em N = 300, expoente 2,78); transição mediana dos últimos 100 eventos 10,2 / 17,2 / 30,2 ms em N = 100/200/300 (p90 em 300: 34,1 ms; mediana geral 17,3 ms; máximo 93,6 ms numa mutação com instantâneo; a v1 media 0,41 s em N = 150, expoente 1,36); `get` 3,7 / 9,4 / 10,6 ms. Leitura de um contexto legado com 35,7 MB de `state_json` após migração: 32 ms contra 273 ms na v1, pelo índice de cobertura. O custo por transição ainda cresce com N porque toda leitura verifica a cadeia inteira (duas vezes por transição) e reescreve o estado materializado; é a mesma garantia da v1 com custo linear, não quadrático. Extrapolação para o contexto do heartbeat (735 eventos): ≈ 60–70 ms por transição [DERIVED], contra 5,3 s de leitura mais uma cópia de 357 MB hoje.
++
++**Validação.** 20 testes da entrega anterior (uma reescrita: `test_state_and_flow_commit_together_and_survive_restart`, que afirmava o backup integral por mutação) e 34 testes novos (`test_store_v2.py`) aprovados em cópia, sob a guarda da auditoria, em 13/10/2026; recibos em `work\memoria_acom_fix_12out\1_NUCLEO\` (`TESTES.md`, `MANIFESTO.json`, `DIFF.patch`). A aprovação independente e a instalação cabem à gerência.
+diff --git a/originais_arvore/MEMORIA_IALD/lib/iald_memory/__init__.py b/copia/MEMORIA_IALD/lib/iald_memory/__init__.py
+index c6a8095..82f0470 100644
+--- a/originais_arvore/MEMORIA_IALD/lib/iald_memory/__init__.py
++++ b/copia/MEMORIA_IALD/lib/iald_memory/__init__.py
+@@ -2,16 +2,21 @@
+ 
+ This is a local application ledger, not access to a model's hidden state/KV cache.
+ Hashes detect inconsistent storage; they are not an external trust anchor.
++
++Schema v2 (12/10/2026): events store deltas, the current state is materialized
++per context, every mutation is journaled before commit and the database is
++copied by bytes on a mutation/time policy. A v1 database raises
++``SchemaMigrationRequired`` until the explicit migration runs.
+ """
+ from .store import (
+     MemoryStore, MemoryError, InvalidInput, ContextNotFound, ScopeViolation,
+     AnchorConflict, RevisionConflict, IdempotencyConflict, IntegrityError,
+-    ProjectionOverflow, InvariantViolation,
++    ProjectionOverflow, InvariantViolation, SchemaMigrationRequired,
+ )
+ 
+ __all__ = [
+     'MemoryStore', 'MemoryError', 'InvalidInput', 'ContextNotFound',
+     'ScopeViolation', 'AnchorConflict', 'RevisionConflict',
+     'IdempotencyConflict', 'IntegrityError', 'ProjectionOverflow',
+-    'InvariantViolation',
+-]
+\ No newline at end of file
++    'InvariantViolation', 'SchemaMigrationRequired',
++]
+diff --git a/copia/MEMORIA_IALD/lib/iald_memory/journal.py b/copia/MEMORIA_IALD/lib/iald_memory/journal.py
+new file mode 100644
+index 0000000..b8c9d14
+--- /dev/null
++++ b/copia/MEMORIA_IALD/lib/iald_memory/journal.py
+@@ -0,0 +1,282 @@
++"""Append-only, hash-chained per-context journal of memory mutations (D2a).
++
++One JSONL file per context under ``<state>/journal/``. Every mutation of the
++store is appended and fsynced here BEFORE the SQLite commit, so the journal is
++the immediate backup of the mutation. Lines are never rewritten or deleted: a
++line whose mutation never committed (process death between append and commit)
++is voided by a later ``void`` line that references it. The ``anchor`` line
++carries scope, anchor and the original inscription (base64), so the journals
++alone rebuild every context (see ``migrate.rebuild_from_journal``).
++
++Line format (ASCII JSON, sorted keys, one per line)::
++
++    {"seq", "kind": "anchor"|"event"|"void", "context_id", "revision", "event_id",
++     "actor_json", "changes_json", "state_sha256", "previous_hash", "event_hash",
++     "created_at", "legacy", "prev_line_sha256", "line_sha256"}
++
++``line_sha256 = sha256(prev_line_sha256 + canonical(line without line_sha256))``.
++The anchor line adds ``scope_json``, ``anchor_json`` and ``objective_b64``; a
++void line has ``voids_seq``, ``voids_line_sha256`` and ``reason``.
++"""
++from __future__ import annotations
++
++import hashlib
++import json
++import os
++from pathlib import Path
++from urllib.parse import quote
++
++KINDS = ('anchor', 'event', 'void')
++_RESERVED = {'CON', 'PRN', 'AUX', 'NUL'} | {f'COM{i}' for i in range(1, 10)} | {f'LPT{i}' for i in range(1, 10)}
++_CHUNK = 256 * 1024
++
++
++class JournalError(ValueError):
++    """Visible refusal: the journal could not be read or extended consistently."""
++
++
++def canonical(obj):
++    return json.dumps(obj, sort_keys=True, separators=(',', ':'), ensure_ascii=True, allow_nan=False)
++
++
++def line_digest(previous, fields):
++    return hashlib.sha256((previous + canonical(fields)).encode('ascii')).hexdigest()
++
++
++def path_for(journal_dir, context_id):
++    name = quote(context_id, safe='-_.')  # ':' is a valid identifier character, not a valid NTFS one
++    if name.split('.')[0].upper() in _RESERVED:
++        name = '_' + name
++    return Path(journal_dir) / (name + '.events.jsonl')
++
++
++def _parse(raw):
++    try:
++        line = json.loads(raw.decode('ascii'))
++    except (UnicodeDecodeError, json.JSONDecodeError):
++        return None
++    if (not isinstance(line, dict) or type(line.get('seq')) is not int or line.get('kind') not in KINDS
++            or not isinstance(line.get('line_sha256'), str) or not isinstance(line.get('prev_line_sha256'), str)):
++        return None
++    return line
++
++
++def read_all(path):
++    """All lines in file order. Returns (lines, malformed_count, ends_with_newline)."""
++    path = Path(path)
++    if not path.exists():
++        return [], 0, True
++    raw = path.read_bytes()
++    if not raw:
++        return [], 0, True
++    ends = raw.endswith(b'\n')
++    lines, malformed = [], 0
++    for chunk in raw.split(b'\n'):
++        if not chunk:
++            continue
++        line = _parse(chunk)
++        if line is None:
++            malformed += 1
++        else:
++            lines.append(line)
++    return lines, malformed, ends
++
++
++def _tail_bytes(handle, size, minimum_lines):
++    """Bytes from the start of a line boundary to EOF holding at least ``minimum_lines`` lines."""
++    offset, buffer = size, b''
++    while offset > 0:
++        step = min(_CHUNK, offset)
++        offset -= step
++        handle.seek(offset)
++        buffer = handle.read(step) + buffer
++        if buffer.count(b'\n') > minimum_lines:
++            break
++    if offset > 0:
++        cut = buffer.find(b'\n')
++        buffer = buffer[cut + 1:]
++    return buffer
++
++
++def _trailing(handle, size, committed):
++    """Return (last_line, uncommitted_trailing_lines, ends_with_newline).
++
++    Walks back from the end of the open file over lines that are neither
++    voided, void lines, nor committed in the database. ``committed`` maps
++    revision to event hash as the database sees it under the writer lock.
++    """
++    if size == 0:
++        return None, [], True
++    need = 4
++    while True:
++        buffer = _tail_bytes(handle, size, need)
++        chunks = [c for c in buffer.split(b'\n') if c]
++        parsed = [(_parse(c), c) for c in chunks]
++        ends = buffer.endswith(b'\n')
++        last = next((line for line, _ in reversed(parsed) if line is not None), None)
++        if last is None and len(buffer) < size:
++            need *= 4
++            continue
++        uncommitted = []
++        complete = True
++        for line, _ in reversed(parsed):
++            if line is None:
++                continue
++            if line['kind'] == 'void':
++                break
++            if committed.get(line.get('revision')) == line.get('event_hash'):
++                break
++            uncommitted.append(line)
++        else:
++            complete = len(buffer) >= size
++        if not complete:
++            need *= 4
++            continue
++        uncommitted.reverse()
++        return last, uncommitted, ends
++
++
++def _stat_tail(path):
++    st = os.stat(path)
++    return st.st_size, st.st_mtime_ns
++
++
++def append(journal_dir, context_id, kind, fields, committed, created_at, cached_tail=None):
++    """Append one line (voiding trailing uncommitted lines first) with fsync.
++
++    ``fields`` are the mutation fields without seq/kind/prev/line digests.
++    ``cached_tail`` is the value returned by the previous COMMITTED append of
++    this process for the same context: ``{'size', 'mtime_ns', 'last'}``. It is
++    used only when the file's size and mtime_ns are still exactly those (one
++    ``stat``); otherwise the tail is read from the file. Re-opening a file that
++    was just modified costs ~4.5 ms on the operator's machine (antivirus scan
++    on open, measured 12/10/2026); ``stat`` costs 0.03 ms.
++    Returns ``(line, tail)``: the appended line (dict, including
++    ``line_sha256``) and the new tail record for the caller's cache.
++    """
++    if kind not in ('anchor', 'event'):
++        raise JournalError('Only anchor and event lines are appended by the store')
++    journal_dir = Path(journal_dir)
++    journal_dir.mkdir(parents=True, exist_ok=True)
++    path = path_for(journal_dir, context_id)
++    # Read-only tail, then append-only write: the two cheap open modes on
++    # Windows ('r+b' measured ~20x slower on the operator's machine, 12/10/2026).
++    if path.exists():
++        if (cached_tail and _stat_tail(path) == (cached_tail['size'], cached_tail['mtime_ns'])
++                and cached_tail['last'] is not None):
++            last, orphans, ends = cached_tail['last'], [], True
++        else:
++            with path.open('rb') as handle:
++                handle.seek(0, os.SEEK_END)
++                last, orphans, ends = _trailing(handle, handle.tell(), committed)
++    else:
++        last, orphans, ends = None, [], True
++    seq = last['seq'] + 1 if last else 1
++    previous = last['line_sha256'] if last else ''
++    out = []
++    for orphan in orphans:
++        void = {'seq': seq, 'kind': 'void', 'context_id': context_id, 'voids_seq': orphan['seq'],
++                'voids_line_sha256': orphan['line_sha256'], 'reason': 'not_committed',
++                'created_at': created_at, 'prev_line_sha256': previous}
++        void['line_sha256'] = line_digest(previous, void)
++        out.append(void)
++        previous, seq = void['line_sha256'], seq + 1
++    line = dict(fields, seq=seq, kind=kind, prev_line_sha256=previous)
++    line['line_sha256'] = line_digest(previous, line)
++    out.append(line)
++    payload = b''.join(canonical(item).encode('ascii') + b'\n' for item in out)
++    if not ends:
++        payload = b'\n' + payload  # a truncated last line (crash mid-write) stays visible and malformed
++    with path.open('ab') as handle:
++        handle.write(payload)
++        handle.flush()
++        os.fsync(handle.fileno())
++    size, mtime_ns = _stat_tail(path)
++    return line, {'size': size, 'mtime_ns': mtime_ns, 'last': line}
++
++
++def append_many(journal_dir, context_id, lines):
++    """Bootstrap/bulk append of already-built lines (anchor/event), chained, one fsync.
++
++    Used by the migration: lines are appended after the existing tail; a line
++    whose (revision, event_hash) already exists un-voided in the journal is
++    skipped (idempotent re-run). Returns the number of lines written.
++    """
++    journal_dir = Path(journal_dir)
++    journal_dir.mkdir(parents=True, exist_ok=True)
++    path = path_for(journal_dir, context_id)
++    existing, malformed, ends = read_all(path)
++    chain = verify_lines(existing)
++    if not chain['chain_ok']:
++        raise JournalError('Existing journal chain is broken; refuse to extend it')
++    voided = {l['voids_seq'] for l in existing if l['kind'] == 'void'}
++    present = {(l.get('revision'), l.get('event_hash')) for l in existing if l['kind'] != 'void' and l['seq'] not in voided}
++    seq = existing[-1]['seq'] + 1 if existing else 1
++    previous = existing[-1]['line_sha256'] if existing else ''
++    out = []
++    for kind, fields in lines:
++        if kind not in ('anchor', 'event'):
++            raise JournalError('Only anchor and event lines can be bootstrapped')
++        if (fields['revision'], fields['event_hash']) in present:
++            continue
++        line = dict(fields, seq=seq, kind=kind, prev_line_sha256=previous)
++        line['line_sha256'] = line_digest(previous, line)
++        out.append(line)
++        previous, seq = line['line_sha256'], seq + 1
++    if not out:
++        return 0
++    payload = b''.join(canonical(item).encode('ascii') + b'\n' for item in out)
++    if not ends:
++        payload = b'\n' + payload
++    with path.open('ab') as handle:
++        handle.write(payload)
++        handle.flush()
++        os.fsync(handle.fileno())
++    return len(out)
++
++
++def verify_lines(lines):
++    """Verify seq continuity and the digest chain of parsed lines."""
++    previous, expected = '', 1
++    broken_at = None
++    for line in lines:
++        fields = dict(line)
++        digest = fields.pop('line_sha256')
++        if line['seq'] != expected or line['prev_line_sha256'] != previous or line_digest(previous, fields) != digest:
++            broken_at = line['seq']
++            break
++        previous, expected = digest, expected + 1
++    return {'chain_ok': broken_at is None, 'broken_at_seq': broken_at, 'lines': len(lines)}
++
++
++def effective_events(lines):
++    """Map revision -> (event_hash, line) of the last un-voided anchor/event line per revision."""
++    voided = {l['voids_seq'] for l in lines if l['kind'] == 'void'}
++    effective = {}
++    for line in lines:
++        if line['kind'] != 'void' and line['seq'] not in voided:
++            effective[line['revision']] = (line['event_hash'], line)
++    return effective, voided
++
++
++def verify_chain(path, db_events):
++    """Compare the journal with the database view of one context.
++
++    ``db_events`` is a list of (revision, event_hash). ``ok`` requires the file
++    to exist, the digest chain to hold and every database event to have an
++    un-voided line with the same hash. Orphans (lines not in the database) and
++    malformed lines are counted, not hidden.
++    """
++    path = Path(path)
++    lines, malformed, ends = read_all(path)
++    chain = verify_lines(lines)
++    effective, voided = effective_events(lines)
++    db = dict(db_events)
++    missing = [rev for rev, digest in db_events if effective.get(rev, (None,))[0] != digest]
++    orphans = [l['seq'] for l in lines if l['kind'] != 'void' and l['seq'] not in voided
++               and db.get(l['revision']) != l['event_hash']]
++    return {'path': str(path), 'exists': path.exists(), 'lines': len(lines), 'malformed_lines': malformed,
++            'ends_with_newline': ends, 'chain_ok': chain['chain_ok'], 'broken_at_seq': chain['broken_at_seq'],
++            'voided': len(voided), 'orphans': len(orphans), 'orphan_seqs': orphans,
++            'missing_events': len(missing), 'missing_revisions': missing,
++            'ok': path.exists() and chain['chain_ok'] and not missing}
+diff --git a/copia/MEMORIA_IALD/lib/iald_memory/migrate.py b/copia/MEMORIA_IALD/lib/iald_memory/migrate.py
+new file mode 100644
+index 0000000..3a194db
+--- /dev/null
++++ b/copia/MEMORIA_IALD/lib/iald_memory/migrate.py
+@@ -0,0 +1,414 @@
++"""Explicit migration v1 -> v2 (delta mode) and rebuild from the journal.
++
++The store never migrates implicitly: a v1 database raises
++``SchemaMigrationRequired``. ``migrate(root)`` is a dry run by default; with
++``apply=True`` it runs, inside ONE ``BEGIN IMMEDIATE`` transaction:
++
++ 1. deep replay of every context in v1 form (every legacy ``state_json`` and
++    every event digest verified; the chain must close);
++ 2. whole-database byte backup (D2c) next to the database,
++    ``memory.sqlite3.pre_v2_<stamp>`` + ``.sha256``, optional second copy,
++    both verified by SHA-256 re-read;
++ 3. the v2 tables (``context_state``, ``snapshots``, ``snapshot_policy`` with its
++    initial row), chain index and triggers;
++ 4. one ``snapshots`` row (``reason='migration_v2'``) at the head of each
++    context and its ``context_state`` row (delta mode on from here);
++ 5. journal bootstrap: one ``legacy: true`` line per existing event, appended
++    and fsynced before the commit (idempotent on re-run);
++ 6. ``schema_version`` 1 -> 2 (the ``metadata_no_update`` guard is dropped
++    and recreated inside the transaction) and ``schema_upgrade_2_at``;
++ 7. commit, then ``verify(deep=True)`` through the public store for every
++    context, comparing head revision/state digest/event hash with step 1.
++
++Legacy events are not touched (their ``state_json`` stays). A v2 database is
++reported as already migrated and only verified. Nothing is written on a dry
++run or on any failure before step 2; a failure after step 2 leaves the backup
++and rolls the transaction back.
++"""
++from __future__ import annotations
++
++import base64
++from datetime import datetime, timezone
++import json
++import os
++from pathlib import Path
++import sqlite3
++import time
++import zlib
++
++from . import journal as _journal
++from . import snapshots as _snapshots
++from .store import (
++    MemoryStore, IntegrityError, SchemaMigrationRequired, SCHEMA_VERSION, MAX_TEXT_BYTES,
++    _SCHEMA_V2_ADDITIONS, _CHAIN_COLUMNS, _TRIGGERS_V1, _execute_ddl, _actor, _changes,
++    _apply_inplace, _initial_state, _dump, _sha, _event_digest,
++)
++
++
++class MigrationError(IntegrityError):
++    pass
++
++
++def _iso():
++    return datetime.now(timezone.utc).isoformat(timespec='microseconds')
++
++
++def _connect(db_path):
++    conn = sqlite3.connect(str(db_path), timeout=30, isolation_level=None)
++    conn.row_factory = sqlite3.Row
++    conn.execute('PRAGMA foreign_keys=ON')
++    conn.execute('PRAGMA synchronous=FULL')
++    conn.execute('PRAGMA busy_timeout=30000')
++    return conn
++
++
++def schema_version(conn):
++    tables = {r[0] for r in conn.execute("SELECT name FROM sqlite_master WHERE type='table'")}
++    if 'metadata' not in tables:
++        return None
++    row = conn.execute("SELECT value FROM metadata WHERE key='schema_version'").fetchone()
++    return row[0] if row else None
++
++
++def inspect(root):
++    """Metadata and counts only; no record content is returned."""
++    root = Path(root)
++    db_path = root / 'memory.sqlite3'
++    result = {'root': str(root), 'db': str(db_path), 'exists': db_path.exists(),
++              'db_bytes': db_path.stat().st_size if db_path.exists() else 0}
++    if not db_path.exists():
++        return result
++    conn = _connect(db_path)
++    try:
++        result['schema_version'] = schema_version(conn)
++        result['journal_mode'] = conn.execute('PRAGMA journal_mode').fetchone()[0]
++        result['tables'] = sorted(r[0] for r in conn.execute("SELECT name FROM sqlite_master WHERE type='table'"))
++        result['triggers'] = sorted(r[0] for r in conn.execute("SELECT name FROM sqlite_master WHERE type='trigger'"))
++        result['indexes'] = sorted(r[0] for r in conn.execute("SELECT name FROM sqlite_master WHERE type='index'"))
++        if 'contexts' in result['tables']:
++            result['contexts'] = conn.execute('SELECT count(*) FROM contexts').fetchone()[0]
++            result['events'] = conn.execute('SELECT count(*) FROM events').fetchone()[0]
++            sums = conn.execute('SELECT sum(length(state_json)), sum(length(changes_json)) FROM events').fetchone()
++            result['sum_state_json_chars'] = int(sums[0] or 0)
++            result['sum_changes_json_chars'] = int(sums[1] or 0)
++            result['legacy_events'] = conn.execute("SELECT count(*) FROM events WHERE revision>0 AND state_json<>''").fetchone()[0]
++            result['delta_events'] = conn.execute("SELECT count(*) FROM events WHERE revision>0 AND state_json=''").fetchone()[0]
++        if 'snapshots' in result['tables']:
++            result['snapshot_rows'] = conn.execute('SELECT count(*) FROM snapshots').fetchone()[0]
++        if 'context_state' in result['tables']:
++            result['context_state_rows'] = conn.execute('SELECT count(*) FROM context_state').fetchone()[0]
++        if 'snapshot_policy' in result['tables']:
++            row = conn.execute('SELECT policy_json FROM snapshot_policy WHERE id=1').fetchone()
++            result['snapshot_policy'] = json.loads(row[0]) if row else None
++    finally:
++        conn.close()
++    backups = _snapshots.list_legacy_backups(root)
++    result['legacy_backups'] = len(backups)
++    result['legacy_backups_bytes'] = sum(p.stat().st_size for p in backups)
++    result['journal_files'] = len(list((root / 'journal').glob('*.events.jsonl'))) if (root / 'journal').exists() else 0
++    result['db_snapshots'] = len(_snapshots.list_snapshots(root / 'snapshots'))
++    return result
++
++
++def replay_v1_context(conn, context_id):
++    """Deep v1 replay of one context: anchor, envelope, chain and every legacy state verified.
++
++    Streams the event rows (the legacy state_json is large) and returns the head
++    (revision, state_json, state_sha256, event_hash), the scope, the anchor
++    line fields for the journal bootstrap and the chain lines of every event.
++    """
++    row = conn.execute('SELECT * FROM contexts WHERE context_id=?', (context_id,)).fetchone()
++    if row is None:
++        raise MigrationError(f'Context {context_id} missing')
++    anchor = json.loads(row['anchor_json'])
++    if _sha(row['anchor_json'].encode('utf-8')) != row['anchor_sha256'] or anchor['context_id'] != context_id:
++        raise MigrationError(f'Anchor digest/identity mismatch in {context_id}')
++    scope = json.loads(row['scope_json'])
++    if anchor['scope'] != scope or _dump(scope) != row['scope_json']:
++        raise MigrationError(f'Anchor scope mismatch in {context_id}')
++    decoder = zlib.decompressobj()
++    objective = decoder.decompress(row['objective_blob'], MAX_TEXT_BYTES + 1)
++    if len(objective) > MAX_TEXT_BYTES or decoder.unconsumed_tail or not decoder.eof or decoder.unused_data:
++        raise MigrationError(f'Objective envelope invalid in {context_id}')
++    if (len(objective) != row['objective_bytes'] or _sha(objective) != row['objective_sha256']
++            or anchor['objective_sha256'] != row['objective_sha256'] or anchor['objective_bytes'] != len(objective)):
++        raise MigrationError(f'Inscription byte/hash mismatch in {context_id}')
++    objective.decode('utf-8')
++    state, known = _initial_state(), set()
++    previous = row['anchor_sha256']
++    head = None
++    chain = []
++    count = 0
++    for event in conn.execute('SELECT * FROM events WHERE context_id=? ORDER BY revision', (context_id,)):
++        index = count
++        count += 1
++        if event['revision'] != index or event['previous_hash'] != previous:
++            raise MigrationError(f'Event chain gap or predecessor mismatch in {context_id} at {index}')
++        actor = _actor(json.loads(event['actor_json']))
++        changes = json.loads(event['changes_json'])
++        if index == 0:
++            if event['event_id'] != 'anchor' or changes != {'anchor_sha256': previous} or actor != anchor['actor']:
++                raise MigrationError(f'Invalid anchor event in {context_id}')
++        else:
++            normalized = _changes(changes, actor)
++            if normalized != changes:
++                raise MigrationError(f'Noncanonical event changes in {context_id} at {index}')
++            _apply_inplace(state, normalized, known)
++        state_json = _dump(state)
++        if state_json != event['state_json'] or _sha(state_json.encode('utf-8')) != event['state_sha256']:
++            raise MigrationError(f'Legacy state differs from replay or digest in {context_id} at {index}')
++        digest = _event_digest(context_id, index, event['event_id'], actor, changes,
++                               event['state_sha256'], previous, event['created_at'])
++        if digest != event['event_hash']:
++            raise MigrationError(f'Event digest mismatch in {context_id} at {index}')
++        previous = digest
++        fields = {'context_id': context_id, 'revision': index, 'event_id': event['event_id'],
++                  'actor_json': event['actor_json'], 'changes_json': event['changes_json'],
++                  'state_sha256': event['state_sha256'], 'previous_hash': event['previous_hash'],
++                  'event_hash': event['event_hash'], 'created_at': event['created_at'], 'legacy': True}
++        if index == 0:
++            fields.update(scope_json=row['scope_json'], anchor_json=row['anchor_json'],
++                          objective_b64=base64.b64encode(objective).decode('ascii'))
++        chain.append(('anchor' if index == 0 else 'event', fields))
++        head = {'revision': index, 'state_json': state_json, 'state_sha256': event['state_sha256'],
++                'event_hash': event['event_hash'], 'created_at': event['created_at']}
++    if head is None:
++        raise MigrationError(f'Context {context_id} has no anchor event')
++    return {'context_id': context_id, 'scope': scope, 'events': count, 'head': head, 'chain': chain}
++
++
++def whole_backup(db_path, second_copy_dir=None, label='pre_v2'):
++    """D2c: verified byte copy of the database before a non-additive operation."""
++    db_path = Path(db_path)
++    stamp = datetime.now().strftime('%Y%m%d_%H%M%S_%f')
++    backup = db_path.with_name(f'{db_path.name}.{label}_{stamp}')
++    size, digest = _snapshots.copy_verified(db_path, backup)
++    _snapshots._write_text_atomic(backup.with_name(backup.name + '.sha256'), f'{digest}  {backup.name}\n')
++    result = {'path': str(backup), 'bytes': size, 'sha256': digest, 'second_copy': None}
++    if second_copy_dir:
++        second_dir = Path(second_copy_dir)
++        second_dir.mkdir(parents=True, exist_ok=True)
++        second = second_dir / backup.name
++        size2, digest2 = _snapshots.copy_verified(db_path, second)
++        if size2 != size or digest2 != digest:
++            raise MigrationError('Second backup copy does not match the first')
++        _snapshots._write_text_atomic(second.with_name(second.name + '.sha256'), f'{digest2}  {second.name}\n')
++        result['second_copy'] = {'path': str(second), 'bytes': size2, 'sha256': digest2}
++    return result
++
++
++def verify_all(root, deep=False, snapshot_archive_dir=None):
++    """Public-store verification of every context (v2 database)."""
++    root = Path(root)
++    store = MemoryStore(root, snapshot_archive_dir=snapshot_archive_dir)
++    conn = _connect(root / 'memory.sqlite3')
++    try:
++        contexts = [(r[0], json.loads(r[1])) for r in conn.execute('SELECT context_id, scope_json FROM contexts ORDER BY created_at, context_id')]
++    finally:
++        conn.close()
++    results = {}
++    for context_id, scope in contexts:
++        results[context_id] = store.verify(context_id, scope, deep=deep)
++    return results
++
++
++def migrate(root, *, apply=False, second_copy_dir=None, deep_after=True, snapshot_archive_dir=None, log=None):
++    """Dry run (default) or apply the v1 -> v2 migration. Returns a receipt dict."""
++    root = Path(root)
++    log = log or (lambda *_: None)
++    db_path = root / 'memory.sqlite3'
++    started = time.time()
++    receipt = {'root': str(root), 'db': str(db_path), 'apply': apply, 'started_at': _iso(),
++               'before': inspect(root)}
++    if not db_path.exists():
++        raise MigrationError('No memory database at this root')
++    conn = _connect(db_path)
++    try:
++        conn.execute('BEGIN IMMEDIATE')
++        version = schema_version(conn)
++        if version == str(SCHEMA_VERSION):
++            conn.rollback()
++            receipt['already_migrated'] = True
++            receipt['verify_after'] = _summarize(verify_all(root, deep=deep_after, snapshot_archive_dir=snapshot_archive_dir))
++            receipt['finished_at'], receipt['seconds'] = _iso(), round(time.time() - started, 3)
++            return receipt
++        if version != '1':
++            raise MigrationError(f'Unsupported schema version {version!r}; refuse to migrate')
++        found = {r[0] for r in conn.execute("SELECT name FROM sqlite_master WHERE type='trigger'")}
++        if not _TRIGGERS_V1 <= found:
++            raise MigrationError('v1 immutability guards missing; refuse to migrate')
++        if conn.execute('PRAGMA journal_mode').fetchone()[0].lower() != 'delete':
++            raise MigrationError('Unexpected journal mode; refuse unsafe byte backup')
++        receipt['already_migrated'] = False
++        contexts = [r[0] for r in conn.execute('SELECT context_id FROM contexts ORDER BY created_at, context_id')]
++        replays = {}
++        for context_id in contexts:
++            log(f'replay v1 {context_id}')
++            replays[context_id] = replay_v1_context(conn, context_id)
++        receipt['contexts'] = {cid: {'events': r['events'], 'head_revision': r['head']['revision'],
++                                     'head_state_sha256': r['head']['state_sha256'],
++                                     'head_event_hash': r['head']['event_hash'],
++                                     'scope': r['scope']} for cid, r in replays.items()}
++        if not apply:
++            conn.rollback()
++            receipt['dry_run'] = True
++            receipt['finished_at'], receipt['seconds'] = _iso(), round(time.time() - started, 3)
++            return receipt
++        log('whole-database backup')
++        receipt['backup'] = whole_backup(db_path, second_copy_dir)
++        log('schema v2 additions')
++        _execute_ddl(conn, _SCHEMA_V2_ADDITIONS)
++        # The 50-mutation / 60-minute window starts at the migration.
++        conn.execute('INSERT INTO snapshot_policy VALUES (1, ?)',
++                     (json.dumps(_snapshots.new_policy(time.time()), sort_keys=True),))
++        at = _iso()
++        for context_id, replay in replays.items():
++            head = replay['head']
++            conn.execute('INSERT INTO snapshots VALUES (?,?,?,?,?,?,?)',
++                         (context_id, head['revision'], head['state_json'], head['state_sha256'],
++                          head['event_hash'], at, 'migration_v2'))
++            conn.execute('INSERT INTO context_state VALUES (?,?,?,?,?,?)',
++                         (context_id, head['revision'], head['state_json'], head['state_sha256'],
++                          head['event_hash'], at))
++        journal_written = {}
++        for context_id, replay in replays.items():
++            log(f'journal bootstrap {context_id}')
++            journal_written[context_id] = _journal.append_many(root / 'journal', context_id, replay['chain'])
++        receipt['journal_lines_written'] = journal_written
++        conn.execute('DROP TRIGGER metadata_no_update')
++        conn.execute("UPDATE metadata SET value=? WHERE key='schema_version'", (str(SCHEMA_VERSION),))
++        conn.execute("CREATE TRIGGER metadata_no_update BEFORE UPDATE ON metadata BEGIN SELECT RAISE(ABORT,'immutable metadata'); END")
++        conn.execute('INSERT INTO metadata VALUES (?,?)', ('schema_upgrade_2_at', at))
++        conn.commit()
++        receipt['committed_at'] = _iso()
++    except sqlite3.Error as exc:
++        conn.rollback()
++        raise MigrationError(f'Migration transaction failed: {exc!r}') from exc
++    except BaseException:
++        conn.rollback()
++        raise
++    finally:
++        conn.close()
++    log('verify after')
++    after = verify_all(root, deep=deep_after, snapshot_archive_dir=snapshot_archive_dir)
++    receipt['verify_after'] = _summarize(after)
++    mismatches = []
++    for context_id, replay in replays.items():
++        receipt_after = after[context_id]['receipt']
++        if (receipt_after['revision'] != replay['head']['revision']
++                or receipt_after['state_sha256'] != replay['head']['state_sha256']
++                or receipt_after['event_hash'] != replay['head']['event_hash']
++                or not after[context_id]['ok']):
++            mismatches.append(context_id)
++    receipt['head_mismatches'] = mismatches
++    receipt['after'] = inspect(root)
++    receipt['ok'] = not mismatches
++    receipt['finished_at'], receipt['seconds'] = _iso(), round(time.time() - started, 3)
++    if mismatches:
++        raise MigrationError(f'Post-migration verification mismatch in {mismatches}')
++    return receipt
++
++
++def _summarize(results):
++    keys = ('ok', 'event_count', 'schema_version', 'deep', 'replay_from_revision', 'legacy_events',
++            'delta_events', 'snapshot_rows', 'journal_ok', 'journal_lines', 'journal_voided', 'journal_orphans',
++            'journal_missing_events')
++    summary = {}
++    for context_id, verification in results.items():
++        entry = {k: verification[k] for k in keys}
++        entry['receipt'] = {k: verification['receipt'][k] for k in ('revision', 'event_hash', 'state_sha256')}
++        summary[context_id] = entry
++    return summary
++
++
++def rebuild_from_journal(journal_dir, out_root, snapshot_archive_dir=None, log=None):
++    """Rebuild a v2 database from the journals alone into an EMPTY ``out_root``.
++
++    Every un-voided line is replayed; each event's state digest and event hash
++    are recomputed and must match the line. The journal files are copied into
++    the new root so the rebuilt store verifies with ``journal_ok``. Returns a
++    report with the head of every context.
++    """
++    journal_dir, out_root = Path(journal_dir), Path(out_root)
++    log = log or (lambda *_: None)
++    if (out_root / 'memory.sqlite3').exists():
++        raise MigrationError('Refuse to rebuild into a root that already holds a database')
++    store = MemoryStore(out_root, snapshot_archive_dir=snapshot_archive_dir)
++    report = {'journal_dir': str(journal_dir), 'out_root': str(out_root), 'contexts': {}}
++    conn = store._connect()
++    try:
++        conn.execute('BEGIN IMMEDIATE')
++        for path in sorted(journal_dir.glob('*.events.jsonl')):
++            lines, malformed, _ = _journal.read_all(path)
++            chain = _journal.verify_lines(lines)
++            if not chain['chain_ok']:
++                raise MigrationError(f'Journal chain broken in {path.name} at seq {chain["broken_at_seq"]}')
++            effective, voided = _journal.effective_events(lines)
++            if not effective or sorted(effective) != list(range(len(effective))):
++                raise MigrationError(f'Journal {path.name} does not hold a contiguous revision sequence')
++            anchor_hash, anchor_line = effective[0]
++            if anchor_line['kind'] != 'anchor':
++                raise MigrationError(f'Journal {path.name} revision 0 is not an anchor line')
++            context_id = anchor_line['context_id']
++            log(f'rebuild {context_id} from {path.name}')
++            objective = base64.b64decode(anchor_line['objective_b64'])
++            anchor_json, scope_json = anchor_line['anchor_json'], anchor_line['scope_json']
++            anchor = json.loads(anchor_json)
++            if anchor['context_id'] != context_id or anchor['objective_sha256'] != _sha(objective):
++                raise MigrationError(f'Anchor line of {context_id} does not bind its objective')
++            anchor_sha = _sha(anchor_json.encode('utf-8'))
++            conn.execute('INSERT INTO contexts VALUES (?,?,?,?,?,?,?,?)',
++                         (context_id, scope_json, anchor_json, anchor_sha, zlib.compress(objective, 9),
++                          _sha(objective), len(objective), anchor_line['created_at']))
++            state, known, previous = _initial_state(), set(), anchor_sha
++            head = None
++            for revision in range(len(effective)):
++                digest_line, line = effective[revision]
++                if line['context_id'] != context_id or line['previous_hash'] != previous:
++                    raise MigrationError(f'Journal chain of {context_id} does not link at revision {revision}')
++                actor = _actor(json.loads(line['actor_json']))
++                changes = json.loads(line['changes_json'])
++                if revision == 0:
++                    if changes != {'anchor_sha256': anchor_sha} or actor != anchor['actor'] or line['event_id'] != 'anchor':
++                        raise MigrationError(f'Invalid anchor line in {context_id}')
++                else:
++                    _apply_inplace(state, _changes(changes, actor), known)
++                state_json = _dump(state)
++                state_sha = _sha(state_json.encode('utf-8'))
++                if state_sha != line['state_sha256']:
++                    raise MigrationError(f'Journal state digest of {context_id} differs at revision {revision}')
++                digest = _event_digest(context_id, revision, line['event_id'], actor, changes, state_sha,
++                                       previous, line['created_at'])
++                if digest != line['event_hash']:
++                    raise MigrationError(f'Journal event hash of {context_id} differs at revision {revision}')
++                conn.execute('INSERT INTO events VALUES (?,?,?,?,?,?,?,?,?,?)',
++                             (context_id, revision, line['event_id'], line['actor_json'], line['changes_json'],
++                              state_json if revision == 0 else '', state_sha, previous, digest, line['created_at']))
++                previous = digest
++                head = (revision, state_json, state_sha, digest, line['created_at'])
++            revision, state_json, state_sha, digest, created_at = head
++            conn.execute('INSERT INTO context_state VALUES (?,?,?,?,?,?)',
++                         (context_id, revision, state_json, state_sha, digest, created_at))
++            conn.execute('INSERT INTO snapshots VALUES (?,?,?,?,?,?,?)',
++                         (context_id, revision, state_json, state_sha, digest, _iso(), 'rebuild'))
++            report['contexts'][context_id] = {'scope': json.loads(scope_json), 'events': revision + 1,
++                                              'head_revision': revision, 'head_state_sha256': state_sha,
++                                              'head_event_hash': digest, 'journal_lines': len(lines),
++                                              'journal_voided': len(voided), 'journal_malformed': malformed}
++        conn.commit()
++    except sqlite3.Error as exc:
++        conn.rollback()
++        raise MigrationError(f'Rebuild transaction failed: {exc!r}') from exc
++    except BaseException:
++        conn.rollback()
++        raise
++    finally:
++        conn.close()
++    (out_root / 'journal').mkdir(parents=True, exist_ok=True)
++    for path in sorted(journal_dir.glob('*.events.jsonl')):
++        _snapshots.copy_verified(path, out_root / 'journal' / path.name)
++    report['verify'] = _summarize(verify_all(out_root, deep=True, snapshot_archive_dir=snapshot_archive_dir))
++    report['ok'] = all(v['ok'] for v in report['verify'].values())
++    if not report['ok']:
++        raise MigrationError('Rebuilt database did not verify')
++    return report
+diff --git a/copia/MEMORIA_IALD/lib/iald_memory/snapshots.py b/copia/MEMORIA_IALD/lib/iald_memory/snapshots.py
+new file mode 100644
+index 0000000..a45fc90
+--- /dev/null
++++ b/copia/MEMORIA_IALD/lib/iald_memory/snapshots.py
+@@ -0,0 +1,299 @@
++"""Whole-database byte snapshots and the archive of legacy backups (D2b/D2c).
++
++Policy (evaluated on the write path, under the writer lock, before the first
++write of the transaction): a byte copy of ``memory.sqlite3`` is taken when
++``SNAPSHOT_EVERY_MUTATIONS`` mutations or ``SNAPSHOT_MAX_AGE_SECONDS`` have
++passed since the last snapshot, whichever comes first. Without a mutation
++nothing is copied (there is no daemon). The counter lives in the database
++itself (table ``snapshot_policy``, one row) and is updated in the mutation's
++transaction, so it counts committed mutations and costs no extra file I/O. The copy is verified (size and
++SHA-256 re-read from the destination) and gets a ``.sha256`` sidecar. The
++``KEEP_LOCAL`` newest snapshots stay next to the database; older ones are
++MOVED (copy, verify, delete source, manifest line) to the archive directory.
++If the archive is unavailable or a copy does not verify, nothing local is
++deleted and a visible warning is recorded.
++
++``archive_legacy_backups`` moves the v1 ``memory.sqlite3.bak_*`` files the same
++way (keep the newest ``keep``, verify SHA-256, manifest), never deleting a
++source whose copy did not verify. It never touches ``memory.sqlite3``, its
++``-journal``, ``snapshots/`` or ``journal/``.
++"""
++from __future__ import annotations
++
++from datetime import datetime, timezone
++import hashlib
++import json
++import os
++from pathlib import Path
++import time
++import warnings
++
++SNAPSHOT_EVERY_MUTATIONS = 50
++SNAPSHOT_MAX_AGE_SECONDS = 3600
++KEEP_LOCAL = 3
++DEFAULT_ARCHIVE_DIR = r'D:\IALD_ARQUIVO\MEMORIA_IALD\snapshots'
++ENV_ARCHIVE_DIR = 'IALD_MEMORY_SNAPSHOT_ARCHIVE_DIR'
++SNAPSHOT_PREFIX = 'memory.sqlite3.snap_'
++LEGACY_BACKUP_PREFIX = 'memory.sqlite3.bak_'
++COPY_BUFFER = 8 * 1024 * 1024
++WARNINGS_FILE = 'AVISOS.jsonl'
++MANIFEST_JSONL = 'MANIFEST.jsonl'
++MANIFEST_JSON = 'MANIFEST.json'
++
++
++class SnapshotError(RuntimeError):
++    """A snapshot could not be taken or did not verify."""
++
++
++def default_archive_dir():
++    return Path(os.environ.get(ENV_ARCHIVE_DIR) or DEFAULT_ARCHIVE_DIR)
++
++
++def _iso(now=None):
++    return datetime.fromtimestamp(now if now is not None else time.time(), timezone.utc).isoformat(timespec='microseconds')
++
++
++def sha256_file(path):
++    digest = hashlib.sha256()
++    with Path(path).open('rb') as handle:
++        while True:
++            block = handle.read(COPY_BUFFER)
++            if not block:
++                break
++            digest.update(block)
++    return digest.hexdigest()
++
++
++def _copy_bytes(src, dst):
++    """Copy bytes src -> dst with fsync; returns (bytes, sha256 of what was written)."""
++    digest, total = hashlib.sha256(), 0
++    with Path(src).open('rb') as source, Path(dst).open('wb') as target:
++        while True:
++            block = source.read(COPY_BUFFER)
++            if not block:
++                break
++            digest.update(block)
++            target.write(block)
++            total += len(block)
++        target.flush()
++        os.fsync(target.fileno())
++    return total, digest.hexdigest()
++
++
++def copy_verified(src, dst):
++    """Copy and verify: size equal, SHA-256 of the written stream equal to the re-read destination."""
++    src, dst = Path(src), Path(dst)
++    size = src.stat().st_size
++    written, digest = _copy_bytes(src, dst)
++    if written != size or dst.stat().st_size != size:
++        raise SnapshotError(f'Copy size mismatch for {src.name}')
++    if sha256_file(dst) != digest:
++        raise SnapshotError(f'Copy digest mismatch for {src.name}')
++    return size, digest
++
++
++def _write_text_atomic(path, text):
++    path = Path(path)
++    temp = path.with_name(path.name + '.tmp_' + format(os.getpid(), 'x') + '_' + format(time.time_ns(), 'x'))
++    data = text.encode('utf-8')
++    with temp.open('wb') as handle:
++        handle.write(data)
++        handle.flush()
++        os.fsync(handle.fileno())
++    if temp.stat().st_size != len(data):
++        temp.unlink()
++        raise SnapshotError(f'Short write for {path.name}')
++    os.replace(temp, path)
++
++
++def parse_policy(text):
++    """Policy row stored in the database (table ``snapshot_policy``); None when absent."""
++    if text is None:
++        return None
++    try:
++        policy = json.loads(text)
++    except ValueError as exc:
++        raise SnapshotError('Snapshot policy row unreadable') from exc
++    if not isinstance(policy, dict) or 'mutations_since_snapshot' not in policy or 'window_started_at' not in policy:
++        raise SnapshotError('Snapshot policy row malformed')
++    return policy
++
++
++def new_policy(now):
++    return {'mutations_since_snapshot': 0, 'window_started_at': now, 'last_snapshot': None,
++            'last_snapshot_at': None, 'snapshots_taken': 0, 'every_mutations': SNAPSHOT_EVERY_MUTATIONS,
++            'max_age_seconds': SNAPSHOT_MAX_AGE_SECONDS, 'updated_at': _iso(now)}
++
++
++def due(policy, now):
++    """True when the policy says a snapshot is due at this mutation (counter already incremented)."""
++    return (policy['mutations_since_snapshot'] >= SNAPSHOT_EVERY_MUTATIONS
++            or now - float(policy['window_started_at']) >= SNAPSHOT_MAX_AGE_SECONDS)
++
++
++def take(db_path, snap_dir, now=None):
++    """Byte copy of the database into snap_dir, verified, with a .sha256 sidecar."""
++    db_path, snap_dir = Path(db_path), Path(snap_dir)
++    now = time.time() if now is None else now
++    if not db_path.exists() or db_path.stat().st_size == 0:
++        raise SnapshotError('Refuse mutation of empty memory database')
++    snap_dir.mkdir(parents=True, exist_ok=True)
++    stamp = datetime.fromtimestamp(now).strftime('%Y%m%d_%H%M%S_%f')
++    temp = snap_dir / (SNAPSHOT_PREFIX + stamp + '.tmp')
++    if temp.exists():
++        raise SnapshotError('Snapshot temporary already exists')
++    size, digest = copy_verified(db_path, temp)
++    final = snap_dir / (SNAPSHOT_PREFIX + stamp + '_' + digest[:16])
++    os.replace(temp, final)
++    _write_text_atomic(final.with_name(final.name + '.sha256'), f'{digest}  {final.name}\n')
++    return {'path': str(final), 'name': final.name, 'bytes': size, 'sha256': digest, 'at': _iso(now)}
++
++
++def list_snapshots(snap_dir):
++    snap_dir = Path(snap_dir)
++    if not snap_dir.exists():
++        return []
++    return sorted(p for p in snap_dir.iterdir()
++                  if p.is_file() and p.name.startswith(SNAPSHOT_PREFIX)
++                  and not p.name.endswith('.sha256') and not p.name.endswith('.tmp'))
++
++
++def _warn(snap_dir, message, **extra):
++    record = dict(at=_iso(), message=message, **extra)
++    try:
++        Path(snap_dir).mkdir(parents=True, exist_ok=True)
++        with (Path(snap_dir) / WARNINGS_FILE).open('a', encoding='utf-8') as handle:
++            handle.write(json.dumps(record, ensure_ascii=False, sort_keys=True) + '\n')
++    except OSError:
++        pass
++    warnings.warn('iald_memory snapshots: ' + message, RuntimeWarning, stacklevel=3)
++
++
++def _manifest_line(dest_dir, entry):
++    with (Path(dest_dir) / MANIFEST_JSONL).open('a', encoding='utf-8') as handle:
++        handle.write(json.dumps(entry, ensure_ascii=False, sort_keys=True) + '\n')
++        handle.flush()
++        os.fsync(handle.fileno())
++
++
++def _move_verified(src, dest_dir):
++    """Move one file (and its .sha256 sidecar if any) into dest_dir: copy, verify, delete source."""
++    src, dest_dir = Path(src), Path(dest_dir)
++    dest_dir.mkdir(parents=True, exist_ok=True)
++    dst = dest_dir / src.name
++    source_sha = sha256_file(src)
++    if dst.exists() and dst.stat().st_size == src.stat().st_size and sha256_file(dst) == source_sha:
++        size, digest = dst.stat().st_size, source_sha  # already archived (idempotent re-run)
++    else:
++        partial = dst.with_name(dst.name + '.part')
++        try:
++            size, digest = copy_verified(src, partial)
++            if digest != source_sha:
++                raise SnapshotError(f'Archived copy of {src.name} does not match its source')
++        except SnapshotError:
++            # The partial copy is kept, renamed, as evidence; the source is never touched.
++            if partial.exists():
++                os.replace(partial, partial.with_name(partial.name + '.mismatch'))
++            raise
++        os.replace(partial, dst)
++    if sha256_file(dst) != source_sha:
++        raise SnapshotError(f'Archived copy of {src.name} does not verify')
++    sidecar = src.with_name(src.name + '.sha256')
++    if sidecar.exists():
++        sidecar_dst = dest_dir / sidecar.name
++        if not sidecar_dst.exists():
++            copy_verified(sidecar, sidecar_dst)
++        sidecar.unlink()
++    src.unlink()
++    entry = {'name': src.name, 'bytes': size, 'sha256': digest, 'src': str(src), 'dst': str(dst),
++             'moved_at': _iso()}
++    _manifest_line(dest_dir, entry)
++    return entry
++
++
++def prune_and_archive(snap_dir, archive_dir, keep=KEEP_LOCAL):
++    """Keep the newest ``keep`` snapshots locally; move the rest to the archive, fail-safe."""
++    result = {'kept': [], 'moved': [], 'failed': []}
++    snapshots = list_snapshots(snap_dir)
++    result['kept'] = [p.name for p in snapshots[-keep:]] if keep > 0 else []
++    for path in (snapshots[:-keep] if keep > 0 else snapshots):
++        try:
++            result['moved'].append(_move_verified(path, archive_dir))
++        except (OSError, SnapshotError) as exc:
++            result['failed'].append({'name': path.name, 'error': repr(exc)})
++            _warn(snap_dir, 'archive unavailable or copy did not verify; local snapshot kept',
++                  name=path.name, archive_dir=str(archive_dir), error=repr(exc))
++            break
++    return result
++
++
++def snapshot_if_due(db_path, snap_dir, archive_dir, policy, now=None):
++    """Count one mutation; take, verify and archive a snapshot when the policy says so.
++
++    ``policy`` is the current policy dict (or None). Returns ``(taken, policy)``:
++    the snapshot record or None, and the updated policy the caller persists in
++    the same transaction as the mutation (table ``snapshot_policy``). Raises
++    SnapshotError when a due snapshot cannot be taken or verified (the caller
++    fails the mutation). Nothing is written to any side file here.
++    """
++    now = time.time() if now is None else now
++    policy = dict(policy) if policy else new_policy(now)
++    policy['mutations_since_snapshot'] = int(policy['mutations_since_snapshot']) + 1
++    taken = None
++    if due(policy, now):
++        taken = take(db_path, snap_dir, now)
++        policy.update(mutations_since_snapshot=0, window_started_at=now, last_snapshot=taken['name'],
++                      last_snapshot_at=taken['at'], snapshots_taken=int(policy.get('snapshots_taken', 0)) + 1)
++        taken['archive'] = prune_and_archive(snap_dir, archive_dir, KEEP_LOCAL)
++    policy.update(every_mutations=SNAPSHOT_EVERY_MUTATIONS, max_age_seconds=SNAPSHOT_MAX_AGE_SECONDS,
++                  updated_at=_iso(now))
++    return taken, policy
++
++
++def list_legacy_backups(state_dir):
++    state_dir = Path(state_dir)
++    return sorted(p for p in state_dir.iterdir()
++                  if p.is_file() and p.name.startswith(LEGACY_BACKUP_PREFIX)
++                  and not p.name.endswith('.sha256') and not p.name.endswith('.part')
++                  and not p.name.endswith('.mismatch'))
++
++
++def archive_legacy_backups(state_dir, dest, keep=3, dry_run=False, log=None):
++    """Move the v1 per-mutation backups to ``dest``, keeping the newest ``keep`` in place.
++
++    Order is the timestamp in the name. Each file: SHA-256 of the source, copy
++    with fsync, SHA-256 of the destination re-read; equal -> delete the source
++    and write a manifest line; different -> keep the source and abort (what was
++    moved stays recorded). Writes MANIFEST.json at the end.
++    """
++    state_dir, dest = Path(state_dir), Path(dest)
++    log = log or (lambda *_: None)
++    started = _iso()
++    backups = list_legacy_backups(state_dir)
++    kept = backups[-keep:] if keep > 0 else []
++    to_move = backups[:-keep] if keep > 0 else backups
++    report = {'state_dir': str(state_dir), 'dest': str(dest), 'keep': keep, 'dry_run': dry_run,
++              'found': len(backups), 'to_move': len(to_move), 'kept': [p.name for p in kept],
++              'moved': 0, 'moved_bytes': 0, 'already_archived': 0, 'failed': None, 'started_at': started}
++    if dry_run:
++        report['plan'] = [{'name': p.name, 'bytes': p.stat().st_size} for p in to_move]
++        report['finished_at'] = _iso()
++        return report
++    dest.mkdir(parents=True, exist_ok=True)
++    for path in to_move:
++        try:
++            entry = _move_verified(path, dest)
++        except (OSError, SnapshotError) as exc:
++            report['failed'] = {'name': path.name, 'error': repr(exc)}
++            log(f'ABORT at {path.name}: {exc!r}; source kept')
++            break
++        report['moved'] += 1
++        report['moved_bytes'] += entry['bytes']
++        log(f'moved {entry["name"]} {entry["bytes"]} B sha256 {entry["sha256"][:16]}')
++    manifest = dest / MANIFEST_JSONL
++    report['manifest_jsonl'] = str(manifest)
++    report['manifest_jsonl_sha256'] = sha256_file(manifest) if manifest.exists() else None
++    report['manifest_lines'] = sum(1 for _ in manifest.open('rb')) if manifest.exists() else 0
++    report['finished_at'] = _iso()
++    _write_text_atomic(dest / MANIFEST_JSON, json.dumps(report, ensure_ascii=False, sort_keys=True, indent=1))
++    return report
+diff --git a/originais_arvore/MEMORIA_IALD/lib/iald_memory/store.py b/copia/MEMORIA_IALD/lib/iald_memory/store.py
+index f207603..9d0781d 100644
+--- a/originais_arvore/MEMORIA_IALD/lib/iald_memory/store.py
++++ b/copia/MEMORIA_IALD/lib/iald_memory/store.py
+@@ -1,20 +1,43 @@
+-"""Standard-library inscription/state/flow store. No remote execution or imports."""
++"""Standard-library inscription/state/flow store. No remote execution or imports.
++
++Schema v2 (12/10/2026 — decisions D1/D2 of the common-memory fix):
++
++* D1, state by delta. A transition event stores the change set and the SHA-256
++  of the resulting state; ``state_json`` is ``''`` for events written by this
++  version. The current state of every context is materialized in
++  ``context_state`` (the only mutable table, updated in the same transaction
++  with a revision CAS) and ``snapshots`` keeps full states every
++  ``SNAPSHOT_EVERY_EVENTS`` revisions, so a read replays a bounded number of
++  deltas. Legacy v1 events (full ``state_json``) are kept exactly as they are:
++  the event hash formula is unchanged, so legacy and delta events chain.
++* D2, immediate backup of every mutation. Each mutation is appended, hash
++  chained and fsynced to a per-context journal (``journal.py``) BEFORE the
++  SQLite commit; the whole database file is copied by bytes on a
++  50-mutations / 60-minutes policy (``snapshots.py``). The v1 whole-database
++  copy before every mutation is gone.
++
++A v1 database is refused with ``SchemaMigrationRequired``; the migration is an
++explicit, audited step (``migrate.py`` / ``migrar_para_delta.py``).
++"""
+ from __future__ import annotations
+ 
+ import base64
+ import hashlib
+ import json
+-import os
+ from pathlib import Path
+ import re
+ import sqlite3
+ from datetime import datetime, timezone
+-import uuid
++import time
+ import zlib
+ 
++from . import journal as _journal
++from . import snapshots as _snapshots
++
+ MAX_TEXT_BYTES = 16 * 1024 * 1024
+ MAX_JSON_BYTES = 32 * 1024 * 1024
+-SCHEMA_VERSION = 1
++SCHEMA_VERSION = 2
++SNAPSHOT_EVERY_EVENTS = 256
+ _ID = re.compile(r"[A-Za-z0-9][A-Za-z0-9_.:-]{0,159}\Z")
+ _SHA = re.compile(r"[0-9a-fA-F]{64}\Z")
+ ACTOR_KINDS = {'operator', 'agent', 'model', 'measurement', 'system'}
+@@ -59,6 +82,10 @@ class IntegrityError(MemoryError):
+     pass
+ 
+ 
++class SchemaMigrationRequired(IntegrityError):
++    """A v1 database was found. It is never migrated implicitly."""
++
++
+ class InvariantViolation(MemoryError):
+     pass
+ 
+@@ -217,39 +244,76 @@ def _changes(value, actor):
+     return _clone({'records': records, 'flow': flow})
+ 
+ 
+-def _apply(state, changes):
+-    result = _clone(state)
+-    known = {r['id'] for r in result['q']['records']}
++def _apply_inplace(state, changes, known=None):
++    """Apply one change set to ``state`` in place (same semantics as v1 ``_apply``).
++
++    ``known`` is the set of record ids already in the state; the replay loop
++    keeps it across events so the replay stays linear in the number of events.
++    """
++    records = state['q']['records']
++    if known is None:
++        known = {r['id'] for r in records}
+     for record in changes['records']:
+         if record['id'] in known:
+             raise InvariantViolation('Record ids are immutable; write an erratum with a new id')
+         if record.get('supersedes') and record['supersedes'] not in known:
+             raise InvariantViolation('Superseded record does not exist')
+-        result['q']['records'].append(record)
++        records.append(record)
+         known.add(record['id'])
+     flow = changes['flow']
+     for key in ('phase', 'next_action'):
+         if key in flow:
+-            result['p'][key] = flow[key]
++            state['p'][key] = flow[key]
+     if 'handles' in flow:
+-        handles = {h['id']: h for h in result['p']['handles']}
++        handles = {h['id']: h for h in state['p']['handles']}
+         for handle in flow['handles']:
+             handles[handle['id']] = {**handles.get(handle['id'], {}), **handle}
+-        result['p']['handles'] = list(handles.values())
+-    return result
++        state['p']['handles'] = list(handles.values())
++    return state
++
++
++def _apply(state, changes):
++    return _apply_inplace(_clone(state), changes)
+ 
+ 
+ def _initial_state():
+     return {'q': {'records': []}, 'p': {'phase': 'registered', 'next_action': '', 'handles': []}}
+ 
+ 
+-def _event_hash(context_id, revision, event_id, actor_json, changes_json, state_sha, previous, at):
++def _event_digest(context_id, revision, event_id, actor, changes, state_sha, previous, at):
++    """Event hash over already-parsed actor/changes. Same formula as v1 ``_event_hash``."""
+     return _sha(_dump({'context_id': context_id, 'revision': revision, 'event_id': event_id,
+-                      'actor': json.loads(actor_json), 'changes': json.loads(changes_json),
++                      'actor': actor, 'changes': changes,
+                       'state_sha256': state_sha, 'previous_hash': previous, 'at': at}).encode('utf-8'))
+ 
+ 
+-_SCHEMA = """
++def _event_hash(context_id, revision, event_id, actor_json, changes_json, state_sha, previous, at):
++    return _event_digest(context_id, revision, event_id, json.loads(actor_json), json.loads(changes_json),
++                         state_sha, previous, at)
++
++
++def _json_str(value):
++    return json.dumps(value, ensure_ascii=False)
++
++
++def _event_hash_stored(context_id_json, revision, event_id, actor_json, changes_json, state_sha, previous, at):
++    """The v1 digest computed from the STORED canonical JSON, without parse + re-dump.
++
++    ``_dump`` sorts keys and uses compact separators, so the digest text of an
++    event is the concatenation below whenever ``actor_json`` and ``changes_json``
++    are themselves ``_dump`` outputs and the short fields (identifier, ISO
++    timestamp, hex digests) need no JSON escaping, which is how the store writes
++    them. The reader falls back to ``_event_hash`` (parse + re-dump) when this
++    value does not match, so the accepted set of rows is exactly the v1 set;
++    this is a fast path, not a different formula.
++    """
++    return _sha(('{"actor":' + actor_json + ',"at":"' + at + '","changes":' + changes_json
++                 + ',"context_id":' + context_id_json + ',"event_id":"' + event_id
++                 + '","previous_hash":"' + previous + '","revision":' + str(int(revision))
++                 + ',"state_sha256":"' + state_sha + '"}').encode('utf-8'))
++
++
++_SCHEMA_V1 = """
+ CREATE TABLE IF NOT EXISTS metadata (key TEXT PRIMARY KEY, value TEXT NOT NULL);
+ CREATE TABLE IF NOT EXISTS contexts (
+  context_id TEXT PRIMARY KEY, scope_json TEXT NOT NULL, anchor_json TEXT NOT NULL,
+@@ -269,31 +333,71 @@ CREATE TRIGGER IF NOT EXISTS metadata_no_update BEFORE UPDATE ON metadata BEGIN
+ CREATE TRIGGER IF NOT EXISTS metadata_no_delete BEFORE DELETE ON metadata BEGIN SELECT RAISE(ABORT,'immutable metadata'); END;
+ """
+ 
++# v2 additions. The covering index holds every chain column except state_json:
++# a read verifies the whole hash chain from the index and never touches the
++# (possibly huge) legacy state_json pages of the table.
++_SCHEMA_V2_ADDITIONS = """
++CREATE TABLE IF NOT EXISTS context_state (
++ context_id TEXT PRIMARY KEY REFERENCES contexts(context_id), revision INTEGER NOT NULL,
++ state_json TEXT NOT NULL, state_sha256 TEXT NOT NULL, event_hash TEXT NOT NULL,
++ updated_at TEXT NOT NULL);
++CREATE TABLE IF NOT EXISTS snapshots (
++ context_id TEXT NOT NULL REFERENCES contexts(context_id), revision INTEGER NOT NULL,
++ state_json TEXT NOT NULL, state_sha256 TEXT NOT NULL, event_hash TEXT NOT NULL,
++ created_at TEXT NOT NULL, reason TEXT NOT NULL,
++ PRIMARY KEY(context_id, revision));
++CREATE TABLE IF NOT EXISTS snapshot_policy (id INTEGER PRIMARY KEY CHECK (id = 1), policy_json TEXT NOT NULL);
++CREATE INDEX IF NOT EXISTS events_chain_idx ON events(context_id, revision, event_id, actor_json, changes_json, state_sha256, previous_hash, event_hash, created_at);
++CREATE TRIGGER IF NOT EXISTS context_state_no_delete BEFORE DELETE ON context_state BEGIN SELECT RAISE(ABORT,'materialized state is not deletable'); END;
++CREATE TRIGGER IF NOT EXISTS snapshot_policy_no_delete BEFORE DELETE ON snapshot_policy BEGIN SELECT RAISE(ABORT,'snapshot policy is not deletable'); END;
++CREATE TRIGGER IF NOT EXISTS snapshots_no_update BEFORE UPDATE ON snapshots BEGIN SELECT RAISE(ABORT,'append-only snapshot'); END;
++CREATE TRIGGER IF NOT EXISTS snapshots_no_delete BEFORE DELETE ON snapshots BEGIN SELECT RAISE(ABORT,'append-only snapshot'); END;
++"""
++
++_SCHEMA = _SCHEMA_V1 + _SCHEMA_V2_ADDITIONS
++
++_TRIGGERS_V1 = {'contexts_no_update', 'contexts_no_delete', 'events_no_update',
++                'events_no_delete', 'metadata_no_update', 'metadata_no_delete'}
++_TRIGGERS_V2 = _TRIGGERS_V1 | {'context_state_no_delete', 'snapshots_no_update', 'snapshots_no_delete',
++                               'snapshot_policy_no_delete'}
++_CHAIN_COLUMNS = 'revision, event_id, actor_json, changes_json, state_sha256, previous_hash, event_hash, created_at'
++
++
++def _execute_ddl(conn, ddl):
++    # DDL statements are executed individually, within the caller's lock.
++    for statement in ddl.split(';\n'):
++        if statement.strip():
++            conn.execute(statement)
++
+ 
+ class MemoryStore:
+     """A store per root. Scope is isolation, never authentication or authorization.
+ 
+     The embedding application authenticates actor and scope. SQLite serializes
+-    writers; revisions provide CAS. Existing database bytes are backed up in the
+-    same directory before every mutation, under the writer lock. No provider is
+-    called and no model hidden state is asserted or fabricated.
++    writers; revisions provide CAS. Every mutation is journaled (append-only,
++    hash-chained, fsynced) before commit, and the database file is copied by
++    bytes under the writer lock on the snapshot policy. No provider is called
++    and no model hidden state is asserted or fabricated.
+     """
+-    def __init__(self, root):
++    def __init__(self, root, *, snapshot_archive_dir=None):
+         self.root = Path(root).resolve()
+         self.root.mkdir(parents=True, exist_ok=True)
+         self.db_path = self.root / 'memory.sqlite3'
++        self.journal_dir = self.root / 'journal'
++        self.snapshot_dir = self.root / 'snapshots'
++        self.snapshot_archive_dir = (Path(snapshot_archive_dir) if snapshot_archive_dir is not None
++                                     else _snapshots.default_archive_dir())
++        self._clock = time.time
++        self._journal_tails = {}  # context_id -> tail of the last COMMITTED append by this instance
+         try:
+             conn = self._connect()
+             try:
+                 conn.execute('BEGIN IMMEDIATE')
+                 tables = {row[0] for row in conn.execute("SELECT name FROM sqlite_master WHERE type='table'")}
+                 if not tables:
+-                    # DDL statements are executed individually, within this lock.
+-                    for statement in _SCHEMA.split(';\n'):
+-                        if statement.strip():
+-                            conn.execute(statement)
++                    _execute_ddl(conn, _SCHEMA)
+                     conn.execute('INSERT INTO metadata VALUES (?,?)', ('schema_version', str(SCHEMA_VERSION)))
+-                    conn.commit()
++                    conn.commit()  # the snapshot_policy row is born with the first mutation
+                 else:
+                     self._schema_check(conn)
+                     conn.rollback()
+@@ -313,32 +417,74 @@ class MemoryStore:
+     @staticmethod
+     def _schema_check(conn):
+         row = conn.execute("SELECT value FROM metadata WHERE key='schema_version'").fetchone()
+-        if row is None or row[0] != str(SCHEMA_VERSION):
++        if row is None:
++            raise IntegrityError('Unsupported or missing memory schema')
++        if row[0] == '1':
++            raise SchemaMigrationRequired('Memory schema v1 found; run the explicit migration (migrar_para_delta.py) first')
++        if row[0] != str(SCHEMA_VERSION):
+             raise IntegrityError('Unsupported or missing memory schema')
+-        expected = {'contexts_no_update', 'contexts_no_delete', 'events_no_update',
+-                    'events_no_delete', 'metadata_no_update', 'metadata_no_delete'}
+         found = {r[0] for r in conn.execute("SELECT name FROM sqlite_master WHERE type='trigger'")}
+-        if not expected <= found:
++        if not _TRIGGERS_V2 <= found:
+             raise IntegrityError('Memory immutability guards missing')
++        if conn.execute("SELECT 1 FROM sqlite_master WHERE type='index' AND name='events_chain_idx'").fetchone() is None:
++            raise IntegrityError('Memory chain index missing')
+         if conn.execute('PRAGMA journal_mode').fetchone()[0].lower() != 'delete':
+             raise IntegrityError('Unexpected journal mode; refuse unsafe byte backup')
+ 
+-    def _backup(self):
+-        # BEGIN IMMEDIATE is already held, before any database mutation. DELETE
+-        # journal mode keeps the main file complete; no WAL state is omitted.
+-        raw = self.db_path.read_bytes()
+-        if not raw:
+-            raise IntegrityError('Refuse mutation of empty memory database')
+-        stamp = datetime.now().strftime('%Y%m%d_%H%M%S_%f')
+-        backup = self.db_path.with_name(self.db_path.name + '.bak_' + stamp + '_' + uuid.uuid4().hex[:8])
+-        with backup.open('xb') as out:
+-            out.write(raw)
+-            out.flush()
+-            os.fsync(out.fileno())
+-        if backup.stat().st_size != len(raw) or _sha(backup.read_bytes()) != _sha(raw):
+-            raise IntegrityError('Immediate byte backup did not verify')
+-
+-    def _read(self, conn, context_id, scope):
++    def _snapshot_if_due(self, conn):
++        # BEGIN IMMEDIATE is already held and nothing was written yet in this
++        # transaction: in DELETE journal mode the main file is complete. The
++        # policy row is read before the byte copy and written after it, inside
++        # the mutation's transaction (it counts committed mutations).
++        row = conn.execute('SELECT policy_json FROM snapshot_policy WHERE id=1').fetchone()
++        try:
++            taken, policy = _snapshots.snapshot_if_due(self.db_path, self.snapshot_dir, self.snapshot_archive_dir,
++                                                       _snapshots.parse_policy(row[0] if row else None),
++                                                       now=self._clock())
++        except _snapshots.SnapshotError as exc:
++            raise IntegrityError('Database byte snapshot did not verify') from exc
++        policy_json = json.dumps(policy, sort_keys=True)
++        if conn.execute('UPDATE snapshot_policy SET policy_json=? WHERE id=1', (policy_json,)).rowcount != 1:
++            conn.execute('INSERT INTO snapshot_policy VALUES (1, ?)', (policy_json,))
++        return taken
++
++    def snapshot_policy(self):
++        """Read-only view of the byte-snapshot policy row (counter, window, last snapshot)."""
++        conn = self._connect()
++        try:
++            conn.execute('BEGIN')
++            self._schema_check(conn)
++            row = conn.execute('SELECT policy_json FROM snapshot_policy WHERE id=1').fetchone()
++            return _snapshots.parse_policy(row[0] if row else None)
++        except sqlite3.Error as exc:
++            raise IntegrityError('Memory read failed closed') from exc
++        finally:
++            conn.rollback()
++            conn.close()
++
++    def _journal_append(self, context_id, kind, fields, rows):
++        """Journal the mutation before commit. Returns the tail record to cache AFTER commit.
++
++        The cache entry is dropped first: if this transaction does not commit,
++        the next append re-reads the file and voids the orphan line.
++        """
++        committed = {r['revision']: r['event_hash'] for r in rows}
++        cached = self._journal_tails.pop(context_id, None)
++        try:
++            _, tail = _journal.append(self.journal_dir, context_id, kind, fields, committed, _now(), cached_tail=cached)
++            return tail
++        except (_journal.JournalError, OSError) as exc:
++            raise IntegrityError('Journal append failed closed') from exc
++
++    def _read(self, conn, context_id, scope, deep=False):
++        """Verify and replay one context. Returns (snapshot, chain rows, info).
++
++        Fast path (``deep=False``): anchor and inscription envelope; the whole
++        event hash chain (no state deserialized); replay from the latest state
++        snapshot; the resulting digest must equal the head event's and the
++        materialized row's. ``deep=True`` replays from revision 0, checks every
++        event digest, every legacy ``state_json`` and every snapshot row.
++        """
+         self._schema_check(conn)
+         row = conn.execute('SELECT * FROM contexts WHERE context_id=?', (context_id,)).fetchone()
+         if row is None:
+@@ -360,33 +506,113 @@ class MemoryStore:
+             if anchor['objective_sha256'] != row['objective_sha256'] or anchor['objective_bytes'] != len(objective):
+                 raise IntegrityError('Objective is not bound to anchor')
+             text = objective.decode('utf-8')
+-            rows = conn.execute('SELECT * FROM events WHERE context_id=? ORDER BY revision', (context_id,)).fetchall()
++            rows = conn.execute(f'SELECT {_CHAIN_COLUMNS} FROM events WHERE context_id=? ORDER BY revision',
++                                (context_id,)).fetchall()
+             if not rows:
+                 raise IntegrityError('Context has no anchor event')
+-            state = _initial_state()
++            head = len(rows) - 1
++            initial_sha = _sha(_dump(_initial_state()).encode('utf-8'))
++            beyond = conn.execute('SELECT count(*) FROM snapshots WHERE context_id=? AND revision>?',
++                                  (context_id, head)).fetchone()[0]
++            if beyond:
++                raise IntegrityError('State snapshot beyond chain head')
++            snapshot_rows = conn.execute('SELECT count(*) FROM snapshots WHERE context_id=?', (context_id,)).fetchone()[0]
++            # The replay base is chosen before the chain walk so that only the
++            # deltas after it (and the anchor) are deserialized on the fast path.
++            if deep:
++                base_rev, state, known = 0, _initial_state(), set()
++                snaps = {s['revision']: s for s in conn.execute(
++                    'SELECT revision, state_json, state_sha256, event_hash FROM snapshots WHERE context_id=? ORDER BY revision',
++                    (context_id,)).fetchall()}
++            else:
++                snap = conn.execute(
++                    'SELECT revision, state_json, state_sha256, event_hash FROM snapshots WHERE context_id=? AND revision<=? '
++                    'ORDER BY revision DESC LIMIT 1', (context_id, head)).fetchone()
++                snaps = {}
++                if snap is None:
++                    base_rev, state, known = 0, _initial_state(), set()
++                else:
++                    base_rev = snap['revision']
++                    if (_sha(snap['state_json'].encode('utf-8')) != snap['state_sha256']
++                            or snap['state_sha256'] != rows[base_rev]['state_sha256']
++                            or snap['event_hash'] != rows[base_rev]['event_hash']):
++                        raise IntegrityError('State snapshot digest mismatch')
++                    state = json.loads(snap['state_json'])
++                    known = {r['id'] for r in state['q']['records']}
+             previous = row['anchor_sha256']
++            context_id_json = _json_str(context_id)
++            parsed = {}
++            legacy_events = delta_events = 0
+             for index, event in enumerate(rows):
+                 if event['revision'] != index or event['previous_hash'] != previous:
+                     raise IntegrityError('Event chain gap or predecessor mismatch')
+-                actor = _actor(json.loads(event['actor_json']))
+-                changes = json.loads(event['changes_json'])
+-                if index == 0:
+-                    if event['event_id'] != 'anchor' or changes != {'anchor_sha256': previous} or actor != anchor['actor']:
+-                        raise IntegrityError('Invalid anchor event')
++                if deep or index == 0 or index > base_rev:
++                    actor = _actor(json.loads(event['actor_json']))
++                    changes = json.loads(event['changes_json'])
++                    if index == 0:
++                        if event['event_id'] != 'anchor' or changes != {'anchor_sha256': previous} or actor != anchor['actor']:
++                            raise IntegrityError('Invalid anchor event')
++                        if event['state_sha256'] != initial_sha:
++                            raise IntegrityError('Anchor state digest mismatch')
++                    elif deep:
++                        normalized = _changes(changes, actor)
++                        if normalized != changes:
++                            raise IntegrityError('Noncanonical event changes')
++                    parsed[index] = changes
++                if deep:
++                    digest = _event_digest(context_id, index, event['event_id'], actor, changes,
++                                           event['state_sha256'], previous, event['created_at'])
+                 else:
+-                    normalized = _changes(changes, actor)
+-                    if normalized != changes:
+-                        raise IntegrityError('Noncanonical event changes')
+-                    state = _apply(state, normalized)
+-                state_json = _dump(state)
+-                if state_json != event['state_json'] or _sha(state_json.encode('utf-8')) != event['state_sha256']:
+-                    raise IntegrityError('State differs from replay or digest')
+-                digest = _event_hash(context_id, index, event['event_id'], event['actor_json'],
+-                                     event['changes_json'], event['state_sha256'], previous, event['created_at'])
++                    digest = _event_hash_stored(context_id_json, index, event['event_id'], event['actor_json'],
++                                                event['changes_json'], event['state_sha256'], previous, event['created_at'])
++                    if digest != event['event_hash']:
++                        # Not canonical JSON in storage: decide by the v1 formula itself.
++                        digest = _event_hash(context_id, index, event['event_id'], event['actor_json'],
++                                             event['changes_json'], event['state_sha256'], previous, event['created_at'])
+                 if digest != event['event_hash']:
+                     raise IntegrityError('Event digest mismatch')
+                 previous = digest
++            for index in range(base_rev + 1, head + 1):
++                _apply_inplace(state, parsed[index], known)
++                if deep:
++                    state_json = _dump(state)
++                    if _sha(state_json.encode('utf-8')) != rows[index]['state_sha256']:
++                        raise IntegrityError('State differs from replay or digest')
++                    legacy = conn.execute('SELECT state_json FROM events WHERE context_id=? AND revision=?',
++                                          (context_id, index)).fetchone()[0]
++                    if legacy:
++                        legacy_events += 1
++                        if legacy != state_json:
++                            raise IntegrityError('Legacy state differs from replay')
++                    else:
++                        delta_events += 1
++                    if index in snaps:
++                        s = snaps[index]
++                        if (s['state_json'] != state_json or s['state_sha256'] != rows[index]['state_sha256']
++                                or s['event_hash'] != rows[index]['event_hash']):
++                            raise IntegrityError('State snapshot digest mismatch')
++            if deep:
++                anchor_state = conn.execute('SELECT state_json FROM events WHERE context_id=? AND revision=0',
++                                            (context_id,)).fetchone()[0]
++                if anchor_state and anchor_state != _dump(_initial_state()):
++                    raise IntegrityError('Anchor state differs from initial state')
++                if 0 in snaps and snaps[0]['state_json'] != _dump(_initial_state()):
++                    raise IntegrityError('State snapshot digest mismatch')
++            state_json = _dump(state)
++            state_sha = _sha(state_json.encode('utf-8'))
+             last = rows[-1]
++            if state_sha != last['state_sha256']:
++                raise IntegrityError('State differs from replay or digest')
++            current = conn.execute('SELECT revision, state_json, state_sha256, event_hash FROM context_state WHERE context_id=?',
++                                   (context_id,)).fetchone()
++            if (current is None or current['revision'] != head or current['state_sha256'] != state_sha
++                    or current['event_hash'] != last['event_hash']
++                    or _sha(current['state_json'].encode('utf-8')) != current['state_sha256']):
++                raise IntegrityError('Materialized state lags or differs')
++            if not deep:
++                # Counting legacy rows needs the state_json content (overflow pages of
++                # every legacy event); the fast path never reads it. verify() counts.
++                legacy_events = delta_events = None
+             result = {'context_id': context_id, 'scope': scope, 'objective': text,
+                       'objective_bytes_b64': base64.b64encode(objective).decode('ascii'),
+                       'objective_sha256': row['objective_sha256'], 'anchor_sha256': row['anchor_sha256'],
+@@ -394,7 +620,9 @@ class MemoryStore:
+                       'anchor_actor': anchor['actor'], 'revision': last['revision'],
+                       'q': state['q'], 'p': state['p'], 'state_sha256': last['state_sha256']}
+             result['receipt'] = self._receipt(result, last)
+-            return result, rows
++            info = {'schema_version': SCHEMA_VERSION, 'deep': deep, 'replay_from_revision': base_rev,
++                    'legacy_events': legacy_events, 'delta_events': delta_events, 'snapshot_rows': snapshot_rows}
++            return result, rows, info
+         except (KeyError, TypeError, UnicodeError, zlib.error, json.JSONDecodeError, InvalidInput, InvariantViolation) as exc:
+             raise IntegrityError('Memory replay failed closed') from exc
+ 
+@@ -433,7 +661,7 @@ class MemoryStore:
+             conn.execute('BEGIN IMMEDIATE')
+             self._schema_check(conn)
+             if parent_id:
+-                parent, _ = self._read(conn, parent_id, scope)
++                parent, _, _ = self._read(conn, parent_id, scope)
+                 if constraints is None:
+                     constraints = parent['constraints']
+                 elif constraints != parent['constraints']:
+@@ -445,26 +673,36 @@ class MemoryStore:
+             anchor_json = _dump(anchor)
+             exists = conn.execute('SELECT 1 FROM contexts WHERE context_id=?', (context_id,)).fetchone()
+             if exists:
+-                current, _ = self._read(conn, context_id, scope)
++                current, _, _ = self._read(conn, context_id, scope)
+                 stored = conn.execute('SELECT anchor_json FROM contexts WHERE context_id=?', (context_id,)).fetchone()[0]
+                 if stored != anchor_json:
+                     raise AnchorConflict('Context exists with a different immutable inscription')
+                 conn.rollback()
+                 current['receipt']['replayed'] = True
+                 return current
+-            self._backup()
++            self._snapshot_if_due(conn)
+             at = _now()
+             anchor_sha = _sha(anchor_json.encode('utf-8'))
++            scope_json = _dump(scope)
+             conn.execute('INSERT INTO contexts VALUES (?,?,?,?,?,?,?,?)',
+-                         (context_id, _dump(scope), anchor_json, anchor_sha, zlib.compress(raw, 9), _sha(raw), len(raw), at))
++                         (context_id, scope_json, anchor_json, anchor_sha, zlib.compress(raw, 9), _sha(raw), len(raw), at))
+             state_json = _dump(_initial_state())
+             state_sha = _sha(state_json.encode('utf-8'))
+             actor_json, changes_json = _dump(actor), _dump({'anchor_sha256': anchor_sha})
+             event_hash = _event_hash(context_id, 0, 'anchor', actor_json, changes_json, state_sha, anchor_sha, at)
+             conn.execute('INSERT INTO events VALUES (?,?,?,?,?,?,?,?,?,?)',
+                          (context_id, 0, 'anchor', actor_json, changes_json, state_json, state_sha, anchor_sha, event_hash, at))
+-            current, _ = self._read(conn, context_id, scope)
++            conn.execute('INSERT INTO context_state VALUES (?,?,?,?,?,?)',
++                         (context_id, 0, state_json, state_sha, event_hash, at))
++            tail = self._journal_append(context_id, 'anchor', {
++                'context_id': context_id, 'revision': 0, 'event_id': 'anchor', 'actor_json': actor_json,
++                'changes_json': changes_json, 'state_sha256': state_sha, 'previous_hash': anchor_sha,
++                'event_hash': event_hash, 'created_at': at, 'legacy': False,
++                'scope_json': scope_json, 'anchor_json': anchor_json,
++                'objective_b64': base64.b64encode(raw).decode('ascii')}, [])
++            current, _, _ = self._read(conn, context_id, scope)
+             conn.commit()
++            self._journal_tails[context_id] = tail
+             return current
+         except sqlite3.Error as exc:
+             conn.rollback()
+@@ -481,7 +719,7 @@ class MemoryStore:
+         conn = self._connect()
+         try:
+             conn.execute('BEGIN')
+-            snapshot, _ = self._read(conn, context_id, scope)
++            snapshot, _, _ = self._read(conn, context_id, scope)
+             return snapshot
+         except sqlite3.Error as exc:
+             raise IntegrityError('Memory read failed closed') from exc
+@@ -492,13 +730,43 @@ class MemoryStore:
+     def receipt(self, context_id, scope):
+         return self.get(context_id, scope)['receipt']
+ 
+-    def verify(self, context_id, scope):
+-        """Replay all local events and verify inscription hashes; no external attestation."""
+-        snapshot = self.get(context_id, scope)
+-        return {'ok': True, 'event_count': snapshot['revision'] + 1,
++    def verify(self, context_id, scope, deep=False):
++        """Replay all local events, verify inscription hashes and the journal; no external attestation.
++
++        ``deep=True`` also re-serializes every legacy state and every snapshot row.
++        Keys of v1 are preserved; the v2 keys are additive. ``ok`` is False only
++        when the journal does not cover every event of the context (the replay
++        itself raises ``IntegrityError`` on any inconsistency, as before).
++        """
++        _identifier(context_id, 'context id')
++        scope = _scope(scope)
++        conn = self._connect()
++        try:
++            conn.execute('BEGIN')
++            snapshot, rows, info = self._read(conn, context_id, scope, deep=deep)
++            db_events = [(r['revision'], r['event_hash']) for r in rows]
++            if info['legacy_events'] is None:
++                counts = conn.execute("SELECT sum(state_json<>''), sum(state_json='') FROM events WHERE context_id=? AND revision>0",
++                                      (context_id,)).fetchone()
++                info['legacy_events'], info['delta_events'] = int(counts[0] or 0), int(counts[1] or 0)
++        except sqlite3.Error as exc:
++            raise IntegrityError('Memory read failed closed') from exc
++        finally:
++            conn.rollback()
++            conn.close()
++        journal = _journal.verify_chain(_journal.path_for(self.journal_dir, context_id), db_events)
++        return {'ok': bool(journal['ok']), 'event_count': snapshot['revision'] + 1,
+                 'objective_bytes': len(base64.b64decode(snapshot['objective_bytes_b64'])),
+                 'receipt': snapshot['receipt'],
+-                'validation_scope': 'local_integrity_and_replay_only'}
++                'validation_scope': 'local_integrity_and_replay_only',
++                'schema_version': info['schema_version'], 'deep': info['deep'],
++                'replay_from_revision': info['replay_from_revision'],
++                'legacy_events': info['legacy_events'], 'delta_events': info['delta_events'],
++                'snapshot_rows': info['snapshot_rows'],
++                'journal_ok': bool(journal['ok']), 'journal_lines': journal['lines'],
++                'journal_voided': journal['voided'], 'journal_orphans': journal['orphans'],
++                'journal_missing_events': journal['missing_events'],
++                'journal_malformed_lines': journal['malformed_lines']}
+ 
+     def transition(self, context_id, scope, expected_revision, event_id, actor, changes):
+         _identifier(context_id, 'context id')
+@@ -513,7 +781,7 @@ class MemoryStore:
+         conn = self._connect()
+         try:
+             conn.execute('BEGIN IMMEDIATE')
+-            current, rows = self._read(conn, context_id, scope)
++            current, rows, _ = self._read(conn, context_id, scope)
+             existing = next((e for e in rows if e['event_id'] == event_id), None)
+             if existing is not None:
+                 if existing['actor_json'] != actor_json or existing['changes_json'] != changes_json:
+@@ -522,17 +790,31 @@ class MemoryStore:
+                 return self._receipt(current, existing, replayed=True)
+             if current['revision'] != expected_revision:
+                 raise RevisionConflict(expected_revision, current['revision'])
+-            state = _apply({'q': current['q'], 'p': current['p']}, normalized)
++            state = _apply_inplace({'q': current['q'], 'p': current['p']}, normalized)
+             state_json = _dump(state)
+             state_sha = _sha(state_json.encode('utf-8'))
+             revision, at = current['revision'] + 1, _now()
+             previous = current['receipt']['event_hash']
+             event_hash = _event_hash(context_id, revision, event_id, actor_json, changes_json, state_sha, previous, at)
+-            self._backup()
++            self._snapshot_if_due(conn)
+             conn.execute('INSERT INTO events VALUES (?,?,?,?,?,?,?,?,?,?)',
+-                         (context_id, revision, event_id, actor_json, changes_json, state_json, state_sha, previous, event_hash, at))
+-            checked, _ = self._read(conn, context_id, scope)
++                         (context_id, revision, event_id, actor_json, changes_json, '', state_sha, previous, event_hash, at))
++            updated = conn.execute(
++                'UPDATE context_state SET revision=?, state_json=?, state_sha256=?, event_hash=?, updated_at=? '
++                'WHERE context_id=? AND revision=?',
++                (revision, state_json, state_sha, event_hash, at, context_id, current['revision']))
++            if updated.rowcount != 1:
++                raise IntegrityError('Materialized state revision CAS failed')
++            if revision % SNAPSHOT_EVERY_EVENTS == 0:
++                conn.execute('INSERT INTO snapshots VALUES (?,?,?,?,?,?,?)',
++                             (context_id, revision, state_json, state_sha, event_hash, at, 'periodic'))
++            tail = self._journal_append(context_id, 'event', {
++                'context_id': context_id, 'revision': revision, 'event_id': event_id, 'actor_json': actor_json,
++                'changes_json': changes_json, 'state_sha256': state_sha, 'previous_hash': previous,
++                'event_hash': event_hash, 'created_at': at, 'legacy': False}, rows)
++            checked, _, _ = self._read(conn, context_id, scope)
+             conn.commit()
++            self._journal_tails[context_id] = tail
+             return checked['receipt']
+         except sqlite3.Error as exc:
+             conn.rollback()
+@@ -620,4 +902,4 @@ class MemoryStore:
+                 'omitted_record_ids': [r['id'] for r in records if r['id'] not in included],
+                 'overflow': len(selected) != len(records), 'required_chars': minimum,
+                 'actual_chars': len(text), 'projection_sha256': _sha(text.encode('utf-8')),
+-                'current_input_sha256': _sha(current_input.encode('utf-8'))}
+\ No newline at end of file
++                'current_input_sha256': _sha(current_input.encode('utf-8'))}
+diff --git a/copia/MEMORIA_IALD/migrar_para_delta.py b/copia/MEMORIA_IALD/migrar_para_delta.py
+new file mode 100644
+index 0000000..cfa6846
+--- /dev/null
++++ b/copia/MEMORIA_IALD/migrar_para_delta.py
+@@ -0,0 +1,67 @@
++"""Migrate the common memory database from schema v1 to v2 (state by delta).
++
++Dry run by default; ``--apply`` runs the migration. Whole-database byte backup
++(verified) before any change; one transaction; deep verification after.
++Idempotent: a v2 database is only verified. No network, no provider.
++
++    python -X utf8 migrar_para_delta.py --state C:\\IALD\\MEMORIA_IALD\\state [--apply]
++        [--second-copy-dir D:\\IALD_ARQUIVO\\MEMORIA_IALD\\pre_v2] [--receipt RECIBO.json]
++        [--no-deep-after] [--snapshot-archive-dir DIR]
++    python -X utf8 migrar_para_delta.py --state DIR --verify-only [--deep]
++    python -X utf8 migrar_para_delta.py --state DIR --rebuild-from-journal OUT_DIR
++"""
++from __future__ import annotations
++
++import argparse
++import json
++from pathlib import Path
++import sys
++import time
++
++sys.path.insert(0, str(Path(__file__).resolve().parent / 'lib'))
++
++from iald_memory import migrate as _migrate  # noqa: E402
++
++
++def _log(message):
++    print(f'[{time.strftime("%H:%M:%S")}] {message}', file=sys.stderr, flush=True)
++
++
++def main(argv=None):
++    parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
++    parser.add_argument('--state', required=True, help='state directory holding memory.sqlite3')
++    parser.add_argument('--apply', action='store_true', help='apply the migration (default: dry run)')
++    parser.add_argument('--second-copy-dir', default=None, help='second verified copy of the pre-migration backup')
++    parser.add_argument('--receipt', default=None, help='write the JSON receipt to this file')
++    parser.add_argument('--no-deep-after', action='store_true', help='skip the deep post-verification (not recommended)')
++    parser.add_argument('--snapshot-archive-dir', default=None, help='override the byte-snapshot archive directory')
++    parser.add_argument('--verify-only', action='store_true', help='only verify a v2 database (no migration)')
++    parser.add_argument('--deep', action='store_true', help='with --verify-only: deep verification')
++    parser.add_argument('--rebuild-from-journal', default=None, metavar='OUT_DIR',
++                        help='rebuild a v2 database into an empty OUT_DIR from <state>/journal')
++    args = parser.parse_args(argv)
++    try:
++        if args.rebuild_from_journal:
++            result = _migrate.rebuild_from_journal(Path(args.state) / 'journal', args.rebuild_from_journal,
++                                                   snapshot_archive_dir=args.snapshot_archive_dir, log=_log)
++        elif args.verify_only:
++            result = {'root': args.state, 'inspect': _migrate.inspect(args.state),
++                      'verify': _migrate._summarize(_migrate.verify_all(
++                          args.state, deep=args.deep, snapshot_archive_dir=args.snapshot_archive_dir))}
++            result['ok'] = all(v['ok'] for v in result['verify'].values())
++        else:
++            result = _migrate.migrate(args.state, apply=args.apply, second_copy_dir=args.second_copy_dir,
++                                      deep_after=not args.no_deep_after,
++                                      snapshot_archive_dir=args.snapshot_archive_dir, log=_log)
++    except Exception as exc:  # visible failure, never a false ok
++        print(json.dumps({'ok': False, 'error': repr(exc)}, ensure_ascii=False, indent=1))
++        return 1
++    text = json.dumps(result, ensure_ascii=False, sort_keys=True, indent=1)
++    if args.receipt:
++        Path(args.receipt).write_text(text + '\n', encoding='utf-8')
++    print(text)
++    return 0 if result.get('ok', True) else 1
++
++
++if __name__ == '__main__':
++    sys.exit(main())
+diff --git a/copia/MEMORIA_IALD/mover_backups_antigos.py b/copia/MEMORIA_IALD/mover_backups_antigos.py
+new file mode 100644
+index 0000000..3f1e916
+--- /dev/null
++++ b/copia/MEMORIA_IALD/mover_backups_antigos.py
+@@ -0,0 +1,49 @@
++"""Move the v1 per-mutation backups (memory.sqlite3.bak_*) out of the state directory.
++
++Keeps the newest ``--keep`` (default 3) in place; for every other file: SHA-256
++of the source, copy with fsync, SHA-256 of the destination re-read; equal ->
++delete the source and append a MANIFEST.jsonl line; different -> keep the
++source and abort with a visible error. Writes MANIFEST.json at the end. Never
++touches memory.sqlite3, its -journal, snapshots/ or journal/. No network.
++
++    python -X utf8 mover_backups_antigos.py --state C:\\IALD\\MEMORIA_IALD\\state
++        --dest D:\\IALD_ARQUIVO\\MEMORIA_IALD\\backups_ate_20261012 [--keep 3] [--dry-run]
++"""
++from __future__ import annotations
++
++import argparse
++import json
++from pathlib import Path
++import sys
++import time
++
++sys.path.insert(0, str(Path(__file__).resolve().parent / 'lib'))
++
++from iald_memory import snapshots as _snapshots  # noqa: E402
++
++
++def _log(message):
++    print(f'[{time.strftime("%H:%M:%S")}] {message}', file=sys.stderr, flush=True)
++
++
++def main(argv=None):
++    parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
++    parser.add_argument('--state', required=True, help='state directory holding the memory.sqlite3.bak_* files')
++    parser.add_argument('--dest', required=True, help='destination directory (another volume, e.g. D:)')
++    parser.add_argument('--keep', type=int, default=3, help='how many of the newest backups stay in place')
++    parser.add_argument('--dry-run', action='store_true', help='list what would move; nothing is copied or deleted')
++    args = parser.parse_args(argv)
++    if args.keep < 0:
++        parser.error('--keep must be >= 0')
++    try:
++        report = _snapshots.archive_legacy_backups(args.state, args.dest, keep=args.keep, dry_run=args.dry_run, log=_log)
++    except Exception as exc:
++        print(json.dumps({'ok': False, 'error': repr(exc)}, ensure_ascii=False, indent=1))
++        return 1
++    report['ok'] = report['failed'] is None
++    print(json.dumps(report, ensure_ascii=False, sort_keys=True, indent=1))
++    return 0 if report['ok'] else 1
++
++
++if __name__ == '__main__':
++    sys.exit(main())
+diff --git a/originais_arvore/tests/test_store.py b/tests/test_store.py
+index 285173d..63bb53f 100644
+--- a/originais_arvore/tests/test_store.py
++++ b/tests/test_store.py
+@@ -93,17 +93,29 @@ class MemoryStoreTests(unittest.TestCase):
+         self.assertEqual(self.store.get('context', SCOPE)['revision'], 0)
+ 
+     def test_state_and_flow_commit_together_and_survive_restart(self):
++        # Rewritten 12/10/2026 (D1/D2): no whole-database copy per mutation any more;
++        # the append-only journal holds both mutations, chained, and the
++        # materialized row follows the head revision.
+         receipt = self.append()
+         fresh = MemoryStore(self.root).get('context', SCOPE)
+         self.assertEqual(fresh['revision'], 1)
+         self.assertEqual(fresh['q']['records'][0]['id'], 'record-1')
+         self.assertEqual(fresh['p']['phase'], 'result_ready')
+         self.assertEqual(fresh['receipt'], receipt)
+-        backups = list(self.root.glob('memory.sqlite3.bak_*'))
+-        self.assertEqual(len(backups), 2)
+-        previous = sqlite3.connect(str(backups[-1]))
+-        self.assertEqual(previous.execute('SELECT count(*) FROM events').fetchone()[0], 1)
+-        previous.close()
++        self.assertEqual(list(self.root.glob('memory.sqlite3.bak_*')), [])
++        journal = self.root / 'journal' / 'context.events.jsonl'
++        lines = [json.loads(line) for line in journal.read_text('ascii').splitlines()]
++        self.assertEqual([line['kind'] for line in lines], ['anchor', 'event'])
++        self.assertEqual([line['revision'] for line in lines], [0, 1])
++        self.assertEqual([line['seq'] for line in lines], [1, 2])
++        self.assertEqual(lines[1]['event_hash'], receipt['event_hash'])
++        self.assertEqual(lines[1]['prev_line_sha256'], lines[0]['line_sha256'])
++        self.assertEqual(lines[0]['prev_line_sha256'], '')
++        con = sqlite3.connect(str(self.store.db_path))
++        self.assertEqual(con.execute("SELECT revision FROM context_state WHERE context_id='context'").fetchone()[0], 1)
++        self.assertEqual(con.execute("SELECT state_json FROM events WHERE context_id='context' AND revision=1").fetchone()[0], '')
++        con.close()
++        self.assertTrue(self.store.verify('context', SCOPE)['journal_ok'])
+ 
+     def test_cas_and_stable_replay(self):
+         payload = {'candidates': [candidate('r')]}
+diff --git a/tests/test_store_v2.py b/tests/test_store_v2.py
+new file mode 100644
+index 0000000..f265f0d
+--- /dev/null
++++ b/tests/test_store_v2.py
+@@ -0,0 +1,945 @@
++"""Tests of schema v2 (state by delta, journal, byte snapshots, migration) — 12/10/2026.
++
++Runs only inside the 1_NUCLEO folder (temporary directories under its tmp/, the
++snapshot archive under tmp/ as well). Never touches production.
++"""
++import hashlib
++import json
++import math
++import multiprocessing
++import os
++from pathlib import Path
++import shutil
++import sqlite3
++import statistics
++import subprocess
++import sys
++import tempfile
++import time
++import unittest
++from unittest.mock import patch
++import warnings
++
++import iald_memory
++from iald_memory import (
++    MemoryStore, IntegrityError, SchemaMigrationRequired, InvariantViolation, RevisionConflict,
++)
++from iald_memory import store as store_module
++from iald_memory import journal, snapshots, migrate
++import store_v1_frozen
++from test_store import crash_after_insert
++
++SCOPE = {'house': 'IALD', 'principal': 'operator'}
++OPERATOR = {'id': 'operator', 'kind': 'operator'}
++AGENT = {'id': 'coordinator', 'kind': 'agent'}
++HERE = Path(__file__).resolve().parent
++NUCLEO = HERE.parent
++EVID = Path(os.environ.get('NUCLEO_EVIDENCIAS', NUCLEO / 'evidencias'))
++SCRIPTS = NUCLEO / 'copia' / 'MEMORIA_IALD'
++# Same shape as the audit's synthetic candidate (~1.313 B of canonical record JSON).
++TEXT = ('heartbeat sample response text ' * 40)[:1200]
++
++V1_SNAPSHOT_KEYS = {'context_id', 'scope', 'objective', 'objective_bytes_b64', 'objective_sha256', 'anchor_sha256',
++                    'constraints', 'parent_id', 'anchor_actor', 'revision', 'q', 'p', 'state_sha256', 'receipt'}
++V1_RECEIPT_KEYS = {'context_id', 'scope', 'revision', 'event_id', 'event_hash', 'objective_sha256', 'anchor_sha256',
++                   'state_sha256', 'replayed'}
++V1_PROJECTION_KEYS = {'text', 'receipt', 'required_record_ids', 'included_record_ids', 'omitted_record_ids', 'overflow',
++                      'required_chars', 'actual_chars', 'projection_sha256', 'current_input_sha256'}
++V1_VERIFY_KEYS = {'ok', 'event_count', 'objective_bytes', 'receipt', 'validation_scope'}
++V1_EXPORTS = {'MemoryStore', 'MemoryError', 'InvalidInput', 'ContextNotFound', 'ScopeViolation', 'AnchorConflict',
++              'RevisionConflict', 'IdempotencyConflict', 'IntegrityError', 'ProjectionOverflow', 'InvariantViolation'}
++
++
++def sha256_file(path):
++    return hashlib.sha256(Path(path).read_bytes()).hexdigest()
++
++
++def candidate(name, text=TEXT):
++    return {'id': name, 'text': text, 'statute': 'DECLARADO', 'source': {'kind': 'executor', 'ref': 'job:' + name}}
++
++
++def changes_for(i, text=TEXT):
++    return {'candidates': [candidate(f'c{i}', text)], 'flow': {'phase': f'cycle-{i}'}}
++
++
++def journal_lines(root, context_id):
++    path = journal.path_for(Path(root) / 'journal', context_id)
++    return [json.loads(line) for line in path.read_text('ascii').splitlines() if line]
++
++
++def make_v1(root, plan, backups=False):
++    """Build a schema-v1 database with the frozen v1 code. plan: {context_id: n_transitions}."""
++    with patch.object(store_v1_frozen.MemoryStore, '_backup', lambda self: None) if not backups else _noop():
++        store = store_v1_frozen.MemoryStore(root)
++        heads = {}
++        for context_id, count in plan.items():
++            store.ensure_context(context_id, objective=f'Objective of {context_id}\r\n'.encode(), scope=SCOPE,
++                                 actor=OPERATOR, constraints={'max_calls': 1})
++            for i in range(count):
++                store.transition(context_id, SCOPE, i, f'e{i}', AGENT, changes_for(i, TEXT[:200]))
++            heads[context_id] = store.get(context_id, SCOPE)
++        return heads
++
++
++class _noop:
++    def __enter__(self):
++        return None
++
++    def __exit__(self, *exc):
++        return False
++
++
++class Base(unittest.TestCase):
++    def setUp(self):
++        self.temp = tempfile.TemporaryDirectory()
++        self.root = Path(self.temp.name) / 'state'
++        self.archive = Path(self.temp.name) / 'arquivo_D'
++        self.warned = warnings.catch_warnings(record=True)
++        self.caught = self.warned.__enter__()
++        warnings.simplefilter('always')
++
++    def tearDown(self):
++        self.warned.__exit__(None, None, None)
++        self.temp.cleanup()
++
++    def store(self, root=None):
++        return MemoryStore(root or self.root, snapshot_archive_dir=self.archive)
++
++    def fill(self, store, context_id, count, start=0):
++        receipt = None
++        for i in range(start, start + count):
++            receipt = store.transition(context_id, SCOPE, i, f'e{i}', AGENT, changes_for(i))
++        return receipt
++
++
++class FrozenAndContract(Base):
++    def test_v1_frozen_copy_is_pinned(self):
++        pinned = (HERE / 'store_v1_frozen.sha256').read_text('ascii').split()[0]
++        self.assertEqual(sha256_file(HERE / 'store_v1_frozen.py'), pinned)
++        self.assertTrue(pinned.startswith('2d4f6214fa433534'))
++        self.assertEqual(store_v1_frozen.SCHEMA_VERSION, 1)
++        self.assertEqual(store_module.SCHEMA_VERSION, 2)
++
++    def test_public_contract_fields_unchanged(self):
++        store = self.store()
++        snapshot = store.ensure_context('context', objective='Objective', scope=SCOPE, actor=OPERATOR)
++        self.assertEqual(set(snapshot), V1_SNAPSHOT_KEYS)
++        receipt = store.transition('context', SCOPE, 0, 'e0', AGENT, changes_for(0))
++        self.assertEqual(set(receipt), V1_RECEIPT_KEYS)
++        self.assertEqual(set(store.get('context', SCOPE)), V1_SNAPSHOT_KEYS)
++        self.assertEqual(set(store.receipt('context', SCOPE)), V1_RECEIPT_KEYS)
++        self.assertEqual(set(store.project('context', SCOPE)), V1_PROJECTION_KEYS)
++        verification = store.verify('context', SCOPE)
++        self.assertTrue(V1_VERIFY_KEYS <= set(verification))
++        self.assertEqual(verification['validation_scope'], 'local_integrity_and_replay_only')
++        self.assertTrue(V1_EXPORTS <= set(iald_memory.__all__))
++        self.assertIn('SchemaMigrationRequired', iald_memory.__all__)
++        self.assertTrue(issubclass(SchemaMigrationRequired, IntegrityError))
++        # Semantics preserved: CAS, idempotent replay, model invariant.
++        replay = store.transition('context', SCOPE, 0, 'e0', AGENT, changes_for(0))
++        self.assertTrue(replay['replayed'])
++        with self.assertRaises(RevisionConflict):
++            store.transition('context', SCOPE, 0, 'e1', AGENT, changes_for(1))
++        with self.assertRaises(InvariantViolation):
++            store.transition('context', SCOPE, 1, 'e1', {'id': 'm', 'kind': 'model'}, {'flow': {'phase': 'x'}})
++
++
++class DeltaReplay(Base):
++    def test_delta_events_store_no_state_and_replay_from_snapshot(self):
++        with patch.object(store_module, 'SNAPSHOT_EVERY_EVENTS', 4):
++            store = self.store()
++            store.ensure_context('context', objective='Objective', scope=SCOPE, actor=OPERATOR)
++            self.fill(store, 'context', 10)
++            con = sqlite3.connect(str(store.db_path))
++            states = con.execute("SELECT revision, state_json FROM events WHERE context_id='context' ORDER BY revision").fetchall()
++            self.assertEqual([s for r, s in states if r > 0], [''] * 10)
++            self.assertEqual(json.loads(states[0][1]), store_module._initial_state())
++            self.assertEqual([r[0] for r in con.execute("SELECT revision FROM snapshots ORDER BY revision")], [4, 8])
++            self.assertEqual(con.execute("SELECT revision FROM context_state").fetchone()[0], 10)
++            con.close()
++            verification = store.verify('context', SCOPE)
++            self.assertEqual(verification['replay_from_revision'], 8)
++            self.assertEqual((verification['legacy_events'], verification['delta_events'], verification['snapshot_rows']), (0, 10, 2))
++            self.assertEqual(verification['event_count'], 11)
++            deep = store.verify('context', SCOPE, deep=True)
++            self.assertTrue(deep['ok'] and deep['deep'])
++            self.assertEqual(deep['replay_from_revision'], 0)
++            state = store.get('context', SCOPE)
++            self.assertEqual([r['id'] for r in state['q']['records']], [f'c{i}' for i in range(10)])
++            self.assertEqual(state['p']['phase'], 'cycle-9')
++
++    def test_errata_and_handles_replay_identically_through_snapshots(self):
++        with patch.object(store_module, 'SNAPSHOT_EVERY_EVENTS', 2):
++            store = self.store()
++            store.ensure_context('context', objective='Objective', scope=SCOPE, actor=OPERATOR)
++            store.transition('context', SCOPE, 0, 'a', AGENT, {'candidates': [candidate('r1', 'original')],
++                                                                 'flow': {'handles': [{'id': 'job', 'job_id': 'x', 'status': 'sent'}]}})
++            correction = {'id': 'fix', 'kind': 'erratum', 'text': 'corrected', 'statute': 'INPUT',
++                          'sources': [{'kind': 'operator', 'ref': 'turn:2'}], 'supersedes': 'r1'}
++            store.transition('context', SCOPE, 1, 'b', OPERATOR, {'records': [correction]})
++            store.transition('context', SCOPE, 2, 'c', AGENT, {'flow': {'handles': [{'id': 'job', 'status': 'uncertain'}, {'id': 'other', 'n': 1}]}})
++            store.transition('context', SCOPE, 3, 'd', AGENT, {'flow': {'phase': 'done', 'next_action': ''}})
++            state = store.get('context', SCOPE)
++            self.assertEqual(state['p']['handles'], [{'id': 'job', 'job_id': 'x', 'status': 'uncertain'}, {'id': 'other', 'n': 1}])
++            self.assertEqual([r['id'] for r in state['q']['records']], ['r1', 'fix'])
++            self.assertEqual(store.verify('context', SCOPE)['replay_from_revision'], 4)
++            self.assertTrue(store.verify('context', SCOPE, deep=True)['ok'])
++            with self.assertRaises(InvariantViolation):
++                store.transition('context', SCOPE, 4, 'dup', AGENT, {'candidates': [candidate('r1')]})
++            projected = store.project('context', SCOPE)
++            self.assertEqual(projected['required_record_ids'], ['r1', 'fix'])
++
++    def test_stored_json_digest_equals_v1_formula_and_falls_back_when_noncanonical(self):
++        """The fast digest over stored canonical JSON is the v1 formula; a row whose stored JSON is
++        not canonical (impossible through the store, possible in a hand-built database) is still
++        judged by the v1 formula itself, never by a different one."""
++        store = self.store()
++        store.ensure_context('context', objective='Objective', scope=SCOPE, actor=OPERATOR)
++        self.fill(store, 'context', 3)
++        con = sqlite3.connect(str(store.db_path))
++        con.row_factory = sqlite3.Row
++        rows = con.execute("SELECT * FROM events WHERE context_id='context' ORDER BY revision").fetchall()
++        con.close()
++        cid = store_module._json_str('context')
++        for e in rows:
++            fast = store_module._event_hash_stored(cid, e['revision'], e['event_id'], e['actor_json'], e['changes_json'],
++                                                   e['state_sha256'], e['previous_hash'], e['created_at'])
++            full = store_module._event_hash('context', e['revision'], e['event_id'], e['actor_json'], e['changes_json'],
++                                            e['state_sha256'], e['previous_hash'], e['created_at'])
++            self.assertEqual(fast, full)
++            self.assertEqual(full, e['event_hash'])
++        # Hand-built context whose event 1 stores NON-canonical JSON (spaces, unsorted keys) but a
++        # correct v1 digest: the v2 reader must accept it (fallback), v1 frozen code agrees on the digest.
++        head = store.get('context', SCOPE)
++        actor_nc = '{"kind": "agent", "id": "coordinator"}'
++        changes = store_module._changes(changes_for(3), AGENT)
++        changes_nc = json.dumps(changes, ensure_ascii=False, indent=1)
++        state = store_module._apply({'q': head['q'], 'p': head['p']}, changes)
++        state_json = store_module._dump(state)
++        state_sha = store_module._sha(state_json.encode('utf-8'))
++        at = store_module._now()
++        digest = store_v1_frozen._event_hash('context', 4, 'e3', actor_nc, changes_nc, state_sha, head['receipt']['event_hash'], at)
++        self.assertNotEqual(digest, store_module._event_hash_stored(cid, 4, 'e3', actor_nc, changes_nc, state_sha,
++                                                                    head['receipt']['event_hash'], at))
++        con = sqlite3.connect(str(store.db_path), isolation_level=None)
++        con.execute('BEGIN IMMEDIATE')
++        con.execute('INSERT INTO events VALUES (?,?,?,?,?,?,?,?,?,?)',
++                    ('context', 4, 'e3', actor_nc, changes_nc, '', state_sha, head['receipt']['event_hash'], digest, at))
++        con.execute('DROP TRIGGER context_state_no_delete')
++        con.execute("DELETE FROM context_state WHERE context_id='context'")
++        con.execute('INSERT INTO context_state VALUES (?,?,?,?,?,?)', ('context', 4, state_json, state_sha, digest, at))
++        con.execute("CREATE TRIGGER context_state_no_delete BEFORE DELETE ON context_state BEGIN SELECT RAISE(ABORT,'materialized state is not deletable'); END")
++        con.commit()
++        con.close()
++        read = store.get('context', SCOPE)
++        self.assertEqual((read['revision'], read['receipt']['event_hash']), (4, digest))
++        self.assertEqual([r['id'] for r in read['q']['records']], ['c0', 'c1', 'c2', 'c3'])
++        # Tampering the non-canonical row (same parsed content is impossible to fake: any byte change
++        # alters the v1 digest) is still refused.
++        con = sqlite3.connect(str(store.db_path), isolation_level=None)
++        con.execute('DROP TRIGGER events_no_update')
++        con.execute("UPDATE events SET actor_json=? WHERE context_id='context' AND revision=4", ('{"kind": "agent", "id": "other"}',))
++        con.execute("CREATE TRIGGER events_no_update BEFORE UPDATE ON events BEGIN SELECT RAISE(ABORT,'append-only event'); END")
++        con.close()
++        with self.assertRaises(IntegrityError):
++            store.get('context', SCOPE)
++
++
++class TamperFailsClosed(Base):
++    def prepared(self):
++        with patch.object(store_module, 'SNAPSHOT_EVERY_EVENTS', 3):
++            store = self.store()
++            store.ensure_context('context', objective='Objective', scope=SCOPE, actor=OPERATOR)
++            self.fill(store, 'context', 5)
++        return store
++
++    def test_materialized_row_tamper_fails_closed(self):
++        store = self.prepared()
++        con = sqlite3.connect(str(store.db_path))
++        con.execute("UPDATE context_state SET state_json='{}'")
++        con.commit()
++        con.close()
++        with self.assertRaises(IntegrityError) as caught:
++            store.get('context', SCOPE)
++        self.assertIn('Materialized', str(caught.exception))
++        with self.assertRaises(IntegrityError):
++            store.transition('context', SCOPE, 5, 'e5', AGENT, changes_for(5))
++
++    def test_context_state_revision_lag_fails_closed(self):
++        store = self.prepared()
++        con = sqlite3.connect(str(store.db_path))
++        con.execute('UPDATE context_state SET revision=revision-1')
++        con.commit()
++        con.close()
++        with self.assertRaises(IntegrityError) as caught:
++            store.get('context', SCOPE)
++        self.assertIn('lags', str(caught.exception))
++
++    def test_snapshot_row_tamper_fails_closed(self):
++        store = self.prepared()
++        con = sqlite3.connect(str(store.db_path))
++        for query in ['DELETE FROM snapshots', "UPDATE snapshots SET state_json='{}'", 'DELETE FROM context_state']:
++            with self.assertRaises(sqlite3.IntegrityError):
++                con.execute(query)
++            con.rollback()
++        trigger = con.execute("SELECT sql FROM sqlite_master WHERE name='snapshots_no_update'").fetchone()[0]
++        con.execute('DROP TRIGGER snapshots_no_update')
++        con.execute("UPDATE snapshots SET state_json=replace(state_json, 'cycle-2', 'cycle-X') WHERE revision=3")
++        con.execute(trigger)
++        con.commit()
++        con.close()
++        with self.assertRaises(IntegrityError) as caught:
++            store.get('context', SCOPE)
++        self.assertIn('snapshot', str(caught.exception).lower())
++        with self.assertRaises(IntegrityError):
++            store.verify('context', SCOPE, deep=True)
++
++    def test_delta_event_tamper_fails_closed(self):
++        store = self.prepared()
++        con = sqlite3.connect(str(store.db_path))
++        trigger = con.execute("SELECT sql FROM sqlite_master WHERE name='events_no_update'").fetchone()[0]
++        con.execute('DROP TRIGGER events_no_update')
++        con.execute("UPDATE events SET changes_json=replace(changes_json, 'cycle-4', 'cycle-Z') WHERE revision=5")
++        con.execute(trigger)
++        con.commit()
++        con.close()
++        with self.assertRaises(IntegrityError) as caught:
++            store.get('context', SCOPE)
++        self.assertIn('digest', str(caught.exception).lower())
++
++    def test_stray_snapshot_beyond_head_fails_closed(self):
++        store = self.prepared()
++        con = sqlite3.connect(str(store.db_path))
++        row = con.execute("SELECT state_json, state_sha256, event_hash, created_at FROM snapshots WHERE revision=3").fetchone()
++        con.execute('INSERT INTO snapshots VALUES (?,?,?,?,?,?,?)', ('context', 9, *row, 'test'))
++        con.commit()
++        con.close()
++        with self.assertRaises(IntegrityError):
++            store.get('context', SCOPE)
++
++
++class Journal(Base):
++    def test_journal_written_before_commit_and_orphan_voided(self):
++        store = self.store()
++        store.ensure_context('context', objective='Objective', scope=SCOPE, actor=OPERATOR)
++        original = store._read
++        calls = 0
++        def failing(*args, **kwargs):
++            nonlocal calls
++            calls += 1
++            if calls == 2:
++                raise IntegrityError('Simulated failure after journal append, before commit')
++            return original(*args, **kwargs)
++        with patch.object(store, '_read', side_effect=failing):
++            with self.assertRaises(IntegrityError):
++                store.transition('context', SCOPE, 0, 'lost', AGENT, changes_for(0))
++        self.assertEqual(self.store().get('context', SCOPE)['revision'], 0)
++        lines = journal_lines(self.root, 'context')
++        self.assertEqual([l['kind'] for l in lines], ['anchor', 'event'])
++        self.assertEqual(lines[1]['event_id'], 'lost')
++        verification = store.verify('context', SCOPE)
++        self.assertTrue(verification['journal_ok'])
++        self.assertEqual(verification['journal_orphans'], 1)
++        receipt = store.transition('context', SCOPE, 0, 'kept', AGENT, changes_for(0))
++        lines = journal_lines(self.root, 'context')
++        self.assertEqual([l['kind'] for l in lines], ['anchor', 'event', 'void', 'event'])
++        self.assertEqual(lines[2]['voids_seq'], 2)
++        self.assertEqual(lines[2]['voids_line_sha256'], lines[1]['line_sha256'])
++        self.assertEqual(lines[2]['reason'], 'not_committed')
++        self.assertEqual(lines[3]['event_hash'], receipt['event_hash'])
++        self.assertEqual([l['seq'] for l in lines], [1, 2, 3, 4])
++        self.assertTrue(journal.verify_lines(lines)['chain_ok'])
++        verification = store.verify('context', SCOPE)
++        self.assertTrue(verification['ok'] and verification['journal_ok'])
++        self.assertEqual((verification['journal_voided'], verification['journal_orphans'], verification['journal_lines']), (1, 0, 4))
++
++    def test_abrupt_exit_after_journal_append_voids_orphan(self):
++        store = self.store()
++        store.ensure_context('context', objective='Objective', scope=SCOPE, actor=OPERATOR)
++        ctx = multiprocessing.get_context('spawn')
++        process = ctx.Process(target=crash_after_insert, args=(str(self.root),))
++        process.start()
++        process.join(timeout=30)
++        self.assertEqual(process.exitcode, 73)
++        self.assertEqual([l['kind'] for l in journal_lines(self.root, 'context')], ['anchor', 'event'])
++        self.assertEqual(self.store().get('context', SCOPE)['revision'], 0)
++        store.transition('context', SCOPE, 0, 'after', AGENT, changes_for(0))
++        self.assertEqual([l['kind'] for l in journal_lines(self.root, 'context')], ['anchor', 'event', 'void', 'event'])
++        self.assertTrue(store.verify('context', SCOPE)['ok'])
++
++    def test_journal_missing_or_truncated_is_visible(self):
++        store = self.store()
++        store.ensure_context('context', objective='Objective', scope=SCOPE, actor=OPERATOR)
++        self.fill(store, 'context', 2)
++        path = journal.path_for(self.root / 'journal', 'context')
++        raw = path.read_bytes()
++        path.write_bytes(raw + b'{"seq":4,"kind":"event","partial')  # crash mid-write
++        verification = store.verify('context', SCOPE)
++        self.assertTrue(verification['journal_ok'])
++        self.assertEqual(verification['journal_malformed_lines'], 1)
++        store.transition('context', SCOPE, 2, 'e2', AGENT, changes_for(2))
++        lines = journal_lines(self.root, 'context') if False else None
++        parsed, malformed, ends = journal.read_all(path)
++        self.assertEqual((len(parsed), malformed, ends), (4, 1, True))
++        self.assertTrue(journal.verify_lines(parsed)['chain_ok'])
++        path.unlink()
++        verification = store.verify('context', SCOPE)
++        self.assertFalse(verification['ok'])
++        self.assertFalse(verification['journal_ok'])
++        self.assertEqual(verification['journal_missing_events'], 4)
++        self.assertEqual(store.get('context', SCOPE)['revision'], 3)  # reads never depend on the journal
++
++    def test_journal_chain_and_rebuild_equals_db(self):
++        with patch.object(store_module, 'SNAPSHOT_EVERY_EVENTS', 3):
++            store = self.store()
++            store.ensure_context('alpha', objective=b'Alpha\r\n original bytes', scope=SCOPE, actor=OPERATOR, constraints={'k': [1, 2]})
++            store.ensure_context('beta:child', objective='Beta', scope=SCOPE, actor=AGENT, parent_id='alpha')
++            self.fill(store, 'alpha', 7)
++            store.transition('beta:child', SCOPE, 0, 'x', AGENT, {'candidates': [candidate('r1', 'original')],
++                                                                   'flow': {'handles': [{'id': 'job', 'status': 'sent'}]}})
++            store.transition('beta:child', SCOPE, 1, 'y', OPERATOR, {'records': [{'id': 'fix', 'kind': 'erratum', 'text': 'corr', 'statute': 'INPUT',
++                                                                                    'sources': [{'kind': 'operator', 'ref': 't'}], 'supersedes': 'r1'}]})
++            before = {c: store.get(c, SCOPE) for c in ('alpha', 'beta:child')}
++            self.assertTrue((self.root / 'journal' / 'beta%3Achild.events.jsonl').exists())
++            out = Path(self.temp.name) / 'rebuilt'
++            report = migrate.rebuild_from_journal(self.root / 'journal', out, snapshot_archive_dir=self.archive)
++            self.assertTrue(report['ok'])
++            rebuilt = MemoryStore(out, snapshot_archive_dir=self.archive)
++            for context_id, snapshot in before.items():
++                after = rebuilt.get(context_id, SCOPE)
++                self.assertEqual(after, snapshot)
++                deep = rebuilt.verify(context_id, SCOPE, deep=True)
++                self.assertTrue(deep['ok'] and deep['journal_ok'])
++                self.assertEqual(deep['receipt'], snapshot['receipt'])
++            with self.assertRaises(IntegrityError):
++                migrate.rebuild_from_journal(self.root / 'journal', out, snapshot_archive_dir=self.archive)
++
++    def test_journal_tail_cache_validated_by_stat_across_instances(self):
++        """Two store instances on the same root alternate appends: a stale in-memory tail must be
++        rejected by the stat check (size + mtime_ns) and re-read, so the chain stays unbroken and
++        no void line is written. A cache hit never skips a real orphan either."""
++        a = self.store()
++        b = self.store()
++        a.ensure_context('context', objective='Objective', scope=SCOPE, actor=OPERATOR)
++        a.transition('context', SCOPE, 0, 'a0', AGENT, changes_for(0))   # a: cache hit path (own tail)
++        self.assertEqual(a._journal_tails['context']['last']['revision'], 1)
++        b.transition('context', SCOPE, 1, 'b1', AGENT, changes_for(1))   # b: no cache, reads the file
++        a.transition('context', SCOPE, 2, 'a2', AGENT, changes_for(2))   # a: stale cache -> stat mismatch -> re-read
++        b.transition('context', SCOPE, 3, 'b3', AGENT, changes_for(3))
++        lines = journal_lines(self.root, 'context')
++        self.assertEqual([l['kind'] for l in lines], ['anchor', 'event', 'event', 'event', 'event'])
++        self.assertEqual([l['revision'] for l in lines], [0, 1, 2, 3, 4])
++        self.assertTrue(journal.verify_lines(lines)['chain_ok'])
++        for store in (a, b):
++            verification = store.verify('context', SCOPE)
++            self.assertTrue(verification['ok'] and verification['journal_ok'])
++            self.assertEqual((verification['journal_voided'], verification['journal_orphans']), (0, 0))
++        # A failed transition drops the cache entry; the orphan is voided on the next append.
++        original = a._read
++        calls = {'n': 0}
++        def failing(*args, **kwargs):
++            calls['n'] += 1
++            if calls['n'] == 2:
++                raise IntegrityError('Simulated failure after journal append, before commit')
++            return original(*args, **kwargs)
++        with patch.object(a, '_read', side_effect=failing):
++            with self.assertRaises(IntegrityError):
++                a.transition('context', SCOPE, 4, 'a4', AGENT, changes_for(4))
++        self.assertNotIn('context', a._journal_tails)
++        a.transition('context', SCOPE, 4, 'a4bis', AGENT, changes_for(4))
++        lines = journal_lines(self.root, 'context')
++        self.assertEqual([l['kind'] for l in lines][-3:], ['event', 'void', 'event'])
++        self.assertTrue(journal.verify_lines(lines)['chain_ok'])
++        verification = a.verify('context', SCOPE)
++        self.assertTrue(verification['ok'] and verification['journal_ok'])
++        self.assertEqual((verification['journal_voided'], verification['journal_orphans']), (1, 0))
++
++
++class SnapshotPolicy(Base):
++    def test_snapshot_policy_50_mutations(self):
++        store = self.store()
++        store.ensure_context('context', objective='Objective', scope=SCOPE, actor=OPERATOR)
++        self.fill(store, 'context', 48)  # 49 mutations
++        self.assertEqual(snapshots.list_snapshots(self.root / 'snapshots'), [])
++        policy = store.snapshot_policy()
++        self.assertEqual((policy['mutations_since_snapshot'], policy['snapshots_taken']), (49, 0))
++        self.fill(store, 'context', 1, start=48)  # 50th mutation
++        taken = snapshots.list_snapshots(self.root / 'snapshots')
++        self.assertEqual(len(taken), 1)
++        digest = sha256_file(taken[0])
++        self.assertTrue(taken[0].name.endswith('_' + digest[:16]))
++        self.assertEqual(Path(str(taken[0]) + '.sha256').read_text('ascii').split()[0], digest)
++        copy = sqlite3.connect(f'file:{taken[0].as_posix()}?mode=ro', uri=True)
++        self.assertEqual(copy.execute("SELECT max(revision) FROM events WHERE context_id='context'").fetchone()[0], 48)
++        copy.close()
++        policy = store.snapshot_policy()
++        self.assertEqual((policy['mutations_since_snapshot'], policy['snapshots_taken']), (0, 1))
++        self.assertEqual(policy['last_snapshot'], taken[0].name)
++        self.fill(store, 'context', 49, start=49)
++        self.assertEqual(len(snapshots.list_snapshots(self.root / 'snapshots')), 1)
++        self.fill(store, 'context', 1, start=98)
++        self.assertEqual(len(snapshots.list_snapshots(self.root / 'snapshots')), 2)
++        self.assertEqual(list(self.root.glob('memory.sqlite3.bak_*')), [])
++        self.assertFalse((self.root / 'snapshot_policy.json').exists())  # the counter is a row of the database
++        con = sqlite3.connect(str(store.db_path))
++        try:
++            row = json.loads(con.execute('SELECT policy_json FROM snapshot_policy WHERE id=1').fetchone()[0])
++            with self.assertRaises(sqlite3.IntegrityError):
++                con.execute('DELETE FROM snapshot_policy')
++        finally:
++            con.close()
++        self.assertEqual(row, store.snapshot_policy())
++        self.assertEqual((row['mutations_since_snapshot'], row['snapshots_taken']), (0, 2))
++
++    def test_snapshot_policy_counts_committed_mutations_only(self):
++        """A mutation that fails after the policy was evaluated does not advance the counter."""
++        store = self.store()
++        store.ensure_context('context', objective='Objective', scope=SCOPE, actor=OPERATOR)
++        self.fill(store, 'context', 2)
++        self.assertEqual(store.snapshot_policy()['mutations_since_snapshot'], 3)
++        original = store._read
++        calls = {'n': 0}
++        def failing(*args, **kwargs):
++            calls['n'] += 1
++            if calls['n'] == 2:
++                raise RuntimeError('simulated failure after insert')
++            return original(*args, **kwargs)
++        with patch.object(store, '_read', side_effect=failing):
++            with self.assertRaises(RuntimeError):
++                store.transition('context', SCOPE, 2, 'e2', AGENT, changes_for(2))
++        self.assertEqual(store.snapshot_policy()['mutations_since_snapshot'], 3)
++        self.assertEqual(store.get('context', SCOPE)['revision'], 2)
++
++    def test_snapshot_policy_60_minutes(self):
++        store = self.store()
++        clock = [1_800_000_000.0]
++        store._clock = lambda: clock[0]
++        store.ensure_context('context', objective='Objective', scope=SCOPE, actor=OPERATOR)
++        clock[0] += 3599
++        self.fill(store, 'context', 1)
++        self.assertEqual(snapshots.list_snapshots(self.root / 'snapshots'), [])
++        clock[0] += 1  # 3600 s since the window started
++        self.fill(store, 'context', 1, start=1)
++        self.assertEqual(len(snapshots.list_snapshots(self.root / 'snapshots')), 1)
++        policy = store.snapshot_policy()
++        self.assertEqual(policy['mutations_since_snapshot'], 0)
++        self.assertEqual(policy['window_started_at'], clock[0])
++        clock[0] += 3599
++        self.fill(store, 'context', 1, start=2)
++        self.assertEqual(len(snapshots.list_snapshots(self.root / 'snapshots')), 1)
++        clock[0] += 1
++        self.fill(store, 'context', 1, start=3)
++        self.assertEqual(len(snapshots.list_snapshots(self.root / 'snapshots')), 2)
++
++    def test_snapshot_keep3_and_archive_move_verified(self):
++        with patch.object(snapshots, 'SNAPSHOT_EVERY_MUTATIONS', 2):
++            store = self.store()
++            store.ensure_context('context', objective='Objective', scope=SCOPE, actor=OPERATOR)
++            self.fill(store, 'context', 11)  # 12 mutations -> 6 snapshots
++        local = snapshots.list_snapshots(self.root / 'snapshots')
++        archived = snapshots.list_snapshots(self.archive)
++        self.assertEqual((len(local), len(archived)), (3, 3))
++        self.assertLess(max(p.name for p in archived), min(p.name for p in local))
++        manifest = [json.loads(l) for l in (self.archive / 'MANIFEST.jsonl').read_text('utf-8').splitlines()]
++        self.assertEqual([m['name'] for m in manifest], [p.name for p in archived])
++        for entry, path in zip(manifest, archived):
++            self.assertEqual(sha256_file(path), entry['sha256'])
++            self.assertEqual(path.stat().st_size, entry['bytes'])
++            self.assertEqual(Path(str(path) + '.sha256').read_text('ascii').split()[0], entry['sha256'])
++        for path in local:
++            self.assertEqual(Path(str(path) + '.sha256').read_text('ascii').split()[0], sha256_file(path))
++        self.assertEqual(len(list((self.root / 'snapshots').glob('*.sha256'))), 3)
++        self.assertEqual(self.caught, [])
++
++    def test_archive_unavailable_keeps_local_copies(self):
++        blocked = Path(self.temp.name) / 'arquivo_D'
++        blocked.write_bytes(b'not a directory')  # the archive path cannot be created
++        with patch.object(snapshots, 'SNAPSHOT_EVERY_MUTATIONS', 2):
++            store = MemoryStore(self.root, snapshot_archive_dir=blocked)
++            store.ensure_context('context', objective='Objective', scope=SCOPE, actor=OPERATOR)
++            self.fill(store, 'context', 11)
++        self.assertEqual(len(snapshots.list_snapshots(self.root / 'snapshots')), 6)
++        avisos = [json.loads(l) for l in (self.root / 'snapshots' / 'AVISOS.jsonl').read_text('utf-8').splitlines()]
++        self.assertGreaterEqual(len(avisos), 3)
++        self.assertTrue(all('local snapshot kept' in a['message'] for a in avisos))
++        self.assertTrue(any(issubclass(w.category, RuntimeWarning) for w in self.caught))
++        self.assertEqual(store.get('context', SCOPE)['revision'], 11)  # mutations never blocked by the archive
++
++    def test_due_snapshot_that_does_not_verify_fails_the_mutation(self):
++        with patch.object(snapshots, 'SNAPSHOT_EVERY_MUTATIONS', 2):
++            store = self.store()
++            store.ensure_context('context', objective='Objective', scope=SCOPE, actor=OPERATOR)
++            with patch.object(snapshots, 'sha256_file', lambda path: '0' * 64):
++                with self.assertRaises(IntegrityError):
++                    self.fill(store, 'context', 1)
++            self.assertEqual(store.get('context', SCOPE)['revision'], 0)
++            self.assertEqual(snapshots.list_snapshots(self.root / 'snapshots'), [])
++
++
++class ArchiveLegacyBackups(Base):
++    def synthetic_state(self, count):
++        state = Path(self.temp.name) / f'state_{count}'
++        state.mkdir()
++        (state / 'memory.sqlite3').write_bytes(b'LIVE DATABASE BYTES')
++        (state / 'snapshots').mkdir()
++        (state / 'snapshots' / 'memory.sqlite3.snap_x').write_bytes(b'snap')
++        (state / 'journal').mkdir()
++        (state / 'journal' / 'c.events.jsonl').write_bytes(b'{}\n')
++        names = []
++        for i in range(count):
++            name = f'memory.sqlite3.bak_20261010_{90000 + i:06d}_{i:06d}_{i:08x}'
++            (state / name).write_bytes(os.urandom(64) + bytes([i]))
++            names.append(name)
++        return state, names
++
++    def test_archive_legacy_backups_mover_manifest_and_sha(self):
++        state, names = self.synthetic_state(12)
++        before = {n: sha256_file(state / n) for n in names}
++        dest = Path(self.temp.name) / 'D_backups'
++        plan = snapshots.archive_legacy_backups(state, dest, keep=3, dry_run=True)
++        self.assertEqual((plan['to_move'], plan['moved']), (9, 0))
++        self.assertFalse(dest.exists())
++        report = snapshots.archive_legacy_backups(state, dest, keep=3)
++        self.assertEqual((report['found'], report['to_move'], report['moved'], report['failed']), (12, 9, 9, None))
++        self.assertEqual(report['kept'], names[-3:])
++        self.assertEqual(sorted(p.name for p in state.glob('memory.sqlite3.bak_*')), names[-3:])
++        self.assertEqual((state / 'memory.sqlite3').read_bytes(), b'LIVE DATABASE BYTES')
++        self.assertTrue((state / 'snapshots' / 'memory.sqlite3.snap_x').exists())
++        self.assertTrue((state / 'journal' / 'c.events.jsonl').exists())
++        manifest = [json.loads(l) for l in (dest / 'MANIFEST.jsonl').read_text('utf-8').splitlines()]
++        self.assertEqual([m['name'] for m in manifest], names[:9])
++        for entry in manifest:
++            self.assertEqual(sha256_file(dest / entry['name']), entry['sha256'])
++            self.assertEqual(entry['sha256'], before[entry['name']])
++        consolidated = json.loads((dest / 'MANIFEST.json').read_text('utf-8'))
++        self.assertEqual((consolidated['moved'], consolidated['manifest_lines']), (9, 9))
++        self.assertEqual(consolidated['manifest_jsonl_sha256'], sha256_file(dest / 'MANIFEST.jsonl'))
++        again = snapshots.archive_legacy_backups(state, dest, keep=3)
++        self.assertEqual((again['found'], again['to_move'], again['moved']), (3, 0, 0))
++
++    def test_archive_legacy_backups_corrupt_copy_aborts_without_deleting(self):
++        state, names = self.synthetic_state(5)
++        dest = Path(self.temp.name) / 'D_backups'
++        real = snapshots._copy_bytes
++        def corrupting(src, dst):
++            if Path(src).name == names[2]:
++                Path(dst).write_bytes(b'corrupted copy')
++                return len(b'corrupted copy'), hashlib.sha256(b'corrupted copy').hexdigest()
++            return real(src, dst)
++        with patch.object(snapshots, '_copy_bytes', corrupting):
++            report = snapshots.archive_legacy_backups(state, dest, keep=0)
++        self.assertEqual((report['moved'], report['failed']['name']), (2, names[2]))
++        self.assertEqual(sorted(p.name for p in state.glob('memory.sqlite3.bak_*')), names[2:])
++        self.assertTrue(any(p.name.endswith('.mismatch') for p in dest.iterdir()))
++        self.assertFalse((dest / names[2]).exists())
++
++
++class Migration(Base):
++    def migrated(self, plan=None):
++        plan = plan or {'alpha': 200, 'beta': 5, 'gamma': 0}
++        heads = make_v1(self.root, plan)
++        con = sqlite3.connect(str(self.root / 'memory.sqlite3'))
++        rows_before = con.execute('SELECT * FROM events ORDER BY context_id, revision').fetchall()
++        contexts_before = con.execute('SELECT * FROM contexts ORDER BY context_id').fetchall()
++        con.close()
++        return heads, rows_before, contexts_before
++
++    def test_legacy_v1_db_refused_without_migration(self):
++        make_v1(self.root, {'alpha': 3})
++        digest = sha256_file(self.root / 'memory.sqlite3')
++        with self.assertRaises(SchemaMigrationRequired):
++            MemoryStore(self.root)
++        with self.assertRaises(IntegrityError):
++            MemoryStore(self.root)
++        self.assertEqual(sha256_file(self.root / 'memory.sqlite3'), digest)
++        self.assertFalse((self.root / 'journal').exists())
++        self.assertEqual(migrate.inspect(self.root)['schema_version'], '1')
++
++    def test_migration_dry_run_writes_nothing(self):
++        heads, _, _ = self.migrated({'alpha': 20})
++        digest = sha256_file(self.root / 'memory.sqlite3')
++        receipt = migrate.migrate(self.root, apply=False, snapshot_archive_dir=self.archive)
++        self.assertTrue(receipt['dry_run'])
++        self.assertEqual(receipt['contexts']['alpha']['head_state_sha256'], heads['alpha']['state_sha256'])
++        self.assertEqual(sha256_file(self.root / 'memory.sqlite3'), digest)
++        self.assertEqual(list(self.root.glob('memory.sqlite3.pre_v2_*')), [])
++        self.assertFalse((self.root / 'journal').exists())
++        with self.assertRaises(SchemaMigrationRequired):
++            MemoryStore(self.root)
++
++    def test_migration_preserves_head_state_sha_and_chain(self):
++        heads, rows_before, contexts_before = self.migrated()
++        second = Path(self.temp.name) / 'D_pre_v2'
++        receipt = migrate.migrate(self.root, apply=True, second_copy_dir=second, snapshot_archive_dir=self.archive)
++        self.assertTrue(receipt['ok'] and not receipt['already_migrated'] and receipt['head_mismatches'] == [])
++        backup = Path(receipt['backup']['path'])
++        self.assertTrue(backup.exists() and backup.name.startswith('memory.sqlite3.pre_v2_'))
++        self.assertEqual(sha256_file(backup), receipt['backup']['sha256'])
++        self.assertEqual(Path(str(backup) + '.sha256').read_text('ascii').split()[0], receipt['backup']['sha256'])
++        self.assertEqual(sha256_file(second / backup.name), receipt['backup']['sha256'])
++        con = sqlite3.connect(str(self.root / 'memory.sqlite3'))
++        self.assertEqual(con.execute("SELECT value FROM metadata WHERE key='schema_version'").fetchone()[0], '2')
++        self.assertIsNotNone(con.execute("SELECT value FROM metadata WHERE key='schema_upgrade_2_at'").fetchone())
++        self.assertEqual(con.execute('SELECT * FROM events ORDER BY context_id, revision').fetchall(), rows_before)
++        self.assertEqual(con.execute('SELECT * FROM contexts ORDER BY context_id').fetchall(), contexts_before)
++        snaps = con.execute('SELECT context_id, revision, reason FROM snapshots ORDER BY context_id').fetchall()
++        self.assertEqual(snaps, [('alpha', 200, 'migration_v2'), ('beta', 5, 'migration_v2'), ('gamma', 0, 'migration_v2')])
++        self.assertEqual(con.execute('SELECT context_id, revision FROM context_state ORDER BY context_id').fetchall(),
++                         [('alpha', 200), ('beta', 5), ('gamma', 0)])
++        with self.assertRaises(sqlite3.IntegrityError):
++            con.execute("UPDATE metadata SET value='3' WHERE key='schema_version'")
++        con.rollback()
++        con.close()
++        store = self.store()
++        for context_id, head in heads.items():
++            verification = store.verify(context_id, SCOPE, deep=True)
++            self.assertTrue(verification['ok'] and verification['journal_ok'])
++            self.assertEqual(verification['receipt'], head['receipt'])
++            self.assertEqual(verification['legacy_events'], head['revision'])
++            self.assertEqual(verification['delta_events'], 0)
++            self.assertEqual(verification['replay_from_revision'], 0)
++            self.assertEqual(store.verify(context_id, SCOPE)['replay_from_revision'], head['revision'])
++            after = store.get(context_id, SCOPE)
++            self.assertEqual(after, head)
++            lines = journal_lines(self.root, context_id)
++            self.assertEqual(len(lines), head['revision'] + 1)
++            self.assertTrue(all(l['legacy'] for l in lines))
++            self.assertEqual(lines[0]['kind'], 'anchor')
++            self.assertEqual(lines[-1]['event_hash'], head['receipt']['event_hash'])
++        self.assertEqual(receipt['verify_after']['alpha']['receipt']['state_sha256'], heads['alpha']['state_sha256'])
++
++    def test_migration_is_idempotent(self):
++        self.migrated({'alpha': 10})
++        migrate.migrate(self.root, apply=True, snapshot_archive_dir=self.archive)
++        digest = sha256_file(self.root / 'memory.sqlite3')
++        journal_bytes = (self.root / 'journal' / 'alpha.events.jsonl').stat().st_size
++        backups = sorted(self.root.glob('memory.sqlite3.pre_v2_*'))
++        again = migrate.migrate(self.root, apply=True, snapshot_archive_dir=self.archive)
++        self.assertTrue(again['already_migrated'])
++        self.assertTrue(all(v['ok'] for v in again['verify_after'].values()))
++        self.assertEqual(sha256_file(self.root / 'memory.sqlite3'), digest)
++        self.assertEqual((self.root / 'journal' / 'alpha.events.jsonl').stat().st_size, journal_bytes)
++        self.assertEqual(sorted(self.root.glob('memory.sqlite3.pre_v2_*')), backups)
++        # Journal bootstrap is idempotent on its own as well (partial re-run).
++        con = migrate._connect(self.root / 'memory.sqlite3')
++        try:
++            chain = migrate.replay_v1_context(con, 'alpha')['chain']
++        finally:
++            con.close()
++        self.assertEqual(journal.append_many(self.root / 'journal', 'alpha', chain), 0)
++
++    def test_mixed_legacy_delta_replay(self):
++        heads, _, _ = self.migrated({'alpha': 200})
++        migrate.migrate(self.root, apply=True, snapshot_archive_dir=self.archive)
++        store = self.store()
++        self.fill(store, 'alpha', 60, start=200)
++        state = store.get('alpha', SCOPE)
++        self.assertEqual(state['revision'], 260)
++        self.assertEqual(len(state['q']['records']), 260)
++        self.assertEqual(state['p']['phase'], 'cycle-259')
++        self.assertEqual(store.project('alpha', SCOPE, 4000)['receipt'], state['receipt'])
++        verification = store.verify('alpha', SCOPE)
++        self.assertTrue(verification['ok'])
++        self.assertEqual((verification['legacy_events'], verification['delta_events']), (200, 60))
++        self.assertEqual(verification['replay_from_revision'], 256)
++        self.assertEqual(verification['snapshot_rows'], 2)
++        self.assertTrue(store.verify('alpha', SCOPE, deep=True)['ok'])
++        con = sqlite3.connect(str(self.root / 'memory.sqlite3'))
++        empties = con.execute("SELECT revision FROM events WHERE context_id='alpha' AND state_json='' ORDER BY revision").fetchall()
++        self.assertEqual([r[0] for r in empties], list(range(201, 261)))
++        self.assertEqual(con.execute("SELECT revision, reason FROM snapshots WHERE context_id='alpha' ORDER BY revision").fetchall(),
++                         [(200, 'migration_v2'), (256, 'periodic')])
++        con.close()
++        self.assertEqual(len(journal_lines(self.root, 'alpha')), 261)
++
++    def test_v1_code_refuses_v2_schema(self):
++        self.migrated({'alpha': 3})
++        migrate.migrate(self.root, apply=True, snapshot_archive_dir=self.archive)
++        with self.assertRaises(store_v1_frozen.IntegrityError) as caught:
++            store_v1_frozen.MemoryStore(self.root)
++        self.assertIn('Unsupported or missing memory schema', str(caught.exception))
++
++    def test_covering_index_serves_chain_reads_without_legacy_state(self):
++        big = TEXT * 4  # ~5 KB per candidate -> legacy state_json grows to ~0.6 MB
++        with patch.object(store_v1_frozen.MemoryStore, '_backup', lambda self: None):
++            v1 = store_v1_frozen.MemoryStore(self.root)
++            v1.ensure_context('heavy', objective='Heavy', scope=SCOPE, actor=OPERATOR)
++            for i in range(120):
++                v1.transition('heavy', SCOPE, i, f'e{i}', AGENT, changes_for(i, big))
++            t0 = time.perf_counter()
++            v1_get = v1.get('heavy', SCOPE)
++            v1_seconds = time.perf_counter() - t0
++        inspected = migrate.inspect(self.root)
++        migrate.migrate(self.root, apply=True, snapshot_archive_dir=self.archive)
++        store = self.store()
++        con = sqlite3.connect(str(self.root / 'memory.sqlite3'))
++        plan = ' '.join(r[3] for r in con.execute(
++            f'EXPLAIN QUERY PLAN SELECT {store_module._CHAIN_COLUMNS} FROM events WHERE context_id=? ORDER BY revision', ('heavy',)))
++        con.close()
++        self.assertIn('COVERING INDEX events_chain_idx', plan)
++        times = []
++        for _ in range(5):
++            t0 = time.perf_counter()
++            v2_get = store.get('heavy', SCOPE)
++            times.append(time.perf_counter() - t0)
++        self.assertEqual(v2_get, v1_get)
++        evidence = {'legacy_sum_state_json_chars': inspected['sum_state_json_chars'], 'events': 121,
++                    'v1_get_seconds': round(v1_seconds, 4), 'v2_get_seconds_median': round(statistics.median(times), 4),
++                    'query_plan': plan}
++        (EVID / 'indice_cobertura_legado.json').write_text(json.dumps(evidence, indent=1), encoding='utf-8')
++        self.assertLess(statistics.median(times), v1_seconds)
++
++
++class Scripts(Base):
++    def run_script(self, name, *args):
++        env = dict(os.environ)
++        proc = subprocess.run([sys.executable, '-X', 'utf8', str(SCRIPTS / name), *args], capture_output=True,
++                              text=True, encoding='utf-8', env=env, cwd=str(self.temp.name))
++        return proc.returncode, proc.stdout, proc.stderr
++
++    def test_migrar_para_delta_cli_dry_run_apply_verify(self):
++        make_v1(self.root, {'alpha': 8, 'beta': 2})
++        archive = ['--snapshot-archive-dir', str(self.archive)]
++        code, out, err = self.run_script('migrar_para_delta.py', '--state', str(self.root), *archive)
++        self.assertEqual(code, 0, err)
++        self.assertTrue(json.loads(out)['dry_run'])
++        receipt_path = Path(self.temp.name) / 'MIGRACAO_RECIBO.json'
++        code, out, err = self.run_script('migrar_para_delta.py', '--state', str(self.root), '--apply',
++                                         '--second-copy-dir', str(Path(self.temp.name) / 'D_pre_v2'),
++                                         '--receipt', str(receipt_path), *archive)
++        self.assertEqual(code, 0, err)
++        receipt = json.loads(receipt_path.read_text('utf-8'))
++        self.assertTrue(receipt['ok'] and receipt['backup']['second_copy'])
++        self.assertEqual(receipt['after']['schema_version'], '2')
++        code, out, err = self.run_script('migrar_para_delta.py', '--state', str(self.root), '--verify-only', '--deep', *archive)
++        self.assertEqual(code, 0, err)
++        self.assertTrue(json.loads(out)['ok'])
++        code, out, err = self.run_script('migrar_para_delta.py', '--state', str(self.root), '--apply', *archive)
++        self.assertEqual(code, 0, err)
++        self.assertTrue(json.loads(out)['already_migrated'])
++        rebuilt = Path(self.temp.name) / 'rebuilt'
++        code, out, err = self.run_script('migrar_para_delta.py', '--state', str(self.root), '--rebuild-from-journal', str(rebuilt), *archive)
++        self.assertEqual(code, 0, err)
++        self.assertTrue(json.loads(out)['ok'])
++        self.assertEqual(MemoryStore(rebuilt, snapshot_archive_dir=self.archive).get('alpha', SCOPE), self.store().get('alpha', SCOPE))
++        code, out, err = self.run_script('migrar_para_delta.py', '--state', str(Path(self.temp.name) / 'nowhere'))
++        self.assertEqual(code, 1)
++        self.assertFalse(json.loads(out)['ok'])
++
++    def test_mover_backups_antigos_cli(self):
++        state = Path(self.temp.name) / 'state_bak'
++        state.mkdir()
++        (state / 'memory.sqlite3').write_bytes(b'LIVE')
++        names = [f'memory.sqlite3.bak_20261011_{100000 + i:06d}_{i:06d}_{i:08x}' for i in range(6)]
++        for i, name in enumerate(names):
++            (state / name).write_bytes(bytes([i]) * 100)
++        dest = Path(self.temp.name) / 'D_backups'
++        code, out, err = self.run_script('mover_backups_antigos.py', '--state', str(state), '--dest', str(dest), '--keep', '3', '--dry-run')
++        self.assertEqual(code, 0, err)
++        self.assertEqual(json.loads(out)['to_move'], 3)
++        self.assertEqual(len(list(state.glob('memory.sqlite3.bak_*'))), 6)
++        code, out, err = self.run_script('mover_backups_antigos.py', '--state', str(state), '--dest', str(dest), '--keep', '3')
++        self.assertEqual(code, 0, err)
++        report = json.loads(out)
++        self.assertEqual((report['moved'], report['ok'], report['kept']), (3, True, names[3:]))
++        self.assertEqual(sorted(p.name for p in state.glob('memory.sqlite3.bak_*')), names[3:])
++        self.assertEqual((state / 'memory.sqlite3').read_bytes(), b'LIVE')
++        self.assertEqual(sorted(p.name for p in dest.iterdir() if p.name.startswith('memory.sqlite3.bak_')), names[:3])
++
++
++class GrowthN300(unittest.TestCase):
++    """N=300 candidates of ~1.3 KB in one context: bytes of the database, the journal and the
++    byte snapshots at N=100/200/300 and the time per transition. The audit measured v1 exponents
++    of 1.87 (database), 2.78 (per-mutation backups) and 1.36 (time) between N=50 and N=150."""
++    N = 300
++    metrics = None
++
++    @classmethod
++    def setUpClass(cls):
++        cls.temp = tempfile.TemporaryDirectory()
++        root, archive = Path(cls.temp.name) / 'state', Path(cls.temp.name) / 'arquivo_D'
++        store = MemoryStore(root, snapshot_archive_dir=archive)
++        store.ensure_context('growth', objective='Growth objective', scope=SCOPE, actor=OPERATOR)
++        changes_bytes, seconds, checkpoints = [], [], {}
++        for i in range(cls.N):
++            changes = changes_for(i)
++            changes_bytes.append(len(store_module._dump(store_module._changes(changes, AGENT)).encode('utf-8')))
++            t0 = time.perf_counter()
++            store.transition('growth', SCOPE, i, f'e{i}', AGENT, changes)
++            seconds.append(time.perf_counter() - t0)
++            n = i + 1
++            if n in (100, 200, 300):
++                local = snapshots.list_snapshots(root / 'snapshots')
++                archived = snapshots.list_snapshots(archive)
++                gets = []
++                for _ in range(5):
++                    t0 = time.perf_counter()
++                    store.get('growth', SCOPE)
++                    gets.append(time.perf_counter() - t0)
++                checkpoints[n] = {
++                    'db_bytes': (root / 'memory.sqlite3').stat().st_size,
++                    'journal_bytes': (root / 'journal' / 'growth.events.jsonl').stat().st_size,
++                    'snapshots_local': len(local), 'snapshots_archived': len(archived),
++                    'snapshots_local_bytes': sum(p.stat().st_size for p in local),
++                    'snapshots_archived_bytes': sum(p.stat().st_size for p in archived),
++                    'transition_seconds_median_last100': statistics.median(seconds[n - 100:n]),
++                    'transition_seconds_p90_last100': sorted(seconds[n - 100:n])[89],
++                    'get_seconds_median': statistics.median(gets),
++                }
++        cls.metrics = {'N': cls.N, 'changes_json_bytes_mean': statistics.mean(changes_bytes),
++                       'changes_json_bytes_total': sum(changes_bytes), 'checkpoints': checkpoints,
++                       'transition_seconds_median_all': statistics.median(seconds),
++                       'transition_seconds_max': max(seconds), 'seconds_total': sum(seconds)}
++        cls.store, cls.root, cls.archive = store, root, archive
++
++    @classmethod
++    def tearDownClass(cls):
++        EVID.mkdir(parents=True, exist_ok=True)
++        (EVID / 'crescimento_n300.json').write_text(json.dumps(cls.metrics, indent=1, sort_keys=True), encoding='utf-8')
++        cls.temp.cleanup()
++
++    @staticmethod
++    def exponent(c, key):
++        return math.log(c[300][key] / c[100][key]) / math.log(3)
++
++    def test_growth_n300_bytes_db_journal_snapshots(self):
++        c = self.metrics['checkpoints']
++        m = self.metrics
++        increment_ratio = (c[300]['db_bytes'] - c[200]['db_bytes']) / (c[200]['db_bytes'] - c[100]['db_bytes'])
++        m['db_increment_ratio_300_200_over_200_100'] = increment_ratio
++        m['exponent_db_bytes_100_to_300'] = self.exponent(c, 'db_bytes')
++        m['exponent_journal_bytes_100_to_300'] = self.exponent(c, 'journal_bytes')
++        total_snap = {n: c[n]['snapshots_local_bytes'] + c[n]['snapshots_archived_bytes'] for n in c}
++        m['exponent_snapshot_total_bytes_100_to_300'] = math.log(total_snap[300] / total_snap[100]) / math.log(3)
++        m['v1_audit_exponents'] = {'db_bytes': 1.87, 'backups_bytes': 2.78, 'time': 1.36,
++                                   'v1_db_bytes_at_n150': 15_000_000, 'v1_backups_bytes_at_n150': 756_000_000,
++                                   'v1_transition_seconds_at_n150': 0.41}
++        m['v1_db_bytes_extrapolated_n300'] = 15_000_000 * (300 / 150) ** 1.87
++        m['v1_backups_bytes_extrapolated_n300'] = 756_000_000 * (300 / 150) ** 2.78
++        expected_journal = m['changes_json_bytes_total'] + 600 * (self.N + 1)
++        m['journal_expected_bytes_spec'] = expected_journal
++        m['journal_deviation_from_spec'] = c[300]['journal_bytes'] / expected_journal - 1
++        self.assertGreaterEqual(increment_ratio, 0.7)
++        self.assertLessEqual(increment_ratio, 1.5)
++        self.assertLess(c[300]['db_bytes'], 6_000_000)
++        self.assertLess(m['exponent_db_bytes_100_to_300'], 1.3)
++        self.assertLess(m['exponent_journal_bytes_100_to_300'], 1.1)
++        self.assertLessEqual(abs(m['journal_deviation_from_spec']), 0.2)
++        self.assertEqual((c[300]['snapshots_local'], c[300]['snapshots_archived']), (3, 3))
++        for path in snapshots.list_snapshots(self.root / 'snapshots') + snapshots.list_snapshots(self.archive):
++            self.assertEqual(Path(str(path) + '.sha256').read_text('ascii').split()[0], sha256_file(path))
++        self.assertEqual(list(self.root.glob('memory.sqlite3.bak_*')), [])
++        verification = self.store.verify('growth', SCOPE)
++        self.assertTrue(verification['ok'] and verification['journal_ok'])
++        self.assertEqual((verification['delta_events'], verification['replay_from_revision']), (300, 256))
++        self.assertTrue(self.store.verify('growth', SCOPE, deep=True)['ok'])
++
++    def test_transition_time_bounded_n300(self):
++        c = self.metrics['checkpoints']
++        self.assertLess(self.metrics['transition_seconds_median_all'], 0.050)
++        self.assertLess(c[300]['transition_seconds_median_last100'], 0.050)
++        self.assertLess(c[300]['get_seconds_median'], 0.050)
++
++
++if __name__ == '__main__':
++    unittest.main(verbosity=2)
+diff --git a/tests/run_tests.py b/tests/run_tests.py
+new file mode 100644
+index 0000000..88540c7
+--- /dev/null
++++ b/tests/run_tests.py
+@@ -0,0 +1,72 @@
++"""Run the core suites against the v2 copy, under the auditor guard, inside this folder only.
++
++Environment fixed here: ACOM_AUDIT_ROOT (guard: no network, no write/sqlite outside this
++folder, no confidential open), PYTHONPATH (guard + v2 lib + tests), TMP/TEMP inside the folder,
++IALD_MEMORY_SNAPSHOT_ARCHIVE_DIR inside the folder (never D:). Writes a JSON summary per suite.
++"""
++import json, os, re, subprocess, sys, time
++from pathlib import Path
++
++HERE = Path(__file__).resolve().parent
++NUCLEO = HERE.parent
++LIB = NUCLEO / 'copia' / 'MEMORIA_IALD' / 'lib'
++TMP = NUCLEO / 'tmp'
++EVID = NUCLEO / 'evidencias'
++
++
++def run(module, extra_env=None):
++    TMP.mkdir(exist_ok=True); EVID.mkdir(exist_ok=True); (NUCLEO / 'guard_log').mkdir(exist_ok=True)
++    env = dict(os.environ)
++    env.update({
++        'ACOM_AUDIT_ROOT': str(NUCLEO),
++        'PYTHONPATH': os.pathsep.join([str(NUCLEO / 'guard'), str(LIB), str(HERE)]),
++        'TMP': str(TMP), 'TEMP': str(TMP), 'TMPDIR': str(TMP),
++        'IALD_MEMORY_SNAPSHOT_ARCHIVE_DIR': str(TMP / 'arquivo_D_padrao'),
++        'NUCLEO_EVIDENCIAS': str(EVID),
++        'PYTHONIOENCODING': 'utf-8',
++    })
++    env.update(extra_env or {})
++    started = time.time()
++    proc = subprocess.run([sys.executable, '-X', 'utf8', '-m', 'unittest', '-v', module],
++                          cwd=str(HERE), env=env, capture_output=True, text=True, encoding='utf-8', errors='replace')
++    out = proc.stdout + proc.stderr
++    (EVID / f'unittest_{module}.txt').write_text(out, encoding='utf-8')
++    results = []
++    pending = None  # a test with a docstring prints its verdict on the following line
++    for line in out.splitlines():
++        m = re.match(r'^(test_\w+) \((\S+)\)(?: \.\.\.)? ... (ok|FAIL|ERROR|skipped.*)$', line)
++        if not m:
++            m = re.match(r'^(test_\w+) \((\S+)\) \.\.\. (ok|FAIL|ERROR|skipped.*)$', line)
++        if m:
++            results.append({'test': m.group(1), 'class': m.group(2), 'result': m.group(3)})
++            pending = None
++            continue
++        head = re.match(r'^(test_\w+) \((\S+)\)$', line)
++        if head:
++            pending = (head.group(1), head.group(2))
++            continue
++        if pending:
++            tail = re.match(r'^.* \.\.\. (ok|FAIL|ERROR|skipped.*)$', line)
++            if tail:
++                results.append({'test': pending[0], 'class': pending[1], 'result': tail.group(1)})
++                pending = None
++    summary = {'module': module, 'returncode': proc.returncode, 'seconds': round(time.time() - started, 2),
++               'ran': len(results), 'ok': sum(r['result'] == 'ok' for r in results),
++               'failed': sum(r['result'] != 'ok' for r in results), 'results': results,
++               'tail': out.strip().splitlines()[-3:]}
++    (EVID / f'unittest_{module}.json').write_text(json.dumps(summary, ensure_ascii=False, indent=1), encoding='utf-8')
++    return summary
++
++
++if __name__ == '__main__':
++    modules = sys.argv[1:] or ['test_store', 'test_store_v2']
++    total_fail = 0
++    for module in modules:
++        s = run(module)
++        total_fail += s['failed'] + (1 if s['returncode'] else 0)
++        print(f"{module}: ran {s['ran']} ok {s['ok']} failed {s['failed']} rc {s['returncode']} in {s['seconds']}s")
++        for r in s['results']:
++            if r['result'] != 'ok':
++                print('   ', r['result'], r['test'])
++        print('   ', ' | '.join(s['tail']))
++    sys.exit(1 if total_fail else 0)
+diff --git a/tests/guard_summary.py b/tests/guard_summary.py
+new file mode 100644
+index 0000000..642e8e1
+--- /dev/null
++++ b/tests/guard_summary.py
+@@ -0,0 +1,20 @@
++"""Summarize the auditor-guard logs of the final run: event kinds and the files read outside the folder."""
++import collections, json, sys
++from pathlib import Path
++root = Path(sys.argv[1])
++kinds, reads, blocks = collections.Counter(), collections.Counter(), []
++for log in sorted((root / 'guard_log').glob('*.jsonl')):
++    for line in log.read_text('utf-8').splitlines():
++        try:
++            d = json.loads(line)
++        except Exception:
++            continue
++        kinds[d['kind']] += 1
++        if d['kind'] == 'READ_OUTSIDE':
++            reads[str(Path(d['path']).parent)[:100]] += 1
++        if d['kind'].startswith('BLOCK_'):
++            blocks.append({'kind': d['kind'], 'path': d.get('path')})
++summary = {'logs': len(list((root / 'guard_log').glob('*.jsonl'))), 'kinds': dict(kinds),
++           'reads_outside_by_dir': reads.most_common(20), 'blocks': blocks}
++(root / 'evidencias' / 'guarda_resumo.json').write_text(json.dumps(summary, ensure_ascii=False, indent=1), encoding='utf-8')
++print(json.dumps(summary, ensure_ascii=False, indent=1))
+diff --git a/tests/make_diff_and_manifest.py b/tests/make_diff_and_manifest.py
+new file mode 100644
+index 0000000..8d0af59
+--- /dev/null
++++ b/tests/make_diff_and_manifest.py
+@@ -0,0 +1,103 @@
++"""Build DIFF.patch (originals vs copy, plus tests) and MANIFESTO.json (sha256 of every delivered file).
++
++Everything by script; hashes read from the files on disk. Writes only inside 1_NUCLEO.
++Run from anywhere:  C:\\Python314\\python.exe -X utf8 tests\\make_diff_and_manifest.py
++"""
++import hashlib
++import json
++import os
++import subprocess
++from datetime import datetime, timezone
++from pathlib import Path
++
++NUCLEO = Path(__file__).resolve().parents[1]
++os.chdir(NUCLEO)
++
++
++def sha256(path):
++    h = hashlib.sha256()
++    with open(path, 'rb') as f:
++        for block in iter(lambda: f.read(1 << 20), b''):
++            h.update(block)
++    return h.hexdigest()
++
++
++def git_diff(a, b):
++    proc = subprocess.run(['git', '-c', 'core.autocrlf=false', '-c', 'core.safecrlf=false', 'diff', '--no-index',
++                           '--no-color', '--text', '--src-prefix=a/', '--dst-prefix=b/', a, b],
++                          capture_output=True)
++    if proc.returncode not in (0, 1):
++        raise SystemExit(proc.stderr.decode('utf-8', 'replace'))
++    return proc.stdout
++
++
++EXCLUDE_DIRS = {'__pycache__'}
++HEADER = (
++    '# DIFF.patch -- FRENTE NUCLEO, conserto ACOM 12/10 (gerado 13/10/2026 por tests/make_diff_and_manifest.py)\n'
++    '# a/originais_arvore/ = originais (byte-iguais a C:\\IALD\\MEMORIA_IALD e ao core de 10/10, conferido por cmp);\n'
++    '# b/copia/MEMORIA_IALD/ = a arvore v2 desta frente, espelhando C:\\IALD\\MEMORIA_IALD; b/tests/ = os testes.\n'
++    '# Arquivos novos aparecem como adicoes integrais. Este e um diff de REVISAO entre duas arvores (prefixos a/ e b/\n'
++    '# apontam para pastas diferentes): a instalacao (passo M3, ato da gerencia) e a copia byte a byte de\n'
++    '# copia/MEMORIA_IALD/* sobre C:\\IALD\\MEMORIA_IALD/* com .bak_<data> de cada arquivo tocado, nunca git apply.\n\n'
++).encode('utf-8')
++parts = [
++    HEADER,
++    git_diff('originais_arvore/MEMORIA_IALD', 'copia/MEMORIA_IALD'),
++    git_diff('originais_arvore/tests/test_store.py', 'tests/test_store.py'),
++]
++# New test and tooling files as whole additions.
++for new in ('tests/test_store_v2.py', 'tests/run_tests.py', 'tests/guard_summary.py', 'tests/make_diff_and_manifest.py',
++            'tests/store_v1_frozen.sha256'):
++    parts.append(git_diff(os.devnull, new).replace(b'a/' + os.devnull.encode(), b'/dev/null').replace(b'/dev/null', b'/dev/null'))
++patch = b''.join(parts)
++Path('DIFF.patch').write_bytes(patch)
++
++entries = []
++for root, dirs, files in os.walk(NUCLEO):
++    dirs[:] = sorted(d for d in dirs if d not in EXCLUDE_DIRS)
++    rel_root = Path(root).relative_to(NUCLEO)
++    if rel_root.parts and rel_root.parts[0] == 'tmp':
++        continue
++    for name in sorted(files):
++        p = Path(root) / name
++        rel = str(p.relative_to(NUCLEO)).replace('\\', '/')
++        if rel == 'MANIFESTO.json':
++            continue
++        st = p.stat()
++        entries.append({'path': rel, 'bytes': st.st_size, 'sha256': sha256(p),
++                        'mtime': datetime.fromtimestamp(st.st_mtime).isoformat(timespec='seconds')})
++
++by_path = {e['path']: e for e in entries}
++summary = {
++    'titulo': 'FRENTE NUCLEO -- conserto ACOM 12/10 -- MANIFESTO',
++    'gerado_em': datetime.now(timezone.utc).isoformat(timespec='seconds'),
++    'pasta': str(NUCLEO),
++    'gerado_por': 'tests/make_diff_and_manifest.py (hashes lidos dos arquivos por script; nenhum hash de memoria)',
++    'ordem_do_operador': {'arquivo': r'C:\IALD\Central de Patentes\work\cunhagens_12out\OPERADOR_12out_ordem_memoria_remote_rank_qg_bancada_verbatim.txt',
++                          'sha16_declarado_pela_gerencia': '78ef70e6f9868281'},
++    'producao_nao_tocada': True,
++    'originais_byte_iguais_a_producao': 'conferido por cmp em 13/10/2026: store.py, __init__.py, CORE.md (C:\\IALD\\MEMORIA_IALD) e test_store.py (core de 10/10)',
++    'entregas': {
++        'codigo_v2 (arvore espelhando C:\\IALD\\MEMORIA_IALD)': [k for k in by_path if k.startswith('copia/')],
++        'testes': [k for k in by_path if k.startswith('tests/')],
++        'evidencias': [k for k in by_path if k.startswith('evidencias/')],
++        'diff': 'DIFF.patch', 'testes_md': 'TESTES.md',
++        'originais_congelados': [k for k in by_path if k.startswith('originais/') or k.startswith('originais_arvore/')],
++        'guarda': [k for k in by_path if k.startswith('guard/')],
++    },
++    'testes_rodada_final': {m: json.loads(Path(f'evidencias/unittest_{m}.json').read_text('utf-8'))
++                            for m in ('test_store', 'test_store_v2')},
++    'arquivos': entries,
++}
++for m, s in summary['testes_rodada_final'].items():
++    s.pop('results', None)
++Path('MANIFESTO.json').write_text(json.dumps(summary, ensure_ascii=False, indent=1) + '\n', encoding='utf-8', newline='\n')
++print('DIFF.patch', len(patch), 'bytes; MANIFESTO.json entries', len(entries))
++print('sha256 DIFF.patch', sha256('DIFF.patch'))
++print('sha256 MANIFESTO.json', sha256('MANIFESTO.json'))
++for k in ('copia/MEMORIA_IALD/lib/iald_memory/store.py', 'copia/MEMORIA_IALD/lib/iald_memory/journal.py',
++          'copia/MEMORIA_IALD/lib/iald_memory/snapshots.py', 'copia/MEMORIA_IALD/lib/iald_memory/migrate.py',
++          'copia/MEMORIA_IALD/lib/iald_memory/__init__.py', 'copia/MEMORIA_IALD/migrar_para_delta.py',
++          'copia/MEMORIA_IALD/mover_backups_antigos.py', 'copia/MEMORIA_IALD/CORE.md', 'tests/test_store_v2.py',
++          'tests/test_store.py', 'TESTES.md', 'evidencias/crescimento_n300.json'):
++    print(f"{by_path[k]['sha256'][:16]}  {by_path[k]['bytes']:7d}  {k}")
+diff --git a/tests/store_v1_frozen.sha256 b/tests/store_v1_frozen.sha256
+new file mode 100644
+index 0000000..57ee8c5
+--- /dev/null
++++ b/tests/store_v1_frozen.sha256
+@@ -0,0 +1 @@
++2d4f6214fa433534084c725e9fffef76ab95fd1dbbf3dc776b8560796bdfa34b  store_v1_frozen.py

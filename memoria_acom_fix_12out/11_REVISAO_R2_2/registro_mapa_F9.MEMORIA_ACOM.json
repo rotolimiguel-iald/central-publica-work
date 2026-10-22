@@ -1,0 +1,40 @@
+{
+ "tipo": "RESULTADO",
+ "rota_id": "programa.memoria_acom.conserto_delta_12out",
+ "dominio": "INFRA",
+ "titulo": "Revisao adversarial independente da R2.2 do conserto ACOM (c1): manifesto e patch por hash, suite 278, K4b/K4c/K3r/P8b/P8c e runbook do operador",
+ "pergunta": "A R2.2 corrige K4c, K4b, K3r, P8b, N1 e N3 pela via do app sem quebrar a suite, e os comandos do RUNBOOK_OPERADOR.md funcionam como escritos, completos e na ordem?",
+ "dados": [
+  "candidato_r2_2 e ferramentas R2.2 (manifesto 58184a0173281540; implantar 11104b0e2dd8f80d; reverter 62f212555a845e1a; lib 3f42bf41edf2c6d0; runbook 8b412619a5e91563; patch 991fe46e8dffe6bd), hashes lidos por script",
+  "REVISAO_R2_1.md e os scripts do revisor R2.1 (ensaio s5_ensaio_rev.py + s5_extra.py), reaproveitados com entradas trocadas",
+  "so sintetico: banco v1 por store_v1_frozen, psion/.env sinteticos, backend de processos simulado; producao so metadados (processos, tarefa, MEMORY.md)"
+ ],
+ "metodo": "Manifesto 15/15 e git apply do patch fora de repositorio (autocrlf false) sobre a R2.1; suite inteira em copia propria sob a guarda; ensaio de 17 cenarios com as ferramentas R2.2 (K2, K3, K4, K6, P8, K2b-d, K3b, K3r, K4b, K4c, K6b, K6c, P8b, P8c nova, CFG); medida N1 R2.1 x R2.2; leitura do patch do web server e do reverter; runbook: parser PowerShell dos 13 blocos, opcoes contra o argparse, mover_backups_antigos em pasta sintetica, existencia de caminhos, MEMORY.md. Nada em producao.",
+ "resultado": "Manifesto 15/15, 3 mudados = r2_2_mudancas, 18 arquivos reproduzidos pelo patch com 0 diferencas. Suite 278/278 PASSA (uma rodada), guarda: 3 BLOCK_NETWORK IPv6, nenhuma leitura de banco ACOM, psion, .env ou Escritorio. Ensaio: K4c FALHOU_EM_reiniciar_app rc 1 sem religar com acao preenchida e trava ainda vendo a pendente, 2a reversao REVERTIDA; K4b idem com Permission denied; K3r FALHOU_EM_parar_app, nada restaurado, tarefa reabilitada, recibo com estado lido e sem fica parado, reversao normal REVERTIDA; P8 rc 3 LENTO sem mandar reverter; P8b e P8c rc 3 LACO_DE_QUEDA_PROVAVEL com o como distinguir; CFG sequencia do runbook fecha. N1: 16.000 componentes 2,196 s (R2.1) para 0,016 s (R2.2). Runbook: 13 blocos sem erro de sintaxe, opcoes e caminhos existem, mover_backups_antigos testado em sandbox (found 6, to_move 3, ok true). Producao (metadados): 1 filho web, 1 supervisor, tarefa Running, python 3.14.3; MEMORY.md 191 linhas e 19.509 B (folga 9, nao 12).",
+ "veredito": "REVISAO_R2_2__PODE_IMPLANTAR_COM_RESSALVAS__MANIFESTO_E_PATCH_CONFEREM__278_DE_278__K4B_K4C_K3R_P8B_P8C_FECHAM__RUNBOOK_SEM_COMANDO_QUEBRADO_3_AJUSTES_DE_TEXTO__NADA_EM_PRODUCAO",
+ "estatuto": "REAL",
+ "olhou_dados": false,
+ "defeito": "Runbook: item 3 da secao 3 promete supervisor e filho web e o comando lista so o filho (R-1); folga do MEMORY.md citada (12 linhas) envelheceu, hoje 9 (R-2); falta a linha do dry-run para banco ocupado (R-3). Resquicios ja nomeados: cmdlets reais do Agendador nunca exercitados; K2b/K2c/K2d recuperacao automatica perdida se o operador mexe no recibo; P8b em producao nao medido; N2 conteudo e N3 renomeio (D4). K1a-d e K5 nao refeitos.",
+ "nao_refazer": "Nao refazer: a prova do manifesto e do patch (fora de repositorio), a suite inteira, o ensaio dos 17 cenarios com K4b/K4c/K3r/P8b/P8c, a medida N1 e a prova dos comandos do runbook (parser, argparse, mover em sandbox); ler 11_REVISAO_R2_2/REVISAO_R2_2.md e runs/.",
+ "proximo_passo": "Gerencia aplica R-1 a R-3 no RUNBOOK_OPERADOR.md (texto) e entrega ao operador; o operador segue o runbook: janela quieta, dry-run DRY_RUN_OK, implantar com --pular-mover-backups, conferencias, 7_VERIFICACAO com janela maior que 30 min e llama online, mover backups. Cmdlets reais do Agendador seguem a observar na primeira implantacao.",
+ "onde": "C:\\IALD\\Central de Patentes\\work\\memoria_acom_fix_12out\\11_REVISAO_R2_2\\REVISAO_R2_2.md",
+ "artefatos": [
+  "C:\\IALD\\Central de Patentes\\work\\memoria_acom_fix_12out\\11_REVISAO_R2_2\\REVISAO_R2_2.md",
+  "C:\\IALD\\Central de Patentes\\work\\memoria_acom_fix_12out\\11_REVISAO_R2_2\\MANIFESTO_REVISAO_R2_2.json",
+  "C:\\IALD\\Central de Patentes\\work\\memoria_acom_fix_12out\\11_REVISAO_R2_2\\runs\\s1_manifesto_patch.json",
+  "C:\\IALD\\Central de Patentes\\work\\memoria_acom_fix_12out\\11_REVISAO_R2_2\\runs\\s2_RESULTADOS_TESTES.json",
+  "C:\\IALD\\Central de Patentes\\work\\memoria_acom_fix_12out\\11_REVISAO_R2_2\\runs\\s3_guarda_resumo.json",
+  "C:\\IALD\\Central de Patentes\\work\\memoria_acom_fix_12out\\11_REVISAO_R2_2\\runs\\s4_runbook_blocos.txt",
+  "C:\\IALD\\Central de Patentes\\work\\memoria_acom_fix_12out\\11_REVISAO_R2_2\\runs\\s5_ensaio_rev22.json",
+  "C:\\IALD\\Central de Patentes\\work\\memoria_acom_fix_12out\\11_REVISAO_R2_2\\runs\\s6_n1_rapido.json",
+  "C:\\IALD\\Central de Patentes\\work\\memoria_acom_fix_12out\\11_REVISAO_R2_2\\runs\\s7_resumo_ensaio.json",
+  "C:\\IALD\\Central de Patentes\\work\\memoria_acom_fix_12out\\11_REVISAO_R2_2\\scripts\\s5_ensaio_rev22.py",
+  "C:\\IALD\\Central de Patentes\\work\\memoria_acom_fix_12out\\11_REVISAO_R2_2\\scripts\\s4_runbook_blocos.ps1"
+ ],
+ "refs": [
+  "infra.memoria_acom.core_20261010",
+  "infra.memoria_acom.integracao_20261010",
+  "infra.memoria_acom.sessoes_20261010"
+ ],
+ "nota": "Revisor c1, independente do construtor e do revisor R2.1. init/transition do ACOM nao executados (escreveriam no banco de producao, contra a regra da tarefa). A chave de producao do web server nao esta em nenhum arquivo da pasta (conferido por script). A primeira execucao do ensaio foi encerrada de fora durante o K6; refeita completa."
+}

@@ -1,0 +1,56 @@
+# -*- coding: utf-8 -*-
+"""Revisor c1 R2.1: MANIFESTO_REVISAO_R2_1.json (sha256 lido de cada artefato) e registro_mapa_F9.MEMORIA_ACOM.json
+(RESULTADO da rota programa.memoria_acom.conserto_delta_12out, so com os campos de `rotas.py modelo`, artefatos
+existentes, olhou_dados false). Escreve so em 10_REVISAO_R2_1."""
+import hashlib
+import json
+from datetime import datetime
+from pathlib import Path
+
+ME = Path(__file__).resolve().parents[1]
+WIN = 'C:\\IALD\\Central de Patentes\\work\\memoria_acom_fix_12out\\10_REVISAO_R2_1\\'
+
+
+def sha(p):
+    return hashlib.sha256(Path(p).read_bytes()).hexdigest()
+
+
+arts = ['REVISAO_R2_1.md'] + sorted('scripts/' + p.name for p in (ME / 'scripts').glob('*.py')) + \
+    sorted('runs/' + p.name for p in (ME / 'runs').iterdir() if p.is_file())
+man = {'titulo': 'REVISAO R2.1 (revisor adversarial c1) — conserto ACOM 12/10', 'gerado_em': datetime.now().isoformat(timespec='seconds'),
+       'arquivos': [{'arquivo': a, 'sha256': sha(ME / a), 'bytes': (ME / a).stat().st_size} for a in arts]}
+(ME / 'MANIFESTO_REVISAO_R2_1.json').write_text(json.dumps(man, ensure_ascii=False, indent=1), encoding='utf-8')
+
+art_rel = ['REVISAO_R2_1.md', 'MANIFESTO_REVISAO_R2_1.json', 'runs/s1_manifesto_patch.json', 'runs/s2_RESULTADOS_rodada2.json',
+           'runs/s3_heartbeat.json', 'runs/s3_heartbeat_controle_R2.json', 'runs/s4_ataques.json',
+           'runs/s5_ensaio_rev_principal.json', 'runs/s5_ensaio_rev_CFG.json', 'runs/s8_producao_metadados.json',
+           'scripts/s4_ataques.py', 'scripts/s5_extra.py']
+for a in art_rel:
+    assert (ME / a).exists(), a
+reg = {
+    'tipo': 'RESULTADO',
+    'rota_id': 'programa.memoria_acom.conserto_delta_12out',
+    'dominio': 'INFRA',
+    'titulo': 'Revisao adversarial independente da R2.1 do conserto ACOM (c1): patch, suite, heartbeat, K2-K6/P8 e N1-N3 em formas novas',
+    'pergunta': 'A R2.1 corrige os achados da revisao R2 sem quebrar a suite, e resiste a formas novas dos mesmos ataques? Os comandos da secao 4 servem ao operador?',
+    'dados': ['candidato_r2_1 e ferramentas R2.1 (manifesto f7ccb802d2388ac3; implantar b913952cb2592b84; reverter b6e3906baa88a7e5; lib c72ddd0a5686a4e0), hashes lidos por script',
+              'REVISAO_R2.md 13e8287d5b5e0ff7 e os scripts do revisor R2; ensaio do construtor com diff conferido',
+              'so sintetico: banco v1 por store_v1_frozen, psion/.env sinteticos, backend de processos simulado; producao so metadados'],
+    'metodo': 'git apply (autocrlf false/true) do patch sobre copia do candidato_r2; suite inteira em copia propria (2 rodadas) sob a guarda; teste original do heartbeat 180x com varredor externo (30 ms e 150 ms) separando corpo de tearDown, com controle R2; ensaio K2/K3/K4/K6/P8 refeitos e formas novas K2b/K2c/K2d/K3b/K3r/K4b/K4c/K6b/K6c/P8b/CFG; ataques N1 (nome e caminho com muitos componentes), N2 (.ENV, env, espaco/ponto no fim, ADS, 8.3, largura total), N3 (hardlink, renomeio, via do app, symlink). Nada em producao.',
+    'resultado': 'Patch: 0 diferencas com autocrlf=false (2 em CRLF com true); manifesto 15/15, 3 mudados. Suite: rodada 1 258/259 (erro de fixture os.rename Escritorio, como o revisor R2), rodada 2 259/259. Heartbeat R2.1: 0 falhas de corpo e 0 "3 != 1" em 180 execucoes com varredor; 4 erros so no tearDown (fixture); controle R2 7/60 falhas de corpo (3 "3 != 1"). Ensaio: K2, K3, K4, K6 e P8 corrigidos; K2b/K2c recibo renomeado/apagado: 2a execucao falha fechada na pre-conferencia sem tocar; K2d recusa; K3b honesto; K3r reverter com stop sem efeito deixa o app v2 vivo com tarefa desabilitada e o recibo diz "fica parado"; K4b FALHOU_EM_reiniciar_app correto; K4c alvo modificado apos conferir_alvos: status REVERTIDA ok=true com app_religado=false e trava liberada; K6b/K6c ok; P8b app v2 em laco de queda tambem sai CONCLUIDA_AGUARDANDO_REINICIO; CFG comandos da secao 4 funcionam. N1: formas de nome lineares (3-13 ms em 32 KB); caminho com 16.000 componentes 2,8-3,7 s (realpath quadratico). N2: todas as formas novas de nome recusadas; central.env.txt e ADS notas.txt:oculto aceitos e com senha sintetica no banco (classe conteudo, D4). N3: hardlink 0/29.503 no session_memory; renomeio 551/7.451 (equivale a copia); via do app 40/17.136.',
+    'veredito': 'REVISAO_R2_1__PODE_IMPLANTAR_COM_RESSALVAS__259_DE_259__HEARTBEAT_0_DE_180__K2_K3_K4_K6_P8_CORRIGIDOS__NOVOS_K4C_STATUS_REVERTIDA_ENGANOSO_K3R_REVERTER_SEM_CONSERTO_K3_N1_COMPONENTES__NADA_EM_PRODUCAO',
+    'estatuto': 'REAL',
+    'status': 'EXAMINADA_COM_DEFEITO',
+    'olhou_dados': False,
+    'defeito': 'K4c: reverter devolve REVERTIDA (ok=true) quando nao religa por alvo divergente na conferencia final, e a trava passa a ver 0 pendentes; K4b: acao_requerida null no caminho de excecao; K3r: o conserto K3 nao foi feito no reverter (app v2 vivo, tarefa desabilitada, recibo diz parado); N1 por componentes (realpath quadratico, 3,7 s em 32 KB); N2 classe conteudo (*.env.txt, ADS) aberta em D4; N3 renomeio e via do app; secao 4 sem o passo de conferencia pos-implantacao e sem o comando de mover backups; comandos da secao 5 do REVISAO_R2 superados; campo ferramentas do manifesto com sha do R1. Cmdlets reais do Agendador nunca exercitados.',
+    'nao_refazer': 'Nao refazer: a prova do patch, a suite inteira, a repeticao do heartbeat com controle, o ensaio K2-K6/P8 e as formas novas, os ataques N1-N3; ler 10_REVISAO_R2_1/REVISAO_R2_1.md e runs/.',
+    'proximo_passo': 'Gerencia decide: implantar a R2.1 com as ressalvas (operador: comandos da secao 4 do RESULTADO_R2_1 + conferencia pos-implantacao; apos reverter exigir REVERTIDA, app_religado true e acao_requerida null) ou um R2.2 pequeno (K4c/K4b/K3r no reverter, teto de caminho no guard, via do app por read_checked).',
+    'onde': WIN + 'REVISAO_R2_1.md',
+    'artefatos': [WIN + a.replace('/', '\\') for a in art_rel],
+    'refs': ['infra.memoria_acom.core_20261010', 'infra.memoria_acom.integracao_20261010', 'infra.memoria_acom.sessoes_20261010'],
+    'nota': 'Revisor adversarial c1, independente do construtor e do revisor R2. init/transition do ACOM nao executados (escreveriam no banco de producao, contra a regra da tarefa). A chave de producao do web server nao esta em nenhum arquivo da pasta (conferido por script).',
+}
+(ME / 'registro_mapa_F9.MEMORIA_ACOM.json').write_text(json.dumps(reg, ensure_ascii=False, indent=1), encoding='utf-8')
+print('manifesto', sha(ME / 'MANIFESTO_REVISAO_R2_1.json')[:16], len(man['arquivos']), 'arquivos')
+print('registro', sha(ME / 'registro_mapa_F9.MEMORIA_ACOM.json')[:16])
+print('REVISAO_R2_1.md', sha(ME / 'REVISAO_R2_1.md')[:16])

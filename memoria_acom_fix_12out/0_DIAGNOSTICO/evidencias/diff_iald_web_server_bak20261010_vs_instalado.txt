@@ -1,0 +1,361 @@
+--- iald_web_server.py.bak_20261010_092122_942219
++++ iald_web_server.py (installed 7e48e90a)
+@@ -23,6 +23,7 @@
+     Admin: http://localhost:8082/admin (localhost only)
+ """
+ 
++import iald_app_memory as app_memory
+ import sys
+ import os
+ import json
+@@ -1375,9 +1376,10 @@
+ 
+ def _ferramentas_para(superficie):
+     """Lista de ferramentas permitida para a superfície que fez a chamada."""
++    tools = PUBLIC_TOOLS + app_memory.tool_definitions()
+     if (superficie or "web") != "app":
+-        return PUBLIC_TOOLS
+-    return [t for t in PUBLIC_TOOLS
++        return tools
++    return [t for t in tools
+             if (t.get("function") or {}).get("name") not in FERRAMENTAS_FORA_DA_LOJA]
+ 
+ 
+@@ -1586,6 +1588,11 @@
+ 
+ def execute_public_tool(tool_name, arguments, user="?", operator_authorized=False):
+     """Execute a public (safe) tool and return result as string."""
++    if tool_name == 'iald_memory_read':
++        try:
++            return json.dumps(app_memory.read_record(arguments), ensure_ascii=False)
++        except (ValueError, OSError, TypeError):
++            return json.dumps({'status': 'UNAVAILABLE', 'error': 'Memória fora do escopo ou pedido inválido.'}, ensure_ascii=False)
+ 
+     if tool_name in ('search_tgl', 'fetch_tgl'):
+         try:
+@@ -2101,7 +2108,7 @@
+         finally:
+             if task_control is not None: task_control.finish()
+ 
+-    wallet_worker, wallet_failed = wallet_runtime.threaded(_alvo)
++    wallet_worker, wallet_failed = wallet_runtime.threaded(app_memory.thread_target(_alvo))
+     th = threading.Thread(target=wallet_worker, daemon=True)
+     tracked = False
+     try:
+@@ -2154,7 +2161,7 @@
+         except BaseException as exc:      # noqa: BLE001 — repassada ao chamador
+             fila.put(("erro", exc))
+ 
+-    wallet_worker, wallet_failed = wallet_runtime.threaded(_alvo)
++    wallet_worker, wallet_failed = wallet_runtime.threaded(app_memory.thread_target(_alvo))
+     th = threading.Thread(target=wallet_worker, daemon=True)
+     try: th.start()
+     except BaseException:
+@@ -2225,6 +2232,7 @@
+     busca_falhou = False       # 15/09/2026: search_web devolveu MSG_BUSCA_INDISPONIVEL neste pedido
+ 
+     while loop_count < max_voltas:
++        current_messages = app_memory.project_messages(current_messages)
+         if task_control is not None: task_control.check()
+         loop_count += 1
+         # 15/09/2026: na última volta permitida, ou depois que a busca na internet falhou, o modelo
+@@ -2495,6 +2503,7 @@
+                         else "Ferramenta não autorizada para esta sessão.",
+                         **({'task_control':task_control} if task_control is not None else {})
+                     )
++                app_memory.tool_result(tool_name, tool_args, result)
+                 if task_control is not None: task_control.check()
+                 if tool_name == "search_web" and str(result or "").startswith(BUSCA_INDISPONIVEL_PREFIXO):
+                     busca_falhou = True
+@@ -2602,12 +2611,14 @@
+         resolved = os.path.realpath(path_str)
+     except (ValueError, OSError) as e:
+         return None, f"Path invalido: {e}"
++    if app_memory.protected_path(resolved):
++        return None, "Arquivo confidencial fora da memória e do transporte"
+     # Check whitelist
+     allowed = False
+     for root in ALLOWED_ROOTS:
+         try:
+             root_real = os.path.realpath(root)
+-            if resolved.lower().startswith(root_real.lower()):
++            if os.path.commonpath([resolved.lower(), root_real.lower()]) == root_real.lower():
+                 allowed = True
+                 break
+         except Exception:
+@@ -3143,6 +3154,12 @@
+ 
+ 
+ def heartbeat_cycle():
++    return app_memory.run_autonomous('native-heartbeat',
++        'Measure the existing local heartbeat with operational memory; no private service state or scientific gate decisions.',
++        _heartbeat_cycle_with_memory)
++
++
++def _heartbeat_cycle_with_memory():
+     """
+     One complete heartbeat cycle.
+     Sends micro-benchmark prompts to llama-server, measures tok/s,
+@@ -3171,26 +3188,28 @@
+                 t0 = time.perf_counter()
+                 r = req_lib.post(
+                     f"{LLAMA_URL}/v1/chat/completions",
+-                    json={
++                    json=_operational_native_payload({
+                         "model": "qwen3",
+                         "messages": [sys_msg, prompt],
+                         "max_tokens": HEARTBEAT_MAX_TOKENS,
+                         "temperature": 0.7,
+                         "stream": False,
+-                    },
++                    }),
+                     timeout=60,
+                 )
+                 elapsed = time.perf_counter() - t0
+                 if r.status_code != 200:
+-                    continue
++                    raise RuntimeError("Heartbeat dispatch failed; reconcile before another cycle")
+                 data = r.json()
+                 usage = data.get("usage", {})
++                app_memory.tool_result("heartbeat_sample", {"prompt": prompt, "sample": _},
++                    {"response": data, "elapsed_seconds": elapsed, "measurement_regime": "operational_memory_included"})
+                 comp_tokens = usage.get("completion_tokens", 0)
+                 if comp_tokens > 0 and elapsed > 0.01:
+                     tok_s = comp_tokens / elapsed
+                     runs.append(round(tok_s, 1))
+             except Exception:
+-                continue
++                raise
+ 
+         if runs:
+             avg = sum(runs) / len(runs)
+@@ -5156,7 +5175,7 @@
+ 
+ def _haiku_tool_definitions():
+     return (iald_kernel.tool_definitions() + iald_fontes_publicas.tool_definitions()
+-            + iald_core_indexado.tool_definitions())
++            + iald_core_indexado.tool_definitions() + app_memory.tool_definitions())
+ 
+ def _haiku_client_ready():
+     # Compatibility marker only: it never grants account/model authorization.
+@@ -5666,6 +5685,16 @@
+         yield from _aviso_limite(str(exc), por, user, registro, motor).response
+ 
+ 
++def _operational_native_payload(payload):
++    result = dict(payload)
++    result['messages'] = app_memory.project_messages(payload.get('messages', []))
++    model_id, base_url = ACTIVE_MODEL_ID, LLAMA_URL
++    native_memory.check_text_window(result, native_memory.configured_window(MODELS[model_id]), base_url=base_url)
++    if model_id != ACTIVE_MODEL_ID or base_url != LLAMA_URL:
++        raise ValueError('Native model changed during memory projection/counting')
++    return result
++
++
+ def _prepare_native_payload(payload, superficie):
+     """Called only after the existing native-account authorization gate."""
+     if MEMORIA_EXTERNA is None or MEMORIA_EXTERNA.nucleus_manifest is None:
+@@ -5673,7 +5702,7 @@
+     manifest = MEMORIA_EXTERNA.nucleus_manifest
+     prefix, identity = native_memory.load_native_context(manifest, KERNEL_EXTERNO)
+     result = dict(payload)
+-    result['messages'] = native_memory.attach_context(payload.get('messages'), prefix)
++    result['messages'] = app_memory.project_messages(native_memory.attach_context(payload.get('messages'), prefix))
+     # Canonical readers are public. Do not add the private Atlas or task/admin tools.
+     definitions = list(_ferramentas_para(superficie))
+     names = {(t.get('function') or {}).get('name') for t in definitions}
+@@ -5786,7 +5815,7 @@
+     search_tgl/fetch_tgl). Nada de acervo, memória do operador, prova viva, arquivo ou transferência."""
+     nomes = set(CLAUDE_CFG.ferramentas) & set(iald_motores.FERRAMENTAS_CLAUDE_PERMITIDAS)
+     for fonte in (iald_kernel.tool_definitions, iald_memoria_canonica.tool_definitions,
+-                  iald_fontes_publicas.tool_definitions, iald_core_indexado.tool_definitions):
++                  iald_fontes_publicas.tool_definitions, iald_core_indexado.tool_definitions, app_memory.tool_definitions):
+         try:
+             nomes.update((t.get("function") or {}).get("name") for t in fonte())
+         except Exception as exc:          # noqa: BLE001 — fail-closed: a ferramenta fica fora
+@@ -6415,7 +6444,7 @@
+             instrucao = (instrucao + "\n\n" if instrucao else "") + alerta_saldo
+ 
+         permitidas = (_haiku_tool_definitions() if haiku
+-                      else _ferramentas_externas(cfg, limites, superficie, gratuito))
++                      else _ferramentas_externas(cfg, limites, superficie, gratuito) + app_memory.tool_definitions())
+         if haiku:
+             permitidas += [t for t in _ferramentas_para('app') if t['function']['name'] in ('search_web','fetch_url','get_current_datetime','iald_public_search')]
+         if task_scope:
+@@ -6484,6 +6513,7 @@
+             # prefixo com o Atlas integral não sai para a Anthropic (o envio também confere)
+             print(f"[claude] {user}: o prefixo leva o Atlas integral; nada enviado à Anthropic", flush=True)
+             return _sse_aviso(MSG_CLAUDE_ATLAS_INTEGRAL, "motor_indisponivel")
++        para_openai = app_memory.project_messages(para_openai)
+         try:
+             pedido_saida = int(req_json.get("max_tokens") or 0) or teto_saida
+         except (TypeError, ValueError):
+@@ -8323,7 +8353,9 @@
+ 
+ @app.route("/v1/<path:subpath>", methods=["POST"])
+ def api_post(subpath):
+-    return WALLET_DISPATCH(_api_post_with_wallet, subpath)
++    return app_memory.dispatch(SERVE_DIR, _chat_account_generation,
++        lambda user: app_router.allowed(load_users_estrito().get(user, {}), user),
++        lambda path: WALLET_DISPATCH(_api_post_with_wallet, path), subpath)
+ 
+ 
+ def _api_post_with_wallet(subpath):
+@@ -8447,7 +8479,7 @@
+             req_json["messages"] = messages
+             body = json.dumps(req_json).encode("utf-8")
+         except Exception as e:
+-            print(f"[Memoria] Erro (seguindo sem memória): {e}", flush=True)
++            return jsonify({"error": "Memória do operador indisponível; nenhum envio."}), 503
+ 
+     # ── HOLOGRAPHIC MEMORY: compress context before routing ──
+     if subpath == "chat/completions" and messages:
+@@ -8773,8 +8805,27 @@
+             pass
+ 
+ 
++def _prepare_completion_body(body):
++    payload = app_memory.project_completion_payload(json.loads(body))
++    model_id, base_url = ACTIVE_MODEL_ID, LLAMA_URL
++    configured = native_memory.configured_window(MODELS[model_id])
++    serving = native_memory._local_json(base_url, '/props')['default_generation_settings']['n_ctx']
++    tokens = native_memory._local_json(base_url, '/tokenize',
++        {'content': payload['prompt'], 'add_special': True, 'parse_special': True})['tokens']
++    reserve = payload.get('max_tokens', 4096)
++    if (type(serving) is not int or serving <= 0 or not isinstance(tokens, list) or not tokens
++            or any(type(t) is not int or t < 0 for t in tokens) or type(reserve) is not int or reserve <= 0
++            or len(tokens) + reserve + 256 > min(configured, serving)):
++        raise ValueError('Completion exceeds the measured native context window')
++    if model_id != ACTIVE_MODEL_ID or base_url != LLAMA_URL:
++        raise ValueError('Native completion model changed during counting')
++    return json.dumps(payload, ensure_ascii=False).encode('utf-8')
++
++
+ def _normal_proxy(subpath, body):
+     try:
++        if subpath == "completions":
++            body = _prepare_completion_body(body)
+         r = req_lib.post(f"{LLAMA_URL}/v1/{subpath}", data=body,
+                          headers={"Content-Type": "application/json"}, timeout=600)
+         return Response(r.content, status=r.status_code,
+@@ -8783,6 +8834,8 @@
+         return Response(json.dumps({"error": str(e)}), status=502, content_type="application/json")
+ 
+ def _stream_proxy(subpath, body, user=None, origem="chat"):
++    if subpath == "completions":
++        body = _prepare_completion_body(body)
+     # user/origem são OPCIONAIS de propósito: assim os chamadores antigos
+     # continuam válidos e a medição é aditiva, nunca uma troca de contrato.
+     def generate():
+@@ -9733,6 +9786,10 @@
+ 
+ @app.route("/admin/api/test-prompt", methods=["POST"])
+ def admin_api_test_prompt():
++    return app_memory.dispatch_admin(SERVE_DIR, _chat_account_generation, require_admin, _admin_api_test_prompt_with_memory)
++
++
++def _admin_api_test_prompt_with_memory():
+     check = require_admin()
+     if check:
+         return check
+@@ -9746,6 +9803,7 @@
+         "stream": False, "max_tokens": 512, "temperature": 0.7}
+     t0 = time.time()
+     try:
++        payload = _operational_native_payload(payload)
+         r = req_lib.post(f"{LLAMA_URL}/v1/chat/completions", json=payload, timeout=60)
+         duration_ms = int((time.time() - t0) * 1000)
+         if r.status_code != 200:
+@@ -10628,6 +10686,10 @@
+ 
+ @app.route("/admin/api/agi/command", methods=["POST"])
+ def agi_command():
++    return app_memory.dispatch_admin(SERVE_DIR, _chat_account_generation, require_admin, _agi_command_with_memory)
++
++
++def _agi_command_with_memory():
+     """Send a command to IALD AGI for analysis."""
+     check = require_admin()
+     if check:
+@@ -10675,7 +10737,7 @@
+     payload = {
+         "model": "local",
+         "messages": llama_messages,
+-        "tools": PUBLIC_TOOLS,
++        "tools": PUBLIC_TOOLS + app_memory.tool_definitions(),
+         "tool_choice": "auto",
+         "stream": False,
+         "max_tokens": 2048,
+@@ -10687,6 +10749,8 @@
+     try:
+         # AGI command supports one round of tool calls
+         for _attempt in range(3):  # max 3 tool rounds
++            payload["messages"] = llama_messages
++            payload = _operational_native_payload(payload)
+             r = req_lib.post(f"{LLAMA_URL}/v1/chat/completions", json=payload, timeout=600)
+             if r.status_code != 200:
+                 return jsonify({"error": f"llama-server: {r.status_code}"}), 502
+@@ -10710,6 +10774,7 @@
+                     except (json.JSONDecodeError, TypeError):
+                         t_args = {}
+                     t_result = execute_public_tool(t_name, t_args)
++                    app_memory.tool_result(t_name, t_args, t_result)
+                     if len(t_result) > AGENT_MAX_RESULT_CHARS:
+                         t_result = t_result[:AGENT_MAX_RESULT_CHARS] + "\n[...truncado]"
+                     llama_messages.append({
+@@ -10743,6 +10808,10 @@
+ 
+ @app.route("/admin/api/agi/execute", methods=["POST"])
+ def agi_execute():
++    return app_memory.dispatch_admin(SERVE_DIR, _chat_account_generation, require_admin, _agi_execute_with_memory)
++
++
++def _agi_execute_with_memory():
+     """Execute a confirmed AGI plan. Two-phase: asks llama for JSON actions, then executes."""
+     check = require_admin()
+     if check:
+@@ -10769,6 +10838,8 @@
+         "temperature": 0.1,
+     }
+     try:
++        payload["messages"] = llama_messages
++        payload = _operational_native_payload(payload)
+         r = req_lib.post(f"{LLAMA_URL}/v1/chat/completions", json=payload, timeout=600)
+         if r.status_code != 200:
+             return jsonify({"error": f"llama-server: {r.status_code}"}), 502
+@@ -10780,6 +10851,7 @@
+             return jsonify({"error": "Resposta vazia do modelo"}), 502
+     except Exception as e:
+         return jsonify({"error": f"llama-server: {e}"}), 502
++    app_memory.current().append("admin_plan", raw, source_kind="model")
+     # Phase 2: Parse JSON actions
+     # Clean markdown fences if present
+     clean = raw.strip()
+@@ -10886,6 +10958,8 @@
+             result["ok"] = False
+             result["error"] = str(e)
+         results.append(result)
++    for result in results:
++        app_memory.tool_result("admin_file_action", {"action": result["action"], "path": result["path"]}, result)
+     # Phase 4: If there were successful reads, send content to llama for analysis
+     read_contents = []
+     for r in results:
+@@ -10915,13 +10989,15 @@
+         })
+         try:
+             ar = req_lib.post(f"{LLAMA_URL}/v1/chat/completions",
+-                json={"model": "local", "messages": analysis_messages,
+-                      "stream": False, "max_tokens": 2048, "temperature": 0.4},
++                json=_operational_native_payload({"model": "local", "messages": analysis_messages,
++                      "stream": False, "max_tokens": 2048, "temperature": 0.4}),
+                 timeout=600)
+             if ar.status_code == 200:
+                 analysis = ar.json().get("choices", [{}])[0].get("message", {}).get("content", "")
++            else:
++                return jsonify({"error": "Análise falhou; ações registradas, sem repetição automática.", "results": results}), 502
+         except Exception:
+-            pass
++            return jsonify({"error": "Análise incerta; ações já registradas, sem repetição automática.", "results": results}), 502
+     auth_log("AGI_EXECUTE", session.get("username", "?"),
+              f"actions={len(actions)} ok={sum(1 for r in results if r.get('ok'))}")
+     log_request(session.get("username", "?"), "/admin/api/agi/execute", "POST",

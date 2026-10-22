@@ -1,0 +1,532 @@
+diff --git a/IALD/projetos_pyhton/IALD/iald_web_server.py b/IALD/projetos_pyhton/IALD/iald_web_server.py
+index 45419bf..b7553af 100644
+--- a/IALD/projetos_pyhton/IALD/iald_web_server.py
++++ b/IALD/projetos_pyhton/IALD/iald_web_server.py
+@@ -3060,6 +3060,7 @@ HEARTBEAT_MEMORY_OBJECTIVE = ("Health ledger of the existing local heartbeat: ge
+                               "recorded only on health-class change or at most hourly; no response bodies, "
+                               "no private service state, no scientific gate decisions.")
+ HEARTBEAT_PSION_DAILY_BAK = True                      # uma cópia de bytes por dia: <psion>.bak_<AAAAMMDD> (D3c)
++HEARTBEAT_REPLACE_RETRY_S = 3.0                       # R2.1: espera máxima de uma troca/remoção do heartbeat
+ HEARTBEAT_PROMPTS = [
+     {"role": "user", "content": "Explain quantum entanglement in 3 sentences. /no_think"},
+     {"role": "user", "content": "If 3x + 7 = 22, what is x? Show your work. /no_think"},
+@@ -3093,6 +3094,35 @@ def _heartbeat_llama_ok():
+         return False
+ 
+ 
++def _heartbeat_retry(fn, *args):
++    """R2.1 (13/10/2026, revisão R2 §3): os.replace/os.remove com nova tentativa curta e LIMITADA.
++
++    Um leitor externo (antivírus em tempo real, indexador) que abre o arquivo sem FILE_SHARE_DELETE faz a troca
++    falhar com PermissionError (WinError 5/32) por alguns milissegundos; a batida virava psion_error (+2 eventos
++    na memória comum) e o tempário ficava órfão. Espera 10 ms, dobrando até 200 ms, por no máximo
++    HEARTBEAT_REPLACE_RETRY_S segundos; depois a exceção sobe como antes (falha visível).
++    """
++    deadline = time.monotonic() + HEARTBEAT_REPLACE_RETRY_S
++    delay = 0.01
++    while True:
++        try:
++            return fn(*args)
++        except PermissionError:
++            if time.monotonic() >= deadline:
++                raise
++            time.sleep(delay)
++            delay = min(delay * 2, 0.2)
++
++
++def _heartbeat_discard_temp(path):
++    """Remove o tempário que ESTA escrita criou e que nunca virou o arquivo (R2.1). Nunca levanta."""
++    try:
++        if os.path.exists(path):
++            _heartbeat_retry(os.remove, path)
++    except OSError as exc:
++        print(f"[Heartbeat] tempário não removido ({type(exc).__name__}): {os.path.basename(path)}", flush=True)
++
++
+ def _load_psion_state():
+     """Load Psion state from JSON or create minimal structure."""
+     if os.path.exists(HEARTBEAT_STATE_FILE):
+@@ -3129,25 +3159,31 @@ def _save_psion_state(psion):
+             with open(target, "rb") as f:
+                 old = f.read()
+             tmp_bak = bak + ".tmp_" + secrets.token_hex(4)
+-            with open(tmp_bak, "wb") as out:
+-                out.write(old)
+-                out.flush()
+-                os.fsync(out.fileno())
+-            with open(tmp_bak, "rb") as chk:
+-                if chk.read() != old:
+-                    os.remove(tmp_bak)
+-                    raise OSError("Psion daily byte copy did not verify")
+-            os.replace(tmp_bak, bak)
++            try:
++                with open(tmp_bak, "wb") as out:
++                    out.write(old)
++                    out.flush()
++                    os.fsync(out.fileno())
++                with open(tmp_bak, "rb") as chk:
++                    if chk.read() != old:
++                        raise OSError("Psion daily byte copy did not verify")
++                _heartbeat_retry(os.replace, tmp_bak, bak)          # R2.1: nova tentativa curta
++            except BaseException:
++                _heartbeat_discard_temp(tmp_bak)                     # R2.1: sem tempário órfão
++                raise
+     tmp = target + ".tmp_" + secrets.token_hex(4)
+-    with open(tmp, "wb") as out:
+-        out.write(raw)
+-        out.flush()
+-        os.fsync(out.fileno())
+-    with open(tmp, "rb") as chk:
+-        if chk.read() != raw:
+-            os.remove(tmp)
+-            raise OSError("Psion state write did not verify")
+-    os.replace(tmp, target)
++    try:
++        with open(tmp, "wb") as out:
++            out.write(raw)
++            out.flush()
++            os.fsync(out.fileno())
++        with open(tmp, "rb") as chk:
++            if chk.read() != raw:
++                raise OSError("Psion state write did not verify")
++        _heartbeat_retry(os.replace, tmp, target)                    # R2.1: nova tentativa curta
++    except BaseException:
++        _heartbeat_discard_temp(tmp)                                 # R2.1: sem tempário órfão
++        raise
+ 
+ 
+ def _update_psion_from_heartbeat(psion, avg_tok_s, cv, n_prompts):
+@@ -3349,13 +3385,13 @@ def _heartbeat_telemetry_rotate(path):
+     """Renomeação encadeada path → .1 → … → .KEEP (o mais antigo além de KEEP cai). Nunca trunca."""
+     oldest = f"{path}.{HEARTBEAT_TELEMETRY_KEEP}"
+     if os.path.exists(oldest):
+-        os.remove(oldest)
++        _heartbeat_retry(os.remove, oldest)                          # R2.1: nova tentativa curta
+     for i in range(HEARTBEAT_TELEMETRY_KEEP - 1, 0, -1):
+         src = f"{path}.{i}"
+         if os.path.exists(src):
+-            os.replace(src, f"{path}.{i + 1}")
++            _heartbeat_retry(os.replace, src, f"{path}.{i + 1}")
+     if os.path.exists(path):
+-        os.replace(path, f"{path}.1")
++        _heartbeat_retry(os.replace, path, f"{path}.1")
+ 
+ 
+ def _heartbeat_telemetry_append(summary):
+@@ -3397,11 +3433,15 @@ def _heartbeat_health_save(state):
+     os.makedirs(HEARTBEAT_LOG_DIR, exist_ok=True)
+     raw = json.dumps(state, ensure_ascii=False, indent=2, sort_keys=True).encode("utf-8")
+     tmp = HEARTBEAT_HEALTH_FILE + ".tmp_" + secrets.token_hex(4)
+-    with open(tmp, "wb") as out:
+-        out.write(raw)
+-        out.flush()
+-        os.fsync(out.fileno())
+-    os.replace(tmp, HEARTBEAT_HEALTH_FILE)
++    try:
++        with open(tmp, "wb") as out:
++            out.write(raw)
++            out.flush()
++            os.fsync(out.fileno())
++        _heartbeat_retry(os.replace, tmp, HEARTBEAT_HEALTH_FILE)     # R2.1: nova tentativa curta
++    except BaseException:
++        _heartbeat_discard_temp(tmp)                                 # R2.1: sem tempário órfão
++        raise
+ 
+ 
+ def _heartbeat_record_memory_if_due(klass, summary, line_sha256, now):
+diff --git a/IALD/MEMORIA_IALD/session_memory.py b/IALD/MEMORIA_IALD/session_memory.py
+index e8eb5f8..51842e0 100644
+--- a/IALD/MEMORIA_IALD/session_memory.py
++++ b/IALD/MEMORIA_IALD/session_memory.py
+@@ -36,18 +36,24 @@ def _guard():
+     from iald_memory import guard
+     return guard
+ 
++def _guarded_read(raw_path, max_bytes, log_path, where, not_file, too_large):
++    # R2.1 (review N3): the requested and resolved NAMES are checked before any open; then the guard opens a
++    # handle (attributes only), checks hard-link count, identity and the FINAL path of THAT handle, and reads
++    # the same file object (never the name again). The refusal names the rule, never the bytes.
++    guard = _guard()
++    try:
++        final, data = guard.read_checked(raw_path, max_bytes=max_bytes, log_path=log_path, where=where)
++    except guard.PathRefused as exc:
++        raise ProtocolError("source_path_not_allowed:" + exc.reason) from None
++    except guard.NotRegularFile:
++        raise ProtocolError(not_file) from None
++    if len(data) > max_bytes:
++        raise ProtocolError(too_large)
++    return Path(final), data
++
+ def read_allowed_file(raw_path, log_path=None):
+-    # Requested name, resolved name (junctions/symlinks), hard-link count and file identity
+-    # are all checked BEFORE the file is opened. The refusal names the rule, never the bytes.
+-    reason = _guard().is_confidential_path(raw_path, log_path=log_path, where="read_allowed_file")
+-    if reason:
+-        raise ProtocolError("source_path_not_allowed:" + reason)
+-    path = Path(raw_path).resolve(strict=True)
+-    if not path.is_file():
+-        raise ProtocolError("source_is_not_file")
+-    if path.stat().st_size > MAX_INPUT_BYTES:
+-        raise ProtocolError("source_too_large")
+-    return path, path.read_bytes()
++    return _guarded_read(raw_path, MAX_INPUT_BYTES, log_path, "read_allowed_file", "source_is_not_file",
++                         "source_too_large")
+ 
+ def guarded_reference_path(raw_path, log_path=None, where="write_reference"):
+     """Refuse (before exists/read/create) a reference path the guard classifies as confidential."""
+@@ -58,16 +64,11 @@ def guarded_reference_path(raw_path, log_path=None, where="write_reference"):
+ 
+ def load_reference(raw_path, log_path=None, where="reference"):
+     """Read a reference through the guard; accept only the protocol keys; return a clean copy."""
+-    reason = _guard().is_confidential_path(raw_path, log_path=log_path, where=where)
+-    if reason:
+-        raise ProtocolError("source_path_not_allowed:" + reason)  # same code as every guarded read
+-    path = Path(raw_path).resolve(strict=True)
+-    if not path.is_file():
+-        raise ProtocolError("reference_is_not_file")
+-    if path.stat().st_size > MAX_REFERENCE_BYTES:
+-        raise ProtocolError("reference_too_large")
++    # Same code as every guarded read (source_path_not_allowed:<rule>); R2.1: read through the handle (N3).
++    _, raw = _guarded_read(raw_path, MAX_REFERENCE_BYTES, log_path, where, "reference_is_not_file",
++                           "reference_too_large")
+     try:
+-        ref = json.loads(path.read_bytes().decode("utf-8"))
++        ref = json.loads(raw.decode("utf-8"))
+     except (UnicodeDecodeError, ValueError):
+         raise ProtocolError("reference_not_json") from None
+     if not isinstance(ref, dict):
+diff --git a/IALD/MEMORIA_IALD/lib/iald_memory/guard.py b/IALD/MEMORIA_IALD/lib/iald_memory/guard.py
+index 8c630b4..33dbc15 100644
+--- a/IALD/MEMORIA_IALD/lib/iald_memory/guard.py
++++ b/IALD/MEMORIA_IALD/lib/iald_memory/guard.py
+@@ -1,15 +1,22 @@
+-"""Fail-closed confidentiality guard for the common IALD memory (D4/D6, 12/10/2026).
++"""Fail-closed confidentiality guard for the common IALD memory (D4/D6, 12/10/2026; R2.1 13/10/2026).
+ 
+ Three layers; every refusal is visible and recorded, nothing is redacted silently:
+ 
+-1. NAMES  -- basename patterns after NFKC + casefold with repeated removal of
+-   backup/temp suffixes (`.bak_*`, `.tmp_*`, ...): `iald_psion_state*`,
+-   `iald_stack_v*`, `.env`, `.env.*`, `*.key`, `*.pem`; and any path component
+-   that starts with `escritorio` (accents stripped), i.e. the Escritório house.
++1. NAMES  -- basename patterns on a SKELETON of the name (NFKC, format characters
++   removed, casefold, common Cyrillic/Greek look-alikes and Unicode dashes mapped
++   to ASCII, accents stripped) with repeated removal of backup/temp suffixes
++   (`.bak_*`, `.tmp_*`, ..., trailing `~`) in LINEAR time (R2.1, review N1):
++   the radicals `iald?psion?state` and `iald?stack?v` anywhere in the name,
++   `.env`, `*.env`, `*.env.*`, `*.env_*`, `.envrc`, `*.key`, `*.pem` (R2.1, review N2);
++   and any path component that starts with `escritorio`, i.e. the Escritório house.
+ 2. IDENTITY -- the requested path AND `os.path.realpath` (junctions, symbolic
+    links) are both name-checked; a file with more than one hard link is refused;
+    `(st_dev, st_ino)` is compared with the identities of the real confidential
+    files (stat only, never read); a file system without identifiers is refused.
++   R2.1 (review N3): `read_checked` opens a HANDLE first (read access, without
++   FILE_SHARE_DELETE, so the name cannot be unlinked or renamed while it is held),
++   checks link count, identity and the FINAL path of THAT handle, and only then
++   reads from the same handle: a swap of the name cannot change what is read.
+ 3. CONTENT -- `scan_text` returns RULE NAMES only. The matched text is never put
+    in a message, an exception or the refusal log.
+ 
+@@ -32,10 +39,11 @@ __all__ = [
+     'ConfidentialContent', 'confidential_basename', 'escritorio_component',
+     'is_confidential_path', 'confidential_identities', 'scan_text',
+     'assert_clean_text', 'assert_scope_allowed', 'log_refusal', 'fold',
+-    'IDENTITY_ROOTS', 'RULE_NAMES',
++    'IDENTITY_ROOTS', 'RULE_NAMES', 'PathRefused', 'NotRegularFile', 'read_checked', 'skeleton',
++    'normalized_basename', 'path_reason',
+ ]
+ 
+-GUARD_VERSION = 'iald-memory-guard/2026-10-13-r2'
++GUARD_VERSION = 'iald-memory-guard/2026-10-13-r2.1'
+ 
+ # Folders whose real confidential files feed the identity registry (stat only).
+ IDENTITY_ROOTS = (
+@@ -65,31 +73,105 @@ def fold(value):
+     return ''.join(c for c in decomposed if not unicodedata.combining(c)).casefold()
+ 
+ 
+-_STRIP_SUFFIX = re.compile(r'\.(?:bak|backup|tmp|temp|orig|old|save|swp|copy)(?:[_.\-][^.]*)?\Z')
++# R2.1 (13/10/2026, review N2 and the review-B name gaps): the name rules run on a SKELETON of the name.
++# NFKC alone does not map Cyrillic/Greek look-alikes (U+0455 'ѕ' stays 'ѕ'), so the common ones are mapped
++# explicitly, Unicode dashes become '-', and format characters (zero-width, soft hyphen, bidi marks) vanish.
++_DASHES = '‐‑‒–—―⁃−﹘﹣－'
++_CONFUSABLE_SRC = ('аеорсухѕіјԁһӏԛԝ'
++                   'үкмнтвɡıɑ'
++                   'αικνορτυχϲϳ'
++                   'օս')
++_CONFUSABLE_DST = ('aeopcyxsijdhlqw'
++                   'ykmhtbgia'
++                   'aikvoptuxcj'
++                   'ou')
++_SKELETON_MAP = {ord(d): '-' for d in _DASHES}
++_SKELETON_MAP.update({ord(c): t for c, t in zip(_CONFUSABLE_SRC, _CONFUSABLE_DST)})
++assert len(_CONFUSABLE_SRC) == len(_CONFUSABLE_DST)
++
++
++def skeleton(value):
++    """NFKC, format characters removed, casefold, look-alikes and dashes mapped to ASCII, accents stripped."""
++    text = unicodedata.normalize('NFKC', str(value))
++    text = ''.join(c for c in text if unicodedata.category(c) != 'Cf').casefold().translate(_SKELETON_MAP)
++    return fold(text)
++
++
++_SUFFIX_WORDS = frozenset(('bak', 'backup', 'tmp', 'temp', 'orig', 'old', 'save', 'swp', 'copy'))
++# One dot-free segment that is a backup/temp suffix: `bak`, `bak_20261013`, `tmp-x` ...
++_SUFFIX_SEGMENT = re.compile(r'(?:bak|backup|tmp|temp|orig|old|save|swp|copy)(?:[_\-][^.]*)?')
++_SEP = r'[\W_]{0,4}'
+ _NAME_RULES = (
+-    ('psion_name', re.compile(r'\Aiald_psion_state')),
+-    ('stack_name', re.compile(r'\Aiald_stack_v')),
+-    ('dotenv_name', re.compile(r'\A\.env(?:\.|\Z)')),
++    ('psion_name', re.compile(r'iald' + _SEP + r'psion' + _SEP + r'state')),      # radical, anywhere (R2.1)
++    ('stack_name', re.compile(r'iald' + _SEP + r'stack' + _SEP + r'v')),           # radical, anywhere (R2.1)
++    ('dotenv_name', None),                                                         # _dotenv_rule (R2.1)
+     ('key_name', re.compile(r'\A.+\.key(?:\.|\Z)')),
+     ('pem_name', re.compile(r'\A.+\.pem(?:\.|\Z)')),
+ )
+ 
+ 
++# R2.1 (review N2): dotenv files by NAME. Refused: `.env`, `.envrc`, `.env<sep>...` (R2), bare `env`, `*.env`,
++# `*.envrc` and `*.env<sep><tail>` (app.env.local, x.env_prod) unless <tail> ends in a DOCUMENT/CODE extension
++# (the frente-3 suite keeps `envelope.env.txt` allowed: a text ABOUT an env file is not one).
++_DOTENV_HEAD = re.compile(r'\A(?:\.env(?:rc)?(?:\Z|[._\-])|env\Z)')
++_DOTENV_TAIL = re.compile(r'\.env(?:rc)?\Z')
++_DOTENV_MID = re.compile(r'\.env(?:rc)?[._\-]')
++_DOC_EXT = frozenset(('txt', 'md', 'rst', 'html', 'htm', 'pdf', 'doc', 'docx', 'odt', 'rtf', 'tex', 'csv', 'log',
++                      'py', 'js', 'ts', 'sh', 'ps1', 'bat', 'png', 'jpg', 'svg'))
++
++
++def _dotenv_rule(base):
++    if _DOTENV_HEAD.search(base) or _DOTENV_TAIL.search(base):
++        return True
++    last_dot = base.rfind('.')
++    last_ext = base[last_dot + 1:]
++    for m in _DOTENV_MID.finditer(base):
++        # the extension of the tail is the extension of the whole name, unless the tail has no dot (linear)
++        ext = last_ext if last_dot >= m.end() else base[m.end():]
++        if ext not in _DOC_EXT:
++            return True
++    return False
++
++
+ def normalized_basename(name):
+-    """Casefolded basename with backup/temp suffixes removed repeatedly."""
+-    base = fold(name)
+-    while True:
+-        stripped = _STRIP_SUFFIX.sub('', base)
+-        if stripped == base or not stripped:
+-            return base
+-        base = stripped
++    r"""Skeleton of the basename with backup/temp suffixes (and trailing '~') removed repeatedly.
++
++    R2.1 (review N1): same decision as the R2 loop `re.sub(r'\.(?:bak|...)(?:[_.\-][^.]*)?\Z', '', base)` repeated
++    until stable (plus trailing '~'), but walking back from the end over at most the last two dot segments per
++    step: every character is visited a bounded number of times, so the cost is LINEAR in the name (the R2 loop
++    re-scanned the whole name once per suffix: 32 KB of '.bak' took seconds).
++    """
++    base = skeleton(name)
++    end = len(base)
++    while end > 0:
++        tilde = end
++        while tilde > 0 and base[tilde - 1] == '~':
++            tilde -= 1
++        if tilde != end:
++            if tilde == 0:
++                break
++            end = tilde
++            continue
++        p1 = base.rfind('.', 0, end)
++        if p1 < 0:
++            break
++        cut = None
++        p2 = base.rfind('.', 0, p1)
++        if p2 >= 0 and base[p2 + 1:p1] in _SUFFIX_WORDS:
++            cut = p2        # '.<word>.<rest without dot>' (the leftmost match of the R2 pattern)
++        elif _SUFFIX_SEGMENT.fullmatch(base, p1 + 1, end):
++            cut = p1        # '.<word>' or '.<word>[_-]<rest without dot>'
++        if cut is None or cut == 0:
++            break           # nothing to strip, or the whole name is a suffix (kept, as in R2)
++        end = cut
++    return base[:end]
+ 
+ 
+ def confidential_basename(name):
+     """Rule name when `name` (a basename) is a confidential file name, else None."""
+     base = normalized_basename(name)
+     for rule, pattern in _NAME_RULES:
+-        if pattern.search(base):
++        if (_dotenv_rule(base) if pattern is None else pattern.search(base)):
+             return rule
+     return None
+ 
+@@ -98,7 +180,7 @@ def escritorio_component(path):
+     """True when any component of `path` starts with `escritorio` (accents/case ignored)."""
+     text = os.fsdecode(path) if isinstance(path, bytes) else str(path)
+     for part in re.split(r'[\\/]+', text):
+-        if fold(part).startswith('escritorio'):
++        if skeleton(part).startswith('escritorio'):
+             return True
+     return False
+ 
+@@ -175,6 +257,161 @@ def is_confidential_path(path, *, log_path=None, where='path', roots=None):
+     return reason
+ 
+ 
++# ------------------------------------------------------------------- guarded read
++
++class PathRefused(MemoryError):
++    """Visible refusal of a PATH by the guard. Carries the rule name, never the bytes."""
++
++    def __init__(self, reason, where):
++        self.reason = reason
++        self.where = where
++        super().__init__('path refused at %s: %s' % (where, reason))
++
++
++class NotRegularFile(MemoryError):
++    """The path names a directory, a device or another non-regular object (nothing was read)."""
++
++
++_WIN = None
++
++
++def _win():
++    """kernel32 entry points used by read_checked (lazy; Windows only)."""
++    global _WIN
++    if _WIN is None:
++        import ctypes
++        from ctypes import wintypes
++        k = ctypes.WinDLL('kernel32', use_last_error=True)
++        k.CreateFileW.argtypes = [wintypes.LPCWSTR, wintypes.DWORD, wintypes.DWORD, ctypes.c_void_p,
++                                  wintypes.DWORD, wintypes.DWORD, wintypes.HANDLE]
++        k.CreateFileW.restype = wintypes.HANDLE
++        k.GetFinalPathNameByHandleW.argtypes = [wintypes.HANDLE, wintypes.LPWSTR, wintypes.DWORD, wintypes.DWORD]
++        k.GetFinalPathNameByHandleW.restype = wintypes.DWORD
++        k.CloseHandle.argtypes = [wintypes.HANDLE]
++        k.CloseHandle.restype = wintypes.BOOL
++        _WIN = (ctypes, k)
++    return _WIN
++
++
++def _win_invalid(handle):
++    return handle is None or handle == 0 or handle == (1 << 64) - 1 or handle == -1
++
++
++def _win_final_path(ctypes, k, handle):
++    size = 1024
++    while True:
++        buf = ctypes.create_unicode_buffer(size)
++        n = k.GetFinalPathNameByHandleW(handle, buf, size, 0)   # FILE_NAME_NORMALIZED | VOLUME_NAME_DOS
++        if n == 0:
++            raise ctypes.WinError(ctypes.get_last_error())
++        if n < size:
++            text = buf.value
++            break
++        size = n + 1
++    if text.startswith('\\\\?\\UNC\\'):
++        return '\\\\' + text[8:]
++    if text.startswith('\\\\?\\'):
++        return text[4:]
++    return text
++
++
++def _refuse(reason, path_text, where, log_path):
++    if log_path is not None:
++        log_refusal(log_path, kind='path', where=where, reason=reason,
++                    path_sha16=hashlib.sha256(path_text.encode('utf-8', 'surrogatepass')).hexdigest()[:16])
++    raise PathRefused(reason, where)
++
++
++def _handle_checks(st, final_text, roots):
++    if not _stat.S_ISREG(st.st_mode):
++        return 'not_regular'
++    if not st.st_ino:
++        return 'no_file_identity'
++    if st.st_nlink > 1:
++        return 'hardlink'
++    if (st.st_dev, st.st_ino) in confidential_identities(roots):
++        return 'identity_of_confidential_file'
++    reason = _name_reason(final_text)
++    if reason:
++        return 'final:' + reason
++    return None
++
++
++def read_checked(path, *, max_bytes, log_path=None, where='read', roots=None):
++    """Read a file only after the guard accepted the very file object that is read. Returns (final_path, bytes).
++
++    R2.1 (review N3, TOCTOU): R2 checked the NAME (name, realpath, st_nlink, identity) and then opened by name,
++    so a hard link swapped in between was read. Here: (1) the requested and resolved names are checked BEFORE any
++    open (a confidential name is never opened); (2) on Windows a handle is opened with READ access and WITHOUT
++    FILE_SHARE_DELETE: while it is held nobody can unlink or rename that name (an attributes-only handle does
++    not take part in sharing checks: the first R2.1 draft used one and the swap test still read the canary
++    13 times, because the link was removed between the open and the link count); (3) link count, file identity
++    and the FINAL path of that handle are checked, no byte read yet; (4) only then the bytes are read from the
++    SAME handle, never through the name. At most `max_bytes + 1` bytes are read, so the caller can refuse an
++    oversized file without reading it all.
++    Raises PathRefused (rule name only), NotRegularFile, or the OSError of the open (e.g. FileNotFoundError).
++    """
++    requested = os.fsdecode(path) if isinstance(path, bytes) else os.fspath(path)
++    reason = _name_reason(requested)
++    if reason:
++        _refuse(reason, requested, where, log_path)
++    try:
++        real = os.path.realpath(requested, strict=False)
++    except (OSError, ValueError):
++        _refuse('realpath_failed', requested, where, log_path)
++    reason = _name_reason(real)
++    if reason:
++        _refuse('resolved:' + reason, requested, where, log_path)
++    if os.name != 'nt':
++        flags = os.O_RDONLY | getattr(os, 'O_NOFOLLOW', 0) | getattr(os, 'O_CLOEXEC', 0)
++        fd = os.open(real, flags)
++        with os.fdopen(fd, 'rb') as stream:
++            st = os.fstat(stream.fileno())
++            if _stat.S_ISDIR(st.st_mode):
++                raise NotRegularFile('directory')
++            reason = _handle_checks(st, real, roots)
++            if reason == 'not_regular':
++                raise NotRegularFile('not_regular')
++            if reason:
++                _refuse(reason, requested, where, log_path)
++            return real, stream.read(max_bytes + 1)
++    import msvcrt
++    ctypes, k = _win()
++    target = os.path.abspath(real)
++    if len(target) > 240 and not target.startswith('\\\\?\\'):
++        target = '\\\\?\\UNC\\' + target[2:] if target.startswith('\\\\') else '\\\\?\\' + target
++    FILE_READ_ATTRIBUTES, GENERIC_READ = 0x80, 0x80000000
++    SHARE_READ_WRITE = 0x1 | 0x2                 # no FILE_SHARE_DELETE: no rename/delete while held
++    OPEN_EXISTING, BACKUP_SEMANTICS = 3, 0x02000000
++    handle = k.CreateFileW(target, GENERIC_READ | FILE_READ_ATTRIBUTES, SHARE_READ_WRITE, None, OPEN_EXISTING,
++                           BACKUP_SEMANTICS, None)
++    if _win_invalid(handle):
++        raise ctypes.WinError(ctypes.get_last_error())
++    attr_fd = None
++    try:
++        try:
++            final_text = _win_final_path(ctypes, k, handle)
++        except OSError:
++            _refuse('final_path_failed', requested, where, log_path)
++        attr_fd = msvcrt.open_osfhandle(handle, os.O_RDONLY | getattr(os, 'O_BINARY', 0))
++        st = os.fstat(attr_fd)                   # link count and identity OF THE HANDLE (no byte read yet)
++        if _stat.S_ISDIR(st.st_mode):
++            raise NotRegularFile('directory')
++        reason = _handle_checks(st, final_text, roots)
++        if reason == 'not_regular':
++            raise NotRegularFile('not_regular')
++        if reason:
++            _refuse(reason, requested, where, log_path)
++        with os.fdopen(attr_fd, 'rb') as stream:  # the SAME handle; the stream owns and closes it
++            attr_fd = -1
++            return final_text, stream.read(max_bytes + 1)
++    finally:
++        if attr_fd is None:
++            k.CloseHandle(handle)
++        elif attr_fd >= 0:
++            os.close(attr_fd)                    # closes `handle`
++
++
+ # ------------------------------------------------------------------------- content
+ 
+ _CONTENT_RULES = (

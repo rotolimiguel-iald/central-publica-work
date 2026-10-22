@@ -1,0 +1,691 @@
+diff --git a/C/IALD/MEMORIA_IALD/session_memory.py b/C/IALD/MEMORIA_IALD/session_memory.py
+index c9c3aa2135235723..9cfc53af2005d29c
+--- a/C/IALD/MEMORIA_IALD/session_memory.py
++++ b/C/IALD/MEMORIA_IALD/session_memory.py
+@@ -11,10 +11,12 @@
+ 
+ PROTOCOL = "iald-memory-session/v1"
+ MAX_INPUT_BYTES = 2 * 1024 * 1024
+-FORBIDDEN_NAMES = {".env", "iald_stack_v7.py", "iald_psion_state.json"}
+-FORBIDDEN_PARTS = {"escritorio", "escritório"}
++# D4 (12/10/2026): name/identity/content filters live in iald_memory.guard (fail-closed);
++# the former exact-name sets FORBIDDEN_NAMES/FORBIDDEN_PARTS were removed (they let
++# iald_psion_state_32B.json, *.bak_*, .env.local, hard links and NFD names through).
+ OPS = {"init", "get", "project", "transition", "verify"}
+ ALLOWED_ACTORS = {"model", "agent"}
++GUARD_LOG_NAME = "guard_refusals.jsonl"
+ 
+ class ProtocolError(ValueError):
+     pass
+@@ -22,10 +24,18 @@
+ def digest(data):
+     return hashlib.sha256(data).hexdigest()
+ 
+-def read_allowed_file(raw_path):
++def _guard():
++    # Imported lazily: main() puts --core-root on sys.path before any operation.
++    from iald_memory import guard
++    return guard
++
++def read_allowed_file(raw_path, log_path=None):
++    # Requested name, resolved name (junctions/symlinks), hard-link count and file identity
++    # are all checked BEFORE the file is opened. The refusal names the rule, never the bytes.
++    reason = _guard().is_confidential_path(raw_path, log_path=log_path, where="read_allowed_file")
++    if reason:
++        raise ProtocolError("source_path_not_allowed:" + reason)
+     path = Path(raw_path).resolve(strict=True)
+-    if path.name.casefold() in FORBIDDEN_NAMES or any(p.casefold() in FORBIDDEN_PARTS for p in path.parts):
+-        raise ProtocolError("source_path_not_allowed")
+     if not path.is_file():
+         raise ProtocolError("source_is_not_file")
+     if path.stat().st_size > MAX_INPUT_BYTES:
+@@ -62,10 +72,10 @@
+         raise ProtocolError("actor_must_be_local_model_or_agent")
+     return actor
+ 
+-def reference_for(request, store_root):
++def reference_for(request, store_root, log_path=None):
+     raw = request.get("reference")
+     if raw:
+-        _, data = read_allowed_file(raw)
++        _, data = read_allowed_file(raw, log_path)
+         ref = json.loads(data.decode("utf-8"))
+         if ref.get("protocol") != PROTOCOL:
+             raise ProtocolError("unsupported_reference_protocol")
+@@ -75,9 +85,11 @@
+             raise ProtocolError("reference_context_mismatch")
+         if request.get("scope", ref["scope"]) != ref["scope"]:
+             raise ProtocolError("reference_scope_mismatch")
++        _guard().assert_scope_allowed(ref["scope"])  # D6: Escritório never enters this bank.
+         return ref
+     if not request.get("context_id") or not request.get("scope"):
+         raise ProtocolError("context_id_and_scope_or_reference_required")
++    _guard().assert_scope_allowed(request["scope"])
+     return {"protocol": PROTOCOL, "store": str(store_root),
+             "context_id": request["context_id"], "scope": request["scope"]}
+ 
+@@ -87,14 +99,19 @@
+     op = request["operation"]
+     if op != "init" and not (store_root / "memory.sqlite3").is_file():
+         raise ProtocolError("memory_store_missing")
++    guard = _guard()
++    log_path = store_root / GUARD_LOG_NAME  # refusals are recorded beside the bank, never the text
+     store = MemoryStore(store_root)
+     if op == "init":
+-        source, raw = read_allowed_file(request["objective_file"])
++        source, raw = read_allowed_file(request["objective_file"], log_path)
+         actual = digest(raw)
+         if request.get("objective_sha256") != actual:
+             raise ProtocolError("objective_source_hash_mismatch")
+         objective = raw.decode("utf-8")  # Do not normalize CRLF or strip the original.
++        # D4: keys, Escritório paths and confidential names never enter the bank (visible refusal).
++        guard.assert_clean_text(objective, "init.objective", log_path=log_path)
+         scope = request["scope"]
++        guard.assert_scope_allowed(scope)  # D6
+         request_id = str(uuid.UUID(request["request_id"]))
+         identity = json.dumps([scope, request_id], sort_keys=True, separators=(",", ":"))
+         context_id = request.get("context_id") or str(uuid.uuid5(uuid.NAMESPACE_URL, "iald-memory-session:" + identity))
+@@ -146,30 +163,37 @@
+                 ref = existing  # Preserve the first reference and its source provenance.
+             else:
+                 create_reference(ref_path, (json.dumps(ref, ensure_ascii=False, indent=2) + "\n").encode("utf-8"))
++        # Defence in depth: a re-attached legacy context is scanned before its state leaves the process.
++        guard.assert_clean_text(json.dumps(snapshot, ensure_ascii=False), "init.snapshot", log_path=log_path)
+         return {"reference": ref, "snapshot": snapshot, "source_verified": True}
+-    ref = reference_for(request, store_root)
++    ref = reference_for(request, store_root, log_path)
+     context_id, scope = ref["context_id"], ref["scope"]
+     current = store.get(context_id, scope)
+     if ref.get("objective_sha256") and current["objective_sha256"] != ref["objective_sha256"]:
+         raise ProtocolError("reference_anchor_mismatch")
+     if op == "get":
++        guard.assert_clean_text(json.dumps(current, ensure_ascii=False), "get", log_path=log_path)
+         return current
+     if op == "project":
+-        return store.project(context_id, scope, max_chars=request.get("max_chars", 24000),
+-                             current_input=request.get("current_input", ""))
++        result = store.project(context_id, scope, max_chars=request.get("max_chars", 24000),
++                               current_input=request.get("current_input", ""))
++        # The projection goes to the session's provider: it is scanned before it is returned.
++        guard.assert_clean_text(result["text"], "project", log_path=log_path)
++        return result
+     if op == "verify":
+         return store.verify(context_id, scope)
+     changes = request.get("changes")
+     if "changes_file" in request:
+         if changes is not None:
+             raise ProtocolError("changes_or_changes_file_not_both")
+-        _, raw = read_allowed_file(request["changes_file"])
++        _, raw = read_allowed_file(request["changes_file"], log_path)
+         expected = request.get("changes_sha256")
+         if expected != digest(raw):
+             raise ProtocolError("changes_source_hash_mismatch")
+         changes = json.loads(raw.decode("utf-8"))
+     if not isinstance(changes, dict):
+         raise ProtocolError("changes_object_required")
++    guard.assert_clean_text(json.dumps(changes, ensure_ascii=False), "transition.changes", log_path=log_path)
+     return store.transition(context_id, scope,
+         expected_revision=request["expected_revision"], event_id=request["event_id"],
+         actor=actor_for(request), changes=changes)
+diff --git a/C/IALD/MEMORIA_IALD/SESSION_BRIDGE.md b/C/IALD/MEMORIA_IALD/SESSION_BRIDGE.md
+index 49f1626d52d9cd6c..70c67257c04703a1
+--- a/C/IALD/MEMORIA_IALD/SESSION_BRIDGE.md
++++ b/C/IALD/MEMORIA_IALD/SESSION_BRIDGE.md
+@@ -1,4 +1,5 @@
+-<!-- IALD_SHARED_MEMORY_SESSION_BRIDGE_20261010 -->
+-**Memória comum da IALD — antes de agir e após compactação/retomada:** leia `C:\IALD\MEMORIA_IALD\README.md` e use `C:\Python314\python.exe -X utf8 C:\IALD\MEMORIA_IALD\session_memory.py`, JSON em stdin. Com a referência própria da tarefa: `{"operation":"project","reference":"CAMINHO_EXATO_DO_RECIBO" }`. Sem referência, inscreva o comando original autorizado pelo protocolo `init`; nunca adote a última tarefa de outra sessão. Ao concluir etapa material, registre q (fonte/estatuto) e p (fase/próxima ação) por `transition`, revisão esperada e evento estável. O original não muda; correções são ao lado; modelos só geram candidatos DECLARADO. Confirme recibo ou declare falha. Essa orientação não comprova hook ativo nem autoriza novos envios/ações.
+-<!-- END_IALD_SHARED_MEMORY_SESSION_BRIDGE_20261010 -->
++<!-- IALD_SHARED_MEMORY_SESSION_BRIDGE_20261012 -->
++**Memória comum da IALD — ao abrir a sessão e após compactação/retomada:** leia `C:\IALD\MEMORIA_IALD\README.md` e rode `C:\Python314\python.exe -X utf8 C:\IALD\MEMORIA_IALD\session_memory.py` com JSON em stdin: `{"operation":"project","reference":"CAMINHO_EXATO_DO_RECIBO"}` (só leitura; custo pequeno: o banco grava por delta e cada transição custa uma linha no diário, não uma cópia do banco). Sem referência própria, inscreva a fonte original autorizada por `init`; nunca adote a tarefa de outra sessão. `transition` só ao concluir etapa material: q com fonte/estatuto, p com fase/próxima ação, revisão esperada e evento estável. O original não muda; correções ao lado; modelos só geram candidatos DECLARADO. Nomes confidenciais, chaves e caminhos da casa Escritório são recusados com erro visível, nunca redigidos em silêncio. Confirme o recibo ou declare a falha. Não autoriza ações, não move gate, não mistura a casa Escritório.
++<!-- bloco anterior (887 B, sha16 49f1626d52d9cd6c) substituído em 12/10/2026 por ordem do operador («resolva a questão da memória», sha16 78ef70e6f9868281) -->
++<!-- END_IALD_SHARED_MEMORY_SESSION_BRIDGE_20261012 -->
+ 
+diff --git a/C/IALD/MEMORIA_IALD/lib/iald_memory/__init__.py b/C/IALD/MEMORIA_IALD/lib/iald_memory/__init__.py
+index fc534f8d3b18cddd..3306d630244598c0
+--- a/C/IALD/MEMORIA_IALD/lib/iald_memory/__init__.py
++++ b/C/IALD/MEMORIA_IALD/lib/iald_memory/__init__.py
+@@ -8,10 +8,13 @@
+     AnchorConflict, RevisionConflict, IdempotencyConflict, IntegrityError,
+     ProjectionOverflow, InvariantViolation,
+ )
++# D4 (12/10/2026): fail-closed confidentiality guard shared by sessions, app and queue.
++from . import guard
++from .guard import ConfidentialContent
+ 
+ __all__ = [
+     'MemoryStore', 'MemoryError', 'InvalidInput', 'ContextNotFound',
+     'ScopeViolation', 'AnchorConflict', 'RevisionConflict',
+     'IdempotencyConflict', 'IntegrityError', 'ProjectionOverflow',
+-    'InvariantViolation',
++    'InvariantViolation', 'ConfidentialContent', 'guard',
+ ]
+\ No newline at end of file
+diff --git a/C/IALD/MEMORIA_IALD/lib/iald_memory/guard.py b/C/IALD/MEMORIA_IALD/lib/iald_memory/guard.py
+new file mode 100644
+index 0000000000000000..5ef08688963e4207
+--- /dev/null
++++ b/C/IALD/MEMORIA_IALD/lib/iald_memory/guard.py
+@@ -0,0 +1,245 @@
++"""Fail-closed confidentiality guard for the common IALD memory (D4/D6, 12/10/2026).
++
++Three layers; every refusal is visible and recorded, nothing is redacted silently:
++
++1. NAMES  -- basename patterns after NFKC + casefold with repeated removal of
++   backup/temp suffixes (`.bak_*`, `.tmp_*`, ...): `iald_psion_state*`,
++   `iald_stack_v*`, `.env`, `.env.*`, `*.key`, `*.pem`; and any path component
++   that starts with `escritorio` (accents stripped), i.e. the Escritório house.
++2. IDENTITY -- the requested path AND `os.path.realpath` (junctions, symbolic
++   links) are both name-checked; a file with more than one hard link is refused;
++   `(st_dev, st_ino)` is compared with the identities of the real confidential
++   files (stat only, never read); a file system without identifiers is refused.
++3. CONTENT -- `scan_text` returns RULE NAMES only. The matched text is never put
++   in a message, an exception or the refusal log.
++
++Standard library only. No network. Hashes are computed, never remembered.
++"""
++from __future__ import annotations
++
++import hashlib
++import json
++import os
++import re
++import stat as _stat
++import unicodedata
++from datetime import datetime, timezone
++from pathlib import Path
++
++from .store import MemoryError, ScopeViolation
++
++__all__ = [
++    'ConfidentialContent', 'confidential_basename', 'escritorio_component',
++    'is_confidential_path', 'confidential_identities', 'scan_text',
++    'assert_clean_text', 'assert_scope_allowed', 'log_refusal', 'fold',
++    'IDENTITY_ROOTS', 'RULE_NAMES',
++]
++
++GUARD_VERSION = 'iald-memory-guard/2026-10-12'
++
++# Folders whose real confidential files feed the identity registry (stat only).
++IDENTITY_ROOTS = (
++    Path(r'C:\IALD\projetos_pyhton\IALD'),
++    Path(r'C:\IALD\projetos_pyhton\IALD\files'),
++    Path(r'C:\IALD\MEMORIA_IALD'),
++    Path(r'C:\IALD\Central de Patentes\Chatgpt\IALD_ORQUESTRACAO_20260923'),
++)
++
++
++class ConfidentialContent(MemoryError):
++    """Visible refusal of confidential CONTENT. Carries rule names, never the text."""
++
++    def __init__(self, rules, where, text_sha16=None):
++        self.rules = tuple(rules)
++        self.where = where
++        self.text_sha16 = text_sha16
++        super().__init__('confidential content refused at %s: rules=%s text_sha16=%s'
++                         % (where, ','.join(self.rules), text_sha16 or '-'))
++
++
++# --------------------------------------------------------------------------- names
++
++def fold(value):
++    """NFKD, strip combining marks, casefold: `Escritório` -> `escritorio` (NFC or NFD input)."""
++    decomposed = unicodedata.normalize('NFKD', str(value))
++    return ''.join(c for c in decomposed if not unicodedata.combining(c)).casefold()
++
++
++_STRIP_SUFFIX = re.compile(r'\.(?:bak|backup|tmp|temp|orig|old|save|swp|copy)(?:[_.\-][^.]*)?\Z')
++_NAME_RULES = (
++    ('psion_name', re.compile(r'\Aiald_psion_state')),
++    ('stack_name', re.compile(r'\Aiald_stack_v')),
++    ('dotenv_name', re.compile(r'\A\.env(?:\.|\Z)')),
++    ('key_name', re.compile(r'\A.+\.key(?:\.|\Z)')),
++    ('pem_name', re.compile(r'\A.+\.pem(?:\.|\Z)')),
++)
++
++
++def normalized_basename(name):
++    """Casefolded basename with backup/temp suffixes removed repeatedly."""
++    base = fold(name)
++    while True:
++        stripped = _STRIP_SUFFIX.sub('', base)
++        if stripped == base or not stripped:
++            return base
++        base = stripped
++
++
++def confidential_basename(name):
++    """Rule name when `name` (a basename) is a confidential file name, else None."""
++    base = normalized_basename(name)
++    for rule, pattern in _NAME_RULES:
++        if pattern.search(base):
++            return rule
++    return None
++
++
++def escritorio_component(path):
++    """True when any component of `path` starts with `escritorio` (accents/case ignored)."""
++    text = os.fsdecode(path) if isinstance(path, bytes) else str(path)
++    for part in re.split(r'[\\/]+', text):
++        if fold(part).startswith('escritorio'):
++            return True
++    return False
++
++
++def _name_reason(path_text):
++    if escritorio_component(path_text):
++        return 'escritorio_path'
++    tail = re.split(r'[\\/]+', path_text.rstrip('\\/'))[-1] if path_text else ''
++    rule = confidential_basename(tail)
++    return rule
++
++
++# ------------------------------------------------------------------------ identity
++
++def confidential_identities(roots=None):
++    """{(st_dev, st_ino)} of the real confidential files under `roots` (stat only, no read)."""
++    identities = set()
++    for root in (roots if roots is not None else IDENTITY_ROOTS):
++        try:
++            entries = list(os.scandir(root))
++        except OSError:
++            continue
++        for entry in entries:
++            if confidential_basename(entry.name) is None:
++                continue
++            try:
++                if not entry.is_file(follow_symlinks=False):
++                    continue
++                st = os.stat(entry.path)  # DirEntry.stat() has no st_ino/st_nlink on Windows
++            except OSError:
++                continue
++            if st.st_ino:
++                identities.add((st.st_dev, st.st_ino))
++    return identities
++
++
++def path_reason(path, roots=None):
++    """Reason string when `path` must not be read/written through the memory, else None."""
++    requested = os.fsdecode(path) if isinstance(path, bytes) else os.fspath(path)
++    reason = _name_reason(requested)
++    if reason:
++        return reason
++    try:
++        real = os.path.realpath(requested, strict=False)
++    except (OSError, ValueError):
++        return 'realpath_failed'
++    reason = _name_reason(real)
++    if reason:
++        return 'resolved:' + reason
++    try:
++        st = os.stat(real)
++    except FileNotFoundError:
++        return None  # nothing exists to leak; names already checked
++    except OSError:
++        return 'stat_failed'
++    if _stat.S_ISDIR(st.st_mode):
++        return None
++    if not st.st_ino:
++        return 'no_file_identity'
++    if st.st_nlink > 1:
++        return 'hardlink'
++    if (st.st_dev, st.st_ino) in confidential_identities(roots):
++        return 'identity_of_confidential_file'
++    return None
++
++
++def is_confidential_path(path, *, log_path=None, where='path', roots=None):
++    """Reason (truthy) when the path is refused; None when allowed. Logs refusals."""
++    reason = path_reason(path, roots)
++    if reason and log_path is not None:
++        text = os.fsdecode(path) if isinstance(path, bytes) else os.fspath(path)
++        log_refusal(log_path, kind='path', where=where, reason=reason,
++                    path_sha16=hashlib.sha256(text.encode('utf-8', 'surrogatepass')).hexdigest()[:16])
++    return reason
++
++
++# ------------------------------------------------------------------------- content
++
++_CONTENT_RULES = (
++    ('openai_key', re.compile(r'\bsk-[A-Za-z0-9_-]{12,}')),            # includes sk-proj-
++    ('google_api_key', re.compile(r'\bAIza[0-9A-Za-z_-]{20,}')),
++    ('github_token', re.compile(r'\bgh[pousr]_[A-Za-z0-9]{20,}')),
++    ('slack_token', re.compile(r'\bxox[abposr]-[A-Za-z0-9-]{10,}')),
++    ('bearer_token', re.compile(r'\bbearer\s+[A-Za-z0-9._~+/=-]{16,}', re.I)),
++    ('psion_name', re.compile(r'iald_psion_state', re.I)),
++    ('stack_name', re.compile(r'iald_stack_v\d', re.I)),
++    ('dotenv_name', re.compile(r'(?:\A|[\\/\s"\'`(\[{=:,;])\.env(?:\.[A-Za-z0-9_.\-]+)?(?=\Z|[\s"\'`)\]}:;,])', re.I)),
++    ('key_pem_name', re.compile(r'\b[\w\-]+\.(?:key|pem)\b', re.I)),
++)
++# Escritório as a PATH (drive, UNC or slash-delimited component), never the loose word.
++_ESCRITORIO_PATH = re.compile(r'(?:\b[a-z]:[\\/]+(?:[^\\/\s]+[\\/]+)*|\\\\[^\\/\s]+[\\/]+(?:[^\\/\s]+[\\/]+)*|[\\/])escritorio')
++RULE_NAMES = tuple(name for name, _ in _CONTENT_RULES) + ('escritorio_path',)
++
++
++def scan_text(text):
++    """Names of the rules matched by `text` (never the matched spans)."""
++    if not isinstance(text, str):
++        text = json.dumps(text, ensure_ascii=False, sort_keys=True, default=str)
++    rules = [name for name, pattern in _CONTENT_RULES if pattern.search(text)]
++    if _ESCRITORIO_PATH.search(fold(text)):
++        rules.append('escritorio_path')
++    return rules
++
++
++def assert_clean_text(text, where, *, log_path=None):
++    """Raise ConfidentialContent (rule names only) when `text` carries confidential content."""
++    rules = scan_text(text)
++    if not rules:
++        return text
++    raw = text if isinstance(text, str) else json.dumps(text, ensure_ascii=False, sort_keys=True, default=str)
++    sha16 = hashlib.sha256(raw.encode('utf-8', 'surrogatepass')).hexdigest()[:16]
++    if log_path is not None:
++        log_refusal(log_path, kind='content', where=where, rules=rules, text_sha16=sha16, text_chars=len(raw))
++    raise ConfidentialContent(rules, where, sha16)
++
++
++# --------------------------------------------------------------------------- scope
++
++def assert_scope_allowed(scope):
++    """D6: the Escritório house never enters the common IALD memory."""
++    if isinstance(scope, dict):
++        for key in ('house', 'principal'):
++            if 'escritorio' in fold(scope.get(key, '')):
++                raise ScopeViolation('Escritório house never enters the IALD common memory')
++    return scope
++
++
++# ----------------------------------------------------------------------------- log
++
++def log_refusal(log_path, **fields):
++    """Append one JSON line (never the text). A log failure never hides the refusal."""
++    record = {'at': datetime.now(timezone.utc).isoformat(timespec='microseconds'),
++              'guard': GUARD_VERSION, 'pid': os.getpid()}
++    record.update(fields)
++    try:
++        path = Path(log_path)
++        path.parent.mkdir(parents=True, exist_ok=True)
++        with path.open('a', encoding='utf-8') as out:
++            out.write(json.dumps(record, ensure_ascii=False, sort_keys=True, default=str) + '\n')
++            out.flush()
++            os.fsync(out.fileno())
++        return True
++    except OSError:
++        return False
+diff --git a/C/IALD/projetos_pyhton/IALD/iald_app_memory.py b/C/IALD/projetos_pyhton/IALD/iald_app_memory.py
+index 422bd3aa36e259f5..b6c08d28b4a80c13
+--- a/C/IALD/projetos_pyhton/IALD/iald_app_memory.py
++++ b/C/IALD/projetos_pyhton/IALD/iald_app_memory.py
+@@ -22,6 +22,8 @@
+     sys.path.insert(0, r'C:\IALD\MEMORIA_IALD\lib')
+ 
+ from iald_memory import MemoryStore, ContextNotFound, RevisionConflict, ProjectionOverflow
++# D4 (12/10/2026): fail-closed guard — names/identity for files, content before any provider.
++from iald_memory import guard, ConfidentialContent
+ 
+ _CURRENT = ContextVar('iald_common_memory', default=None)
+ _START = '\n<IALD_COMMON_MEMORY_V1>\n'
+@@ -41,6 +43,20 @@
+ 
+ def current():
+     return _CURRENT.get()
++
++
++def _guard_log():
++    """Refusal log beside the bank (rule names and hashes only, never the text)."""
++    return Path(_SHARED_ROOT) / 'guard_refusals.jsonl'
++
++
++def _record_refusal(binding, label, exc, *, flow=None):
++    """The refused text never enters the bank; the ledger keeps a VISIBLE open record
++    naming the rules and the sha16 of what was refused (no silent redaction)."""
++    body = canonical({'refused': 'confidential content never enters the common memory',
++                      'label': label, 'rules': list(exc.rules), 'text_sha16': exc.text_sha16, 'where': exc.where})
++    return binding.append('refused.' + label, body, kind='pending', statute='OPEN',
++                          source_kind='tool', actor_kind='system', flow=flow)
+ 
+ 
+ @contextmanager
+@@ -80,6 +96,8 @@
+         changes = {'records': [record]}
+         if flow is not None:
+             changes['flow'] = flow
++        # D4: text AND flow are scanned before anything is spooled; refusal names rules only.
++        guard.assert_clean_text(canonical(changes), 'app.append:' + label, log_path=_guard_log())
+         actor = {'id': 'app.' + self.request_id, 'kind': actor_kind}
+         pending = self._spool(event_id, actor, changes)
+         return self._commit(pending)
+@@ -131,15 +149,22 @@
+             if not path.with_suffix('.committed').exists(): self._commit(path)
+ 
+     def projection(self, max_chars=None):
++        # D4: every projection is scanned before it can reach a provider (project_messages,
++        # routing_state, project_completion_payload and begin() all pass through here).
+         if max_chars is not None:
+-            return self.store.project(self.context_id, self.scope, max_chars=max_chars, current_input=self.current_input)
++            return self._checked(self.store.project(self.context_id, self.scope, max_chars=max_chars, current_input=self.current_input))
+         # 24K is a retrieval target, never an anchor/constraint truncation limit.
+         # The existing model adapter counts the complete wire payload and refuses
+         # before sending if its actual configured input/output window cannot fit.
+         try:
+-            return self.store.project(self.context_id, self.scope, max_chars=24000, current_input=self.current_input)
++            return self._checked(self.store.project(self.context_id, self.scope, max_chars=24000, current_input=self.current_input))
+         except ProjectionOverflow as exc:
+-            return self.store.project(self.context_id, self.scope, max_chars=exc.required_chars, current_input=self.current_input)
++            return self._checked(self.store.project(self.context_id, self.scope, max_chars=exc.required_chars, current_input=self.current_input))
++
++    @staticmethod
++    def _checked(projection):
++        guard.assert_clean_text(projection['text'], 'app.projection', log_path=_guard_log())
++        return projection
+ 
+ 
+ def _text(message):
+@@ -177,6 +202,8 @@
+             binding.recover()
+             snapshot = binding.snapshot()
+         except ContextNotFound:
++            # D4: the original inscription is immutable, so it is scanned BEFORE it is written.
++            guard.assert_clean_text(_text(user_messages[0]), 'app.begin.objective', log_path=_guard_log())
+             snapshot = store.ensure_context(ident, objective=_text(user_messages[0]), scope=scope,
+                 actor={'id': 'app.' + request_id, 'kind': 'operator'},
+                 constraints={'permissions_source': 'authenticated_server_policy',
+@@ -231,8 +258,13 @@
+     if binding is None:
+         return
+     body = canonical({'tool': name, 'arguments_sha256': digest(canonical(args)), 'result': result})
+-    binding.append('tool.' + digest(name + canonical(args)), body, source_kind='tool', actor_kind='agent',
+-        flow={'phase': 'tool_observed', 'next_action': 'Review the recorded tool evidence and continue the same command.'})
++    label = 'tool.' + digest(name + canonical(args))
++    try:
++        binding.append(label, body, source_kind='tool', actor_kind='agent',
++            flow={'phase': 'tool_observed', 'next_action': 'Review the recorded tool evidence and continue the same command.'})
++    except ConfidentialContent as exc:
++        _record_refusal(binding, label, exc, flow={'phase': 'tool_observed',
++            'next_action': 'A tool result carried confidential content and was NOT recorded; continue the same command without copying it.'})
+ 
+ 
+ def routing_state(max_chars=None):
+@@ -306,9 +338,14 @@
+                         if data == '[DONE]':
+                             status = 'refused' if refused else 'completed'
+                             if fragments and not refused:
+-                                binding.append('response', ''.join(fragments),
+-                                    flow={'phase': 'awaiting_review', 'next_action': 'Review the candidate response; retain original inscription and unresolved work.',
+-                                          'handles': [{'id': 'app_request', 'request_id': binding.request_id, 'kind': 'app_request', 'status': status}]})
++                                try:
++                                    binding.append('response', ''.join(fragments),
++                                        flow={'phase': 'awaiting_review', 'next_action': 'Review the candidate response; retain original inscription and unresolved work.',
++                                              'handles': [{'id': 'app_request', 'request_id': binding.request_id, 'kind': 'app_request', 'status': status}]})
++                                except ConfidentialContent as exc:
++                                    _record_refusal(binding, 'response', exc,
++                                        flow={'phase': 'requires_reconciliation', 'next_action': 'The model response carried confidential content and was NOT recorded; review the refusal before another command.',
++                                              'handles': [{'id': 'app_request', 'request_id': binding.request_id, 'kind': 'app_request', 'status': 'refused'}]})
+                             else:
+                                 binding.append('response_refused', 'No complete admissible model response was produced.', kind='pending', statute='OPEN', source_kind='tool', actor_kind='system',
+                                     flow={'phase': 'requires_reconciliation', 'next_action': 'Inspect the existing request receipt; do not resend an uncertain operation.',
+@@ -328,10 +365,13 @@
+             if close:
+                 close()
+             if not finished:
+-                binding.append('response_uncertain', canonical({'partial_response': ''.join(fragments), 'status': 'FAILED_OR_UNCERTAIN', 'automatic_retry': False}),
+-                    source_kind='model', actor_kind='system',
+-                    flow={'phase': 'requires_reconciliation', 'next_action': 'Recover the existing request and evidence; never automatically repeat the provider call.',
+-                          'handles': [{'id': 'app_request', 'request_id': binding.request_id, 'kind': 'app_request', 'status': 'uncertain'}]})
++                uncertain_flow = {'phase': 'requires_reconciliation', 'next_action': 'Recover the existing request and evidence; never automatically repeat the provider call.',
++                                  'handles': [{'id': 'app_request', 'request_id': binding.request_id, 'kind': 'app_request', 'status': 'uncertain'}]}
++                try:
++                    binding.append('response_uncertain', canonical({'partial_response': ''.join(fragments), 'status': 'FAILED_OR_UNCERTAIN', 'automatic_retry': False}),
++                        source_kind='model', actor_kind='system', flow=uncertain_flow)
++                except ConfidentialContent as exc:
++                    _record_refusal(binding, 'response_uncertain', exc, flow=uncertain_flow)
+ 
+ 
+ def dispatch(root, account_key, authorize, view, subpath):
+@@ -375,6 +415,9 @@
+             else:
+                 finish_result(binding, value)
+         return response
++    except ConfidentialContent as exc:
++        # D4: visible refusal with the rule names; the content never reached the bank or a provider.
++        return jsonify({'error': 'Conteúdo confidencial recusado pela memória: ' + ', '.join(exc.rules)}), 409
+     except (ValueError, OSError, RuntimeError):
+         return jsonify({'error': 'A memória da tarefa precisa de conferência. O pedido não será repetido automaticamente.'}), 409
+ 
+@@ -457,6 +500,8 @@
+     if record is None:
+         return {'status': 'NOT_FOUND_IN_CURRENT_SCOPE', 'memory_id': binding.context_id}
+     text = record['text']
++    # D4: the whole record is scanned (a key could straddle a slice boundary); the slice goes to the model.
++    guard.assert_clean_text(text, 'app.read_record', log_path=_guard_log())
+     return {'memory_id': binding.context_id, 'record_id': ident, 'kind': record['kind'], 'statute': record['statute'],
+             'text': text[offset:offset+maximum], 'offset': offset, 'total_chars': len(text),
+             'next_offset': offset+maximum if offset+maximum < len(text) else None,
+@@ -501,6 +546,8 @@
+             else:
+                 finish_result(binding, result, 'admin_response')
+             return response
++    except ConfidentialContent as exc:
++        return jsonify({'error': 'Conteúdo confidencial recusado pela memória: ' + ', '.join(exc.rules)}), 409
+     except (ValueError, OSError, RuntimeError):
+         return jsonify({'error': 'Memória administrativa indisponível; não houve repetição automática.'}), 409
+ 
+@@ -539,8 +586,10 @@
+ 
+ 
+ def protected_path(path):
+-    name = str(path).replace("\\", "/").rsplit("/", 1)[-1].casefold()
+-    return name in {'iald_stack_v7.py', 'iald_psion_state.json'} or name == '.env' or name.startswith('.env.') or name.endswith(('.key', '.pem'))
++    """D4: True for confidential files — by normalized name (iald_psion_state*, iald_stack_v*,
++    .env, .env.*, *.key, *.pem, their .bak_*/.tmp_* copies), by resolved path (junctions,
++    symbolic links), by hard-link count and by file identity; also any Escritório path."""
++    return guard.is_confidential_path(path, log_path=_guard_log(), where='app.protected_path') is not None
+ 
+ 
+ def project_completion_payload(payload):
+diff --git a/C/IALD/Central de Patentes/Chatgpt/IALD_ORQUESTRACAO_20260923/iald_orchestrator/policy.py b/C/IALD/Central de Patentes/Chatgpt/IALD_ORQUESTRACAO_20260923/iald_orchestrator/policy.py
+index 252bdeb74097aaa3..7df276df8518ee66
+--- a/C/IALD/Central de Patentes/Chatgpt/IALD_ORQUESTRACAO_20260923/iald_orchestrator/policy.py
++++ b/C/IALD/Central de Patentes/Chatgpt/IALD_ORQUESTRACAO_20260923/iald_orchestrator/policy.py
+@@ -5,14 +5,41 @@
+ import re
+ from .matrix import select_support
+ 
+-FORBIDDEN = re.compile(r"iald_stack_v7|iald_psion_state|(?:^|[\\/\s])\.env(?:[.\s]|$)|\b(?:sk-|AIza)[A-Za-z0-9_-]{12,}", re.I)
++# D4 (12/10/2026): superset of the previous pattern. Adds any iald_stack_v<N>, GitHub/Slack/Bearer
++# tokens, *.key/*.pem names and the Escritório house as a PATH (drive, UNC or slash-delimited
++# component; NFC or NFD accent), never the loose word. Fail-closed: a hit refuses, nothing is redacted.
++FORBIDDEN = re.compile(
++    r"iald_stack_v\d|iald_psion_state|(?:^|[\\/\s])\.env(?:[.\s]|$)|\b(?:sk-|AIza)[A-Za-z0-9_-]{12,}"
++    r"|\bgh[pousr]_[A-Za-z0-9]{20,}|\bxox[abposr]-[A-Za-z0-9-]{10,}|\bbearer\s+[A-Za-z0-9._~+/=-]{16,}"
++    r"|\b[\w\-]+\.(?:key|pem)\b"
++    r"|(?:\b[a-z]:[\\/]+(?:[^\\/\s]+[\\/]+)*|\\\\[^\\/\s]+[\\/]+(?:[^\\/\s]+[\\/]+)*|[\\/])escrit(?:ó|[oó])rio",
++    re.I)
++
++
++def confidential_rules(text):
++    """Rule NAMES matched by `text` (never the matched spans).
++
++    The regex above is the always-present shortcut; when the shared memory guard
++    (`iald_memory.guard`, installed with the common memory) is importable its rule
++    names are added. The shortcut alone already covers every D4 item.
++    """
++    rules = ["policy.FORBIDDEN"] if isinstance(text, str) and FORBIDDEN.search(text) else []
++    try:
++        from iald_memory import guard
++    except ImportError:
++        guard = None
++    if guard is not None:
++        rules.extend(r for r in guard.scan_text(text) if r not in rules)
++    return rules
+ 
+ 
+ def validate_prompt(prompt, max_chars=24000):
+     if not isinstance(prompt, str) or not prompt.strip() or len(prompt) > max_chars:
+         raise ValueError(f"Informe uma tarefa de 1 a {max_chars} caracteres.")
+-    if FORBIDDEN.search(prompt):
+-        raise ValueError("A tarefa referencia confidenciais bloqueados ou aparenta conter credencial.")
++    rules = confidential_rules(prompt)
++    if rules:
++        raise ValueError("A tarefa referencia confidenciais bloqueados ou aparenta conter credencial: "
++                         + ", ".join(rules))
+     return prompt.strip()
+ 
+ 
+diff --git a/C/IALD/Central de Patentes/Chatgpt/IALD_ORQUESTRACAO_20260923/iald_orchestrator/operational_memory.py b/C/IALD/Central de Patentes/Chatgpt/IALD_ORQUESTRACAO_20260923/iald_orchestrator/operational_memory.py
+index 1d6bf484063b118b..ef6ea57468860e4d
+--- a/C/IALD/Central de Patentes/Chatgpt/IALD_ORQUESTRACAO_20260923/iald_orchestrator/operational_memory.py
++++ b/C/IALD/Central de Patentes/Chatgpt/IALD_ORQUESTRACAO_20260923/iald_orchestrator/operational_memory.py
+@@ -16,6 +16,7 @@
+ SCOPE = {'house': 'IALD', 'principal': 'operator'}
+ ACTOR = {'id': 'iald-queue', 'kind': 'system'}
+ SEPARATOR = '\n\nMEMORIA OPERACIONAL — INSCRICAO, ESTADO q E FLUXO p:\n'
++GUARD_LOG_ROOT = COMMON_STATE  # where attach() records refusals (tests point it elsewhere)
+ 
+ 
+ def core():
+@@ -92,15 +93,33 @@
+     return memory.get(reference, SCOPE)
+ 
+ 
++def refuse_confidential(text, where, log_root=None):
++    """D4: fail-closed content filter before any provider sees the projection.
++
++    Raises ValueError naming the rules (never the matched text) and records the
++    refusal in `<log_root>/guard_refusals.jsonl` through the shared guard.
++    """
++    from .policy import confidential_rules
++    rules = confidential_rules(text)
++    if not rules:
++        return text
++    try:
++        guard = core().guard
++    except AttributeError:  # core without the guard: the refusal still happens
++        guard = None
++    if guard is not None and log_root is not None:
++        guard.log_refusal(Path(log_root) / 'guard_refusals.jsonl', kind='content', where=where, rules=rules,
++                          text_sha16=digest(text)[:16], text_chars=len(text))
++    raise ValueError('Confidential reference in operational memory; dispatch refused: ' + ', '.join(rules))
++
++
+ def projection(runtime, reference, objective, constraints, max_chars=None):
+     state = sync(runtime, reference)
+     if state['objective'] != objective or state['constraints'] != (constraints or {}):
+         raise ValueError('Memory inscription differs from queue original or constraints')
+     value = store(runtime).project(reference, SCOPE,
+         max_chars=max_chars or max(6500, len(objective) + len(encode(constraints or {})) + 4000))
+-    from .policy import FORBIDDEN
+-    if FORBIDDEN.search(value['text']):
+-        raise ValueError('Confidential reference in operational memory; dispatch refused')
++    refuse_confidential(value['text'], 'queue.projection', runtime.memory_root)
+     value['objective'] = objective
+     value['receipt']['projection_sha256'] = digest(value['text'])
+     return value
+@@ -111,6 +130,8 @@
+         return packet
+     if digest(projection['text']) != projection['receipt']['projection_sha256']:
+         raise ValueError('Operational projection altered')
++    # Re-checked here because attach is the last step before the transport packet is sealed.
++    refuse_confidential(projection['text'], 'queue.attach', GUARD_LOG_ROOT)
+     result = copy.deepcopy(packet)
+     result['prompt'] += SEPARATOR + projection['text']
+     receipt = result['receipt']

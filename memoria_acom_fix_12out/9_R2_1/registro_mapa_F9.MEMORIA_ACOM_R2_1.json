@@ -1,0 +1,50 @@
+{
+ "tipo": "RESULTADO",
+ "rota_id": "programa.memoria_acom.conserto_delta_12out",
+ "dominio": "INFRA",
+ "titulo": "R2.1 do conserto ACOM: K2, K3, K4, K6, passo 8 lento, heartbeat (3 != 1), filtro N1/N2/N3, com teste antes/depois",
+ "pergunta": "Os achados da revisao independente R2 (K2, K3, K4, K6, passo 8, heartbeat, N1, N2, N3) ficam corrigidos sem quebrar as 235 da suite, e o ensaio de implantacao/reversao com processos simulados fecha?",
+ "dados": [
+  "candidato_r2 (CANDIDATO_MANIFESTO_R2 1dd4a837bd33dc40) e ferramentas R2 (f2c9b3facc91500f, 7c12615545382ac7, 928118ee223976c3), conferidos por script",
+  "REVISAO_R2.md 13e8287d5b5e0ff7 e os scripts do revisor (s3c, s4, s5)",
+  "somente sintetico: banco v1 por store_v1_frozen, psion e .env sinteticos, backend de processos simulado"
+ ],
+ "metodo": "Consertos no candidato (guard.py, session_memory.py, iald_web_server.py) e nas ferramentas (implantar/reverter/implantacao_lib); 24 testes novos rodados na copia do R2 (devem falhar) e na copia da R2.1 (devem passar); suite inteira da R2.1 sob a guarda da auditoria; repeticao s3c do teste original do heartbeat (30 sequenciais + 60 com varredor) antes e depois; medidas N1/N2; ensaio K1a/K1b2/K1c/K1d/K2/K3/K4/K5/K6/P8 com as ferramentas R2.1; patch R2->R2.1 provado por git apply (autocrlf=false). Nada em producao.",
+ "resultado": "Suite R2.1 259/259 PASSA (235 + 24 novos), 2 bloqueios BLOCK_NETWORK IPv6. Testes novos no R2: 20 falham, 4 controles passam; na R2.1 24/24. Heartbeat (teste original): R2 1/30 sequencial e 12/60 com varredor (3 != 1, psion_error, PermissionError); R2.1 0/30 e 0/60 falhas do teste (6/60 so na limpeza do tempdir da fixture no tearDown). N1: nome 32 KB 1,30 s -> 4,5 ms; path_reason 32 KB 2,59 s -> 19 ms. N2: central.env, prod.env, app.env.local, secrets.env~, .env~, x.env_prod, .envrc, homoglifos e radicais do psion recusados; envelope.env.txt segue aceito. N3: troca por hardlink 12 s, canario lido R2 140 -> R2.1 0. Ensaio: K1a/K1b2/K1c/K1d/K2/K4/K5/K6 REVERTIDA com originais identicos e banco = original; K2 2a execucao RECUSADA com recibo 1 intocado; K3 tarefa reabilitada e recibo honesto; K4 reverter com alvo preso nao religa, 2o reverter fecha; K6 leitor segurando o recibo 2 s e a implantacao conclui; P8 CONCLUIDA_AGUARDANDO_REINICIO sem mandar reverter. Patch fbf1990188955854 reproduz os 15 arquivos byte a byte.",
+ "veredito": "R2_1__K2_K3_K4_K6_P8_HEARTBEAT_N1_N2_N3_CORRIGIDOS_NAS_COPIAS__259_DE_259__ENSAIO_10_DE_10__NADA_EM_PRODUCAO__IMPLANTACAO_E_ATO_DO_OPERADOR",
+ "estatuto": "REAL",
+ "status": "EXAMINADA_COM_DEFEITO",
+ "olhou_dados": false,
+ "defeito": "Restam: N3 no caminho do app (agi_validate_path ainda checa e abre por nome); renomear (nao linkar) um confidencial para nome benigno passa no guard; regras de conteudo para senha/JWT/AKIA/PEM seguem abertas (D4); cmdlets reais do Agendador nunca exercitados; no K3 com web vivo e supervisor morto a ferramenta so reabilita a tarefa; tarefa fica desabilitada por desenho depois de falha com mudanca; escala dos instantaneos (D1-B) inalterada. A R2.1 nao foi revista por terceiro.",
+ "nao_refazer": "Nao refazer: a suite inteira e os 24 testes antes/depois, a repeticao s3c antes/depois, as medidas N1/N2/N3 e o ensaio K1-K6/P8; ler 9_R2_1/runs, TESTES_R2_1.md e RESULTADO_R2_1.md.",
+ "proximo_passo": "Revisao independente curta da R2.1 (gerencia); depois o operador decide rodar: dry-run e implantar com --pular-mover-backups pela config implantar_config_producao_r2_1.json (comandos na secao 4 do RESULTADO_R2_1.md); repetir 7_VERIFICACAO contra o recibo real com janela > 30 min e llama online.",
+ "onde": "C:\\IALD\\Central de Patentes\\work\\memoria_acom_fix_12out\\9_R2_1\\RESULTADO_R2_1.md",
+ "artefatos": [
+  "C:\\IALD\\Central de Patentes\\work\\memoria_acom_fix_12out\\9_R2_1\\RESULTADO_R2_1.md",
+  "C:\\IALD\\Central de Patentes\\work\\memoria_acom_fix_12out\\9_R2_1\\TESTES_R2_1.md",
+  "C:\\IALD\\Central de Patentes\\work\\memoria_acom_fix_12out\\9_R2_1\\CANDIDATO_MANIFESTO_R2_1.json",
+  "C:\\IALD\\Central de Patentes\\work\\memoria_acom_fix_12out\\9_R2_1\\DIFF_R2_R2_1.patch",
+  "C:\\IALD\\Central de Patentes\\work\\memoria_acom_fix_12out\\9_R2_1\\DIFF_R2_R2_1_APPLY_CHECK.json",
+  "C:\\IALD\\Central de Patentes\\work\\memoria_acom_fix_12out\\9_R2_1\\implantar.py",
+  "C:\\IALD\\Central de Patentes\\work\\memoria_acom_fix_12out\\9_R2_1\\reverter.py",
+  "C:\\IALD\\Central de Patentes\\work\\memoria_acom_fix_12out\\9_R2_1\\implantacao_lib.py",
+  "C:\\IALD\\Central de Patentes\\work\\memoria_acom_fix_12out\\9_R2_1\\implantar_config_producao_r2_1.json",
+  "C:\\IALD\\Central de Patentes\\work\\memoria_acom_fix_12out\\9_R2_1\\MANIFESTO_R2_1.json",
+  "C:\\IALD\\Central de Patentes\\work\\memoria_acom_fix_12out\\9_R2_1\\copia\\testes_r2\\RESULTADOS_TESTES.json",
+  "C:\\IALD\\Central de Patentes\\work\\memoria_acom_fix_12out\\9_R2_1\\copia_r2\\testes_r2\\RESULTADOS_TESTES_parcial.json",
+  "C:\\IALD\\Central de Patentes\\work\\memoria_acom_fix_12out\\9_R2_1\\runs\\s3c_copia_r2.json",
+  "C:\\IALD\\Central de Patentes\\work\\memoria_acom_fix_12out\\9_R2_1\\runs\\s3c_copia.json",
+  "C:\\IALD\\Central de Patentes\\work\\memoria_acom_fix_12out\\9_R2_1\\runs\\diag_s3c_copia.json",
+  "C:\\IALD\\Central de Patentes\\work\\memoria_acom_fix_12out\\9_R2_1\\runs\\s4_medidas_nomes_copia_r2.json",
+  "C:\\IALD\\Central de Patentes\\work\\memoria_acom_fix_12out\\9_R2_1\\runs\\s4_medidas_nomes_copia.json",
+  "C:\\IALD\\Central de Patentes\\work\\memoria_acom_fix_12out\\9_R2_1\\runs\\s5_ensaio_r2_1.json",
+  "C:\\IALD\\Central de Patentes\\work\\memoria_acom_fix_12out\\9_R2_1\\src_r2_1\\test_r2_1.py",
+  "C:\\IALD\\Central de Patentes\\work\\memoria_acom_fix_12out\\9_R2_1\\src_r2_1\\hb\\test_heartbeat_r2_1.py"
+ ],
+ "refs": [
+  "infra.memoria_acom.core_20261010",
+  "infra.memoria_acom.integracao_20261010",
+  "infra.memoria_acom.sessoes_20261010"
+ ],
+ "nota": "Construtor: subagente c1, 13/10/2026. Desvio deliberado: init/transition da memoria ACOM nao executados (escreveriam no banco de producao). O iald_web_server.py do candidato_r2_1 carrega a chave de producao (e o que se instala); nas copias de teste, no ensaio e na prova do patch ela esta redigida; o patch nao a contem."
+}
