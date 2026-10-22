@@ -1,0 +1,76 @@
+{
+  "status": "BLOCK_CLIENT_R1",
+  "installation_approval": false,
+  "unit": "F9.APP_READABILITY_RELIABLE_TOOLS_20261021",
+  "reviewer": "codex-independent-review",
+  "files": [
+    {
+      "file": "iald.js",
+      "staged_sha256": "da8b23a61aa76c71049366ff6443b77a9b5eb90dfa1e66df244334912f4ebcac",
+      "origin_sha256": "5bc89f6f9ffc9a78d0b49d8805589dc1a77cc60af87274439bda2b4d46d94fb6",
+      "runtime_sha256": "5bc89f6f9ffc9a78d0b49d8805589dc1a77cc60af87274439bda2b4d46d94fb6",
+      "receipt_stage_matches": true,
+      "receipt_origin_matches": true
+    },
+    {
+      "file": "iald.css",
+      "staged_sha256": "b20db0d858e07bcc8a7f6b3c73e777463c774aed76d7dc0b920999c7b95712e6",
+      "origin_sha256": "d7ef6b255de0ec7a5779d25bb245e3d55b19790fec9e65f00871bd0d9d9dcefe",
+      "runtime_sha256": "d7ef6b255de0ec7a5779d25bb245e3d55b19790fec9e65f00871bd0d9d9dcefe",
+      "receipt_stage_matches": true,
+      "receipt_origin_matches": true
+    },
+    {
+      "file": "index.html",
+      "staged_sha256": "b6f6cd25755b178c6a83e71ecfe594f8bb7166be206f1d26781e37dc6f81a533",
+      "origin_sha256": "b6f6cd25755b178c6a83e71ecfe594f8bb7166be206f1d26781e37dc6f81a533",
+      "runtime_sha256": "b6f6cd25755b178c6a83e71ecfe594f8bb7166be206f1d26781e37dc6f81a533",
+      "receipt_stage_matches": true,
+      "receipt_origin_matches": true
+    }
+  ],
+  "findings": [
+    {
+      "id": "CLIENT-01",
+      "severity": "MEDIO",
+      "status": "OPEN",
+      "file": "C:\\IALD\\Central de Patentes\\work\\iald_readability_reliable_tools_20261021\\client_stage\\iald.js",
+      "lines": [
+        3047,
+        3140,
+        4093,
+        4097
+      ],
+      "title": "Histórico local de mídia impede nova mensagem apenas textual",
+      "reproduction": "enviarTexto(texto,[]) detecta iald_local_media antigo; mediaPrepareLegacy chama mediaUpload, que recusa incondicionalmente. Zero anexos novos, zero transmissão, histórico conservado porém conversa bloqueada.",
+      "evidence": "C:\\IALD\\Central de Patentes\\work\\iald_readability_reliable_tools_20261021\\review\\legacy_continuation_result.json",
+      "evidence_sha256": "8d644796a5aab3fd69b55956c99d8464e959c07bda47befa8a825710b90cfecb",
+      "requested_resolution": "Projetar somente o envio: substituir mídia histórica por metadados explícitos sem alegar análise; preservar texto, referências e bytes do histórico armazenado. Não executar upload. Mídia nova continua recusada. Requer revisão R2 dos bytes efetivamente entregues."
+    }
+  ],
+  "existing_tests": {
+    "checks": 31,
+    "status": "PASS",
+    "receipt": "C:\\IALD\\Central de Patentes\\work\\iald_readability_reliable_tools_20261021\\review\\existing_client_tests.json",
+    "limitation": "Os 31 checks não cobrem continuação textual com mídia local histórica; funções históricas inalteradas não bastam para excluir regressão."
+  },
+  "confirmed_scope": [
+    "Tarja removida da montagem de anexos.",
+    "Conversa 16.5px para 15.5px; input e edição 16px preservados; tamanhos absolutos de código inline e fórmulas compensados.",
+    "index.html idêntico; múltiplos/documentos/imagens preservados nos testes existentes."
+  ],
+  "r2_required_cases": [
+    "Histórico iald_local_media seguido de texto, sem anexos novos: enviar sem upload e preservar original.",
+    "Histórico iald_media e referências antigas: projeção explícita de metadados, sem inferência de análise ou fetch/upload implícito.",
+    "Áudio/vídeo inline legado após migração e antes dela, conforme caminho de recuperação: continuidade sem apagar original.",
+    "Texto/imagens/documentos históricos mantidos em ordem; nenhum falso marcador de análise de áudio/vídeo.",
+    "Novos anexos áudio/vídeo no picker/drop/paste e envio direto continuam bloqueados.",
+    "Projeção não modifica S.conversas nem mensagens/content; repetir montagem não degrada metadados.",
+    "Backend admite a continuação textual e recusa mídia nova apesar de cliente forjado; carteira/consentimento/uncertain retries continuam protegidos."
+  ],
+  "runtime_modified": false,
+  "stage_modified": false,
+  "models_called": false,
+  "tests_network_calls": 0,
+  "final_plan_review": "NOT_STARTED_AWAITING_CLOSED_PLAN"
+}

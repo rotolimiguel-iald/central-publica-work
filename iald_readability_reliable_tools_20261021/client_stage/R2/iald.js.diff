@@ -1,0 +1,201 @@
+--- origin/iald.js
++++ R2/iald.js
+@@ -2848,7 +2848,47 @@
+ // Embedded private-media integration. No upload is performed by the file picker.
+ const MEDIA_RAW_MAX = 37_499_904;
+ const MEDIA_BASE64_MAX = 50_000_000;
+-const MEDIA_LIMIT_TEXT = 'Áudio e vídeo: até 37,5 MB por arquivo. A duração disponível depende do contexto da conversa; a memória da TGL é preservada.';
++const MEDIA_DISABLED_TEXT = 'Novos anexos de áudio e vídeo estão desativados. Use PDF, texto ou imagem. O histórico anterior foi preservado.';
++// Selection, drop, paste and direct attachment submission share this policy.
++function isNewAudioVideo(value) {
++  if (!value) return false;
++  const mime = String(value.mime || value.type || '').trim();
++  return /^(audio|video)\//i.test(mime) ||
++    /\.(wav|wave|mp3|mp2|flac|ogg|oga|opus|m4a|m4b|aac|aiff?|wma|amr|mid|midi|mp4|m4v|mov|avi|wmv|webm|mkv|mpeg|mpg|ogv|3gp|3g2|ts|mts|m2ts)$/i.test(String(value.name || '').trim()) ||
++    !!value.localDraftId || !!value.media || ['audio', 'video'].includes(value.mediaKind || value.kind) ||
++    ['input_audio', 'video_url', 'iald_media', 'iald_local_media'].includes(value.type) ||
++    /^data:(audio|video)\//i.test(String(value.image || value.image_url?.url || ''));
++}
++// Outbound-only metadata: never rewrite persisted history or send historical media bytes.
++function historicalMediaContent(content) {
++  if (!Array.isArray(content)) return content;
++  return content.map(part => {
++    if (!['input_audio', 'video_url', 'iald_media', 'iald_local_media'].includes(part?.type)) return part;
++    const kind = part.type === 'input_audio' ? 'áudio' : part.type === 'video_url' ? 'vídeo'
++      : part.kind === 'audio' ? 'áudio' : part.kind === 'video' ? 'vídeo' : 'áudio/vídeo';
++    const metadata = { type: part.type };
++    // Only bounded identifiers, never raw data/URLs or arbitrary descriptive text.
++    for (const key of ['media_ref', 'localDraftId', 'sha256']) {
++      if (typeof part[key] === 'string' && /^[a-zA-Z0-9_-]{1,128}$/.test(part[key])) metadata[key] = part[key];
++    }
++    if (Number.isSafeInteger(part.bytes) && part.bytes >= 0) metadata.bytes = part.bytes;
++    return { type: 'text', text: '[anexo histórico ' + kind + ', análise indisponível nesta mensagem; metadados: '
++      + JSON.stringify(metadata) + ']' };
++  });
++}
++function outboundHistory(messages) {
++  return messages.map((message, index) => {
++    // The last user message is the current request, never a legacy exemption.
++    if (index === messages.length - 1 && message.role === 'user' && Array.isArray(message.content)) {
++      rejectNewAudioVideo(message.content);
++      return { ...message };
++    }
++    return { ...message, content: historicalMediaContent(message.content) };
++  });
++}
++function rejectNewAudioVideo(anexos) {
++  if (anexos.some(isNewAudioVideo)) throw Error(MEDIA_DISABLED_TEXT);
++}
+ let mediaDraftDatabase = null, mediaPendingConsent = null, mediaSending = false;
+ let mediaCapsAccount = '';
+ const mediaDraftURLs = new Map();
+@@ -2956,17 +2996,12 @@
+   mediaDraftURLs.clear(); mediaRAM.clear(); S.anexos = [];
+ }
+ async function mediaRestoreDrafts(conversation) {
+-  if (!conversation || !backgroundOwner || conversation.background_owner !== backgroundOwner) return;
+-  const owner = backgroundOwner, id = conversation.id;
+-  const records = await mediaLocal('readonly', store => store.index('conversation').getAll([mediaStorageScope(), owner, id]));
+-  if (owner !== backgroundOwner || S.ativaId !== id) return;
+-  const known = new Set((conversation.mensagens || []).flatMap(m => Array.isArray(m.content) ? m.content.filter(p => p?.type === 'iald_media').map(p => p.media_ref) : []));
+-  const drafts = records.filter(r => r.selected === true && (!r.part || !known.has(r.part.media_ref)));
+-  S.anexos = S.anexos.filter(a => !a.localDraftId).concat(drafts.map(r => ({ name: r.name, media: mediaURL(r), mediaKind: r.kind, mime: r.mime,
+-    localDraftId: r.id, mediaOwner: owner, mediaConversation: id, kb: Math.round(r.blob.size / 1024) })));
+-  desenharAnexos(); atualizarBotaoEnviar();
++  // Existing local drafts remain stored; they are not new selectable attachments.
++  return;
+ }
++
+ async function lerMidiaLocal(f, tipo) {
++  throw Error(MEDIA_DISABLED_TEXT);
+   const owner = backgroundOwner, conversation = conversaAtiva()?.id;
+   mediaScope(owner, conversation); const limits = mediaLimits(tipo); mediaValidateSize(f.size, limits);
+   const extension = f.name.split('.').pop().toLowerCase();
+@@ -2982,6 +3017,7 @@
+     mediaOwner: owner, mediaConversation: conversation, kb: Math.round(f.size / 1024) };
+ }
+ async function mediaConsent(anexos, text, conversation) {
++  rejectNewAudioVideo(anexos);
+   if (anexos.filter(a => a.localDraftId).length > 1) throw Error('Uma mídia de áudio/vídeo por mensagem.');
+   const owner = backgroundOwner; mediaActiveConversation(owner, conversation);
+   const response = await fetchIALD('/api/motor', { cache: 'no-store' });
+@@ -3035,6 +3071,7 @@
+   return canonicalMediaPart(part);
+ }
+ async function mediaUpload(anexo, owner, conversation) {
++  throw Error(MEDIA_DISABLED_TEXT);
+   mediaActiveConversation(owner, conversation);
+   if (anexo.mediaOwner !== owner || anexo.mediaConversation !== conversation) throw Error('O anexo pertence a outra conversa.');
+   const originalStorageScope = mediaStorageScope();
+@@ -3077,18 +3114,8 @@
+   throw new PendingChatJobError('O escopo seguro ainda não foi carregado. O histórico original foi preservado; a recuperação será retomada.');
+ }
+ async function mediaRecoverLegacyHistory(owner) {
+-  const legacy = S.conversas.some(c => (c.mensagens || []).some(m => Array.isArray(m.content) && m.content.some(p =>
+-    (p?.type === 'input_audio' && typeof p.input_audio?.data === 'string' && p.input_audio.data.startsWith('data:audio/')) ||
+-    (p?.type === 'video_url' && typeof p.video_url?.url === 'string' && p.video_url.url.startsWith('data:video/')))));
+-  if (!legacy) return;
+-  await mediaAwaitBoundMotor(owner);
+-  const epoch = backgroundEpoch, scope = mediaStorageScope(), snapshot = JSON.stringify(S.conversas);
+-  const recovered = JSON.parse(snapshot);
+-  await mediaMigrateLegacy(recovered, owner);
+-  if (owner !== backgroundOwner || epoch !== backgroundEpoch || scope !== mediaStorageScope()) throw detached();
+-  if (snapshot !== JSON.stringify(S.conversas)) throw new PendingChatJobError('O histórico mudou durante a recuperação; as alterações foram preservadas e a recuperação será retomada.');
+-  S.conversas = recovered;
+-  persistirConversasBackground();
++  // Keep legacy inline/local/ref history byte-for-byte; no automatic migration/upload.
++  return;
+ }
+ async function mediaMigrateLegacy(conversations, owner) {
+   let changed = false;
+@@ -3123,7 +3150,7 @@
+ }
+ function mediaAssertHistory(conversations) {
+   for (const c of conversations) for (const message of c.mensagens || []) if (Array.isArray(message.content)) for (const p of message.content) {
+-    if (p?.type === 'input_audio' || p?.type === 'video_url') throw Error('Mídia antiga precisa ser recuperada localmente antes de salvar. O histórico não foi apagado.');
++    // Inline legacy media is allowed in local persistence; outboundHistory removes its payload.
+     if (p?.type === 'iald_media') canonicalMediaPart(p);
+   }
+ }
+@@ -3164,7 +3191,7 @@
+ }
+ 
+ function midiaPermitida(tipo) {
+-  return limitesDoPlano()?.[tipo] === true;
++  return false; // New audio/video selection is disabled, including advertised server capabilities.
+ }
+ 
+ function extensoesMidia(tipo) {
+@@ -3179,7 +3206,6 @@
+   const zona = $('#anexos');
+   zona.innerHTML = '';
+   let chars = 0;
+-  if (midiaPermitida('audio') || midiaPermitida('video')) zona.appendChild(el('p', 'ajuda', MEDIA_LIMIT_TEXT));
+   for (const [i, a] of S.anexos.entries()) {
+     chars += (a.content || '').length;
+     const item = el('div', 'anexo');
+@@ -3250,8 +3276,6 @@
+   const permitidas = imagensPermitidas();
+   campo.setAttribute('accept', permitidas ? aceitaOriginal
+     : aceitaOriginal.split(',').filter((ext) => !EXTENSOES_DE_IMAGEM.test(ext.trim())).join(','));
+-  const extrasMidia = ['audio','video'].flatMap(tipo => midiaPermitida(tipo) ? extensoesMidia(tipo).map(ext => '.'+ext) : []);
+-  if (extrasMidia.length) campo.setAttribute('accept', campo.getAttribute('accept') + ',' + extrasMidia.join(','));
+   botao.dataset.semImagem = permitidas ? '' : '1';
+   const rotulo = permitidas ? 'Anexar PDF, texto ou imagem'
+     : 'Anexar PDF ou texto — ' + textoSemImagens();
+@@ -3267,16 +3291,8 @@
+ 
+     const ehImagem = (f.type && f.type.startsWith('image/')) || /\.(png|jpe?g|webp|gif|bmp)$/i.test(f.name);
+     const ehPdf = /\.pdf$/i.test(f.name);
+-    const tipoMidia = /\.(wav|mp3|flac|ogg|m4a)$/i.test(f.name) ? 'audio'
+-      : /\.(mp4|mov|avi|wmv)$/i.test(f.name) ? 'video' : null;
+-    if (tipoMidia) {
+-      if (S.anexos.some(a => a.media)) { avisar('Uma mídia de áudio/vídeo por mensagem.'); continue; }
+-      try { S.anexos.push(await lerMidiaLocal(f,tipoMidia)); desenharAnexos(); }
+-      catch (e) { avisar(e.message); }
+-      continue;
+-    }
+-    if (/^(audio|video)\//.test(f.type)) { avisar('Formato de mídia não integrado.'); continue; }
+-
++    if (isNewAudioVideo(f)) { avisar(MEDIA_DISABLED_TEXT); continue; }
++
+     if (ehImagem && !imagensPermitidas()) {
+       S.dicaImagem = true;
+       desenharAnexos();
+@@ -4083,21 +4099,17 @@
+   finally { mediaSending = false; atualizarBotaoEnviar(); }
+ }
+ 
+-async function enviarTexto(texto, anexos) {
++async function enviarTexto(texto, anexos) {
++  rejectNewAudioVideo(anexos);
++  if (Array.isArray(texto)) rejectNewAudioVideo(texto);
+   if (respostaPendenteBackground()) return;
+   if (!DEMO && !backgroundOwner) { recuperarRespostasBackground(); return; }
+   const c = conversaAtiva();
+   if (!c) return;
+ 
+   const owner = backgroundOwner;
+-  const hasMedia = anexos.some(a => a.localDraftId) || c.mensagens.some(m => Array.isArray(m.content) && m.content.some(p => ['iald_media','iald_local_media'].includes(p?.type)));
++  const hasMedia = false; // New media rejected above; history is projected only by montarEnvio.
+   const midias = [];
+-  if (hasMedia) {
+-    if (!await mediaConsent(anexos, texto, c.id)) return false;
+-    await mediaPrepareLegacy(c, owner);
+-    for (const a of anexos) if (a.localDraftId) midias.push(await mediaUpload(a, owner, c.id));
+-    mediaActiveConversation(owner, c.id);
+-  }
+   let conteudo = texto;
+   const imagens = anexos.filter(a => a.image).map(a => a.image);
+   const arquivos = anexos.filter(a => !a.image && !a.localDraftId && a.content);
+@@ -4145,9 +4157,8 @@
+   // marca de texto "[1 imagem(ns) anexada(s)]" — senão toda mensagem desta conversa voltaria
+   // recusada com "recurso_indisponivel"
+   const semImagens = !imagensPermitidas();
+-  for (const m of recortar(c.mensagens, sys)) {
++  for (const m of recortar(outboundHistory(c.mensagens), sys)) {
+     const conteudo = m.content;
+-    if (Array.isArray(conteudo) && conteudo.some(p => p?.type === 'iald_local_media')) throw Error('Mídia local ainda não foi enviada com autorização; histórico preservado.');
+     enviadas.push({ role: m.role === 'assistant' ? 'assistant' : 'user', content: conteudo });
+   }
+   return enviadas;

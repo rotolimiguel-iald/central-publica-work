@@ -1,0 +1,117 @@
+--- origin/iald.js
++++ staged/iald.js
+@@ -2848,7 +2848,20 @@
+ // Embedded private-media integration. No upload is performed by the file picker.
+ const MEDIA_RAW_MAX = 37_499_904;
+ const MEDIA_BASE64_MAX = 50_000_000;
+-const MEDIA_LIMIT_TEXT = 'Áudio e vídeo: até 37,5 MB por arquivo. A duração disponível depende do contexto da conversa; a memória da TGL é preservada.';
++const MEDIA_DISABLED_TEXT = 'Novos anexos de áudio e vídeo estão desativados. Use PDF, texto ou imagem. O histórico anterior foi preservado.';
++// Selection, drop, paste and direct attachment submission share this policy.
++function isNewAudioVideo(value) {
++  if (!value) return false;
++  const mime = String(value.mime || value.type || '').trim();
++  return /^(audio|video)\//i.test(mime) ||
++    /\.(wav|wave|mp3|mp2|flac|ogg|oga|opus|m4a|m4b|aac|aiff?|wma|amr|mid|midi|mp4|m4v|mov|avi|wmv|webm|mkv|mpeg|mpg|ogv|3gp|3g2|ts|mts|m2ts)$/i.test(String(value.name || '').trim()) ||
++    !!value.localDraftId || !!value.media || ['audio', 'video'].includes(value.mediaKind || value.kind) ||
++    ['input_audio', 'video_url', 'iald_media', 'iald_local_media'].includes(value.type) ||
++    /^data:(audio|video)\//i.test(String(value.image || value.image_url?.url || ''));
++}
++function rejectNewAudioVideo(anexos) {
++  if (anexos.some(isNewAudioVideo)) throw Error(MEDIA_DISABLED_TEXT);
++}
+ let mediaDraftDatabase = null, mediaPendingConsent = null, mediaSending = false;
+ let mediaCapsAccount = '';
+ const mediaDraftURLs = new Map();
+@@ -2956,17 +2969,12 @@
+   mediaDraftURLs.clear(); mediaRAM.clear(); S.anexos = [];
+ }
+ async function mediaRestoreDrafts(conversation) {
+-  if (!conversation || !backgroundOwner || conversation.background_owner !== backgroundOwner) return;
+-  const owner = backgroundOwner, id = conversation.id;
+-  const records = await mediaLocal('readonly', store => store.index('conversation').getAll([mediaStorageScope(), owner, id]));
+-  if (owner !== backgroundOwner || S.ativaId !== id) return;
+-  const known = new Set((conversation.mensagens || []).flatMap(m => Array.isArray(m.content) ? m.content.filter(p => p?.type === 'iald_media').map(p => p.media_ref) : []));
+-  const drafts = records.filter(r => r.selected === true && (!r.part || !known.has(r.part.media_ref)));
+-  S.anexos = S.anexos.filter(a => !a.localDraftId).concat(drafts.map(r => ({ name: r.name, media: mediaURL(r), mediaKind: r.kind, mime: r.mime,
+-    localDraftId: r.id, mediaOwner: owner, mediaConversation: id, kb: Math.round(r.blob.size / 1024) })));
+-  desenharAnexos(); atualizarBotaoEnviar();
++  // Existing local drafts remain stored; they are not new selectable attachments.
++  return;
+ }
++
+ async function lerMidiaLocal(f, tipo) {
++  throw Error(MEDIA_DISABLED_TEXT);
+   const owner = backgroundOwner, conversation = conversaAtiva()?.id;
+   mediaScope(owner, conversation); const limits = mediaLimits(tipo); mediaValidateSize(f.size, limits);
+   const extension = f.name.split('.').pop().toLowerCase();
+@@ -2982,6 +2990,7 @@
+     mediaOwner: owner, mediaConversation: conversation, kb: Math.round(f.size / 1024) };
+ }
+ async function mediaConsent(anexos, text, conversation) {
++  rejectNewAudioVideo(anexos);
+   if (anexos.filter(a => a.localDraftId).length > 1) throw Error('Uma mídia de áudio/vídeo por mensagem.');
+   const owner = backgroundOwner; mediaActiveConversation(owner, conversation);
+   const response = await fetchIALD('/api/motor', { cache: 'no-store' });
+@@ -3035,6 +3044,7 @@
+   return canonicalMediaPart(part);
+ }
+ async function mediaUpload(anexo, owner, conversation) {
++  throw Error(MEDIA_DISABLED_TEXT);
+   mediaActiveConversation(owner, conversation);
+   if (anexo.mediaOwner !== owner || anexo.mediaConversation !== conversation) throw Error('O anexo pertence a outra conversa.');
+   const originalStorageScope = mediaStorageScope();
+@@ -3164,7 +3174,7 @@
+ }
+ 
+ function midiaPermitida(tipo) {
+-  return limitesDoPlano()?.[tipo] === true;
++  return false; // New audio/video selection is disabled, including advertised server capabilities.
+ }
+ 
+ function extensoesMidia(tipo) {
+@@ -3179,7 +3189,6 @@
+   const zona = $('#anexos');
+   zona.innerHTML = '';
+   let chars = 0;
+-  if (midiaPermitida('audio') || midiaPermitida('video')) zona.appendChild(el('p', 'ajuda', MEDIA_LIMIT_TEXT));
+   for (const [i, a] of S.anexos.entries()) {
+     chars += (a.content || '').length;
+     const item = el('div', 'anexo');
+@@ -3250,8 +3259,6 @@
+   const permitidas = imagensPermitidas();
+   campo.setAttribute('accept', permitidas ? aceitaOriginal
+     : aceitaOriginal.split(',').filter((ext) => !EXTENSOES_DE_IMAGEM.test(ext.trim())).join(','));
+-  const extrasMidia = ['audio','video'].flatMap(tipo => midiaPermitida(tipo) ? extensoesMidia(tipo).map(ext => '.'+ext) : []);
+-  if (extrasMidia.length) campo.setAttribute('accept', campo.getAttribute('accept') + ',' + extrasMidia.join(','));
+   botao.dataset.semImagem = permitidas ? '' : '1';
+   const rotulo = permitidas ? 'Anexar PDF, texto ou imagem'
+     : 'Anexar PDF ou texto — ' + textoSemImagens();
+@@ -3267,16 +3274,8 @@
+ 
+     const ehImagem = (f.type && f.type.startsWith('image/')) || /\.(png|jpe?g|webp|gif|bmp)$/i.test(f.name);
+     const ehPdf = /\.pdf$/i.test(f.name);
+-    const tipoMidia = /\.(wav|mp3|flac|ogg|m4a)$/i.test(f.name) ? 'audio'
+-      : /\.(mp4|mov|avi|wmv)$/i.test(f.name) ? 'video' : null;
+-    if (tipoMidia) {
+-      if (S.anexos.some(a => a.media)) { avisar('Uma mídia de áudio/vídeo por mensagem.'); continue; }
+-      try { S.anexos.push(await lerMidiaLocal(f,tipoMidia)); desenharAnexos(); }
+-      catch (e) { avisar(e.message); }
+-      continue;
+-    }
+-    if (/^(audio|video)\//.test(f.type)) { avisar('Formato de mídia não integrado.'); continue; }
+-
++    if (isNewAudioVideo(f)) { avisar(MEDIA_DISABLED_TEXT); continue; }
++
+     if (ehImagem && !imagensPermitidas()) {
+       S.dicaImagem = true;
+       desenharAnexos();
+@@ -4083,7 +4082,8 @@
+   finally { mediaSending = false; atualizarBotaoEnviar(); }
+ }
+ 
+-async function enviarTexto(texto, anexos) {
++async function enviarTexto(texto, anexos) {
++  rejectNewAudioVideo(anexos);
+   if (respostaPendenteBackground()) return;
+   if (!DEMO && !backgroundOwner) { recuperarRespostasBackground(); return; }
+   const c = conversaAtiva();

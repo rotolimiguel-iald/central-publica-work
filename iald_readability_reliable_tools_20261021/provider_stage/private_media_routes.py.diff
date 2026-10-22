@@ -1,0 +1,86 @@
+--- C:\IALD\projetos_pyhton\IALD\private_media_routes.py
++++ C:\IALD\Central de Patentes\work\iald_readability_reliable_tools_20261021\provider_stage\private_media_routes.py
+@@ -2,6 +2,43 @@
+ import hmac
+ import re
+ from private_media_store import MAX_RAW_BYTES,MAX_CHAT_JSON_BYTES,MediaError,MediaUnavailable,media_scope_token
++
++
++NEW_AV_ERROR = 'Novos anexos de áudio e vídeo estão indisponíveis. Imagens, documentos e histórico permanecem acessíveis.'
++NEW_AV_CODE = 'new_audio_video_disabled'
++
++
++def _audio_video(value, depth=0):
++    # Inspect typed payloads, not quoted/embedded JSON or old conversation turns.
++    if depth > 32:
++        raise ValueError('Attachment structure exceeds admission depth')
++    if isinstance(value, str):
++        return value.lstrip().lower().startswith(('data:audio/', 'data:video/'))
++    if isinstance(value, list):
++        return any(_audio_video(v, depth + 1) for v in value)
++    if not isinstance(value, dict):
++        return False
++    kind = str(value.get('type', '')).lower()
++    if kind in ('input_audio', 'audio', 'audio_url', 'input_video', 'video', 'video_url', 'iald_media'):
++        return True
++    mime = str(value.get('mime', value.get('mime_type', value.get('media_type', '')))).lower()
++    if mime.startswith(('audio/', 'video/')):
++        return True
++    return any(_audio_video(v, depth + 1) for v in value.values())
++
++
++def has_new_audio_video(payload):
++    if not isinstance(payload, dict):
++        return False  # Existing JSON/schema guards remain authoritative.
++    messages = payload.get('messages')
++    if isinstance(messages, list) and messages and isinstance(messages[-1], dict):
++        latest = messages[-1]
++        if latest.get('role') == 'user' and _audio_video(latest.get('content')):
++            return True
++    # Legacy top-level attachment envelopes are new input, never history.
++    return any(_audio_video(payload[k]) for k in
++        ('attachments', 'files', 'audio', 'input_audio', 'audio_url', 'video', 'input_video', 'video_url')
++        if k in payload)
+ 
+ 
+ def register_private_media(app,store,*,host_scope,authenticate_csrf,upload_eligible):
+@@ -30,21 +67,27 @@
+         if authenticate_csrf() is not True:return jsonify(error='Authentication/CSRF required'),403
+         try:g.private_media_scope,g.private_media_token=checked_scope()
+         except (MediaError,ValueError):return jsonify(error='Media account context mismatch; refresh capabilities'),403
+-        if request.content_length is None:return jsonify(error='Content-Length required'),411
+-        if not 0<request.content_length<=MAX_RAW_BYTES:return jsonify(error='Upload exceeds server media byte limit',max_media_bytes=MAX_RAW_BYTES),413
+-        if request.max_content_length!=MAX_RAW_BYTES:
+-            return jsonify(error='Upload route limit not active; upload disabled'),503
++        # This binary endpoint only creates new audio/video custody.
++        # Authenticate partition first; never read/store/probe the rejected body.
++        return jsonify(error=NEW_AV_ERROR,code=NEW_AV_CODE),415
++
++    @app.before_request
++    def new_audio_video_post_guard():
++        if request.method != 'POST' or request.path not in (
++                '/api/chat-jobs', '/v1/chat/completions', '/v1/completions'):
++            return
++        if not request.is_json:
++            return  # Existing route/body guards reject unsupported envelopes.
++        try:
++            blocked = has_new_audio_video(request.get_json(silent=True))
++        except ValueError:
++            return jsonify(error='Estrutura de anexo inválida.'),400
++        if blocked:
++            return jsonify(error=NEW_AV_ERROR,code=NEW_AV_CODE),415
+ 
+     @app.post('/api/private-media')
+     def private_media_upload():
+-        try:
+-            scope,token=checked_scope()
+-            if scope!=g.private_media_scope:return jsonify(error='Media account context changed'),403
+-            if upload_eligible(scope) is not True:return jsonify(error='Private media upload unavailable'),403
+-            result=store.put(request.stream,scope=scope,mime=request.mimetype,content_length=request.content_length)
+-            return jsonify(dict(result,media_scope=token)),201
+-        except MediaUnavailable:return jsonify(error='Media unavailable'),404
+-        except (MediaError,ValueError):return jsonify(error='Media validation or storage admission refused; history unchanged'),400
++        return jsonify(error=NEW_AV_ERROR,code=NEW_AV_CODE),415
+ 
+     @app.get('/api/private-media/<media_ref>')
+     def private_media_metadata(media_ref):

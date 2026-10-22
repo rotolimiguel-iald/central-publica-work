@@ -1,0 +1,73 @@
+{
+  "status": "BLOCK",
+  "reviewer": "codex-client-stage-independent-mobile-reviewer",
+  "reviewer_actor": "codex-client-stage-independent-mobile-reviewer",
+  "created_at": "2026-10-21T11:22:27.068690+00:00",
+  "scope": "BUILD_COMMIT_PUSH_PUBLICATION_TECHNICAL_ONLY",
+  "runner_sha256": "700a2083a5f81e020fe71e4c7c49560fccfae5fec85d37d7e2bdb8fa12b7c6fa",
+  "publisher_sha256": "61ec0a57464508996ef852fd64d00cfa8c3d93e75cca58af903c803df09f7004",
+  "init_sha256": "2653ddc539f90a4639ec3b0dfd2d46c1d3dd40346dafbc862f1a9a79c54f57a0",
+  "previous_review": {
+    "path": "C:\\IALD\\Central de Patentes\\work\\iald_readability_reliable_tools_20261021\\validation\\mobile_review.json",
+    "sha256": "42d93fd0e320f6a080920e78fd029ac70660f143168ac19d98969c993f7b7861",
+    "preserved": true
+  },
+  "independence": "Revisão exclusivamente dos runners mobile de autoria do pai. Nenhum aceite da implementação JS/CSS de autoria deste revisor. Hashes de JS/CSS conferidos apenas como vínculos de artefatos.",
+  "resolved_previous_findings": [
+    {
+      "id": "MOBILE-01",
+      "status": "RESOLVED_STATIC",
+      "evidence": "--init-script próprio fornecido; init exige projeto/versão31/identidade e isola buildDirectory; marcadores exigidos."
+    },
+    {
+      "id": "MOBILE-02",
+      "status": "RESOLVED_STATIC",
+      "evidence": "push() repete allowlist das URLs fetch/push antes de ls-remote/intenção/push."
+    }
+  ],
+  "findings": [
+    {
+      "id": "MOBILE-R2-01",
+      "severity": "MEDIO",
+      "file": "C:\\IALD\\Central de Patentes\\work\\iald_readability_reliable_tools_20261021\\mobile_release.py",
+      "start_line": 43,
+      "end_line": 52,
+      "title": "AUDIT PASS não exige cobertura integral da assinatura AAB",
+      "evidence": "Comando jarsigner -verify sem -strict/-verbose; resultado é aceito apenas por exit_code==0 e filtered_lines==0. keytool -printcert prova presença/correspondência do certificado, não cobertura das entradas. Não se verifica jar verified., jar is unsigned, unsigned entries ou contagem de entradas assinadas antes de gravar AUDIT.json PASS.",
+      "impact": "Um AAB parcialmente assinado pode conservar certificado válido e emitir advertência com retorno zero; as verificações ZIP de JS/CSS não verificam a cobertura criptográfica das demais entradas. O recibo PASS excede a verificação realizada.",
+      "required_fix": "Verificar assinatura integral do AAB: exigir confirmação jar verified., ausência de entradas sem assinatura/JAR unsigned e entradas assinadas positivas; usar saída verbose ou verificador equivalente. Tratar certificados self-signed/timestamp separadamente para não confundir confiança PKI com integridade. Preservar correspondência com APK e certificado anterior.",
+      "reproduction": "Conclusão por inspeção estática; nenhum arquivo AAB fabricado, alterado ou verificado nesta revisão.",
+      "relationship_to_previous_note": "O R1 mencionava jar verified. como melhoria baixa. Este achado trata da lacuna concreta de cobertura integral das entradas, que continua possível mesmo com certificado correspondente."
+    }
+  ],
+  "confirmed": [
+    "Nenhum acesso direto a credenciais nos scripts; assinatura delegada ao loader Gradle existente.",
+    "collect reutilizado sem invocar guards/preflights/main da missão antiga; logs filtrados e linhas filtradas recusadas.",
+    "Allowlist privada explícita de seis arquivos; índice prévio vazio, blobs raw --no-filters e SHA256 do índice confrontado com bytes de trabalho.",
+    "Intenções exclusivas antes de build/commit/push/publicação; diretório build31 criado com exist_ok=False; nenhuma repetição automática.",
+    "check(deploy) atual em cada fase; runner compara destinos ao plano e ciência ao baseline.",
+    "APK/AAB esperados em caminhos exatos de build31; ZIP sem duplicatas/CRC inválido; JS/CSS por hash.",
+    "APK verificado por apksigner; certificados APK e AAB confrontados com baseline lido do plano anterior (não alegada inspeção real de novos artefatos).",
+    "Publisher aditivo: destino31 fixo e inexistente, intenção exclusiva, arquivo temporário exclusivo, rename e hashes dos APKs anteriores preservados."
+  ],
+  "pin_measurements": {
+    "install_files": 12,
+    "source_matches": 12,
+    "runtime_matches": 12,
+    "science_files": 5,
+    "science_matches": 5,
+    "install_plan_sha256": "296f4c9eaf99f686cce958e30a552b160543653c7bbe9411a749444fc5586950",
+    "science_baseline_sha256": "2a707772383013f25d6fcb1255b35e60fdbe7e989d9fc733c6dfa8503dbc5d49",
+    "task_sha256": "8829095072960e4b869d043035c0a956b58518fa9507c642529fd7c9047f874c"
+  },
+  "limitations": [
+    "Sem execução/importação dos runners, build, Git, assinatura, publicação ou chamada paga.",
+    "O contrato do jarsigner não foi reproduzido com artefato nesta revisão estática.",
+    "Este parecer não aceita implementação do cliente, distribuição em lojas ou instalação em aparelho.",
+    "O parecer ativo anterior permanece BLOCK, sem sobrescrita, pois R2 não é PASS."
+  ],
+  "executed": false,
+  "credentials_read": false,
+  "models_called": false,
+  "deployment_accepted": false
+}
