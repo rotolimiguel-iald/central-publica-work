@@ -1,0 +1,23 @@
+INTEGRAÇÃO FÍSICA R2 E INCERTEZA COMUM R3 — CANDIDATO EM CÓPIA
+Autoria: /root/r69_locality_bridge, unidade F3.INTEGRACAO_20261019, delegação do coordenador.
+
+1. [REAL] Reuso concreto
+O motor copiado é background_controls.prediction_worker da ORDEM018. Usa CAMB, universo plano LCDM, neutrino térmico massivo, recombinação RECFAST/BBN explicitados no protocolo. Não usa a tabela histórica incompleta nem chama main/claims antigos. O verificador original confere versões e SHA dos arquivos CAMB. A previsão retorna E(z*), R, l_A, rstar/rdrag e DM,DH,DV. O fornecedor ExistingEngineSupplier já existente demonstra a interface de supervisor; nossa qualificação é unidade limitada própria, não reinício daquele protocolo.
+
+2. [DERIVED/REAL código] Likelihood física, não mock de fundo
+physical_mean usa exatamente as dependências físicas do assembler anterior. H5 é BAO-only r_d livre, uniforme130–160Mpc; CMB e rstar ficam preservados. O canal LOCAL em km/s/Mpc vale H0*K(theta) para H1 e H0 para H2/H5. A testemunha conjunta anterior usa log10(H0*K) em linhas de magnitude; não identificamos as duas grandezas.
+L=-1/2[(y-mu)^T C^-1(y-mu)+logdetC+nlog(2pi)] com C completa SPD nas unidades das linhas. A normalização muda por -log|detT| sob reescala y->Ty,C->TCT^T. Essa mudança foi conferida. O consumidor aceita exclusivamente SYNTHETIC: não há rota observacional ou token decisório novo. Não há mock no motor físico; os vetores/covariâncias usados para qualificação são fabricados e declarados.
+
+3. [DERIVED] Incerteza de theta compartilhada
+Theta=(H0,ombh2,omch2). Beta=ALPHA_FINE_CODATA_2018*sqrt(e) permanece fixo; I(theta)=2lnE(theta,z*)/3; K=exp(beta I). d(H0K)=K dH0+H0 K beta dI. Logo Var(H0K) exige o termo cruzado entre H0 e I, não só K²Var(H0). Para múltiplos leitores, usar J Ctheta J^T cria blocos cruzados comuns; não repartir a mesma incerteza como ruído independente de cada leitor.
+O código aceita Ctheta completa e calcula essa expressão, mas marca aproximação linear com erro de linearização ainda não certificado. Sem Ctheta, retorna somente CONDITIONAL_FIXED_THETA; pedido incondicional recusa. O ramo de integração não linear já existe em theta_integrator e não foi repetido. Para resultado real, usar uma vez a likelihood conjunta (fundo+leitores) integrada em theta, ou expectativa posterior-preditiva com posterior independente. É dupla contagem somar Ctheta de um posterior do fundo e reintegrar a mesma informação de fundo.
+
+4. [REAL] Qualificação limitada
+Pré-registro por hash antes da execução; 7pontos (centro da caixa anterior70,.0225,.13 e seis deslocamentos centrais), sem centros observados. Uma thread, limite7chamadas/300s, sem repetição. 7retornos do CAMB, 16checks positivos/negativos, exit0; duração registrada no RESULT. O caso y=mu_H1 foi escolhido por construção para verificar normalização, não para discriminar modelos. Nenhum lnB, ajuste, sigma estatístico, dado real, instalação ou gate. Os 7pontos não qualificam a caixa inteira nem o erro uniforme da teoria.
+
+5. [OPEN] Integração decisória e equivalência do K
+O escalar E1 usa Omega_m/Omega_r fixos e compara K congelado. O fornecedor real calcula E térmico em theta. No centro sintético, K fisico é diferente do escalar; valores no RESULT. Não substituímos silenciosamente o K anterior, não ajustamos theta para coincidir, não confundimos testemunha escalar e conjunta. O contrato a congelar deve definir o consumo do fornecedor e sua incerteza.
+Permanecem: admissão D-H/atos aplicáveis e consumidor observado separado; covariance/posterior de theta admitida e sua dependência com os leitores; quadratura de theta/r_d com convergência; semântica física BAO-only de H5; normalização completa dos nuisances da testemunha escolhida. Os backgrounds comprimidos são aproximações condicionais, não a likelihood CMB completa.
+
+6. [REAL] Escopo de permissões
+Nenhum original, memória, quadro, Bancada de produção, um.py ou gate alterado. A primeira consulta WSL em sandbox recusou E_ACCESSDENIED antes de qualquer solver; metadados e execução depois autorizados pela ferramenta. Não houve rede. A execução científica única consta START, CALLs, PREDICTIONs e RESULT.

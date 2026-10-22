@@ -1,0 +1,28 @@
+Correção de transporte; nenhuma alteração do experimento — 19/10/2026
+
+[REAL documental] R1 terminou exit1 depois de2 chamadas CAMB concluídas e
+custodiadas. O integrador ainda não havia aceitado nenhum callback. O erro foi
+SCHEMA_ERROR: conditional output must contain native JSON types. Falha e recibos
+originais preservados na pasta superior, sem reexecução dessas duas chamadas.
+
+[DERIVED da implementação] copies/linear_gaussian.py:37–39 combina o escalar
+Python com np.log(...).sum(), produzindo np.float64 para log_prefactor.
+copies/likelihood_consumer.py:405–406 transporta esse valor sem conversão.
+copies/physical_prior.py conserva normalization do consumidor.
+copies/theta_integrator.py:102–120 exige type(value) is float para números reais.
+Essa diferença de representação não é uma falha do cálculo cosmológico.
+
+A recuperação faz uma conversão EXCLUSIVAMENTE em
+normalization.log_prefactor. Aceita np.float64 ou float nativo finito; qualquer
+outro tipo ou não finito é recusado. np.float64→float precisa conservar os bytes
+little-endianfloat64. Não muda o backend, o resultado matemático, os pesos,
+os priors, a tolerância ou os centros sintéticos.
+
+Os dois fundos concluídos são importados por custódia de bytes e identidade de
+configuração/runtime; nenhum claim incerto é retomado. Até123 fundos novos são
+permitidos, para um máximo agregado de125. Esta continuação administrativa foi
+autorizada pelo coordenador após a falha, sob o mesmo objetivo humano. Os IDs da
+nova integração de theta identificam transport-recovery-r2, sem apagar R1.
+
+Nenhum número do resultado sintético é promovido a lnB observado, sigma físico,
+convergência certificada, fonte admitida ou confirmação da TGL.

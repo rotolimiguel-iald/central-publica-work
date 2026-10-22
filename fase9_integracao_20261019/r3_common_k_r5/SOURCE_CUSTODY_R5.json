@@ -1,0 +1,114 @@
+{
+  "scope": "FOCAL_EXISTING_ARTIFACTS_ONLY_NOT_UNIVERSAL_ABSENCE",
+  "sources": [
+    {
+      "path": "C:\\IALD\\Central de Patentes\\work\\fase9_integracao_20261019\\r4_robust_tail_r3\\PROOF.txt",
+      "sha256": "5e5cadb996ff3be869d5aa6944861d13e116ad9b579bd4ee8068c5f9a729ad12",
+      "bytes": 1629,
+      "role": "Prova prévia: f fixo, Gaussianidade e limite da média nula.",
+      "anchors": [
+        {
+          "start": 1,
+          "end": 21,
+          "text": "[DERIVED — candidato sintético, sem adoção da Fase 9]\nConsidere D=w'X-fB, soma w=1, f fixo antes dos centros, e E[D]≤b sob a hipótese nula.\nAdmita normalidade conjunta e desvios marginais TOTAIS corretos. A prova do envelope\nR1 dá Var(D)≤smax², smax=sum|w_i|sigma_i+|f|sigma_B, para qualquer covariância PSD.\nPara d>b, P(D≥d)≤SF((d-b)/smax). Para d≤b usamos 1. Assim o p conservador é\nsuperuniforme sob toda essa classe, inclusive para H0 fixo desconhecido, que cancela.\nSe a variância for zero, D=E[D]≤b quase certamente e a recusa não cria falso positivo.\nBonferroni para m testes fixados previamente não exige independência entre os testes.\n\nA cota b é sobre a MÉDIA NULA do contraste, não é uma incerteza que se soma em quadratura.\nEla precisa de fonte independente dos centros usados para discriminar. A implementação\nrecusa b ausente; b=0 é hipótese explícita, não conclusão documental nem descoberta física.\nSem limite para b, uma mudança da média pode reproduzir a previsão da TGL: não há\nidentificação pelo contraste comprimido sozinho. Uma sistemática de média e uma\ncovariância entre erros são objetos distintos.\n\nO consumidor é somente candidato sintético e usa erfc float64, não aritmética intervalar.\nNão transporta a prova para erros não gaussianos, sigmas incompletas, pesos selecionados\npelos centros, f estimado no mesmo dado, nem mapas físicos não demonstrados. K variável\ncom theta requer a verossimilhança física conjunta e não é substituído aqui por K fixo.\nNão converte o escore histórico 4,28 em sigma calibrado, nem abre o dado observado."
+        }
+      ]
+    },
+    {
+      "path": "C:\\IALD\\Central de Patentes\\work\\fase9_integracao_20261019\\r4_robust_tail_r3\\robust_tail.py",
+      "sha256": "e960a344bddda5b7a6fc782185cf920cf3145afc625f7c05c242673307af60da",
+      "bytes": 2820,
+      "role": "Consumidor existente apenas fator fixo; não implementa supremo contínuo.",
+      "anchors": [
+        {
+          "start": 18,
+          "end": 50,
+          "text": "def upper_tail(*,contrast,weights,local_sigmas,background_sigma,factor,\n               null_bias_upper_bound,bias_source,mode,tests_in_family):\n    if mode!='SYNTHETIC_ONLY':raise RobustTailError('SYNTHETIC_ONLY')\n    if type(tests_in_family) is not int or tests_in_family<1:\n        raise RobustTailError('FINITE_FAMILY_SIZE_REQUIRED')\n    if not isinstance(bias_source,str) or not bias_source.strip():\n        raise RobustTailError('NAMED_BIAS_BOUND_REQUIRED')\n    if null_bias_upper_bound is None:raise RobustTailError('NULL_BIAS_UNBOUNDED')\n    try:\n        d=_env.rational(contrast);f=_env.rational(factor)\n        b=_env.rational(null_bias_upper_bound)\n        w=[_env.rational(v) for v in weights]\n        if sum(w)!=1:raise RobustTailError('EXACT_NORMALIZED_FIXED_WEIGHTS_REQUIRED')\n        if f<=0 or b<0:raise RobustTailError('POSITIVE_FACTOR_NONNEGATIVE_BIAS_BOUND')\n        envelope=_env.fixed_contrast_envelope(w+[-f],list(local_sigmas)+[background_sigma])\n        radius=envelope['standard_error_bound']\n        z=float((d-b)/radius)\n        if not math.isfinite(z):raise RobustTailError('UNREPRESENTABLE_STANDARDIZED_CONTRAST')\n    except (ValueError,TypeError,OverflowError) as exc:\n        if isinstance(exc,RobustTailError):raise\n        raise RobustTailError(str(exc)) from exc\n    # For negative thresholds, maximal variance need not maximize the tail.\n    # Return 1 there rather than extrapolating the positive-tail envelope.\n    p=1.0 if d<=b else .5*math.erfc(z/math.sqrt(2))\n    if p==0:raise RobustTailError('TAIL_UNDERFLOW_NO_INFINITE_SIGMA')\n    return {'p_upper_conservative':p,'p_bonferroni':min(1,tests_in_family*p),\n            'contrast_minus_null_bias_over_sd_bound':z,\n            'standard_error_bound_exact':[radius.numerator,radius.denominator],\n            'scope':'UNIFORM_GAUSSIAN_UPPER_TAIL_WITHIN_DECLARED_TOTAL_SIGMAS_AND_NULL_BIAS_BOUND',\n            'covariance_class':'ALL_PSD_WITH_GIVEN_DIAGONAL_INCLUDING_LOCAL_BACKGROUND',\n            'sampling_model':'joint Gaussian; fixed weights and factor; fixed unknown H0 cancels',\n            'physical_assumptions_verified':False,'observed_F9_verdict':None,\n            'numerics':'FLOAT64_ERFC_NOT_INTERVAL_CERTIFICATE'}"
+        }
+      ]
+    },
+    {
+      "path": "C:\\IALD\\Central de Patentes\\work\\fase9_integracao_20261019\\r2_background\\API_CONTRACT_R1.json",
+      "sha256": "e32273211d566b4ba9c5126ff3d08ef92460e8b9a93c4c6fc79af9418f420dfc",
+      "bytes": 2400,
+      "role": "K(theta), prior e dupla contagem; sem conjunto de confiança.",
+      "anchors": [
+        {
+          "start": 14,
+          "end": 28,
+          "text": "    \"propagate_theta\": \"J rows x3 ordered H0,ombh2,omch2; full covarianceTheta; J Ctheta J^T shared across readers; only named conditional/linearized-synthetic scopes\"\n  },\n  \"alpha\": {\n    \"path\": \"C:\\\\IALD\\\\Central de Patentes\\\\Chatgpt\\\\TUNEL\\\\DO_CHATGPT\\\\ORDEM_019\\\\F3.1\\\\PREREGISTRO_FASE9_V2_R5_2_F31_LABELS_E1_20261008.json\",\n    \"sha256\": \"81a970926345832ad34d4963b0fadf70827003086e2876295d07024f83ffcca7\",\n    \"pointer\": \"$.spec.beta.alpha_read\"\n  },\n  \"K_contract\": \"K(theta)=exp[(2 alpha sqrt(e)/3)ln E_CAMB(theta,z*)], z*=1089.95 fixed; old scalar K retained separately, no silent substitution\",\n  \"priors\": {\n    \"common_theta\": \"U H0[50,90],ombh2[.015,.030],omch2[.08,.18], density50/3 as ORDEM018; not integrated here\",\n    \"H5_rd\": \"U[130,160]Mpc density1/30; replacing rd does not replace CMB rstar; no generic free-background claim\"\n  },\n  \"real_consumer_next\": \"Authorised controller supplies admitted joint covariance and data only in a separately reviewed real consumer; this API rejects dataset_kind OBSERVED. Do not simply flip the synthetic label.\",\n  \"no_double_count\": \"Either joint Lbg(theta)*Llocal(y|theta) integrate theta once, or posterior-predictive expectation under independently obtained p(theta|bg). Do not add a posterior covariance to a likelihood containing the same background rows and marginalize theta again.\",\n  \"root_semantics\": \"Scalar and ROOT90da remain separate witnesses. This is a reused physical prediction layer, not merging datasets or verdicts.\""
+        }
+      ]
+    },
+    {
+      "path": "C:\\IALD\\Central de Patentes\\work\\fase9_integracao_20261019\\r2_background\\BACKGROUND_INTEGRATION_R1.txt",
+      "sha256": "997cca0e67268f66cf9da7d31255909697f3d09550ce612594d562a5576c0182",
+      "bytes": 4275,
+      "role": "Propagação comum já construída; covariância/posterior admitida ainda pendente.",
+      "anchors": [
+        {
+          "start": 11,
+          "end": 20,
+          "text": "3. [DERIVED] Incerteza de theta compartilhada\nTheta=(H0,ombh2,omch2). Beta=ALPHA_FINE_CODATA_2018*sqrt(e) permanece fixo; I(theta)=2lnE(theta,z*)/3; K=exp(beta I). d(H0K)=K dH0+H0 K beta dI. Logo Var(H0K) exige o termo cruzado entre H0 e I, não só K²Var(H0). Para múltiplos leitores, usar J Ctheta J^T cria blocos cruzados comuns; não repartir a mesma incerteza como ruído independente de cada leitor.\nO código aceita Ctheta completa e calcula essa expressão, mas marca aproximação linear com erro de linearização ainda não certificado. Sem Ctheta, retorna somente CONDITIONAL_FIXED_THETA; pedido incondicional recusa. O ramo de integração não linear já existe em theta_integrator e não foi repetido. Para resultado real, usar uma vez a likelihood conjunta (fundo+leitores) integrada em theta, ou expectativa posterior-preditiva com posterior independente. É dupla contagem somar Ctheta de um posterior do fundo e reintegrar a mesma informação de fundo.\n\n4. [REAL] Qualificação limitada\nPré-registro por hash antes da execução; 7pontos (centro da caixa anterior70,.0225,.13 e seis deslocamentos centrais), sem centros observados. Uma thread, limite7chamadas/300s, sem repetição. 7retornos do CAMB, 16checks positivos/negativos, exit0; duração registrada no RESULT. O caso y=mu_H1 foi escolhido por construção para verificar normalização, não para discriminar modelos. Nenhum lnB, ajuste, sigma estatístico, dado real, instalação ou gate. Os 7pontos não qualificam a caixa inteira nem o erro uniforme da teoria.\n\n5. [OPEN] Integração decisória e equivalência do K\nO escalar E1 usa Omega_m/Omega_r fixos e compara K congelado. O fornecedor real calcula E térmico em theta. No centro sintético, K fisico é diferente do escalar; valores no RESULT. Não substituímos silenciosamente o K anterior, não ajustamos theta para coincidir, não confundimos testemunha escalar e conjunta. O contrato a congelar deve definir o consumo do fornecedor e sua incerteza.\nPermanecem: admissão D-H/atos aplicáveis e consumidor observado separado; covariance/posterior de theta admitida e sua dependência com os leitores; quadratura de theta/r_d com convergência; semântica física BAO-only de H5; normalização completa dos nuisances da testemunha escolhida. Os backgrounds comprimidos são aproximações condicionais, não a likelihood CMB completa."
+        }
+      ]
+    },
+    {
+      "path": "C:\\IALD\\Central de Patentes\\work\\fase9_integracao_20261019\\r2_background\\PLAN_SYNTHETIC_R1.json",
+      "sha256": "1cf2f359a1df6340f1b88bec782a519b50a7437fb743c4f273bc40f8bcfbe34b",
+      "bytes": 4327,
+      "role": "Covariância theta explicitamente sintética, não estimativa com cobertura.",
+      "anchors": [
+        {
+          "start": 78,
+          "end": 104,
+          "text": "  \"synthetic_covariance_theta\": [\n    [\n      0.25,\n      0,\n      0\n    ],\n    [\n      0,\n      1e-08,\n      0\n    ],\n    [\n      0,\n      0,\n      1e-06\n    ]\n  ],\n  \"alpha_fine_input\": 0.0072973525693,\n  \"alpha_origin\": {\n    \"path\": \"C:\\\\IALD\\\\Central de Patentes\\\\Chatgpt\\\\TUNEL\\\\DO_CHATGPT\\\\ORDEM_019\\\\F3.1\\\\PREREGISTRO_FASE9_V2_R5_2_F31_LABELS_E1_20261008.json\",\n    \"sha256\": \"81a970926345832ad34d4963b0fadf70827003086e2876295d07024f83ffcca7\",\n    \"pointer\": \"$.spec.beta.alpha_read\"\n  },\n  \"frozen_scalar_K\": 1.0838071748529643,\n  \"supplier_manifest_sha256\": \"b83e988faa7a5e36b3a09d875c8a31eca2a1d9d039b272b41bf22d684f8c1a9d\",\n  \"execution_pins\": [\n    {"
+        }
+      ]
+    },
+    {
+      "path": "C:\\IALD\\Central de Patentes\\work\\fase9_integracao_20261019\\r2_refinement_r3\\CONFIGURATION_R3.json",
+      "sha256": "e759632f5c5b61634c730aec124d0819906bf02045b3e8b58cb108455993fd91",
+      "bytes": 87455,
+      "role": "Caixa uniforme de integração; coverage significa cobertura da tabela/interpolação.",
+      "anchors": [
+        {
+          "start": 1,
+          "end": 38,
+          "text": "{\n  \"schema\": \"F9_BACKGROUND_PREPARATION_V1\",\n  \"request_id\": \"f3-integration-full-prior-refinement-r3\",\n  \"status\": \"SYNTHETIC_ENGINEERING_AUTHORIZED\",\n  \"created_utc\": \"2026-10-06T03:21:22.692070+00:00\",\n  \"scope\": \"NEW_SYNTHETIC_FIVE_MODEL_PRIOR_QUALIFICATION\",\n  \"prior\": {\n    \"coordinates\": [\n      \"H0\",\n      \"ombh2\",\n      \"omch2\"\n    ],\n    \"units\": [\n      \"km/s/Mpc\",\n      \"dimensionless\",\n      \"dimensionless\"\n    ],\n    \"bounds\": {\n      \"H0\": [\n        50,\n        90\n      ],\n      \"ombh2\": [\n        0.015,\n        0.03\n      ],\n      \"omch2\": [\n        0.08,\n        0.18\n      ]\n    },\n    \"measure\": \"independent_uniform_in_listed_coordinates\",\n    \"volume_exact\": \"3/50\",\n    \"density_exact\": \"50/3\",\n    \"boundary\": \"closed; endpoints have measure zero\",\n    \"on_solver_or_table_failure\": \"COMPUTATIONAL_FAILURE_STOP_NOT_ZERO_LIKELIHOOD\",\n    \"on_outside_prior\": \"DOMAIN_ERROR_NOT_SCIENTIFIC_VERDICT\"\n  },"
+        },
+        {
+          "start": 5990,
+          "end": 6000,
+          "text": "    ],\n    \"padded_nodes\": 76797,\n    \"five_field_payload_bytes\": 3071880,\n    \"time_formula\": \"padded_nodes * measured_seconds_per_node + independent held-out controls; no forecast before measured pilot\",\n    \"not_implemented_in_unit\": true,\n    \"needed_extra_fields\": \"Historical five fields omit H(z), consistent E(z*) and low-z distances. Any table/derivative emulator must also specify these, common parameters and verified redshift interpolation.\",\n    \"coverage\": \"padding and no extrapolation; any miss is computational error. Continuous interpolation tested off-grid before integration.\",\n    \"accuracy_plan\": \"after a separately authorized generation: deterministic eight-corner plus face/edge midpoint and space-filling off-grid controls, baseline/reference comparison, adaptive refinement based only on prediction error; hash new table and pins. Not run here.\"\n  },\n  \"required_inputs\": [\n    {"
+        }
+      ]
+    },
+    {
+      "path": "C:\\IALD\\Central de Patentes\\work\\fase9_integracao_20261019\\r2_refinement_r3\\THETA_PLAN_R3.json",
+      "sha256": "70a9cc317867b4bc9b9ad1987e9af1084dd3c0ac6f78f9240ca4d365af47d3d4",
+      "bytes": 2293,
+      "role": "Quadratura e alvo de convergência, não construção frequentista.",
+      "anchors": [
+        {
+          "start": 1,
+          "end": 1,
+          "text": "{\"absolute_log_refinement_target\":0.01,\"assembly_admission_sha256\":\"f357c8c8958e4972928b2aa9b46c6b209d641088ffa247db9031f2bd49df8752\",\"callback_reference\":{\"id\":\"physical-five-model-prior-callback-r1\",\"sha256\":\"5c9cb9fca453d6a65ce00289a4194f818538e5b96c29717613024a3cb321bd75\"},\"common_measure_id\":\"synthetic-common-kappa-deta-r1\",\"consumer_admission_sha256\":\"2ac7a669c5467f265dd3cfdec44445f5cb8ab6c8c90b8e9a6ac31bdad9da271c\",\"controller_reference\":{\"id\":\"single-use-synthetic-driver-r1\",\"sha256\":\"5c9cb9fca453d6a65ce00289a4194f818538e5b96c29717613024a3cb321bd75\"},\"engine_configuration_sha256\":\"e759632f5c5b61634c730aec124d0819906bf02045b3e8b58cb108455993fd91\",\"execution_unit_id\":\"f3-integration-full-prior-synthetic-r1:nested-refinement-r3\",\"first_level\":2,\"last_level\":3,\"max_callback_calls\":729,\"preparation_request_id\":\"ad02511d-1536-4a1b-a6c4-fb3e5eb26550\",\"schema\":\"F9_THETA_INTEGRATION_PLAN_V1\",\"source_pins\":{\"f9_consolidated_draft/RESOLUTOR_F9.json\":{\"bytes\":69740,\"path\":\"C:\\\\IALD\\\\Central de Patentes\\\\Chatgpt\\\\TUNEL\\\\DO_CHATGPT\\\\ORDEM_018\\\\f9_consolidated_draft\\\\RESOLUTOR_F9.json\",\"sha256\":\"c45de68d187fc49d5f79316b1561c9d9807dbb525019160837e8deea5e13ba53\"},\"f9_five_model_assembly_preparation/five_model_assembly.py\":{\"bytes\":17325,\"path\":\"C:\\\\IALD\\\\Central de Patentes\\\\Chatgpt\\\\TUNEL\\\\DO_CHATGPT\\\\ORDEM_018\\\\f9_five_model_assembly_preparation\\\\five_model_assembly.py\",\"sha256\":\"d65bc8be6123a0bca8ef6e47db10c85b89ff487d9c2edfd5cc6c465e84c4b87f\"},\"f9_likelihood_consumer_preparation/likelihood_consumer.py\":{\"bytes\":24982,\"path\":\"C:\\\\IALD\\\\Central de Patentes\\\\Chatgpt\\\\TUNEL\\\\DO_CHATGPT\\\\ORDEM_018\\\\f9_likelihood_consumer_preparation\\\\likelihood_consumer.py\",\"sha256\":\"6776bb660f6b8565c7282f937ecdc5239d5b941cce3e257aa6155379c9ccd6a5\"},\"f9_physical_prior_preparation/CONTRATO_API.json\":{\"bytes\":6777,\"path\":\"C:\\\\IALD\\\\Central de Patentes\\\\Chatgpt\\\\TUNEL\\\\DO_CHATGPT\\\\ORDEM_018\\\\f9_physical_prior_preparation\\\\CONTRATO_API.json\",\"sha256\":\"96dbd03f15ac8614eba760b8775145014d9684d1e51a5f63a1cad9303a0c1a03\"},\"f9_physical_prior_preparation/physical_prior.py\":{\"bytes\":21629,\"path\":\"C:\\\\IALD\\\\Central de Patentes\\\\Chatgpt\\\\TUNEL\\\\DO_CHATGPT\\\\ORDEM_018\\\\f9_physical_prior_preparation\\\\physical_prior.py\",\"sha256\":\"4fbae1160282875c4ed61c242361c14db9434416a1886d41905c79f0a4f7a3f6\"}}}"
+        }
+      ]
+    },
+    {
+      "path": "C:\\IALD\\Central de Patentes\\work\\fase9_integracao_20261019\\r1_envelope\\covariance_envelope_r1.py",
+      "sha256": "87fc4fdb5603ecf66ebfa87eaeea7d84d285806af2183afb87f77f5a11295451",
+      "bytes": 2523,
+      "role": "Envelope PSD diagonal reutilizado, não covariância física admitida.",
+      "anchors": [
+        {
+          "start": 1,
+          "end": 58,
+          "text": "\"\"\"Exact-rational variance envelopes; no observations, distribution or verdict.\n\nInput variances are assumed correct TOTAL marginal errors of a common target.\nOnly a mathematical bound is returned. This code cannot certify that assumption.\n\"\"\"\nfrom fractions import Fraction\nimport math\n\n\nclass EnvelopeError(ValueError):\n    pass\n\n\ndef rational(x):\n    if type(x) is bool or type(x) not in (int, float, Fraction):\n        raise EnvelopeError(\"RATIONAL_NUMERIC_INPUT_REQUIRED\")\n    if type(x) is float and not math.isfinite(x):\n        raise EnvelopeError(\"NONFINITE_INPUT\")\n    return Fraction(x)\n\n\ndef fixed_contrast_envelope(coefficients, sigmas):\n    if not coefficients or len(coefficients) != len(sigmas):\n        raise EnvelopeError(\"DIMENSION_MISMATCH\")\n    w, s = list(map(rational, coefficients)), list(map(rational, sigmas))\n    if any(x <= 0 for x in s):\n        raise EnvelopeError(\"POSITIVE_TOTAL_MARGINAL_SIGMAS_REQUIRED\")\n    a = sum(abs(x) * y for x, y in zip(w, s))\n    # This rank-one matrix has the stipulated diagonal and attains the bound.\n    v = [y if x >= 0 else -y for x, y in zip(w, s)]\n    return {\"variance_bound\": a*a, \"standard_error_bound\": a,\n            \"attaining_covariance\": [[x*y for y in v] for x in v],\n            \"physical_covariance_admitted\": False, \"tail_probability\": None}\n\n\ndef mean_minimax_design(sigmas):\n    s = list(map(rational, sigmas))\n    if not s or any(x <= 0 for x in s):\n        raise EnvelopeError(\"POSITIVE_TOTAL_MARGINAL_SIGMAS_REQUIRED\")\n    k = min(range(len(s)), key=lambda i: (s[i], i))\n    weights = [Fraction(int(i == k)) for i in range(len(s))]\n    smallest = s[k]*s[k]\n    # A worst covariance for oracle BLUE/GLS as a variational problem; do not\n    # confuse it with the rank-one extremizer for every individual fixed w.\n    worst = [[smallest + (s[i]*s[i]-smallest if i == j else 0)\n              for j in range(len(s))] for i in range(len(s))]\n    return {\"weights\": weights, \"selected_index\": k,\n            \"variance_minimax\": smallest, \"oracle_gls_worst_covariance\": worst,\n            \"selection_uses\": \"total sigmas and preregistered index tie-break only\",\n            \"physical_covariance_admitted\": False, \"observed_data_consumed\": False}\n\n\ndef quadratic(weights, matrix):\n    w = list(map(rational, weights))\n    if len(matrix) != len(w) or any(len(r) != len(w) for r in matrix):\n        raise EnvelopeError(\"DIMENSION_MISMATCH\")\n    return sum(w[i]*rational(matrix[i][j])*w[j]\n               for i in range(len(w)) for j in range(len(w)))"
+        }
+      ]
+    }
+  ]
+}

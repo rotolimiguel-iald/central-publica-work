@@ -1,0 +1,49 @@
+R1 — mapa físico local de H0: ligação reaproveitada e entrada restante
+19/10/2026; codex / r69_calibration_bridge; F3.INTEGRACAO_20261019, R1.
+Estatuto: DERIVED condicional + REAL documental. Nenhum centro composto, ajuste, dado novo, execução de artigo, motor ou Lean.
+As referências S01–S11 são trechos e hashes calculados em SOURCE_MAPS_R3.json.
+
+1. O que já existe, sem voltar a pedir sua construção
+S01 registrou corretamente que H0 publicado é uma compressão de observáveis. Sua ausência documental de L1b/L6 é histórica: a camada r5_source_completion já custodiou esses leitores; isso não resolve seus mapas físicos.
+S02: TheFlowLawContrast.lean:155–170 prova Hlocal=Hbg [E(N)/E(0)]^(2 beta/3), para Hlocal definido em :49–50, E positiva/diferenciável e contraste integrável. O registro N é ln(1+z); converter E(N) em E(z) requer essa composição. Não é um teorema sobre o estimador de disco maser nem sobre dA.
+S03: SectorFriedmann:37–55 já dá Friedmann/conservação com constante de integração, sob balanço nulo e fecho de setores explícitos. O teorema recebe a(t), fluido e hipóteses; não seleciona sozinho uma única história E(z), geometria de propagação ou likelihood instrumental.
+S04: o Custo implementa H_TGL(z), integral de distância comóvel, dL e dA (:3325–3404). Portanto é falso dizer genericamente que a TGL ainda não tem expansão ou distâncias.
+S05/S06: motor.py:256–285 e fundo_gpu.py:141–149 implementam a leitura acumulada dentro da integral. S07:20–30 já separa mapa A (luminosidade) da promoção B (geometria comum). K isolado não escolhe entre eles.
+
+2. Duas construções existentes não devem ser fundidas por nome
+Escreva beta=ALPHA_FINE_CODATA_2018 sqrt(e) em qualquer avaliação runtime; nenhuma avaliação numérica é feita aqui. Para matéria, radiação e Lambda não negativas e expansão plana:
+H_raw(z)^2=H_bare^2 [C_m(1+z)^3+C_r(1+z)^4+C_L],
+C_m=(1+beta)Omega_m; C_r=(1+4beta/3)Omega_r; C_L=Omega_L.
+Esta é a simplificação exata da implementação S04 quando 1+w_eff>=0. A função de resposta usada é beta Xi; seu comentário conserva O(beta^2), mas não implementa esse resto. Não promovemos a fórmula truncada a uma expansão física de todas as ordens.
+S=C_m+C_r+C_L, H_phys=H_raw(0)=H_bare sqrt(S), E_eff^2=[C_m(1+z)^3+C_r(1+z)^4+C_L]/S.
+Com o fecho nu Omega_m+Omega_r+Omega_L=1, S=1+beta Omega_m+(4beta/3)Omega_r, não 1. Assim o argumento H0 da rotina e a taxa física hoje são coordenadas diferentes. Reusar H_bare como H_phys sem normalizar introduz um erro.
+S10 já demonstrou a reparametrização GR por H_phys e Omega'_j=C_j/S. Fixar T_CMB/N_eff fixa a densidade física de radiação; esse prior não se transforma livremente. Essa equivalência algébrica não é um novo ajuste.
+Já a convenção D1b acumulada no fundo nu é distinta. Ponha nu=2beta/3, E(0)=1, K*=E(z*)^nu,
+I(z)=integral_0^z du/E(u), J(z)=integral_0^z E(u)^(nu-1)du.
+No intervalo 0<=z<=z*, o canal implementado tem dL_ac=(1+zHEL)c J(zHD)/(H_BG K*), contra dL_s=(1+zHEL)c I(zHD)/(H_BG K*).
+Q=J/I, Delta mu=5 log10 Q. Isso já estava em S07. Usar E(z)^nu no lugar de Q troca uma taxa pelo caminho integrado. O código trata separadamente z>z*; não estendemos esta forma além do intervalo.
+Somente sob a hipótese adicional de geometria óptica FLRW plana comum, com dualidade apropriada, resulta dA_ac=c J/[(1+z)H_BG K*], H_geo(z)=H_BG K* E(z)^(1-nu). No mapa A já escrito, essa promoção não está feita: luminosidade e distância angular não são identificadas por decreto. Tampouco se soma esse transporte ao fundo efetivo sem fixar a convenção, como se fossem dois fatores independentes.
+
+3. Consumidor concreto do maser: onde a lei entra
+S08 (Pesce Eq.1) usa D_A,ref=c I_ref(z)/[H_fit(1+z)] em LambdaCDM plano. S09 conserva latentes de redshift/velocidade peculiar; a distância vem do modelo do disco. Para uma candidata geometria plana E_geo normalizada:
+D_A,geo=c I_geo(z)/[H_phys(1+z)], I_geo=integral du/E_geo.
+O consumidor necessário é L=produto_i L_disk,i(dados_i | D_A,geo(z_i), nuisance_disk_i) L_velocity,i(vhat_i | z_i,vpec_i), integrado nos latentes/priores originais. Se forem reutilizados posteriors de distância em vez da likelihood, os priors já incorporados devem ser preservados ou removidos explicitamente. Não duplicar prior inadvertidamente.
+Mantendo a mesma distância geométrica e um único z exato, H_fit/H_phys=I_ref/I_geo. Para vários objetos, essa razão depende de z: não há correção escalar única do H0 comprimido sem demonstrar constância ou transportar a likelihood com seus pesos e latentes. A relação v=c z do artigo é uma convenção do consumidor; substituir por outra composição relativística exige declarar a alteração, não fazê-la em silêncio.
+Na promoção angular acumulada, H_phys=H_BG K*, I_geo=J e, se E_ref=E, H_fit/H_BG=K*/Q(z). No fundo efetivo, H_phys=H_bare sqrt(S) e I_geo usa E_eff. São dois consumidores explícitos condicionais, não duas previsões somáveis.
+
+4. Cota de baixos z sem ajustar centros
+Se E é positiva e crescente em [0,z], E(0)=1 e beta>=0, então Q é a média de E(u)^nu com peso positivo 1/E(u):
+1<=Q(z)<=E(z)^nu; logo K*/E(z)^nu<=H_fit/H_BG<=K* na promoção angular acima.
+Essa cota é exata nessas premissas e não usa o centro de nenhum leitor. Se E não for crescente, usar mínimo/máximo de E^nu no intervalo; não presumir o sinal.
+Para E(z)=1+e1 z+O(z^2), I=z-e1 z^2/2+O(z^3), J=z+(nu-1)e1 z^2/2+O(z^3),
+Q=1+(nu e1/2)z+O(z^2); H_fit/(H_BG K*)=1-(nu e1/2)z+O(z^2).
+No fundo nu matéria+radiação+Lambda, e1=(3Omega_m+4Omega_r)/2, portanto Q-1=beta(3Omega_m+4Omega_r)z/6+O(z^2).
+No fundo efetivo, e1_eff=(3C_m+4C_r)/(2S). A série sem uma cota do resto não é um certificado numérico. A cota de Pesce para variar Omega_m em LambdaCDM não é uma cota automática para outro mapa TGL.
+
+5. Entrada exata restante e saída operacional
+FEITO: fator K derivado no contrato da taxa, Friedmann condicional, rotinas de distâncias, leitura acumulada e sua razão Q; não pedir recunhagem desses mecanismos.
+OPEN nesta cobertura: identificar qual D_A e qual relógio/redshift o instrumento maser realiza na TGL; comprovar preservação ou corrigir a dinâmica inferencial do disco. A promoção B acima é uma hipótese tipada utilizável, não consequência extraída aqui de S02. Nenhuma leitura nova do operador é exigida por esta nota: buscar/ligar a derivação pertinente é trabalho técnico.
+OPEN para recalcular o leitor: recuperar likelihood/posteriors de cada disco com priors e latentes, tratamento de velocidades e seleção dos cinco sem NGC4258. A Tabela2 comprimida não contém essa informação. É possível provar invariância aproximada em vez de refazer tudo, mas deve incluir modelo do disco e erro controlado da transformação, não apenas uma amplitude K.
+OPEN para os demais canais: distâncias de fluxo/magnitude com suas calibrações e seleção; distância GW não é automaticamente dL eletromagnético; lentes pedem potencial e geometria. Não inferimos esses vínculos da igualdade do símbolo H0.
+RESULTADO: mapa matemático de conversão explicitado, partes existentes reaproveitadas, aceitação física do H0 comprimido ainda OPEN. Nenhuma significância observada ou confirmação foi obtida.
+Custódia de versão: S11 está numa pasta chamada v394_r12, mas o próprio SEAL_SNAPSHOT.json informa um_version=v393 e timestamp 2026-10-14 18:11:50. Não declarar selo v394 por nome de diretório. Esta nota é leitura de fontes e não atestado de implantação/compilação atual.

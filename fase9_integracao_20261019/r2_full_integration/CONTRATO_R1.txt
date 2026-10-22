@@ -1,0 +1,47 @@
+Integração física sintética R2/R3 — candidato, 19/10/2026
+
+[DERIVED] Reuso byte a byte de theta_integrator, physical_prior, five_model_assembly,
+likelihood_consumer, linear_gaussian e singular_gaussian_v2 da ORDEM018. A preparação
+relê todos os arquivos apontados por SOURCE_PINS; COPIED_SOURCE_PINS_R1 identifica
+fontes reais, cópias e hashes. Nenhum main antigo é invocado.
+
+[INPUT] O novo experimento é sintético. As 283 linhas e as 63 colunas de nuisance
+reutilizam a estrutura histórica; as médias são geradas por CAMB no ponto médio
+do prior [70,.0225,.13], modelo H1, nuisance zero. A covariância é a receita SPD
+explícita de RECIPE_R1, em coordenadas de saída, com dois termos cruzados .1 e
+demais cruzados zero SOMENTE no experimento sintético. Isso não preenche nenhuma
+covariância observada nem equivale à família de 600 sistemáticas da conjunta.
+
+O centro teórico novo é um dos125 pontos; sua execução é custodiada antes de
+gerar a média sintética. Seus bytes são recuperados quando o callback o recebe.
+Cada ponto tem claim exclusivo anterior à chamada e recibo/resultado posteriores.
+Qualquer falha encerra a rodada; nenhum claim incerto é repetido. Não se reutiliza
+o cache dos sete pontos R1 porque a configuração de redshifts é distinta.
+
+Os cinco modelos são H1 TGL, H2 LCDM, H3 beta livre, H4 deslocamento de Cefeidas e
+H5 r_d livre somente em BAO. H5 não representa fundo cosmológico arbitrário.
+Beta_TGL vem de ALPHA_FINE_CODATA_2018 no layout pinado, multiplicado por sqrt(e)
+em runtime. O parâmetro beta=0 é apenas a âncora afim do integral H3, não beta_TGL.
+
+Todos compartilham theta=(H0,ombh2,omch2), um fundo CAMB por theta, a mesma
+covariância, suporte, origem e medida kappa*d_eta. A integral de eta mantém o
+prefator normalizado. O kappa comum desconhecido cancela nas razões. Os priors
+extras são os contratos originais: beta uniforme[-.05,.05], s uniforme[-.15,.15],
+r_d uniforme[130,160]Mpc. As transformações delta=-5log10(1+s) e q=1/r_d mantêm
+os respectivos Jacobianos, sem inserir prior uniforme no parâmetro transformado.
+
+O prior theta uniforme tem volume3/50 e densidade50/3. A mudança para cubo unitário
+faz o produto exatamente1; o integrador Simpson original aplica os pesos uma vez.
+Níveis1 e2 têm27 e125 nós aninhados; os27 não são executados outra vez. A diferença
+dos log-integrais deve ser <=.01 para satisfazer o diagnóstico pré-fixado; não é
+cota de erro global, não limita picos perdidos e não se ajusta após os resultados.
+
+As admissões são ENGINEERING_STRUCTURAL_ADMISSION e ENGINEERING_POINTWISE_ONLY,
+data_kind=SYNTHETIC. Elas vinculam hashes da receita e implementação, não inventam
+D-H, X13, d72, congelamento, admissão observada ou aceite científico. MM permanece
+CONDITIONAL_UNRATIFIED. O escalar e a conjunta continuam testemunhas distintas.
+
+[OPEN] O cálculo futuro observado precisa das sistemáticas/atos aplicáveis e de
+precisão suficientemente qualificada. O controle sintético pode verificar a
+ligação real e a marginalização theta; não mede lnB observado, sigma de cauda,
+discriminação física, certeza do fornecedor ou confirmação da TGL.

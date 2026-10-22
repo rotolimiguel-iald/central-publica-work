@@ -1,0 +1,51 @@
+R4 — QUALIFICAÇÃO CONDICIONAL DO ESCORE, 19/10/2026
+Construtor: /root/r68_independent_review nesta etapa; exige outro revisor.
+Unidade F3.INTEGRACAO_20261019; referência própria SESSION_REFERENCE.json; preflight R4 revisão6 pronto.
+
+1. REAPROVEITAMENTO E ALCANCE
+[REAL documental] f9_runner_v1x_staged_e1_bytes.py:297–345 usa, para a comparação TGL/ΛCDM, os fatores uniformes f=K·1 ou1 e S_f=C+σ_BG² f fᵀ. O escore legado é signed_sqrt(Q_LCDM−Q_TGL); a variante com logdet é diagnóstico. O código original/veredito foram preservados.
+O contrato conjunto ORDEM018/F9_VERDICT_CONTRACT_CANDIDATE_V2 já distingue caudas calibradas, cenários finitos, supremum de nuisance e Bonferroni5. Isso foi reaproveitado como princípio de construção, NÃO adotado como ato ou família do escalar. A remissão Sidak do escalar não demonstra independência.
+As funções novas são de sandbox, somente qualificações sintéticas. Nenhuma abertura, d72, centro de leitor, mudança de gate ou resultado observado é produzido. Planos e scripts foram pinados antes das duas execuções distintas:30 controles do adaptador e8 controles da ponte GLS; não repetimos campanhas antigas.
+
+2. DUAS MÉDIAS SIMPLES, COVARIÂNCIA COMUM
+[DERIVED] y~N(μ0,Σ), Σ SPD conhecida; d=μ1−μ0, D²=dᵀΣ⁻¹d>0.
+T=Q0−Q1=2dᵀΣ⁻¹(y−μ0)−D². Sob H0, T~N(−D²,4D²).
+Logo p=P0(T*≥T)=SF((T+D²)/(2D)), e Z_eq=−Φ⁻¹(p).
+signed_sqrt(T) é mantido como escore; não substitui Z_eq. Em y=μ1, T=D² e ambas as leituras coincidem com D; fora desse ponto não em geral.
+Potência no caso normal simples com limiar unilateral zcrit é SF(zcrit−D). D=5, zcrit=5 dá50%, não garantia de detecção.
+
+3. COVARIÂNCIAS DISTINTAS
+[DERIVED] Sob H0, y=μ0+L0 z, z~N(0,I), L0L0ᵀ=Σ0, d=μ1−μ0:
+T=zᵀAz+bᵀz+c,
+A=I−L0ᵀΣ1⁻¹L0; b=2L0ᵀΣ1⁻¹d; c=−dᵀΣ1⁻¹d.
+Para2(logL1−logL0), acrescente logdetΣ0−logdetΣ1 a c e ao T observado. Isso é deslocamento constante no par simples fixo, portanto não muda sua ordenação/p.
+No caso escalar, T=a z²+b z+c. Complete o quadrado: m=−b/(2a), r²=(T−c)/a+m². Para a>0 e r²>0, p=Φ(m−r)+SF(m+r); para a<0, p=Φ(m+r)−Φ(m−r). Demais sinais são tratados explicitamente. Implementação usa erfc para evitar subtração1−Φ(z) na cauda positiva.
+Não foi localizado Imhof/Davies/ncx2 nos .py da ORDEM018 na busca focal. Para matriz multivariada desigual genérica o adaptador devolve A,b,c e CALIBRATION_UNAVAILABLE com p/Z nulos, sem Wilks, aproximação normal ou Monte Carlo de5σ. Isso não afirma ausência de métodos em todo o acervo/literatura.
+
+4. PONTE EXATA PARA O ESCORE ESCALAR EXISTENTE
+[DERIVED] Seja C SPD fixa, 1 o vetor de uns, I=1ᵀC⁻¹1, v=1/I,
+ĥ=(1ᵀC⁻¹y)/I, r=y−ĥ1, com1ᵀC⁻¹r=0.
+Para fator constante f>0 e fundo gaussiano de média μ e variância s², S_f=C+f²s²11ᵀ.
+Sherman–Morrison e o lema do determinante dão:
+Q_f=rᵀC⁻¹r+(ĥ−fμ)²/(v+f²s²),
+detS_f=detC·(v+f²s²)/v.
+O termo perpendicular é comum e cancela tanto em Q0−Q1 como em2ΔlogL. Portanto a comparação das matrizes n×n do runner é EXATAMENTE a comparação escalar:
+H0: ĥ~N(μ,v+s²); H1: ĥ~N(Kμ,v+K²s²).
+Não há aproximação de dimensão ou descarte de informação relevante à razão desse par simples. Esta redução não vale para fatores Cepheid não uniformes, perfis de β, C estimada com y, seleção de cenário a partir do resultado ou K cosmológico variável sem qualificação adicional.
+[INPUT explícito] A distribuição acima usa um modelo AMOSTRAL preditivo: o fundo é uma variável gaussiana comum independente do ruído local. A marginalização gaussiana do código, sozinha, não prova esse modelo como frequência de um H0 verdadeiro fixo desconhecido. Para o nulo composto desse último problema falta um supremum válido ou outra construção uniforme. O adaptador recusa UNKNOWN_FIXED_H0 e não o converte em significância frequentista irrestrita.
+
+5. MULTIPLICIDADE E CENÁRIOS
+adjust_family exige contrato nomeado, rota, lista de testes e lista de cenários únicos COMPLETAS. Cada resultado deve ser calibrado para sua distribuição simples declarada. p_robusto=max_s p_s é válido para a união FINITA dos nulos admitidos; não é supremum contínuo certificado.
+Bonferroni p_adj=min(1,m p_robusto) é conservador sob dependência arbitrária entre testes quando cada p local é válido. m vem da lista explícita, nunca é5 por default. Não se sumam testemunhas, lnB ou sigmas.
+Sidak é recusado: uma futura habilitação requer qualificação da independência/dependência aplicável, não mera string ou repetição da remissão da spec. O contrato de multiplicidade desta entrega é SYNTHETIC_QUALIFICATION_ONLY; adoção observada exige instrumento congelado/atos próprios. Não existe autorização embutida.
+
+6. ENCAIXE E RECUSAS
+scalar_bridge.qualify_scalar_synthetic recebe uma matrizC com SHA256 dos floats little-endian, dados sintéticos e K/H_BG/σ_BG previamente fixos. Devolve escore bruto, escore legado, p/Z condicionais e p separado da variante logdet. Não importa um.py, não importa o runner original e não altera sua função de veredito.
+Ponto de integração em nova versão: ao lado do retorno synthetic_statistics, passar os mesmos values/c/mu/sigma_bg/K e anexar campo de calibração. Não sobrescrever z_disc_quadratic nem alimentar a função antiga como se sua semântica tivesse mudado. A amplitude e a matriz devem vir das fontes pinadas/admissões; o hash da matriz verifica identidade de bytes, não sua origem física.
+Distribuição ausente/ajustada ao y, NaN/booleanos, dimensão incompatível, matriz não simétrica/SPD, hipóteses idênticas, overflow/cauda zero ou underflow recusam. Sem cauda qualificada, nenhuma não-rejeição ou sigma é emitida. p=1 conserva Z nulo com limite −∞ explicitado; não inventa número finito.
+Os records de adjust_family são entradas confiadas do adaptador: este módulo NÃO autentica terceiros nem transforma um dicionário arbitrário em certificado científico. A revisão/admissão independente e o pin do contrato continuam externos.
+
+7. RESULTADO E RESÍDUOS
+[REAL sintético]30/30 testes do adaptador;8/8 da redução GLS. Incluem comparação da forma matricial completa, mudança de coordenadas, covariâncias correlacionadas, termo perpendicular não zero, covariâncias distintas e controles negativos. Logs/planos/recibos por hash em DELIVERY_R4.json. Nenhum controle usou centros observados da Fase9.
+[DERIVED/INPUT] Leis estatísticas analíticas exatas no modelo simples declarado; avaliações em float64. Os testes verificam tolerâncias locais, não são certificados de arredondamento para qualquer matriz/cauda nem supremum sobre nuisance físico. Não emitir uma alegação observada de5σ a partir desta entrega.
+[OPEN] Qualificação do modelo amostral real, mapa dos leitores, fonte/covariância completas, tratamento cosmológico, distribuições dos perfis e demais estatísticas, independência/Sidak ou ato de outra família, orçamento numérico certificado e integração operacional de abertura. O requisito integralR4 não é automaticamente satisfeito por uma lei condicional. Este componente resolve uma passagem específica reutilizando a estrutura efetiva do escore.

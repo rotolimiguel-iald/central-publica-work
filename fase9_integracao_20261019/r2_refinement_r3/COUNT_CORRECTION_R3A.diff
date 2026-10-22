@@ -1,0 +1,20 @@
+--- run_refinement_r3.py
++++ run_refinement_r3a.py
+@@ -13,7 +13,7 @@
+     if temp.stat().st_size!=len(b):raise RuntimeError('Incomplete output')
+     temp.rename(p);return b
+ def main():
+-    plan_raw=(H/'PLAN_R3.json').read_bytes();plan=json.loads(plan_raw)
++    plan_raw=(H/'PLAN_R3A.json').read_bytes();plan=json.loads(plan_raw)
+     if sys.argv[1:]!=[sha(plan_raw)]:raise RuntimeError('Plan pin required')
+     for pin in plan['execution_pins']:
+         if sha((H/pin['path']).read_bytes())!=pin['sha256']:raise RuntimeError('Pin mismatch '+pin['path'])
+@@ -144,7 +144,7 @@
+         check('729_callbacks_all_five_models',result['callback_counts']['completed']==729 and set(result['models'])==set(a.MODELS))
+         check('normalized_theta_prior_once',result['prior']['unit_cube_density_exact']=='1')
+         check('no_observed_or_scientific_verdict',result['sigma'] is None and result['p'] is None and result['verdict'] is None)
+-        put('RESULT_R3.json',{'status':'SYNTHETIC_INTEGRATION_COMPLETE','exit_code':0,'started_utc':json.loads((H/'START_R3.json').read_bytes())['started_utc'],'ended_utc':now(),'seconds':time.perf_counter()-start,'solver_calls':calls,'reused_completed_calls':2,'total_physical_calls_across_R1_R3':calls+2,'checks':checks,'refinement':result['refinement'],'conditional_precision_summary':result['conditional_precision_summary'],'observed_data':False,'limits':recipe['limits'],'plan_sha256':sha(plan_raw),'theta_result_sha256':sha((H/'THETA_RESULT_R3.json').read_bytes())})
++        put('RESULT_R3.json',{'status':'SYNTHETIC_INTEGRATION_COMPLETE','exit_code':0,'started_utc':json.loads((H/'START_R3.json').read_bytes())['started_utc'],'ended_utc':now(),'seconds':time.perf_counter()-start,'solver_calls':calls,'reused_completed_calls':125,'total_physical_calls_across_R1_R3':calls+125,'checks':checks,'refinement':result['refinement'],'conditional_precision_summary':result['conditional_precision_summary'],'observed_data':False,'limits':recipe['limits'],'plan_sha256':sha(plan_raw),'theta_result_sha256':sha((H/'THETA_RESULT_R3.json').read_bytes())})
+         print(json.dumps({'status':'complete','calls':calls,'seconds':time.perf_counter()-start,'refinement':result['refinement']}))
+     except BaseException as exc:
+         put('FAILURE_R3.json',{'status':'FAILED_TERMINAL_NO_RETRY','exit_code':1,'ended_utc':now(),'seconds':time.perf_counter()-start,'solver_calls_attempted':calls,'checks':checks,'exception':type(exc).__name__,'message':str(exc),'traceback':traceback.format_exc(),'diagnostics':None if integrator is None else integrator.diagnostics()})

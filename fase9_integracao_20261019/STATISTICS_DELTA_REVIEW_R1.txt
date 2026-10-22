@@ -1,0 +1,38 @@
+--- 
++++ 
+@@ -120,17 +120,28 @@
+     av, bv = float(a[0, 0]), float(b[0])
+     if av == 0:
+         raise CalibrationError('unequal covariance rounded to zero quadratic coefficient')
+-    center = -bv/(2*av)
+-    radius2 = (score-c)/av + center*center
+-    _finite(center, 'quadratic center'); _finite(radius2, 'quadratic radius squared')
+-    if radius2 <= 0:
++    # Stable roots of av*z^2+bv*z+(c-score)=0. Center +/- radius loses
++    # the finite root when variances differ by about machine precision.
++    dv = _finite(c-score, 'quadratic threshold constant')
++    scale = max(abs(av), abs(bv), abs(dv))
++    an, bn, dn = av/scale, bv/scale, dv/scale
++    discriminant = math.fsum([bn*bn, -4*an*dn])
++    _finite(discriminant, 'scaled discriminant')
++    roots = None
++    if discriminant <= 0:
+         p = 1.0 if av > 0 else 0.0
+     else:
+-        radius = math.sqrt(radius2)
+-        lo, hi = center-radius, center+radius
++        sq = math.sqrt(discriminant)
++        qr = -.5 * (bn + math.copysign(sq, bn))
++        if qr == 0 or an == 0:
++            raise CalibrationError('quadratic roots unresolved at floating precision')
++        lo, hi = sorted((qr/an, dn/qr))
++        _finite(lo, 'lower root'); _finite(hi, 'upper root')
++        roots = [lo, hi]
+         p = _sf(-lo)+_sf(hi) if av > 0 else _interval(lo, hi)
+     out.update(_tail_result(p))
+-    out.update(calibration='ANALYTIC_SCALAR_QUADRATIC_NORMAL', root_center=center, root_radius_squared=radius2)
++    out.update(calibration='ANALYTIC_SCALAR_QUADRATIC_NORMAL', roots=roots,
++               scaled_discriminant=discriminant, root_algorithm='SCALED_STABLE_Q_FORMULA')
+     return out
+ 
+ 

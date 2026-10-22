@@ -1,0 +1,23 @@
+--- fixed_background_pivot.py
++++ fixed_background_pivot_r2.py
+@@ -152,9 +152,17 @@
+         cov=matrix(alternative_covariance,n+1);l=w+[-f];v1=dot(l,[dot(row,l) for row in cov])
+     v0f=finite_float(v0);v1f=finite_float(v1)
+     if v0f<=0 or v1f<=0:raise PivotError('unresolved design variance')
+-    mean=finite_float((alt-f)*h)/math.sqrt(v0f);sd=math.sqrt(v1f/v0f)
+-    power=sf((threshold-mean)/sd)
+-    if contract['tail']=='two_sided':power+=sf((threshold+mean)/sd)
++    # Separate square roots avoid overflowing v1/v0 for finite input variances.
++    # Every standardized intermediate must remain representable; otherwise refuse.
++    root0=math.sqrt(v0f);root1=math.sqrt(v1f)
++    mean=finite_float(finite_float((alt-f)*h)/root0)
++    sd=finite_float(root1/root0)
++    if sd<=0:raise PivotError('design standard deviation underflow')
++    upper=finite_float(finite_float(threshold-mean)/sd)
++    power=sf(upper)
++    if contract['tail']=='two_sided':
++        lower=finite_float(finite_float(threshold+mean)/sd)
++        power+=sf(lower)
+     if not math.isfinite(power) or not 0<=power<=1:raise PivotError('invalid power')
+     return {'power':power,'alternative_mean_z':mean,'alternative_sd_z':sd,'threshold_z':threshold,
+             'tail':contract['tail'],'H_true_design_input':finite_float(h),'observed_power':False}

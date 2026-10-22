@@ -1,0 +1,44 @@
+Contrato de reuso físico e refinamento — 19/10/2026
+
+[DERIVED por inspeção, não nova execução] O fornecedor copiado
+copies/background_controls.py:130–186 recebe configuração p, point_id e
+profile_id. Seleciona exatamente um ponto; não usa os demais pontos do catálogo.
+As entradas numéricas vêm de: ponto selecionado (id,theta), background,
+accuracy_profiles, redshifts, precision e h5_candidate. check_theta:35–40 lê
+prior.coordinates/bounds. runtime_check:69–79 fixa versões e bytes CAMB.
+A projeção conservadora em cache_equivalence_r3.py inclui os objetos inteiros
+prior/background/accuracy_profiles/redshifts/precision/h5_candidate, ponto,
+perfil reference e hashes da implementação/runtime. Igualdade desses objetos
+assegura igualdade das entradas efetivamente consumidas pela função pinada.
+
+O novo catálogo usa grade9³ e muda seu próprio SHA256; não se afirma que ele
+tenha o hash antigo. Os125 pontos antigos conservam id e theta exatos. As729
+entradas são geradas pelo mesmo _theta/_node_key do integrador original.
+Somente os604 pontos novos podem chamar CAMB. O centro sintético e a covariância
+são preservados por bytes; nenhuma escolha depende de centro observado.
+
+Cada pacote recuperado guarda, em original_nodes, o packet/result/receipt/claim
+originais, sem alteração. A receipt nova é explicitamente uma PONTE de entradas
+equivalentes, com zero chamadas, ambos os hashes de configuração, a projeção
+consumida e hashes originais. Seu pacote de transporte novo aponta para essa
+ponte e para o catálogo novo; o result é o objeto original, inalterado. Não se
+atribui execução antiga a uma configuração cujo hash não existia àquela época.
+
+Os125 resultados condicionais H1–H5 também são reutilizados: exigem igualdade
+exata de médias/parâmetros/priors, estrutura/nuisance, input_sha256 de y/C/origem,
+suporte/cutoffs/medida, código dos serviços, limites e tolerâncias, versões e
+runtime. A proveniência é religada com uma conditional_bridge explícita,
+preservando todo o restante do resultado e a proveniência original. A ponte não
+reexecuta a integral antiga nem converte indicador em certificado.
+
+[INPUT] Níveis2/3,729 pontos acumulados, até604 chamadas novas,1thread,600s+
+kill-after10s; nenhuma repetição de falha/incerteza. Priors, cinco modelos,
+dados e covariância sintéticos e alvo.01 permanecem idênticos à rodada anterior.
+O máximo600s vale para o processo inteiro; per_worker100 herdado não é imposto.
+O resultado final reportará diferença de níveis, erro dos serviços internos e
+se o diagnóstico satisfaz.01. Falhar mantém INCONCLUSIVE, sem novo refinamento.
+
+[OPEN] Uma diferença pequena entre grades não certifica erro global ou exclui
+picos perdidos. Esta é uma covariância sintética283×283, não600cenários nem
+composição observada. H5=r_d livre em BAO, MM permanece CONDITIONAL_UNRATIFIED.
+Nenhum ato de admissão, X13, d72, freeze, memória, produção ou gate é produzido.

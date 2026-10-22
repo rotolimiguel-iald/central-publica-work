@@ -1,0 +1,112 @@
+--- run_refinement_r3a.py
++++ run_refinement_r4.py
+@@ -13,13 +13,13 @@
+     if temp.stat().st_size!=len(b):raise RuntimeError('Incomplete output')
+     temp.rename(p);return b
+ def main():
+-    plan_raw=(H/'PLAN_R3A.json').read_bytes();plan=json.loads(plan_raw)
++    plan_raw=(H/'PLAN_R4.json').read_bytes();plan=json.loads(plan_raw)
+     if sys.argv[1:]!=[sha(plan_raw)]:raise RuntimeError('Plan pin required')
+     for pin in plan['execution_pins']:
+         if sha((H/pin['path']).read_bytes())!=pin['sha256']:raise RuntimeError('Pin mismatch '+pin['path'])
+     for key in ['OMP_NUM_THREADS','OPENBLAS_NUM_THREADS','MKL_NUM_THREADS','NUMEXPR_NUM_THREADS']:
+         if os.environ.get(key)!='1':raise RuntimeError('Single-thread environment required')
+-    put('START_R3.json',{'started_utc':now(),'plan_sha256':sha(plan_raw),'execution_count':1})
++    put('START_R4.json',{'started_utc':now(),'plan_sha256':sha(plan_raw),'execution_count':1})
+     start=time.perf_counter();calls=0;checks=[];integrator=None
+     try:
+         sys.path.insert(0,str(H/'copies'))
+@@ -31,22 +31,22 @@
+         import physical_prior as p
+         import precision_services as ps
+         import linear_gaussian as lg
+-        import cache_equivalence_r3 as ce
+-        recipe=json.loads((H/'RECIPE_R3.json').read_bytes());cfg=json.loads((H/'CONFIGURATION_R3.json').read_bytes())
+-        config_raw=(H/'CONFIGURATION_R3.json').read_bytes();runtime_raw=(H/'copies/RUNTIME_METADATA.json').read_bytes()
++        import cache_equivalence_r4 as ce
++        recipe=json.loads((H/'RECIPE_R4.json').read_bytes());cfg=json.loads((H/'CONFIGURATION_R4.json').read_bytes())
++        config_raw=(H/'CONFIGURATION_R4.json').read_bytes();runtime_raw=(H/'copies/RUNTIME_METADATA.json').read_bytes()
+         layout_raw=(H/'copies/LAYOUT_ESTRUTURAL_3CMB_13BAO.json').read_bytes();design_raw=(H/'copies/ESPECIFICACAO_LINEAR.json').read_bytes()
+         bg.runtime_check()
+-        runtime=put('LOADED_BINDING_R3.json',{'numpy':np.__version__,'python':sys.version,'runtime_sha256':sha(runtime_raw),'class_module':lg.FlatNuisanceGaussian.__module__,'sources':plan['execution_pins'],'runtime_file_check':True})
+-        reference={'id':recipe['unit_id']+':synthetic-recipe','sha256':sha((H/'RECIPE_R3.json').read_bytes())}
++        runtime=put('LOADED_BINDING_R4.json',{'numpy':np.__version__,'python':sys.version,'runtime_sha256':sha(runtime_raw),'class_module':lg.FlatNuisanceGaussian.__module__,'sources':plan['execution_pins'],'runtime_file_check':True})
++        reference={'id':recipe['unit_id']+':synthetic-recipe','sha256':sha((H/'RECIPE_R4.json').read_bytes())}
+         assembly_admission={'schema':'F9_ASSEMBLY_ADMISSION_V1','status':'ENGINEERING_STRUCTURAL_ADMISSION','layout_sha256':sha(layout_raw),'sources':a.SOURCE_PINS,'engine_configuration_sha256':sha(config_raw),'runtime_sha256':sha(runtime_raw)}
+-        ad_raw=put('ASSEMBLY_ADMISSION_R3.json',assembly_admission)
++        ad_raw=put('ASSEMBLY_ADMISSION_R4.json',assembly_admission)
+         cache={}; old_nodes={}
+-        custody=json.loads((H/'CACHE_CUSTODY_R3.json').read_bytes())
++        custody=json.loads((H/'CACHE_CUSTODY_R4.json').read_bytes())
+         for item in custody['entries']:
+             if sha((H/item['copy']).read_bytes())!=item['sha256']:raise RuntimeError('Original cache bytes changed')
+-        old_config_raw=(H/'original_context/CONFIGURATION_R2.json').read_bytes();old_config=json.loads(old_config_raw)
+-        old_admission=json.loads((H/'original_context/CONSUMER_ADMISSION_R2.json').read_bytes())
+-        old_loaded=json.loads((H/'original_context/LOADED_BINDING_R2.json').read_bytes())
++        old_config_raw=(H/'original_context/CONFIGURATION_R3.json').read_bytes();old_config=json.loads(old_config_raw)
++        old_admission=json.loads((H/'original_context/CONSUMER_ADMISSION_R3.json').read_bytes())
++        old_loaded=json.loads((H/'original_context/LOADED_BINDING_R3.json').read_bytes())
+         for directory in sorted((H/'original_nodes').iterdir()):
+             point=next(x for x in cfg['points'] if x['id']==directory.name)
+             original_packet=(directory/'packet.json').read_bytes()
+@@ -67,7 +67,7 @@
+                 disk=(H/'nodes'/point['id']/'packet.json').read_bytes()
+                 if sha(disk)!=sha(packet):raise RuntimeError('Cache identity mismatch')
+                 return packet,receipt,'VERIFIED_DURABLE_CACHE'
+-            if calls>=604 or time.perf_counter()-start>600:raise RuntimeError('Resource budget exhausted')
++            if calls>=4184 or time.perf_counter()-start>1800:raise RuntimeError('Resource budget exhausted')
+             calls+=1;begin=now();t=time.perf_counter()
+             identity={'theta':point['theta'],'engine_configuration_sha256':sha(config_raw),'runtime_sha256':sha(runtime_raw),'engine_sha256':sha((H/'copies/background_controls.py').read_bytes())}
+             put('nodes/'+point['id']+'/claim.json',{'attempt':calls,'started_utc':begin,'identity':identity})
+@@ -86,7 +86,7 @@
+         center=next(x for x in cfg['points'] if x['id']==recipe['center']['point_id'])
+         if center['theta']!=recipe['center']['theta']:raise RuntimeError('Center mismatch')
+         center_packet,_,_=background(center)
+-        cent=assemble(center['theta'],center_packet);cent_raw=put('CENTER_ASSEMBLY_R3.json',cent)
++        cent=assemble(center['theta'],center_packet);cent_raw=put('CENTER_ASSEMBLY_R4.json',cent)
+         structure_raw=c.extract_structure(cent_raw,assembly_sha256=sha(cent_raw));structure=json.loads(structure_raw)
+         scales=np.array(structure['native_to_output_row_scale'],dtype='<f8')
+         expected_y=np.array(cent['models']['H1_TGL']['mean_without_nuisance'],dtype='<f8')/scales
+@@ -100,9 +100,9 @@
+         for name,array in [('y_native',y),('C_native',C),('origin',origin)]:
+             with (H/(name+'.f64le')).open('xb') as f:f.write(array.tobytes())
+         loaded_ref={'id':'loaded-physical-and-statistical-objects','sha256':sha(runtime)}
+-        backend=put('BACKEND_BINDING_R3.json',{'schema':'F9_QUALIFIED_BACKEND_CALLER_RECEIPT_V1','source_pins':{k:c.SOURCE_PINS[k] for k in ('linear_gaussian','support')},'runtime_reference':loaded_ref,'class_module':lg.FlatNuisanceGaussian.__module__,'class_name':'FlatNuisanceGaussian','caller_verification_reference':loaded_ref})
++        backend=put('BACKEND_BINDING_R4.json',{'schema':'F9_QUALIFIED_BACKEND_CALLER_RECEIPT_V1','source_pins':{k:c.SOURCE_PINS[k] for k in ('linear_gaussian','support')},'runtime_reference':loaded_ref,'class_module':lg.FlatNuisanceGaussian.__module__,'class_name':'FlatNuisanceGaussian','caller_verification_reference':loaded_ref})
+         admission={'schema':'F9_CONSUMER_ADMISSION_V1','scope':'ENGINEERING_POINTWISE_ONLY','scenario_id':'one-explicit-synthetic-SPD-context','data_kind':'SYNTHETIC','input_sha256':{'y_native_f64le':sha(y.tobytes()),'C_native_f64le':sha(C.tobytes()),'affine_origin_native_f64le':sha(origin.tobytes()),'row_ids_canonical_json':sha(c._canonical(structure['row_ids']))},'structure_sha256':sha(structure_raw),'source_pins':c.SOURCE_PINS,'backend_receipt_sha256':sha(backend),'prediction_admission_sha256':sha(ad_raw),'coordinates':c.COORDINATES,'output_measure':c.OUTPUT_MEASURE,'common_measure_id':'synthetic-common-kappa-deta-r1','MM_status':'CONDITIONAL_UNRATIFIED','expected_support_rank':283,'tolerances':recipe['tolerances'],'references':{k:reference for k in ['statistical_model','covariance_and_cross_blocks','fixed_affine_support','compression_and_offsets','common_nuisance_measure','MM_conditional_model','structure_review','synthetic_fixture']}}
+-        adm_raw=put('CONSUMER_ADMISSION_R3.json',admission);put('STRUCTURE_R3.json',structure)
++        adm_raw=put('CONSUMER_ADMISSION_R4.json',admission);put('STRUCTURE_R4.json',structure)
+         joint=c.prepare_joint(y,C,structure['row_ids'],affine_origin_native=origin,structure_json=structure_raw,admission_json=adm_raw,admission_sha256=sha(adm_raw),backend_receipt_json=backend,numpy_module=np,flat_gaussian_class=lg.FlatNuisanceGaussian)
+         def check(name,value):
+             checks.append({'name':name,'passed':bool(value)})
+@@ -113,8 +113,8 @@
+         check('H3_zero_equals_LCDM',cent['models']['H3_beta_free']['mean_without_nuisance']==cent['models']['H2_LCDM']['mean_without_nuisance'])
+         check('H4_zero_equals_LCDM',cent['models']['H4_Cepheid']['mean_without_nuisance']==cent['models']['H2_LCDM']['mean_without_nuisance'])
+         code_sha=sha(Path(__file__).read_bytes());callback_ref={'id':'physical-five-model-prior-callback-r1','sha256':code_sha}
+-        theta_plan={'schema':'F9_THETA_INTEGRATION_PLAN_V1','preparation_request_id':ti.REQUEST_ID,'execution_unit_id':recipe['unit_id']+':nested-refinement-r3','source_pins':ti.SOURCE_PINS,'consumer_admission_sha256':sha(adm_raw),'assembly_admission_sha256':sha(ad_raw),'engine_configuration_sha256':sha(config_raw),'callback_reference':callback_ref,'controller_reference':{'id':'single-use-synthetic-driver-r1','sha256':code_sha},'first_level':2,'last_level':3,'max_callback_calls':729,'absolute_log_refinement_target':recipe['absolute_log_refinement_target'],'common_measure_id':admission['common_measure_id']}
+-        theta_raw=put('THETA_PLAN_R3.json',theta_plan)
++        theta_plan={'schema':'F9_THETA_INTEGRATION_PLAN_V1','preparation_request_id':ti.REQUEST_ID,'execution_unit_id':recipe['unit_id']+':nested-refinement-r4','source_pins':ti.SOURCE_PINS,'consumer_admission_sha256':sha(adm_raw),'assembly_admission_sha256':sha(ad_raw),'engine_configuration_sha256':sha(config_raw),'callback_reference':callback_ref,'controller_reference':{'id':'single-use-synthetic-driver-r1','sha256':code_sha},'first_level':3,'last_level':4,'max_callback_calls':4913,'absolute_log_refinement_target':recipe['absolute_log_refinement_target'],'common_measure_id':admission['common_measure_id']}
++        theta_raw=put('THETA_PLAN_R4.json',theta_plan)
+         services={k:getattr(ps,k) for k in ['log_exp_quad_interval','positive_quad_1d']}
+         def callback(descriptor):
+             point=next(x for x in cfg['points'] if x['theta']==descriptor['theta'])
+@@ -139,14 +139,14 @@
+             result_raw=put('nodes/'+point['id']+'/conditional.json',ti._json_ready(result))
+             return {'conditional_result':result,'receipt':{'node_id':descriptor['node_id'],'execution_unit_id':descriptor['execution_unit_id'],'callback_reference':descriptor['callback_reference'],'conditional_result_reference':{'id':point['id']+':conditional','sha256':ti.canonical_conditional_sha256(result)},'background_execution_reference':receipt,'background_attempts':1,'background_successes':1,'background_origin':origin_kind,'background_calls_this_callback':int(origin_kind=='NEW_EXECUTION'),'assembly_admission_sha256':sha(ad_raw),'engine_configuration_sha256':sha(config_raw)}}
+         integrator=ti.ThetaIntegrator(theta_raw,plan_sha256=sha(theta_raw),evaluate_node=callback)
+-        result=integrator.run();put('THETA_RESULT_R3.json',result)
+-        check('exactly729_accumulated_unique_physical_calls',calls==604 and len(cache)==729)
+-        check('729_callbacks_all_five_models',result['callback_counts']['completed']==729 and set(result['models'])==set(a.MODELS))
++        result=integrator.run();put('THETA_RESULT_R4.json',result)
++        check('exactly4913_accumulated_unique_physical_calls',calls==4184 and len(cache)==4913)
++        check('4913_callbacks_all_five_models',result['callback_counts']['completed']==4913 and set(result['models'])==set(a.MODELS))
+         check('normalized_theta_prior_once',result['prior']['unit_cube_density_exact']=='1')
+         check('no_observed_or_scientific_verdict',result['sigma'] is None and result['p'] is None and result['verdict'] is None)
+-        put('RESULT_R3.json',{'status':'SYNTHETIC_INTEGRATION_COMPLETE','exit_code':0,'started_utc':json.loads((H/'START_R3.json').read_bytes())['started_utc'],'ended_utc':now(),'seconds':time.perf_counter()-start,'solver_calls':calls,'reused_completed_calls':125,'total_physical_calls_across_R1_R3':calls+125,'checks':checks,'refinement':result['refinement'],'conditional_precision_summary':result['conditional_precision_summary'],'observed_data':False,'limits':recipe['limits'],'plan_sha256':sha(plan_raw),'theta_result_sha256':sha((H/'THETA_RESULT_R3.json').read_bytes())})
++        put('RESULT_R4.json',{'status':'SYNTHETIC_INTEGRATION_COMPLETE','exit_code':0,'started_utc':json.loads((H/'START_R4.json').read_bytes())['started_utc'],'ended_utc':now(),'seconds':time.perf_counter()-start,'solver_calls':calls,'reused_completed_calls':729,'total_physical_calls_accumulated':calls+729,'checks':checks,'refinement':result['refinement'],'conditional_precision_summary':result['conditional_precision_summary'],'observed_data':False,'limits':recipe['limits'],'plan_sha256':sha(plan_raw),'theta_result_sha256':sha((H/'THETA_RESULT_R4.json').read_bytes())})
+         print(json.dumps({'status':'complete','calls':calls,'seconds':time.perf_counter()-start,'refinement':result['refinement']}))
+     except BaseException as exc:
+-        put('FAILURE_R3.json',{'status':'FAILED_TERMINAL_NO_RETRY','exit_code':1,'ended_utc':now(),'seconds':time.perf_counter()-start,'solver_calls_attempted':calls,'checks':checks,'exception':type(exc).__name__,'message':str(exc),'traceback':traceback.format_exc(),'diagnostics':None if integrator is None else integrator.diagnostics()})
++        put('FAILURE_R4.json',{'status':'FAILED_TERMINAL_NO_RETRY','exit_code':1,'ended_utc':now(),'seconds':time.perf_counter()-start,'solver_calls_attempted':calls,'checks':checks,'exception':type(exc).__name__,'message':str(exc),'traceback':traceback.format_exc(),'diagnostics':None if integrator is None else integrator.diagnostics()})
+         raise
+ if __name__=='__main__':main()

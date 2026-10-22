@@ -1,0 +1,44 @@
+R4 — CONTRASTE COM FUNDO MEDIDO E H0 FIXO DESCONHECIDO
+19/10/2026; construtor /root/r68_independent_review; revisão distinta necessária.
+Unidade F3.INTEGRACAO_20261019; referência própria SESSION_REFERENCE.json; preflightR4 revisão7 pronto.
+
+1. REUSO ANTES DA CONSTRUÇÃO
+[REAL documental] F9_ASSEMBLY.md da ORDEM018 já trata um vetor conjunto de dados, covariância comum/suporte e eliminação de nuisance. Declara expressamente que ausência de covariância cruzada não prova independência. MEDIDA_NUISANCE_CANDIDATA.json distingue medidas próprias, perfis e integrais: esta proposta não usa a medida plana como distribuição amostral. F9_VERDICT_CONTRACT_CANDIDATE_V2 exige cauda válida uniforme no nulo, distingue cenários finitos de supremum contínuo e não converte lnB em sigma.
+O runner escalar usa f=K·1 ou1 e fundo marginal gaussiano; R4 anterior qualificou seu escore apenas como distribuição PREDITIVA simples. A construção presente usa outro experimento estatístico: o fundo b é uma medição conjunta, H0 é um parâmetro fixo desconhecido. É candidato novo, não correção retrospectiva do z_disc4.28 e não adoção da família conjunta pelo escalar.
+
+2. HIPÓTESES E PROVA DO PIVÔ
+[INPUT explícito] Para cada fator f previamente fixado, supõe-se a lei amostral conjunta
+(y,b) ~ N( (f H0·1, H0), Sigma ), Sigma=[[C,d],[dᵀ,s²]],
+com C,d,s² conhecidos e Sigma SPD. O H0 pode ser qualquer constante; nenhum prior de H0 é necessário. f, a seleção dos leitores, a covariância e os pesos são fixados independentemente dos centros. A compressão do fornecedor cosmológico é hipótese a qualificar, não demonstrada por esta álgebra.
+[DERIVED] Seja wᵀ1=1. Defina a_f=(w,−f), N_f=wᵀy−f b,
+V_f=a_fᵀSigma a_f=wᵀCw+f²s²−2f wᵀd>0.
+Então E_f[N_f]=f H0(wᵀ1−1)=0, Var_f[N_f]=V_f e Z_f=N_f/sqrt(V_f)~N(0,1), uniformemente em H0 dentro desse contrato. A transformação y→y+f h·1,b→b+h deixa N_f inalterado. Não é preciso medir/estimar H0 para calcular a cauda.
+Para f=1, a cauda superior p=SF(Z_1) testa excesso local em relação à hipótese LCDM desse mapa. Para f=K fixo, p=2 SF(|Z_K|) testa compatibilidade bilateral da resposta TGL; a não rejeição não é confirmação. Uma versão unilateral de compatibilidade seria outro contrato e não é inferida silenciosamente.
+Z_eq=−Phi^-1(p) é a convenção equivalente unilateral de cauda, separada do Z_f assinado; no teste bilateral Z_eq não é |Z_f|. Não somar os dois testes nem interpretá-los como réplicas independentes.
+
+3. PESOS, CROSS-COVARIÂNCIA E NUMÉRICA
+O módulo permite w=C^-1 1/(1ᵀC^-1 1), calculado a partir de C fixa, ou pesos racionais explícitos cuja soma deve ser EXATAMENTE1. Pesos negativos são permitidos. O GLS de C não é anunciado ótimo quando d≠0; é uma escolha admissível, fixa e auditável.
+d é obrigatório, junto de referência documental/sintética e pin da matriz conjunta. d=None, campo ausente e origem vazia recusam. d=0 explícito é hipótese possível, não prova automática de independência física. O hash autentica a identidade dos valores entregues ao cálculo, não a autoria/verdade do contrato de origem.
+Normalização, simetria, SPD por LDL e V_f são verificados em aritmética racional exata dos números binários de entrada. Isso impede que tolerância repare uma covariância impossível ou deixe resíduo arbitrário de H0 na média. O suporte implementado é SPD estrito, até32leitores; casos PSD singulares podem admitir contraste válido, mas exigem outro contrato e são recusados, não classificados como fisicamente impossíveis.
+Normalização não é renormalizada de forma tácita. Valores booleanos, não finitos, pesos inválidos, alteração de matriz pinada e cauda numérica zero/underflow recusam. A avaliação erfc/Phi inversa é float64, não certificado intervalar universal. Não sai sigma infinito por underflow; p=1 conserva limite−infinito explicitamente sem falso sigma finito.
+
+4. PODER SEM DADOS OBSERVADOS
+[DERIVED] Sob alternativa g com H_true de planejamento e matriz Sigma_alt explicitada,
+Z_f ~ N(m, r²), m=(g−f)H_true/sqrt(V_f), r²=a_fᵀSigma_alt a_f/V_f.
+No teste superior com limiar zcrit, poder=SF((zcrit−m)/r). No bilateral, poder=SF((zcrit−m)/r)+SF((zcrit+m)/r).
+SAME_AS_NULL deve ser informado explicitamente para reutilizar Sigma; ausência de matriz alternativa não assume igualdade. H_true é entrada de planejamento, não estimativa produzida pelo adaptador. Sob o nulo, m=0 e r=1 para todoH0; o tamanho é SF(zcrit), ou2SF(zcrit) no bilateral.
+Para a alternativa com m=5,r=1 e limiar superior5, poder=50%. Um orçamento D=5 não garante descoberta. Se a família usar Bonferroni com m_testes e limiar equivalente global alpha5, o limiar superior local é −Phi^-1(alpha5/m_testes); o bilateral usa −Phi^-1(alpha5/(2m_testes)). Não utilizar5 como limiar local após correção sem essa conversão.
+
+5. MULTIPLICIDADE E LIMITES DE INTERPRETAÇÃO
+family_adjust aceita somente uma família sintética nomeada com lista completa de testes/cenários. Usa máximo de p por teste sobre os cenários FINITOS explícitos e Bonferroni min(1,m_testes p_max), válido com dependência arbitrária se as caudas de cada cenário forem válidas. Não assume independência entre Z_1 e Z_K, pois ambos usam os mesmos dados.
+Sidak continua recusado sem qualificação de independência/dependência. A família de dois testes usada nos controles é INPUT SINTÉTICO, não a família oficialmente adotada da Fase9. Não transporta os cinco testes da conjunta para a escalar. Cenário ausente, duplicado, cruzamento de rota e registro não calibrado recusam.
+O código recebe resultados confiados do próprio módulo e não autentica aprovação científica de um terceiro. A revisão distinta, atos de congelamento/abertura e admissão de fontes continuam separados.
+
+6. INTEGRAÇÃO SEM REESCREVER O HISTÓRICO
+Uma futura versão candidata do runner poderá acrescentar pivot_lcdm_upper e pivot_tgl_compatibility ao lado de z_disc_quadratic e lnB. Deve receber b como medição, C,s²,d e pesos com proveniência, preservando o vínculo da fonte e o contrato de compressão. O retorno traz observed_F9_verdict=None e gate_moved=False. O módulo atual recusa mode observado.
+Este pivô remove o nuisance escalar H0 sob suas hipóteses, mas não remove incerteza de K/Omega, vieses de calibração, seleção de fontes, mapas TGL dos indicadores, covariâncias desconhecidas, estimated errors ou distribuição não gaussiana. Se f=K(theta) for estimado usando os mesmos dados, a prova do pivô deixa de se aplicar sem propagação/calibração adicional. Não se pode usar a conclusão para estimadores de beta perfilados ou selecionar a melhor família após o resultado.
+Rejeitar f=1 não demonstra exclusividade TGL: sistemáticas alternativas e outras leis continuam objetos de comparação próprios. Não rejeitar f=K não constitui confirmação. O escore observado antigo4.28 não foi recalculado ou renomeado.
+
+7. EVIDÊNCIA
+[REAL sintético]26testes determinísticos PASS, uma execução posterior ao plano pinado. Controles: invariância de H0 até um valor sintético1e12, f≠1, d positivo/negativo, GLS/racionais/pesos negativos, contraste matricial, unilateral/bilateral, poder com covariância alternativa, PSD impossível/near-negative, missing cross, mudança de hash, overflow/underflow, família finita completa e Sidak recusado.
+Nenhum centro observado, algoritmo canônico, d72, provedor ou MonteCarlo foi executado. PLAN_PIVOT_R1.json, TEST_PIVOT_R1.log e RUN_PIVOT_R1.json custodiados em DELIVERY_PIVOT_R1.json. O construtor não aprova sua própria entrega.
