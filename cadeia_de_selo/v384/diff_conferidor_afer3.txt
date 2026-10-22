@@ -1,0 +1,29 @@
+--- conferir_rito_v384.py.bak_antes_afer3_RECONSTITUIDO	2026-10-03 15:05:46.803675100 -0300
++++ conferir_rito_v384.py.bak_antes_afer4	2026-10-03 14:19:18.127064000 -0300
+@@ -23,18 +23,24 @@
+ mf = open(os.path.join(NOS, "um_absoluto_manifest.md"), encoding="utf-8", errors="replace").read()
+ cache_ok = False
+ _sv = (qp.get("reuse") or {}).get("saved_to_cache")
++_d128_ran = str(((qp.get("summary") or {}).get("D128") or {}).get("status_code")) == "RAN"
+ if _sv and os.path.exists(os.path.join(_sv, "result.json")):
+     cache_ok = hashlib.sha256(open(os.path.join(_sv, "result.json"), "rb").read()).hexdigest() == qp.get("result_sha256") == open(os.path.join(_sv, "result.json.sha256"), encoding="ascii").read().strip()
++elif not _d128_ran:
++    # o D128 nao rodou (negativo honesto da arvore): o cache NAO grava, e isso tem de estar DITO com o codigo (3a afericao)
++    cache_ok = str((qp.get("reuse") or {}).get("not_cached_code") or "").startswith("D128_NOT_RAN")
++_vq = V("quantum_pillar_v384")
+ DEVE_MUDAR = {
+     "um.py = o candidato aplicado (sha16 %s)" % ESP["candidato_sha16"]: umsha == ESP["candidato_sha16"],
+     "selo: um_version = v384; a leitura e o registro do pilar presentes": selo.get("um_version") == "v384" and "the_quantum_pillar_reading_v384" in selo and bool(sq),
+     "o pilar RODOU nesta rodada (mode COMPUTE, rodada completa, sem reaproveitamento)": qp.get("mode") == "COMPUTE" and (qp.get("reuse") or {}).get("reused") is False and qp.get("checkpoint_switch") is False,
+     "o veredito do pilar e' da arvore congelada, rederivado igual ao do trabalhador, sem NOT_RUN/VOID/PARCIAL": V("quantum_pillar_v384").startswith("TGL_QUANTUM_PILLAR_V1__FIVE_JUMP_GKLS__")
+-        and qp.get("verdict_rederived") == qp.get("verdict_worker") == V("quantum_pillar_v384") and not any(t in V("quantum_pillar_v384") for t in ("NOT_RUN", "RESULTS_VOID", "PARTIAL", "CUSTODY_CHAIN_INCOMPLETE")),
++        and qp.get("verdict_rederived") == qp.get("verdict_worker") == _vq and not _vq.startswith("TGL_QUANTUM_PILLAR_V1__NOT_RUN__")
++        and not any(t in _vq for t in ("__RESULTS_VOID__", "__PARTIAL_RESULT_", "__CUSTODY_CHAIN_INCOMPLETE__")),   # D128_NOT_RUN_* e' negativo honesto da arvore, nao reprova (3a afericao)
+     "a cadeia de custodia do pilar confere (sha256 do resultado; a especificacao e o trabalhador congelados; o pre-registro em disco)": qp.get("custody_chain_ok") is True
+         and qp.get("spec_sha256_in_result") == ESP["spec_sha256"] and qp.get("worker_sha256") == ESP["worker_sha256"]
+         and all(((qp.get("preregistration") or {}).get("on_disk_matches") or {}).get(k) is True for k in ("json", "md")),
+-    "o resultado foi GRAVADO no cache (a ferramenta de reaproveitamento) e o sha256 do cache bate": cache_ok,
++    "o resultado foi GRAVADO no cache e o sha256 bate (ou o D128 nao rodou e a razao esta dita com o codigo)": cache_ok,
+     "o selo registra o mesmo veredito e o mesmo sha256 do resultado": sq.get("verdict") == V("quantum_pillar_v384") and sq.get("result_sha256") == qp.get("result_sha256"),
+     "o beta do trabalhador e' o do core (bit a bit) e a marca da rodada esta no resultado": qp.get("beta_matches_core") is True and bool(qp.get("run_id")),
+     "o resultado do pilar esta no Nos e no hash do selo": (lambda p_: os.path.exists(p_) and (selo.get("sha256") or {}).get("um_absoluto_pilar_quantico.json") == hashlib.sha256(open(p_, "rb").read()).hexdigest() == qp.get("result_sha256"))(os.path.join(NOS, "um_absoluto_pilar_quantico.json")),

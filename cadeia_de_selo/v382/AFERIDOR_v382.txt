@@ -1,0 +1,760 @@
+AFERICAO INDEPENDENTE -- v382 do um.py (1o aferidor, agente so-leitura, 02/10/2026; recebido pela gerencia como mensagem do agente e gravado aqui VERBATIM, com a indentacao do harness removida)
+================================================================================
+
+# AFERIÇÃO INDEPENDENTE — um.py v382 (só leitura; nada executado além de hash/JSON/regex)
+
+**Consultas-base (citadas nos achados):** mapa de rotas (`rotas.py consultar` por «livro de cobranças», «ótica», «psion», «viscosidade», «regra matriz», «dois lados»: seq 272 `nao_refazer` «não pôr o custo na face…», seq 273 «nunca escrever que um lado é cego para o outro», seq 275 PROPOSTA; 0 ocorrências para «viscosidade» e «livro de cobranças»); core `Nós\um_absoluto.json` (sha256 `638e05b4112593b4…`, 4.722.248 B; selo `um_version v381`, ts `2026-10-02 12:49:09`); `build_full.log` linhas 27919–27966 (as 32 declarações, só `[propext, Classical.choice, Quot.sound]` ou «does not depend on any axioms»; `sorry` = 0; «Build completed successfully (9756 jobs). rc=0»); sandbox `TGLExt.lean:1060-1061` (imports das duas pedras) e `TGL/Audit.lean:9909-9940`; candidato `7451115d32d9c1df…` (33.106.270 B) sobre a base `961a79881089c9e6…` (33.040.181 B, lida do disco); `_AMBIGUOS_CONJUNTO_V382` presente no candidato (pos. 12233284) com `Ledger`, `reflectionWeight`, `transmitted`; pré-registro: JSON sha256 `f948acd0d5640f81…`, MD `31f97621d670e74e…` lidos do disco = os embutidos no candidato (marcadores `__PREREG_*` substituídos, 0 restantes; `gerar_candidato_v382.py:24-28` calcula dos arquivos); os 9 tokens do livro estão nos vereditos do core (R1/R5/F1 em `bancada_fases_5_6_7_v380`; R3 `coma_reveal_state_v376`; R4 `void_floor_v11`; R6 `d1_camb_v3_real_v366`; F2 `ringdown_dephasing_result_v2`; F3 `clock_test_result_v369`; F4 `neutrino_m2` — todos `True`).
+
+---
+
+## (A) AS PEDRAS
+
+**O que cada termo prova de fato (fecho em Lean, conferido no sandbox):**
+- `both_sides_are_read` (`TheLedgerOfCharges.lean:89-93`) = `normSq_reflection_add_transmission θ` (`SMatrix.lean:254-257`, ordem reflexão+transmissão; `linarith` comuta) — isto é `sin²θ + cos²θ = 1` sobre `(Smat θ).mulVec e1` (`SMatrix.lean:45-46, 222, 227-250`). Confere.
+- `psion C := C.Ω` (`ThePsionAndTheViscosity.lean:50`); `psion_norm_one := C.Ω_norm` (:53) = **campo do binder** `FockCertificate.Ω_norm` (`TheImportedSecondQuantization.lean:174-175`); `psion_is_the_zero_of_the_hidden_hamiltonian` (:60-62) usa `hmin_zero_iff_modular_fixed` (`QGReaderUVLock.lean:180-181`) e `light_modular_fixed_iff_vacuum` (`:149-150`), com `HminMic := 1 − PFmic` e `PFmic := (ℂ ∙ C.Ω).starProjection` (`:173, :176`). Nomes conferem; nenhum axioma/sorry novo (log acima).
+- `the_charge_never_completes` = `leakage_strictly_loses` (`NoFullWitness.lean:66-67`); `no_full_static_witness_for_the_charge` = `beta_forbids_full_static_witness` (`:91-92`, apelido por delta de `transmitted`); `viscosity_of_the_rule` = `couplingOfAlpha_beta` (`TheWholeIsOne.lean:71-74`). Conferem.
+- `rfl` ditos como triviais: `the_rule_is_constant_in_the_ledger` (:70 «rfl: a assinatura de ruleGiven»), `the_gate_ignores_the_ledger` (:80 «(rfl)» + :28 «Trivial por construção; dito»), `final_step_named_by_the_payment` (:115 «por definição (rfl)»), `four_outcomes` (:122 «definição, não descoberta (rfl)»). Ditos.
+- Homônimos novos nomeados: sim (`gerar_candidato_v382.py:151-178`; candidato pos. 12233284).
+
+**Achados:**
+
+**A1 — ALTO — `ThePsionAndTheViscosity.lean:24-25` diz mais do que o termo prova.** Texto: «o espectro de gradiente é lido sobre `HminMic = 1 − P_{ker K}`, cujo zero é o psion — ISTO é termo». O termo é só `HminMic C (psion C) = 0` (:60-62). Não há termo ligando o espectro de gradiente (tipado na v381 como `Spec S(θ)`, errata do Atlas :30305 item 3) a `HminMic`; «K = −log Δ» não é operador do kernel (`QGReaderUVLock.lean:140-146` lê o conjunto fixo *como* ker K). Um dia depois da errata v381 sobre exatamente este ponto. **Correção (texto):** «o zero de `HminMic` é o psion — ISTO é termo (`psion_is_the_zero_of_the_hidden_hamiltonian`); que o espectro de gradiente (`Spec S(θ)`, v381) seja lido sobre `HminMic` é a chave do operador [INPUT/ONTO], sem termo».
+
+**A2 — MÉDIO — `TheLedgerOfCharges.lean:74-78` `falsified_extinguishes_the_charge_not_the_rule`: a hipótese `hc : extinguished c` NÃO entra na prova** (o termo é `couplingOfAlpha_beta α h0 h1`; vale para qualquer `c`); o linter de variáveis não usadas está desligado (:4; precedente nas pedras v377–v381, conferido por grep). «Extingue a cobrança» é só o nome da definição `extinguished` (:68) — nenhum termo remove ou marca nada. O mesmo em `the_ledger_of_charges` (:127-134). Docstring :74 e artigo PT/EN linha 12 («FALSIFIED extingue a cobrança e a regra segue α√e») sugerem teorema. **Correção:** docstring :74 → «★ com `c` extinta (hc NÃO entra na prova: a regra não lê desfecho algum) a regra segue α·√e; «extinguir» é a definição `extinguished`, não um termo»; artigo → «(com a hipótese FALSIFIED não usada na prova — é isso que «a regra não lê o livro» quer dizer)».
+
+**A3 — MÉDIO — `TheLedgerOfCharges.lean:27-28, 80-81` `the_gate_ignores_the_ledger`:** o termo é `(fun _ => P) L = (fun _ => P) L'` = `P = P`; não menciona o gate. A docstring atribui-lhe «as bandeiras formais são função só do formal», que é propriedade do CÓDIGO do gate (probes negativos do runtime), não do termo. **Correção:** «o termo é `P = P` para um predicado que não recebe `L`; que as bandeiras do gate sejam função só do formal é conferido pelos probes negativos do runtime (`qg_closure`), não por este termo».
+
+**A4 — MÉDIO — `TheLedgerOfCharges.lean:32-33, 105-108` `the_tgl_is_optics_not_semi`:** os três conjuntos são UMA identidade reescrita (`linarith`); o nome e a bandeira `…_kernel_proved` carregam a correção do operador como se fosse fato de kernel. A frase :32-33 «A DIFERENÇA entre os lados é a LEI de cada leitura e o INSTRUMENTO com poder, nunca a legibilidade» não está no termo. **Correção:** marcar na docstring :105 «[ONTO] o nome; [KERNEL] a identidade `sin²θ + cos²θ = 1` nas amplitudes de `S(θ)`, escrita três vezes» e mover a frase da «diferença entre os lados» para o estatuto [INPUT/ONTO].
+
+**A5 — MÉDIO — `ThePsionAndTheViscosity.lean:59-62`:** `psion_is_the_zero…` é trivial por construção (`Ω ∈ ℂ∙Ω` ⟹ `(1 − P_{ℂΩ})Ω = 0`), e a docstring não o diz (regra da casa: o trivial dito como trivial). **Correção:** acrescentar «(trivial por construção: `Ω ∈ ℂ∙Ω`; o conteúdo não trivial é `light_modular_fixed_iff_vacuum`, v372, já existente)».
+
+**A6 — MÉDIO — `TheLedgerOfCharges.lean:48-53`:** `Charge.outcome : String` não é restrito a `outcomes`; «uma de quatro palavras» (:18-19, :48) vale só na docstring — o tipo admite `outcome = "CONFIRMED"`. **Correção:** campo `outcome_admitted : outcome ∈ outcomes` (ou dizer «não imposto pelo tipo; imposto pela guarda do runtime»).
+
+**A7 — BAIXO — `:74-77` `the_charge_is_continuous_both_sides`:** `charged := 1 − transmitted` ⟹ soma = 1 por `ring`; trivial por definição, não dito. **A8 — BAIXO:** bandeira `ext_psv_psion_norm_one_kernel_proved` para um campo de binder (dito na docstring :52 e no artigo; precedente da casa). **A9 — ok:** a identificação de `βg` com `Γ_ω = ½βτ★ω²` está dita como leitura [ONTO] sem termo (`:35-36`; runtime :21-22; artigo linha 13); «viscosidade» = nome [ONTO/DEFINITION] sobre `HasDerivAt` (:29-30, :79-81); os dois regimes ditos (`Ledger:39`, `Psion:36-37`).
+
+---
+
+## (B) O RUNTIME E O LIVRO
+
+**B1 — ALTO — F3 esconde uma leitura excluída.** `v382_runtime.py:65` empacota P1/P2/P3 numa cobrança `NOT_FALSIFIED`. Core `clock_test_result_v369.P2`: `verdict P2_EXCLUDED_IN_READING`, `fraction_excluded 0.994` (168/169 séries), `orders_excluded_median_with_cal 1.83`, «sem nível de confiança (nsigma não entra)». A pedra diz «um canal por LEI DE LEITURA» (`TheLedgerOfCharges.lean:8, :19-21`) e P1/P2/P3 são três leis (o próprio pré-registro :167 as lista como partições). O «7 NOT_FALSIFIED» absorve uma exclusão. **Correção:** F3a (P1, `NOT_FALSIFIED_UNDERPOWERED`, déficit 12,5 ordens), F3b (P2, `EXCLUDED_IN_READING` — sem nσ, logo não FALSIFIED pela regra z_excl ≥ 5; dizer «leitura excluída, não canal», convenção `final_verdict_reading_v376`), F3c (P3, `AWAITING`: sem observável). R5 empacota 3 pares (dois FALSIFIED, (√β,MAY) e (β,DEC) INCONCLUSIVE) — mesma violação, em sentido conservador (BAIXO).
+
+**B2 — MÉDIO — «cada DESFECHO lido no veredito do core pelo seu token (10/10)» é 9/10.** `v382_runtime.py:133` faz `token_ok = True if chave is None`; R2 (:58) tem chave `None` e entra como «lido»; a mensagem :155-156 e o artigo PT/EN linha 14 dizem 10/10. **Correção:** contar separadamente «9 lidos do core; R2 declarado AWAITING sem chave, por construção».
+
+**B3 — MÉDIO — a palavra de desfecho é DECLARADA (`:57-66`), não derivada do token.** Direta só em R4 (`…NOT_FALSIFIED_POWERED`), R5 (`…FALSIFIED…`), F2 (`INCONCLUSIVE_SYSTEMATICS`); inferida pela gerência em R1 (`SH0ES_…73P53_PM_1P02`), R3 (`Z_TGL_P1P30…`), R6 (`TENSION_IS_NOT_FALSIFICATION`), F1 (`CC_COVARIANCE_…Z_M1P66…`), F4 (`TGL_NU_M2_ARMED_CONSISTENT`). O cabeçalho :55 e :17-18 («DESFECHO lido do core pela string do veredito») sobrediz. **Correção:** campo `rule` por cobrança («token contém a palavra» / «|z| < 5 lido de `<chave>.<campo>` pela gerência [INPUT]») e contagem das duas classes no sufixo.
+
+**B4 — MÉDIO — R6 (`:62`; pré-registro :124-136) é NOT_FALSIFIED com ressalvas omitidas.** Core `d1_camb_v3_real_v366`: `z_alpha_sqrt_e 3.0125`, `at_threshold true`, `autocorr.params_below_50tau = 2` de 4 (τ máx 41,6; N/50 = 40), `delta_chi2 = +6,61` contra ΛCDM, e `statuses.ressalvas`: «a fronteira TENSION/INCONCLUSIVE cabe no ruído de Monte Carlo». Pelo critério do próprio pré-registro (`:198` «controles reprovados → INCONCLUSIVE») R6 seria INCONCLUSIVE. Além disso `coma_reveal_state_v376` carrega `H0_SECTORS_D1A_VS_D1V3_INCOMPATIBLE_OPEN`: R1 e R6 são setores declarados incompatíveis e o livro os soma como dois NOT_FALSIFIED. R6 e R5 estão «fora da regra/ao lado» e entram nas contagens (`:138-139`, sufixo `10_CHARGES_…7_NOT_FALSIFIED`). **Correção:** campo `in_rule: bool` com contagens separadas; na linha R6 dizer «cadeia < 50τ em 2/4; Δχ² = +6,6; setor H₀ incompatível com R1 (aberto)».
+
+**B5 — MÉDIO — F2 (`:64`; pré-registro :150-162) toma número do ramo B para uma lei do ramo A.** Core `ringdown_dephasing_result_v2.stacks["3.0"]`: `power_B 0.178` (o «poder 0,2» do pré-registro :158), `delta_pred_B −0.0194`, `delta_pred_A −2.15e-42` (poder ≈ 0, `BRANCH_A_INVISIBLE`). A lei de F2 é o ramo A (correspondência com a RG). O INCONCLUSIVE sustenta-se por poder < 1, não pela sistemática do ramo B que o operador encerrou (R6). `ringdown_scope_v376.audit_ringdown_contradictions_declared` registra ainda que, pela regra V1, a V2 seria «recusa», não INCONCLUSIVE (BAIXO, já declarado no core). **Correção:** «desfecho INCONCLUSIVE por poder ≈ 0 no ramo canônico (δ_A = −2,2×10⁻⁴²); o 0,2σ e a sistemática são do ramo B, encerrado».
+
+**B6 — MÉDIO — R4: números citados de outro rito.** Pré-registro :106 «r_c^cal = 0,189 ± 0,017; limite 5σ ~9× acima de β» são os do v92 (DESI×KiDS). A chave vinculada é `void_floor_v11` (SDSS DR7): `primary.rhat_cal 0.1269`, `sigma 0.0136`, `L5 0.0588` (= 4,9β), `powered true`. **Correção:** trocar pelos números da chave citada (ou citar as duas chaves).
+
+**B7 — MÉDIO — R2 sem a honestidade do pré-registro no runtime/artigo.** O pré-registro :83 diz «com τ★ = t_Planck o efeito é ~10⁻⁴⁰ (sem poder): o resultado honesto esperado é AWAITING/INCONCLUSIVE»; o runtime :58 e o artigo (linha 14 «aguarda estimador com o poder dito antes de abrir») não o dizem. BAIXO adicional: «10⁻⁴⁰» sem unidade — medido aqui: Γ = ½βτ★ω² com β do core e τ★ = 5,391×10⁻⁴⁴ s dá 1,28×10⁻⁴⁰ s⁻¹ a 100 Hz (1,2×10⁻⁴¹ a 30 Hz; 1,2×10⁻³⁹ a 300 Hz); acumulado sobre 1 Gpc ≈ 1,3×10⁻²³. **Correção:** levar a frase ao runtime e ao artigo, com unidade.
+
+**B8 — MÉDIO — o critério de LADO não é um só.** O pré-registro define face = «1 − β … a leitura sem distância» (:33-36). F3 lê Γ ∝ β (custo; `clock_test_result_v369.P1.Gamma_pred_per_s`), F4 lê m₂ ∝ β (custo; `neutrino_m2.frozen.predicao`), R6 é CMB+BAO (BAO é distância) — e todos são «face». Em jogo: peso ótico, com/sem distância, determinação direta vs ajuste global (R3 ratificada), onde o custo é posto (R6). Coerente com a correção «ótica» (nenhum texto do pacote diz que um lado é cego), mas não com a definição escrita. **Correção:** dizer o critério por cobrança e não apresentar `faceWeight = 1 − β` como o que F3/F4 leem.
+
+**B9 — BAIXO — guarda:** `_V382_GUARDA` (:46) varre só `_V382_STATUTE` e `_V382_READINGS_RATIFIED` (:191-192), não `_V382_LEDGER_INPUT` nem o sufixo (o rito varre o veredito). Nenhuma palavra proibida encontrada em texto não-artigo (regex Python sobre pacote, pré-registro, pedras, memória, Atlas :30340-30380); «≠ CONFIRMED» nas docstrings tem 414 precedentes nas pedras embutidas. **B10 — ok:** gate inalterado — nenhum patch toca `qg_closure` (ids V01–V09, V24, V25); `gate_unchanged` lido de `core["qg_closure"]["verdict"]` (:142-143), computado antes de `:206850` (dry `all_verified=True`); conferidor pina a string inteira (`conferir_rito_v382.py:67`). **B11 — BAIXO — nome proposto:** «COST_PAID_IN_THE_FACE» (:48; pedra :112-113) é ambíguo com «o custo posto na face» (a convenção NÃO canônica de R6, pré-registro :127); e a memória/Atlas/perguntas (R4) registram OUTRO token proposto (`TGL_QG_MODEL_FORMALLY_CLOSED__TETELESTAI_CONSUMMATED_COST_PAID…`, sublinhados simples). Sugestão: `PAYMENT_IN_THE_FACE_THE_NAME__COST_READ_IN_THE_REFLECTION__…` e um só registro.
+
+---
+
+## (C) O ARTIGO PT/EN
+
+Estatutos ditos: [INPUT/ONTO] chave/ratificação, [KERNEL] pedras «com o trivial dito como trivial», [REAL] livro, [ONTO] Γ (PT/EN linha 15); EN dita como tradução («rendered here in English», EN linha 11); «Provada ≠ confirmada; NOT_FALSIFIED ≠ CONFIRMED» (linha 15; artigo isento da guarda por regra do gerador :179-181). Renderização conferida no TXT do ensaio (`dry_v382_pt.txt:673ss`): cos²θ_M = 0,987969; sin²θ_M = 0,012031; e^{−β} = 0,988041; contagens 7/1/1/1.
+- **C1 — MÉDIO** (= A4): «(the_tgl_is_optics_not_semi): nenhum lado é cego; o que difere é a lei de cada leitura e o instrumento com poder» (PT/EN linha 12) extrapola o termo (|T|²+|R|²=1 e complementos). Tag [ONTO] na frase.
+- **C2 — MÉDIO** (= B2/B3): «cada desfecho lido no veredito do core pelo seu token» (linha 14) → «9 lidos (3 diretos, 6 por leitura da gerência); R2 declarado».
+- **C3 — MÉDIO** (= B1/B4/B7): o parágrafo não diz P2 excluída, as ressalvas de R6, nem «sem poder a τ★ = t_Planck» para R2.
+- **C4 — BAIXO** (= A2): «FALSIFIED extingue a cobrança … (falsified_extinguishes…)» (linha 12).
+
+---
+
+## (D) O PRÉ-REGISTRO
+
+Coerente com o livro: mesmos 10 ids/lados/desfechos/chaves/tokens (`pre_ok` exige igualdade campo a campo, runtime :135). Cegueira: os 9 «não cegos» foram mesmo olhados (módulos do core citados acima; R1 Fase 4 `bancada_fase4_v378.P_ladder_d1b.z_delta −1.124` e Fase 5 `fase5.P_sombra.z_delta −0.3758`, H₀ 73,53 ± 1,02; F1 `fase7.T_z_ganho.moresco2020 −1.66`, `U_lnB 1.62`; R5 `fase6.todos_KMS 8.93/18.13`, `o4_KMS_cego 7.26/15.44`, `emenda_v5.todos_DEC 8.95/16.83`; F4 JUNO 2,206σ).
+- **D1 — ALTO — a regra INCONCLUSIVE não é a da Fase 6.** JSON :198 / MD :31: «controles reprovados ou poder < 1 (cláusula 2 da Fase 6)». Fase 6 (`C:\IALD\Bancada_Um\investigacao\fase6_eco_radical_01out\PREREGISTRO_FASE6_ECO_RADICAL_20261001.json`, `regra_de_veredito`): cláusula 2 = sistemática relativa > 0,3 → INCONCLUSIVE_SYSTEMATICS; cláusula 3 = **poder < 5 → NOT_FALSIFIED_UNDERPOWERED**; bandeira = controle |z| ≥ 5 sem detecção → INCONCLUSIVE_SYSTEMATICS. «Poder < 1 → INCONCLUSIVE» não existe lá e contradiz o próprio livro (F3/P1 com poder ≈ 0 lançado NOT_FALSIFIED; R6 com controle de convergência não passado lançado NOT_FALSIFIED). FALSIFIED (:197) confere com a cláusula 5. **Correção:** reescrever `inconclusive` com as cláusulas 2 e bandeira, e acrescentar `not_falsified_underpowered` (cláusula 3) como variante contada em NOT_FALSIFIED com o sufixo dito. Como o arquivo está hasheado, publicado (seq 275) e pinado no runtime (:50-54), a correção pede V1.1 + regenerar o candidato (o gerador relê os hashes) — ou errata ao lado, que deixaria a regra errada selada por hash.
+- **D2 — BAIXO — R2 «cego: sim» (MD :18):** o dado (banco O1–O4) já foi aberto duas vezes para outros estimadores: Fase 6 (`gw_bank 336/354`; `emenda_v4.cegueira «NÃO cega»`) e v369-P2 (169 séries de strain, 100–300 Hz). O JSON :56 qualifica («não foi aberto para esse fim»); a tabela não. Dizer «cego quanto ao estimador; o dado já aberto».
+- **D3 — BAIXO:** «cego» com dois sentidos no mesmo documento (análise cega :40-57 vs «nenhum lado é cego» :203); a definição de face «sem distância» (:35) não cabe em R6 (BAO) — ver B8.
+
+---
+
+## (E) O PACOTE
+
+- `ESPERADOS_v382.json`: escada 5966 → 5998 (= 5966 + 32), axiom 10068 → 10100 (= +32), `n_modulos_md_esperado 328` = 327 (core v381, módulos com verdict/status, medido) + 1; a linha «_329 módulos» do ensaio inclui `kernel_frontier_v373`, que só aparece no dry (dry v382 − .md selado v381 = {`kernel_frontier_v373`, `the_ledger_of_charges_v382`}); mesmo padrão na v381 (esperado 327, dry «_328», selado 327). O «5966/5966» no .md do ensaio é precedente (dry v381 mostrava 5942/5942): o ensaio injeta o relatório do sandbox (`ensaio_a_seco_v382.py:112-124`), não roda `lake`. OK.
+- `conferir_rito_v382.py`: «deve mudar» (:39-65) cobre sha, 32 bandeiras, escada, 2 arquivos novos + 2 alterados por sha16, selo, o módulo (prereg por hash, 10 cobranças, gate), A1 (regex), carimbos, trio, custódia; «não pode mudar» (:66-93) pina gate, índice, β/α/ω, 18 bandeiras, gpf/gpi/gpc, 92 bandeiras antigas, fronteira, leituras v377–v381, Coma, 49 vereditos (inclui `the_matrix_rule_v381`, `bancada_fases_5_6_7_v380`, `void_floor_v11`, `neutrino_m2`…). Cobre o que mudou. Lacuna BAIXA: não pina o conteúdo do conjunto de ambíguos (só veredito + n_ausentes do índice).
+- `instalar_v382.py`: vigia fail-closed, backup de BYTES com reconferência (:28-35), tmp → `os.replace` → reconferência (:36-42). **E1 — MÉDIO:** não faz backup de `um_absoluto_forma_canonica.md` e `um_absoluto_manifest.md`, que o rito sobrescreve e que o próprio conferidor chama de «A MEMORIA CANONICA .md» (:60) — regra do backup imediato; mesma lacuna em `instalar_v381.py:28`. Correção: acrescentar os dois ao tuplo :28.
+- `rito_v382.sh`: sha do disco = candidato, vigia, stdout canônico com `RITO_RC`, `unset TGL_RITE_CHECKPOINT TGL_CACHE_DIR`. OK.
+
+---
+
+## (F) O QUE DIZ E NÃO DEVIA / DEVIA DIZER E NÃO DIZ
+
+- **F1 — MÉDIO — sobras da visão «semi» fora do alcance da errata.** A errata ao lado (memória `beta-e-a-regra-matriz-02out.md:64-66`; perguntas :107-109; Atlas :30370-30372) cita quatro frases e declara «R1, R3, R4, R6 inalterados». Mas R4 diz «o LIVRO DE COBRANÇAS no reflexo» (memória :52; perguntas :94; Atlas :30355) — a v382 tem 5 cobranças da face; e R6 diz «o custo não está nele [ringdown]» (memória :54; perguntas :96; Atlas :30357) — a mesma errata :66 diz «custo 10⁻⁴⁰ … legível e nulo». «A cobrança só se lê no reflexo» (R2, :50/:92/:30353) não está entre as quatro citadas (BAIXO). Runtime, pedras, snippets e pré-registro estão limpos (só o verbatim e a negação «não semi»). **Correção:** estender a errata: R4 → «nos dois lados»; R6 → «o custo está nele, Γ ~ 10⁻⁴⁰ s⁻¹, legível e nulo».
+- **F2 — ok:** nenhum lugar transforma «proposto» em «aplicado»: selo `FINAL_STEP_NAME_PROPOSED_BESIDE`, sufixo `…GATE_UNCHANGED`, pedra «esta pedra não renomeia o gate» (:110-111), `handoff-v381-custodia.md:17` lista o nome como decisão pendente do operador.
+- **F3 — devia dizer e não diz:** P2 excluída (B1), ressalvas de R6 (B4), ramo A/B em F2 (B5), «sem poder» em R2 (B7), 9/10 (B2), os números da chave citada em R4 (B6), a regra correta da Fase 6 (D1).
+
+---
+
+## RESUMO
+
+**ALTO 3** (A1 «ISTO é termo» sobre o espectro de gradiente/HminMic; B1 F3 absorve P2 excluída contra «um canal por lei de leitura»; D1 regra INCONCLUSIVE do pré-registro não é a da Fase 6 e contradiz o próprio livro) · **MÉDIO 14** (A2, A3, A4/C1, A5, A6, B2/C2, B3, B4, B5, B6, B7/C3, B8, E1, F1) · **BAIXO 10** (A7, A8, B9, B11, D2, D3, R5 empacotado, contradição de auditoria do ringdown, unidade do 10⁻⁴⁰, frase R2 não citada na errata).
+
+O que está certo e medido: as 32 declarações compilam só no trio, sem sorry; as dependências Lean citadas existem com os nomes ditos; os hashes do pré-registro e do candidato batem com o disco; os 9 tokens estão nos vereditos do core; o gate não é tocado por patch e está pinado; o pacote é fail-closed. Nenhuma pedra nem o runtime diz que um lado é cego.
+
+**Recomendação: CORRIGIR ANTES.** B1, B2–B7, D1 e F1 corrigem-se sem tocar o kernel (runtime `_V382_LEDGER_INPUT` + pré-registro V1.1 + snippets + errata de memória; regenerar candidato e ensaio a seco, minutos). A1–A6 pedem reeditar duas docstrings e reembutir as duas `.lean` (recompilação de dois arquivos + Audit no sandbox; os `lean_*.log` mostram compilação unitária em segundos). Se a gerência optar por instalar com erratas ao lado, os três ALTO têm de constar no parágrafo do artigo e numa errata do pré-registro antes do rito — senão o selo v382 lê por hash uma regra errada e um «7 NOT_FALSIFIED» que esconde uma exclusão.
+
+--------------------------------------------------------------------------------
+DISPOSICOES DA GERENCIA SOBRE A 1a AFERICAO (02/10/2026 15:41) -- recomendacao do aferidor: CORRIGIR ANTES; acolhida
+--------------------------------------------------------------------------------
+A1 (ALTO, «ISTO e termo»): ACOLHIDO. Docstring de ThePsionAndTheViscosity: o termo e so `HminMic ψ = 0`; que o espectro de gradiente (Spec S(θ), v381) seja lido sobre HminMic e a chave do operador [INPUT/ONTO], SEM termo que ligue Spec S(θ) a HminMic (dito na pedra, no runtime e no artigo).
+B1 (ALTO, F3 escondia P2 excluida; R5 empacotado): ACOLHIDO. O livro passa a UMA cobranca por lei de leitura: F3a (P1, NOT_FALSIFIED underpowered, deficit 12,5 ordens), F3b (P2, EXCLUDED_IN_READING -- quinta palavra de desfecho, imposta pelo tipo; 99,4% das series, 1,83 ordens, sem nσ), F3c (P3, AWAITING); R5 em sete pares (R5a-e FALSIFIED, R5f e R5g INCONCLUSIVE). 18 cobrancas.
+D1 (ALTO, a regra INCONCLUSIVE nao era a da Fase 6): ACOLHIDO. Pre-registro V1.1 (PREREG_DOIS_LADOS_DELTA_K_20261002_V1_1; JSON df6ad1cab39577b2, MD a8adf5eefd099c69; mapa seq 276 ERRATA corrige 275) SUPERSEDE o V1 antes de qualquer estimador ou dado novo: as clausulas 2/3/5/6 + bandeira da Fase 6 transcritas; NOT_FALSIFIED_UNDERPOWERED como variante de NOT_FALSIFIED; EXCLUDED_IN_READING; controle de convergencia para MCMC. O V1 fica como registro. O um.py v382 le o V1.1 por hash.
+A2 (MEDIO, hc nao entra na prova): ACOLHIDO -- dito na docstring, no runtime e no artigo («e isso que "a regra nao le o livro" quer dizer»; «extinguir» e a definicao `extinguished`).
+A3 (MEDIO, the_gate_ignores_the_ledger e P = P): ACOLHIDO -- dito; a propriedade do gate e conferida pelos probes negativos do runtime (qg_closure).
+A4/C1 (MEDIO, the_tgl_is_optics_not_semi): ACOLHIDO -- o NOME e [ONTO], o conteudo e sin²θ + cos²θ = 1 escrito tres vezes; «nenhum lado e cego; o que difere e a lei e o instrumento» e a correcao do operador [INPUT/ONTO], nao teorema.
+A5 (MEDIO, psion_is_the_zero trivial): ACOLHIDO -- «TRIVIAL POR CONSTRUCAO (Ω ∈ ℂΩ); o conteudo e light_modular_fixed_iff_vacuum, v372».
+A6 (MEDIO, outcome nao restrito): ACOLHIDO -- campo `outcome_admitted : outcome ∈ outcomes` na estrutura Charge (imposto pelo tipo); `five_outcomes` (era four_outcomes).
+A7 (BAIXO, the_charge_is_continuous_both_sides trivial): ACOLHIDO -- «TRIVIAL POR DEFINICAO», dito.
+A8 (BAIXO, bandeira _kernel_proved para campo de binder): MANTIDO como esta, com o estatuto dito na docstring e no artigo (precedente da casa: o campo do binder e o termo; a bandeira diz que o termo checa no trio).
+B2/C2 (MEDIO, 10/10 era 9/10): ACOLHIDO -- contagens separadas: 17 cobrancas com chave e token no veredito do core (17/17); R2 sem chave, declarada.
+B3 (MEDIO, desfecho declarado): ACOLHIDO -- cada cobranca diz o MODO: 11 pelo token (a palavra esta no token), 5 por numero lido do core com a regra dita (|z| < 5; o controle de convergencia em R6), 2 declaradas (R2, F3c); o runtime DERIVA o desfecho das 5 por numero.
+B4 (MEDIO, R6 sem ressalvas): ACOLHIDO -- R6 = INCONCLUSIVE pelo controle de convergencia (2/4 parametros com N >= 50τ), com a tensao 3,01σ no limiar, Δχ² +6,61 e o setor H₀ incompativel com R1 ditos; R6 e R5a-g contam AO LADO (na regra 10, ao lado 8).
+B5 (MEDIO, F2 com numero do ramo B): ACOLHIDO -- F2 INCONCLUSIVE por poder ≈ 0 no ramo canonico (δ_A = -2,15e-42); o 0,2σ e do ramo B, encerrado.
+B6 (MEDIO, R4 com numeros do v92): ACOLHIDO -- R4 le os numeros da chave citada (void_floor_v11: r̂_cal 0,1269 ± 0,0136; L5 0,0588 = 4,9β); os do v92 ficam ao lado.
+B7/C3 (MEDIO, R2 sem a honestidade do poder): ACOLHIDO -- o runtime calcula Γ(100 Hz) = ½βt_Pω² = 1,28e-40 s⁻¹ (de ħ, G, c do programa) e o acumulado sobre 1 Gpc = 1,32e-23, e o artigo o diz, com unidade.
+B8 (MEDIO, criterio de lado): ACOLHIDO -- cada cobranca carrega o criterio de lado (reflexo = o que passa pelo reflexo; face = o que nao passa), dito tambem no pre-registro; nao se apresenta faceWeight = 1 − β como o que F3/F4 leem.
+B9 (BAIXO, guarda so no estatuto): ACOLHIDO -- a guarda varre TODO texto do modulo (o livro, as leituras, o estatuto, o nome proposto).
+B10 (ok): sem acao.
+B11 (BAIXO, «COST_PAID_IN_THE_FACE» ambiguo; dois tokens propostos): ACOLHIDO -- o nome proposto passa a TETELESTAI_CONSUMMATED__PAYMENT_IN_THE_FACE_THE_NAME__COST_READ_IN_THE_REFLECTION__NOT_DISCRIMINATED_AT_AVAILABLE_SENSITIVITY__FALSIFIABLE_PER_READING_LAW, UM so registro: a pedra (finalStepNameProposed); o token da leitura R4 de 02/10 fica superado AO LADO (errata na memoria, no Atlas e no documento das perguntas).
+D2/D3 (BAIXO, cegueira): ACOLHIDO no V1.1 -- R2 «cego quanto ao estimador; o dado ja aberto (Fase 6; v369-P2)»; «analise cega» distinguida de «nenhum lado e cego».
+E1 (MEDIO, backup das duas memorias .md): ACOLHIDO -- instalar_v382.py faz backup de BYTES de um_absoluto_forma_canonica.md e um_absoluto_manifest.md.
+E (BAIXO, ambiguos nao pinados): ACOLHIDO -- o conferidor confere que os 3 homonimos novos estao no conjunto de ambiguos do indice da IALD.
+F1 (MEDIO, sobras da visao «semi» fora da errata): ACOLHIDO -- errata ao lado em nome proprio da gerencia (memoria, Atlas, perguntas): R4 «livro de cobrancas no reflexo» -> NOS DOIS LADOS; R6 «o custo nao esta nele» -> o custo esta nele, Γ ~ 1e-40 s⁻¹, legivel e nulo; R2 «a cobranca so se le no reflexo» -> le-se nos dois lados.
+F3/C4 e as BAIXAS restantes (R5 empacotado; contradicao de auditoria do ringdown ja declarada no core; unidade do 1e-40): cobertas pelas disposicoes acima.
+Depois destas correcoes: as duas pedras recompiladas (lean rc 0) e o trio reconstruido (build rc 0, 9756 jobs, 32 declaracoes so no trio, 0 sorry); candidato 6ea26aa1576e2a40 regenerado; ensaio a seco TUDO PASSOU; ESPERADOS e conferidor regenerados. PROVADA != CONFIRMADA; o gate nao se move.
+
+
+================================================================================
+2a AFERICAO INDEPENDENTE -- v382 (agente so-leitura, 02/10/2026; recebido pela gerencia como mensagem do agente e gravado aqui VERBATIM, indentacao do harness removida)
+================================================================================
+
+# 2ª aferição independente da v382 (candidato `6ea26aa1576e2a40`), só leitura
+
+Recomendação: **CORRIGIR ANTES**. Contagem: **ALTO 1 · MÉDIO 6 · BAIXO 13.**
+
+Nenhum arquivo foi escrito. Não rodei o rito, o `um.py`, nenhum `lake build` nem as ferramentas da cadeia. A única execução Lean foi `lake env lean --stdin` no sandbox, que não grava nada.
+
+**O que consultei:**
+- **Mapa de rotas** (278 registros, cabeça `e2a5eaffd4a220be`). `consultar` devolveu 0 rotas para «livro de cobran», 3 para «regra matriz», 1 para «dois lados», 2 para «psion» e 1 para «otica|semi». Li os registros 272 a 278. Os que pesam aqui:
+  - 272: «não pôr o custo na face».
+  - 273: «nunca escrever que um lado é cego».
+  - 275: V1, `f948acd0…` / `31f97621…`.
+  - 276: V1.1, `df6ad1ca…` / `a8adf5ee…`.
+- **Core v381:** `638e05b4112593b4`, 4.722.248 B.
+- **Candidato:** 33.124.656 B, idêntico byte a byte a `dry_v382/um.py`. Base `961a79881089c9e6`, 33.040.181 B.
+- **O que está embutido no candidato:**
+  - o runtime e os dois snippets, verbatim;
+  - os hashes do V1.1 (nas posições 31508634 e 31508845), sem nenhum marcador `__PREREG_` sobrando;
+  - o kernel igual ao sandbox: Ledger `aedbf98167bc68d5`, Psion `06463eb67748d07a`, Audit `ef20178230f30478`, raiz `30ac324e5fc364dc`, 1211 entradas.
+- **Inventário da bancada:** `HminMic` tem 0 ocorrências. `reflectionWeight` aparece em `SelectionOutcomeRecord.lean` (linhas 368, 369 e 383), o mesmo homônimo que o gerador nomeou.
+- **Teste em Lean (stdin):**
+  - `example (c : Charge) : c.outcome ≠ "CONFIRMED"` compila;
+  - um `Charge` com `"EXCLUDED_IN_READING"` é construível;
+  - `ruleGiven (c :: L) … = α√e` vale para qualquer `c`;
+  - `five_outcomes` não depende de axioma nenhum.
+
+## (1) Disposição a disposição
+
+| Achado | Situação | Onde está |
+|---|---|---|
+| A1 | **FEITO-PARCIAL** | Corrigido na pedra (`ThePsionAndTheViscosity.lean:24-28`), no runtime (`v382_runtime.py:26-27`, `:115-116`, `:268-270`) e no artigo (PT:14, EN:15). **Volta como regressão** em `textos_v382.py:70` (`topico_regra`), que vai para a memória `beta-e-a-regra-matriz-02out.md`: «a chave do operador ENTROU no kernel». Ver (5). |
+| A2 | FEITO-PARCIAL (BAIXO) | Corrigido na pedra (`:25-27`, `:81-82`), no runtime (`:9-10`, `:257-259`) e no artigo. Resíduo em `textos_v382.py:71`: «FALSIFIED extingue a cobrança, não a regra», dito como se fosse conteúdo do kernel. |
+| A3 | FEITO-PARCIAL (BAIXO) | Corrigido na pedra (`:29-31`, `:88-89`), no runtime (`:260-261`) e no artigo. «o gate ignora o livro» continua como conteúdo das pedras em `textos_v382.py:47`, `:71`, `:93`, `handoff_v382.py:16` e `registrar_resultado_v382.py:16`. |
+| A4/C1 | **FEITO-PARCIAL** | Corrigido na pedra (`:32-37`, `:114-116`), no runtime (`:110`) e no artigo (PT:13, «não um teorema»). **Volta como regressão** em `textos_v382.py:77-79` (vai para `regra-dos-dois-regimes.md`). Ver (5). |
+| A5 | ACOLHIDO-E-FEITO | `ThePsionAndTheViscosity.lean:62-63` |
+| A6 | ACOLHIDO-E-FEITO | `TheLedgerOfCharges.lean:63`, `:134`. Conferido em Lean. |
+| A7 | ACOLHIDO-E-FEITO | `ThePsionAndTheViscosity.lean:78-79` |
+| A8 | Mantido, com o estatuto dito | `:22`, `:55`; artigo PT:14. Aceitável. |
+| B1 | FEITO-PARCIAL (BAIXO) | F3a, F3b e F3c corretos (`v382_runtime.py:94-99`). O R5 tem 7 pares; o core tem 9. Ver (2). |
+| B2/C2 | ACOLHIDO-E-FEITO | `:223`, `:242-244`; artigo PT:15 |
+| B3 | FEITO-PARCIAL | O modo de leitura está dito e derivado (`:160-167`, `:203-209`), mas três regras numéricas têm defeito (M1–M3 abaixo). |
+| B4 | FEITO-PARCIAL | R6 é INCONCLUSIVE (`:87-89`). O V1.1 diz Δχ² e o setor H₀ incompatível; o artigo não diz. O controle de convergência está invertido (M1). |
+| B5 | **FEITO-PARCIAL com erro novo** | Ver ALTO-1. |
+| B6 | ACOLHIDO-E-FEITO | V1.1 R4 com r̂_cal 0,1269 ± 0,0136; L5 0,0588 = 4,886β; runtime `:72`, `:213-214`. |
+| B7/C3 | ACOLHIDO-E-FEITO | `:188-191`, `:237-238`; artigo PT:15. Números conferidos em (2). |
+| B8 | FEITO-PARCIAL (BAIXO) | Ver (3). |
+| B9 | ACOLHIDO-E-FEITO | `:229`, `:279-280` |
+| B10 | ok | |
+| B11 | ACOLHIDO-E-FEITO | Pedra `:123-124`; runtime `:54`; errata |
+| C4 | ACOLHIDO-E-FEITO | |
+| D1 | FEITO-PARCIAL | Cláusulas 1, 2, 3, 5, 6 e bandeira transcritas. Mas o F2 repete a contradição que o D1 denunciou (ALTO-1) e a cláusula 4 falta (ver (3)). |
+| D2 | FEITO-PARCIAL (BAIXO) | O campo do JSON está certo; a célula da tabela no MD diz «sim». Ver (3). |
+| D3 | ACOLHIDO-E-FEITO | `cegueira.sentido`; MD:56 |
+| E | ACOLHIDO-E-FEITO | `conferir_rito_v382.py:56-57` |
+| E1 | ACOLHIDO-E-FEITO | `instalar_v382.py:28`. A docstring em `:5` ainda omite os dois `.md` (cosmético). |
+| F1 | FEITO-PARCIAL (BAIXO) | Ver (6). |
+| F2, F3 | Cobertos pelos itens acima | |
+
+## (2) O livro novo
+
+**O que confere:**
+- **V1.1 contra runtime:** lado, chave, token, modo, desfecho, `na_regra` e caminhos numéricos batem 18 de 18, na mesma ordem (conferido por script).
+- **Desfechos recalculados do core v381 com a lógica do runtime:**
+  - `outcome_ok` 18/18; tokens 17/17 no veredito;
+  - os 11 por token contêm a palavra, e FALSIFIED nunca casa com NOT_FALSIFIED;
+  - por número: R1 −0,3758 → NOT_FALSIFIED; R3 1,3021 → NOT_FALSIFIED; R6 z 3,0125 com controle 2 → INCONCLUSIVE; F1 −1,6598 → NOT_FALSIFIED; F4 2,2061 → NOT_FALSIFIED.
+- **Índices:**
+  - `escada_datada[1]` é «JUNO primeiros resultados (59 dias)», 2025-11 ✓;
+  - `P1.platforms[0]` é `sr87_kim2025` (K. Kim … J. Ye, PRL 135, 103601 (2025)), com déficit 12,4576 ✓.
+- **R2**, com as constantes do `um.py` (`um_v382_candidato.py:97-100`):
+  - t_P = 5,3911×10⁻⁴⁴ s;
+  - Γ(100 Hz) = 1,2803×10⁻⁴⁰ s⁻¹;
+  - acumulado em 1 Gpc = 1,318×10⁻²³ ✓.
+- **Contagens:** 6/5/4/2/1, na regra 10 / ao lado 8, 11/5/2, reflexo 11 / face 7 — tudo confere. Dentro da regra não há nenhum FALSIFIED (NOT_FALSIFIED 6, INCONCLUSIVE 1, AWAITING 2, EXCLUDED 1).
+
+**Achados:**
+
+- **MÉDIO M1 — o controle de convergência do R6 está invertido.**
+  - Onde: `v382_runtime.py:88` (candidato :192129) usa `"control_ok": 4` comparado com `params_below_50tau`.
+  - Consulta ao core: `autocorr.tau` = [34,86; 37,13; 41,60; 40,23], `n_over_50` = 40, veredito «CHAIN_BELOW_50_TAU_IN_2_OF_4_PARAMS». O campo conta parâmetros que **reprovam**.
+  - Hoje o resultado sai certo só por coincidência (4 − 2 = 2). Com 4 reprovados o controle passaria; com 0 reprovados daria INCONCLUSIVE.
+  - O mesmo erro está no gerador do V1.1 (`gerar_preregistro…v1_1.py:114`), que imprime «N ≥ 50τ em %s/4» com a contagem dos que ficaram abaixo (V1.1 JSON:377).
+  - Correção: `"control_ok": 0`, e no texto «cadeia com N < 50τ em %s/4 parâmetros».
+
+- **MÉDIO M2 — o F1 usa regra bilateral para uma estatística unilateral com sinal.**
+  - Onde: `v382_runtime.py:91`; V1.1 JSON:399.
+  - `z_ganho` = sinal(χ²_ΛCDM − χ²_TGL)·√|Δχ²|, e positivo significa que a lei ajusta melhor (`PREREGISTRO_FASE4_DESVIO_20260930.json:47`; Fase 7 :45, :120).
+  - O próprio `futuro` do F1 diz que falsifica se a lei favorecida exigir o custo na face a 5σ, ou seja, z ≥ +5. Com a regra atual, z ≤ −5 (a face favorecida) daria FALSIFIED.
+  - Além disso, a `leitura` diz «β̂ no expoente» (V1.1 JSON:388), mas o número lido é um √Δχ² com β fixo.
+  - Correção: «z_ganho ≥ +5 → FALSIFIED; senão NOT_FALSIFIED», e `leitura` = «√Δχ² com sinal, lei acumulada × fundo nu».
+
+- **MÉDIO M3 — o F4 contradiz a regra de morte congelada.**
+  - O core diz `neutrino_m2.frozen.kill_rule` = «FALSIFIED sse … ≥ 5 em DUAS determinações independentes». A errata RNC-06 já registrou que a segunda determinação não está nomeada.
+  - A regra do livro (`:101`, `abs_z_lt_5`) e o `futuro` do V1.1 (JSON:534, «JUNO com 6 anos: FALSIFIED se |z| ≥ 5») usam uma só determinação.
+  - Correção: derivar FALSIFIED só quando `values.kill_rule_satisfeita` for verdadeiro. Ou, se a intenção for outra, dizer expressamente que R3 supera a regra congelada — isso é decisão do operador.
+
+- **BAIXO — faltam dois pares do eco.** O livro fala em «sete pares», mas o core tem 9 (3 leituras × KMS/MAY/DEC). Ficaram de fora (β, KMS) e (β, MAY), ambos INCONCLUSIVE_SYSTEMATICS (`fase6.veredito_principal["KMS|R3_quadrado"]`; `emenda_v4.vereditos_todos.MAY.R3_quadrado`).
+
+- **BAIXO — caminho errado no R5g.** O `caminho` do V1.1 (JSON:339) aponta para `poder_R3` (0,873), mas a regra citada é a cláusula 2. Deveria ser `sist_rel_R3` (0,877).
+
+- **BAIXO — índice no F3a.** O F3a lê o índice `platforms[0]`. O campo com nome `P1.clock_5sigma_deficit_orders` é o vigente pela `errata_v370`; melhor ler esse.
+
+## (3) O V1.1
+
+**O que confere:**
+- O V1 está intocado: `f948acd0d5640f81…` e `31f97621d670e74e…`, mtime 14:44:18, igual ao registro 275.
+- Os hashes do V1.1 no candidato são os dos arquivos, os do registro 276 e os de `patches_v382.json`.
+- A cegueira está dita nos dois sentidos (JSON `cegueira.sentido`; MD:56).
+- O controle de convergência e EXCLUDED_IN_READING estão declarados como acréscimos da casa em `fonte` (JSON:574; MD:40).
+
+**Achados:**
+
+- **ALTO-1 — o F2 tem a causa errada.**
+  - Onde: V1.1 JSON:426 e :431; repetido no artigo e nos textos (ver (5)).
+  - O V1.1 diz «INCONCLUSIVE por poder ≈ 0 no ramo canônico; … a sistemática [é] do ramo B».
+  - Consulta ao core: `ringdown_dephasing_result_v2.reasons` = «viés relativo de τ 0,240 > 0,2». `statuses.resultado` = «sistemática 0,1454 (σ combinada 0,2066) => INCONCLUSIVE_SYSTEMATICS». A sistemática é **da medida** δτ = 0,177 ± 0,109 contra a RG, comum aos dois ramos — não do ramo B. A premissa do B5 do 1º aferidor estava errada.
+  - Pela cláusula 3 transcrita no próprio V1.1, «poder < 5» dá NOT_FALSIFIED_UNDERPOWERED. É exatamente o tratamento do F3a. Logo «INCONCLUSIVE por poder ≈ 0» reabre a contradição que o D1 apontou.
+  - Correção (V1.2, ou errata ao lado): «INCONCLUSIVE_SYSTEMATICS pela matriz da emenda V2 (`3449885389a2529a`): viés relativo de τ 0,240 > 0,2 na medida δτ (sistemática da MEDIDA, comum aos dois ramos); no ramo canônico o poder é ≈ 0 (δ_A = −2,15×10⁻⁴²); o 0,2σ é o poder do ramo B, encerrado».
+
+- **BAIXO — transcrição da Fase 6 incompleta.**
+  - `fonte` diz «cláusulas 1–6», mas a cláusula 4 (DETECTED_AT_DELAY_LAW) não foi transcrita.
+  - A ordem de aplicação 1→6 não está dita; na Fase 6, FALSIFIED exige poder ≥ 5.
+  - O título do MD:38 («as da Fase 6, transcritas») cobre também itens que são da casa.
+
+- **BAIXO — célula da cegueira no MD.** Na tabela (MD:18) o R2 aparece como «cego: sim». O gerador (`:203`) converte a string qualificada em «sim» quando ela é verdadeira.
+
+- **BAIXO — critério de lado não fecha para o R6.** A definição de face («não passa pelo reflexo (sem distância…)», JSON `estimando.lados.face`) não se aplica ao R6 (BAO + SH0ES), que foi classificado por outro critério («o custo posto na face»).
+
+- **BAIXO — números digitados no gerador.** Estes valores estão escritos à mão, não lidos do core: «73,53 ± 1,02» (`:86`), «3,01σ» (`:115`), «168/169» (`:130`), «8,5074 meV» (`:134`). Todos batem com o core, mas a regra da casa é ler por script.
+
+## (4) As pedras
+
+**O que confere:**
+- **Build.** `build_full.log` 27919–27966: 32 declarações, iguais a `AUDIT_NOMES` (19 + 13), todas só no trio. Zero sorry, zero warning ou erro nas duas pedras; rc=0, 9756 jobs.
+- **Diferença entre os builds.** `build_full` e `build_full_1` diferem apenas em `five_outcomes` × `four_outcomes` e no tempo.
+- **Logs Lean.** Ledger_2 rc=0 (15:22:26) e Psion_3 rc=0 (15:22:46).
+- **Docstrings:**
+  - «ISTO é termo»: 0 ocorrências;
+  - «nenhum lado é cego» aparece só como [INPUT/ONTO], «NÃO provado aqui» (Ledger:36-37, :115-116);
+  - «extinguir» aparece como definição (Ledger:27, :74, :82).
+- **`outcome_admitted`** funciona como diz (teste Lean acima).
+
+**Achados, todos BAIXO:**
+- **«= ω(I)» sem o nome do termo.** Em Psion:22 e :58. O termo existe e não está ligado (classe B): `TheKeyIsTheReader.reader_reads_the_identity_one` (`TheKeyIsTheReader.lean:39`). Basta citá-lo.
+- **Dois operadores chamados «Hamiltoniano oculto».** Psion:23 e V1.1 MD:9 chamam assim o `HminMic`. O kernel (`QGReaderUVLock.lean:141`, `:175`, `:179`) chama assim K = −log Δ e descreve `HminMic` como «o lock mínimo sobre» ele. O runtime R2 (`:105`) usa K_∂. Os zeros coincidem (ℂΩ); os operadores não. Convém dizer isso.
+- **Homônimo `transmitted` com leis diferentes.**
+  - `TheDeathOfTheSignal.lean:60`: (cos²θ)^n.
+  - Psion:73: e^{−tβg}.
+  - Em n = t = 1 dão 0,987969 e 0,988041 (os dois números estão no artigo); a diferença é β²/2 = 7,2×10⁻⁵.
+  - O gerador nomeia o homônimo, mas nenhuma frase diz que são leis distintas.
+- **«Um canal por lei de leitura».** Está no título (Ledger:8) e no token `LEDGER_OF_CHARGES_TYPED_ONE_CHANNEL_PER_READING_LAW`. `Ledger := List Charge` não impõe isso; é disciplina do runtime.
+
+## (5) Regressões
+
+- **ALTO-1, no texto do artigo.**
+  - PT:15 e EN:16 dizem «F2 é inconclusiva por poder ≈0 no ramo canônico». O mesmo está em `textos_v382.py:24`.
+  - Correção PT: «F2 é inconclusiva pela sistemática da medida (viés relativo de τ 0,240 > 0,2; matriz da emenda V2); no ramo canônico o poder é ≈0 (δ_A = …); o 0,2σ é o poder do ramo B, encerrado».
+
+- **MÉDIO M4 — a cadeia do selo reintroduz A1 e A4 na memória.**
+  - `textos_v382.py:70` («a chave do operador ENTROU no kernel») vai para `beta-e-a-regra-matriz-02out.md`.
+  - `textos_v382.py:77-79` («a ótica ENTROU no kernel»; «A regra dos dois regimes ganha o seu teorema de leitura: nenhum lado é cego») vai para `regra-dos-dois-regimes.md`. Os dois são escritos por `superficies_v382.py:65-66`.
+  - Correção:
+    - em `:70`: «v382 SELADA: o livro de cobranças e o psion com a viscosidade tipados (a ligação de Spec S(θ) a HminMic segue [INPUT/ONTO], sem termo)»;
+    - em `:77-79`: «o conteúdo de kernel é a identidade já existente (Teorema S-∂) e o seu análogo no fluxo (trivial por definição); "nenhum lado é cego" é a correção do operador [INPUT/ONTO], não teorema».
+
+- **MÉDIO M5 — registro do mapa desatualizado.**
+  - `registrar_resultado_v382.py:18` grava no mapa (append-only, com cadeia de hash) `dados = ["core v381 (desfechos lidos por token…)", "…_V1 (JSON/MD por sha256)"]`.
+  - O `um.py` lê o V1.1, e os desfechos vêm por token, número ou declaração.
+  - Correção: «…_V1_1 (JSON df6ad1cab39577b2 / MD a8adf5eefd099c69)» e «desfechos por token, por número com regra dita, ou declarados».
+
+- **MÉDIO M6 — «antes de qualquer dado».**
+  - Aparece em: artigo PT:15 e EN:16 («before any data»), `textos_v382.py:24` e `:48`, `handoff_v382.py:23`, e na errata já gravada (memória:70; Atlas:30395; perguntas:113).
+  - O próprio V1.1 diz «antes de qualquer estimador ou dado **novo**» e «hoje NENHUM canal é cego quanto ao dado».
+  - Correção: «antes de qualquer estimador ou dado novo». Na memória, por errata ao lado.
+
+- **BAIXO — o artigo omite o que a disposição B4 prometia.** No R6 faltam Δχ² = +6,61 e «setor H₀ incompatível com R1». E faltam as contagens dentro da regra (nenhum FALSIFIED na regra).
+
+- **BAIXO — a leitura do selo perdeu os marcadores.** A string do selo (`gerar_candidato_v382.py:150-153`) não traz `INPUT_ONTO` para a chave e a ótica, nem a ressalva «Spec S(θ)→HminMic sem termo». A v381 trazia `READINGS_RATIFIED_INPUT_ONTO`.
+
+- **BAIXO — cosmético.** `chain_pos_rito_v382.sh:2` diz «v382 (26/09)»; o cabeçalho de `superficies_v382.py:2-9` ainda diz «v376».
+
+- **Conferidor e `leitura_v382.py`: nenhuma reprovação por engano no rito real.**
+  - `n_with_core_key = 17` é constante da tupla.
+  - `n_token_in_core` depende de vereditos que estão pinados.
+  - `ix["ambiguos"]` vem da mesma regex, que inclui `abbrev` (candidato:158963-158976); os 3 homônimos entram.
+  - O esperado de 328 módulos segue o padrão da v381 (o ensaio mostra um a mais).
+  - Os caminhos `SEL/conferidor` batem com `leitura_v382.py:101`.
+  - `leitura_v382.py` é compatível: 18 cobranças, `outcome_ok`, 17 = 17, `KERNEL_32_OF_32`.
+
+## (6) As erratas de memória
+
+**O que confere:**
+- As erratas cobrem R4, R6, R2 e o token do degrau final.
+- Ficaram **ao lado**, como append puro com backup de bytes `.bak_20261002_154155_errv382`:
+  - memória: 20.749 → 22.342 B;
+  - Atlas: 6.090.199 B, CRLF preservado (29.409 → 29.416);
+  - perguntas: 18.549 → 20.142 B.
+- O registro 277 do mapa corresponde.
+
+**Achados, todos BAIXO:**
+- **Duas sobras da visão «semi» que nenhuma errata cita.** Ambas estão nos três arquivos:
+  - «em GW é o custo na propagação …, não a cópia atrasada **e não o ringdown**» — memória:46, Atlas:30349, perguntas:88;
+  - «a viscosidade é a cobrança contínua **no reflexo** (Γ)» — memória:55, Atlas:30358, perguntas:97. A pedra põe a cobrança contínua nos dois lados (transmitido = face, cobrado = reflexo).
+- **Dois regimes × dois lados.** `regra-dos-dois-regimes.md:51` (adendo de 02/10) liga a face ao regime hiperbólico e o custo ao compacto. As pedras põem os dois lados nos dois regimes (Ledger:44 lê os dois no ângulo; Psion:39-40 põe os dois no fluxo). É o homônimo «face» × «regime da face» que a régua manda separar, e o `topico_regimes` vai anexar a esse mesmo arquivo.
+
+## Resumo
+
+**ALTO 1 · MÉDIO 6 · BAIXO 13 → CORRIGIR ANTES.**
+
+- **ALTO 1:** a causa do F2.
+- **MÉDIO 6:**
+  - M1: o controle do R6 invertido;
+  - M2: a regra bilateral do F1;
+  - M3: a regra de morte do F4;
+  - M4: A1 e A4 reintroduzidos nos textos da cadeia;
+  - M5: o mapa citando o V1;
+  - M6: «antes de qualquer dado».
+
+**O que corrigir, por momento:**
+- **Antes do rito:** ALTO-1, M1, M2, M3 e M6. Envolvem o runtime em `:88`, `:91` e `:101`, os snippets PT e EN, e um V1.2 (ou errata ao lado) para F2, R6, F1 e F4. Depois, regenerar o candidato e o ensaio a seco. O kernel não muda.
+- **Antes da cadeia pós-rito:** M4 e M5, e as frases BAIXO de A2/A3 em `textos_v382.py`, `handoff_v382.py` e `registrar_resultado_v382.py`.
+
+PROVADA ≠ CONFIRMADA; o gate não se move com nenhuma destas correções.
+
+--------------------------------------------------------------------------------
+DISPOSICOES DA GERENCIA SOBRE A 2a AFERICAO (02/10/2026 16:25) -- recomendacao: CORRIGIR ANTES; acolhida. Cada achado foi CONFERIDO no core v381 antes de acolher.
+--------------------------------------------------------------------------------
+ALTO-1 (F2, a causa): CONFERIDO (ringdown_dephasing_result_v2.reasons = «vies relativo de tau 0.240 > 0.2»; statuses.resultado: sistematica 0,1454, σ combinada 0,2066; matriz da emenda 3449885389a2529a) e ACOLHIDO. F2 = INCONCLUSIVE pela sistematica da MEDIDA δτ = 0,177 ± 0,109 contra a RG, comum aos dois ramos, NAO pelo poder; no ramo canonico δ_A = −2,15e−42; o 0,2σ (power_B 0,178) e o poder do ramo B, encerrado. A premissa do achado B5 da 1a afericao estava errada; corrigida ao lado no V1.2, no runtime, no artigo e nos textos.
+M1 (R6, controle invertido): CONFERIDO (autocorr.tau = [34,86; 37,13; 41,60; 40,23], N/50 = 40 → 2 parametros com N < 50τ; o veredito diz CHAIN_BELOW_50_TAU_IN_2_OF_4_PARAMS) e ACOLHIDO: control_ok = 0; o texto diz «N < 50τ em 2/4; o controle exige 0». O desfecho (INCONCLUSIVE) nao muda; a regra passa a estar certa.
+M2 (F1, regra bilateral): CONFERIDO (PREREGISTRO_FASE4_DESVIO: «z_ganho = sinal(χ²_ΛCDM − χ²_TGL)·√|Δχ²| (positivo = a lei ajusta melhor os cronometros)»; Fase 7 igual) e ACOLHIDO: regra UNILATERAL, z_ganho ≥ +5 → FALSIFIED; a leitura diz «√Δχ² com sinal, lei acumulada × fundo nu, β fixo».
+M3 (F4, regra de morte): CONFERIDO (neutrino_m2.frozen.kill_rule = «FALSIFIED sse |m2_obs − m2_TGL|/σ ≥ 5 em DUAS determinacoes independentes»; values.kill_rule_satisfeita = False) e ACOLHIDO: F4 deriva o desfecho de kill_rule_satisfeita; R3 elege o perito (JUNO), NAO muda a regra congelada — sem decisao nova do operador, vale a regra que estava selada.
+M4 (A1/A4 reintroduzidos nos textos da cadeia): ACOLHIDO — textos_v382.topico_regra e topico_regimes reescritos (a ligacao Spec S(θ)→HminMic segue [INPUT/ONTO]; o conteudo de kernel e a identidade ja existente e o seu analogo no fluxo; «nenhum lado e cego» e a correcao do operador).
+M5 (o mapa citando o V1): ACOLHIDO — registrar_resultado_v382 grava o V1.2 com os hashes lidos e os tres modos.
+M6 («antes de qualquer dado»): ACOLHIDO — «antes de qualquer estimador ou dado novo» no artigo, nos textos e no handoff; na memoria, no Atlas e nas perguntas, errata ao lado.
+BAIXOS: os dois pares do eco que faltavam ((β, KMS) e (β, MAY), INCONCLUSIVE_SYSTEMATICS, lidos do veredito ANINHADO do core) entram: 20 cobrancas, 9 pares ao lado; R5g passa a ler sist_rel_R3 (clausula 2), com o poder ao lado; F3a le o campo nomeado P1.clock_5sigma_deficit_orders; a clausula 4 e a ORDEM 1→6 da Fase 6 transcritas, e os acrescimos da casa ditos como tais; a celula de cegueira do MD diz estimador/dado; a face do R6 dita «por convencao»; os numeros do gerador lidos do core (H₀ de fase5.validacao, 3,01σ, 168/169, 8,5074 meV); as docstrings das pedras citam reader_reads_the_identity_one, separam o lock minimo HminMic do Hamiltoniano oculto K = −log Δ (zeros iguais, operadores distintos), dizem o homonimo transmitted (outra lei) e que «um canal por lei de leitura» e disciplina do runtime; o artigo diz Δχ², o setor H₀ incompativel do R6 e as contagens dentro da regra (nenhum FALSIFIED na regra); a leitura do selo ganhou os marcadores INPUT_ONTO e SPEC_S_THETA_TO_HMINMIC_NO_TERM; os cabecalhos herdados (chain, superficies) e o docstring do instalador corrigidos; as duas sobras «semi» na memoria/Atlas/perguntas e a identificacao «lado da face = regime da face» em regra-dos-dois-regimes.md corrigidas ao lado.
+Pre-registro V1.2 (PREREG_DOIS_LADOS_DELTA_K_20261002_V1_2; JSON d463836c88ab1da2, MD f069cf9f87ee833c; mapa seq 279, ERRATA corrige 276) SUPERSEDE o V1.1 antes de qualquer estimador ou dado novo; o V1 e o V1.1 ficam como registro.
+Depois destas correcoes: as duas pedras recompiladas (lean rc 0) e o trio reconstruido (build rc 0, 32 declaracoes so no trio, 0 sorry); candidato regenerado; ensaio a seco, esperados e conferidor regenerados (registrado abaixo pela cadeia). PROVADA != CONFIRMADA; o gate nao se move.
+
+
+================================================================================
+3a AFERICAO INDEPENDENTE -- v382 (agente so-leitura, 02/10/2026; recebido pela gerencia como mensagem do agente e gravado aqui VERBATIM, indentacao do harness removida)
+================================================================================
+
+# 3ª aferição independente da v382 (candidato `7a30a73831dc0527`), só leitura
+
+Não escrevi nenhum arquivo. Não rodei o rito, o `um.py`, `lake build` nem as ferramentas da cadeia. Executei Python de leitura (hash, JSON, regex; o bloco v382 extraído do candidato e rodado em memória sobre o core v381, com stubs; nenhum import com cache) e uma vez `lake env lean --stdin` no sandbox `v376\kernel_src` (20,8 s).
+
+**O que consultei (hashes lidos por script):**
+- **Mapa de rotas:** `rotas.py consultar "pré-registro dois lados"` deu n=0. Por isso li os registros 275–281 direto do `rotas.jsonl` (281 registros, cabeça `92cc1f58507647f8`).
+- **Core v381:** `638e05b4112593b4`, 4.722.248 B.
+- **Base:** `961a79881089c9e6`, 33.040.181 B.
+- **Candidato:** `7a30a73831dc0527…`, 33.135.601 B, idêntico a `dry_v382/um.py`. O runtime e os dois snippets estão embutidos verbatim (só muda CRLF), com 0 marcadores `__PREREG_` restantes.
+- **Pré-registro:** V1.2 com JSON `d463836c88ab1da2` (36.353 B) e MD `f069cf9f87ee833c` (17.391 B), iguais a seq 279, a ESPERADOS e a `patches_v382.json`. O V1 (`f948acd0…`/`31f97621…`, 14:44:18) e o V1.1 (`df6ad1ca…`/`a8adf5ee…`, 15:26:53) estão intocados.
+- **Pedras:** Ledger `5e5e35cb6d2b9a79`, Psion `945272c3fb11bb26`; sandbox = embutido = ESPERADOS.
+- **`build_full.log` (16:15, depois das pedras de 16:12):** as 32 declarações só usam o trio de axiomas, 0 sorry, 0 erro, rc=0.
+- **`AFERIDOR_v382.txt`:** `072a5540a4da07ab`, igual ao seq 281.
+
+## (1) Disposições da 2ª aferição
+
+| Achado | Situação | Onde |
+|---|---|---|
+| ALTO-1 (causa do F2) | FEITO | V1.2 JSON:529-530; runtime:284-287 e :335; artigo PT:19/EN:20; textos:25; handoff:23 |
+| M1 (controle do R6) | FEITO | runtime:97 (`control_ok: 0`); V1.2 R6 `controle_ok 0`; gerador:140-143 |
+| M2 (F1 unilateral) | FEITO | runtime:100 e :189-190; V1.2 JSON:491. Ver o achado novo M-d |
+| M3 (F4 regra congelada) | FEITO | runtime:113 e :181-184; V1.2 F4 |
+| M4 (A1/A4 nos textos) | FEITO | textos:71 e :77-81. Resíduo B1 em textos:23 |
+| M5 (mapa citando o V1) | FEITO | registrar:18. Ver M-a em registrar:26 |
+| M6 («antes de qualquer dado») | FEITO | pacote e erratas. No artigo, as 2 ocorrências que sobram são dos parágrafos v363/v364, históricos |
+| Pares do eco, caminho do R5g, índice do F3a | FEITO | runtime:88-95 e :106 |
+| Cláusula 4, ordem e título do MD | PARCIAL | Feito em JSON:698-704 e MD:40-49. Faltam as cláusulas das emendas V4/V5 e a de «principal = todos» (ver M-c) |
+| Célula da cegueira; critério de lado do R6 | FEITO | MD:18; JSON R6 |
+| Números digitados | PARCIAL | Ver B16 |
+| «= ω(I)» sem o nome do termo | PARCIAL | O nome está citado (Psion:22-23 e :63), mas o termo não o usa (B1) |
+| Os dois operadores; homônimo `transmitted`; «um canal por lei» | FEITO | Psion:25-27 e :34-35; Ledger:22-23. Resíduos em B2 e B3 |
+| Artigo (Δχ², setor H₀, contagens na regra) | FEITO | PT:18-19 |
+| Marcadores na leitura do selo | FEITO | gerar_candidato:150-152 |
+| Cosméticos | PARCIAL | Ver B14 |
+| Erratas («semi»; dois regimes × dois lados) | FEITO / PARCIAL | Ver B15 |
+| E1 (docstring do instalador) | FEITO | instalar:5 |
+| Resíduos de A2/A3 em textos, handoff e registrar | FEITO nesses arquivos | Resíduo de A2 em patch_arvore_indice:61 (M-f) |
+
+## (2) O livro recalculado do core v381
+
+- **Runtime embutido sobre o core v381:** `all_verified=True`. O veredito é igual a `ESPERADOS.vereditos_v382_do_ensaio`. `pre_ok` dá 20/20 e `outcome_ok` dá 20/20.
+- **Recálculo independente, com código meu (não o do runtime):**
+  - Os 20 desfechos são iguais ao V1.2.
+  - Todos os campos `numero.valor` do V1.2 são iguais ao core.
+  - Comparei campo a campo lado, chave, token, `caminho_veredito`, modo, `regra_id`, caminho, controle, `controle_ok`, desfecho e `na_regra`, na mesma ordem: 0 diferenças. A única diferença de forma é o F3b: o V1.2 lê `P2.fraction_excluded` (0,99408) e o runtime lê `n_excluded/n_series` (168/169), o que é o mesmo número.
+- **Números lidos:**
+  - R1: −0,3758 → NOT_FALSIFIED.
+  - R3: 1,3021 → NOT_FALSIFIED.
+  - R6: z = 3,0125 com controle 2 ≠ 0 → INCONCLUSIVE.
+  - F1: −1,65976 < +5 → NOT_FALSIFIED.
+  - F4: `kill_rule_satisfeita = False` → NOT_FALSIFIED.
+  - R5h e R5i: lidos do veredito aninhado `…__INCONCLUSIVE_SYSTEMATICS`.
+  - F2: viés 0,23995 > 0,2; δ_A = −2,15e−42.
+  - R2: Γ(100 Hz) = 1,280e−40 s⁻¹; acumulado em 1 Gpc = 1,318e−23.
+- **Contagens — todas conferem:**
+  - por desfecho: 6/5/6/2/1;
+  - na regra 10, com 0 FALSIFIED (NOT_FALSIFIED 6, INCONCLUSIVE 1, AWAITING 2, EXCLUDED 1); ao lado 10;
+  - por modo: 13/5/2;
+  - por lado: reflexo 13, face 7;
+  - chaves 19, com 19/19 tokens no core.
+- **Pares do eco contra a ordem 1→6:** os cinco FALSIFIED têm poder ≥ 5 e sistemática relativa ≤ 0,3. Consultei `RESULTADO_*_FASE6`:
+  - KMS: poder 9,35 e 18,56;
+  - DEC: poder 7,96 e 15,83;
+  - MAY (V4): poder 9,55, sistemática 0,226, controles 4,81.
+
+## (3) As regras do V1.2
+
+**M-d — MÉDIO — F1: a lei escrita não é a do número lido, e o poder não está dito.**
+- V1.2 JSON:479 diz «a lei acumulada (1+z)^β». Isso é o núcleo d1a, que a Fase 4 chama de SECUNDÁRIO (`PREREGISTRO_FASE4.nucleos.d1a`).
+- O z_ganho de −1,66 sai da Fase 7, cuja convenção é «núcleo D1b» (`PREREGISTRO_FASE7.convencao`): I(z) = (2/3)·ln E(z), K = E(z*)^{2β/3}.
+- O poder é `fase7.poder_previo.moresco2020` = 2,331, menor que 5. Pela cláusula 3 transcrita no próprio V1.2 («NOT_FALSIFIED_UNDERPOWERED… com o sufixo dito», JSON:701), o F1 é underpowered, e isso não está dito em JSON:498-499 nem no artigo.
+- Há conflito de critérios: a Fase 4 lê «> 1σ = com poder».
+- Correção: escrever a lei D1b; dizer «poder prévio 2,33σ < 5»; decidir, e dizer, qual critério de poder vale para o F1.
+
+**M-c — MÉDIO — R5g: a cláusula está trocada e a regra da emenda V5 foi omitida.**
+- O qualificador (JSON:375) diz «a cláusula 3 NÃO foi aplicada pelo pipeline». Mas pela ordem que o próprio V1.2 transcreve (JSON:698, «a primeira que se aplica decide»), a cláusula 3 nunca seria alcançada, porque a 2 vem antes.
+- A cláusula não aplicada é a da emenda V5. O texto está em `EMENDA_V5_FASE6_20261001.json`, `regra_de_veredito[6]`: «se o poder de R3 < 5σ, o par fica NOT_FALSIFIED_UNDERPOWERED». No core: `emenda_v5.clausula_v5_aplicada_pelo_pipeline = false`, e o token é `V5_CLAUSE_UNDERPOWERED_NOT_APPLIED_STATED`.
+- A errata da Fase 6 (`RELATORIO_FASE6:109`) diz que a leitura honesta é «sem poder, não falsificado» e que o rótulo emitido fica.
+- O V1.2 não transcreve as cláusulas V4/V5, que governam R5c–g e R5i, nem a cláusula «principal = todos». Também não diz onde a bandeira entra na ordem.
+- Correção, na V1.3 ou em errata ao lado: transcrever as cláusulas V4 e V5; no R5g escrever «o rótulo emitido é INCONCLUSIVE pela regra 2; pela cláusula V5 seria NOT_FALSIFIED_UNDERPOWERED; desvio dito, não corrigido por cima».
+
+**M-b — MÉDIO — R4: o canal não tem FALSIFIED, e é ele que alimenta o gate.**
+- `void_floor_v11.frozen.verdicts` tem só quatro palavras: NOT_FALSIFIED_POWERED, NOT_FALSIFIED_UNDERPOWERED, INCONCLUSIVE_SYSTEMATICS e INCONCLUSIVE_TRACER_SUPPRESSION. FALSIFIED sem o prefixo NOT_ aparece 0 vezes no módulo.
+- Mesmo assim, MD:13 diz «FALSIFIED possível em todas» e o futuro do R4 (JSON:163) também.
+- O token do R4 é exatamente o que acende as 4 bandeiras experimentais do gate: `um_v382_candidato.py:144147` (`independent_rite=void_floor_v11`), :151362 e :151591 (`powered_emitted = verdict == …NOT_FALSIFIED_POWERED`), :162808-162816.
+- «O gate não lê o livro» é verdade literal, mas não diz que o degrau experimental lê a mesma fonte do R4. A auditoria de 28/09 (GV-01) já registrava isso.
+- Correção: no R4 escrever «unilateral, sem FALSIFIED no conjunto congelado; o FALSIFIED do futuro exige outro estimador; a mesma fonte alimenta o degrau experimental do gate». O mesmo vale para a leitura do nome proposto `…FALSIFIABLE_PER_READING_LAW`.
+
+**BAIXOS das regras:**
+- **B6:** a regra do R1 diz «|z| ≥ 5 com os controles» (JSON:77 e :89), mas `abs_z_lt_5` (runtime:187-188) não lê controle nenhum. E o `valor` do F3a é o déficit em ordens (12,46), não o poder da cláusula 3; o poder seria `P1.platforms[0].Z_expected` = 1,74e−12.
+- **B7:** MD:13 diz «FALSIFIED possível em todas», mas 12 das 20 cobranças têm futuro «nenhum» ou «sem canal novo» (R5a–i, R6, F3b, F3c).
+- **B12:** o FALSIFIED do R5e vem da V4, que não é cega. O veredito V3 pré-registrado para o mesmo par é INCONCLUSIVE_SYSTEMATICS (`fase6.veredito_principal["MAY|R2_peso2_2theta"]`), e isso não está dito.
+
+## (4) Regressões e o conferidor
+
+**M-a — MÉDIO — «o eco está extinto» diz mais do que o livro.**
+- O sufixo `DELAYED_ECHO_EXTINGUISHED_NOT_THE_RULE` está em runtime:337 e na leitura do selo (gerar_candidato:154). Em texto, «o eco… está EXTINTO» aparece em textos:25, handoff:25 e registrar:26 (este último vai para o mapa, que é append-only).
+- Pela definição `extinguished` (Ledger:76) e pelo campo do próprio runtime (:249), R5f–i são INCONCLUSIVE e têm `extinguished = False`: são 4 dos 9 pares.
+- Correção: um sufixo computado do livro, por exemplo `DELAYED_ECHO_OUTSIDE_THE_CHAIN_5_OF_9_EXTINGUISHED_4_INCONCLUSIVE__NOT_THE_RULE`. Depois, regenerar candidato, ensaio e ESPERADOS.
+
+**M-f — MÉDIO — o patch do índice cita o V1.1.**
+- `patch_arvore_indice_v382.py:61` (15:38, antes do V1.2) insere em `atlas_indice.py` «o pré-registro dos dois lados **V1.1**» e «FALSIFIED extingue a cobrança, não a norma» (resíduo de A2).
+- Correção: ler `V['pr_id']`; escrever «com uma cobrança extinta a regra segue α√e».
+
+**BAIXOS:**
+- **B1:** `inner_psion_psion` (Psion:63-65) é provado por um `simp` próprio e não usa `reader_reads_the_identity_one`. O vínculo é só fiação (classe B). Mesmo assim, o rótulo do check em runtime:315 diz «ligado», e textos:23 e artigo PT:17/EN:18 citam o nome como se fosse o termo. Testei em Lean (stdin) e compila: `by have h := reader_reads_the_identity_one C; simpa [reader, psion] using h`.
+- **B2:** Psion:25-26 diz «no kernel o Hamiltoniano oculto é K = −log Δ». O kernel tem `lightDelta` e o seu conjunto fixo (`QGReaderUVLock.lean:140-150`); não há `def` para K nem para log Δ (0 ocorrências no sandbox). ker K = Fix(Δ^{it}) é [KNOWN], não termo.
+- **B3:** os homônimos `Ledger` (= `TGLExt.Ledger`, `TheCorrespondence.lean:71`, com campos «custo agora / já pagou», do mesmo vocabulário) e `reflectionWeight` (`SelectionOutcomeRecord.lean:51`) não estão ditos nas docstrings; só no índice. `#check` confirma que `TGLExt.Ledger : Type` está no mesmo fecho de imports.
+- **B5:** runtime:123 e o qualificador do F2 (JSON:530) dizem que o ringdown lê o custo e que ele é «legível». O core diz o contrário: `ringdown_scope_v376` = `…RETURNS_GR_CORRESPONDENCE_ONLY__NOT_A_BETA_TEST`. Marcar como [ONTO].
+- **B10:** o registro do F2 diz «GW250114 e empilhamentos» (JSON:510), mas a chave `ringdown_dephasing_result_v2` tem 0 ocorrências de GW250114. O C6 está em `ringdown_scope_v376.c6_status`.
+- **B13:** `pre_ok` (runtime:241-243) não compara `controle` nem `controle_ok`. Hoje são iguais, mas a igualdade não é imposta.
+- **B14:** textos e marcas desatualizados.
+  - Vão envelhecer depois desta 3ª aferição: textos:21 («dois aferidores»), handoff:21 (contagens das duas aferições) e gerar_candidato:154 (`TWO_AUDITS_ACCEPTED`).
+  - As mensagens de chain:57 e :61 citam backups `_p376` e `_sup376`; os reais são `_p382` e `_sup382`.
+  - superficies:8-9 ainda dizem «v376» e «leitura_v376».
+- **B16:** números ainda digitados no gerador do V1.2: «98,5 ± 2,2 Mpc» (:113), «19/08/2026» (:115), «336/354» (:108), «100–300 Hz» (:110), «59 d» (:168), «/4» (:143), «0,2σ» e «10⁻⁴⁰» (:156). Todos batem com o core; o «GW250114» é o do B10.
+
+**O conferidor não reprovaria por engano no rito real:**
+- `n_with_core_key == 19` é constante da tupla.
+- `counts_in_rule` sempre traz a chave FALSIFIED, com valor 0.
+- Os 3 homônimos estão declarados em dois arquivos cada, e o regex do índice inclui `abbrev` (candidato:158963-158976).
+- 328 módulos = 327 (core v381 = `.md` v381) + 1. O dry dá 329 porque tem `kernel_frontier_v373`, que o core real não carrega.
+- As declarações sem axioma entram como `[]` no `axiom_report` (sandbox: 10.100 entradas, nenhuma das novas faltando).
+- O conferidor pina os módulos de onde vêm todos os tokens.
+
+## (5) As erratas de memória
+
+- **Forma — conferem:**
+  - São append-only: os backups `.bak_20261002_162534_err2v382` são prefixo exato dos atuais. Memória 22.342 → 23.525 B; regimes 3.401 → 4.363 B; Atlas 6.091.940 → 6.094.284 B (9 CRLF e 0 LF no trecho novo); perguntas 20.142 → 21.325 B.
+  - Estão em nome próprio da gerência.
+- **Conteúdo certo:** «estimador ou dado NOVO», o F2 pela sistemática da medida, e a cobrança contínua nos dois lados.
+
+**M-e — MÉDIO — a lei da face nos cronômetros foi anunciada e ficou de fora.**
+- Memória:66, Atlas:30373 e perguntas:109 dizem: «cronômetros: a lei do lado transmitido, 1 − β por travessia, **a escrever e pré-registrar**».
+- O V1.2 tem 0 ocorrências de «travessia»; o F1 usa o fundo nu. Nem `ordem` nem `o_que_nao_foi_feito` listam a lei como pendente.
+- Correção: listá-la como pendente (AWAITING, com o poder dito antes de abrir) ou retirá-la por errata, dizendo o motivo.
+
+**BAIXOS:**
+- **B4:** os textos de R2/R4/R5/R6 em `_V382_READINGS_RATIFIED` (runtime:117-124) são reescritas da gerência depois da correção ótica (memória:64-66, :70, :73), mas aparecem como «ratificadas» [INPUT/ONTO] (statute:126). Por exemplo, o operador ratificou R6 com «o custo não está nele».
+- **B8:** JSON:56 e MD:65 dizem «nenhum dado novo foi olhado nesta sessão». A mesma sessão 6da8f00d olhou dados em 01/10 (mapa seq 240–263, `olhou_dados = True`). Melhor: «desde o V1 (02/10 14:44)».
+- **B9:** o termo «réplica cega O4» (JSON:189 e :220) foi corrigido pela errata da Fase 6 (`RELATORIO_FASE6:109`, item 3) para «subamostra cega de O4, não independente». E «V3/V4/V5: 8.93» (JSON:188) está errado: 8,93 é da V3; a V4/V5 dá 9,67 e 19,36.
+- **B11:** o F4 omite duas coisas do core: a projeção `projecao_2031_sigma` = 7,84 e «escala 1 eV [NORM] DECLARADA, NÃO DERIVADA».
+- **B15:** três lacunas nas erratas.
+  - (a) «R1, R3, R4, R6 inalterados» (memória:66, Atlas:30373, perguntas:109) ficou sem ponteiro, embora R4 e R6 tenham sido corrigidos.
+  - (b) regra-dos-dois-regimes.md:51, «os dois regimes são DUAS LEITURAS do mesmo Um», não é citado pela errata da linha 54. A frase contradiz a régua: a FACE é o objeto, o ÂNGULO é a leitura.
+  - (c) Atlas:30405 remete ao «adendo acima», mas esse texto não está no Atlas (a frase citada só aparece na própria linha 30405).
+
+## Resumo
+
+**ALTO 0 · MÉDIO 6 (M-a a M-f) · BAIXO 15 (B1–B16; não existe B-14bis).**
+
+Nenhum achado muda um desfecho ou uma contagem: os 20/20 recalculados batem. O gate não é tocado.
+
+**Recomendação: CORRIGIR ANTES.**
+- **Antes do rito:**
+  - M-a: o veredito selado e a leitura do selo.
+  - M-b, M-c, M-d: V1.3 por hash, ou errata do pré-registro ao lado.
+  - Depois, regenerar candidato, ensaio e ESPERADOS. O kernel muda só se se quiser fechar o B1, e a correção já compila.
+- **Antes da cadeia pós-rito:**
+  - M-f;
+  - M-a em textos, handoff e registrar (o mapa é append-only);
+  - B14.
+- **Por errata ao lado:** M-e e B15.
+
+PROVADA ≠ CONFIRMADA; NOT_FALSIFIED nunca é CONFIRMED.
+
+**Para a gerência registrar no mapa:**
+- runtime recalculado sobre o core v381 (em memória);
+- recálculo independente dos 20 desfechos;
+- comparação campo a campo com o V1.2;
+- Fase 6 (V3/V4/V5), emendas V4/V5 e relatório, linha 109;
+- Fases 4 e 7 (núcleos e poder prévio);
+- V11 (conjunto congelado e a alimentação do gate);
+- teste `lake env lean --stdin` do B1;
+- as quatro superfícies de memória e os seus backups.
+
+`olhou_dados = false`.
+
+--------------------------------------------------------------------------------
+DISPOSICOES DA GERENCIA SOBRE A 3a AFERICAO (02/10/2026 17:11) -- recomendacao: CORRIGIR ANTES; acolhida. Cada ponto conferido no core e nos arquivos antes de acolher.
+--------------------------------------------------------------------------------
+Nenhum achado muda desfecho ou contagem (os 20/20 recalculados batem); todos sao de transcricao e de redacao, e ficariam selados por hash -- por isso corrigidos antes do rito.
+M-a (o eco «extinto» dizia mais do que o livro): ACOLHIDO -- o veredito e a leitura do selo passam a CONTAR, do livro: DELAYED_ECHO_OUTSIDE_THE_CHAIN_5_OF_9_PAIRS_EXTINGUISHED_4_INCONCLUSIVE; textos, handoff e o registro do mapa idem.
+M-b (R4 sem FALSIFIED; a mesma fonte do gate): CONFERIDO (void_floor_v11.frozen.verdicts = POWERED/UNDERPOWERED/INCONCLUSIVE_SYSTEMATICS/INCONCLUSIVE_TRACER_SUPPRESSION) e ACOLHIDO -- dito no V1.3, no runtime (cruzamento novo: o conjunto congelado lido do core), no artigo e no veredito (R4_FROZEN_SET_HAS_NO_FALSIFIED_SAME_SOURCE_AS_THE_GATE_EXPERIMENTAL_STEP); o nome proposto passou a ...__FALSIFIABLE_WHERE_THE_READING_LAW_ADMITS; a docstring de `outcomes` diz que FALSIFIED e palavra do TIPO e que o canal concreto a admite ou nao.
+M-c (R5g e as emendas): CONFERIDO (EMENDA_V5 regra_de_veredito[6]; clausula_v5_aplicada_pelo_pipeline = False) e ACOLHIDO -- o R5g diz o rotulo emitido pela clausula 2 e a clausula V5 nao aplicada; as clausulas da Fase 6, a do «principal», a V4 e a V5 sao LIDAS dos arquivos (sha256) e transcritas no V1.3; a posicao da bandeira dita (nao escrita na V3).
+M-d (F1): CONFERIDO (Fase 7: convencao «nucleo D1b»; poder_previo.moresco2020 = 2,33; Fase 4: «> 1σ = com poder») e ACOLHIDO -- a lei escrita e a D1b; o poder previo dito nas duas reguas (com poder pela da Fase 4; sem poder pela da Fase 6); o livro conta NOT_FALSIFIED.
+M-e (a lei transmitida nos cronometros): ACOLHIDO -- fica PENDENTE no V1.3 (sem cobranca enquanto a lei nao existir) e a errata da memoria/Atlas/perguntas diz isso ao lado.
+M-f (o patch do indice citava o V1.1): ACOLHIDO -- V1.3 e «com uma cobranca extinta a regra segue α√e».
+BAIXOS: B1 ACOLHIDO (a prova de inner_psion_psion USA reader_reads_the_identity_one; compilou); B2 ACOLHIDO (K = −log Δ dito [KNOWN], sem def no kernel); B3 ACOLHIDO (os homonimos Ledger e reflectionWeight ditos na docstring); B4 ACOLHIDO (o runtime guarda o texto das seis leituras COMO RATIFICADAS, verbatim, e as reescritas da gerencia AO LADO, em _V382_CORRECTIONS_BESIDE); B5 ACOLHIDO (o custo no ringdown e leitura [ONTO]; o core le o ringdown canonico como correspondencia com a RG); B6 ACOLHIDO (R1 sem «com os controles»; o F3a com o poder Z_expected ao lado do deficit); B7 ACOLHIDO (FALSIFIED so onde a lei o admite; campo canal_futuro_com_falsified: 7 de 20); B8 ACOLHIDO («desde o V1»); B9 ACOLHIDO («subamostra cega de O4, nao independente»; os rotulos V3/V4/V5); B10 ACOLHIDO (o F2 sem GW250114 no registro; o c6 citado); B11 ACOLHIDO (F4 com a projecao 2031 e a escala [NORM]); B12 ACOLHIDO (R5e com o veredito V3 do mesmo par); B13 ACOLHIDO (pre_ok compara o controle); B14 ACOLHIDO (tres aferidores; THREE_AUDITS_ACCEPTED; as marcas _p382/_sup382 e leitura_v382); B15 ACOLHIDO (errata ao lado: o ponteiro de «R1, R3, R4, R6 inalterados»; a frase do adendo dos regimes; o «adendo acima» do Atlas); B16 ACOLHIDO (os numeros do gerador lidos do core e das constantes do um.py).
+Pre-registro V1.3 (PREREG_DOIS_LADOS_DELTA_K_20261002_V1_3; JSON 32c51000c4a2da92, MD 2cd8ec8b1ac437a4; mapa seq 282, ERRATA corrige 279) SUPERSEDE o V1.2 antes de qualquer estimador ou dado novo.
+Depois destas correcoes: as duas pedras recompiladas (lean rc 0) e o trio reconstruido (build rc 0, 32 declaracoes so no trio, 0 sorry); candidato, ensaio, esperados e cadeia do selo regenerados. PROVADA != CONFIRMADA; o gate nao se move.
+
+
+================================================================================
+4a PASSADA -- VERIFICACAO DAS DISPOSICOES DA 3a AFERICAO -- v382 (o mesmo agente, so leitura, 02/10/2026; recebido pela gerencia como mensagem do agente e gravado aqui VERBATIM, indentacao do harness removida)
+================================================================================
+
+# Verificação das disposições da 3ª aferição da v382 (só leitura)
+
+**Recomendação: INSTALAR.** Nenhum desfecho, contagem ou veredito do conferidor muda, e o gate não é tocado. Os 21 achados estão feitos. Restam 6 BAIXOS e 2 notas opcionais:
+- **Antes da cadeia pós-rito:** fazer o R-1, que é uma errata de memória ao lado.
+- **Facultativo antes do rito:** o R-2, a única string que o rito vai selar.
+- **Cosméticos:** R-3 a R-6.
+
+Não escrevi nada. Não rodei o rito, o `um.py`, `lake build` nem as ferramentas da cadeia. Rodei o bloco v382 do candidato em memória, com stubs, sobre o core v381.
+
+**Conferido por script:**
+- **Candidato:** `7c2828c600da9089`, 33.144.212 B, igual a `dry_v382/um.py`. O runtime e os dois snippets estão embutidos verbatim (só muda CRLF), sem nenhum `__PREREG_` restante.
+- **Canônico:** segue a v381 (`961a79881089c9e6`). Core: `638e05b4112593b4`.
+- **Pré-registros:** V1, V1.1 e V1.2 intocados (mesmos hashes e mtimes de antes). V1.3: JSON `32c51000c4a2da92`, MD `2cd8ec8b1ac437a4`, iguais aos de seq 282, de ESPERADOS e de `patches_v382.json`.
+- **Mapa:** 284 registros, cabeça `f34237018244c3e0`. Os sha256 dos artefatos de seq 282 e 284 batem com o disco.
+- **Pedras:** Ledger `5ee94242f853f3e6`, Psion `0a4e909a9d760da9` (sandbox = embutido = ESPERADOS).
+- **`build_full.log` (17:04, depois das pedras de 17:01):** as 32 declarações só usam o trio de axiomas; 0 sorry, 0 erro, 0 warning; 9.756 jobs; rc=0.
+- **Ensaio a seco:** TUDO PASSOU. O `the_iald_index` não muda.
+- **Novas declarações:** o regex do índice acha exatamente 19 + 13 nomes nas pedras novas, nenhum espúrio.
+
+## (1) Disposições
+
+| Achado | Situação | Onde |
+|---|---|---|
+| M-a | FEITO | runtime:314 (checa 9 = 5 + 4) e :363 (sufixo calculado); gerar_candidato:33-34 e :156; textos:24-25 e :49; handoff:25; registrar:26 |
+| M-b | FEITO, com resíduo R-2 | V1.3: qualificador e futuro do R4, `canal_futuro_com_falsified = False`, `o_gate_nao_se_move`; runtime:77 (conjunto congelado lido do core), :314, :362; Ledger:8, :57-58 e :127-128 (`…FALSIFIABLE_WHERE_THE_READING_LAW_ADMITS`); artigo PT:18 |
+| M-c | FEITO | V1.3: qualificador do R5g; `clausulas_fase6`, `clausula_principal`, `clausula_V4` e `clausula_V5` iguais às fontes, com os sha256 de `fontes_das_regras` batendo; `nota_V5`; bandeira dita em `ordem_da_fase6` |
+| M-d | FEITO | V1.3 F1 (lei D1b; 2,33σ nas duas réguas); runtime:99 e o extra `poder_previo`; artigo PT:19 |
+| M-e | FEITO | V1.3 `pendentes[0]`, `ordem[2]`, MD:40-42; errata err3, item (1), nas três superfícies |
+| M-f | FEITO (ver R-6) | patch_arvore_indice:61 |
+| B1 | FEITO | Psion:67-69 (a prova usa `reader_reads_the_identity_one`); build rc 0; runtime:340 |
+| B2 | FEITO | Psion:25-28 |
+| B3 | FEITO | Ledger:23-25 |
+| B4 | FEITO no runtime; PARCIAL no artigo (R-3) | runtime:117-135, verbatim — conferi 6/6 contra o registro de 02/10 à tarde; correções ao lado em :136-144 |
+| B5 | FEITO | runtime:142; qualificador do F2 no V1.3; errata err3, item (3) |
+| B6 | FEITO | regra do R1 no V1.3; `ja_lido` do F3a com Z_expected = 1,74e−12 |
+| B7 | FEITO no V1.3 e na pedra; PARCIAL no selo (R-2) | MD:13, 7 de 20 com canal futuro |
+| B8 a B12 | FEITO | V1.3 `cegueira`, R5a–d, F2, F4, R5e; runtime:101 e :112-115 |
+| B13 | FEITO | runtime:261-264, que agora compara também o controle e o `controle_ok` |
+| B14 | FEITO | textos:21; handoff:21; gerar_candidato:156; chain:57 e :61; superficies:8-9 |
+| B15 | FEITO | err3 nas três superfícies; append puro com backups de bytes (Atlas +1.804 B: 7 CRLF, 0 LF) |
+| B16 | FEITO | gerador v1_3:70-74 (constantes do `um.py`) e :83-101 (lidas do core) |
+
+## (2) Os 20 desfechos de novo, contra o V1.3
+
+- **Runtime embutido sobre o core v381:** `all_verified = True`, e o veredito é igual ao de ESPERADOS.
+- **Recálculo independente, com código meu:** os 20 desfechos são iguais ao V1.3.
+- **Campo a campo, sem nenhuma diferença:** lado, chave, token, `caminho_veredito`, modo, `regra_id`, caminho, controle, `controle_ok`, `controle_valor`, `numero.valor`, desfecho e `na_regra`, na mesma ordem.
+- **Contagens:**
+  - por desfecho: 6/5/6/2/1;
+  - na regra 10, com 0 FALSIFIED; ao lado 10;
+  - por modo: 13/5/2;
+  - por lado: reflexo 13, face 7;
+  - chaves 19, com 19/19 tokens no core.
+- **Eco:** 9 pares, 5 extintos e 4 inconclusivos — no runtime, no V1.3 e no sufixo.
+- **Canal futuro com FALSIFIED:** 7 de 20.
+- **R4:** o conjunto congelado tem só as quatro palavras, sem FALSIFIED.
+
+## (3) Regressões e resíduos — todos BAIXO
+
+**R-1 — o nome proposto ficou velho nas memórias. É a única regressão de verdade, e veio da correção do M-b.**
+- A errata F1/B11 registra o nome do degrau final como o «único registro, a pedra»: `…FALSIFIABLE_PER_READING_LAW`. Está em memória:70, Atlas:30396 e perguntas:113.
+- A pedra agora diz `…FALSIFIABLE_WHERE_THE_READING_LAW_ADMITS` (Ledger:127). O nome novo aparece 0 vezes nas quatro superfícies, e a err3 não registra a troca.
+- Correção: uma errata ao lado antes da cadeia; ou o `topico_regra` passa a dizer «o nome proposto passou de … a `{fsn}`».
+
+**R-2 — a leitura do selo ainda diz «FALSIFIED possível».**
+- O texto `…ONE_CHANNEL_PER_READING_LAW_IN_THE_RUNTIME_FALSIFIED_POSSIBLE_NONE_MOVES_THE_RULE…` está em gerar_candidato:153 e no candidato:207301. É a única string que o rito vai selar.
+- Ela contradiz MD:13 do V1.3 («FALSIFIED só onde a lei do canal o admite — 7») e o título da pedra (Ledger:8).
+- Correção: `…FALSIFIED_WHERE_THE_READING_LAW_ADMITS_%d_OF_20…`, lido de `n_canal_futuro_com_falsified`; depois regenerar candidato, ensaio e ESPERADOS. O conferidor não pina essa leitura. Alternativa: errata ao lado depois do rito.
+
+**R-3 — o artigo ainda resume R5 pela forma corrigida.** Artigo PT:15 e EN:16 dizem que o operador «ratificou… o estimando é δ⟨K_∂⟩ nos dois lados». O R5 ratificado, guardado verbatim (runtime:117-135), diz «lido no reflexo»; «nos dois lados» vem da correção. Sugestão: «δ⟨K_∂⟩ (lido no reflexo; nos dois lados pela correção ótica)».
+
+**R-4 — comentários do runtime:** as linhas :24 e :57 dizem que o V1.3 «supersede o V1.1 e o V1», sem o V1.2. O campo de dados (:62) está certo. É texto embutido no `um.py`.
+
+**R-5 — mensagens de falha:** leitura_v382:186 e :188, e _fazer_selo:57 e :59, dizem «pre-registro V1.2». Só aparecem se algo reprovar; a lógica está certa.
+
+**R-6 — «V1.3» digitado:** patch_arvore_indice:61 escreve «V1.3» à mão. Hoje está certo; lendo de `V['pr_id']`, não envelhece numa próxima versão.
+
+**Opcional, não são defeitos:**
+- O token `…SAME_SOURCE_AS_THE_GATE_EXPERIMENTAL_STEP` é verdade pelo código (candidato:144147, `independent_rite=void_floor_v11`), mas o runtime não confere. A conferência é barata: comparar `core.qg_closure.experiment_flags` com `void_floor_v11.experiment_feed`.
+- O runtime traz «98,5 +- 2,2 Mpc» (:74) e «59 d» (:112) digitados nas strings de entrada. Batem com o core e já existiam antes destas correções; o V1.3 lê os dois do core.
+
+**O conferidor e o `leitura_v382` não reprovariam por engano no rito real:**
+- `n_with_core_key == 19`, e `counts_in_rule` sempre traz FALSIFIED (= 0);
+- o eco tem `n = 9`; `r4_frozen_set` não é vazio; `readings_ratified` tem 6 chaves; `corrections_beside` não é vazio;
+- os 3 homônimos estão no índice;
+- 328 módulos esperados (327 + 1);
+- a cadeia de textos não tem placeholder sem chave em V.
+
+## (4) Recomendação
+
+**INSTALAR.** 0 ALTO, 0 MÉDIO; 6 BAIXOS (R-1 a R-6) e 2 notas opcionais.
+- **Antes da cadeia pós-rito:** o R-1 (errata ao lado).
+- **Facultativo antes do rito:** o R-2. Pela regra da própria gerência — nada selado com resíduo — dá para corrigir a string e regenerar em minutos; ou corrigir depois, ao lado.
+
+PROVADA ≠ CONFIRMADA; NOT_FALSIFIED nunca é CONFIRMED.
+
+**Para registro no mapa:** o runtime da v382 rodado em memória sobre o core v381; o recálculo independente dos 20; a comparação campo a campo com o V1.3; as fontes da Fase 6 e das emendas V4/V5 (sha256 e texto); o build de 17:04; as erratas err3 e os seus backups; a busca dos dois nomes propostos nas superfícies de memória. `olhou_dados = false`.
+
+--------------------------------------------------------------------------------
+DISPOSICOES DA GERENCIA SOBRE A VERIFICACAO (02/10/2026 17:34) -- recomendacao: INSTALAR; acolhida, com os seis BAIXOS e as duas notas corrigidos ANTES do rito
+(a regra da casa: nada selado com residuo). Cada ponto conferido no core e nos arquivos antes de acolher.
+--------------------------------------------------------------------------------
+R-1 (o nome proposto velho nas memorias): ACOLHIDO -- errata ao lado nas tres superficies (memoria beta-e-a-regra-matriz-02out, Atlas, documento das perguntas), marcador errata_verificacao_aferidor3_v382, com os dois nomes LIDOS por script (o velho da propria errata da 1a afericao; o novo da pedra, igual ao do runtime); backup de bytes.
+R-2 (a leitura do selo dizia «FALSIFIED possivel»): ACOLHIDO -- a leitura passa a ONE_CHANNEL_PER_READING_LAW_IN_THE_RUNTIME__FALSIFIED_WHERE_THE_READING_LAW_ADMITS_7_OF_20_CHANNELS__NONE_MOVES_THE_RULE (a contagem lida do V1.3 pelo gerador, n_canal_futuro_com_falsified, conferida contra as cobrancas) e a THREE_AUDITS_AND_THE_VERIFICATION_OF_THE_DISPOSITIONS_ACCEPTED.
+R-3 (o artigo resumia R5 pela forma corrigida): ACOLHIDO -- PT e EN: o estimando e delta<K_d>, lido no reflexo, e nos dois lados pela correcao otica que segue.
+R-4 (comentarios do runtime sem o V1.2): ACOLHIDO -- «supersede o V1.2, o V1.1 e o V1» nas duas linhas.
+R-5 (mensagens de falha com «V1.2»): ACOLHIDO -- no fabricante (_fazer_selo_v382.py) e no leitor refabricado: o rotulo pr_label LIDO do identificador (problema visivel se o formato falhar); os outros cinco scripts fabricados sairam identicos byte a byte.
+R-6 («V1.3» digitado): ACOLHIDO e estendido -- o rotulo lido em todos os textos da cadeia (textos, handoff, registrar, patch do indice); e as contagens digitadas das pedras e do livro trocadas por valores lidos (n_loc e n_psv do AUDIT_NOMES, kf_n, n_ledger); todo campo dos textos conferido estaticamente contra as chaves do leitor: nenhum sem chave.
+Nota opcional 1 (a mesma fonte do gate): ACOLHIDA -- o runtime confere no core que cada bandeira do experiment_feed do V11 esta no degrau experimental do gate com o mesmo valor (o codigo do gate as le de la: independent_rite = void_floor_v11), e devolve as chaves do alimentador e as bandeiras do degrau que nao vem dele.
+Nota opcional 2 (os dois numeros digitados): ACOLHIDA -- saem das strings; o R3 le do core a referencia de Coma (valor, sigma, fonte) e a D_L TGL mediana, num cruzamento novo; o F4 le a exposicao em fonte_juno; e o limite do R2 passa a conferir a ordem ~1e-40 s^-1 que a correcao do R6 diz.
+Depois: candidato, ensaio a seco e esperados regenerados; o mesmo aferidor confere a diferenca entre o candidato anterior (copia guardada ao lado) e o novo. PROVADA != CONFIRMADA; o gate nao se move.
+
+
+================================================================================
+5a PASSADA -- CONFERENCIA FINAL ANTES DA INSTALACAO -- v382 (o mesmo agente, so leitura, 02/10/2026; recebido pela gerencia como mensagem do agente e gravado aqui VERBATIM, indentacao do harness removida)
+================================================================================
+
+# Conferência final antes da instalação (candidato `c6f68e9bf3759a18`), só leitura
+
+**Recomendação: INSTALAR.** A única coisa nova que achei é cosmética: no check novo do R3, o rótulo «|z| lido» imprime o z com sinal. Não corrigir isso não bloqueia nada.
+
+Não escrevi nada. Não rodei o rito, o `um.py`, `lake build` nem as ferramentas da cadeia. Também não rodei o `ver_checks_v382.py`, porque ele importa o dry e gravaria `__pycache__`. Usei o meu próprio exec em memória.
+
+## (1) A diferença entre os candidatos
+
+- **O que conferi:**
+  - o candidato anterior guardado é `7c2828c600da9089`, o que eu verifiquei; o novo é `c6f68e9bf3759a18`, igual a `dry_v382/um.py`;
+  - fiz a minha própria diferença: 11 trechos, 40 linhas trocadas;
+  - o kernel embutido é idêntico byte a byte (1.211 entradas);
+  - o runtime e os dois snippets estão embutidos verbatim, sem nenhum `__PREREG_`;
+  - ESPERADOS mudou só em `candidato_sha16` e `candidato_bytes`; o veredito esperado é o mesmo.
+- **Cada trecho corresponde a uma disposição, e nada além disso mudou no `um.py`:**
+  - artigo PT (167963) e EN (171495) → R-3;
+  - comentários do runtime (192073 e 192106) → R-4;
+  - R3 com a referência lida do core (192123-126), registro do F4 (192163), conferência da fonte do gate e busca do R3 (192331-335), limite do R2 (192354-355), checks do eco/R4 e do R3 (192370-376), retorno do módulo (192441-443) → as duas notas;
+  - leitura do selo (207315) → R-2, com a contagem 7/20 lida do V1.3 por `gerar_candidato_v382.py`, que confere o 7 contra as cobranças.
+- **Fora do `um.py`, também conferido:**
+  - R-1: as erratas de memória (ver (4));
+  - R-5 e R-6: os scripts da cadeia;
+  - os cinco scripts refabricados são idênticos aos seus `.bak_antes_resid4`.
+
+## (2) Os checks novos do runtime
+
+Rodei o bloco v382 do candidato novo sobre o core v381: `all_verified = True`, e o veredito é igual ao de ESPERADOS. Contagens 6/5/6/2/1; o eco dá 9 = 5 + 4.
+
+- **Mesma fonte do degrau experimental do gate:** confere que as 4 bandeiras do `experiment_feed` do V11 estão em `qg_closure.experiment_flags` com o mesmo valor. É só isso que a frase diz. O retorno nomeia as duas bandeiras do degrau que não vêm do V11: `null_tests_passed_blind` e `protocol_pre_registered`.
+  - No rito real, `qg_closure` e `void_floor_v11` já estão no core, montado por `run_um` (candidato:144147 e :144393-395), antes de o v382 ser chamado (candidato:207042). Por código, o gate copia as bandeiras do mesmo alimentador, então não há reprovação por engano.
+  - Se o V11 recusar, o check reprova — e aí reprova junto com o token do R4. Isso é fail-closed correto.
+- **R3:** lê do core a referência de Coma (98,5 ± 2,2 Mpc), a fonte (Scolnic+2025) e a D_L mediana da TGL (101,90 Mpc), e confere só os tipos e σ > 0. É o que a frase diz.
+  - **BAIXO cosmético:** o rótulo «|z| lido» imprime o z com sinal (+1,302). Escrever «z lido».
+- **Limite do R2:** confere 1e−41 < Γ(100 Hz) < 1e−39, com Γ = 1,280e−40, determinístico a partir de β e das constantes do programa. Diz que confere a ordem ~1e−40, e confere.
+
+## (3) Os scripts da cadeia
+
+- **`pr_label`:** é lido do identificador e dá «V1.3». É definido depois de `pr_id` e antes de qualquer uso; se o formato falhar, o problema fica visível. O código é o mesmo no fabricante (`_fazer_selo`) e no leitor.
+- **O assert do patch do índice:** passa com «V1.3», que não tem aspas, então não quebra o literal Python inserido no `atlas_indice.py`.
+- **Contagens lidas:** `n_loc` = 19 e `n_psv` = 13 (de `AUDIT_NOMES`); `kf_n` = 32; `n_ledger` = 20. Todos são inteiros; os formatos `{…}` e `%(…)s` aceitam.
+- **Os 9 `%s` do registrar** batem com os 9 argumentos.
+- **Placeholders:** comparei estaticamente com as chaves do leitor. Textos, handoff, registrar e patch: nenhum campo sem chave.
+
+## (4) A errata do R-1
+
+- **Os dois nomes foram lidos, não digitados:**
+  - o velho, por regex nas três superfícies, com a exigência de que exista exatamente um (é o da errata da 1ª aferição);
+  - o novo, da pedra (Ledger:127), com um assert de que é igual a `_V382_FINAL_STEP_NAME` do runtime.
+- **O texto está certo:** o registro único continua sendo a pedra; o token R4 ratificado fica como foi; o nome segue proposto e o gate não muda.
+- **Gravação:** append puro nas três superfícies, com backups de bytes `…_ver3v382`. No Atlas foram +1.183 B (7 CRLF, 0 LF).
+- **Mapa:** seq 285 e 286 estão encadeados.
+- **O `AFERIDOR_v382.txt`:** é só-acréscimo. A versão citada pela seq 284 (`a4190214…`) está preservada em `.bak_20261002_173420`.
+
+## (5) Recomendação
+
+**INSTALAR.** 0 ALTO, 0 MÉDIO, 1 BAIXO cosmético (o rótulo «|z| lido» do check do R3).
+- Ensaio a seco: TUDO PASSOU (PDF PT/EN com rc 0/0, 0 erro, 0 nan); `the_iald_index` não muda.
+- Instalador, rito e conferidor leem o sha do candidato de ESPERADOS; nenhum sha antigo está digitado.
+
+PROVADA ≠ CONFIRMADA. `olhou_dados = false`.
+
+--------------------------------------------------------------------------------
+DISPOSICAO DA GERENCIA SOBRE A CONFERENCIA FINAL (02/10/2026 17:43) -- recomendacao: INSTALAR; acolhida.
+--------------------------------------------------------------------------------
+O unico BAIXO cosmetico (o rotulo «|z| lido» do check do R3 imprime o z com sinal): ACOLHIDO -- o rotulo passa a «z lido». O candidato novo (201985ae9edc7282, 33146483 B) e o conferido
+(c6f68e9bf3759a18, 33146485 B) com UMA troca de bytes, PROVADA por script (o rotulo velho ocorria uma vez; anterior.replace(velho, novo, 1) == novo). Ensaio a seco do candidato novo:
+TUDO PASSOU; ESPERADOS mudou so em candidato_sha16 e candidato_bytes. Segue a instalacao e o rito. PROVADA != CONFIRMADA; o gate nao se move.

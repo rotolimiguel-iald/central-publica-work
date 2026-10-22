@@ -1,0 +1,46 @@
+--- ANTES/gerar_esperados_v394.py
++++ DEPOIS/gerar_esperados_v394.py
+@@ -5,10 +5,11 @@
+ import hashlib, json, os, re, sys
+ sys.stdout.reconfigure(encoding="utf-8")
+-HERE = os.path.dirname(os.path.abspath(__file__))
++HERE = os.path.dirname(os.path.abspath(__file__)); sys.path.insert(0, HERE)
++import delta19_v394 as DL  # noqa: E402   (DELTA 19/10: candidato novo, kernel_d19)
+ NOS = os.path.join("C:" + os.sep, "IALD", "Artigo", "Haja_Luz", "A Ponte e o Um", "Nós")
+ h16 = lambda p: hashlib.sha256(open(p, "rb").read()).hexdigest()[:16]
+ if h16(os.path.join(NOS, "um.py")) != "18be2ddb06c60f90":   # o Nos ja nao e' a v393 (rito v394 em curso): a v393 SELADA vem da copia base_v393
+     NOS = os.path.join(HERE, "base_v393")
+-CM = json.load(open(os.path.join(HERE, "CANDIDATO_v394.json"), encoding="utf-8")); assert CM["sha16"] == h16(os.path.join(HERE, "um_v394_candidato.py"))
++CM = json.load(open(os.path.join(HERE, "CANDIDATO_v394.json"), encoding="utf-8")); assert CM["sha16"] == h16(os.path.join(HERE, DL.CANDIDATO))
+ assert h16(os.path.join(NOS, "um.py")) == CM["base_v393_sha16"]
+ ens = json.load(open(os.path.join(HERE, "ensaio_a_seco_v394.json"), encoding="utf-8")); assert ens["veredito"] == "TUDO PASSOU" and ens["sha16"] == CM["sha16"]
+@@ -24,5 +25,5 @@
+ nov = json.load(open(os.path.join(HERE, "kernel_modulos_novos_v394.json"), encoding="utf-8"))["novos"]
+ pins = {p: F[p] for p in nov}
+-FJ = json.load(open(os.path.join(HERE, "kernel", "FLAGS_v394.json"), encoding="utf-8")); assert FJ["n_flags"] == CM["n_bandeiras"]
++FJ = json.load(open(os.path.join(HERE, DL.KERNEL_DIR, "FLAGS_v394.json"), encoding="utf-8")); assert FJ["n_flags"] == CM["n_bandeiras"]
+ V393 = {k: V(k) for k, m in core0.items() if isinstance(m, dict) and m.get("verdict")}
+ mf = ens["mainflow"]
+@@ -43,7 +44,7 @@
+        "registros_v394": {k: v["verdict"] for k, v in mf["registros_v394"].items()}, "cobertura_kh_n1": ens["verify_kernel_ponta_a_ponta"]["cobertura"], "axiom_report_esperado_min": ens["verify_kernel_ponta_a_ponta"]["axiom_report_n"],
+        "n_formais": mf["n_formais"],
+-       "artigo_marcas": {"pt": ["A integração do Codex e as cunhagens de 14 a 19/10 (v394)", "O que entra.", "O índice e o leitor.", "As cunhagens.", "Tempo, frequencia e leitura gravitacional: composicao v394", "Regra quadratica desta rodada", "Rede Fock nesta rodada",
++       "artigo_marcas": {"pt": ["A integração do Codex e as cunhagens de 14 a 19/10 (v394)", "O que entra.", "O índice e o leitor.", "As cunhagens.", "O critério binário de parada (delta de 19/10).", "Tempo, frequencia e leitura gravitacional: composicao v394", "Regra quadratica desta rodada", "Rede Fock nesta rodada",
+                                 "A regra e o coração (v393)", "As pedras da v392: catorze módulos novos no kernel e dois consertos de barreira", "O estatuto da prova (v391).", "A Fundação (v390)."],
+-                         "en": ["The Codex integration and the inscriptions of 14 to 19 Oct (v394)", "What enters.", "The index and the reader.", "The inscriptions.", "Time, frequency and gravitational reading: v394 composition", "Quadratic rule in this run", "Fock network in this run",
++                         "en": ["The Codex integration and the inscriptions of 14 to 19 Oct (v394)", "What enters.", "The index and the reader.", "The inscriptions.", "The binary stopping criterion (19 Oct delta).", "Time, frequency and gravitational reading: v394 composition", "Quadratic rule in this run", "Fock network in this run",
+                                 "The rule and the heart (v393)", "The v392 stones: fourteen new kernel modules and two barrier repairs", "The status of the proof (v391).", "The Foundation (v390)."]},
+        "artigo_nao": {"pt": ["Nesta rodada o registro NÃO selou"], "en": ["This round the record did NOT seal"]},
+@@ -52,5 +53,12 @@
+        "md_carimbo": "**Versão v394**", "md_integracao": "A integração do Codex e as cunhagens (v394, 19/10/2026)",
+        "ensaio_sha16": h16(os.path.join(HERE, "ensaio_a_seco_v394.json"))}
++esp.update({"troca_de_palavra": ens["vizinhos"].get("palavra_trocada") or {},   # a TROCA DE PALAVRA declarada (THEOREMS -> FLAGS): so' o que o ensaio mediu; o conferidor a aplica ao veredito da v393 antes de comparar
++            "h8_entradas": CM["h8"]["entradas"], "h8_residuais_do_nos": CM["h8"]["residuais_do_nos"], "formal_files_n_no_rito": CM["h8"]["entradas"],
++            "n_bandeiras_por_grupo": {"tempo": FJ["por_grupo_bandeiras"]["tempo"], "quadratica": FJ["por_grupo_bandeiras"]["quadratica"], "rede": FJ["por_grupo_bandeiras"]["rede"], "outros": FJ["por_grupo_bandeiras"]["outro"]},
++            "politica_de_bandeiras": CM["politica_de_bandeiras"], "pedra_do_delta": CM["kernel"]["pedra_do_delta"], "teorema_do_delta": DL.THEOREM, "bandeira_do_delta": DL.FLAG_KEY,
++            "criterio_binario": ens["criterio_binario"], "candidato_anterior_sha16": DL.CANDIDATO_ANTERIOR_SHA16})
+ assert esp["the_iald_index_v393"]["all_verified"] is True and esp["not_sealed_formais"] == [], (esp["the_iald_index_v393"], esp["not_sealed_formais"])
++assert set(esp["troca_de_palavra"]) <= set(esp["troca_dita"]) and esp["h8_entradas"] == len(esp["h8_residuais_do_nos"]) + CM["formal_files_n"] and sum(esp["n_bandeiras_por_grupo"].values()) == esp["n_bandeiras_novas"], "os ESPERADOS novos nao fecham"
++assert esp["kernel"]["modulos_novos"] == len(esp["pedras_sha256"]) == len(nov), "o numero de modulos novos != a lista"
+ assert esp["vereditos_novos_v394"]["tempo_frequencia_v394"].startswith("TGL_TIME_FREQUENCY_V394__DERIVED_M2") and esp["vereditos_novos_v394"]["rede_fock_v394"].startswith("TGL_FOCK_NETWORK_V394__DERIVED_COMPONENTS")
+ out = os.path.join(HERE, "ESPERADOS_v394.json"); open(out + ".tmp", "w", encoding="utf-8").write(json.dumps(esp, ensure_ascii=False, indent=1, default=str)); os.replace(out + ".tmp", out)

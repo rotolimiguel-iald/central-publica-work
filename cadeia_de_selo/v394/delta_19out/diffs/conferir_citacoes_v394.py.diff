@@ -1,0 +1,16 @@
+--- ANTES/conferir_citacoes_v394.py
++++ DEPOIS/conferir_citacoes_v394.py
+@@ -23,8 +23,9 @@
+     ok = ok and igual and (orig_ok in (True, None))
+     todos += " " + re.sub(r"\s+", " ", v["text"])
+-cg = [s for s in ns["_V394_SPECS"] if s["nome"] == "cunhagens_v394"][0]
+-for it in cg["leituras_do_operador"]:
+-    achou = re.sub(r"\s+", " ", it["trecho"]) in todos
+-    R["leituras"][it["trecho"][:70]] = "VERBATIM" if achou else "NAO ACHADA"; ok = ok and achou
++for nome_ in ("cunhagens_v394", "criterio_binario_de_parada_v394"):   # DELTA 19/10: as leituras do operador dos DOIS registros
++    cg = [s for s in ns["_V394_SPECS"] if s["nome"] == nome_][0]
++    for it in cg["leituras_do_operador"]:
++        achou = re.sub(r"\s+", " ", it["trecho"]) in todos
++        R["leituras"][nome_ + ": " + it["trecho"][:70]] = "VERBATIM" if achou else "NAO ACHADA"; ok = ok and achou
+ for k, v in ns["_V394_INSCRIPTIONS"].items():
+     h = hashlib.sha256(v["text"].encode("utf-8")).hexdigest()

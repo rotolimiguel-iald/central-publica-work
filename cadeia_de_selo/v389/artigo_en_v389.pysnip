@@ -1,0 +1,35 @@
+    # v389 (2026-10-06) -- BESIDE: the text and label errata from the complete exam of v388 (the management's decision via c1, for the operator to veto); no calculation,
+    # no kernel change; numbers READ from the record text_label_errata_v389; the old seal label is NOT printed here (it stays in the record).
+    _tl389 = core.get("text_label_errata_v389") or {}
+    _ex389 = _tl389.get("exam") or {}
+    _rs389 = _ex389.get("resumo_por_gravidade") or {}
+    _lg389 = _tl389.get("ledger") or {}
+
+    def _tx389(x_):
+        t_ = str(x_)
+        for a_, b_ in (("\\", r"\textbackslash{}"), ("_", r"\_"), ("%", r"\%"), ("&", r"\&"), ("#", r"\#"), ("$", r"\$"), ("{", r"\{"), ("}", r"\}"), ("~", r"\~{}"), ("^", r"\^{}")):
+            t_ = t_.replace(a_, b_)
+        return t_
+
+    def _i389(x_):
+        return str(x_) if isinstance(x_, int) and not isinstance(x_, bool) else r"\text{n/a}"
+    _tk389 = lambda x_: r"\texttt{" + _tx389(x_).replace(r"\_", r"\_\allowbreak{}") + "}"
+    _f389 = ((_tl389.get("files") or {}).get("exame_json") or {}).get("sha256") or ""
+    s.append(r"\section*{Beside (v389): the text and label errata from the v388 exam}")
+    s.append(r"\addcontentsline{toc}{section}{Beside (v389): the text and label errata from the v388 exam}")
+    _es389 = _tl389.get("exam_said") or {}
+    s.append((r"\textbf{In this run the record did NOT seal: what follows is the statement, not a seal.} " if _tl389.get("all_verified") is not True else r"")
+             + r"\textbf{The exam.} By the operator's order, the whole program and the v388 paper were examined (static analysis of the code, the embedded kernel byte by byte, the table of contents, "
+             r"the agreement of numbers across sections and the incorporation of every test and derivation); the report is read here by sha256 (" + _tk389(_f389[:16] or "ABSENT") + r"): "
+             + _i389(_ex389.get("bloqueia")) + r" blockers and " + _i389(_ex389.get("corrigir_contados")) + r" corrections, all of text and label. By the management's decision, for the operator to veto, "
+             r"v389 makes them \emph{without changing any calculation or the kernel}; the old text stays as record, here and in the program's record. "
+             r"\textbf{What changed.} (i) A seal label of the record \texttt{iii1\_net\_image} (the physical net of fermions in a box) said, of a numerical check on the simulated net, the word the ruler reserves for the observer's judgment; "
+             r"it now reads " + _tk389((_tl389.get("seal") or {}).get("new") or "n/a") + r", and the old name is kept in the record itself (\texttt{seals\_errata\_v389}). "
+             r"(ii) The Introduction's title no longer claims \emph{now} with v384 and states the range, v384 to v389, each version beside. "
+             r"(iii) The abstract and Part B said \emph{a single postulate}; they now say \emph{a single posited axiom} --- \textsf{[POSTO]}, the operator's decision of 2026-10-05; the v385 erratum stays beside. "
+             r"Correcting beside is not enough when the chosen side is not the side that is read. "
+             r"(iv) The v387 section said nothing had been opened in Phase 9; it still says so, and points to the opening, which is in v388, beside. "
+             r"(v) Part C states the cut of the stone count: " + _i389(_lg389.get("unique_paths")) + r" unique paths in the citable ledger, plus " + _i389(_lg389.get("tglext_outside_ledger"))
+             + r" embedded \texttt{TGLExt} files outside it (" + _i389(_lg389.get("of_which_O16")) + r" in \texttt{TGLExt/O16}, imported by ORDER 016), all counted at runtime. "
+             r"\textbf{Erratum beside the exam itself:} it had counted " + _i389(_es389.get("unique_paths")) + r" paths and " + _i389(_es389.get("outside")) + r" outside, because a line search missed entries written over several lines; the number read here corrects the phrase. "
+             r"None of this moves the gate or touches what nature decides. Record: " + _tk389(_tl389.get("verdict") or "ABSENT") + r".")

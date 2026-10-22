@@ -1,0 +1,21 @@
+--- ANTES/reverter_v394.py
++++ DEPOIS/reverter_v394.py
+@@ -1,5 +1,5 @@
+ # -*- coding: utf-8 -*-
+ """reverter_v394.py -- REVERSAO da instalacao v394 (ato da gerencia c1; usar so' se o rito falhar). Le o ULTIMO APLICADO_AO_CANONICO_*.json desta pasta (o carimbo dos backups; nada digitado),
+-guarda o estado falho como registro, restaura os 8 backups de BYTES (um.py, core, selo, .md, manifesto, pilar, TGLExt.lean, TGL/Audit.lean) e poe os 189 modulos novos de kernel da v394 em QUARENTENA (nunca apaga; guarda o caminho relativo).
++guarda o estado falho como registro, restaura os 8 backups de BYTES (um.py, core, selo, .md, manifesto, pilar, TGLExt.lean, TGL/Audit.lean) e poe os 190 modulos novos de kernel da v394 em QUARENTENA (nunca apaga; guarda o caminho relativo).
+ Confere ao fim que o um.py voltou a ser a v393 selada (o sha16 e' LIDO de ESPERADOS_v393.json do pacote anterior, nunca digitado). Fail-closed: backup ausente => para sem tocar o que resta. Molde: reverter_v393.py (que tinha o carimbo digitado)."""
+ import datetime, glob, hashlib, json, os, shutil, sys
+@@ -12,9 +12,9 @@
+ AP = json.load(open(ap_p[-1], encoding="utf-8")); TS = AP["ts"]
+ T2 = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+-# --- tudo o que decide a reversao e' LIDO ANTES de qualquer escrita (fail-closed): ESPERADOS_v394, a lista dos 189 modulos novos e a ancora do hash da v393 selada
++# --- tudo o que decide a reversao e' LIDO ANTES de qualquer escrita (fail-closed): ESPERADOS_v394, a lista dos modulos novos e a ancora do hash da v393 selada
+ esp = json.load(open(os.path.join(CAD, "ESPERADOS_v394.json"), encoding="utf-8"))
+ _aplic = AP.get("modulos_novos_v394") or {}
+ _lista = list(_aplic.get("lista") or []) or list(esp.get("pedras_sha256") or [])
+-assert len(_lista) == len(set(_lista)) == 189 and all(x_.startswith("TGLExt/") and x_.endswith(".lean") for x_ in _lista), ("a lista dos modulos novos da v394 nao tem 189 .lean de TGLExt/", len(_lista))
++assert len(_lista) == len(set(_lista)) == len(esp["pedras_sha256"]) and set(_lista) == set(esp["pedras_sha256"]) and all(x_.startswith("TGLExt/") and x_.endswith(".lean") for x_ in _lista), ("a lista dos modulos novos da v394 difere de ESPERADOS.pedras_sha256", len(_lista))
+ try:
+     ANCORA = json.load(open(os.path.join(os.path.dirname(CAD), "v393", "ESPERADOS_v393.json"), encoding="utf-8"))["candidato_sha16"]   # o sha16 do um.py da v393 selada, lido do pacote anterior

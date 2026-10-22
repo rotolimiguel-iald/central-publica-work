@@ -1,0 +1,33 @@
+--- ANTES/instalar_v394.py
++++ DEPOIS/instalar_v394.py
+@@ -3,5 +3,5 @@
+   * o canonico tem de ser a v393 selada (ESPERADOS_v394.origem_sha16) e o candidato o de ESPERADOS e do registro;
+   * o cache do pilar tem de guardar o resultado reaproveitado (o mesmo que a v394 reaproveita pela chave);
+-  * nenhum processo um.py ou trabalhador do pilar rodando (a v394 traz 189 modulos novos de kernel: o proprio rito os materializa a partir do corpo embutido);
++  * nenhum processo um.py ou trabalhador do pilar rodando (a v394 traz 190 modulos novos de kernel: o proprio rito os materializa a partir do corpo embutido);
+   * BACKUP DE BYTES de um.py, um_absoluto.json, _selo.json, _forma_canonica.md, _manifest.md, _pilar_quantico.json, tgl_kernel/TGLExt.lean e tgl_kernel/TGL/Audit.lean;
+   * COPIA DE BYTES do resultado do pilar no cache para o pacote (pilar_anterior_v393_<ts>/);
+@@ -13,5 +13,5 @@
+ NOS = os.path.join("C:" + os.sep, "IALD", "Artigo", "Haja_Luz", "A Ponte e o Um", "Nós")
+ ESP = json.load(open(os.path.join(HERE, "ESPERADOS_v394.json"), encoding="utf-8")); CM = json.load(open(os.path.join(HERE, "CANDIDATO_v394.json"), encoding="utf-8"))
+-CAND = os.path.join(HERE, "um_v394_candidato.py")
++CAND = os.path.join(HERE, "um_v394_candidato_d19.py")
+ h16 = lambda b: hashlib.sha256(b).hexdigest()[:16]
+ ps = subprocess.run(["powershell.exe", "-NoProfile", "-NonInteractive", "-Command",
+@@ -26,5 +26,5 @@
+ _cdir = os.path.join("C:" + os.sep, "IALD", "Artigo", "Haja_Luz", "A Ponte e o Um", "cache", "checkpoints", "quantum_pillar", ESP["pilar"]["key"])
+ assert hashlib.sha256(open(os.path.join(_cdir, "result.json"), "rb").read()).hexdigest() == ESP["pilar"]["result_sha256"], "o cache do pilar nao guarda o resultado reaproveitado"
+-# v394: (a) as 3 pedras da v393 (a regra) JA estao no kernel do Nos (a base instalada e' a v393 selada); (b) NENHUM dos 189 modulos novos da v394 esta la ainda.
++# v394: (a) as 3 pedras da v393 (a regra) JA estao no kernel do Nos (a base instalada e' a v393 selada); (b) NENHUM dos modulos novos da v394 (os do Codex e a pedra do criterio binario de parada) esta la ainda.
+ # A lista dos modulos novos: kernel_modulos_novos_v394.json (campo 'novos', gerado por preparar_kernel_v394.py) se vier como LISTA; se vier so' a contagem (defeito conhecido do json.dump), a lista de
+ # kernel_modulos_novos_v394.lista.json (derivar_instalar_rito_v394.py: sandbox x Nos); por fim ESPERADOS.pedras_sha256 / ESPERADOS.kernel.new. Fail-closed em tudo.
+@@ -45,7 +45,7 @@
+ 
+ NOVOS_V394, _N_DITO, _FONTE_NOVOS = _modulos_novos()
+-assert len(NOVOS_V394) == _N_DITO == 189 and len(set(NOVOS_V394)) == 189 and all(x_.startswith("TGLExt/") and x_.endswith(".lean") for x_ in NOVOS_V394), ("a lista dos modulos novos nao e' a de 189 .lean de TGLExt/", len(NOVOS_V394), _N_DITO, _FONTE_NOVOS)
++assert len(NOVOS_V394) == _N_DITO and len(set(NOVOS_V394)) == _N_DITO and ESP["kernel"]["modulos_novos"] == _N_DITO and all(x_.startswith("TGLExt/") and x_.endswith(".lean") for x_ in NOVOS_V394), ("a lista dos modulos novos nao e' a do ESPERADOS (.lean de TGLExt/)", len(NOVOS_V394), _N_DITO, _FONTE_NOVOS)
+ assert set(NOVOS_V394) == set(ESP.get("pedras_sha256") or NOVOS_V394), "a lista dos modulos novos difere de ESPERADOS.pedras_sha256 -- nao instalo"
+-assert not [rel for rel in NOVOS_V394 if os.path.exists(os.path.join(NOS, "tgl_kernel", *rel.split("/")))], "algum dos 189 modulos novos (v394) ja esta no kernel do Nos -- nao instalo"
++assert not [rel for rel in NOVOS_V394 if os.path.exists(os.path.join(NOS, "tgl_kernel", *rel.split("/")))], "algum dos modulos novos (v394) ja esta no kernel do Nos -- nao instalo"
+ ts = time.strftime("%Y%m%d_%H%M%S"); rec = {"ts": ts, "backups": {}}
+ rec["modulos_novos_v394"] = {"fonte": _FONTE_NOVOS, "n": len(NOVOS_V394), "lista": NOVOS_V394}   # o reverter usa ESTA lista (a que o instalar conferiu)

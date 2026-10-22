@@ -1,0 +1,22 @@
+--- teste_congelamento_v384.py.bak_antes_afer11	2026-10-04 09:06:07.462798500 -0300
++++ teste_congelamento_v384.py	2026-10-04 09:52:35.634407900 -0300
+@@ -49,7 +49,7 @@
+         shutil.rmtree(p)
+     os.makedirs(p)
+     for f in ("disposicoes_afericoes_v384.json", "estresse_eig.json", "estresse_eig_grande.json", "caracterizar_queda_cusolver.json", "variantes_cusolver.json",
+-              "durabilidade_pipeline.json", "planejar_carga_v384.json", "AFERIDOR_v384.txt") + tuple("afericao%d_resultado.json" % i for i in range(2, 10)):
++              "durabilidade_pipeline.json", "planejar_carga_v384.json", "AFERIDOR_v384.txt") + tuple("afericao%d_resultado.json" % i for i in range(2, 20)):   # 11a: ate a 19 (a 10 ficou obrigatoria)
+         if os.path.exists(os.path.join(HERE, f)):
+             shutil.copyfile(os.path.join(HERE, f), os.path.join(p, f))
+     for t in os.listdir(HERE):
+@@ -102,8 +102,8 @@
+ for caso, gp in (("F_grafia_8_3", GEN83), ("F_prefixo_longo", "\\\\?\\" + GEN)):
+     antes = sorted(os.listdir(_PERMD))
+     env = dict(os.environ); env["PYTHONIOENCODING"] = "utf-8"; env["TGL_PREREG_TRANSCRITO_TESTE"] = os.path.join(HERE, "teste_congelamento", "A_igual", "transcrito_TESTE.jsonl")
+-    # (9a afericao) um trabalhador INEXISTENTE: com a guarda, recusa nela; sem ela, o gerador morreria ao abrir o trabalhador, antes de qualquer gravacao
+-    r = subprocess.run([sys.executable, gp, os.path.join(HERE, "NAO_EXISTE_worker.py"), TT, TM, HERE, "--escolha=B_REDUZIDO"], capture_output=True, text=True,
++    # (9a afericao) um trabalhador INEXISTENTE: com a guarda, recusa nela; sem ela, o gerador morreria ao abrir o trabalhador, antes de qualquer gravacao
++    r = subprocess.run([sys.executable, gp, os.path.join(HERE, "NAO_EXISTE_worker.py"), TT, TM, HERE, "--escolha=B_REDUZIDO"], capture_output=True, text=True,
+                        encoding="utf-8", errors="replace", env=env)
+     o = (r.stdout + r.stderr)
+     RES[caso] = {"caminho_invocado": gp, "rc": r.returncode, "grafia_difere": os.path.normcase(gp) != os.path.normcase(GEN),

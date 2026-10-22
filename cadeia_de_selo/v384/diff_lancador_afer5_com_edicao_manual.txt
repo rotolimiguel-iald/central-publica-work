@@ -1,0 +1,99 @@
+--- rito_v384.sh.bak_antes_afer5	2026-10-03 15:15:33.465998100 -0300
++++ rito_v384.sh	2026-10-04 05:58:09.311349100 -0300
+@@ -10,7 +10,8 @@
+ # o servidor estiver parado pelo rito, o marcador .servidor_parado_pelo_rito (com restaurar=0|1) fica no pacote: se o lancador morrer a forca (o trap nao
+ # roda), a proxima rodada o le e restaura o que ele gravou -- e a memoria da v384 manda a gerencia conferi-lo se nao houver proxima rodada. Um sinal antes do
+ # rito so restaura; durante, encerra a arvore do um.py e grava RITO_RC=SINAL_<x>. INT/HUP so sao capturados se o lancador NAO for iniciado em segundo plano
+-# por shell nao interativo nem com nohup (POSIX); rodar em PRIMEIRO PLANO. (3a e 4a afericoes, 03/10/2026)
++# com & por shell nao interativo nem com nohup (POSIX); TERM sempre. ABORTAR o rito = kill -TERM $(cat <pacote>/.rito_v384.pid) -- o TaskStop da ferramenta
++# da gerencia NAO para o lancador. O mata_um so encerra a arvore DESTA rodada (descendentes do lancador). (3a a 5a afericoes, 03-04/10/2026)
+ PK="/c/Users/rotol/AppData/Local/Temp/claude/c--IALD-Central-de-Patentes/6da8f00d-d44f-4888-a88d-fc9f73eead3d/scratchpad/v384"
+ NOS="/c/IALD/Artigo/Haja_Luz/A Ponte e o Um/Nós"
+ STOPPS="C:\\IALD\\projetos_pyhton\\IALD\\stop_iald_llama.ps1"
+@@ -35,9 +36,11 @@
+ }
+ 
+ mata_um() {
+-  # encerra a ARVORE do um.py desta rodada (o rito esta perdido): usado so no manejador de sinal
+-  u=$(powershell.exe -NoProfile -NonInteractive -Command "Get-CimInstance Win32_Process -Filter \"Name='python.exe' OR Name='pythonw.exe' OR Name='py.exe'\" | Where-Object { \$_.CommandLine -ne \$null -and \$_.CommandLine -match '(^|[\\\\ \"])um\\.py\"?(\\s|\$)' } | ForEach-Object { \$_.ProcessId }" 2>/dev/null | tr -d '\r')
+-  for p in $u; do log "encerrando a arvore do um.py (PID $p)"; taskkill //T //F //PID "$p" >> "$LOGS" 2>&1; done
++  # encerra a ARVORE do um.py DESTA rodada (o rito esta perdido): so os um.py DESCENDENTES do lancador, nunca os de outra casa (5a afericao)
++  RW=$(cat /proc/$$/winpid 2>/dev/null)
++  case "$RW" in ''|*[!0-9]*) log "o PID nativo do lancador nao e' legivel -- NAO encerro nada as cegas (encerre o um.py desta rodada a mao)"; return 0;; esac
++  u=$(powershell.exe -NoProfile -NonInteractive -Command "\$all = Get-CimInstance Win32_Process; \$d = @($RW); \$i = 0; while (\$i -lt \$d.Count) { \$p = \$d[\$i]; foreach (\$c in \$all) { if (\$c.ParentProcessId -eq \$p -and -not (\$d -contains \$c.ProcessId)) { \$d += \$c.ProcessId } }; \$i++ }; \$all | Where-Object { (\$d -contains \$_.ProcessId) -and \$_.ProcessId -ne $RW -and \$_.Name -match '^(python|pythonw|py)\.exe\$' -and \$_.CommandLine -match '(^|[\\\\ \"])um\\.py\"?(\\s|\$)' } | ForEach-Object { \$_.ProcessId }" 2>/dev/null | tr -d '\r')
++  for p in $u; do log "encerrando a arvore do um.py desta rodada (PID $p)"; taskkill //T //F //PID "$p" >> "$LOGS" 2>&1; done
+ }
+ 
+ VPID=""
+@@ -46,8 +49,13 @@
+   trap '' TERM HUP INT                                # a restauracao nao e' abortada por sinal (4a afericao)
+   [ "$RELIGADO" = "1" ] && return 0
+   RELIGADO=1
++  rm -f "$PK/.rito_v384.pid"
+   [ -f "$PK/.vigia_ativo" ] && rm -f "$PK/.vigia_ativo"
+-  if [ -n "$VPID" ]; then kill "$VPID" 2>/dev/null; wait "$VPID" 2>/dev/null; fi   # o vigia sai ANTES do religamento (nao mata o servidor recem-religado)
++  if [ -n "$VPID" ]; then
++    # o vigia NAO e' morto: ve a bandeira apagada, termina a parada que estiver fazendo e sai sozinho -- nenhuma parada orfa depois do religamento (5a afericao)
++    w_=0; while kill -0 "$VPID" 2>/dev/null && [ $w_ -lt 120 ]; do sleep 1; w_=$((w_+1)); done
++    if kill -0 "$VPID" 2>/dev/null; then log "AVISO: o vigia nao saiu em 120 s -- encerrado"; kill "$VPID" 2>/dev/null; fi
++  fi
+   orfaos
+   if [ "$ESTAVA_LIGADO" != "1" ]; then
+     log "nao religo: o servidor nao estava ligado antes do rito (estado anterior restaurado)"; rm -f "$MARCA"; return 0
+@@ -59,6 +67,7 @@
+     [ "$s_" = "0" ] && break
+     sleep 5; j=$((j+1))
+   done
++  [ "$s_" = "0" ] || log "AVISO: depois de 60 s ainda havia parada em curso ou a contagem nao foi legivel ('$s_') -- religo assim mesmo"
+   log "RELIGANDO o servidor do modelo nativo pela tarefa agendada (como no boot)"
+   powershell.exe -NoProfile -NonInteractive -Command "Start-ScheduledTask -TaskName 'IALD Llama Server'" >> "$LOGS" 2>&1
+   i=0
+@@ -73,10 +82,13 @@
+ 
+ RITO_INICIADO=0
+ sinal() {
++  # tres estados (5a afericao): 0 antes do rito, 1 durante, 2 depois (o RITO_RC ja foi gravado)
+   if [ "$RITO_INICIADO" = "1" ]; then
+-    log "SINAL $1 recebido durante o rito: o rito esta perdido -- encerro a arvore do um.py e restauro o servidor"
++    log "SINAL $1 recebido durante o rito: o rito esta perdido -- encerro a arvore do um.py desta rodada e restauro o servidor"
+     mata_um
+     echo "RITO_RC=SINAL_$1" >> rodada_v384_stdout.txt
++  elif [ "$RITO_INICIADO" = "2" ]; then
++    log "SINAL $1 recebido DEPOIS do rito (RITO_RC=$rc ja gravado): restauro o servidor"; exit $rc
+   else
+     log "SINAL $1 recebido ANTES do rito comecar: nada a encerrar; restauro o servidor"   # o stdout da tentativa anterior nao e' tocado (4a afericao)
+   fi
+@@ -89,6 +101,7 @@
+ T_RODANDO=$(powershell.exe -NoProfile -NonInteractive -Command "\$t = Get-ScheduledTask -TaskName 'IALD Llama Server' -ErrorAction SilentlyContinue; if (\$t -and \$t.State -eq 'Running') { '1' } else { '0' }" 2>/dev/null | tr -d '\r')
+ P_VIVO=$(powershell.exe -NoProfile -NonInteractive -Command "if (@(Get-Process llama-server -ErrorAction SilentlyContinue).Count -gt 0) { '1' } else { '0' }" 2>/dev/null | tr -d '\r')
+ T_DESAB=$(powershell.exe -NoProfile -NonInteractive -Command "\$t = Get-ScheduledTask -TaskName 'IALD Llama Server' -ErrorAction SilentlyContinue; if (\$t -and \$t.State -eq 'Disabled') { '1' } else { '0' }" 2>/dev/null | tr -d '\r')
++case "$T_DESAB" in 0|1) ;; *) echo "a sonda da tarefa DESABILITADA falhou ('$T_DESAB') -- NAO RODO"; exit 14;; esac   # fail-closed, como a sonda da tarefa (5a afericao)
+ ORIGEM=""
+ [ "$T_RODANDO" = "1" ] && ORIGEM="$ORIGEM tarefa-rodando"
+ [ "$P_VIVO" = "1" ] && ORIGEM="$ORIGEM processo-vivo"
+@@ -113,6 +126,7 @@
+ # 1. o trap ANTES de parar (TERM/HUP/INT durante a parada tambem restauram); depois parar: a TAREFA primeiro, depois o supervisor e os orfaos
+ trap religar EXIT
+ trap 'sinal TERM' TERM; trap 'sinal HUP' HUP; trap 'sinal INT' INT
++echo $$ > "$PK/.rito_v384.pid"   # abortar = kill -TERM $(cat .rito_v384.pid) (5a afericao)
+ echo "$(date '+%Y-%m-%d %H:%M:%S') servidor parado pelo rito v384 (restaurar=$ESTAVA_LIGADO)" > "$MARCA"
+ log "PARANDO o servidor do modelo nativo: tarefa agendada, supervisor e llama-server (ordem do operador, 03/10)"
+ powershell.exe -NoProfile -NonInteractive -Command "Stop-ScheduledTask -TaskName 'IALD Llama Server'" >> "$LOGS" 2>&1
+@@ -144,7 +158,7 @@
+       powershell.exe -NoProfile -NonInteractive -Command "Stop-ScheduledTask -TaskName 'IALD Llama Server'" >> "$LOGS" 2>&1
+       powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass -File "$STOPPS" -Tudo >> "$LOGS" 2>&1
+     fi
+-    sleep 60
++    k_=0; while [ $k_ -lt 60 ] && [ -f "$PK/.vigia_ativo" ]; do sleep 1; k_=$((k_+1)); done   # dorme em passos de 1 s: sai logo depois da bandeira (5a afericao)
+   done
+ ) &
+ VPID=$!
+@@ -159,7 +173,7 @@
+ wait "$UMPID"
+ rc=$?
+ echo "RITO_RC=$rc" >> rodada_v384_stdout.txt
+-RITO_INICIADO=0
++RITO_INICIADO=2
+ t1=$(date +%H:%M:%S); echo "$t1" >> "$PK/rito_horarios_v384.txt"
+ log "fim do rito $t1 rc=$rc"
+ tail -3 rodada_v384_stdout.txt

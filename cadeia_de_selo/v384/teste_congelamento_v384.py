@@ -1,0 +1,116 @@
+# -*- coding: utf-8 -*-
+"""TESTE do caminho de CONGELAMENTO do pre-registro (7a afericao: «testar o caminho RAT com uma ratificacao sintetica numa pasta de teste»). Tudo numa pasta de
+TESTE dentro do pacote; o transcrito e' uma COPIA do real com mensagem(ns) SINTETICA(s) acrescentada(s) (marcadas «TESTE SINTETICO»); nada toca a pasta
+permanente. Casos: (A) V1 igual ao rascunho -> ACEITO, com as evidencias copiadas e o transcrito registrado como de TESTE; (B) escolha/especificacao
+diferente -> RECUSADO, sem pasta de evidencias; (C) uma mensagem a mais com o prefixo de uma ordem do operador muda as ordens no documento -> o V1 difere do
+rascunho -> RECUSADO; (C2, 8a afericao) outra sonda de tempo do MESMO trabalhador (sintetica, numa copia minima do pacote) -> o orcamento difere -> RECUSADO;
+(D) mensagem com negacao -> RECUSADO; (E) a mensagem que nomeia as duas -> RECUSADO.
+[Correcao ao lado, 8a afericao: a docstring da 7a dizia «(C) outra sonda de tempo (orcamento diferente)», mas o caso C rodado era o das ordens; o caso da
+sonda e' o C2, acrescentado agora.]"""
+import hashlib, json, os, shutil, subprocess, sys, time
+sys.stdout.reconfigure(encoding="utf-8")
+HERE = os.path.dirname(os.path.abspath(__file__))
+GEN = os.path.join("C:" + os.sep, "IALD", "Bancada_Um", "investigacao", "preregistro_pilar_quantico_03out", "gerar_preregistro_pilar_quantico_03out.py")
+REAL = os.path.join("C:" + os.sep, "Users", "rotol", ".claude", "projects", "c--IALD-Central-de-Patentes", "6da8f00d-d44f-4888-a88d-fc9f73eead3d.jsonl")
+TW, TM, TT = os.path.join(HERE, "pilar_quantico_worker.py"), os.path.join(HERE, "teste_motor_v8", "result.json"), os.path.join(HERE, "teste_tempo_v9", "result.json")
+# (o TT_OUTRA da 7a -- a sonda v8, de OUTRO trabalhador, que o gerador recusaria antes da comparacao -- nunca foi usado e saiu na 8a; o caso da sonda e' o C2)
+RES = {}
+
+
+def sandbox(nome):
+    d = os.path.join(HERE, "teste_congelamento", nome)
+    if os.path.isdir(d):
+        shutil.rmtree(d)
+    os.makedirs(d); shutil.copyfile(GEN, os.path.join(d, "gerar.py")); return d
+
+
+def run(d, args, trans=None):
+    env = dict(os.environ); env["PYTHONIOENCODING"] = "utf-8"
+    if trans:
+        env["TGL_PREREG_TRANSCRITO_TESTE"] = trans
+    r = subprocess.run([sys.executable, os.path.join(d, "gerar.py")] + args, capture_output=True, text=True, encoding="utf-8", errors="replace", env=env)
+    return r.returncode, (r.stdout + r.stderr)[-1500:]
+
+
+def transcrito(d, texto, extra=None):
+    t = os.path.join(d, "transcrito_TESTE.jsonl")
+    shutil.copyfile(REAL, t)
+    ts = time.strftime("%Y-%m-%dT%H:%M:%S.000Z", time.gmtime())
+    with open(t, "a", encoding="utf-8") as fh:
+        for x in ([extra] if extra else []) + [texto]:
+            fh.write("\n" + json.dumps({"type": "user", "timestamp": ts, "message": {"role": "user", "content": x}}, ensure_ascii=False) + "\n")
+    return t
+
+
+def pacote_minimo():
+    """(C2, 8a afericao) uma COPIA MINIMA do pacote (so o que o gerador le) com uma sonda SINTETICA do MESMO trabalhador: a v9 com os custos x1,10"""
+    p = os.path.join(HERE, "teste_congelamento", "_pacote_C2")
+    if os.path.isdir(p):
+        shutil.rmtree(p)
+    os.makedirs(p)
+    for f in ("disposicoes_afericoes_v384.json", "estresse_eig.json", "estresse_eig_grande.json", "caracterizar_queda_cusolver.json", "variantes_cusolver.json",
+              "durabilidade_pipeline.json", "planejar_carga_v384.json", "AFERIDOR_v384.txt") + tuple("afericao%d_resultado.json" % i for i in range(2, 20)):   # 11a: ate a 19 (a 10 ficou obrigatoria)
+        if os.path.exists(os.path.join(HERE, f)):
+            shutil.copyfile(os.path.join(HERE, f), os.path.join(p, f))
+    for t in os.listdir(HERE):
+        if t.startswith("teste_tempo") and os.path.exists(os.path.join(HERE, t, "result.json")):
+            os.makedirs(os.path.join(p, t)); shutil.copyfile(os.path.join(HERE, t, "result.json"), os.path.join(p, t, "result.json"))
+    j = json.load(open(TT, encoding="utf-8"))
+    for v in j["timing"].values():
+        for k in ("pipeline_s", "t1_injection_sigma0_s", "t1_extra_noise_level_s"):
+            v[k] = v[k] * 1.10
+    j["TESTE_SINTETICO"] = "a sonda v9 com os custos x1,10 (8a afericao, caso C2): NAO e' medida"
+    os.makedirs(os.path.join(p, "teste_tempo_v99"))
+    json.dump(j, open(os.path.join(p, "teste_tempo_v99", "result.json"), "w", encoding="utf-8"), ensure_ascii=False, indent=1)
+    return p, os.path.join(p, "teste_tempo_v9", "result.json"), os.path.join(p, "teste_tempo_v99", "result.json")
+
+
+PAC2, TT2_R, TT2_V = pacote_minimo()
+for caso, esc_r, esc_v, tt_v, msg, espera, pac, tt_r in (
+        ("A_igual", "B_REDUZIDO", "B_REDUZIDO", TT, "TESTE SINTETICO: ratifico o b reduzido", 0, HERE, TT),
+        ("B_outra_escolha", "B_REDUZIDO", "B_AMPLIADO_D64", TT, "TESTE SINTETICO: ratifico o b ampliado", 1, HERE, TT),
+        ("C_ordens_diferentes", "B_REDUZIDO", "B_REDUZIDO", TT, "TESTE SINTETICO: ratifico o b reduzido", 1, HERE, TT),
+        ("C2_outra_sonda_mesmo_trabalhador", "B_REDUZIDO", "B_REDUZIDO", TT2_V, "TESTE SINTETICO: ratifico o b reduzido", 1, PAC2, TT2_R),
+        ("D_negacao", "B_REDUZIDO", "B_REDUZIDO", TT, "TESTE SINTETICO: nao ratifico o b reduzido", 1, HERE, TT),
+        ("E_as_duas", "B_REDUZIDO", "B_REDUZIDO", TT, "TESTE SINTETICO: ratifico o b reduzido ou o b ampliado", 1, HERE, TT)):
+    d = sandbox(caso)
+    rc0, o0 = run(d, [TW, tt_r, TM, pac, "--escolha=" + esc_r])            # o rascunho apresentado
+    assert rc0 == 0, (caso, "o rascunho do caso nao foi gerado", o0[-600:])
+    rasc = os.path.join(d, "PREREGISTRO_PILAR_QUANTICO_20261003_V1_RASCUNHO_%s.json" % esc_r)
+    time.sleep(1.2)
+    tr = transcrito(d, msg, extra=("Concordo com tudo, vamos de rito robusto -- TESTE SINTETICO: uma ordem a mais muda o documento" if caso == "C_ordens_diferentes" else None))
+    rc, o = run(d, [TW, tt_v, TM, pac, "--escolha=" + esc_v, "--ratificacao-prefixo=TESTE SINTETICO", "--rascunho=" + rasc], trans=tr)
+    v1 = os.path.join(d, "PREREGISTRO_PILAR_QUANTICO_20261003_V1.json"); ev = os.path.join(d, "evidencias_PREREGISTRO_V1")
+    r = {"rascunho_rc": rc0, "rc": rc, "v1_existe": os.path.exists(v1), "evidencias_existem": os.path.isdir(ev),
+         "n_evidencias": len(os.listdir(ev)) if os.path.isdir(ev) else 0, "tmp_sobrando": [x for x in os.listdir(d) if x.startswith("evidencias_PREREGISTRO_V1.tmp_")],
+         "saida": o.strip().splitlines()[-1] if o.strip() else ""}
+    if r["v1_existe"]:
+        j = json.load(open(v1, encoding="utf-8"))
+        r["ratificacao"] = {k: j["ratificacao_do_operador"].get(k) for k in ("verbatim", "escolha", "spec_sha256_ratificada", "a_especificacao_ratificada_e_a_do_rascunho", "transcrito")}
+        r["evid_conferem"] = all(hashlib.sha256(open(e["copia_permanente"], "rb").read()).hexdigest() == e["sha256"] for e in j["evidencias"])
+        r["transcrito_marcado_de_teste"] = (j["ratificacao_do_operador"].get("transcrito") or {}).get("de_teste") is True   # 8a afericao
+    r["md_existe"] = os.path.exists(v1[:-5] + ".md")
+    r["passou"] = ((rc == 0 and r["v1_existe"] and r["md_existe"] and r["evidencias_existem"] and r.get("evid_conferem") and r.get("transcrito_marcado_de_teste")) if espera == 0
+                   else (rc != 0 and not r["v1_existe"] and not r["md_existe"] and not r["evidencias_existem"] and not r["tmp_sobrando"]))
+    RES[caso] = r
+    print(caso, "PASSOU" if r["passou"] else "FALHOU", "| rc", rc, "|", r["saida"][:240])
+# (F, 8a afericao, 8N13) o gerador da pasta PERMANENTE invocado por grafias equivalentes (o nome curto 8.3 e o prefixo \\?\) com a variavel de TESTE ligada:
+# tem de RECUSAR na guarda (antes de qualquer gravacao) e a pasta permanente nao pode ganhar nem perder arquivo
+import ctypes
+_buf = ctypes.create_unicode_buffer(1024); ctypes.windll.kernel32.GetShortPathNameW(GEN, _buf, 1024); GEN83 = _buf.value
+_PERMD = os.path.dirname(GEN)
+for caso, gp in (("F_grafia_8_3", GEN83), ("F_prefixo_longo", "\\\\?\\" + GEN)):
+    antes = sorted(os.listdir(_PERMD))
+    env = dict(os.environ); env["PYTHONIOENCODING"] = "utf-8"; env["TGL_PREREG_TRANSCRITO_TESTE"] = os.path.join(HERE, "teste_congelamento", "A_igual", "transcrito_TESTE.jsonl")
+    # (9a afericao) um trabalhador INEXISTENTE: com a guarda, recusa nela; sem ela, o gerador morreria ao abrir o trabalhador, antes de qualquer gravacao
+    r = subprocess.run([sys.executable, gp, os.path.join(HERE, "NAO_EXISTE_worker.py"), TT, TM, HERE, "--escolha=B_REDUZIDO"], capture_output=True, text=True,
+                       encoding="utf-8", errors="replace", env=env)
+    o = (r.stdout + r.stderr)
+    RES[caso] = {"caminho_invocado": gp, "rc": r.returncode, "grafia_difere": os.path.normcase(gp) != os.path.normcase(GEN),
+                 "recusou_na_guarda": "transcrito de TESTE na pasta permanente" in o, "pasta_permanente_intacta": sorted(os.listdir(_PERMD)) == antes,
+                 "saida": o.strip().splitlines()[-1] if o.strip() else ""}
+    RES[caso]["passou"] = bool(r.returncode != 0 and RES[caso]["grafia_difere"] and RES[caso]["recusou_na_guarda"] and RES[caso]["pasta_permanente_intacta"])
+    print(caso, "PASSOU" if RES[caso]["passou"] else "FALHOU", "|", gp, "|", RES[caso]["saida"][:200])
+out = os.path.join(HERE, "teste_congelamento_v384.json")
+json.dump(RES, open(out, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
+print("TUDO PASSOU" if all(r["passou"] for r in RES.values()) else "HA FALHA", "|", hashlib.sha256(open(out, "rb").read()).hexdigest()[:16])

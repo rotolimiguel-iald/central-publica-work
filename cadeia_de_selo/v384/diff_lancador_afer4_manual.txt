@@ -1,0 +1,103 @@
+--- rito_v384.sh.bak_antes_afer4	2026-10-03 14:20:28.510259700 -0300
++++ rito_v384.sh.bak_antes_afer5	2026-10-03 15:15:33.465998100 -0300
+@@ -6,9 +6,11 @@
+ # O SERVIDOR DO MODELO NATIVO: a tarefa agendada «IALD Llama Server» e o supervisor start_iald_llama.ps1 (que religa em 5 s) sao PARADOS antes, conferidos
+ # (nenhum llama-server vivo; VRAM usada <= 6000 MiB e LEGIVEL), VIGIADOS durante (se reaparecer, e' encerrado e o fato registrado) e, no fim -- mesmo se o
+ # rito falhar ou o lancador receber TERM/HUP/INT --, a tarefa e' RELIGADA SE o servidor estava ligado antes (o estado anterior e' lido pela TAREFA e pelo
+-# processo; sonda vazia conta como «ligado»). Servidor ligado SEM a tarefa: o lancador RECUSA (nao saberia religar). Enquanto o servidor estiver parado
+-# pelo rito, o marcador .servidor_parado_pelo_rito fica no pacote: se o lancador morrer a forca (o trap nao roda), a proxima rodada o le e religa.
+-# (3a afericao, 03/10/2026)
++# processo; sonda vazia conta como «ligado»). Servidor ligado SEM a tarefa, ou com a tarefa DESABILITADA: o lancador RECUSA (nao saberia religar). Enquanto
++# o servidor estiver parado pelo rito, o marcador .servidor_parado_pelo_rito (com restaurar=0|1) fica no pacote: se o lancador morrer a forca (o trap nao
++# roda), a proxima rodada o le e restaura o que ele gravou -- e a memoria da v384 manda a gerencia conferi-lo se nao houver proxima rodada. Um sinal antes do
++# rito so restaura; durante, encerra a arvore do um.py e grava RITO_RC=SINAL_<x>. INT/HUP so sao capturados se o lancador NAO for iniciado em segundo plano
++# por shell nao interativo nem com nohup (POSIX); rodar em PRIMEIRO PLANO. (3a e 4a afericoes, 03/10/2026)
+ PK="/c/Users/rotol/AppData/Local/Temp/claude/c--IALD-Central-de-Patentes/6da8f00d-d44f-4888-a88d-fc9f73eead3d/scratchpad/v384"
+ NOS="/c/IALD/Artigo/Haja_Luz/A Ponte e o Um/Nós"
+ STOPPS="C:\\IALD\\projetos_pyhton\\IALD\\stop_iald_llama.ps1"
+@@ -41,6 +43,7 @@
+ VPID=""
+ RELIGADO=0
+ religar() {
++  trap '' TERM HUP INT                                # a restauracao nao e' abortada por sinal (4a afericao)
+   [ "$RELIGADO" = "1" ] && return 0
+   RELIGADO=1
+   [ -f "$PK/.vigia_ativo" ] && rm -f "$PK/.vigia_ativo"
+@@ -49,6 +52,13 @@
+   if [ "$ESTAVA_LIGADO" != "1" ]; then
+     log "nao religo: o servidor nao estava ligado antes do rito (estado anterior restaurado)"; rm -f "$MARCA"; return 0
+   fi
++  # um stop_iald_llama.ps1 do vigia ainda em curso mataria o servidor recem-religado: esperar que nenhum esteja vivo (ate 60 s; 4a afericao)
++  j=0
++  while [ $j -lt 12 ]; do
++    s_=$(powershell.exe -NoProfile -NonInteractive -Command "@(Get-CimInstance Win32_Process -Filter \"Name='powershell.exe' OR Name='pwsh.exe'\" | Where-Object { \$_.CommandLine -and \$_.CommandLine -match 'stop_iald_llama\.ps1' }).Count" 2>/dev/null | tr -d '\r')
++    [ "$s_" = "0" ] && break
++    sleep 5; j=$((j+1))
++  done
+   log "RELIGANDO o servidor do modelo nativo pela tarefa agendada (como no boot)"
+   powershell.exe -NoProfile -NonInteractive -Command "Start-ScheduledTask -TaskName 'IALD Llama Server'" >> "$LOGS" 2>&1
+   i=0
+@@ -61,10 +71,15 @@
+   log "AVISO: a porta 8081 nao escutou em 180 s depois do religamento -- conferir a tarefa «IALD Llama Server» (o marcador fica: $MARCA)"
+ }
+ 
++RITO_INICIADO=0
+ sinal() {
+-  log "SINAL $1 recebido durante o rito: o rito esta perdido -- encerro a arvore do um.py e restauro o servidor"
+-  mata_um
+-  [ -f rodada_v384_stdout.txt ] && echo "RITO_RC=SINAL_$1" >> rodada_v384_stdout.txt
++  if [ "$RITO_INICIADO" = "1" ]; then
++    log "SINAL $1 recebido durante o rito: o rito esta perdido -- encerro a arvore do um.py e restauro o servidor"
++    mata_um
++    echo "RITO_RC=SINAL_$1" >> rodada_v384_stdout.txt
++  else
++    log "SINAL $1 recebido ANTES do rito comecar: nada a encerrar; restauro o servidor"   # o stdout da tentativa anterior nao e' tocado (4a afericao)
++  fi
+   exit 143
+ }
+ 
+@@ -73,11 +88,26 @@
+ case "$TAREFA_EXISTE" in 0|1) ;; *) echo "a sonda da tarefa falhou ('$TAREFA_EXISTE') -- NAO RODO"; exit 14;; esac
+ T_RODANDO=$(powershell.exe -NoProfile -NonInteractive -Command "\$t = Get-ScheduledTask -TaskName 'IALD Llama Server' -ErrorAction SilentlyContinue; if (\$t -and \$t.State -eq 'Running') { '1' } else { '0' }" 2>/dev/null | tr -d '\r')
+ P_VIVO=$(powershell.exe -NoProfile -NonInteractive -Command "if (@(Get-Process llama-server -ErrorAction SilentlyContinue).Count -gt 0) { '1' } else { '0' }" 2>/dev/null | tr -d '\r')
+-if [ "$T_RODANDO" = "1" ] || [ "$P_VIVO" = "1" ] || [ -z "$T_RODANDO" ] || [ -z "$P_VIVO" ]; then ESTAVA_LIGADO=1; else ESTAVA_LIGADO=0; fi   # sonda vazia = «ligado» (a favor do servico)
+-if [ -f "$MARCA" ]; then log "MARCADOR de uma rodada anterior que morreu com o servidor parado: $(cat "$MARCA") -- o servidor sera religado no fim"; ESTAVA_LIGADO=1; fi
+-log "antes: tarefa existe=$TAREFA_EXISTE ; tarefa rodando=$T_RODANDO ; llama-server vivo=$P_VIVO ; restaurar no fim=$ESTAVA_LIGADO"
++T_DESAB=$(powershell.exe -NoProfile -NonInteractive -Command "\$t = Get-ScheduledTask -TaskName 'IALD Llama Server' -ErrorAction SilentlyContinue; if (\$t -and \$t.State -eq 'Disabled') { '1' } else { '0' }" 2>/dev/null | tr -d '\r')
++ORIGEM=""
++[ "$T_RODANDO" = "1" ] && ORIGEM="$ORIGEM tarefa-rodando"
++[ "$P_VIVO" = "1" ] && ORIGEM="$ORIGEM processo-vivo"
++{ [ -z "$T_RODANDO" ] || [ -z "$P_VIVO" ]; } && ORIGEM="$ORIGEM sonda-vazia"
++if [ -n "$ORIGEM" ]; then ESTAVA_LIGADO=1; else ESTAVA_LIGADO=0; fi   # sonda vazia = «ligado» (a favor do servico)
++if [ -f "$MARCA" ]; then
++  # o marcador de uma rodada que morreu com o servidor parado: vale o que ELE gravou (restaurar=0|1), nao mais (4a afericao)
++  if grep -q "restaurar=1" "$MARCA"; then
++    log "MARCADOR de uma rodada anterior que morreu com o servidor parado ($(cat "$MARCA")) -- o servidor sera religado no fim"; ESTAVA_LIGADO=1; ORIGEM="$ORIGEM marcador"
++  else
++    log "MARCADOR de uma rodada anterior com restaurar=0 ($(cat "$MARCA")) -- o servidor nao estava ligado; marcador removido"; rm -f "$MARCA"
++  fi
++fi
++log "antes: tarefa existe=$TAREFA_EXISTE ; tarefa rodando=$T_RODANDO ; tarefa desabilitada=$T_DESAB ; llama-server vivo=$P_VIVO ; restaurar no fim=$ESTAVA_LIGADO (origem:${ORIGEM:- nenhuma})"
+ if [ "$TAREFA_EXISTE" != "1" ] && [ "$ESTAVA_LIGADO" = "1" ]; then
+-  log "o servidor esta ligado SEM a tarefa agendada: nao saberia religa-lo -- NAO RODO (suba-o pela tarefa ou pare-o antes)"; exit 13
++  log "restaurar=1 (origem:$ORIGEM) mas a tarefa agendada NAO existe: nao saberia religar o servidor -- NAO RODO (suba-o pela tarefa ou pare-o antes)"; exit 13
++fi
++if [ "$T_DESAB" = "1" ] && [ "$ESTAVA_LIGADO" = "1" ]; then
++  log "restaurar=1 (origem:$ORIGEM) mas a tarefa agendada esta DESABILITADA: Start-ScheduledTask nao religaria -- NAO RODO"; exit 15
+ fi
+ orfaos
+ # 1. o trap ANTES de parar (TERM/HUP/INT durante a parada tambem restauram); depois parar: a TAREFA primeiro, depois o supervisor e os orfaos
+@@ -123,11 +153,13 @@
+ if [ -f rodada_v384_stdout.txt ]; then n=1; while [ -f "rodada_v384_stdout_tentativa$n.txt" ]; do n=$((n+1)); done; mv rodada_v384_stdout.txt "rodada_v384_stdout_tentativa$n.txt"; fi
+ t0=$(date +%H:%M:%S); echo "$t0" > "$PK/rito_horarios_v384.txt"
+ log "inicio do rito $t0 (um.py $h)"
++RITO_INICIADO=1
+ ( echo 1 | python um.py > rodada_v384_stdout.txt 2>&1 ) &
+ UMPID=$!
+ wait "$UMPID"
+ rc=$?
+ echo "RITO_RC=$rc" >> rodada_v384_stdout.txt
++RITO_INICIADO=0
+ t1=$(date +%H:%M:%S); echo "$t1" >> "$PK/rito_horarios_v384.txt"
+ log "fim do rito $t1 rc=$rc"
+ tail -3 rodada_v384_stdout.txt

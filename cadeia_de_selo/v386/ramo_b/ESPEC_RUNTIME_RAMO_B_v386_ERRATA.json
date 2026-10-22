@@ -1,0 +1,58 @@
+{
+ "id": "ESPEC_RUNTIME_RAMO_B_v386_ERRATA",
+ "gerado_utc": "2026-10-05T20:19:17Z",
+ "regra": "errata AO LADO, nunca por cima: a ESPEC original fica INTACTA como registro (sha256 abaixo); este arquivo diz onde o runtime IMPLEMENTADO (pacote/v386_runtime.py) difere da proposta e por que. Fontes: as tres afericoes adversariais de 05/10 (codigo, texto/citacoes, kernel/V1), em CONSTRUIR_v386_resultado.json.",
+ "espec_original": {
+  "arquivo": "ramo_b/ESPEC_RUNTIME_RAMO_B_v386.json",
+  "sha256": "1be6b3706e963e19c8e767f20a18d2b63cf1813788d426157ccb199bf75f169b",
+  "bytes": 12562,
+  "gerado_utc": "2026-10-05T18:59:53Z",
+  "intacta": true
+ },
+ "erratas": {
+  "c_chave_da_errata_R6": {
+   "espec_diz": "the_ledger_of_charges (v386): corrections_beside_20261005.R6 e corrections_beside_20261005.F2 -- AO LADO; readings_ratified_20261002.R6 e corrections_beside_20261002.R6 NAO se reescrevem",
+   "runtime_faz": "grava em core.ledger_errata_v386.corrections_beside_20261005 (R6, F2, statute) e charge_F2b -- CHAVE PROPRIA; the_ledger_of_charges_v383 e' so' LIDO (nunca escrito): o livro v383 fica intacto (11 cobrancas)",
+   "por_que": "mais «ao lado» que a proposta: nenhuma chave do registro v383 e' tocada; o conferidor do V1.4 dos dois lados continua a conferir 11 == len(_V383_LEDGER_INPUT)"
+  },
+  "d_regra_do_beta": {
+   "espec_diz": "spec.beta.valor_runtime == beta do rito (|diff| < 1e-15) [preregistro_V1.o_que_conferir[3]; regua]",
+   "runtime_faz": "abs(beta_V1/beta_core - 1) < 1e-9 (relativo, a regra da casa no livro v383); a diferenca exata fica dita em ramo_b_preregistration_v386.beta",
+   "por_que": "o numero corrigiu a frase: o beta do V1 veio do literal CODATA por regex x sqrt(e); o do core vem do MOTOR da identidade (o CODATA so' valida)",
+   "diferenca_medida_pelo_gerador_05_10": {
+    "beta_v1": 0.012031300400803142,
+    "beta_core_v385": 0.012031300400796606,
+    "abs_diff": 6.536438057480609e-15,
+    "rel_diff": 5.433431482515516e-13,
+    "lido_de": "pacote/CANDIDATO_v386.json beta_v1_vs_core (gerar_candidato_v386.py)"
+   },
+   "a_frase_1e-15_nos_pinos": "o gerador substitui, ao transcrever o_que_conferir para os pinos, a entrada «|diff| < 1e-15» pela regra implementada, dizendo a errata; a ESPEC em disco nao muda"
+  }
+ },
+ "o_runtime_supera_a_proposta_em_tres_pontos": {
+  "1_nome_do_veredito": {
+   "espec": "TGL_RAMO_B_PREREGISTRATION_V386__V1_READ_BY_HASH_<sha16>__OTHER_LAW_OWN_CHANNEL_F2B__K_2PI_OVER_KAPPA_HAT_KMS__M_F_DET__ENVELOPE_ADDITIVE_RATE__SOURCE_LOCAL__SET_D_O4_14_BLIND_ONLY_TEST__A_B_C_NOT_BLIND_CALIBRATION__BETA_READ_DECLARED_SIGMA_STATED__AWAITING_DATA__DECIDED_BY_DELEGATION_2026_10_05__NOT_A_CONFIRMATION__GATE_UNTOUCHED",
+   "espec_se_falhar": "TGL_RAMO_B_PREREGISTRATION_V386__V1_NOT_READ__<motivo>__AWAITING_PREREGISTRATION__GATE_UNTOUCHED",
+   "runtime": "TGL_RAMO_B_PREREGISTERED_V386__V1_READ_BY_HASH_<sha16>__OTHER_LAW_OWN_CHANNEL_F2B__K_2PI_OVER_KAPPA_HAT_KMS__M_F_DET__ENVELOPE_ADDITIVE_RATE__SOURCE_LOCAL__SET_D_O4_<n>_BLIND_ONLY_TEST__A_B_C_NOT_BLIND_CALIBRATION__BETA_READ_DECLARED_SIGMA_STATED__DECIDED_BY_DELEGATION_2026_10_05__NOT_A_CONFIRMATION__AWAITING_DATA__NOTHING_OPENED__GATE_UNTOUCHED",
+   "runtime_se_falhar": "TGL_RAMO_B_PREREGISTERED_V386__V1_NOT_READ__<motivo>__AWAITING_PREREGISTRATION__NOTHING_OPENED__GATE_UNTOUCHED (motivo FILES_<quais|NONE> / SPEC_SHA256_MISMATCH / IDENTIFIER_MISMATCH / HASHES_FILE_MISMATCH / BETA_MISMATCH / PINS_MISMATCH / SANITY_RECOMPUTE_FAILED)",
+   "diferenca": "PREREGISTRATION -> PREREGISTERED; a ordem dos ultimos tokens; __NOTHING_OPENED e o <n> de D lidos do V1"
+  },
+  "2_assinatura_da_funcao": {
+   "espec": "prove_ramo_b_preregistration_v386(ONE, core)",
+   "runtime": "ramo_b_preregistration_v386(core, prereg=None)  (prereg: os pinos embutidos por padrao; injetavel nos testes de unidade)"
+  },
+  "3_chave_do_core": {
+   "espec": "the_ledger_of_charges.corrections_beside_20261005.R6/F2",
+   "runtime": "core.ledger_errata_v386 (corrections_beside_20261005.R6/F2, charge_F2b, operator_decision_20261005, delegation_20261005) + core.ramo_b_preregistration_v386 (chave_proposta igual)"
+  }
+ },
+ "o_que_o_conferidor_do_rito_usa": "pacote/conferir_rito_v386.py usa os nomes e as chaves do RUNTIME (startswith/endswith do veredito implementado; ledger_errata_v386; ramo_b_preregistration_v386)",
+ "o_que_nao_muda": [
+  "os 25 campos transcritos",
+  "os 12 numeros pinados (o pino beta_runtime_do_V1 foi RETIRADO: coberto pelo spec_sha256 + comparacao 1e-9 rel + alpha.sqrt(e) recomputado)",
+  "os 6 arquivos por sha256",
+  "o status F2b",
+  "F2/R2 intocados",
+  "o gate"
+ ]
+}

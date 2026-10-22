@@ -1,0 +1,103 @@
+## Aferição de código e fiação do pacote v385 (antes da instalação e do rito)
+
+Nada do que encontrei bloqueia o rito. Há 2 pontos a corrigir, ambos no comparador da reprodutibilidade (a mesma correção resolve os dois), e 11 notas. Não rodei o candidato, o instalador, o lançador nem o conferidor contra o Nós, e não escrevi no Nós nem no pacote. Os scripts que usei, todos só de leitura, estão em `...\scratchpad\v385\afericao_codigo\`.
+
+### ACHADOS
+
+**1. CORRIGIR: NaN ou inf vira «reproduzido a menos de arredondamento» (falso positivo).**
+- **Onde:** `v385_runtime.py:155-163` (no candidato, 192623-192635).
+- **Por quê:** a linha `maxrel = max(maxrel, rel)` ignora o NaN, porque `max(0.0, nan)` devolve 0.0. O campo diferente entra com `rel=nan`, que não é None, então `exact_other` fica True e `maxrel` fica em 0.
+- **Teste (`nan_no_comparador.py`):**
+  - com o resumo real da v384, trocar `D128.gap_rel` por NaN dá `REPRODUCED_WITHIN_ROUNDOFF__392_FIELDS__1_DIFFER_MAX_REL_0P0e00`;
+  - trocar `D128.gap` por inf dá o mesmo.
+- **Hoje:** o resumo real tem 0 campos não finitos, então o defeito está latente. O efeito seria o selo e o artigo dizerem «iguais a menos de arredondamento… diferença máxima 0» para um campo que virou NaN.
+- **Correção:** usar a regra que o próprio um.py já tem no comparador da bancada v361 (candidato 190810-190812): `if not (math.isfinite(a) and math.isfinite(b))` conta como diferença.
+
+**2. CORRIGIR: a tolerância puramente relativa em campos que são resíduo de máquina.**
+- **Onde:** `v385_runtime.py:157` (`den = max(abs(x_), abs(y_), 1e-300)`).
+- **O que o resumo carrega:** 28 campos com |v| < 1e-10. Exemplos: `T2.identities.VtPF_eq_PF_d8` = 2,3e-16; `D128.max_re` = -8,9e-15; `D128.ss_res_rel` = 4,3e-16; `cpuref.max_diffs.*` ≈ 1e-12; `T1.per_d.*.median_beta_rel_err.0.0` ≈ 1e-11.
+- **Teste:**
+  - mudar só o último dígito de um desses (2,3e-16 → 2,5e-16) dá `NOT_REPRODUCED__1_OF_392`, com rel 0,06;
+  - `D128.max_re` -8,86e-15 → -1,2e-14 dá NOT_REPRODUCED, com rel 0,26.
+- **Cenário:** se algum caminho não for determinístico bit a bit (o MAGMA usa a CPU e o MKL em paralelo), o artigo selado diria «diferentes em N de 392 campos — é resultado», com o veredito do pilar idêntico. O conferidor não reprova (é desenho dele), mas a frase fica selada.
+- **Evidência a favor do determinismo, que reduz a probabilidade:** o `engine_selftest` (40 campos, inclusive resíduos de 1e-16) saiu idêntico bit a bit em 3 rodadas reais na RTX 5090: o cache da v384, a fumaça 21081c13 e o `teste_motor_v8` (`motor_tres_rodadas.py`). O trabalhador fixa `use_deterministic_algorithms`, a `CUBLAS_WORKSPACE_CONFIG`, desliga o tf32, usa 4 threads e sementes fixas.
+- **Correção:** adotar a escala da v361, `scale = max(1.0, |a|, |b|)`, junto com a guarda `isfinite`. Mantém exatas as contagens: um a mais em 21.100 dá rel 4,7e-5, que continua acusando.
+
+**3. NOTA: o pulo de campos é por nome de chave solto.** `_QP_REPRO_SKIP_V385` (runtime:111) inclui `"started"` e `"s"` em qualquer profundidade. Isso tira da comparação o booleano `D128.started`: o teste mostra que `True→False` ainda dá BIT_FOR_BIT. Hoje é inócuo, porque `D128.ran` e `D128.status_code` são comparados. Sugestão: pular por caminho (`D128.spohn_rk4_informative.s`, `phase_seconds`, `env`).
+
+**4. NOTA: se o D128 for pulado pelo prazo, o resultado sai NOT_REPRODUCED, quando o certo seria «não comparável».**
+- O teste dá `NOT_REPRODUCED__26_OF_393`.
+- A margem da v384 era de cerca de 1,7 h: T3+T2+T1+T4 somaram 8.373 s contra um prazo de 14.400 s.
+- O conferidor aceita (`D128_NOT_RAN`), mas a frase do artigo culparia a reprodutibilidade, não o prazo.
+
+**5. NOTA: o veredito afirma `SAME_V1_SAME_WORKER_SAME_BETA` pela chave da pasta, sem conferir os campos do resultado anterior.** O comparador não confere `spec_sha256`, `worker_sha256` e `beta_hex` do resultado anterior, e o ambiente (torch, CUDA, GPU) não é comparado nem registrado. Hoje bate: recalculei a chave a partir do candidato e deu `75dc30bc9cc8d330e31f99ca`, com trabalhador `0c9ba7fd…`, especificação `ff19731…` e `beta_hex` `0x1.8a3ddcdff890cp-7`, que é o beta do core. Sugestão: gravar `same_env` e conferir os três campos.
+
+**6. NOTA: duas frases do artigo (`artigo_pt/en_v385.pysnip`).**
+- Linha 41: diz que o programa leu o resultado anterior «antes do cálculo». Na verdade a leitura (W03) é logo depois do lançamento do trabalhador, antes de o cálculo poder substituir o cache.
+- Linhas 37 e 40: depois de «o nome foi lido do próprio kernel», imprime `final_step_name` (a constante do runtime), não `final_step_name_from_kernel`. São iguais sempre que sela, porque `tok_ok` faz parte de `ok`, então não há frase falsa.
+
+**7. NOTA, fora da minha lente: a igualdade `F(t)=…=e^{-tH_min}` do artigo (PT:29) só existe em docstring.**
+- Na pedra, ela aparece só nas linhas 30 e 98, que são comentário; nenhum termo Lean a prova (procurei `exp` na pedra).
+- No kernel do Nós, a busca por `exp_complement_idempotent` dá 0 arquivos.
+- Classificação (B): existe na bancada como `exp_complement_idempotent`, em `ORDEM_016_QG/A6_EQUACAO_DA_VERDADE/B_fechamentos/IdempotentDephasing_v2.lean` (inventário, linha 1143).
+- Ou se liga essa peça, ou o artigo marca a igualdade como [KNOWN].
+
+**8. NOTA: uma segunda tentativa do rito compararia contra a primeira tentativa da v385.** Se o rito precisar ser repetido depois de `_qp_save_cache` (candidato 193051), o cache já guarda o resultado da primeira tentativa da v385. O conferidor reprova corretamente («contra o resultado pinado da v384»), mas não há script para restaurar `pilar_anterior_v384_<ts>/` de volta ao cache.
+
+**9. NOTA: o instalador da v385 não tem mais as guardas de ensaio e de ratificação da v384.** A ausência se justifica: o gerador da v385 não tem modo ENSAIO, e a ratificação do V1 é exigida em `gerar_esperados_v385.py:40`. Mas a ordem do operador da v385 não fica gravada no `CANDIDATO_v385.json`, só nas docstrings.
+
+**10. NOTA: as linhas W04 (candidato 208174-208177) não têm try/except.** Uma exceção ali derrubaria o rito depois das cerca de 2,5 h do pilar. O risco é baixo: as duas funções rodaram sem exceção sobre o resumo real de 392 campos.
+
+**11. NOTA: a regra da memória sobre o marcador do servidor parado aponta para `scratchpad\v384\.servidor_parado_pelo_rito`.** Com o lançador da v385, o marcador passa a ficar em `scratchpad\v385`. Atualizar a memória depois do rito.
+
+### CONFERIDO E CERTO
+
+**a) Ordem de execução no `main()`.** O lançamento do pilar está em 205810; a leitura do anterior (W03) em 205811; a materialização do kernel em 205812. O `finish` está em 208172, e é dentro dele que roda `_qp_save_cache` (193051). Depois vêm a reprodutibilidade (W04, 208174), o Axioma (208176) e o artigo (208183). Os 12 patches foram aplicados com `count == 1` garantido por assert. O ensaio tem 5 instruções marcadas v385, sem nome não resolvido.
+
+**b) O resumo do pilar.** Aplicando a `_qp_summary` do candidato ao resultado real da v384 saem 392 campos, 0 não finitos. Nenhum campo traz tempo, caminho, PID, host, run_id ou data: os únicos de tempo são `phase_seconds`, `env`, `D128.spectrum_s`, `steady_state_s` e `spohn_rk4_informative.s`, todos pulados. O resultado comparado consigo mesmo dá `REPRODUCED_BIT_FOR_BIT__392`.
+
+**c) A leitura do nome do degrau final.** O nome é um único literal na pedra (linhas 233-234), e a regex atravessa a quebra de linha com `\s*`. O token lido do kernel é igual ao do runtime (228 caracteres).
+
+**d) As 28 bandeiras e a escada.**
+- As 28 estão em `_LEAN_THEOREM_FLAGS` (134111-134138) e na escada (141775-141802), que tem 6.026 entradas, todas únicas.
+- Os 28 nomes completos têm `#print axioms` no `TGL/Audit.lean` embutido.
+- No relatório do sandbox, as 28 ficam no trio. As 3 que «não dependem de axioma nenhum» são aceitas pela regex da v162 (134712).
+- Os nomes não aparecem em nenhum outro dicionário de bandeiras (0 ocorrências) e não estavam no relatório de axiomas da v384 (que tinha 10.100 entradas; o sandbox tem 10.128).
+
+**e) O kernel embutido.**
+- Bytes idênticos aos do sandbox:
+
+| arquivo | sha16 |
+|---|---|
+| a pedra nova | `3e0f98f4da519620` |
+| `TGLExt.lean` | `0311b3007a67abbc` |
+| `TGL/Audit.lean` | `ceaab480bbb196e9` |
+| `TheDarkSplit.lean` | `53f05130c26a5202` |
+
+- Contra a v384: só esses dois mudam, a única entrada nova é a pedra, e nada sumiu.
+- O `Audit.lean` novo é: 2 imports no topo, mais o da v384 inteiro, mais 30 linhas no fim (28 `#print axioms`).
+- O `materialize_embedded_kernel` grava com `newline=""`, então o sha no disco será o dos esperados.
+- Compilei a pedra de forma independente com `lake env lean`: rc=0 em 22 s, sem nenhuma saída.
+
+**f) Esperados, conferidor e instalador.**
+- `_prev.sha256` vem de `quantum_pillar_previous_v385`: é o sha256 do `result.json` do cache, lido antes do cálculo. O pinado (`71c903c0…`) foi conferido contra o arquivo do cache em `gerar_esperados_v385.py:59`.
+- O instalador copia o cache anterior (linhas 49-63) antes do `os.replace` (linha 69) e confere o sha. Os 8 arquivos de backup existem no Nós.
+- A regra «vereditos inalterados» passou nas conferências reais da v380, v381, v383 e v384 (tudo_bate True, nenhum mudou).
+- Nenhum veredito pinado traz contagem ou versão: a busca por `5998|6026|V384|10100|10128` deu 0.
+- O nome completo do degrau final e o veredito completo do Axioma aparecem nos .txt do ensaio, em PT e em EN.
+- Os baldes de «não selado» usam `all_verified False`, e o registro da reprodutibilidade não tem esse campo, então não entra. As palavras proibidas estão ausentes.
+
+**g) O lançador.** O diff contra o da v384 é só a troca de nomes mais a guarda (exit 18, código único). A guarda vem antes do PID e da parada do servidor. Hoje não existe marcador nem na v384 nem na v385. Não sobrou nenhuma referência a v384 além da guarda e da docstring.
+
+### ROTAS EXAMINADAS (para o mapa)
+
+A consulta prévia ao mapa (`rotas.py consultar "v385"` e `"pilar quantico reprodutibilidade"`) deu 0 rotas.
+
+1. O comparador aplicado ao resumo real da v384, e os casos de borda (NaN, inf, resíduo, D128 pulado, `started`): `sumario_cache.py`, `nan_no_comparador.py`.
+2. Determinismo empírico do motor E1..E8 em 3 rodadas reais na GPU: bit a bit (`motor_tres_rodadas.py`).
+3. Tentativa de medir o determinismo comparando T3/T2 entre a fumaça e o V1: **rota morta**. Os valores diferem nos últimos bits, mas o `beta_hex` difere entre as duas rodadas (`0x1.8a3ddcdff97c4p-7` contra `0x1.8a3ddcdff890cp-7`, cerca de 3.768 ulps), então as entradas não são as mesmas (`detalhes_comuns.py`).
+4. Busca de um par real com a mesma especificação V1: só existe uma rodada real (`0063ce8d`); as fumaças `800be19a` são sintéticas (gpu None) (`achar_rodadas_v1.py`, `listar_fumacas.py`, `comparar_fumacas.py`).
+5. A chave do pilar recalculada a partir do candidato (`chave_do_pilar.py`).
+6. As bandeiras, a escada e o kernel embutido contra o sandbox e contra a v384, e os nomes em outros dicionários (`conferir_bandeiras_kernel.py`, `nomes_em_outros_dicts.py`).
+7. A compilação independente da pedra no sandbox.
+8. Os diffs do lançador e do instalador contra os da v384, e a conferência dos esperados e do conferidor.

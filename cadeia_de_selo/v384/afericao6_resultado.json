@@ -1,0 +1,718 @@
+{
+ "grupos": [
+  {
+   "lente": "trabalhador_runtime_selo",
+   "itens": [
+    {
+     "id": "4N0",
+     "estado": "RESOLVIDO",
+     "evidencia": "Arnês a6_selo_runtime.py (e6faa1a8…, saída a6_selo_runtime.json 4723dce9…). Ele executa o runtime embutido no candidato de ENSAIO 6b062f8f2bf983a1… (faixa :192313-192731; difere do v384_runtime.py corrente 5dbe4a98… só nas linhas 12-16, os marcadores) e o BLOCO DO SELO extraído por conteúdo (:208392-208405, lista hasheada + W09b) com o W07 (:208103), sobre core e arquivos SINTÉTICOS numa sandbox.\n\nCasos:\n- S1, resultado copiado: selo = out_file_sha256 = result_sha256 = 6ab71b45….\n- S2, marcador desta rodada: abb82efc…, reason no_result_file; o selo aceita.\n- S3, arquivo de OUTRA rodada com TRAVA REAL do Windows (open rb), sem resultado: out_marker_error PermissionError(13,'Acesso negado'), out_file_remove_error PermissionError(13,'O arquivo já está sendo usado por outro processo'). O arquivo de A (6ab71b45…) continua no Nós, e o selo grava NOT_THIS_RUN. O W07 leva out_file_remove_error. Nenhum .tmp_qp sobra.\n- S3b, a mesma trava num resultado completo: CUSTODY_CHAIN_INCOMPLETE, NOT_THIS_RUN, sem .tmp_qp.\n- S3c/S3d, core sintético com sha diferente ou sem out_file_sha256: NOT_THIS_RUN.\n- S4a, arquivo ausente: MISSING_THIS_RUN.\n- S4b, o marcador falha e a remoção funciona: out_file_removed True, MISSING_THIS_RUN.\n- S5/S5b, o leitor solta a trava em 2 s: as novas tentativas passam (2,26 s e 2,18 s) e o selo aceita.\n- S6, a cópia falha: reason copy_failed, result_file_absent False, selo aceita o marcador ff3bf1e1….\n- S8, rodada REAPROVEITADA: o selo aceita 286954bb….\n\nA guarda 'quantum_pillar_v384 in core' (S3e) só deixaria hashear um arquivo alheio sem o registro. Isso é inalcançável: o main grava core[\"quantum_pillar_v384\"] em :207827, antes do selo, e o finish sempre devolve um dict. Todos os itens obrigatórios da 4ª foram cumpridos. O item de texto era condicional («se nada mudar»).",
+     "falta": "Nada obrigatório. Ficam três resíduos BAIXOS, registrados como achados novos:\n- result_file_absent True no finish_failed com resultado presente;\n- o _qp_retry tenta de novo qualquer OSError;\n- a frase «nunca sobrevive» no MD:132."
+    },
+    {
+     "id": "4N1",
+     "estado": "RESOLVIDO",
+     "evidencia": "O diff da cópia da 5ª (39e6d560…) contra a corrente (fb974f9d34c216b5…) mostra a linha 1090: «# 2. as identidades (o modo zero no T2, no T4 e no D128; CP, TP, …)». 'E1..E7' aparece 0 vezes.\n\nA cadeia foi regenerada:\n- a especificação embutida no candidato tem worker_sha256 fb974f9d…;\n- o sha canônico da especificação do B_REDUZIDO.json (b26f19ed…), recalculado por script, dá 4728c089ffab6351, igual a _QP_SPEC_SHA256 do candidato e ao CANDIDATO_v384_ENSAIO.json (1aa9456c…);\n- o D64 (fff89c55…) tem especificação 285f3a926d9753ea, com o mesmo trabalhador;\n- o trabalhador embutido é idêntico byte a byte ao corrente;\n- as sondas teste_motor_v7/result.json (7671a86f…, ENGINE_SELFTEST_PASSED) e teste_tempo_v8/result.json (28566863…) trazem worker_sha256 fb974f9d…, com E1..E8 True.",
+     "falta": ""
+    },
+    {
+     "id": "5N0",
+     "estado": "RESOLVIDO",
+     "evidencia": "Verificação adversarial contra o código ANTERIOR (39e6d560…): o achado SE SUSTENTAVA.\n- O main da 5ª chama run_D128(E, spec, beta, prog), sem callback.\n- O parcial só tinha {started, ran False, status_code STARTED}.\n- No mesmo instante de morte, o derive_verdict da 5ª dá …IDENTITIES_HOLD…D128_INTERRUPTED…, mesmo com n0 = 0 (a6_d128_parcial.json ed9055b9…).\n\nNo corrente (fb974f9d…), o AST de run_D128 dá a ordem espectro(9) < zero_mode_ok(13) < on_spectrum(14) < estacionário(15), e o main chama run_D128(E, spec, beta, prog, on_spectrum=_d128_parcial).\n\nExecutei só o _d128_parcial (extraído pelo AST) e o Engine.classify (pura) sobre espectros SINTÉTICOS, sem run_D128 e sem nenhum operador da teoria. Sem zero no espectro:\n- o parcial em disco leva n0 0 e zero_mode_ok False;\n- derive_verdict → IDENTITY_VIOLATED_1__ENGINE_SUSPECT__RESULTS_VOID;\n- o runtime, com processo falso morto (rc = 3) → …IDENTITY_VIOLATED_1__ENGINE_SUSPECT__RESULTS_VOID__PARTIAL_RESULT_WORKER_DIED_RC_3__GATE_UNTOUCHED, com all_verified False e nada ao cache.\n\nUm zero com gap, ou todos zero (gap = inf, que faz o ciclo de ida e volta pelo JSON): D128_INTERRUPTED. O MD:113 dos dois rascunhos descreve isso.",
+     "falta": "Resta um resíduo BAIXO: a falha do próprio callback é engolida sem marca. Ver os achados novos."
+    },
+    {
+     "id": "5N7",
+     "estado": "RESOLVIDO",
+     "evidencia": "Contra o código ANTERIOR, o achado SE SUSTENTAVA. O gerar_candidato_v384.py.bak_antes_afer5 (5fb6af23…) tem 0 ocorrências de out_file_remove_error e 0 de NOT_THIS_RUN/W09b: o selo hasheava qualquer arquivo presente, como o caso M3 da 5ª mostrou.\n\nNo corrente (119aacab…):\n- a tupla do W07 (candidato :208103) contém \"out_file_remove_error\" e \"out_file_sha256\";\n- o W09b está em :208401-208404;\n- a âncora (o json.dump do selo) é única na v383 selada (58abcf20…, contagem 1), e o add() exige count == 1.\n\nCaso S3, a falha dupla real com a trava do Windows: o W07 traz out_marker_error e out_file_remove_error, e o selo grava NOT_THIS_RUN para o arquivo de A. O MD:132 agora fala do NOT_THIS_RUN.",
+     "falta": ""
+    },
+    {
+     "id": "5N20",
+     "estado": "RESOLVIDO",
+     "evidencia": "É o mesmo defeito do 5N7, e a disposição diz «20 = 7». Sustentava-se no gerador anterior: 0 ocorrências de out_file_remove_error. Está resolvido no corrente: W07 com out_file_remove_error e out_file_sha256; o selo grava NOT_THIS_RUN quando o arquivo não é o desta rodada (casos S3, S3b, S3c e S3d do a6_selo_runtime.json). O conferidor (d168557e…, inalterado) continua exigindo, em :46, selo = disco = result_sha256 na rodada final.",
+     "falta": ""
+    }
+   ],
+   "examinado": [
+    "MAPA DE ROTAS consultado antes do exame: python C:\\IALD\\MAPA_DE_ROTAS\\rotas.py consultar \"pilar\". 10 rotas, nenhuma sobre o selo e o runtime do pilar desta passada. Nada registrado.",
+    "C:\\Users\\rotol\\AppData\\Local\\Temp\\claude\\c--IALD-Central-de-Patentes\\6da8f00d-d44f-4888-a88d-fc9f73eead3d\\scratchpad\\v384\\afericao5_resultado.json fa914a9f39299858e905e828f5fca573688f861ce68b333524f7d43227181ce1 (4N0, 4N1, novos[0], novos[7], novos[20])",
+    "disposicoes_afericoes_v384.json a254afc1954302be4a2ab0face2600ef7fa96228eb608bd90917c62e9a14135c (disposicoes_5a_itens 4N0 e 4N1; disposicoes_5a_novos 0, 7, 20); AFERIDOR_v384.txt b2bcdde34d702d06f9e38f0b310c702883475c0644d6730d896ae3edf773fa9e",
+    "pilar_quantico_worker.py fb974f9d34c216b5cff255ee8deca68b6f5cebd6709b2438778dc795531c3ab4; pilar_quantico_worker.py.bak_antes_afer5 = pilar_quantico_worker_auditado_5a_passada.py 39e6d56004fe2813c55470761aaddd8500effac4aa884849aec52f2d1a24b4b5 (diff: on_spectrum, comentario do passo 2, _d128_parcial)",
+    "v384_runtime.py 5dbe4a986244e14622eea338c4bbd1d6d7e63882ad79f5adb3c80f5109b978e9; v384_runtime.py.bak_antes_afer5 8312921623cfb147732785ce98300d41793b5a83043230e84934617ab5a1733b (diff lido inteiro)",
+    "gerar_candidato_v384.py 119aacab42389fb054e380e9c0201699405bf229290b8ba6b4f0afff933e4fae; gerar_candidato_v384.py.bak_antes_afer5 5fb6af238942886457b2d1dddb13acfba9821264d79846068457fba4845b6825 (W07 e W09b; add() exige count == 1)",
+    "um_v384_candidato_ENSAIO.py 6b062f8f2bf983a16f36ec63ffa7de9b5ae35481fb3df5b78beec78d0945298b. Só leitura e extração por conteúdo: runtime :192313-192731; sha_file :358; bloco do selo :208392-208405; W07 :208103; chamadas do pilar :205466 e :207827; terceiro balde :208366-208368. A leitura do selo the_quantum_pillar_reading_v384 cita SPEC_HASH_4728C089FFAB6351, igual a _QP_SPEC_SHA256 4728c089ffab63512814056da761100fea20071bd75fa2c059f362243b58013e. CANDIDATO_v384_ENSAIO.json 1aa9456c80d05450a35b06972e6e7d1a430f7837015d1401db0286478e57e2fc",
+    "conferir_rito_v384.py d168557e2fa7a1f5c781b2567b2397750f426f1fe3af1f169f0a09cf5c87738e (= .bak_antes_afer5; :46 exige selo = disco = result_sha256)",
+    "rascunho_prereg_v6: B_REDUZIDO.json b26f19ed9691195ac92d3315a9e20de176aeba99eb10584513c62415719bb22a (especificação canônica sha16 4728c089ffab6351, worker fb974f9d…); B_REDUZIDO.md 9ed3b619ae7e66f6ac623ac024072c1bb214b7c5b11c08e172af2d7a48fa4bff (:94, :113, :132); B_AMPLIADO_D64.json fff89c555d22c06d7a4ef407afcb7ac9c7e859fbca239b249f90822f10640ff9 (especificação 285f3a926d9753ea); B_AMPLIADO_D64.md e6479d7beccd45d81b4c08107995943a4db5df6faf68d6562a759f1d69c50e14; gerador do pré-registro (só grep :437)",
+    "sondas: teste_motor_v7/result.json 7671a86f4c8b7fbca0ba31479d0977db0971dda65e24da0d74a6535e8d96826a (worker fb974f9d…, ENGINE_SELFTEST_PASSED, E1..E8 True); teste_tempo_v8/result.json 285668632af459e1ec809b174e617f4c38fc399a4959265ca17016452bb21645 (worker fb974f9d…, E1..E8 True)",
+    "base v383 selada, SÓ LEITURA: C:\\IALD\\Artigo\\Haja_Luz\\A Ponte e o Um\\Nós\\um.py 58abcf20651f477715404a0801ffdf4b26ad18a76d6ae49bfa950c602938a427. A âncora do W09b (json.dump do selo) ocorre 1 vez.",
+    "arnês da 5ª lido (base do meu): aferidor5_trabalhador_runtime/a5_runtime.py",
+    "MEUS artefatos, todos em ...\\v384\\aferidor6_trabalhador_runtime_selo\\:\n- a6_selo_runtime.py e6faa1a8cddc552463d82bcac5bcfd9c2888a16038a7e7211d8a88b8e069f6ed → a6_selo_runtime.json 4723dce97af933a1eff348db6f0311c3059015fe68a1c58ca93fc8f06b1a514b. Casos: S1 copiado; S2 marcador; S3 e S3b trava real; S3c, S3d e S3e core sintético; S4a, S4b e S4c ausente; S5 e S5b trava solta em 2 s; S6 cópia falha; S7 e S7b finish_failed; S8 reaproveitada.\n- a6_d128_parcial.py 90f7d034cac2c4bb88798d149d3b3a314ac44efcc561a4a99aef552f9ed75bb7 → a6_d128_parcial.json ed9055b9642788bfe10641bdc60b8b2a3521ed7c153d8d301537b36325552ec3.\n- a6_callback_falha.py d089db58353a1eb6bc31ad2068c971094306d5a1227c46748cbc939ee48522cb → a6_callback_falha.json eb091416c454f41f3da9cc76401a2dc2e199305068bc8f7131a221ae48a420fd.\n- Cópias: pqw_copia.py (fb974f9d…) e pqw_5a_copia.py (39e6d560…).",
+    "Nota do arnês: na primeira execução, a sandbox de caminho longo estourou o MAX_PATH do Windows (261 caracteres) na cópia ao cache. Encurtei a sandbox para .\\s. Não é defeito do produto: o caminho do Nós é curto.",
+    "O QUE EXECUTEI: importei as CÓPIAS do trabalhador na minha pasta e chamei só funções PURAS ou de E/S com entradas SINTÉTICAS:\n- derive_verdict;\n- Engine.classify, estática, sobre espectros sintéticos de 50 autovalores;\n- write_json_atomic;\n- _d128_parcial, extraído pelo AST.\nO runtime embutido no candidato rodou com processos FALSOS. O _qp_rederive chama derive_verdict num subprocesso. NÃO executei:\n- o trabalhador em nenhum modo; five_jumps, canonical_H, t1/t4_instance, run_T1..T4, run_D128, run_cpuref;\n- o rito_v384.sh, instalar, conferir, gerar_esperados, fumaca, ensaio, os geradores e o um.py;\n- Stop/Start-ScheduledTask, stop_iald_llama.ps1 e taskkill (o _qp_kill_tree só viu um processo falso já terminado).\nNada foi escrito fora de aferidor6_trabalhador_runtime_selo\\; Nós, memória, Chatgpt\\ e credenciais intocados."
+   ]
+  },
+  {
+   "lente": "lancador",
+   "itens": [
+    {
+     "id": "#9",
+     "estado": "RESOLVIDO",
+     "evidencia": "(a) Conferido por script (aferidor6_lancador/conferir_memoria.py, 6680af5806e56ed9). O MARCA do rito_v384.sh corrente (55cacfcbeb8aa62e), convertido de /c/ para C:\\, dá C:\\Users\\rotol\\AppData\\Local\\Temp\\claude\\c--IALD-Central-de-Patentes\\6da8f00d-d44f-4888-a88d-fc9f73eead3d\\scratchpad\\v384\\.servidor_parado_pelo_rito. Esse caminho é IGUAL, byte a byte, ao de MEMORY.md:61 (f9caf500c503ae1c, 23 985 B, abaixo de 24 000) e ao da errata do bloco 9, em v384-pilar-quantico-gpu-02out.md:78 (8d8b4b97fc78d6b8). A linha 70 continua com o relativo, como manda a regra da correção AO LADO. A linha antiga do MEMORY.md (backup MEMORY.md.bak_20261004_060050) está VERBATIM no MEMORY_2.md:2121 (8abf0f44521a767f).\n(b) O vigia não é mais morto (rito_v384.sh:53-58 e :161). Com stubs, a partir do .bak_antes_afer5: no V1 (eventos ba35bcabdfad0c77) o START sai às 06:19:45.182 e o Stop órfão do vigia termina às 06:19:50.645 com «servidor 1->0». No corrente, B2 (80078a9d2e2b7ddc): o vigia termina o STOP_TASK de 12 s (06:11:07.152) e o stop_iald_llama falso; só então vêm orfaos e START (06:11:08.678), e o servidor termina =1.\nResíduo, só além de 120 s: B8, ver o achado novo do conferidor. O stop_iald_llama.ps1 real (dd579d3ca8a2a546) dura no máximo cerca de 0,8 + 15 (GraceSec) + 3 s, pela leitura [DERIVED].",
+     "falta": ""
+    },
+    {
+     "id": "5N1",
+     "estado": "RESOLVIDO",
+     "evidencia": "VERIFICAÇÃO ADVERSARIAL contra o .bak_antes_afer5 (cdb830993157ebc3), feita com rito_teste_antigo.sh (d4a3d1e94caecd80) e as quatro trocas do arnês da 5ª. Caso V1, com o vigia num Stop-ScheduledTask nativo de 12 s quando o rito acaba: o religar mata o vigia, a contagem dá vivos=0 e o START_TASK sai às 06:19:45.182. O log diz «servidor de volta», rc=0. Depois, às 06:19:50.645, vem STOP_TASK_FIM(nativo) servidor 1->0, e o servidor termina 0. O achado SE SUSTENTAVA.\nCORRENTE (55cacfcbeb8aa62e; rito_teste.sh d5746e8ab18398e0, com quatro trocas, montagem 37b6f94d48b529bd):\n- B2, mesmo cenário: o religar espera o vigia terminar Stop + stop_iald_llama e sair sozinho; START às 06:11:08.678 e servidor final 1.\n- B3 (vigia num stopps de 12 s): START depois do STOP_PS1_TUDO_FIM, servidor 1.\n- B1: o vigia sai cerca de 1,3 s depois da bandeira (TAIL 06:10:36.491, orfaos 06:10:37.793). O kill -0 não segura um filho já terminado, então não há espera falsa de 120 s.\n- B9: um TERM às 06:14:26.969, no meio da espera do vigia, é ignorado; START sai e rc=0.\n- B7: com a contagem ilegível, sai «AVISO: depois de 60 s ... contagem nao foi legivel ('Get-CimInstance : (stub) falha') -- religo assim mesmo» depois de 12 consultas, cerca de 64 s com stub.\nO MD:133 do rascunho v6 diz «espera o vigia sair sozinho (... até 120 s)». Detalhe menor: a mesma frase ainda diz «encerra o vigia».",
+     "falta": "Resta só o caminho além de 120 s (B8) e o conferidor que não lê os AVISOs. Está no achado novo BAIXO; não é falha da correção."
+    },
+    {
+     "id": "5N2",
+     "estado": "RESOLVIDO",
+     "evidencia": "VERIFICAÇÃO ADVERSARIAL contra o .bak_antes_afer5. V2 (eventos 53cbfa3885f67042), com STUB_TDESAB_FALHA=1, STUB_START_OK=0 e servidor vivo. O log diz «tarefa desabilitada= ;». Depois vêm PARANDO, o rito, «Start-ScheduledTask: (stub) a tarefa nao pode ser iniciada» e, às 06:23:43, «AVISO: a porta 8081 nao escutou em 180 s». rc=0, servidor final 0, marcador restaurar=1 no lugar. O achado SE SUSTENTAVA.\nCORRENTE: a linha 104 é `case \"$T_DESAB\" in 0|1) ;; *) ... exit 14`. B5 (b9993ca622e6e8c6), no mesmo cenário: rc=14 em 1 s e stdout «a sonda da tarefa DESABILITADA falhou ('') -- NAO RODO». Não há STOP_TASK nem marcador nem .rito_v384.pid, e o servidor segue 1. A recusa vale mesmo quando o servidor não seria religado, o que é mais estrito que a correção pedida e coerente com a sonda TAREFA_EXISTE (código 14).",
+     "falta": ""
+    },
+    {
+     "id": "5N3",
+     "estado": "RESOLVIDO",
+     "evidencia": "VERIFICAÇÃO ADVERSARIAL contra o .bak_antes_afer5. V3 (53deac3c02aada55), com stub de tail de 6 s e TERM 16 s depois do início. O log diz «06:20:14 fim do rito ... rc=0» e, em seguida, «06:20:21 SINAL TERM recebido ANTES do rito comecar», com LANCADOR_SAIU rc=143. O achado SE SUSTENTAVA.\nCORRENTE (RITO_INICIADO=2 na l.176; sinal() nas l.84-96): B4 (879749a9c4bd2a6d), no mesmo cenário, dá «06:12:17 SINAL TERM recebido DEPOIS do rito (RITO_RC=0 ja gravado): restauro o servidor». O religar roda, rc=0, e o stdout termina num único RITO_RC=0.\nResíduo, só pela leitura [DERIVED]: ainda há uma janela de um comando builtin entre `echo \"RITO_RC=$rc\" >>` (l.175) e `RITO_INICIADO=2` (l.176). Um sinal ali somaria «RITO_RC=SINAL_x» depois de RITO_RC=0, coisa de microssegundos e no sentido seguro. O cabeçalho (l.11-12) também não cita o terceiro estado.",
+     "falta": ""
+    },
+    {
+     "id": "5N4",
+     "estado": "RESOLVIDO",
+     "evidencia": "VERIFICAÇÃO ADVERSARIAL feita só com leitura: a consulta é Get-CimInstance real e o taskkill foi trocado por echo. A função mata_um do .bak_antes_afer5 foi copiada por script para teste_mata_um_antigo.sh (f39859dbc0bbde5f) e chamada de um trap TERM. Ela listou WOULD_KILL 202452 (o dummy «estrangeiro», filho do bash do driver), 188540 (o descendente) e 176852 (o um.py falso do meu arnês V3, outra árvore) (saida_teste_antigo.txt 4f2f0f2670936c75). O achado SE SUSTENTAVA.\nCORRENTE: a mata_um da l.38-44, copiada por script para teste_mata_um.sh (c3894d3896b2b569, com montagem por script), devolveu SÓ o 198944, o python um.py descendente. Ficaram de fora o estrangeiro 199328, o um.py falso do arnês (196944) e 16 processos python ...\\Bancada_Um\\mcp_um.py vivos na máquina (saida_teste.txt e53466e178a7851f; rodar_teste.out 51fb4fbef01c7534). A cadeia lida é python 198944 ← sh 198384 ← sh 196060 ← lançador 162024 (/proc/$$/winpid). Os dummies saíram sozinhos em 30 s, e a listagem final confirma que nenhum processo meu ficou vivo.",
+     "falta": ""
+    },
+    {
+     "id": "5N5",
+     "estado": "PARCIAL",
+     "evidencia": "VERIFICAÇÃO ADVERSARIAL: a sonda aferidor6_lancador/sonda_taskstop/probe.sh (9d531f49178af620) tem só o esqueleto de traps. Foi lançada por run_in_background (b1mx3nil9) e parada pelo TaskStop («Successfully stopped task»). Às 06:17:06 o kill -0 ainda a dava viva, nenhum TRAP_* foi registrado, e ela terminou em «FIM_NORMAL 06:17:28» (probe.out c3e56ce2be590ede). O achado SE SUSTENTAVA.\nCORRENTE: a l.129 grava `echo $$ > $PK/.rito_v384.pid`; o religar o remove (l.52); o cabeçalho, l.13-14, diz «ABORTAR o rito = kill -TERM $(cat <pacote>/.rito_v384.pid) -- o TaskStop da ferramenta da gerencia NAO para o lancador». B6 (6b3ee2f1e289910b) mostra «.rito_v384.pid='87530' (lancador $!=87530)». O TERM a esse PID leva a «SINAL TERM recebido durante o rito», PS_MATA_UM_CONSULTA RW=193208, TASKKILL do um falso, RITO_RC=SINAL_TERM, religamento, rc=143, e o arquivo AUSENTE depois.",
+     "falta": "O MD:133 dos dois rascunhos v6 (9ed3b619ae7e66f6 e e6479d7beccd45d8), os JSON e o gerador (ed6256249024eca1) têm 0 ocorrências de «TaskStop» (grep -c). O pré-registro diz só «abortar o rito é kill -TERM nesse PID». A disposição 5 afirma que o pré-registro também diz que «o TaskStop da ferramenta nao para o lancador», e isso não está lá. Falta acrescentar essa frase ao gerador e regenerar os rascunhos."
+    },
+    {
+     "id": "5N19",
+     "estado": "RESOLVIDO",
+     "evidencia": "É duplicata do 5N2 (a disposição 19 diz «= 2»). A mesma verificação adversarial vale (V2 sustenta o achado no .bak_antes_afer5), e a correção da l.104 também (B5: rc=14 e nada parado).",
+     "falta": ""
+    },
+    {
+     "id": "5N22",
+     "estado": "RESOLVIDO",
+     "evidencia": "É duplicata do 5N3 (a disposição 22 diz «= 3»). No antigo, V3 registra «ANTES do rito comecar» depois do rito e sai rc=143. No corrente, B4 registra «DEPOIS do rito (RITO_RC=0 ja gravado)» e sai rc=0. Vale o mesmo resíduo de microjanela descrito no 5N3 [DERIVED].",
+     "falta": ""
+    }
+   ],
+   "examinado": [
+    "MAPA DE ROTAS consultado ANTES: python C:\\IALD\\MAPA_DE_ROTAS\\rotas.py consultar \"pilar\" (10 rotas; cabeca aaea264c47c4466c; nenhuma rota sobre o lancador da 5a). Nao registrei: devolvo aqui.",
+    "rito_v384.sh corrente 55cacfcbeb8aa62e (lido inteiro; diff contra .bak_antes_afer5 cdb830993157ebc3)",
+    "aplicar_afer5_lancador.py 6c807a72441ca205 e aplicar_afer5_lancador_b.py 03ee0747a55f8e5e (os pares do _b nao reproduzem sozinhos o mata_um corrente: o filtro por Name foi acrescido por um passo nao registrado por script; o texto corrente e' o auditado)",
+    "afericao5_resultado.json fa914a9f39299858 (#9 e novos[1,2,3,4,5,19,22]); disposicoes_afericoes_v384.json a254afc1954302be (disposicoes_5a_itens #9; disposicoes_5a_novos 1-5,19,22); AFERIDOR_v384.txt b2bcdde34d702d06 (grep mata_um)",
+    "conferir_rito_v384.py d168557e2fa7a1f5 (igual ao .bak_antes_afer5; leitura das l.85-88; NAO rodado)",
+    "rascunho_prereg_v6: B_REDUZIDO.md 9ed3b619ae7e66f6 e B_AMPLIADO_D64.md e6479d7beccd45d8 (linha 133, identica nos dois); os JSON e o gerador ed6256249024eca1 (grep: TaskStop = 0; rito_v384.pid = 1)",
+    "memoria SO LEITURA: MEMORY.md f9caf500c503ae1c (l.61), v384-pilar-quantico-gpu-02out.md 8d8b4b97fc78d6b8 (l.70 e l.78), MEMORY_2.md 8abf0f44521a767f (l.2121), MEMORY.md.bak_20261004_060050; memoria_marcador_absoluto.py bf1b86bde4f5fd38",
+    "C:\\IALD\\projetos_pyhton\\IALD\\stop_iald_llama.ps1 dd579d3ca8a2a546 (so leitura, para estimar a duracao da parada)",
+    "arnes de stubs proprio em aferidor6_lancador\\arnes (copia estendida do da 5a): montar.py 81917805d6cd2b5c -> rito_teste.sh d5746e8ab18398e0 (4 trocas; montagem.json 37b6f94d48b529bd); montar_antigo.py 707d925136f128ce -> rito_teste_antigo.sh d4a3d1e94caecd80 (do .bak_antes_afer5); casos.sh 1a62706788e47dc5 (confere pelo PATH que powershell.exe/taskkill/nvidia-smi/tail sao stubs; acao nova pidsig); stub powershell.exe 8358c7308fcb4ea8 (registra o RW do mata_um; STUB_MATAUM_FALHA); util.py c0e5b973cdf7c015; um.py falso 66c865e241d29249; rodar.sh/rodar2.sh/rodar3.sh 3e40b5b96bff0ce6/652cccd5ccae2b6f/fb940f190193f940",
+    "casos com stubs (eventos.log): B1 4d934e6d688ec96b, B2 80078a9d2e2b7ddc, B3 a6447e0c97f4ed84, B4 879749a9c4bd2a6d, B5 b9993ca622e6e8c6, B6 6b3ee2f1e289910b, B7 3c631258e7544ae1, B8 ec783a065b4f3786, B9 b0ee6ea852f57e26, B10 20982a414ec564c8, B11 96f8e45bc69fb7fd; adversariais no codigo anterior: V1 ba35bcabdfad0c77, V2 53cbfa3885f67042, V3 53deac3c02aada55",
+    "teste REAL so de leitura do mata_um (aferidor6_lancador\\mata_um_real): teste_mata_um.sh c3894d3896b2b569 (corrente) e teste_mata_um_antigo.sh f39859dbc0bbde5f (antigo), com taskkill trocado por echo; dummies um.py 98bca7ab19955399 que saem sozinhos em 30 s; saidas saida_teste.txt e53466e178a7851f, saida_teste_antigo.txt 4f2f0f2670936c75, rodar_teste.out 51fb4fbef01c7534 (o rodar_teste_antigo.out 0b75b7aa3281d558 ficou truncado por um head no pipe; os PIDs dos dummies foram lidos dos pid_*.txt)",
+    "sonda do TaskStop: sonda_taskstop\\probe.sh 9d531f49178af620 -> probe.out c3e56ce2be590ede (TaskStop so na MINHA tarefa b1mx3nil9)",
+    "leitura_conferidor_B8.py c687680ac6b83085 (a expressao do conferidor aplicada aos logs dos stubs, sem rodar o conferidor); conferir_memoria.py 6680af5806e56ed9",
+    "DECLARACOES: NAO rodei o trabalhador, nem importei sua copia, nem chamei funcao alguma dele; NAO rodei rito_v384.sh real, instalar, conferir, gerar_esperados, fumaca, ensaio nem geradores; NAO houve Stop/Start-ScheduledTask, stop_iald_llama.ps1 nem taskkill reais (todos stubs conferidos pelo PATH); as unicas consultas reais foram Get-CimInstance Win32_Process (so leitura) e Get-Alias/kill -TERM com PID inexistente no PowerShell; nenhum processo real foi encerrado; a listagem final confirmou zero processos meus vivos; nada foi escrito fora de aferidor6_lancador\\"
+   ]
+  },
+  {
+   "lente": "cadeia",
+   "itens": [
+    {
+     "id": "N19",
+     "estado": "RESOLVIDO",
+     "evidencia": "Disposição da gerência: a variante sem_cache_d128 tem de exigir a frase própria do ramo. No ensaio corrente (ensaio_a_seco_v384.py, sha256 47aaa55f6ad4775b…), as linhas 209-210 trazem o DEVE {\"pt\": [\"não foi guardado para reaproveitamento\", \"o cache só guarda o resultado completo com ele\"], \"en\": [\"not stored for reuse\", \"the cache keeps only a complete result with it\"]}.\n\nA mudança se reproduz byte a byte: apliquei por AST os 5 pares de aplicar_afer5_ensaio.py (aea4885f…) sobre o .bak_antes_afer5 (a787a802…), cada um com count == 1, e o resultado é igual ao corrente (47aaa55f…).\n\nSimulei com cores SINTÉTICOS, usando uma cópia byte a byte do arnês teste_artigo_afer3/simular.py (d30454eb…), em aferidor6_cadeia/sim_artigo/sim_cadeia6.py (278517c7…), com saída sim_cadeia6.json (9bd1d1a4…):\n- sem_cache_d128 com o trecho corrente: faltam = [] em PT e EN, e o pdflatex compila (pdf_ok true);\n- mutação com o not_cached_code genérico do runtime ('NOT_COMPLETE_OR_NOT_CHECKED', o mesmo formato de v384_runtime.py:403): faltam = [\"o cache só guarda o resultado completo com ele\"] em PT e [\"the cache keeps only a complete result with it\"] em EN.\n\nO DEVE agora distingue o sub-ramo do D128. O candidato de ENSAIO (6b062f8f2bf983a1…) embute cada frase uma vez (contagem por script em conferir_embutidos.json, d567cd12…).",
+     "falta": "Nada."
+    },
+    {
+     "id": "4N5",
+     "estado": "PARCIAL",
+     "evidencia": "Feito:\n- a docstring (3) agora ressalva o terceiro balde (ensaio:8-9, «exceto as do terceiro balde, que leem variaveis locais do main e sao conferidas por nome e executadas A PARTE»);\n- o comentário das linhas 89-90 diz «W08, W08b e o W08c, que leva a marca v384 na linha … saem do fluxo executado, sao conferidos por nome».\n\nNão feito: o comentário que a 5ª apontou («:102 ainda diz …») NÃO foi trocado. O aplicar_afer5_ensaio.py mudou o OUTRO comentário (o antigo :88-89, «os enunciados do TERCEIRO BALDE leem variaveis locais…»). Por isso o ensaio corrente, na linha 103, ainda diz: «# os enunciados do TERCEIRO BALDE (W08/W08b/W08c) nao levam a marca na linha: conferidos por inteiro (3a afericao)». O grep 'TERCEIRO BALDE' no ensaio corrente dá :89 e :103.\n\nO arquivo traz agora dois comentários contraditórios. O candidato confirma o de :89: um_v384_candidato_ENSAIO.py:208369 (o print do W08c) leva «# v384: o terceiro balde nomeado (regra v303)», e as linhas do W08 (208366) e do W08b (208368) não levam a marca.\n\nResidual menor: a docstring (5) continua dizendo só «confere as palavras que TEM de estar», sem o novo «nao_devia_ter» nem as variantes e o bloco da custódia. Só texto, sem efeito no veredito.",
+     "falta": "Trocar ou remover o comentário da linha 103 («(W08/W08b/W08c) nao levam a marca na linha»), por exemplo por «W08 e W08b sem a marca; o W08c com ela; os quatro enunciados conferidos por nome (bad) e executados à parte». Opcional: dizer na docstring (5) que também se confere a AUSÊNCIA da frase da CPU no sucesso."
+    },
+    {
+     "id": "4N6",
+     "estado": "PARCIAL",
+     "evidencia": "Resolvido, a parte da 4ª:\n- diff_conferidor_afer4_manual.txt tem sha256 8f1e0ab542c4e852…, igual ao da disposição. O `patch` sobre uma cópia do .bak_antes_afer4 (b0a63f36…) dá exatamente d168557e… (= .bak_antes_afer5 = conferidor corrente). O corpo é idêntico ao `diff -u` regenerado.\n- diff_lancador_afer4_manual.txt tem sha256 76e5ecd59232e5eb…, igual. O `patch` sobre o .bak_antes_afer4 (21584e80…) dá exatamente cdb83099… (= .bak_antes_afer5). O corpo é idêntico.\n- Arquivos em aferidor6_cadeia/diffs.\n\nRefutado, a frase nova da mesma disposição: «as edicoes da 5a no lancador foram por script aplicar_* com count == 1».\n- Extraí por AST os 9 pares de aplicar_afer5_lancador.py (6c807a72…) e o par de aplicar_afer5_lancador_b.py (03ee0747…), sem executá-los, e os apliquei sobre o rito_v384.sh.bak_antes_afer5 (cdb83099…). Script em reconst5/reconst_lancador_afer5.py (5db8e615…), saída reconst_lancador_afer5.json (60be3d53…).\n- Os 9 pares do primeiro script dão count == 1 e produzem 2ab5b884…. Sobre esse resultado, o `old` do _b tem count == 0, ou seja, o _b não poderia ter rodado sobre a saída do primeiro script.\n- O `diff` entre a saída do primeiro script e o corrente (55cacfcb…) é uma única linha, a do filtro do mata_um (rito:42): o corrente tem `-and \\$_.ProcessId -ne $RW -and \\$_.Name -match '^(python|pythonw|py)\\.exe\\$'` e a regex `(^|[\\\\\\\\ \\\"])um\\\\.py…`, que não estão em nenhum aplicar_*. O grep 'ProcessId -ne' no pacote acha só rito_v384.sh e um diff de outra lente da 6ª.\n\nHouve, portanto, uma edição intermediária fora de script e não declarada (detalhe no achado novo MEDIO). É o mesmo defeito que o 4N6 pedia para não repetir.",
+     "falta": "Gravar diff_lancador_afer5.txt (do .bak_antes_afer5 cdb83099… ao corrente 55cacfcb…) e corrigir AO LADO a disposição: «9 pares por aplicar_afer5_lancador.py; uma edição MANUAL no filtro do mata_um (ProcessId -ne $RW e Name); o _b ajustou o escape». Alternativa: refazer a edição por um script que, aplicado sobre o .bak_antes_afer5, reproduza 55cacfcb… com count == 1."
+    },
+    {
+     "id": "4N25",
+     "estado": "RESOLVIDO",
+     "evidencia": "A disposição está gravada (disposicoes_afericoes_v384.json a254afc1…, chave disposicoes_5a_itens[\"4N25\"]) e cita diff_conferidor_afer3.txt (sha256 f0aa6e0f…).\n\nConferido por script:\n- o sha256 do arquivo é f0aa6e0f4dcb3dc713a70eb4d19e1e1e122a507280b1891102fd0599d969b740, igual ao citado;\n- o `patch` sobre uma cópia do conferir_rito_v384.py.bak_antes_afer3_RECONSTITUIDO (fe466024df3e5827…) dá exatamente b0a63f367a326237… (= .bak_antes_afer4, o estado auditado na 4ª);\n- o corpo é idêntico ao `diff -u` regenerado.\n\nControle independente: o diff normal do verificador da 4ª (aferidor4_verificacao_adversarial/reconst/diff_auditado3_vs_corrente.txt, f6fa87dc…), aplicado ao mesmo RECONSTITUIDO, também dá b0a63f36…. Os dois registros descrevem a mesma mudança. Arquivos em aferidor6_cadeia/diffs.",
+     "falta": "Nada."
+    },
+    {
+     "id": "5N6",
+     "estado": "RESOLVIDO",
+     "evidencia": "Verificação adversarial contra o código ANTERIOR: o achado se sustentava.\n- artigo_pt_v384.pysnip.bak_antes_afer5 (58256920…) tinha a condição `if (\"__CPU_REFERENCE_\" in _v4 and _cr4)` na linha 72, que casa com «__CPU_REFERENCE_AGREES__», presente em todo veredito de sucesso (pilar_quantico_worker.py:1116, a única saída FIVE_JUMP_GKLS de derive_verdict).\n- aplicar_afer4_artigo.py:4 (d38d0413…) declara o escopo «nos vereditos RESULTS_VOID com CPU_REFERENCE_».\n- Na minha simulação (sim_cadeia6.json 9bd1d1a4…), o trecho antigo pôs «A referência na CPU, nesta rodada» nos casos ensaio_principal, reaproveitado e sem_cache_d128, em PT e EN.\n\nResolvido no corrente:\n- os trechos PT e EN (1c7d6236… / 03ae1be3…) usam `_cpuvoid4 = (\"__CPU_REFERENCE_NOT_COMPARABLE__\" in _v4 or \"__CPU_REFERENCE_DISAGREES_OR_ABSENT__\" in _v4)` (linha 22) e a frase só sai `if _cpuvoid4` (linha 78);\n- na simulação, o sucesso, o reaproveitado e o sem_cache saem sem a frase; o void da CPU sai com ela, e o ausente com «não estava presente».\n\nAs 40 saídas da gerência em teste_artigo_afer3/simular.json (419bb3c7…) foram recalculadas por mim com o trecho corrente: 40 de 40 têm txt_sha16 igual (conferir_sim_gerencia.py b250997c…). Só M, P e R trazem a frase.",
+     "falta": "Nada."
+    },
+    {
+     "id": "5N16",
+     "estado": "RESOLVIDO",
+     "evidencia": "O achado se sustentava no código anterior (mesma prova do 5N6). A correção pedia também «pôr no ensaio a seco uma variante de sucesso que exija a AUSÊNCIA da frase». Isso está feito:\n- ensaio:158-160 tem `nao_devia_ter`, com as frases PT/EN do void e do ausente;\n- ensaio:230 reprova o ensaio se a lista não vier vazia.\n\nO teste não é vazio. O FIX do ensaio é de forma de sucesso (ensaio:62-67): o veredito da fumaça começa por FIVE_JUMP_GKLS, logo contém __CPU_REFERENCE_AGREES__ (worker:1116), e summary.cpuref = cpuref_compare ok (runtime:312; a fumaça roda a referência na CPU, fumaca_v384.py:24). Na simulação desse registro (sim_cadeia6.json):\n- com o trecho .bak_antes_afer5, nao_devia_ter = [\"A referência na CPU, nesta rodada\"] em PT e [\"The CPU reference, in this run\"] em EN, e o ensaio reprovaria;\n- com o trecho corrente, a lista vem vazia e o pdflatex compila;\n- a frase do ausente vira no TXT «A referência na CPU não estava presente nesta rodada», então o segundo termo da lista também casa.",
+     "falta": "Nada."
+    }
+   ],
+   "examinado": [
+    "Mapa de rotas: rodei `python C:\\IALD\\MAPA_DE_ROTAS\\rotas.py consultar \"pilar\"` (n = 10, cabeça aaea264c47c4466c) e li as rotas quantica.pilar_v384_* e infra.*. Não registrei nada.",
+    "Achados e disposições (sha256 por script):\n- afericao5_resultado.json fa914a9f39299858e905e828f5fca573688f861ce68b333524f7d43227181ce1 (grupos[cadeia]: N19, 4N5, 4N6, 4N25; novos[0..22]);\n- disposicoes_afericoes_v384.json a254afc1954302be4a2ab0face2600ef7fa96228eb608bd90917c62e9a14135c (disposicoes_5a_itens e disposicoes_5a_novos; o .bak_20261004_060028 ecdcdf4f… só difere por chaves novas e pelo texto_para_o_pre_registro);\n- AFERIDOR_v384.txt b2bcdde34d702d06f9e38f0b310c702883475c0644d6730d896ae3edf773fa9e (o .bak_20261004_060028 442b1ab1… é prefixo exato: só acréscimo).",
+    "Arquivos da cadeia, corrente e .bak_antes_afer5 (sha256 por script):\n- ensaio_a_seco_v384.py 47aaa55f6ad4775b… (bak a787a802a12f8ff2…);\n- rito_v384.sh 55cacfcbeb8aa62e… (bak cdb830993157ebc3…; .bak_antes_afer4 21584e80923edc9b…);\n- conferir_rito_v384.py d168557e2fa7a1f5… = bak (inalterado; .bak_antes_afer4 b0a63f367a326237…; RECONSTITUIDO fe466024df3e5827…; .bak_antes_afer2 c4af6d11762f51c3…);\n- inalterados (corrente = bak): gerar_esperados_v384.py a71bb4165ad665f1…, instalar_v384.py 4c93ba11bc669366…, fumaca_v384.py c6eef34bbd17e72b…;\n- gerar_candidato_v384.py 119aacab42389fb0… (bak 5fb6af238942886…);\n- v384_runtime.py 5dbe4a986244e146… (bak 8312921623cfb147…);\n- artigo_pt 1c7d62368a222558… (bak 58256920e44ea5b5…), artigo_en 03ae1be374839 1df… (bak b9c3336bfa4162a2…);\n- pilar_quantico_worker.py fb974f9d34c216b5… (auditado na 5ª: 39e6d56004fe2813…).",
+    "Diffs registrados:\n- diff_conferidor_afer3.txt f0aa6e0f4dcb3dc7…, diff_conferidor_afer4_manual.txt 8f1e0ab542c4e852… e diff_lancador_afer4_manual.txt 76e5ecd59232e5eb…, iguais aos das disposições;\n- os três aplicados com `patch` sobre cópias dos backups na minha pasta reproduzem EXATAMENTE os alvos (b0a63f36…, d168557e…, cdb83099…), e os corpos são idênticos ao `diff -u` regenerado;\n- o diff do verificador da 4ª (aferidor4_verificacao_adversarial/reconst/diff_auditado3_vs_corrente.txt f6fa87dc…) também dá b0a63f36… a partir do RECONSTITUIDO.",
+    "Scripts da gerência, lidos sem executar, com os pares (old, new) extraídos por AST e aplicados sobre cópias em memória:\n- aplicar_afer5_ensaio.py aea4885f634a49ae…: 5 pares com count 1, reproduz 47aaa55f…;\n- aplicar_afer5_lancador.py 6c807a72441ca205… (9 pares com count 1, dá 2ab5b884…) e aplicar_afer5_lancador_b.py 03ee0747… (count 0 sobre esse resultado): NÃO reproduzem o rito corrente;\n- aplicar_afer4_artigo.py d38d041367cfb1df… (o escopo declarado do 4N22).",
+    "Candidato e pré-registro:\n- um_v384_candidato_ENSAIO.py 6b062f8f2bf983a16f36…, só leitura de texto e grep, nunca importado; embute as 120 linhas não vazias de cada trecho PT/EN corrente e nenhuma das 4 linhas antigas da CPU (conferir_embutidos.py 29d47f45…, saída d567cd12…);\n- CANDIDATO_v384_ENSAIO.json 1aa9456c… (worker fb974f9d…, spec 4728c089…, prereg json b26f19ed… e md 9ed3b619… iguais aos do rascunho_prereg_v6 B_REDUZIDO; spec recalculado = 4728c089…);\n- gerador corrente do pré-registro ed6256249024eca1… (as evidências _EV incluem disposições e AFERIDOR como obrigatórias);\n- sondas teste_motor_v7/result.json 7671a86f… e teste_tempo_v8/result.json 28566863…, ambas com worker fb974f9d….",
+    "Simulações na minha pasta, todas com entradas SINTÉTICAS e sem nenhum operador da teoria:\n- sim_artigo/sim_cadeia6.py 278517c7… → sim_cadeia6.json 9bd1d1a4…, sobre a cópia do arnês simular.py (simular_copia.py d30454eb…, idêntica byte a byte; só o PKG trocado em memória). Mede o DEVE da sem_cache_d128 e a sua mutação, e o nao_devia_ter com o trecho corrente e com o .bak_antes_afer5; pdflatex OK nos casos correntes;\n- sim_artigo/conferir_sim_gerencia.py b250997c…: os 40 casos da gerência (teste_artigo_afer3/simular.json 419bb3c7…) recalculados com o trecho corrente, 40 de 40 iguais;\n- sim_conferidor_servidor.py 18e4e6fe… → c494c16a…: a expressão do conferidor extraída por AST e avaliada sobre logs sintéticos;\n- reconst5/reconst_lancador_afer5.py 5db8e615… → 60be3d53… (apos_script1.sh 2ab5b884…).",
+    "Sintaxe: ast.parse OK no ensaio, no conferidor, em gerar_esperados, em instalar e na fumaça; sh -n OK no rito_v384.sh. As chaves do core que o conferidor lê existem no runtime corrente (contagem por script).",
+    "Não rodei:\n- o trabalhador em modo nenhum, nem funções que constroem operadores da teoria; não importei o trabalhador;\n- rito_v384.sh, instalar, conferir_rito, gerar_esperados, fumaça, o ensaio_a_seco, os geradores, um.py, atlas_indice, arvore_da_prova ou porta_memoria;\n- Stop/Start-ScheduledTask, stop_iald_llama.ps1 ou taskkill; não encerrei processo algum.\nNão importei o candidato. Não toquei o Nós, a memória nem o Chatgpt\\. Escrevi só em …\\scratchpad\\v384\\aferidor6_cadeia\\."
+   ]
+  },
+  {
+   "lente": "artigo",
+   "itens": [
+    {
+     "id": "4N8",
+     "estado": "RESOLVIDO",
+     "evidencia": "Código corrente, PT e EN, linha 105: a fração agora é «\"%.1f\" % (int(1000.0 * f_) / 10.0)». Antes (.bak_antes_afer5) era «\"%.1f\" % (100.0 * f_)».\n\nArnês copiado (aferidor6_artigo/simular6.py, cebdb161…; cores SINTÉTICOS; 72 TXT; 72 PDF compilados com pdflatex):\n- AE, 1999 de 2000. PT: «$d=8$: 99,9% (1999 de 2000)» (sim6/AE_t1_1999_de_2000_pt.txt, ff56fb3d…). EN: «99.9% (1999 of 2000)» (25e082f6…).\n- AI, 999 de 1000: 99,9%. AH, 199 de 200: 99,5%. AF, 4 de 5 em d=64: 80,0%. AG, 0 de 2000: 0,0%.\n- Os mesmos casos com o trecho anterior (simular6_antigo.py fd4c4c01…, saída d42ed6d3…) dão «100,0% (1999 de 2000)». O achado se sustentava, e a correção o desfaz.\n- O PDF confere (pdftotext): «99,9% (1999 de 2000)».\n\nSonda pura (trunc_check.py 2c0e91d0…, saída fb9b3c12…, mais varredura inline): para todo n ≤ 2500 e todo k ≤ n, int(1000·(k/n)) = ⌊1000k/n⌋, com 0 divergências. O f vem de np.mean de booleanos (worker summarize_T1). Logo o ponto flutuante nunca trunca para baixo um k/n exato. As contagens dos dois rascunhos (2000, 1000, 200, 5 e 20) estão cobertas.",
+     "falta": "nada"
+    },
+    {
+     "id": "4N22",
+     "estado": "RESOLVIDO",
+     "evidencia": "Disposição: «a frase da CPU só nos vereditos anulados pela CPU… com a referência AUSENTE diz «não estava presente» com o erro, e o código do filho sem o «None»».\n\nCódigo corrente, PT e EN:\n- linha 22: _cpuvoid4 = ('__CPU_REFERENCE_NOT_COMPARABLE__' in _v4 or '__CPU_REFERENCE_DISAGREES_OR_ABSENT__' in _v4);\n- linhas 72-78: a frase passa a ser condicionada a «if _cpuvoid4». O token de sucesso '__CPU_REFERENCE_AGREES__' não casa mais.\n\nArnês (simular6.json 4de06cac…), contando por script «A referência na CPU, nesta rodada» e «não estava presente»:\n- frase = 0 nos casos de sucesso e parcial, em PT e EN: A, B, C (reaproveitado), D, I, J, N, O, T e AE..AI;\n- frase = 1 só nos anulados pela CPU: M, P, R, U, V, V2, W, X, Y, AB e AC.\n\nCom o trecho anterior, A, C e D davam intro=1 e nota=1 (simular6_antigo.json).\n\nAusente: R dá «A referência na CPU não estava presente nesta rodada (cpuref.json ausente); o processo da CPU não terminou ou foi encerrado pelo prazo.» (R_cpu_ausente_void_pt.txt, ede94623…). Nenhum «None» nos TXT, salvo o caso AB, em que eu mesmo pus «None» no texto sintético do erro.\n\nO else inalcançável do _cpu4 (linha 111) segue como guarda declarada no comentário, o que era opcional.\n\nRessalva: o ramo novo `not _cr4` produz uma afirmação falsa quando o resumo falha. Ver novos_achados[0]; é regressão desta correção, fora do escopo pedido no 4N22.",
+     "falta": "nada no escopo do item; ver novos_achados[0]"
+    },
+    {
+     "id": "5N6",
+     "estado": "RESOLVIDO",
+     "evidencia": "VERIFICAÇÃO ADVERSARIAL contra o anterior: o achado se sustentava. Com o trecho .bak_antes_afer5 (58256920… e b9c3336b…), o caso de sucesso A traz intro=1 («A referência na CPU, nesta rodada: leu 1 158 pontos… código de saída do filho 0.») e nota=1, em PT e EN (simular6_antigo.json d42ed6d3…). A causa: a condição antiga `\"__CPU_REFERENCE_\" in _v4` casava com o token de sucesso 'CPU_REFERENCE_AGREES' (worker derive_verdict, ramo final).\n\nNo corrente, A dá intro=0 e nota=1 (sim6/A_completo_gravado_pt.txt, 0aa907fd…). Vale também para B, D, I, J, N e O.",
+     "falta": "nada"
+    },
+    {
+     "id": "5N8",
+     "estado": "RESOLVIDO",
+     "evidencia": "VERIFICAÇÃO ADVERSARIAL: o achado se sustentava. Com o trecho anterior, o caso C (reaproveitado) trazia «A referência na CPU, nesta rodada: leu 1 158 pontos…» em PT e «The CPU reference, in this run…» em EN, logo depois de dizer que o resultado veio de outra rodada (simular6_antigo.json). Era afirmação falsa: no REUSE, o runtime lê o cpuref_compare do result.json do cache.\n\nNo corrente, C dá intro=0 (sim6/C_reaproveitado_pt.txt, 8d3c240a…). Um veredito com CPU anulada não chega ao REUSE: o cache só guarda sucesso com o D128 rodado (v384_runtime.py, o if com _qp_save_cache).",
+     "falta": "nada"
+    },
+    {
+     "id": "5N9",
+     "estado": "RESOLVIDO",
+     "evidencia": "VERIFICAÇÃO ADVERSARIAL: as duas partes se sustentavam.\n(a) Com o trecho anterior, o caso R (cpu = {ok False, error 'cpuref.json ausente', child_rc None}) dava «leu n/d pontos, comparou n/d (n/d …), discordou em n/d; marca da rodada não conferida; código de saída do filho None.»: quatro «n/d» e o token None.\n(b) O caso V (parcial antes da comparação: summary.cpuref None, veredito …DISAGREES_OR_ABSENT__RESULTS_VOID__PARTIAL_RESULT_WORKER_STOPPED_BY_TIMEOUT…) não dava frase nenhuma (simular6_antigo.json).\nO caminho (b) é real no trabalhador corrente: result_partial.json é gravado depois de cada fase, e a comparação com a CPU só entra no parcial seguinte, o do D128 STARTED.\n\nNo corrente:\n- R: «não estava presente nesta rodada (cpuref.json ausente); o processo da CPU não terminou ou foi encerrado pelo prazo.»\n- U (child_rc 1): «… terminou com código 1.»\n- V e V2: «não estava presente nesta rodada (sem registro); …» (V_parcial_antes_da_cpu_timeout_pt.txt, d9e7e4d8…).\n- EN em paridade.\n- Nenhum «None».\n\nRessalva: o mesmo ramo `not _cr4` erra quando o resumo falhou. Ver novos_achados[0].",
+     "falta": "nada no escopo do item; ver novos_achados[0]"
+    },
+    {
+     "id": "5N16",
+     "estado": "RESOLVIDO",
+     "evidencia": "VERIFICAÇÃO ADVERSARIAL: o achado se sustentava (é o mesmo defeito do 5N6). Com o trecho anterior, A, C e D tinham a frase na introdução.\n\nNo corrente, a frase só sai nos anulados pela CPU (contagem acima).\n\nA parte opcional também foi feita. ensaio_a_seco_v384.py (47aaa55f…) ganhou na variante de sucesso a lista «nao_devia_ter», com «A referência na CPU, nesta rodada», «A referência na CPU não estava presente» e os equivalentes EN, e o «mau» passou a reprovar quando ela não é vazia (diff contra .bak_antes_afer5, linhas 158-160 e 230).",
+     "falta": "nada"
+    },
+    {
+     "id": "5N17",
+     "estado": "RESOLVIDO",
+     "evidencia": "VERIFICAÇÃO ADVERSARIAL: o achado se sustentava. Com o trecho anterior, o caso R tinha «marca da rodada não conferida» em negrito e «código de saída do filho None», e nenhum «ausente»: a ausência não era dita.\n\nNo corrente:\n- R e U dizem «não estava presente (cpuref.json ausente)».\n- A marca só é mencionada quando meta_ok is False: no caso W, PT «a marca da rodada não conferiu» e EN «the run mark did not check». Nos casos R, U, M, P, X e Y ela não aparece.\n- child_rc None vira «não terminou ou foi encerrado pelo prazo».",
+     "falta": "nada (a redação EN «did not check» é ambígua: ver novos_achados[1])"
+    },
+    {
+     "id": "5N18",
+     "estado": "RESOLVIDO",
+     "evidencia": "VERIFICAÇÃO ADVERSARIAL: o achado se sustentava. No runtime, um parcial sempre tem ok_chain False, porque sha_ok exige «not partial». Se a cópia ao Nós falha, o v384_runtime.py acrescenta __CUSTODY_CHAIN_INCOMPLETE__ também ao veredito com __PARTIAL_RESULT_. Com o trecho anterior, os casos S e AD liam «Nesta rodada o mundo quântico deu resultado parcial» e imprimiam «Os quatro testes» (simular6_antigo.json).\n\nNo corrente:\n- PT e EN, linha 21: _part4 exige '__CUSTODY_CHAIN_INCOMPLETE__' not in _v4.\n- S e AD dão «não produziu resultado válido (…PARTIAL_RESULT_…__CUSTODY_CHAIN_INCOMPLETE__…); o que segue é o desenho, não um resultado.», sem os quatro testes (sim6/AD_parcial_e_custodia_timeout_pt.txt 68b43ab2…; S 0d… ed89280d…). A leitura é a mesma do caso F (CUSTODY sem parcial).\n- A árvore: gerar_preregistro_pilar_quantico_03out.py (ed625624…, = a cópia em rascunho_prereg_v6), linha 425, diz que CUSTODY_CHAIN_INCOMPLETE «PODE vir junto do PARCIAL (quando a cópia do parcial ao Nós falha) — o artigo lê o composto PARTIAL+CUSTODY como resultado não válido».\n- A mesma frase está no RASCUNHO_B_REDUZIDO.md:116 (9ed3b619…) e .json:167 (b26f19ed…), que é o prereg_sha256.json do CANDIDATO_v384_ENSAIO.json, e no B_AMPLIADO_D64.",
+     "falta": "nada"
+    }
+   ],
+   "examinado": [
+    "MAPA DE ROTAS consultado antes, sem registrar: python C:\\IALD\\MAPA_DE_ROTAS\\rotas.py consultar \"pilar\". Resultado: n = 10, 319 registros, cabeça aaea264c47c4466c. As rotas quantica.pilar_v384_* e infra.gpu_* não tratam do texto do artigo.",
+    "Entradas lidas por script (sha256):\n- afericao5_resultado.json fa914a9f39299858… (grupos[artigo] 4N8 e 4N22; novos[6, 8, 9, 16, 17, 18]);\n- disposicoes_afericoes_v384.json a254afc1954302be… (disposicoes_5a_itens 4N8/4N22; disposicoes_5a_novos 6/8/9/16/17/18);\n- AFERIDOR_v384.txt b2bcdde34d702d06… (só o sha);\n- aplicar_afer5_artigo.py 10786b0bb003ea13… (lido inteiro);\n- aplicar_afer4_artigo.py (linhas 1-6).",
+    "Trechos do artigo: artigo_pt_v384.pysnip 1c7d62368a222558… (lido inteiro) e artigo_en_v384.pysnip 03ae1be3748391df…. Diff contra os .bak_antes_afer5 58256920e44ea5b5… e b9c3336bfa4162a2…: só as linhas 21-23, 72-78 e 105. Paridade do esqueleto de código PT/EN (paridade_esqueleto.py 02ffa92d…, saída 4a2783f7…): três blocos diferentes, todos o .replace da vírgula decimal do PT, o esperado.",
+    "Contexto do código, lido sem executar:\n- pilar_quantico_worker.py fb974f9d34c216b5… (o .bak_antes_afer5 = o auditado da 5ª, 39e6d56004fe2813…). Diff lido: só o on_spectrum do D128. Lidos compare_cpuref, derive_verdict, summarize_T1 e o laço principal com a espera da CPU.\n- v384_runtime.py 5dbe4a986244e146… (o .bak_antes_afer5 8312921623cfb147…). Diff lido. Lidos _qp_summary e quantum_pillar_finish_v384 (a composição PARTIAL/CUSTODY e o summary_error).\n- ensaio_a_seco_v384.py 47aaa55f6ad4775b… (diff: o nao_devia_ter).\n- gerar_candidato_v384.py 119aacab42389fb0… (diff: só W07/W09b, fora da lente).",
+    "Candidato de ENSAIO um_v384_candidato_ENSAIO.py 6b062f8f2bf983a1…, lido só por grep e por texto: os dois trechos .pysnip correntes estão embutidos VERBATIM, 1 ocorrência cada. CANDIDATO_v384_ENSAIO.json 1aa9456c80d05450… (worker fb974f9d…, prereg json b26f19ed…).",
+    "Pré-registro:\n- gerador C:\\IALD\\Bancada_Um\\investigacao\\preregistro_pilar_quantico_03out\\gerar_preregistro_pilar_quantico_03out.py ed6256249024eca1… (= a cópia em rascunho_prereg_v6), linha 425, a árvore com o PARTIAL+CUSTODY;\n- RASCUNHO_B_REDUZIDO.json b26f19ed9691195a… e .md 9ed3b619ae7e66f6… (linha 116 / 167);\n- RASCUNHO_B_AMPLIADO_D64.json fff89c555d22c06d… e .md e6479d7beccd45d8…;\n- spec T1 d_counts {8: 2000, 16: 1000, 32: 200, 64: 5 | 20}.",
+    "Meus artefatos, todos em scratchpad\\v384\\aferidor6_artigo\\:\n- simular.py d30454eb8172f25f… (cópia SEM alteração do teste_artigo_afer3\\simular.py);\n- simular6.py cebdb161b1e1a5b9… (36 casos sintéticos × PT/EN = 72 TXT e 72 PDF, todos ok e pdf_ok; saída simular6.json 4de06cac9fc772d8…; stdout c75b27eb09e5d2c1…);\n- simular6_antigo.py fd4c4c0126fc4012… (os mesmos casos com os trechos .bak_antes_afer5; saída d42ed6d370c5e2bc…);\n- trunc_check.py 2c0e91d028814f20… (saída fb9b3c12c24e6e0e…);\n- PDFs conferidos por pdftotext nos casos R, V, Z2, AE e W.",
+    "DECLARO:\n- O trabalhador NÃO foi importado nem rodado em modo algum. Nenhuma função que constrói operadores da teoria foi chamada.\n- O arnês só executa os trechos .pysnip e as funções de texto _sci, _tex_guard_nan, _tex_to_txt e o preâmbulo, extraídas por texto do candidato de ENSAIO, sobre cores sintéticos.\n- Não rodei um.py, rito_v384.sh, instalar, conferir_rito, gerar_esperados, fumaça, ensaio a seco, os geradores, atlas_indice, arvore_da_prova nem porta_memoria. Não rodei nenhuma tarefa agendada nem taskkill.\n- Nada escrito fora de aferidor6_artigo\\. A importação do arnês criou ali sim\\ (vazia) e __pycache__\\.\n- Não toquei o Nós, a memória, o Chatgpt\\ nem credenciais.",
+    "Cético aferidor: nenhum achado afirma ausência de item da teoria; os dois são comportamento de texto reproduzido por arnês. Por isso não consultei o inventário, o selo nem o kernel. A única «ausência» citada é a de frase nos TXT, medida por contagem de script."
+   ]
+  },
+  {
+   "lente": "preregistro",
+   "itens": [
+    {
+     "id": "N14",
+     "estado": "RESOLVIDO",
+     "evidencia": "A leitura do estresse (MD:216 dos dois rascunhos v6; JSON estresse_leitura) agora diz «volume do MAGMA no estresse e na caracterização, por n (sem as sondas de tempo): {… \"4096\": 5}». O MD:137 diz «em n = 4 096, mais 9 chamadas nas sondas de tempo deste trabalhador (total 14)». A SPEC.linalg.nota, dentro do hash (4728c089…/285f3a92…), diz «14: 5 no estresse e 9 nas sondas». Recalculei por script a partir de estresse_eig.json (9ec8d704…), estresse_eig_grande.json (11ec6735…) e caracterizar_queda_cusolver.json (00e4daef…). VOL é idêntico ao texto. N4096_EST = 5 (eigvals_magma_4096 com 3 e eig_magma_4096 com 2). A caracterização soma 16500 e a durabilidade 7710, como no texto. A teste_tempo_v8/result.json (285668632af459e1…, trabalhador fb974f9d) tem reps 3 em d = 64. O run_timing (worker:1032-1054) faz 3 _nonherm por repetição: pipeline→spectrum:204 e generator_from_propagator ×2 (:308). Isso dá 9. É a única sonda de tempo deste trabalhador; teste_motor_v7 é só o modo engine. Os rascunhos regenerados por uma cópia do gerador corrente na minha pasta são idênticos aos v6, salvo o carimbo «gerado».",
+     "falta": "Nada."
+    },
+    {
+     "id": "4N16",
+     "estado": "RESOLVIDO",
+     "evidencia": "Gerador (ed625624…), linhas 180-182. O _nrm troca [\\s_\\-\\u2010-\\u2013]+ por espaço, a busca usa \\b<token>\\b e exige _toks == [ESCOLHA]. Testei numa cópia do gerador corrente na minha pasta. A única mudança na cópia é o transcrito SINTÉTICO acrescentado depois do real e, nos casos válidos, o prefixo \\\\?\\ no HERE (caminho longo). Recusou A1 «ratifico o B reduzido e nao o B ampliado» com --escolha=B_AMPLIADO_D64 (achadas as duas), A2 a mesma mensagem com B_REDUZIDO, C2 «Concordo, pode rodar» (nenhuma), C3 «b reduzido» com escolha AMPLIADO, C4 rascunho AMPLIADO com escolha REDUZIDO (a especificação não confere) e C5 com travessão. Aceitou B1 «B-reduzido», B2 «B‑reduzido» (U+2011), B3 «B_AMPLIADO_D64» e C6 «(b reduzido).». Saídas em rodar_ratificacoes.json (999eb683…) e rodar_ratificacoes_lp.json (c5259a4e…).",
+     "falta": "Nada obrigatório. O resíduo vai como achado novo: a guarda é lexical e aceita uma mensagem NEGADA que nomeie uma só escolha (caso C1)."
+    },
+    {
+     "id": "4N17",
+     "estado": "RESOLVIDO",
+     "evidencia": "No gerador:15, WORKER, TIMING, ENGINE e ESTD passam por os.path.abspath. As origens do _EV (:330-335) saem absolutas: nos v6, MD:199-212 e o JSON evidencias trazem C:\\Users\\…\\scratchpad\\v384\\… com sha256 completo. No congelamento SINTÉTICO (sandbox_rat_B1 e B3) saíram 17 cópias em evidencias_PREREGISTRO_V1, com o sha256 conferido (copias_conferem_sha = true). Esse é exatamente o pedido da 5ª.",
+     "falta": "Nada para o que a 5ª pediu. Pela régua dos dois sentidos, a frase da disposição «os caminhos do trabalhador … entram ABSOLUTOS» não vale literalmente. O trabalhador aparece só como `pilar_quantico_worker.py` + sha256 (MD:188; motor.trabalhador = basename). Basta, porque ele vai embutido no um.py e é fixado pelo hash na especificação. ORC.fonte (MD:182) e motor.resultado_do_autoteste continuam «result.json» em nome base, mas o sha256 completo os resolve na lista de evidências. As sondas da variabilidade ficam fora das evidências (achado novo)."
+    },
+    {
+     "id": "5N10",
+     "estado": "RESOLVIDO",
+     "evidencia": "O achado se SUSTENTAVA contra o estado auditado na 5ª. Grep 'b reduzido|b ampliado' nos MD v5 (248a17f0…/9f8be939…) dava 0. No gerador .bak_antes_afer5 (69b8cc9d…), :180 tinha _nrm = [\\s_]+, e por script 'b reduzido' in nrm('ratifico o B-reduzido') dá False. Hoje o MD:11 dos dois v6 diz «A mensagem de ratificação tem de nomear exatamente uma escolha: «b reduzido» (B_REDUZIDO) ou «b ampliado» (B_AMPLIADO_D64); hífen e sublinhado valem como espaço». O JSON desvio_do_plano_B.ratificacao também diz isso. Os hífens são aceitos (casos B1 e B2).",
+     "falta": "Nada."
+    },
+    {
+     "id": "5N11",
+     "estado": "RESOLVIDO",
+     "evidencia": "O achado se SUSTENTAVA. No rito .bak_antes_afer5 (cdb83099…), a recusa com a tarefa DESABILITADA exigia ESTAVA_LIGADO = 1 (:109), e o laço do religar era 12×5 s sem recusa no fim. O MD:133 v5 dizia «recusa também com a tarefa DESABILITADA» e «espera o fim de qualquer parada em curso». Hoje o MD:133 v6 diz «recusa também com a tarefa DESABILITADA quando o servidor seria religado (e com a sonda dela ilegível)» e «espera até 60 s que nenhuma parada esteja em curso antes de religar (com AVISO no log se expirar)». Isso bate com o rito corrente (55cacfcb…): :122-124 (exit 15 só com ESTAVA_LIGADO = 1), :104 (sonda ilegível, exit 14, sempre), :64-70 (12×5 s, depois AVISO) e :56-57 (o vigia até 120 s). Conferi também, só por leitura, o PID em .rito_v384.pid (:129, removido em :52), os três estados de sinal() (:84-96) e o vigia de 8 h (:154).",
+     "falta": "Nada."
+    },
+    {
+     "id": "5N12",
+     "estado": "RESOLVIDO",
+     "evidencia": "O achado se SUSTENTAVA. No runtime .bak_antes_afer5 (83129216…), a falha da cópia acrescentava CUSTODY sem testar __PARTIAL_, e o MD:116 v5 dizia «ou» e «só se o código e a especificação conferem». Hoje o MD:116 v6 diz «só se a especificação, o trabalhador, β e a marca da rodada conferem e o veredito foi rederivado» e que o CUSTODY «PODE vir junto do PARCIAL (quando a cópia do parcial ao Nós falha) — o artigo lê o composto PARTIAL+CUSTODY como resultado não válido». Bate com o runtime corrente (5dbe4a98…): :360-361 (same_code com β e run_id), :364-369 (o PARCIAL e o CUSTODY se excluem ali), :383-388 (o CUSTODY entra também num PARCIAL quando a cópia falha). Bate também com o artigo_pt:21 (_part4 exige a ausência do CUSTODY) e o :70 («não produziu resultado válido»).",
+     "falta": "Nada do pedido. O resíduo de redação vai como achado novo: a lista de causas do CUSTODY omite a rederivação ausente ou divergente (ok_chain exige der == R.verdict)."
+    },
+    {
+     "id": "5N13",
+     "estado": "RESOLVIDO",
+     "evidencia": "O achado se SUSTENTAVA. No gerador .bak_antes_afer5 (69b8cc9d…), o _EV de :315-317 não tinha o rascunho nem o __file__, o :321 tinha `continue` sem guarda e o RAT.rascunho_apresentado guardava só o nome base. Hoje: :333-335 (EV_OPC = {afericao_6}; com RAT, acrescenta rascunho_apresentado_json, rascunho_apresentado_md e o gerador) e :338-340 (falta de evidência obrigatória vira assert). Testes SINTÉTICOS na minha pasta: B1 e B3 congelaram com 17 cópias, entre elas o rascunho apresentado JSON e MD (b26f19ed…/9ed3b619… e fff89c55…/e6479d7b…) e o gerador. D1, com uma ESTD sintética sem afericao3, foi recusado com «evidencia obrigatoria ausente: afericao_3».",
+     "falta": "Nada. Para registro (comprimentos.py af006d04…): no lugar permanente, os destinos das cópias têm de 141 a 185 caracteres. Numa cópia do gerador em scratchpad\\v384\\rascunho_prereg_vN, a cópia do JSON do B_AMPLIADO_D64 teria 261 caracteres, acima do MAX_PATH; esta máquina tem LongPathsEnabled = 0. Aí o congelamento cai com FileNotFoundError. É fail-closed, e o gerar_candidato já exige o V1 no lugar permanente."
+    },
+    {
+     "id": "5N14",
+     "estado": "RESOLVIDO",
+     "evidencia": "O achado se SUSTENTAVA. O texto v5 dizia «26 achados novos, 25 sobreviventes» sem a ressalva. Por script (contagens.py 1e22046a…), disposicoes_4a_novos tem 9 entradas que começam com «=» (5, 11, 12, 13, 20, 21, 23, 24, 25), e nenhuma é a refutada: afericao4 verificacao i=4 tem refutado True, o que dá 25 sobreviventes. Hoje o texto diz «(9 deles duplicatas de outros; quase todos de severidade baixa)». Conferem também, contra afericao4_resultado.json (602c594b…): 55 = 42/10/3; 13 de 50 pelo pior estado; novos 23 BAIXO + 3 MEDIO, com 1 MEDIO entre os sobreviventes pela 5ª.",
+     "falta": "Nada para a 4ª. A frase NOVA da 5ª repete o mesmo tipo de erro de contagem (7 contra 8 pelas próprias disposições): vai como achado novo."
+    },
+    {
+     "id": "5N15",
+     "estado": "RESOLVIDO",
+     "evidencia": "O achado se SUSTENTAVA. O gerador .bak_antes_afer5:381 e o MD:80 v5 diziam «a fração dentro de 5% (β e p)». O worker summarize_T1 (:736-742) faz okm = (be <= beta_rel) & (|p̂ − law_power| <= p_abs) & br, e a spec T1.pass['1e-10'|'1e-08'] = {beta_rel 0.05, p_abs 0.05}. Hoje o MD:80 v6 diz «a fração com β dentro de 5% (relativo) e p dentro de 0,05 (absoluto), com o ramo certificado, é RELATADA». A chave repr(float(sigma)) casa com as chaves da spec ('0.0', '1e-10', '1e-08').",
+     "falta": "Nada."
+    },
+    {
+     "id": "5N21",
+     "estado": "RESOLVIDO",
+     "evidencia": "É o mesmo defeito do 5N10 (a disposição 21 diz «= 10») e se SUSTENTAVA pelas mesmas medidas. O opcional também foi feito: hoje a mensagem que contém os dois tokens é recusada (casos A1 e A2), com fronteira de palavra (\\b) em vez de substring.",
+     "falta": "Nada."
+    }
+   ],
+   "examinado": [
+    "MAPA DE ROTAS: consultei `rotas.py consultar \"pilar\"`. Voltaram 10 rotas, entre elas quantica.pilar_v384_rascunhos_b_reduzido_e_a, quantica.pilar_v384_sondas_b3bdecab e infra.gpu_sonda_tempo_v384; cabeça aaea264c47c4466c, 319 registros. Não registrei nada.",
+    "Pasta de trabalho: C:\\Users\\rotol\\AppData\\Local\\Temp\\claude\\c--IALD-Central-de-Patentes\\6da8f00d-d44f-4888-a88d-fc9f73eead3d\\scratchpad\\v384\\aferidor6_preregistro\\. Nada foi escrito fora dela.",
+    "PROIBIÇÕES respeitadas: não rodei nem importei o trabalhador. Nenhuma função que constrói operadores da teoria foi chamada. Não rodei o rito, o instalar, o conferir, o gerar_esperados, a fumaça, o ensaio, o um.py nem os geradores fora da minha pasta. Não houve Stop/Start-ScheduledTask nem taskkill. Das cópias do trabalhador só fiz ast.parse (texto), sem executar. O gerador do pré-registro (documento, sem operadores) rodou SÓ como cópia na minha pasta. As modificações da cópia: (i) um transcrito_sintetico.jsonl lido depois do transcrito real; (ii) nos casos de congelamento, HERE com o prefixo \\\\?\\ por causa do MAX_PATH. O transcrito real, o um.py do Nós e as evidências foram só lidos.",
+    "Arquivos correntes lidos (sha256 por script): o gerador permanente ed6256249024eca1adaff2bfa8c39a869aa96efb2abe0d9d8f0884354f279ff0, idêntico à cópia em rascunho_prereg_v6. O .bak_antes_afer5_20261004_055332 tem 69b8cc9d70449c69e19189a1cbceee3879d92c029832140f113a42051ae62f5c e o .bak_antes_variabilidade_20261004_060223 tem d3ac5e2174dd06fe578d8d60b707952b934f76c136ecfd5e065102bfd9264a7a; os dois diffs foram lidos.",
+    "Rascunhos v6 lidos por inteiro. B_REDUZIDO.md 9ed3b619ae7e66f6ac623ac024072c1bb214b7c5b11c08e172af2d7a48fa4bff e .json b26f19ed9691195ac92d3315a9e20de176aeba99eb10584513c62415719bb22a (spec 4728c089ffab6351, recalculada igual). B_AMPLIADO_D64.md e6479d7beccd45d81b4c08107995943a4db5df6faf68d6562a759f1d69c50e14 e .json fff89c555d22c06d7a4ef407afcb7ac9c7e859fbca239b249f90822f10640ff9 (spec 285f3a926d9753ea, recalculada igual). O diff entre os dois foi lido. Os 9 sha256 das fontes da teoria conferem com os arquivos em disco. Rascunhos v5 para o confronto: B_REDUZIDO.md 248a17f0… e B_AMPLIADO_D64.md 9f8be939….",
+    "Regeneração: sandbox_gen/gerar_copia.py (dbb67fad…), com as mesmas entradas, produziu JSON e MD idênticos aos v6, salvo os carimbos «gerado/gerado_utc». Saídas: B_REDUZIDO.json 6ed38749…, .md 02668660…; B_AMPLIADO.json 68b3bee5…, .md 071a3a8e….",
+    "Trabalhador corrente: pilar_quantico_worker.py fb974f9d34c216b5cff255ee8deca68b6f5cebd6709b2438778dc795531c3ab4, com 1276 \\n e sem CR. Diff contra o .bak_antes_afer5 (39e6d560…): só run_D128 (on_spectrum) e main (_d128_parcial). Partes lidas: Engine._nonherm/spectrum/generator_from_propagator, run_timing, t1_instance/summarize_T1, run_D128, derive_verdict. AST (ast_caminhos.py 49374c74…, saída 47601bc2…) contra os auditados 2a cec9b0c1…, 3a 569c6eb4… e 4a b3bdecab….",
+    "Sondas: teste_tempo_v8/result.json 285668632af459e1ec809b174e617f4c38fc399a4959265ca17016452bb21645; teste_motor_v7/result.json 7671a86f4c8b7fbca0ba31479d0977db0971dda65e24da0d74a6535e8d96826a (ENGINE_SELFTEST_PASSED, E1..E8); v4 ad95bf8d…, v5 982bbc89…, v6 0dcd4fd2…, v7 ec73eae2…; teste_tempo/teste_tempo_final/teste_tempo_magma inspecionadas. planejar_carga_v384.json 9d1d2c3095d2121817c62065acfcc47b24f5919e02660bf4cb3aa0586c45f3af.",
+    "Orçamento recalculado por recalc_orcamento.py (0c753365…), saída recalc_orcamento.json (d5187859…). B_REDUZIDO 87,38/109,22 min, pré-D128 85,93; B_AMPLIADO_D64 141,67/177,08, pré-D128 153,79; plano B 230,98/288,73; D128 18,63. Todos batem com os v6. Também conferi as frases (1) 3,4 → 45 s, (2) 18,5 contra 9,9 s, 30,1 min, 0,3% → 1,5% e os limites a 95%.",
+    "Estresse: estresse_eig.json 9ec8d704…, estresse_eig_grande.json 11ec6735…, caracterizar_queda_cusolver.json 00e4daef…. Medidos VOL, N4096_EST = 5, 16500, 7710 e 8 de 9.",
+    "Lançador: rito_v384.sh 55cacfcbeb8aa62e0dec7dc9f0358f76601e9af16f0fe08ecc342c445c3b18ad, lido inteiro, contra o .bak_antes_afer5 cdb830993157ebc3ba337da3b6ffe4626e46c71a889ea2d7a5e45682b4c2aa9e. Não rodei nenhum dos dois.",
+    "Runtime: v384_runtime.py 5dbe4a986244e14622eea338c4bbd1d6d7e63882ad79f5adb3c80f5109b978e9, com quantum_pillar_finish_v384, _qp_rederive e _qp_key lidos, contra o .bak_antes_afer5 8312921623cfb147732785ce98300d41793b5a83043230e84934617ab5a1733b. Artigo: artigo_pt_v384.pysnip 1c7d6236… (_part4 :21 e :70). gerar_candidato_v384.py 119aacab… (exige o V1 no lugar permanente, :31-36).",
+    "Ratificações SINTÉTICAS: rodar_ratificacoes.py (f9500379…), saída 999eb683…, com os casos A1, A2, C2-C5 e D1 recusados. rodar_ratificacoes_lp.py (2a0b2492…), saída c5259a4e…, com B1, B2, B3, C1 e C6 congelados na minha pasta. V1 SINTÉTICOS: B1 d6a5f0db…, B3 2e27948b…, C1 44c780c5…, 17 cópias de evidência cada. montar_sandbox.py fa2ba580…; comprimentos.py af006d04…; deriva_texto.py a56bde63… com a sonda SINTÉTICA 3df7e570… e o V1 214c869c….",
+    "Contagens da aferição: contagens.py (1e22046a…) contra afericao3_resultado.json a4dc5181…, afericao4_resultado.json 602c594b…, afericao5_resultado.json fa914a9f39299858e905e828f5fca573688f861ce68b333524f7d43227181ce1 e disposicoes_afericoes_v384.json a254afc1954302be4a2ab0face2600ef7fa96228eb608bd90917c62e9a14135c. Também lidos o AFERIDOR_v384.txt b2bcdde34d702d06f9e38f0b310c702883475c0644d6730d896ae3edf773fa9e (seção da 5ª) e as disposições da 5ª, itens e novos.",
+    "Candidato de ENSAIO um_v384_candidato_ENSAIO.py 6b062f8f2bf983a16f36ec63ffa7de9b5ae35481fb3df5b78beec78d0945298b, só por Grep: _QP_PREREG em 192328-192329 aponta para o rascunho v6 B_REDUZIDO (b26f19ed…/9ed3b619…). CANDIDATO_v384_ENSAIO.json 1aa9456c…; gerar_candidato_ensaio_v6.log lido.",
+    "Memória, só leitura: v384-pilar-quantico-gpu-02out.md 8d8b4b97fc78d6b8f3f27a0693796f798e55d38b62dde874159c89eaab465c51, linhas 61, 66-78 e a errata; MEMORY.md f9caf500…, linha 61. Base v383 do Nós, só leitura: um.py 58abcf20651f477715404a0801ffdf4b26ad18a76d6ae49bfa950c602938a427."
+   ]
+  },
+  {
+   "lente": "regressao",
+   "itens": [],
+   "examinado": [
+    "MAPA DE ROTAS: python C:\\IALD\\MAPA_DE_ROTAS\\rotas.py consultar \"pilar\" → 10 rotas (cabeça aaea264c47c4466c); li o resultado e o próximo passo das rotas quantica.pilar_v384_*, infra.gpu_* e quantica.inventario_gkls_um_py_kernel; nada registrado por mim",
+    "Consultas do aferidor: INVENTARIO_BANCADA_CHATGPT.md, grep -c -i 'pilar_quantico|quantum_pillar' = 0 (esperado: a v384 é ferramenta, não pedra Lean). Selo do Nós: um_version v383, sem 'quantum_pillar_v384', sha256.um.py 58abcf20651f4777. Nenhum achado meu afirma ausência de teorema ou de termo do kernel",
+    "Hashes lidos por script (sha256/16): o trabalhador corrente fb974f9d34c216b5 contra o auditado_5a 39e6d56004fe2813 (= .bak_antes_afer5). runtime 5dbe4a986244e146 contra 8312921623cfb147; artigo_pt 1c7d62368a222558 contra 58256920e44ea5b5; artigo_en 03ae1be3748391df contra b9c3336bfa4162a2; gerar_candidato 119aacab42389fb0 contra 5fb6af238942886; rito_v384.sh 55cacfcbeb8aa62e contra cdb830993157ebc3; ensaio 47aaa55f6ad4775b contra a787a802a12f8ff2. instalar 4c93ba11bc669366, conferir d168557e2fa7a1f5, fumaca c6eef34bbd17e72b e gerar_esperados a71bb4165ad665f1 estão INALTERADOS (= .bak_antes_afer5). Gerador do pré-registro ed6256249024eca1 (.bak_antes_variabilidade d3ac5e2174dd06fe; .bak_antes_afer5 69b8cc9d70449c69)",
+    "Diffs gravados na minha pasta (aferidor6_regressao/diffs/): runtime f960f887…, pt ac1fb3c5…, en 448ee194…, gerar_candidato ee625539…, lançador c73f5623…, ensaio 1e13c7b3…, gerador afer5→variabilidade a93e88ed…, variabilidade→corrente 68b11066…. Diff do trabalhador lido no terminal: só o callback on_spectrum no run_D128 e o comentário do passo 2",
+    "ast.parse OK (ast_parse.txt 6fe806a0…) em: trabalhador, runtime, gerar_candidato, instalar, conferir, ensaio, fumaca, gerar_esperados, gerador do pré-registro, candidato de ENSAIO 6b062f8f2bf983a1 e simular.py. Os dois .pysnip parseiam dentro de def. sh -n e bash -n OK no rito_v384.sh (e na cópia de teste)",
+    "Candidato de ENSAIO conferido por script (candidato_conferencia.txt 6b8e4a72…): o trabalhador embutido = o corrente (fb974f9d); a spec embutida = a spec do rascunho v6 B_REDUZIDO (4728c089ffab6351, worker_sha256 fb974f9d); o runtime corrente está contíguo no candidato; os trechos PT e EN estão contíguos (linhas CRLF 165175 e 168787). LF solto: 468, igual à base v383 (sem regressão)",
+    "W09b: extraí o bloco do selo (o for f + W09b + json.dump) do candidato e o executei com core, seal e arquivos SINTÉTICOS na minha pasta (w09b/resultado.txt 24520397…): desta rodada → hash; de outra rodada → NOT_THIS_RUN; ausente → MISSING_THIS_RUN; copied_to_out sem out_file_sha256 → NOT_THIS_RUN. O ensaio a seco NÃO exercita o W09b: as linhas sem a marca v384 dentro do 'if seal_gate_reasons' (contem) não passam pela conferência de nomes",
+    "Runtime: quantum_pillar_finish_v384 executado com entradas sintéticas no modo REUSE (sem lançar nada; _qp_rederive substituído por stub; OUT e CACHE na minha pasta): sim_finish.py 847c11a5…, saída bb1ad917…",
+    "Trabalhador: importei CÓPIAS (puras/pqw_copia.py = fb974f9d; pqw_5a_copia.py = 39e6d560) e chamei SÓ derive_verdict e compare_cpuref com R sintético (a6_puras.py d4c5e899…, saída 95683f90…). O D128 com a forma do parcial novo (callback depois do espectro) dá o mesmo veredito nas duas versões: n0 = 0 → IDENTITY_VIOLATED_1; n0 = 1 → …D128_INTERRUPTED…. Nenhum operador da teoria foi construído; nenhuma função run_*, five_jumps ou canonical_H foi chamada; o trabalhador não foi rodado",
+    "Artigo: os trechos corrente e .bak_antes_afer5 rodados em 25 casos sintéticos (casos6.json 777d0403…). A frase da CPU sai só nos anulados pela CPU (M, P, R, U, V); o sucesso (A, B, C, I, J, O, T, N, Y) não a traz; o composto PARCIAL+CUSTODY (S) lê-se «não produziu resultado válido». 12 PDFs compilados com pdflatex, rc 0 (pdf6.json 4b20d354…). O truncamento int(1000 f)/10 conferido contra frações exatas k/n para n ∈ {5, 20, 100, 200, 1000, 2000}: 0 divergências",
+    "Lançador: arnês só com stubs (cópia adaptada do arnês da 5ª; PATH conferido pelo casos.sh; nenhum powershell, taskkill ou tarefa real foi tocado). R1 normal; R2 TERM durante o rito (mata_um com stub, RITO_RC=SINAL_TERM, religado); R3 TERM depois do rito (log «DEPOIS do rito», rc=3 devolvido); R4 sonda T_DESAB vazia → rc 14; R5 vigia num Stop nativo de 12 s → o religar espera e o servidor fica =1; R6 rc=3; R7 vigia preso > 120 s → servidor =0 no fim (achado). O .rito_v384.pid é removido no religar (R1 a R7)",
+    "mata_um real SÓ EM LEITURA (mata_um_leitura/ler.sh ac4418e3…): a consulta PowerShell copiada da linha 42, com RW = /proc/$$/winpid, acha só o um.py falso descendente (196604), não o de outra árvore (202436) nem os mcp_um.py da Bancada. Nada foi encerrado; os dois falsos saíram sozinhos (consulta posterior: nenhum processo restante)",
+    "Reprodução das edições da 5ª por script, em sandboxes minhas: trabalhador, runtime, gerar_candidato, pt, en, ensaio e gerador (as duas etapas) REPRODUZEM byte a byte. O lançador NÃO reproduz (achado)",
+    "Gerador do pré-registro: a guarda da ratificação testada puramente (guarda_ratificacao.txt 240e542c…): hífen, sublinhado e U+2011 aceitos; travessão U+2014 recusado; mensagem com as duas escolhas recusada. A cadeia gerador → gerar_candidato confere: o gerar_candidato lê spec, spec_sha256, ratificacao_do_operador e motor.worker_sha256, e o campo 'ratificacao' (texto novo) não é lido por ele",
+    "Orçamento: o estimar do gerador refeito por aritmética pura com cada sonda (orcamento_por_sonda.txt 8f575a17…), inclusive a teste_tempo_magma, excluída pelo glob",
+    "Conferidor e esperados contra o selo novo: conferir_rito_v384.py :46 exige selo = arquivo = result_sha256, e NOT_THIS_RUN reprova corretamente. gerar_esperados lê os patches do CANDIDATO (o W09b entra). As ferramentas de custódia da Central (work/cadeia_de_selo/arvore_da_prova.py e atlas_indice.py) leem só sha256['um.py'] do selo, de modo que o sentinela novo NOT_THIS_RUN não as quebra",
+    "Diffs registrados conferidos: diff_conferidor_afer3.txt f0aa6e0f…, diff_conferidor_afer4_manual.txt 8f1e0ab5… e diff_lancador_afer4_manual.txt 76e5ecd5… batem com os hashes das disposições e reproduzem (diff -u entre os .bak correspondentes, sem os cabeçalhos)",
+    "Leitura (só leitura): a memória v384-pilar-quantico-gpu-02out.md (:70 e a errata :78, caminho absoluto do marcador) e MEMORY.md :61; AFERIDOR_v384.txt (b2bcdde3…), o que foi acrescentado depois do .bak_20261004_060028; disposicoes_afericoes_v384.json (a254afc1…); afericao5_resultado.json (fa914a9f…); rascunhos v6 (B_REDUZIDO json b26f19ed…, md 9ed3b619…; B_AMPLIADO json fff89c55…, md e6479d7b…); teste_motor_v7/result.json (7671a86f…, ENGINE_SELFTEST_PASSED, E1..E8, worker fb974f9d); teste_tempo_v8/result.json (28566863…). Base v383 do Nós: um.py 58abcf20651f4777 (região do selo :207720-207729)"
+   ]
+  }
+ ],
+ "novos": [
+  {
+   "severidade": "BAIXO",
+   "arquivo_linha": "v384_runtime.py:242 (\"result_file_absent\": reason != \"copy_failed\") e :416 (motivo finish_failed); candidato de ENSAIO :192554 e :192728",
+   "afirmacao": "O marcador do caminho FINISH_FAILED grava result_file_absent True mesmo quando o result.json da rodada existe e confere com o seu .sha256. Isso contradiz a disposição do 4N0 («result_file_absent só quando não há resultado»).",
+   "evidencia": "a6_selo_runtime.json (4723dce9…), caso S7b. Resultado VÁLIDO na pasta (result_json_existe_e_confere_com_o_sha True), com TimeoutExpired injetado só na chamada '-c' do derive_verdict (_qp_rederive). Sai TGL_QUANTUM_PILLAR_V1__NOT_RUN__FINISH_FAILED__GATE_UNTOUCHED, e o marcador no Nós diz reason finish_failed, result_file_absent True (sha 6ec0810a…). O S7 (resultado corrompido, mas presente) dá o mesmo. O selo aceita o marcador, o que está correto: o defeito é só a frase do marcador.",
+   "correcao": "Registrar a existência do resultado antes de lê-lo, por exemplo out['result_file_present'] = os.path.exists(rp), e gravar result_file_absent = not result_file_present. Ou usar result_file_absent só para os motivos no_result_file e not_run. Está fora do hash do trabalhador; basta regenerar o candidato.",
+   "origem": "trabalhador_runtime_selo"
+  },
+  {
+   "severidade": "BAIXO",
+   "arquivo_linha": "v384_runtime.py:227-235 (_qp_retry: except (PermissionError, OSError)) e :266-269 (remoção com except FileNotFoundError depois do retry)",
+   "afirmacao": "O _qp_retry tenta de novo QUALQUER OSError, inclusive FileNotFoundError e erros não transitórios. Remover um arquivo que já não existe custa 40 × 0,25 s antes de o except FileNotFoundError reconhecê-lo. A docstring diz «como o write_json_atomic do trabalhador», mas o trabalhador só tenta de novo PermissionError.",
+   "evidencia": "Medido no a6_selo_runtime.json:\n- S4b (marcador falha por injeção, arquivo presente, remoção ok): 9,76 s.\n- S4c (o mesmo, com o Nós já sem o arquivo): 19,53 s; os 10 s a mais são as 40 tentativas sobre FileNotFoundError.\n\nO AST do write_json_atomic do trabalhador tem handlers ['PermissionError'] (a6_callback_falha.json eb091416…). Com trava real, o finish leva 19,57 s (S3) e 29,53 s (S3b). Não muda resultado; é tempo e imprecisão.",
+   "correcao": "No _qp_retry, tentar de novo só PermissionError, ou relançar já FileNotFoundError. E corrigir a docstring. Fora do hash do trabalhador.",
+   "origem": "trabalhador_runtime_selo"
+  },
+  {
+   "severidade": "BAIXO",
+   "arquivo_linha": "rascunho_prereg_v6 B_REDUZIDO.md:132 e B_AMPLIADO_D64.md:132 (e o .json :180; gerador do pré-registro :437)",
+   "afirmacao": "O texto ainda diz «o arquivo do pilar de uma rodada anterior no Nós nunca sobrevive». Com outro processo segurando o arquivo, ele SOBREVIVE no Nós. O que vale é que ele não passa por desta rodada: o selo grava NOT_THIS_RUN e os erros vão ao registro. O parêntese que segue corrige o sentido, mas a frase principal continua literalmente falsa.",
+   "evidencia": "a6_selo_runtime.json, casos S3 e S3b (trava real do Windows): nos.sha256 = 6ab71b45… (o arquivo da rodada A) continua no OUT depois do finish; out_file_remove_error = PermissionError(13,…); o selo grava NOT_THIS_RUN.",
+   "correcao": "Trocar «nunca sobrevive» por «nunca passa por desta rodada» e completar: «se outro processo o segurar, ele fica no Nós, os erros vão ao registro do selo e o selo grava NOT_THIS_RUN». Muda o texto do pré-registro, logo os hashes dos rascunhos; não muda o trabalhador.",
+   "origem": "trabalhador_runtime_selo"
+  },
+  {
+   "severidade": "BAIXO",
+   "arquivo_linha": "pilar_quantico_worker.py (fb974f9d…) :893-897 (on_spectrum dentro de try/except Exception: pass) e write_json_atomic :43-55 (só PermissionError); rascunhos MD:113",
+   "afirmacao": "A gravação do parcial do D128 depois do espectro falha em SILÊNCIO. Qualquer OSError que não seja PermissionError cai na hora (por exemplo, disco cheio), e o PermissionError cai depois de 40 tentativas. Nenhuma marca fica, e o parcial em disco continua {STARTED}, sem n0 nem zero_mode_ok. Se o processo então morrer, volta o veredito do 5N0 original (IDENTITIES_HOLD…D128_INTERRUPTED com n0 = 0). O MD:113 afirma sem ressalva que o parcial «sobrevive a uma morte do processo».",
+   "evidencia": "a6_callback_falha.json (eb091416…): o _d128_parcial, extraído do main pelo AST e executado com pasta sintética inexistente, levanta FileNotFoundError(2,…). O bloco no run_D128 (linha 893, lido pelo AST) é «try: on_spectrum(dict(out)) / except Exception: pass». Os handlers do write_json_atomic são ['PermissionError']. É falha dupla (gravação e depois morte), improvável. Se o processo sobrevive, o result.json final leva o zero_mode_ok.",
+   "correcao": "Sem tocar no hash: ressalvar o MD:113, «salvo falha da própria gravação do parcial». Se o trabalhador for mudado por outro motivo: no except, gravar out['partial_write_error'] = _err(e), que chega ao result.json se o processo sobreviver.",
+   "origem": "trabalhador_runtime_selo"
+  },
+  {
+   "severidade": "MEDIO",
+   "arquivo_linha": "rito_v384.sh:38-44 (mata_um: a consulta com 2>/dev/null, sem sentinela) e :86-89 (sinal no estado 1)",
+   "afirmacao": "Se a consulta do mata_um falha (erro do Get-CimInstance/WMI engolido pelo 2>/dev/null) ou volta vazia, o lançador não registra nada. Mesmo assim, segue como se tivesse encerrado a árvore: grava RITO_RC=SINAL_<x>, sai 143, o religar mata o trabalhador do pilar (orfaos) e religa o servidor, enquanto o python um.py desta rodada CONTINUA vivo. Como o stdout do um.py foi aberto com `>` (sem O_APPEND), o que ele escreve depois SOBRESCREVE o trailer acrescentado. É falha de leitura invisível, contra a régua fail-closed. A vigia da l.28 tem `$ErrorActionPreference='Stop'` e a sentinela VIGIA_OK; o mata_um não tem nenhuma das duas. A falha já existia no .bak_antes_afer5 e continua na função reescrita pela 5ª.",
+   "evidencia": "[REAL, stubs; aferidor6_lancador/arnes] O caso B11 usa STUB_MATAUM_FALHA=1 (o stub powershell.exe, 8358c7308fcb4ea8, escreve um erro no stderr e sai 1 só nessa consulta), FAKE_UM_SECS=25 e TERM aos 12 s. Eventos (96f8e45bc69fb7fd), com o log (3314313fc7de6487):\n- 06:16:06 «SINAL TERM recebido durante o rito: ... encerro a arvore do um.py desta rodada»;\n- PS_MATA_UM_CONSULTA RW=199872 falha=1, sem NENHUMA linha de log sobre a falha;\n- orfaos mata o trabalhador falso; START_TASK às 06:16:09.037; LANCADOR_SAIU rc=143;\n- às 06:16:25.691, «um=VIVO»: o um.py falso continuou;\n- o rodada_v384_stdout.txt final (30b76bb0feadb6d7, 79 linhas) tem 0 ocorrências de «SINAL» e nenhum RITO_RC, porque o trailer foi sobrescrito pelos «hb ...» seguintes.\nNo real, o um.py seguiria cerca de 2 h, com o servidor já de volta na GPU, e escreveria o selo [DERIVED]. A probabilidade do gatilho (falha do WMI no instante do sinal) é baixa [DERIVED].",
+   "correcao": "Dar à consulta a mesma régua da vigia: `$ErrorActionPreference='Stop'` + `Write-Output 'MATA_OK'` + exigir a sentinela. Se a sentinela faltar, ou se nenhum um.py vier enquanto `kill -0 $UMPID` ainda é verdadeiro, cair no alvo direto: `taskkill //T //F //PID $(cat /proc/$UMPID/winpid)`. O subshell do rito é o pai Windows da cadeia; foi conferido na leitura real como sh 196060 ← lançador. Depois, confirmar com `kill -0 $UMPID` (e `wait`) que o rito morreu antes de gravar RITO_RC=SINAL_<x>. Se não morreu, registrar «NAO consegui encerrar o um.py desta rodada -- encerre a mao» e não gravar o trailer.",
+   "origem": "lancador"
+  },
+  {
+   "severidade": "BAIXO",
+   "arquivo_linha": "conferir_rito_v384.py:85-88 (servidor_depois_do_rito)",
+   "afirmacao": "O conferidor reduz o log do lançador a «RELIGADO (a porta 8081 escuta)» sempre que aparece «servidor de volta». Ele ignora os dois AVISOs novos da 5ª: «AVISO: o vigia nao saiu em 120 s -- encerrado» e «AVISO: depois de 60 s ainda havia parada em curso ou a contagem nao foi legivel». Justamente nesses casos uma parada órfã pode derrubar o servidor DEPOIS da porta escutar, e o relatório diz RELIGADO sem ressalva.",
+   "evidencia": "[REAL] leitura_conferidor_B8.py (c687680ac6b83085) aplica a MESMA expressão, copiada por script de conferir_rito_v384.py (d168557e2fa7a1f5), aos logs dos stubs, sem rodar o conferidor:\n- B8 (vigia preso 135 s num Stop-ScheduledTask; eventos ec783a065b4f3786): o log tem «06:18:49 AVISO: o vigia nao saiu em 120 s -- encerrado» e «servidor de volta». O conferidor diria «RELIGADO (a porta 8081 escuta)». STOP_TASK_FIM(nativo) servidor 1->0 sai às 06:18:54.565, e o servidor termina 0.\n- B7 (contagem ilegível): a mesma resposta «RELIGADO», com o AVISO no log.\nNo real, um Stop preso por mais de 120 s é improvável; o stop_iald_llama.ps1 dura no máximo cerca de 19 s pela leitura [DERIVED].",
+   "correcao": "Na informação do conferidor, se o log tiver «AVISO: o vigia nao saiu» ou «AVISO: depois de 60 s», dizer «RELIGADO COM AVISO: <linha>», ou reconferir a porta 8081 no momento da conferência e dizer as duas leituras.",
+   "origem": "lancador"
+  },
+  {
+   "severidade": "BAIXO",
+   "arquivo_linha": "rito_v384.sh:42 (a caminhada por ParentProcessId no mata_um)",
+   "afirmacao": "A caminhada de descendentes aceita qualquer processo cujo ParentProcessId esteja no conjunto, sem conferir que o filho nasceu DEPOIS do pai. No Windows, o ParentProcessId de um processo cujo pai morreu continua apontando o PID antigo, e PIDs são reaproveitados. Um python ...um.py de outra casa, lançado por um processo já morto cujo PID foi reutilizado pelo lançador ou por um descendente vivo, entraria na lista e levaria taskkill //T //F. É o mesmo tipo de dano que o 5N4 quis impedir, agora por coincidência de PID.",
+   "evidencia": "[REAL] Na leitura real (rodar_teste.out 51fb4fbef01c7534), depois que o lançador de teste saiu, o subshell sh 196060 continuava com «pai=162024», e a busca desse pai dá «fim (pai morto ou inexistente): 162024». O ParentProcessId velho persiste. A reutilização de PIDs do Windows e o aviso da documentação do Win32_Process.ParentProcessId sobre identificadores reutilizados são [KNOWN] e não foram conferidos nesta sessão. A probabilidade exige um um.py estrangeiro órfão de pai e uma colisão de PID no instante do sinal: baixa [DERIVED].",
+   "correcao": "Na caminhada, aceitar o filho só se `$c.CreationDate -ge $pai.CreationDate`, com o objeto do pai buscado em $all. Alternativa mais simples, que dispensa a caminhada: encerrar a árvore pelo PID Windows do subshell do rito, `taskkill //T //F //PID $(cat /proc/$UMPID/winpid)`.",
+   "origem": "lancador"
+  },
+  {
+   "severidade": "BAIXO",
+   "arquivo_linha": "rito_v384.sh:13-14 e :129 (.rito_v384.pid), e o MD:133 dos rascunhos v6",
+   "afirmacao": "O caminho de aborto documentado, `kill -TERM $(cat <pacote>/.rito_v384.pid)`, só vale no Git Bash, e isso não está escrito em lugar nenhum. O número gravado é o PID do MSYS, não o do Windows. No PowerShell, que é o shell primário desta casa, `kill` é Stop-Process: o -TERM falha na ligação de parâmetro e nada é sinalizado. Uma tradução para `Stop-Process -Id` acertaria o PID Windows homônimo, que é outro processo, e de qualquer forma não rodaria o trap. Além disso, depois de um kill -9 o arquivo fica velho (só a próxima rodada que passar da l.129 o sobrescreve), e nada manda conferir que o PID ainda é o lançador.",
+   "evidencia": "[REAL] Nesta sessão do Git Bash, $$=84738 e /proc/$$/winpid=199032: os espaços de PID são distintos. No PowerShell, `(Get-Alias kill).Definition` dá Stop-Process, e `kill -TERM 999999999` dá «ParameterBindingException: Não é possível localizar um parâmetro que coincida com o nome de parâmetro 'TERM'» (testado com um PID inexistente). B10 (20982a414ec564c8), com kill -9 no meio do rito: LANCADOR_SAIU rc=137, «.rito_v384.pid depois: 88777», e o pk fica com .rito_v384.pid, .servidor_parado_pelo_rito e .vigia_ativo.",
+   "correcao": "No cabeçalho e no MD:133: «no Git Bash (sh), não no PowerShell: o número é PID do MSYS». Conferir antes que o PID ainda é o lançador (`cat /proc/$(cat .rito_v384.pid)/cmdline` deve conter rito_v384.sh). Opcional: o lançador avisa no log se encontrar um .rito_v384.pid velho ao começar.",
+   "origem": "lancador"
+  },
+  {
+   "severidade": "MEDIO",
+   "arquivo_linha": "disposicoes_afericoes_v384.json (a254afc1…) disposicoes_5a_itens[\"4N6\"] e o mesmo texto no fim de AFERIDOR_v384.txt (b2bcdde3…); rito_v384.sh:42 (55cacfcb…, a linha do mata_um); aplicar_afer5_lancador.py (6c807a72…) e aplicar_afer5_lancador_b.py (03ee0747…)",
+   "afirmacao": "A disposição diz que «as edicoes da 5a no lancador foram por script aplicar_* com count == 1». Os bytes refutam isso. O rito corrente não se reproduz do .bak_antes_afer5 com os dois scripts: entre o primeiro e o _b houve uma edição MANUAL, não declarada e sem diff, no filtro do mata_um. Ela é justamente a parte que decide quais processos são encerrados (ProcessId -ne $RW, Name python e a regex). As disposições e o AFERIDOR_v384.txt são evidências OBRIGATÓRIAS do V1 (gerador ed625624…, _EV :330-332, com EV_OPC = {afericao_6}), então a afirmação falsa seria congelada no pré-registro.",
+   "evidencia": "Reconstituição por AST, sem executar os scripts da gerência: aferidor6_cadeia/reconst5/reconst_lancador_afer5.py (5db8e615…), saída reconst_lancador_afer5.json (60be3d53…).\n- Os 9 pares do aplicar_afer5_lancador.py dão count == 1 sobre cdb83099… e produzem apos_script1.sh (2ab5b884…).\n- O `old` do _b tem count == 0 sobre esse resultado, então não poderia ter rodado sobre ele (o próprio _b faz `assert s.count(old) == 1`).\n- O `diff -u` de apos_script1.sh contra o rito corrente (55cacfcb…) dá uma única linha. O script deixa `… -and \\$_.CommandLine -match 'um\\.py' }`. O corrente tem `… -and \\$_.ProcessId -ne $RW -and \\$_.Name -match '^(python|pythonw|py)\\.exe\\$' -and \\$_.CommandLine -match '(^|[\\\\\\\\ \\\"])um\\\\.py\\\"?(\\\\s|\\$)' }`.\n- O grep 'ProcessId -ne' no pacote acha só rito_v384.sh e aferidor6_regressao/diffs (um diff de outra lente desta passada). Nenhum aplicar_* contém o trecho.\n- O grep 'lancador_b' dá 0 nas disposições e no AFERIDOR_v384.txt, e o grep 'manual' depois da linha 2600 do AFERIDOR também dá 0.\n- mtimes: aplicar_afer5_lancador.py 05:56:53, aplicar_afer5_lancador_b.py 05:58:01, rito_v384.sh 05:58:09.\n\nControle: o ensaio, ao contrário, se reproduz por inteiro do aplicar_afer5_ensaio.py (5 pares com count 1, resultado == 47aaa55f…).",
+   "correcao": "Gravar diff_lancador_afer5.txt (do .bak_antes_afer5 cdb83099… ao corrente 55cacfcb…) com o sha256 nas disposições, e corrigir AO LADO a disposição do 4N6: «9 pares por script; uma edição manual no filtro do mata_um; o _b corrigiu o escape». Alternativa: substituir a edição manual por um aplicar_* que reproduza 55cacfcb… a partir do .bak_antes_afer5. Fazer isso antes de congelar o V1, porque as disposições entram nas evidências.",
+   "origem": "cadeia"
+  },
+  {
+   "severidade": "BAIXO",
+   "arquivo_linha": "conferir_rito_v384.py:84-89 (d168557e…, res[\"servidor_depois_do_rito\"]) contra rito_v384.sh:57 e :70 (55cacfcb…)",
+   "afirmacao": "O conferidor não mudou na 5ª, mas o lançador ganhou duas linhas de AVISO no religar: o vigia que não saiu em 120 s e foi morto, e a espera pelos stop_iald_llama.ps1 que expirou («religo assim mesmo»). Elas são o resíduo do cenário do 5N1, em que uma parada pendente pode derrubar o servidor recém-religado. A leitura informativa do conferidor ignora as duas e relata «RELIGADO (a porta 8081 escuta)» no presente. O conferidor deixou de ser coerente com o log do lançador.",
+   "evidencia": "Extraí por AST, sem executar o conferidor, a expressão de res[\"servidor_depois_do_rito\"] e a avaliei sobre logs SINTÉTICOS com as linhas copiadas do rito corrente (conferidas por substring). Script aferidor6_cadeia/sim_conferidor_servidor.py (18e4e6fe…), saída sim_conferidor_servidor.json (c494c16a…). Nos casos «limpo», «espera_expirou», «vigia_nao_saiu» e «os_dois_avisos», o resultado é sempre «RELIGADO (a porta 8081 escuta)». A expressão só procura «servidor de volta», «nao religo» e «AVISO: a porta 8081». Atenuante: o item é marcado INFORMACAO e não decide o tudo_bate.",
+   "correcao": "Acrescentar à informação as linhas que começam por «AVISO» no log, por exemplo «RELIGADO (com AVISO: …)», ou listar res[\"avisos_do_lancador\"] = [linhas com 'AVISO'] e imprimi-las.",
+   "origem": "cadeia"
+  },
+  {
+   "severidade": "BAIXO",
+   "arquivo_linha": "disposicoes_afericoes_v384.json (a254afc1…) texto_para_o_pre_registro e passada5.duplicatas_entre_os_novos; rascunho_prereg_v6 B_REDUZIDO.md:195 (9ed3b619…)",
+   "afirmacao": "O texto que vai ao operador diz «23 achados novos (7 deles duplicatas de outros)». Pelas próprias disposições, OITO entradas de disposicoes_5a_novos são marcadas «= x»: 6, 8 e 16 (= 4N22), 17 (= 9), 19 (= 2), 20 (= 7), 21 (= 10) e 22 (= 3). Na 4ª passada, a mesma frase contou como duplicata também quem repetia um ITEM (= N18, = #6, = N3), e chegou a 9. Pela mesma convenção, a 5ª dá 8. O 7 só fecha se o 5N6 (= 4N22, um item) não for contado, o que muda o critério entre as duas passadas.",
+   "evidencia": "Contagem por script sobre afericao5_resultado.json (fa914a9f…) e as disposições:\n- entradas 40 = {RESOLVIDO 28, PARCIAL 11, REGRESSAO 1}, que confere;\n- 12 não resolvidos pelo pior estado, todos com disposição, que confere;\n- regex (^|: )= sobre disposicoes_5a_novos → ['6', '8', '16', '17', '19', '20', '21', '22'].\nO texto da 4ª, «9 deles duplicatas de outros», segue a contagem do 5N14 (entradas 5, 11, 12, 13, 20, 21, 23, 24 e 25, incluindo as = item).",
+   "correcao": "«23 achados novos (8 deles repetem um item ou outro achado; 15 distintos)», ou dizer o critério: «7 duplicatas de outros novos, e 3 que repetem o item 4N22».",
+   "origem": "cadeia"
+  },
+  {
+   "severidade": "MEDIO",
+   "arquivo_linha": "artigo_pt_v384.pysnip:72-78 e artigo_en_v384.pysnip:72-78 (o ramo «if (not _cr4 or _cr4.get(\"error\"))» sob «if _cpuvoid4»), com a linha 71 (summary_error) e v384_runtime.py quantum_pillar_finish_v384 (out[\"summary\"] = {} e summary_error no except de _qp_summary)",
+   "afirmacao": "Regressão da correção da 5ª. Quando o resumo falha (summary_error, logo summary = {} e _cr4 = {}) e o veredito é anulado pela CPU, o artigo afirma que a referência «não estava presente nesta rodada (sem registro)» e que «o processo da CPU não terminou ou foi encerrado pelo prazo». Isso é falso: summary_error só diz que o resumo falhou.\n\nNo veredito CPU_REFERENCE_NOT_COMPARABLE a contradição é lógica. O trabalhador só marca not_comparable com o arquivo lido, meta_ok e child_rc == 0 (compare_cpuref: «\"not_comparable\": bool(n > 0 and n == near and meta_ok and child_rc == 0 and not bad)»). Logo a referência estava presente e o processo terminou com código 0.\n\nO mesmo parágrafo diz, uma frase antes, que «Os números desta rodada não puderam ser resumidos».",
+   "evidencia": "Arnês copiado (simular6.py cebdb161…), casos SINTÉTICOS, PDF compilado.\n\nZ2: veredito …CPU_REFERENCE_NOT_COMPARABLE__RESULTS_VOID…, summary {} e summary_error «KeyError('rotated')». PT (sim6/Z2_resumo_com_erro_e_cpu_nao_comparavel_pt.txt, f25c3190…), em sequência: «Nesta rodada o mundo quântico não produziu resultado válido (TGL_QUANTUM_PILLAR_V1__CPU_REFERENCE_NOT_COMPARABLE__RESULTS_VOID__GATE_UNTOUCHED)… Os números desta rodada não puderam ser resumidos para o artigo (KeyError('rotated'))… A referência na CPU não estava presente nesta rodada (sem registro); o processo da CPU não terminou ou foi encerrado pelo prazo.» O pdftotext do PDF dá o mesmo. EN igual (8521e81d…). O caso Z, com DISAGREES_OR_ABSENT, também afirma a ausência (45856e25…), sem base nenhuma.\n\nCom o trecho anterior (.bak_antes_afer5), o mesmo Z2 não dava frase nenhuma: simular6_antigo.json (d42ed6d3…) tem frase_cpu null. O defeito nasce com o ramo `not _cr4`.\n\nAlcance: é o caminho defensivo que o próprio artigo trata na linha 71. Ele só ocorre se _qp_summary levantar exceção; com o resultado bem formado do trabalhador corrente, as chaves lidas existem (worker linhas 662 e 839-840).\n\nNota no mesmo ramo, nos casos de parcial antes da comparação (V e V2): «o processo da CPU não terminou ou foi encerrado pelo prazo» é inferido sem registro. No WORKER_DIED, o filho sai sozinho ao ver o pai morto (run_cpuref, worker:973-974). O core tem timed_out e worker_rc para dizer a causa.",
+   "correcao": "Em PT e EN, com a mesma condição nos dois:\n(1) Não afirmar a ausência quando o resumo falhou: «if _cpuvoid4 and not _q4.get(\"summary_error\")». A linha 71 já diz que os números não foram resumidos.\n(2) No ramo `not _cr4` (o parcial antes da comparação), dizer «sem registro da comparação com a CPU nesta rodada». A causa sai do core (_q4.get(\"timed_out\") → «o trabalhador foi encerrado pelo prazo antes da comparação»; senão «o trabalhador parou antes da comparação (código <worker_rc>)»), sem afirmar o estado do processo da CPU.\n(3) Pôr no ensaio a seco a variante summary_error + CPU_REFERENCE_NOT_COMPARABLE, exigindo a AUSÊNCIA de «não estava presente» / «was not present».",
+   "origem": "artigo"
+  },
+  {
+   "severidade": "BAIXO",
+   "arquivo_linha": "artigo_en_v384.pysnip:72-76 (o «_tx4(_cr4.get(\"error\"))» e o «r\"; the run mark \\textbf{did not check}\"»); a origem do texto é pilar_quantico_worker.py, linha do «R[\"cpuref_compare\"] = {\"ok\": False, \"error\": \"cpuref.json ausente\", ...}»",
+   "afirmacao": "A frase nova do EN quebra a paridade de língua de dois modos.\n(a) Injeta no artigo inglês a mensagem do trabalhador, que é em português: «The CPU reference was not present in this run (cpuref.json ausente)».\n(b) Traduz «a marca da rodada não conferiu» (não bateu) por «the run mark did not check». Em inglês isso se lê como «não foi conferida», a mesma ambiguidade que o 5N17 apontou no PT antigo.\nA casa já tem a regra de compor a frase em cada língua a partir de um código: v384_runtime.py, not_cached_code, comentário «o artigo compoe a frase em cada lingua».",
+   "evidencia": "Arnês (simular6.json 4de06cac…).\n- R_cpu_ausente_void_en.txt (a6fae941…) e U_cpu_ausente_filho_rc1_en.txt (a9ed226c…): «The CPU reference was not present in this run (cpuref.json ausente)…». Contagem por script de «ausente» nos TXT EN: 1 em R, 1 em U e 1 no sintético AB; 0 nos outros. O pdftotext do PDF de R confirma.\n- W_marca_nao_conferiu_en.txt (6b0344af…): «…disagreed in 0; the run mark did not check; the CPU process ended with code 0.»\n- Antes desta correção o erro não era impresso; no .bak_antes_afer4 havia só «was not present», sem o texto do erro. O vazamento é novo.",
+   "correcao": "No EN, compor a frase a partir do caso, não da mensagem. Por exemplo: se _cr4.get(\"error\") == \"cpuref.json ausente\", escrever «no cpuref.json file was written»; para outro erro, «error: \\texttt{…}». Ou fazer o trabalhador gravar um código (CPUREF_FILE_ABSENT) e cada língua compor a sua frase. Trocar «did not check» por «did not match».",
+   "origem": "artigo"
+  },
+  {
+   "severidade": "MEDIO",
+   "arquivo_linha": "gerador_preregistro (ed625624…):239-248 (_frase_preB), :254-257 (plano_B.cabe_no_prazo_de_5_h), :270-279 (razao); rascunhos v6 MD:161 e MD:163 (B_REDUZIDO 9ed3b619… e B_AMPLIADO_D64 e6479d7b…)",
+   "afirmacao": "Com a sonda v8, os números da frase do desvio estão certos, mas a conclusão não se segue deles e a frase está incompleta. Ela diz: «três causas medidas … (3) por isso o plano B inteiro … dá cerca de 231 min (289 com a margem) e, com a margem, cabe no prazo congelado de 5 h; e mesmo SEM margem … 212 min, ACIMA do prazo de início desta especificação (180 min): o D128 não rodaria. Logo d = 64 vira camada de ESCALA».\n(a) A causa (3) agora diz o contrário do que justifica. O único impedimento é o prazo de início do D128, que é um PARÂMETRO escolhido na própria especificação (10800 s; no B_AMPLIADO, 14400 s), não uma medida. Com um prazo entre ~266 e ~276 min, os dois critérios do próprio gerador (:217-218) seriam satisfeitos e o plano B inteiro rodaria o D128, terminando em 288,7 min com a margem.\n(b) A tabela diz «cabe em 5 h: sim» somando o D128 como se ele rodasse, enquanto o texto diz que ele não começaria.\n(c) A folga é de 11,3 min (3,8%) e só existe com a v8, a mais rápida das cinco sondas do mesmo caminho de cálculo. Com qualquer outra, o plano B NÃO cabe.\n(d) No B_AMPLIADO_D64, «Logo d = 64 vira camada de ESCALA» contradiz a própria especificação, que restaura T4 = 100 e T2 = 96 pontos em d = 64.\nO operador havia escolhido o plano B («rito robusto»), e o documento que ele vai ratificar dá a esse desvio uma base que já não é a medida. A memória v384 (bloco 8, linha 61; só lida) ainda registra «o plano B … NÃO cabe no prazo de 5 h. Logo a especificação B_REDUZIDO».",
+   "evidencia": "recalc_orcamento.py (0c753365…) usa as fórmulas do gerador, lidas e não importadas. Saída em recalc_orcamento.json (d5187859…). Plano B com margem: v8 (285668632af459e1…) dá 288,73 min, folga 11,27 e pré-D128 com margem 265,44; v4 (ad95bf8d…) 337,07; v5 (982bbc89…) 319,65; v6 (0dcd4fd2…) 320,34; v7 (ec73eae2…) 317,73. Os rascunhos v5 diziam «cabe em 5 h: NÃO» e os v6 dizem «sim», com o mesmo «Logo».\nA dispersão por custo (max/v8) chega a 1,232, e a v8 é o mínimo em 9 das 12 categorias. A comparação por AST (ast_caminhos.py 49374c74…, que não importa o trabalhador) mostra pipeline, superop, spectrum, steady_state e propagator idênticos de cec9b0c1 a fb974f9d. O generator_from_propagator só difere na norma gen_rel_dev da v4, que é desprezível. A variação é, portanto, de rodada para rodada.\nO fim do D128 com a margem é 18,63 × 1,25 = 23,29 min, o que dá prazo máximo de 300 − 23,29 = 276,7 min.",
+   "correcao": "Reescrever a causa (3), mais ou menos assim: «com a sonda v8, o plano B inteiro caberia nas 5 h, com folga de 11 min, só se o prazo de início do D128 ficasse entre ~266 e ~276 min. Com as sondas v4–v7, do mesmo caminho de cálculo, não caberia (318–337 min). A folga é menor que a dispersão entre as sondas (até 23%); por isso, e não por uma medida única, d = 64 vira camada de escala». Tirar o «Logo d = 64 vira camada de ESCALA» do texto do B_AMPLIADO_D64, ou restringi-lo ao T1. Fazer o campo cabe_no_prazo_de_5_h exigir também que o D128 comece no prazo desta especificação, ou renomeá-lo. Como alternativa, estimar o plano B pela sonda mais lenta. A errata da memória fica a cargo da gerência.",
+   "origem": "preregistro"
+  },
+  {
+   "severidade": "BAIXO",
+   "arquivo_linha": "disposicoes_afericoes_v384.json:texto_para_o_pre_registro (a254afc1…); MD:195 dos dois rascunhos v6",
+   "afirmacao": "A frase da 5ª passada diz «23 achados novos (7 deles duplicatas de outros)». Pelas próprias disposições são 8. A disposição 8 diz «MEDIO tratado: = 4N22», a mesma marca das disposições 6 e 16. O 5N8 descreve o mesmo defeito do 5N6 e do 5N16: a condição \"__CPU_REFERENCE_\" in _v4 casa também com __CPU_REFERENCE_AGREES. A contagem pegou só as disposições que COMEÇAM com «=».",
+   "evidencia": "contagens.py (1e22046a…): em disposicoes_5a_novos, 7 começam com «=» (6, 16, 17, 19, 20, 21 e 22) e a 8 tem «= 4N22» depois de «MEDIO tratado:». Em afericao5_resultado.json (fa914a9f…), as afirmações de novos[6], [8] e [16] tratam da mesma frase da CPU. As outras contagens da 5ª conferem: 40 entradas = 28/11/1; 39 itens únicos, 12 não resolvidos pelo pior estado; 23 novos = 21 BAIXO + 2 MEDIO.",
+   "correcao": "«23 achados novos (8 deles duplicatas de outros, pelas próprias disposições)», contando «= x» em qualquer posição, ou pondo o «=» no começo da disposição 8. Opcional: dizer também «por item, pelo pior estado, 12 de 39», como a frase da 4ª faz.",
+   "origem": "preregistro"
+  },
+  {
+   "severidade": "BAIXO",
+   "arquivo_linha": "gerador_preregistro:180-182 (a guarda da ratificação); MD:11 dos rascunhos v6",
+   "afirmacao": "A guarda confere que a mensagem NOMEIA exatamente uma escolha, mas não confere que ela RATIFICA. Uma mensagem negada que nomeie uma só escolha congela o V1 como «ratificado».",
+   "evidencia": "sandbox_rat_C1, cópia do gerador corrente na minha pasta, mensagem SINTÉTICA «AFERIDOR6-SINT-C1: [SINTETICO] nao ratifico o B reduzido» com --escolha=B_REDUZIDO e o rascunho v6: rc 0. O V1 SINTÉTICO (44c780c5…) saiu com ratificacao_do_operador.verbatim = «… nao ratifico o B reduzido», escolha B_REDUZIDO e a_especificacao_ratificada_e_a_do_rascunho = true (rodar_ratificacoes_lp.json c5259a4e…).",
+   "correcao": "Recusar quando houver negação («não|nao») antes do verbo de assentimento, ou exigir na mensagem o prefixo de 16 hex do spec_sha256 do rascunho. E dizer no MD que a guarda é lexical e que a conferência final é a leitura humana do verbatim gravado no V1.",
+   "origem": "preregistro"
+  },
+  {
+   "severidade": "BAIXO",
+   "arquivo_linha": "gerador_preregistro:183-185 (só spec_sha256 e escolha conferidos contra o RASC); :195-283 (orçamento e desvio fora da especificação); :224-237 (glob das sondas)",
+   "afirmacao": "O congelamento amarra ao rascunho ratificado só a especificação e a escolha. O texto do V1 pode diferir do que o operador ratificou sem nenhuma recusa: orçamento, plano B («cabe»/«NÃO cabe»), variabilidade das sondas e texto da aferição. Basta outra sonda de tempo do mesmo trabalhador, ou outro estado das disposições.",
+   "evidencia": "deriva_texto.py (a56bde63…) usou uma sonda SINTÉTICA na minha pasta (sonda_sintetica/result.json 3df7e570…: os tempos da v7 com o worker_sha256 da v8) e uma ratificação SINTÉTICA «ratifico o B reduzido» contra o rascunho v6 B_REDUZIDO. Resultado: rc 0 e spec igual. O rascunho apresentado dizia plano B 231,0/288,7 «cabe: True» e orçamento 87,4. O V1 congelado (214c869c…) diz 254,2/317,7 «cabe: False» e 93,9.",
+   "correcao": "No congelamento, comparar o DOC com o RASC fora dos campos que mudam por natureza (id, título, gerado*, ratificação, evidências e aferição) e recusar se diferirem. Ou exigir que TIMING, ENGINE e as sondas da variabilidade tenham os mesmos sha256 das evidências do rascunho apresentado.",
+   "origem": "preregistro"
+  },
+  {
+   "severidade": "BAIXO",
+   "arquivo_linha": "gerador_preregistro:224-237 (variabilidade_das_sondas: glob teste_tempo_v*/result.json e `except Exception: pass`) e :330-332 (_EV); MD:184 dos rascunhos v6",
+   "afirmacao": "A nota «a margem ×1,25 cobre a faixa observada» se apoia nas sondas teste_tempo_v4..v7. O documento as cita só pelo nome da pasta e por sha16, e elas não entram na lista de evidências. No congelamento não são copiadas para a pasta permanente e ficam só no TEMP da sessão. Uma sonda ilegível é pulada em silêncio (`pass`). A teste_tempo_magma (MAGMA, trabalhador 62a46e74, reps 1, d = 64: 34,2 s por instância e 104,4 s na injeção) fica fora do glob sem menção.",
+   "evidencia": "O MD:184 lista v4..v8 por pasta e sha16. No V1 SINTÉTICO de sandbox_rat_B1, as 17 cópias (rodar_ratificacoes_lp.json c5259a4e…) não incluem nenhuma teste_tempo_v4..v7. ls de teste_tempo_magma/result.json: worker 62a46e7424497c48, linalg_magma_up_to_n 1e9.",
+   "correcao": "Pôr cada sonda da variabilidade no _EV (papel «variabilidade_<pasta>», caminho absoluto e sha256 completo), para que seja copiada no congelamento. Registrar as sondas excluídas ou ilegíveis com o motivo, em vez de `pass`.",
+   "origem": "preregistro"
+  },
+  {
+   "severidade": "BAIXO",
+   "arquivo_linha": "v384_runtime.py (5dbe4a98…):362 (ok_chain = sha_ok and der and der == R.verdict and same_code), :368-369, :197 (_qp_rederive devolve None se o filho nada imprimir); MD:116 dos rascunhos v6",
+   "afirmacao": "A árvore dá as causas do __CUSTODY_CHAIN_INCOMPLETE como «(sha256, especificação, trabalhador, β ou marca da rodada não conferem, ou o resultado não chegou ao Nós)». O código acrescenta o CUSTODY também quando o veredito rederivado falta ou difere do que o trabalhador gravou, e essa causa não está dita.",
+   "evidencia": "Leitura: o ok_chain exige der e der == R.get('verdict'); sem eles, :368 acrescenta o CUSTODY a qualquer veredito que não seja RESULTS_VOID nem NOT_RUN. O _qp_rederive (:190-197) devolve None quando o subprocesso não imprime.",
+   "correcao": "Acrescentar à lista do MD:116 «, ou o veredito rederivado falta ou difere do gravado pelo trabalhador».",
+   "origem": "preregistro"
+  },
+  {
+   "severidade": "BAIXO",
+   "arquivo_linha": "v384_runtime.py (5dbe4a98…) :379-388, o caminho da cópia ao Nós; :411-416, o fecho; candidato de ENSAIO 6b062f8f…, W09b :208401-208404 (numeração grep -n)",
+   "afirmacao": "REGRESSÃO da correção do 4N0. O caminho da cópia agora relê o arquivo do Nós para calcular out_file_sha256 (:382), sem _qp_retry e DEPOIS de gravar copied_to_out = True (:381). Basta um único PermissionError transitório nessa releitura — o caso que o próprio _qp_retry foi criado para absorver — para anular uma rodada válida. Três efeitos: o veredito ganha CUSTODY_CHAIN_INCOMPLETE; o registro fica contraditório (copied_to_out true junto com copy_to_out_error); e, como copied_to_out é verdadeiro, o fecho (:411) não grava marcador. O arquivo no Nós é o resultado DESTA rodada, mas o W09b o grava como NOT_THIS_RUN, porque out_file_sha256 ficou ausente. Antes da 5ª, o caminho terminava no os.replace e não tinha essa falha.",
+   "evidencia": "Rodei o quantum_pillar_finish_v384 do runtime corrente no modo REUSE, só com entradas SINTÉTICAS: sem subprocesso, sem GPU, sem operador da teoria, com o _qp_rederive substituído por stub e OUT/CACHE na minha pasta. Script aferidor6_regressao/runtime_sint/sim_finish.py (847c11a5…), saída sim_finish_resultado.json (bb1ad917…).\n- Caso b (um PermissionError injetado UMA vez na leitura rb do arquivo final): verdict …FIVE_JUMP_GKLS__SINTETICO__CUSTODY_CHAIN_INCOMPLETE__GATE_UNTOUCHED; copied_to_out true; copy_to_out_error PermissionError; out_file_sha256 null; o arquivo no Nós (67d3dbc1…) é o result.json desta rodada (arquivo_e_o_resultado_desta_rodada = true); W09b_aceitaria = false.\n- Caso a (sem injeção): all_verified true; out_file_sha256 = sha do arquivo.\n- O bloco W09b, extraído do candidato e executado com core e arquivos sintéticos (w09b/resultado.txt, 24520397…), caso f (copied_to_out True, sem out_file_sha256): NOT_THIS_RUN.",
+   "correcao": "Calcular o sha com novas tentativas e só então marcar a cópia: out_file_sha256 = _qp_retry(lambda: hashlib.sha256(open(final, \"rb\").read()).hexdigest()), e depois out[\"copied_to_out\"] = True. Alternativa: no except, se copied_to_out já for True, removê-lo, ou registrar a falha numa chave própria (out_file_sha_error) sem rebaixar o veredito, porque o arquivo É o desta rodada.",
+   "origem": "regressao"
+  },
+  {
+   "severidade": "BAIXO",
+   "arquivo_linha": "v384_runtime.py (5dbe4a98…) :242 (\"result_file_absent\": reason != \"copy_failed\") e :416 (reason \"finish_failed\")",
+   "afirmacao": "A disposição do 4N0 diz «o marcador diz o motivo (result_file_absent só quando não há resultado)». O código não faz isso: o motivo finish_failed grava result_file_absent = true sempre, inclusive quando o result.json da rodada existe e foi lido. Exemplos: o _qp_rederive estoura o prazo de 300 s, o json.loads falha ou uma chave falta depois da leitura. É o resíduo do subitem do 4N0 que a 5ª já tinha medido («O marcador ainda diz result_file_absent True quando o resultado existe»).",
+   "evidencia": "sim_finish.py (847c11a5…), caso c: _qp_rederive levanta TimeoutExpired, com cache_dir/k/result.json presente. Marcador gravado no Nós: {\"verdict\": \"…NOT_RUN__FINISH_FAILED__GATE_UNTOUCHED\", \"marker\": true, \"reason\": \"finish_failed\", \"result_file_absent\": true, \"run_id\": null, \"key\": \"k\"}. Saída em sim_finish_resultado.json (bb1ad917…).",
+   "correcao": "Calcular o campo pelo fato, não pelo motivo: em quantum_pillar_finish_v384, guardar rp e passar result_file_absent = not (rp and os.path.exists(rp)) ao _qp_out_marker, ou gravar no marcador o caminho do resultado quando ele existir. Alternativa: corrigir o texto da disposição.",
+   "origem": "regressao"
+  },
+  {
+   "severidade": "BAIXO",
+   "arquivo_linha": "rito_v384.sh (55cacfcb…) :54-58 (espera de 120 s pelo vigia, depois kill), :70 (AVISO dos 60 s), :76 («servidor de volta» + rm do marcador); conferir_rito_v384.py (d168557e…, igual ao .bak_antes_afer5) :86-88",
+   "afirmacao": "Contrato quebrado entre o lançador e o conferidor. Os dois AVISOs novos da 5ª («o vigia nao saiu em 120 s -- encerrado» e «depois de 60 s ainda havia parada em curso […] religo assim mesmo») não são lidos pelo conferidor, que continua classificando só por «servidor de volta», «nao religo» e «AVISO: a porta 8081». Há ainda um resíduo do 5N1: se o vigia passa dos 120 s numa parada NATIVA, ele é morto, e o Stop-ScheduledTask órfão para a tarefa DEPOIS do Start. O lançador loga «servidor de volta», apaga o marcador e sai com rc=0. O servidor termina parado e o conferidor relata «RELIGADO (a porta 8081 escuta)». Como o marcador foi apagado, a regra da memória (conferir o marcador ao abrir a sessão) também não pega o caso.",
+   "evidencia": "Arnês só com stubs na minha pasta: montar.py 887ac792…, rito_teste.sh 724af32f… = cópia do lançador corrente com 4 trocas (montagem.json a431e355…). powershell.exe, taskkill, nvidia-smi e tail resolvidos pelo PATH para os stubs, conferidos pelo casos.sh antes de rodar. Caso R7 (o vigia preso num Stop nativo de 135 s; saída f5eed945…):\n- 06:29:06 «AVISO: o vigia nao saiu em 120 s -- encerrado»;\n- 06:29:07.496 START_TASK e «servidor de volta: a porta 8081 escuta»;\n- 06:29:11.884 STOP_TASK_FIM(nativo) servidor 1->0;\n- fim da espera: srv=0.\nA expressão do conferidor (:87-88), extraída do texto e aplicada ao log do R7 (e0a59f24…), devolve «RELIGADO (a porta 8081 escuta)» (conferidor_le_log_R7.txt, 6daf43eb…). Grep no conferidor por AVISO: só «AVISO: a porta 8081» (:88).\nOs casos R1 a R6 do mesmo arnês passam: normal; TERM durante; TERM depois (rc=3 devolvido); sonda T_DESAB vazia → 14; vigia num Stop de 12 s → servidor =1 no fim.",
+   "correcao": "No conferidor, ler toda linha «AVISO:» do log e devolvê-la na informação, por exemplo «RELIGADO COM AVISO: …». No lançador: quando o vigia for morto por prazo, NÃO apagar o marcador e conferir a porta de novo depois de ~30 s. Ou contar também os powershell com Stop-ScheduledTask/'IALD Llama Server' na linha de comando na espera dos 60 s, escapando para não casar a si mesmo.",
+   "origem": "regressao"
+  },
+  {
+   "severidade": "BAIXO",
+   "arquivo_linha": "aplicar_afer5_lancador.py e aplicar_afer5_lancador_b.py (pacote v384); rito_v384.sh :42 (o filtro do mata_um); disposicoes_afericoes_v384.json, disposicoes_5a_itens[4N6]",
+   "afirmacao": "A disposição do 4N6 diz que «as edições da 5ª no lançador foram por script aplicar_* com count == 1». O lançador corrente NÃO é reproduzível pelos dois scripts gravados. O 1º script produz, na linha 42, o filtro «-and \\$_.CommandLine -and \\$_.CommandLine -match 'um\\.py'». O _b exige um 'old' que contém «-and \\$_.ProcessId -ne $RW -and \\$_.Name -match '^(python|pythonw|py)\\.exe\\$' … '(^|[\\\\ \\\"])um\\.py…'», e esse texto não está na saída do 1º script (count 0). Houve, portanto, uma edição intermediária NÃO registrada no filtro do mata_um, a parte destrutiva do lançador, sem backup próprio nem diff. As outras edições da 5ª reproduzem byte a byte.",
+   "evidencia": "Reprodução numa sandbox minha (reproduzir_lancador/):\n- .bak_antes_afer5 (cdb83099…) + aplicar_afer5_lancador.py → 2ab5b884…, que difere do corrente (55cacfcb…) SÓ na linha 42 (conferir_cadeia.py cac8109c…: «o resto do arquivo e' igual? True»).\n- O _b, aplicado a essa saída: AssertionError count 0; o 'old' do _b dá 0 na saída do 1º script e 0 no corrente, e o 'new' dá 2 no corrente.\n- grep \"python|pythonw|py)\" em *.py, *.txt e *.json do pacote (fora aferidor6_*): 0 ocorrências.\nControle, também numa sandbox (reproduzir_edicoes/): REPRODUZEM byte a byte o trabalhador fb974f9d…, o runtime 5dbe4a98…, o gerar_candidato 119aacab…, o pt 1c7d6236…, o en 03ae1be3… e o ensaio 47aaa55f…. Com cópias de P redirecionado, o gerador vai de 69b8cc9d… a d3ac5e21… e chega a ed625624….\nO conteúdo final do mata_um está correto: consulta corrente rodada SÓ EM LEITURA (mata_um_leitura/ler.sh, ac4418e3…), com um um.py falso descendente (196604) e outro de árvore alheia (202436); ela acha só [196604], e nada foi encerrado.",
+   "correcao": "Gravar o diff .bak_antes_afer5 → corrente do lançador como diff_lancador_afer5_manual.txt, com o sha256 (o meu está em aferidor6_regressao/diffs/rito_v384.sh.diff, c73f5623…). Corrigir AO LADO a disposição do 4N6: «a 5ª no lançador: dois scripts e uma edição manual no filtro do mata_um, registrada em …».",
+   "origem": "regressao"
+  },
+  {
+   "severidade": "BAIXO",
+   "arquivo_linha": "gravar_afericao5_v384.py :56 (dup5 = sum(1 for v in ACAO_NOV.values() if v.startswith(\"= \"))); disposicoes_afericoes_v384.json passada5.duplicatas_entre_os_novos = 7; rascunhos v6 MD :195 («23 achados novos (7 deles duplicatas de outros)»)",
+   "afirmacao": "O número no texto do pré-registro não bate com as disposições. A contagem por startswith(\"= \") perde o 5N8, cuja disposição é «MEDIO tratado: = 4N22 (…)». Pelas próprias disposições, 8 dos 23 novos são duplicatas: 6, 8, 16, 17, 19, 20, 21 e 22. O critério também mudou de uma passada para a outra: na 4ª, as duplicatas de ITENS antigos entraram na conta (#6, N18, N3, conforme o 5N14). Na 5ª, o 6, o 8 e o 16 duplicam o item 4N22, e só dois deles entram na conta.",
+   "evidencia": "Script sobre disposicoes_afericoes_v384.json (a254afc1…):\n- disposicoes_5a_novos com startswith('= '): 7 → ['6','16','17','19','20','21','22'];\n- com o prefixo tolerado (regex '(^|: )= '): 8, e o 8 é «MEDIO tratado: = 4N22 (inclusive na rodada reaproveitada a frase nao aparece mais).»;\n- na 4ª, as duas contagens dão 9.\nNo afericao5_resultado.json (fa914a9f…), as entradas conferem com o texto: 40, sendo 28 RESOLVIDO, 11 PARCIAL e 1 REGRESSAO.",
+   "correcao": "Contar com re.search(r\"(^|: )= \", v) ou com um campo explícito «duplicata_de», e regenerar o texto: «23 achados novos (8 deles duplicatas de outros achados ou itens)». Usar o mesmo critério da 4ª.",
+   "origem": "regressao"
+  },
+  {
+   "severidade": "BAIXO",
+   "arquivo_linha": "artigo_en_v384.pysnip (03ae1be3…) :72-78 (a frase «The CPU reference was not present … (<error>)»), com pilar_quantico_worker.py :1241 ({\"ok\": False, \"error\": \"cpuref.json ausente\", …})",
+   "afirmacao": "A frase nova da referência ausente, da correção do 4N22 e do 5N17, imprime no artigo INGLÊS a string de erro do trabalhador, que está em português: «The CPU reference was not present in this run (cpuref.json ausente)». Antes da 5ª o EN não imprimia o erro, só «None». É um vazamento de língua novo no artigo bilíngue.",
+   "evidencia": "Arnês do artigo (a cópia do simular.py da 3ª, com PKG apontado para o pacote; simular6.py 4ea70a1a…; casos6.py 5de93972…, saída casos6.json 777d0403…). O caso R_cpu_ausente_void_en dá «The CPU reference was not present in this run (cpuref.json ausente); the CPU process did not finish or was stopped at the deadline.». Os 12 casos novos compilam com pdflatex, rc 0 e sem erros (pdf6.json 4b20d354…). O resto da frase está em paridade PT/EN.",
+   "correcao": "No trabalhador, gravar um código (\"error_code\": \"CPUREF_JSON_ABSENT\") além do texto, e cada língua compõe a frase. Ou, no trecho EN, traduzir o erro conhecido («cpuref.json absent») e imprimir os demais como código.",
+   "origem": "regressao"
+  },
+  {
+   "severidade": "BAIXO",
+   "arquivo_linha": "C:\\IALD\\Bancada_Um\\investigacao\\preregistro_pilar_quantico_03out\\gerar_preregistro_pilar_quantico_03out.py (ed625624…) :224-237 (o bloco da variabilidade; glob «teste_tempo_v*», «except Exception: pass», a nota literal «a margem x1,25 cobre a faixa observada») e :330 (_EV); rascunhos v6 MD :184",
+   "afirmacao": "O bloco novo da variabilidade das sondas (aplicar_variabilidade_sondas.py) faz uma afirmação numérica que o código não verifica e que depende de uma seleção não dita. (1) A faixa é escolhida pelo NOME da pasta (glob teste_tempo_v*), e uma sonda ilegível é descartada EM SILÊNCIO (except: pass, contra a régua fail-closed). (2) A sonda teste_tempo_magma (trabalhador 62a46e74…, MAGMA em todo n, reps = 1 em d = 64: 34,21 s por instância e 104,39 s por injeção do T1) fica fora sem que o documento diga por quê. A razão existe no código (o run_timing usa 3 repetições porque «a mediana tira o custo de arranque do MAGMA»), mas o critério não é dito. (3) «a margem ×1,25 cobre a faixa observada» é texto digitado: vale hoje por 1,5 a 2,7% (max/v8: 1,232 no T1 em d64, 1,223 no pipeline em d32, 1,227 no ruído em d64) e não é conferida por assert. Uma sonda nova pode torná-la falsa sem falha visível. (4) As sondas citadas entram só por sha16 e não estão no _EV, de modo que, no congelamento, só a v8 é copiada para evidencias_PREREGISTRO_V1/ e as outras quatro ficam no TEMP da sessão.",
+   "evidencia": "Script puro sobre os JSON (orcamento_por_sonda.txt, 8f575a17…), com as sondas v4 a v8:\n- d64 por instância: 22,11, 21,52, 20,93, 20,91 e 18,5 s;\n- max/v8 ≤ 1,25 em todos os d e custos (maior: 1,232).\n- O orçamento B_REDUZIDO refeito com cada sonda: 97,9, 95,3, 94,8, 93,9 e 87,4 min; o rascunho usa só a v8: 87,4, ou 109,2 com a margem.\n- Com a teste_tempo_magma (env linalg_magma_up_to_n 1e9, vram_free 28111/32607): B_REDUZIDO 115,9 min; no B_AMPLIADO_D64, antes do D128 201,1 min, que com ×1,25 dá 251,4 > 240 (prazo de início). Ou seja, a bandeira «o D128 começa no prazo mesmo com a margem» viraria False se essa sonda contasse.\n- Diff do gerador (gerador_var_to_cur.diff, 68b11066…). A cópia do gerador em rascunho_prereg_v6 = ed625624… (a mesma).",
+   "correcao": "Declarar o critério no documento: «sondas do run_timing com reps ≥ 3 (mediana); a teste_tempo_magma, de reps = 1 e com o arranque do MAGMA, fica fora». Trocar o except: pass por falha visível, ou registrar a sonda ilegível com o motivo. Calcular a frase: um assert (ou o texto gerado) com max/v8 ≤ MARGEM por d e por custo, com o maior valor impresso. Pôr as sondas citadas no _EV, com sha256 completo.",
+   "origem": "regressao"
+  }
+ ],
+ "verificacao": {
+  "veredictos": [
+   {
+    "i": 0,
+    "refutado": false,
+    "razao": "CONFIRMADO por leitura do runtime corrente (5dbe4a98…). Em _qp_out_marker o campo é \"result_file_absent\": reason != \"copy_failed\". O motivo finish_failed sai do except geral, que também pega falhas depois de rp existir e ser lido: o json.loads, o _qp_rederive (timeout=300) e as chaves. Nesses casos o marcador grava result_file_absent true com o result.json presente. A disposição do 4N0 diz «result_file_absent so quando nao ha resultado» (disposicoes a254afc1…), o que não bate com o código. É o mesmo defeito do [20].",
+    "severidade_ajustada": "BAIXO"
+   },
+   {
+    "i": 1,
+    "refutado": false,
+    "razao": "CONFIRMADO. O _qp_retry captura (PermissionError, OSError), e o FileNotFoundError é subclasse de OSError. Medi o custo com o _qp_retry extraído por AST, sem importar o runtime, sobre um os.remove de um arquivo SINTÉTICO inexistente na minha pasta: 40 tentativas e 9,77 s (aferidor6_verificacao_adversarial/retry_fnf.py 170e1528…, saída retry_fnf.json 946b408f…). O write_json_atomic do trabalhador (fb974f9d…) só tenta de novo em PermissionError, logo a docstring «como o write_json_atomic» é imprecisa. Só custa tempo, e só num caminho de dupla falha.",
+    "severidade_ajustada": "BAIXO"
+   },
+   {
+    "i": 2,
+    "refutado": false,
+    "razao": "CONFIRMADO no texto: «nunca sobrevive» tem 1 ocorrência em cada MD e em cada JSON dos rascunhos v6. A oração principal é literalmente falsa no caso da trava. O parêntese da mesma frase admite que, com outro processo segurando o arquivo, o arquivo de outra rodada só «não passa por desta», ou seja, ele fica no Nós. O código (_qp_out_marker_safe grava out_file_remove_error) e o W09b do candidato (o NOT_THIS_RUN) sustentam o sentido do parêntese, não o da oração principal. É só texto.",
+    "severidade_ajustada": "BAIXO"
+   },
+   {
+    "i": 3,
+    "refutado": false,
+    "razao": "CONFIRMADO por leitura do trabalhador fb974f9d…. No run_D128 a chamada é «try: on_spectrum(dict(out)) except Exception: pass», e o _d128_parcial chama write_json_atomic, que só tenta de novo em PermissionError. Qualquer outra falha na gravação some sem marca, e o parcial em disco fica com status_code STARTED, sem n0. O MD:113 dos dois rascunhos afirma sem ressalva que o parcial «sobrevive a uma morte do processo». O defeito só aparece com falha dupla (gravação e depois morte).",
+    "severidade_ajustada": "BAIXO"
+   },
+   {
+    "i": 4,
+    "refutado": false,
+    "razao": "CONFIRMADO, no código e no arnês. No rito_v384.sh corrente (55cacfcb…), o mata_um (l.42) faz a consulta com 2>/dev/null, sem $ErrorActionPreference='Stop' e sem sentinela, ao contrário da vigia da l.28 (VIGIA_OK). Depois do mata_um, o sinal() grava RITO_RC=SINAL_<x> e sai 143 sem conferir que o rito morreu. Li o caso B11 do arnês de stubs (casos/B11_mata_um_consulta_falha): eventos.log 96f8e45b… mostra PS_MATA_UM_CONSULTA falha=1 sem linha de log, START_TASK, LANCADOR_SAIU rc=143 e, no fim, um=VIVO. O rodada_v384_stdout.txt (30b76bb0…, 79 linhas) tem 0 ocorrências de SINAL/RITO_RC. É «ok» falso num caminho destrutivo, contra a régua fail-closed. O gatilho (falha do WMI no instante de um aborto) é raro, mas a consequência é o um.py vivo por horas com o servidor religado na GPU. Mantenho MEDIO.",
+    "severidade_ajustada": "MEDIO"
+   },
+   {
+    "i": 5,
+    "refutado": false,
+    "razao": "CONFIRMADO. O conferir_rito_v384.py (d168557e…) é byte a byte igual ao .bak_antes_afer5 (cmp). A informação servidor_depois_do_rito só procura «servidor de volta», «nao religo» e «AVISO: a porta 8081», e ignora os dois AVISOs novos do lançador (l.57 e l.70). O item é só INFORMAÇÃO e não decide o tudo_bate. Duplica o [9] e o [21].",
+    "severidade_ajustada": "BAIXO"
+   },
+   {
+    "i": 6,
+    "refutado": false,
+    "razao": "PARCIAL, mas se sustenta. A caminhada da l.42 não confere o CreationDate, e o ParentProcessId velho persiste no Windows [KNOWN]. O ramo da colisão com o PID do PRÓPRIO lançador (RW) está fechado pela guarda de início (l.28-30): um um.py cujo pai tinha o PID RW teria nascido antes do lançador, e o lançador recusaria rodar com ele vivo. Resta a colisão com um descendente VIVO que reusou o PID do pai morto de um um.py estrangeiro lançado DURANTE o rito. É possível, mas muito improvável.",
+    "severidade_ajustada": "BAIXO"
+   },
+   {
+    "i": 7,
+    "refutado": false,
+    "razao": "CONFIRMADO. Nesta sessão do Git Bash, $$=92638 e /proc/$$/winpid=202940: os espaços de PID são distintos. No PowerShell, kill é alias de Stop-Process, cujos parâmetros (Name, Id, InputObject, PassThru, Force, …) não incluem -TERM, então a ligação falha (não rodei kill; só li o alias e os parâmetros). Grep «Git Bash» dá 0 no rito e nos MDs. Atenuante: a falha no PowerShell é VISÍVEL, e o texto se dirige à gerência, que usa o Git Bash. É precisão de documentação, mais o arquivo velho depois de um kill -9.",
+    "severidade_ajustada": "BAIXO"
+   },
+   {
+    "i": 8,
+    "refutado": false,
+    "razao": "CONFIRMADO de forma independente, na minha pasta repro_lanc/, com cópias. O .bak_antes_afer5 (cdb83099…) com o aplicar_afer5_lancador.py (6c807a72…) dá «ok 9» e 2ab5b884…. O aplicar_afer5_lancador_b.py (03ee0747…) sobre essa saída falha com AssertionError: 0. O diff contra o rito corrente (55cacfcb…) é SÓ a linha 42: o script deixa «-and \\$_.CommandLine -match 'um\\.py'», e o corrente tem «-and \\$_.ProcessId -ne $RW -and \\$_.Name -match '^(python|pythonw|py)\\.exe\\$' …». Grep «ProcessId -ne» fora das pastas aferidor6_ dá só rito_v384.sh, e «lancador_b» dá 0 nas disposições. A disposição do 4N6 («as edicoes da 5a no lancador foram por script aplicar_* com count == 1») é FALSA. Ela entra no V1 porque «disposicoes» é evidência OBRIGATÓRIA no _EV do gerador (:330-333, EV_OPC = {afericao_6}). O conteúdo final do filtro está correto; o defeito é de custódia e repete o tipo do 4N6.",
+    "severidade_ajustada": "MEDIO"
+   },
+   {
+    "i": 9,
+    "refutado": false,
+    "razao": "CONFIRMADO. É a mesma expressão de conferir_rito_v384.py :86-88, inalterada na 5ª (cmp com o .bak_antes_afer5), e grep «AVISO» no conferidor só acha «AVISO: a porta 8081». Duplica o [5] e o [21]. É só informativo.",
+    "severidade_ajustada": "BAIXO"
+   },
+   {
+    "i": 10,
+    "refutado": false,
+    "razao": "CONFIRMADO por script sobre as disposições (a254afc1…). Com startswith('= '), disposicoes_5a_novos dá 7 (6, 16, 17, 19, 20, 21, 22). Com a regex (^|: )= dá 8, pois inclui o 8, «MEDIO tratado: = 4N22». Pelo critério da 4ª, que contou as duplicatas de ITENS (= N18, = #6, = N3), a contagem dá 9, e a 5ª daria 8. O 7 só é defensável como «duplicatas entre os novos» (5 de outros novos, mais 2 do trio 6/8/16), e chega a esse número por coincidência de um script que perde o 8. Duplica o [14] e o [23].",
+    "severidade_ajustada": "BAIXO"
+   },
+   {
+    "i": 11,
+    "refutado": false,
+    "razao": "CONFIRMADO por leitura do PT e do EN (l.72-78). Com summary_error, _s4 = {} e _cr4 = {}; com o veredito …CPU_REFERENCE_NOT_COMPARABLE…, _cpuvoid4 é verdadeiro e o ramo «not _cr4» afirma «não estava presente (sem registro)» e «não terminou ou foi encerrado pelo prazo». O compare_cpuref só marca not_comparable com meta_ok e child_rc == 0, então a frase contradiz o veredito. REBAIXO para BAIXO: o caminho só ocorre se _qp_summary levantar exceção, o que não acontece com o resultado bem formado do trabalhador corrente, e o mesmo parágrafo já avisa que os números não foram resumidos. Nos parciais com morte durante a espera da CPU, «não terminou» é em geral verdadeiro.",
+    "severidade_ajustada": "BAIXO"
+   },
+   {
+    "i": 12,
+    "refutado": false,
+    "razao": "CONFIRMADO. O artigo_en_v384.pysnip (03ae1be3…) imprime _tx4(_cr4.get(\"error\")), e o trabalhador grava \"error\": \"cpuref.json ausente\" (worker l.1241), de modo que o EN sai «(cpuref.json ausente)». O caminho é alcançável: basta o filho da CPU não gravar o arquivo. «did not check» por «não conferiu» é ambíguo em inglês (menor). Viola a regra da casa de compor a frase em cada língua (o comentário do not_cached_code). Duplica o [24].",
+    "severidade_ajustada": "BAIXO"
+   },
+   {
+    "i": 13,
+    "refutado": false,
+    "razao": "CONFIRMADO. Recalculei com as fórmulas do gerador (estimar, lido) e a spec do rascunho B_REDUZIDO. Plano B com margem: v8 288,7 min (antes do D128, 265,4 com a margem); v7 317,7; v6 320,3; v5 319,6; v4 337,0. O fim do D128 com a margem é 23,25 min. Só a v8 cabe nas 5 h, e o único impedimento ao D128 é o prazo de início, um PARÂMETRO (10800 s, ou 14400 s no ampliado). A janela de ~266 a ~276 min confere. No B_AMPLIADO_D64 o texto diz «com a margem (265 min), não começaria. Logo d = 64 vira camada de ESCALA», enquanto a própria especificação restaura T4 = 100 e T2 = 96 em d = 64. A justificativa do desvio inverteu entre os rascunhos v5 («NÃO cabe») e v6 («sim») com o mesmo «Logo». É texto que o operador ratifica: MEDIO.",
+    "severidade_ajustada": "MEDIO"
+   },
+   {
+    "i": 14,
+    "refutado": false,
+    "razao": "CONFIRMADO. É a mesma contagem do [10] e do [23]: a disposição 8 é «MEDIO tratado: = 4N22», e o startswith('= ') a perde (7 contra 8). As outras contagens conferem (40 = 28/11/1).",
+    "severidade_ajustada": "BAIXO"
+   },
+   {
+    "i": 15,
+    "refutado": false,
+    "razao": "CONFIRMADO no código e no sandbox. O gerador (:180-182) só exige _toks == [ESCOLHA], sem conferir assentimento. O V1 SINTÉTICO de sandbox_rat_C1 (44c780c5…) tem verbatim «nao ratifico o B reduzido», com a_especificacao_ratificada_e_a_do_rascunho = true. A cópia do gerador difere só no acréscimo da fonte sintética. Atenuante: o MD:11 descreve a guarda com exatidão (nomear uma escolha), e o congelamento exige que a gerência passe o prefixo de uma mensagem que ela leu. O risco depende de erro humano.",
+    "severidade_ajustada": "BAIXO"
+   },
+   {
+    "i": 16,
+    "refutado": false,
+    "razao": "CONFIRMADO no código: o TIMING é um argumento de linha de comando (sys.argv[2]), e a guarda da ratificação (:183-185) só compara spec_sha256 e escolha com o RASC. O orçamento e o desvio são recalculados da sonda dada. Atenuante: o V1 registra o sha do rascunho apresentado e o copia como evidência, então a divergência fica auditável depois, mas não é recusada.",
+    "severidade_ajustada": "BAIXO"
+   },
+   {
+    "i": 17,
+    "refutado": false,
+    "razao": "CONFIRMADO. O glob é os.path.join(ESTD, \"teste_tempo_v*\", \"result.json\"), com «except Exception: pass». O _EV (:330-335) não inclui as sondas da variabilidade, e teste_tempo_magma não casa com «teste_tempo_v*». A frase «cobre a faixa observada» vale hoje: no meu recálculo o pior max/v8 ≈ 1,23 < 1,25 [DERIVED]. Mas é texto fixo, sem assert. Sobrepõe-se ao [25].",
+    "severidade_ajustada": "BAIXO"
+   },
+   {
+    "i": 18,
+    "refutado": false,
+    "razao": "CONFIRMADO. No runtime, ok_chain = sha_ok and der and der == R.get('verdict') and same_code, e sem isso o CUSTODY entra (fora de RESULTS_VOID e NOT_RUN). O _qp_rederive devolve None sem stdout. A lista do MD:116 não inclui «veredito rederivado ausente ou diferente», e a l.134 só diz que o um.py rederiva, não que a discordância rebaixa. É omissão de texto.",
+    "severidade_ajustada": "BAIXO"
+   },
+   {
+    "i": 19,
+    "refutado": false,
+    "razao": "CONFIRMADO por leitura. A ordem nova é _qp_retry(os.replace), depois copied_to_out = True, depois a releitura em rb SEM retry para out_file_sha256. Se essa releitura falhar: copy_to_out_error, CUSTODY no veredito, copied_to_out true, nenhum marcador (o fecho só age em «not copied_to_out») e out_file_sha256 ausente, de modo que o W09b do candidato (:208401-208404) grava NOT_THIS_RUN para o arquivo desta rodada. O .bak_antes_afer5 terminava no os.replace e não tinha essa leitura, logo é falha nova. A direção é fail-closed (perde uma rodada válida, nunca dá ok falso).",
+    "severidade_ajustada": "BAIXO"
+   },
+   {
+    "i": 20,
+    "refutado": false,
+    "razao": "CONFIRMADO. É o mesmo defeito do [0]: reason != \"copy_failed\" grava result_file_absent true no finish_failed, mesmo com o result.json presente, contra a disposição do 4N0.",
+    "severidade_ajustada": "BAIXO"
+   },
+   {
+    "i": 21,
+    "refutado": false,
+    "razao": "CONFIRMADO no contrato: o conferidor (inalterado desde o .bak_antes_afer5) ignora os AVISOs das l.57 e l.70. O resíduo do 5N1 também procede pelo código: depois do kill do vigia, o Stop-ScheduledTask nativo em curso não é morto, e a espera dos 60 s só conta stop_iald_llama.ps1. O caso R7 do arnês (stub de 135 s) o reproduz. Um Stop-ScheduledTask de mais de 120 s é improvável no real. Duplica o [5] e o [9] e acrescenta o resíduo.",
+    "severidade_ajustada": "BAIXO"
+   },
+   {
+    "i": 22,
+    "refutado": false,
+    "razao": "CONFIRMADO por reprodução independente, a mesma do [8] (minha pasta repro_lanc/). O 1º script dá 2ab5b884…, o _b falha com AssertionError: 0, e a diferença para 55cacfcb… é só a linha 42. Subo para MEDIO por coerência com o [8], de que é duplicata: a disposição falsa do 4N6 entra numa evidência OBRIGATÓRIA do V1 e repete o defeito que o 4N6 pedia corrigir (edição manual não declarada).",
+    "severidade_ajustada": "MEDIO"
+   },
+   {
+    "i": 23,
+    "refutado": false,
+    "razao": "CONFIRMADO. O gravar_afericao5_v384.py tem «dup5 = sum(1 for v in ACAO_NOV.values() if v.startswith(\"= \"))», que perde o 8. Pela regex dá 8, e pelo critério da 4ª (que contou as duplicatas de itens), também 8. Duplica o [10] e o [14].",
+    "severidade_ajustada": "BAIXO"
+   },
+   {
+    "i": 24,
+    "refutado": false,
+    "razao": "CONFIRMADO. É o mesmo do [12](a): o EN imprime «cpuref.json ausente» (worker l.1241) no ramo da referência ausente. Vazamento novo de língua no artigo bilíngue.",
+    "severidade_ajustada": "BAIXO"
+   },
+   {
+    "i": 25,
+    "refutado": false,
+    "razao": "CONFIRMADO no código (glob «teste_tempo_v*», except: pass, frase fixa, sondas fora do _EV). Os números do plano B por sonda batem com o meu recálculo. A exclusão da teste_tempo_magma (reps = 1, outro trabalhador) é DEFENSÁVEL, mas não é dita. Hoje a frase da margem é verdadeira. Sobrepõe-se ao [17].",
+    "severidade_ajustada": "BAIXO"
+   }
+  ]
+ }
+}

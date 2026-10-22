@@ -1,0 +1,445 @@
+{
+ "grupos": [
+  {
+   "lente": "congelamento",
+   "itens": [
+    {
+     "id": "6N25",
+     "estado": "PARCIAL",
+     "evidencia": "O cálculo por d e por custo foi feito. O gerador (26aba67a2b7ceb74…), em :273-291, calcula _PDC (instância, injeção do T1 e nível extra de ruído) sobre as 6 sondas válidas e grava variabilidade_das_sondas.por_d_e_custo e a nota_por_d_e_custo.\n\nRefiz a conta por conta própria: dispersao9.py (c07270d4…) → dispersao9.json (7ab70bf4…), lendo teste_tempo_v4..v9/result.json.\n- maior/menor passa de 1,25 só em d = 32 instância (1,3231) e em d = 64 injeção do T1 (1,2642).\n- maior/corrente chega no máximo a 1,0887 (d = 8, injeção do T1).\n- A corrente (v9) é a mais lenta nos três custos em d = 32 e d = 64.\n- Ficam de fora teste_tempo, teste_tempo_final e teste_tempo_magma (reps 1).\nOs dois rascunhos v9 (c2a17102… e 97679e83…) dizem exatamente esses números na nota_por_d_e_custo, e a tabela confere até a 3ª casa.\n\nTambém recalculei o plano B por sonda (planoB9.py fa2a6147…): 269,7 / 255,7 / 256,3 / 254,2 / 231,0 / 279,7 min. Com a margem, as outras sondas vão de 289 a 337 min, 4 de 5 acima das 5 h, e a maior folga é de 4%. Confere com a frase «(3)» dos dois rascunhos.\n\nO que sobra, no mesmo parágrafo (MD:184 dos dois v9, cabeçalho «(d = 64; s por instância / por injeção do T1)»):\n- A nota antiga, gerada em :267-272 com o veredito tirado só de max/min da instância de d = 64, ainda diz «a maior sobre a menor da 1.244 (instancia) -- a margem x1.25 cobre a maior sobre a corrente e cobre a dispersao maior/menor». Duas frases depois, o texto diz «d = 64 injecao do T1 (1.264) -- nesses pontos a margem NAO cobre». São duas afirmações contraditórias sobre o mesmo d = 64.\n- «uma rodada mais lenta que todas as sondas nao esta coberta» é impreciso. O orçamento é a corrente ×1,25, e a corrente é a mais lenta nesses pontos. Logo, uma rodada até 25% mais lenta que todas as sondas ESTÁ coberta.",
+     "falta": "Restringir o veredito antigo («cobre a dispersao maior/menor») a «na instância de d = 64», ou derivá-lo de _PDC. Reescrever o parêntese como «uma rodada mais de 25% mais lenta que a corrente (a mais lenta medida) não está coberta». Opcional: tirar «d = 64» do cabeçalho do parágrafo, que agora cobre d = 8 a 64. Depois, regerar os rascunhos."
+    },
+    {
+     "id": "8N0",
+     "estado": "RESOLVIDO",
+     "evidencia": "O que mudou no gerador (26aba67a…):\n- :698-713: o MD é gravado primeiro e o JSON por último. Cada um vai para temporário, confere o tamanho e é substituído, com 40 novas tentativas de 0,25 s em PermissionError e conferência dos bytes.\n- :676-680: um MD sem o JSON vai para .incompleto_<data>.\n- :685: a pasta de evidências que já existe tem de ter o mesmo listdir.\n- :572: a mensagem trocada para «uma versao nova e' ato da gerencia com gerador novo».\n\nTestei numa CÓPIA do gerador na minha pasta (casos9.py 0adf35ad…). O transcrito de teste é uma cópia do real com UMA mensagem marcada «[SINTETICO AFERIDOR9 -- NAO E' DO OPERADOR] ratifico o b reduzido». O rascunho apresentado é o v9 REAL B_REDUZIDO.\n- X0 (casos9_X0.json a43eff0b…): rc 0, V1 0e9739a3…, 25 evidências, todas conferem. O rascunho v9 apresentado congela hoje.\n- X1, MD órfão (casos9_X1_X2_X3.json 1848635c…): sai o AVISO, o MD vai para .incompleto_20261004_083653 com os bytes preservados, e o V1 e o MD novos são gravados (rc 0).\n- X2, V1 IGUAL (relógio fixo): a 2ª execução dá rc 0 sem reescrever (mesmo sha e mesmo mtime do JSON e do MD). No relógio real, recusa com a mensagem nova e não muda nada.\n- X3, pasta de evidências que já existe:\n  - com um arquivo A MAIS: «OUTROS arquivos», e nenhum V1 nem MD é gravado;\n  - igual e sem V1: completa (rc 0);\n  - com um arquivo alterado: «nao confere»;\n  - com um arquivo A MENOS: «OUTROS arquivos».\n- X7 (casos9_X7.json 69163687…):\n  - o .json.tmp travado 3 s: as novas tentativas vencem (rc 0, 8,1 s);\n  - travado 15 s: rc 1, fica o MD sem o JSON, e a tentativa seguinte põe o MD de lado (.incompleto_20261004_083811) e grava o V1.\nDois resíduos ficam nos achados novos 1 e 2.",
+     "falta": ""
+    },
+    {
+     "id": "8N1",
+     "estado": "RESOLVIDO",
+     "evidencia": "No gerador (26aba67a…):\n- :15-18: a guarda dispara por normcase OU por os.path.samefile.\n- :212-215: o V1 grava RAT.transcrito (caminho, de_teste, linhas_da_mensagem, sha256 das linhas e tamanho).\n\nTestei a guarda como função pura (guarda9.py 3a948d78… → guarda9.json 24d17447…). Ela dispara em 11 grafias do MESMO diretório:\n- normal, minúsculas e barras;\n- o nome 8.3 (BANCAD~1/INVEST~1/PREREG~2);\n- os prefixos de caminho longo e de dispositivo;\n- os UNC localhost/C$, 127.0.0.1/C$ e caminho-longo-UNC;\n- o ponto final e a barra final.\nUma junção, criada na minha pasta e apontando para outra pasta minha, também é reconhecida por samefile.\n\nNo X0, o V1 registra o transcrito: o caminho do meu transcrito de teste, de_teste true, 1 linha, sha256 775bd842… (igual ao sha da minha linha sintética) e 119 354 369 bytes.\n\nRodei uma CÓPIA do gerar_candidato não-ensaio na minha pasta (caso_candidato9.py 0716009c… → caso_candidato9.json 286b05f3…). Nenhum candidato foi gravado. As recusas:\n- K0 (o V1 de teste): «a ratificacao nao diz qual transcrito leu, ou veio de transcrito de TESTE».\n- K1 (de_teste forjado false): «a ratificacao nao foi lida do transcrito canonico».\n- K2 (caminho canônico, mas o V1 fora do lugar): recusado pelo lugar permanente.\n- K3 (sem o campo transcrito) e K4 (de_teste None): recusados.\nPor leitura, a fumaça (:14), o gerar_esperados (:17) e o instalar (:34) exigem de_teste is False. Nos casos F da gerência (teste_congelamento_v384.json e36b487f…), a guarda recusa e a pasta permanente fica intacta.",
+     "falta": ""
+    },
+    {
+     "id": "8N2",
+     "estado": "RESOLVIDO",
+     "evidencia": "O texto_para_o_pre_registro corrente (disposições e35f0d8e…) é o .bak_antes_afer8 com um trecho acrescentado (o .bak é prefixo dele: True). O trecho da 7ª fica intacto. O da 8ª diz, AO LADO: «na 7ª, «com transcrito sintético» lê-se «com uma cópia do transcrito real e uma mensagem sintética acrescentada»».\npassada7_errata_da_8a.texto diz o mesmo.\nA docstring do teste (79c6e872…) foi corrigida, com nota entre colchetes que cita o texto da 7ª.\nO caso C2 (sonda SINTÉTICA do mesmo trabalhador, numa cópia mínima do pacote) foi acrescentado e foi recusado em ['desvio_do_plano_B','orcamento_estimado'].\nO «8 de 8» confere com teste_congelamento_v384.json, 8 casos todos com passou=true.",
+     "falta": ""
+    },
+    {
+     "id": "8N13",
+     "estado": "RESOLVIDO",
+     "evidencia": "É o mesmo que o 8N1. As três correções pedidas foram conferidas:\n(1) O V1 grava o transcrito como campo volátil, dentro de ratificacao_do_operador, que está em _VOL (:557). A cópia do gerar_candidato recusa de_teste true e caminho não canônico (K0 a K4). A fumaça, os esperados e o instalar recusam por de_teste.\n(2) A guarda usa samefile e dispara em 11 grafias e numa junção (guarda9.json).\n(3) Os casos F da gerência (grafia 8.3 e prefixo de caminho longo) recusam na guarda e deixam a pasta permanente intacta.\nConferi a pasta permanente depois do meu trabalho: só o gerador e os .bak, e o mtime da pasta continua 08:19:23.",
+     "falta": ""
+    },
+    {
+     "id": "8N16",
+     "estado": "RESOLVIDO",
+     "evidencia": "Gerador (26aba67a…) :413-418: afericao_6, afericao_7 e afericao_8 entram em _EV como obrigatórias, e EV_OPC = {\"afericao_9\"}.\nNo X0, o V1 tem 25 evidências, entre elas afericao_7.json e afericao_8.json, e todas conferem por sha256 com a cópia permanente. O A_igual da gerência também tem 25.",
+     "falta": ""
+    },
+    {
+     "id": "8N17",
+     "estado": "PARCIAL",
+     "evidencia": "Feito:\n- passada6.criterio_das_repeticoes voltou a ser IGUAL ao original do .bak_antes_afer7 (a8749b74…): «qualquer «= x» na disposicao (o mesmo nas passadas 4, 5 e 6)».\n- O critério da 7ª está ao lado, em passada6.criterio_das_repeticoes_como_implementado_7a.\n- Entre o .bak_antes_afer8 (998ca9f1…) e o corrente (e35f0d8e…) mudaram só duas chaves já existentes: o critério e o texto, este só por acréscimo.\n- O backup de bytes .bak_20261004_082227 é igual a 998ca9f1.\n\nO que sobra:\n- O verificador da 8ª AMPLIOU o achado com um ponto (3) que a disposição não trata. No texto_para_o_pre_registro, o trecho da 6ª continua «(9 deles repetem outro achado ou item, contagem corrigida na 7ª». O número original da 6ª (8) não aparece no texto que vai ao campo «afericao» do V1; vive só em passada6.repetem_outro = 8.\n- A disposição diz «por este script salvo», mas o gravar_afericao8_v384.py (304fe32a…) não é nomeado em nenhum registro: grep -c dá 0 no AFERIDOR_v384.txt, nas disposições e no rotas.jsonl.",
+     "falta": "No trecho da 6ª, escrever, AO LADO, «(8 deles repetem…; 9 pela contagem corrigida na 7ª)». Registrar o gravar_afericao8_v384.py com o seu sha256 (em passada8.evidencias_novas ou no AFERIDOR)."
+    },
+    {
+     "id": "8N18",
+     "estado": "RESOLVIDO",
+     "evidencia": "(a) A docstring do teste (79c6e872…) descreve o C como o caso das ordens, com nota entre colchetes da correção ao lado. O TT_OUTRA saiu e só fica citado num comentário. O C2 foi acrescentado e PASSOU.\n(b) passada7_errata_da_8a registra três coisas:\n- a primeira execução FALHOU (260 caracteres);\n- a troca de <papel>__<nome> para <papel><ext>;\n- o script, com sha256 73a7d797… (conferi por script: igual ao arquivo).\nO aplicar_afer7_gerador_prereg_b.py agora está em passada8.evidencias_novas. O diff entre o .bak_antes_teste_congelamento (c8e25ef4…) e o .bak_antes_afer8 (05d449fd…) confirma a troca do nome e o try/rmtree. O texto do pré-registro diz isso ao lado.",
+     "falta": ""
+    }
+   ],
+   "examinado": [
+    "MAPA DE ROTAS: rotas.py consultar \"pilar\" → 18 rotas, cabeça bf085dabe83f1d52 (quantica.pilar_v384_afericao_8a_passada, teste_do_congelamento, rascunhos_b_reduzido_e_a, sondas_0c9ba7fd); nada registrado por mim",
+    "afericao8_resultado.json b33ecee98d0c1613… (6N25 e novos 0, 1, 2, 13, 16, 17, 18, com os veredictos)",
+    "disposicoes_afericoes_v384.json e35f0d8e011c1c7b… contra .bak_antes_afer7 a8749b746371d1a0… e .bak_antes_afer8 998ca9f186d713e2… (chave a chave; o texto só por acréscimo; passada6.criterio restaurado; passada7_errata_da_8a; passada8: os evidencias_novas conferidos por script, todos OK)",
+    "AFERIDOR_v384.txt b258cbda035cb8a5… (bloco «8a PASSADA», verbatim dos 7 novos da minha lente conferido)",
+    "gravar_afericao8_v384.py 304fe32ad2962583… (lido; 0 menções nos registros)",
+    "gerador permanente 26aba67a2b7ceb747e1e0b698c5a2f70d31e36b7a2ff933c8e16199d2f31c7c7 (lido inteiro); .bak_antes_afer8 05d449fd6719e1b6…, .bak_antes_afer8b ff530b8a9aa8eb2f… (diff: só a mensagem e o MD órfão), .bak_antes_teste_congelamento c8e25ef415e21f63…",
+    "afer9/diff_gerador.txt 992ecdde…, diff_gerar_candidato d81869d5…, diff_fumaca ae544dc1…, diff_gerar_esperados e0482876…, diff_instalar 2ee62bd6…, diff_teste_congelamento cba5384b…",
+    "aplicar_afer8_gerador_prereg.py 27a0b9f7…, aplicar_afer8_gerador_prereg_b.py 15d56cb9…, aplicar_afer8_guardas_transcrito.py ef89ebce…, aplicar_afer7_gerador_prereg_b.py 73a7d797…; diff_afer8_edicoes_pela_ferramenta_Edit.txt 032d8abb… (regerei: IGUAL byte a byte)",
+    "gerar_candidato_v384.py 72afcb5cac77d0aa… (.bak_antes_afer8 119aacab…), fumaca_v384.py 92ac5569…, gerar_esperados_v384.py d44a6062…, instalar_v384.py 53915233… (as recusas por de_teste, lidas)",
+    "teste_congelamento_v384.py 79c6e872… (.bak_antes_afer8 78abf679…), teste_congelamento_v384.json e36b487f… (8 de 8; o gerador das sandboxes é o 26aba67a)",
+    "rascunho_prereg_v9: B_REDUZIDO.json c2a17102…, .md 1065f582…; B_AMPLIADO_D64.json 97679e83…, .md 63346b18…; gerador copiado 26aba67a (specs 800be19a / ff197310)",
+    "sondas teste_tempo_v4 ad95bf8d…, v5 982bbc89…, v6 0dcd4fd2…, v7 ec73eae2…, v8 28566863…, v9 525734bc…; planejar_carga_v384.json 9d1d2c30…",
+    "MEUS (pasta aferidor9_congelamento; só cópias, transcrito de TESTE com mensagem SINTÉTICA marcada; nenhum trabalhador rodado, nenhum operador da teoria construído, nada gravado fora da pasta; a pasta permanente conferida intacta): preparar9.py a81aa158… (transcrito de teste 7ae301bb…, linha sintética 775bd842…); dispersao9.py c07270d4… → dispersao9.json 7ab70bf4…; planoB9.py fa2a6147…; casos9.py 0adf35ad… → casos9_X0.json a43eff0b…, casos9_X1_X2_X3.json 1848635c…, casos9_X7.json 69163687…; relogio_fixo.py bd7732df…; segura.py 48658a58…; caso9b.py 6b3f45e7… → caso9b.json 7e5ec26a…; caso_candidato9.py 0716009c… → caso_candidato9.json 286b05f3… (uma CÓPIA do gerar_candidato, não-ensaio, com 5 variantes; o um.py do Nós só lido); guarda9.py 3a948d78… → guarda9.json 24d17447… (função pura; a junção apontava para uma pasta minha e foi removida, com o alvo intacto)"
+   ]
+  },
+  {
+   "lente": "lancador_conferidor_runtime",
+   "itens": [
+    {
+     "id": "6N7",
+     "estado": "RESOLVIDO",
+     "evidencia": "Texto: o cabeçalho do rito_v384.sh corrente (e18acd113b26c06a…), nas l.13-18, agora traz «ANTES de abortar, conferir que /proc/$(cat .rito_v384.pid)/cmdline contem rito_v384», o código 16, o .fase0 e a reconferência de 30 s. O gerador permanente do pré-registro (26aba67a2b7ceb74…, :520) e os dois MD do rascunho v9 (B_REDUZIDO 1065f582…, B_AMPLIADO 63346b18…, l.133) trazem «conferindo antes que /proc/<pid>/cmdline contém rito_v384». A contagem por script dá 1 ocorrência em cada um dos 4 arquivos e no gerador. A diferença de palavras da linha :520 contra o .bak_antes_afer8_20261004_080849 mostra 4 inserções.\nJanela da fase 0: fechada (= 7N21). No arnês só de stubs (lanc/casos9.sh b6c04d5d…, cópia do rito corrente com as 6 trocas de montar.py, teste a5fe62ed…), caso S_P2 (S_P2.out a7728866…): com A na sonda da tarefa (dormindo 6 s) e o .rito_v384.pid=109221 já gravado, B sai com rc=16 («OUTRO lancador do rito v384 esta VIVO (PID 109221)»). O .fase0 de A fica intacto, há 1 «inicio do rito» e A termina normal.",
+     "falta": ""
+    },
+    {
+     "id": "7N21",
+     "estado": "RESOLVIDO",
+     "evidencia": "rito_v384.sh (e18acd11…): a l.42 grava echo $$ > .rito_v384.pid logo depois da guarda (l.36-40), e a l.43 arma trap 'rm -f …pid' EXIT. A l.176 troca esse trap pelo religar, que também remove o arquivo (l.89).\nArnês de stubs, S_saidas (S_saidas.out cf36ce2a…). Em todas as saídas antecipadas o .rito_v384.pid fica AUSENTE depois: R14a (l.149), R14b (l.153), R13 (l.169), R15 (l.172), R10 (l.188), R12 (l.190) e R11 (l.192).\nS_term_fase0 (14f42a72…): um TERM na fase 0, com pid=108498 e cmdline «sh …rito_v384_teste.sh», dá rc=143 e o pid é removido; o trap EXIT roda no sinal.\nS_term_parada (4dee7c38…): um TERM durante a parada dá «SINAL TERM recebido ANTES do rito», o religar roda e o pid e o marcador ficam ausentes.\nS_P2: o cenário da 8ª, B na fase 0 de A, agora recusa com 16.\nResíduos, ditos e não contados como falta:\n- (a) [DERIVED] a guarda é verificar-e-depois-gravar (l.36 → l.42), sem trava atômica, e dois lançadores no mesmo milissegundo ainda passariam. Não foi reproduzido.\n- (b) uma janela MAIOR no religar, porque a l.89 apaga o pid no começo da restauração: ver o achado novo 1.",
+     "falta": ""
+    },
+    {
+     "id": "8N3",
+     "estado": "RESOLVIDO",
+     "evidencia": "Grep «result_present» dá 0 no v384_runtime.py corrente (5165a870a06d82fb…) e 0 no candidato de ENSAIO (3f3ba218f926183b…). As assinaturas são agora _qp_out_marker(verdict, st, reason) e _qp_out_marker_safe(out, verdict, st, reason) (candidato :192554/:192575). As três chamadas passam 4 argumentos (:192646, :192664, :192738), e st[\"_qp_result_present\"] sumiu.\nO trecho do runtime de «def _qp_dir()» até o fim (26 038 caracteres) está byte a byte no candidato.\nResto cosmético: a :424 do runtime leva dois comentários colados («# o fato … medido no marcador   # o marcador desta rodada…»).",
+     "falta": ""
+    },
+    {
+     "id": "8N4",
+     "estado": "RESOLVIDO",
+     "evidencia": "v384_runtime.py :150: st[\"run_dir\"] = run_dir logo depois do makedirs (:149) e antes do open/Popen.\nSandbox na minha pasta (rt/a9_runtime.py 53765386…, saída a9_runtime.json d9f3cd18…), com o runtime do candidato de ENSAIO. As garantias: subprocess do namespace trocado por stub; Popen falso (um objeto, nenhum processo) ou que levanta; run e Popen reais levantando; nenhum trabalhador, nenhuma rederivação, nenhum operador construído.\n- L1, Popen levanta: LAUNCH_FAILED, st_tem_run_dir true, a pasta run_* só com worker_stdout.txt, e o marcador diz result_file_absent true, batendo com o disco.\n- L2, processo falso sem resultado: NO_RESULT_FILE, true.\n- L3/L4, result.json e result_partial.json SINTÉTICOS: FINISH_FAILED (rederivação recusada pelo stub), false.\n- L5, spec adulterada: SPEC_HASH_MISMATCH, sem pasta, null.\nOs 5 casos batem com o disco.\nObservação, não é falta: no L1 o marcador traz run_id null, porque o run_id só entra no st na :159, embora a pasta medida tenha run_id[:8] no nome.",
+     "falta": ""
+    },
+    {
+     "id": "8N5",
+     "estado": "RESOLVIDO",
+     "evidencia": "conferir_rito_v384.py corrente (7ce681afdb9fc13a…): a :88 testa «ha parada da tarefa ainda em curso» ANTES de «servidor de volta» e de «AVISO: a porta 8081».\nRodei o bloco :84-96, extraído por texto (sha16 f421b70e4303ab75), sobre logs sintéticos com as linhas lidas do rito corrente por regex (conf/classificador9.py c653fb3a…, saída classificador9.json 2936e2fb…). O caso escuta_mas_parada_em_curso dá «ESCUTA, MAS HAVIA PARADA DA TAREFA EM CURSO (o marcador ficou) -- conferir a tarefa».\nO log REAL do arnês V4 (S_V4/snap_V4/rito_servidor_v384.log b6fb514d…) dá o mesmo rótulo. Os outros ramos seguem certos: escutou_e_parou → PAROU DEPOIS DE ESCUTAR; nao_escutou_180s → «AVISO: a porta 8081 nao escutou»; nao_religo; vazio → «sem registro». O conferidor não foi rodado.",
+     "falta": ""
+    },
+    {
+     "id": "8N6",
+     "estado": "RESOLVIDO",
+     "evidencia": "= 7N21. O PID é gravado na l.42, antes da fase 0. No S_P2, B recusa com 16 enquanto A está na sonda da tarefa. O resíduo da janela do religar está no achado novo 1, que é outra janela, não a da fase 0.",
+     "falta": ""
+    },
+    {
+     "id": "8N7",
+     "estado": "RESOLVIDO",
+     "evidencia": "rito_v384.sh :45 desvia o log() para rito_servidor_v384.log.fase0. O giro (:196-198: o log real vai para .anterior, o .fase0 para o lugar do real, o sinal para .anterior) só acontece depois da última recusa (exit 11, :192).\nArnês S_saidas: duas rodadas normais, N0 e N1, e depois R14a, R14b, R13, R15, R10, R12, R11 e R14c. Ao fim de TODAS, o log real fica igual (fbed9135…), o .anterior igual (18311237…), o rito_v384_sinal.txt igual (25e04229…, com a MARCA_DA_RODADA_REAL_N1) e o sinal.anterior igual (336ffdfd…). Os registros da fase 0 entram no log real depois do giro (as linhas «antes:», «PARANDO» e «depois da parada» estão no log de N1).\nO religar das recusas 10/12/11 e do sinal antes do rito escreve no .fase0, de propósito.\nO resíduo, a perda do .fase0 de uma tentativa recusada pela tentativa seguinte, está no achado novo 2.",
+     "falta": ""
+    },
+    {
+     "id": "8N8",
+     "estado": "RESOLVIDO",
+     "evidencia": "rito_v384.sh :118: a contagem agora é ((Stop-Scheduled[T]ask E IALD Llama) OU stop_iald_llam[a]\\.ps1).\n(1) Leitura real, só WMI (conf/leitura_real/consulta_stopps.sh 51356fd9…, saída 3bf00c03…). A linha foi COPIADA por script do rito (sha16 e9fd8abe92caf98b). Sem isca dá sp_='0'. Com uma isca, um powershell que só dorme e tem o texto «stop_iald_llama.ps1» na linha de comando (nada executado, saiu sozinho), dá sp_='1'. Depois da isca volta a '0'. A variante sem [a] também não casa consigo mesma, porque o \\. já impede.\n(2) Arnês V4, refeito com o stop_ps1 falso de 290 s (S_V4.out 95d7b928…): vigia morto em 120 s, «AVISO: depois de 60 s ainda havia parada…», START; a reconferência conta «stoptask=0 stopps=1» e loga «AVISO: a porta 8081 escuta, mas ha parada … ('1') -- o marcador fica». O marcador FICOU, e o stop_ps1 falso derrubou o servidor 58 s depois (servidor=0, marcador restaurar=1 presente).\nNa 8ª, o mesmo cenário dava «servidor de volta (reconferida)» sem marcador.",
+     "falta": ""
+    },
+    {
+     "id": "8N9",
+     "estado": "RESOLVIDO",
+     "evidencia": "Cabeçalho do rito, l.13-18: código 16, «.fase0», gira «depois da ULTIMA recusa», cmdline antes de abortar e «o marcador so sai se a porta ainda escutar 30 s depois E nenhuma parada (Stop-ScheduledTask ou stop_iald_llama.ps1)».\nGerador do pré-registro (26aba67a…) :520, e MD:133 e JSON dos dois rascunhos v9. Contagem por script, 1 em cada arquivo, para: «código 16», «gravado logo depois da guarda», «/proc/<pid>/cmdline», «depois da última recusa» e «stop_iald_llama.ps1 — estiver em curso».\nAs cinco condutas que a disposição promete estão no texto. A imprecisão na colagem da frase no MD:133 está no achado novo 4; a frase «com outro lançador vivo, RECUSA», falsa na janela do religar, está no achado novo 1.",
+     "falta": ""
+    },
+    {
+     "id": "8N10",
+     "estado": "RESOLVIDO",
+     "evidencia": "Refiz o diff por conta própria (diff/refazer_diff9.py 952b15f2…, saída refazer_diff9.json 6c46895c…): subprocess diff dos dois estados, saída gravada em wb na minha pasta (diff_refeito_aferidor9.txt).\n- sha256 4bc5424cd935d21531a1df4ccbeaa25fb43a93e5fc67af63fae686017a32b9fc, 3 530 bytes, 0 CRLF.\n- Igual byte a byte ao diff_disposicoes_afer6_edicao_inline_BYTES.txt registrado.\n- O .json da gerência (42ed4e28…) confere em sha256 e bytes.\n- O antigo (1426f55d…), decodificado em cp1252 e passado para LF, é igual.\n- Por difflib, sem programa externo, as linhas removidas e inseridas batem.\nAs fontes: .bak_20261004_064923 af21771e… e .bak_antes_afer7 a8749b74…, ambas com 0 CRLF.",
+     "falta": ""
+    },
+    {
+     "id": "8N11",
+     "estado": "RESOLVIDO",
+     "evidencia": "Li o teste_mata_um_forma_do_rito.sh (39c988ea54c139ef…) e o .out (bd05c32e055da6df…). Ele usa a forma do rito ( echo 1 | python um.py > f 2>&1 ) &. O W=200652 é sh.exe, com um sh.exe filho e o python. (A) taskkill /T no W encerrou os três; (B) a reserva achou o python e o encerrou; os dois «PASSOU». A consulta (B) do teste é idêntica, comparada por script, à l.69 do rito corrente.\nRepeti na minha pasta com um um.py FALSO meu (mata/teste9_mata_um.sh 8b045df0…, .out 2a0424a7…):\n- (A) SÓ LEITURA, nada encerrado: W=189088 sh.exe, com sh.exe 202268 e python um.py 188724 abaixo, e o falso saiu sozinho.\n- (B) com a consulta COPIADA por script do rito: devolveu 179128 com MATA_OK. Conferi que era «python.exe | C:\\Python314\\python.exe um.py», o meu falso, antes do taskkill, que encerrou só ele. O subshell saiu em 11 s (o falso dormiria 20): PASSOU.\nO caminho (A) com taskkill no sh.exe não foi repetido por mim (proibição); vale a evidência da gerência.",
+     "falta": ""
+    },
+    {
+     "id": "8N12",
+     "estado": "RESOLVIDO",
+     "evidencia": "gravar_afericao8_v384.py (304fe32ad2962583…), gravar() :18-24: backup de BYTES com assert de releitura; .tmp com assert de tamanho; os.replace; e assert dos bytes gravados. Vale para o AFERIDOR e para as disposições (:138, :167). O diff das edições do Edit também passa por tmp e tamanho (:34).\nNo disco:\n- o AFERIDOR_v384.txt corrente (b258cbda…, 968 917 bytes) começa exatamente com o .bak_20261004_082227 (870 010 bytes);\n- o .bak_20261004_082227 das disposições é idêntico (cmp) ao .bak_antes_afer8.\nReprodução numa CÓPIA na minha pasta (grav/repro, a partir dos backups): as disposições saem iguais ao corrente (e35f0d8e…) exceto UMA linha, a do sha256 do diff_afer8_edicoes…, que difere só pelas mtimes dos cabeçalhos do diff -u nas cópias. O AFERIDOR difere só na data do cabeçalho e nessa mesma linha. O diff -u refeito NO LUGAR dá 032d8abb…, igual ao registrado.",
+     "falta": ""
+    },
+    {
+     "id": "8N14",
+     "estado": "RESOLVIDO",
+     "evidencia": "(a) = 8N5: «escuta, mas ha parada» vira «ESCUTA, MAS HAVIA PARADA DA TAREFA EM CURSO» (sintético e log real do V4). (b) conferidor :94 _av_rel exclui «AVISO_PID_VELHO».\nCaso real do arnês S_pid_velho (853e18e4…): pid velho 999991, rodada normal. O log real traz «AVISO_PID_VELHO: .rito_v384.pid velho (999991)…» (a linha do .fase0, girada para o real) e o classificador dá «RELIGADO (a porta 8081 escuta)», sem «COM AVISO»; a linha segue listada em avisos.\nNo sintético com PID velho + AVISO do vigia + «servidor de volta (reconferida)», o rótulo sai «RELIGADO COM AVISO» só com o do vigia. Nota antiga, não desta rodada: a linha «(reconferida … por causa do AVISO acima)» também entra no rótulo, por conter «AVISO».",
+     "falta": ""
+    },
+    {
+     "id": "8N15",
+     "estado": "RESOLVIDO",
+     "evidencia": "= 8N7. As recusas 13/14/15 (antes do trap do religar) e 10/12/11 (depois dele) acontecem todas ANTES do giro (:196), e nenhuma tirou do lugar o log real, o .anterior ou o registro dos sinais (S_saidas, sha256 constantes). A disposição de não ler o .anterior no conferidor está coerente: grep «anterior» dá 0 no conferidor corrente.",
+     "falta": ""
+    }
+   ],
+   "examinado": [
+    "MAPA DE ROTAS consultado antes: python C:\\IALD\\MAPA_DE_ROTAS\\rotas.py consultar \"pilar\" -> n_registros 329, cabeca bf085dabe83f1d52 (nenhuma rota sobre a janela do religar nem sobre o .fase0)",
+    "afericao8_resultado.json b33ecee98d0c1613572c177fdafca8e25964c5de8981c19913277de3ab178c27 (itens 6N7/7N21 e novos 3-12,14,15 + verificacao)",
+    "disposicoes_afericoes_v384.json e35f0d8e011c1c7b99d428a268efa8b19a2bc092f843e57f75940fc76ebc2454 (disposicoes_8a_itens/novos, passada8, passada7_errata_da_8a); AFERIDOR_v384.txt b258cbda035cb8a5997cd97660bde1358eeae5c2de339a74349676e6bf006f35",
+    "rito_v384.sh corrente e18acd113b26c06a21bb5aaf859cacb56f216d8afc2470b1eed81fdc7b778020 (sh -n OK) contra .bak_antes_afer8 28870fc5071ee53b7346cc44e6b448eed47b15f9f5f99af05ade7bea14707d6c; meu diff -u = afer9/diff_rito_v384.sh.txt (fd1de8957746b700)",
+    "conferir_rito_v384.py 7ce681afdb9fc13a08790c44fd41cf2779084aa5a985e777f33b7f60918c58d6 contra .bak_antes_afer8 81fa3ef89796263042bf4c47e6b2c6a2f2f363d822ed0c4929eab7cce8dd73a6; meu diff = afer9 (d3b03f8fb6623d6b)",
+    "v384_runtime.py 5165a870a06d82fbb4d565f22f820fec876293d56b2723d9555143b230acfbbb contra .bak_antes_afer8 766ccfdee7bdd3b44c157f7c5ccb49b32197e36cbf2a201612516c954bfbe119; meu diff = afer9 (695c4322a12a29cd)",
+    "um_v384_candidato_ENSAIO.py 3f3ba218f926183b05956b085a0e2d3718a9e1b1d727a54471ef57c112fa02cf (so Grep/leitura + exec do trecho do runtime numa sandbox minha); trabalhador pilar_quantico_worker.py 0c9ba7fd45e78317a915bb718b11127a0dae9872e48ab430f0600b74ca26452f (inalterado; nao rodado)",
+    "gerador do pre-registro C:\\IALD\\Bancada_Um\\investigacao\\preregistro_pilar_quantico_03out\\gerar_preregistro_pilar_quantico_03out.py 26aba67a2b7ceb747e1e0b698c5a2f70d31e36b7a2ff933c8e16199d2f31c7c7 (so leitura; diferenca contra .bak_antes_afer8_20261004_080849 e .bak_antes_afer8b_20261004_081923); MD v9 B_REDUZIDO 1065f5823821c9d9e7d21ada0a2cd8204371bad8a39accd7f59fcb39d9a426cf, MD v9 B_AMPLIADO 63346b1800a6c68855fd74063a5d4345c91264dc4454ce307cdf3abd49f91880",
+    "runtime em SANDBOX (funcoes do candidato, Popen/run stubados; nenhum processo, nenhum operador): rt/a9_runtime.py 53765386cb878c5bc011292ace17702af5230fa3fc4f0fd3f0c4acc44aa39b70 -> a9_runtime.json d9f3cd1895d9045bd71a16b35680c5e42a6cb978b5634f9d43b28fe0f57cf234 (L1..L5 todos batem com o disco)",
+    "arnes do lancador SO STUBS (powershell.exe/taskkill/nvidia-smi/tail = stubs conferidos; um.py e trabalhador FALSOS): lanc/rito_v384_teste.sh a5fe62ed5d2f3117ddb9f5551fa75836f8284385135e4fd6cc1ad17c45b4cf3e (6 trocas; montagem 7bdee665...), stub powershell.exe 7d1d55365e7bb01d1097b361297242e37827b7d75d77f51f0327ca43eefbf270, casos9.sh b6c04d5de2e424ad207b4866f2df49f3d6c90a4943074226a6740e73a32613e7; saidas: S_saidas cf36ce2a87392627e4925ba94c04b9bb0be0d79e60d2ebd3405c40bb12a79b91, S_term_fase0 14f42a7229e813f086530aa5600ed03aac9fad6f700058acb990c0e33eed3abe, S_term_parada 4dee7c3835f85f97fd985dd86fac6003904fe5d8d10bead4fdcaebfa5ecb7121, S_P2 a7728866d40fc6d23779aa3885dbec6d637ad79343b9e5e3d66b789c3b6169c0, S_pid_velho 853e18e44526b6d52dc5ae17faefd9ee12534d890293128aad551b348f41f0bb, S_V4_230 732085cd4697543f4dd96cd887467c2d3aae30e8318f8892c23e8d41f033d89d, S_V4 (290 s) 95d7b928d0fd928221503ea4389dc5df49e85face84fec8ad84b4d1e840040d1",
+    "janela do religar (copia isolada lanc2): casos9.sh d36c6adcd803c628848a97569ff99fb964c4edd04b63ee49080e3a9957ff794b, S_religar.out 1ee7494afaff510b34d333ba34dbb213be044fc97e95a812aaebffe51ab88173, logs_fim.txt 51df39e27d352764c848448b31a787b2b573359215288e41637b7243e0672aeb",
+    "conferidor: bloco :84-96 extraido por texto (sha16 f421b70e4303ab75) e rodado sobre logs sinteticos e do arnes: conf/classificador9.py c653fb3a097c12014d0c42f22df1beb291ea0c92acd54a35f4310ddff6460928 -> classificador9.json 2936e2fb698389124f242bdede123824a4b9cb240d3a84e9d9a110672fb1a873 (o conferidor NAO foi rodado)",
+    "consulta WMI REAL so de leitura da reconferencia de 30 s (linha copiada do rito; isca = powershell que so dorme com o texto stop_iald_llama.ps1): consulta_stopps.sh 51356fd95a344f54e1ef92331184c11543e7f5c8ddff4075f0e6548824fe3ee1 -> .out 3bf00c03a0e8ab7c366af8ba9d4d663fbe96316597cf945f0f9a949340333e43 (0/1/0)",
+    "diff dos bytes refeito: diff/refazer_diff9.py 952b15f2de68d4f1e3d82a5dc57055fb68503e77e09d5848233fef6e52563e04 -> refazer_diff9.json 6c46895ccccddab31929e330e693100d3aa12a2b3705b869ccfc0bbf361af341; diff_refeito_aferidor9.txt 4bc5424cd935d21531a1df4ccbeaa25fb43a93e5fc67af63fae686017a32b9fc = diff_disposicoes_afer6_edicao_inline_BYTES.txt; regerar_diff_disposicoes_afer6.py b061810e46fee9328a454eae59d628fb82ca112f26e12cb5d948aa285e9048cb lido",
+    "mata_um: teste_mata_um_forma_do_rito.sh 39c988ea54c139ef103b88df637e78ede09ed82220a869e2254fb9f6096b397f e .out bd05c32e055da6dfdad9a5f67408376f396e3b6e5db96266b12c8495b35df9cf lidos; repetido na minha pasta com um.py FALSO meu: mata/teste9_mata_um.sh 8b045df08098a7bece2cb7955a7c7086885414cf228b21220a7a8f9e11167a2a -> .out 2a0424a78cd8758e5dfaa739e85379d40daeaacdb88acc56756f2d98fc1cddca ((A) so leitura; (B) taskkill so do meu python um.py falso)",
+    "gravacao da 8a: gravar_afericao8_v384.py 304fe32ad2962583eedf1e175ca061c758cf12431e452d995bf8ad62c8e097ae lido e reproduzido numa COPIA (grav/repro; repro_stdout.txt cf5dc4a0eeafadda9d8482f1e79d0fd0a2ce794c651f617fce9146f51bb09b6b); diff_afer8_edicoes_pela_ferramenta_Edit.txt refeito no lugar = 032d8abb7d69ae3d2a2f74b68d12602534b3e75b09298cdce922a68e8b9b2c82; AFERIDOR corrente comeca com AFERIDOR_v384.txt.bak_20261004_082227 (870010 bytes); disposicoes .bak_20261004_082227 == .bak_antes_afer8 (cmp)",
+    "aplicar_afer8_lancador_conferidor.py dc526b980b6070041f2a1bf46c157d366429ae5884c673aecdf4176b5bd5e7f8 e aplicar_afer8_runtime.py 0cdcda7498639b44b70dd0c3d787cf05e82bce1d825808e42e69b73dfda4ff98 lidos (docstrings); memoria_bloco10_v384.py lido (repete «outro lancador vivo => recusa, codigo 16»; nao tocado)",
+    "NADA rodado do proibido: nem o trabalhador, nem rito_v384.sh real, instalar/conferir/esperados/fumaca/ensaio, nem o gerador; nenhum Stop/Start-ScheduledTask, stop_iald_llama.ps1 ou taskkill de processo real; conferi por WMI (so leitura) que nao sobrou processo dos meus arneses; escrevi so em scratchpad\\v384\\aferidor9_lancador_conferidor_runtime\\"
+   ]
+  },
+  {
+   "lente": "regressao",
+   "itens": [],
+   "examinado": [
+    "Mapa de rotas consultado antes de examinar: python C:\\IALD\\MAPA_DE_ROTAS\\rotas.py consultar \"pilar\". Saida: n_registros 329, cabeca bf085dabe83f1d52; rotas quantica.pilar_v384_rascunhos_b_reduzido_e_a, _sondas_0c9ba7fd e _teste_do_congelamento, entre outras.",
+    "Diffs desta rodada (sha256 lido por script): afer9\\diff_gerador.txt 992ecdde366c61c4…; diff_rito_v384.sh.txt fd1de8957746b700…; diff_conferir_rito_v384.py.txt d3b03f8fb6623d6b…; diff_v384_runtime.py.txt 695c4322a12a29cd…; diff_gerar_candidato_v384.py.txt d81869d5b3b996b7…; diff_fumaca_v384.py.txt ae544dc1e4625837…; diff_gerar_esperados_v384.py.txt e0482876933e0b5d…; diff_instalar_v384.py.txt 2ee62bd6d409d5f4…; diff_teste_congelamento_v384.py.txt cba5384b3c7eba9b…; diff_afer8_edicoes_pela_ferramenta_Edit.txt 032d8abb7d69ae3d…",
+    "Gerador do pre-registro, conferido nos dois diffs: o corrente 26aba67a2b7ceb74… (identico a copia em rascunho_prereg_v9, tambem 26aba67a…); .bak_antes_afer8_20261004_080849 05d449fd6719e1b6…; .bak_antes_afer8b_20261004_081923 ff530b8a9aa8eb2f…. O diff do 8b contem so a mensagem do RECUSO e o giro do MD orfao. A pasta permanente nao tem nenhum PREREGISTRO_*.json/.md (nao ratificado), conferido por ls.",
+    "Do gerador ao congelamento: ratificacao_do_operador (e o campo novo transcrito) esta em _VOL, FORA da comparacao V1 x rascunho. A nota_por_d_e_custo esta em orcamento_estimado, que e' comparado, e sai igual do mesmo calculo. Diferencas do rascunho v8 para o v9, medidas por script: so afericao, evidencias, execucao[2], gerado, gerado_utc e orcamento_estimado (NOVOS por_d_e_custo e nota_por_d_e_custo). Spec recalculada: B_REDUZIDO 800be19a3e056f47… e B_AMPLIADO_D64 ff19731097e01aab… (iguais as gravadas); trabalhador 0c9ba7fd45e78317… (inalterado).",
+    "Rascunhos v9: B_REDUZIDO.json c2a17102f3f27c0a…, .md 1065f5823821c9d9…; B_AMPLIADO_D64.json 97679e83b65379b2…, .md 63346b1800a6c688…. A nota por d e custo aparece 1 vez em cada MD.",
+    "Teste do congelamento: teste_congelamento_v384.py 79c6e872c08f106f… e .json e36b487f4fa02b62… (8 de 8; rodado com o gerador 26aba67a, conferido nas copias gerar.py das pastas de caso). V1 de teste A_igual 26600887e0af1e0f… com transcrito.de_teste = true. A convencao do hash da linha (linha sem \\r\\n) foi reconferida: 174158732c2dd7cf… bate.",
+    "gerar_candidato_v384.py 72afcb5cac77d0aa…: as guardas novas so no caminho nao-ensaio; W07 e W09b sem mudanca; no candidato de ENSAIO a leitura W07 diz DRY_RUN_CANDIDATE_NOT_RATIFIED e o W09b esta presente. um_v384_candidato_ENSAIO.py 3f3ba218f926183b… embute o runtime novo (_qp_out_marker com 3 argumentos; st[\"run_dir\"] gravado cedo, 1 ocorrencia). CANDIDATO_v384_ENSAIO.json 4887a6121c082a0c…",
+    "v384_runtime.py 5165a870a06d82fb…: todos os chamadores de _qp_out_marker e _qp_out_marker_safe usam 3 e 4 argumentos (linhas 266, 332, 350, 424); nenhum resto de result_present ou _qp_result_present. O st[\"run_dir\"] gravado cedo so muda o result_file_absent do marcador em LAUNCH_FAILED (de None para medido).",
+    "fumaca_v384.py 92ac5569c1f1c5b2…, gerar_esperados_v384.py d44a60629a105c32…, instalar_v384.py 53915233b083aeb8…: guarda de_teste is False no lugar certo, depois da guarda do verbatim.",
+    "rito_v384.sh e18acd113b26c06a… (contra .bak_antes_afer8 28870fc5071ee53b…) e conferir_rito_v384.py 7ce681afdb9fc13a…: lidos inteiros; ordem dos traps, LOGS/LOGF, vigia e religar depois do giro, e ramo novo do conferidor. sh -n e bash -n: OK.",
+    "teste_mata_um_forma_do_rito.sh 39c988ea54c139ef… e .out bd05c32e055da6df… (A e B PASSARAM). teste_artigo_afer3\\simular.json 9e6fb70366204ad1… (46 de 46 ok e pdf_ok).",
+    "disposicoes_afericoes_v384.json e35f0d8e011c1c7b…: de .bak_antes_afer8 para o corrente, so texto_para_o_pre_registro (acrescimo puro, prefixo intacto) e passada6.criterio_das_repeticoes (restaurado ao original de 064923; o da 7a ficou ao lado). AFERIDOR_v384.txt b258cbda035cb8a5…; afericao8_resultado.json b33ecee98d0c1613…; memoria_bloco10_v384.py e9173fc50980d2b0… (so lido, nao rodado).",
+    "ast.parse OK em todos os .py: os 7 do pacote, os dois geradores, simular.py, gravar_afericao8, regerar_diff, os 5 aplicar_afer8_* e o candidato de ENSAIO.",
+    "Rodado SO na minha pasta aferidor9_regressao: (1) uma copia PURA das linhas 273-291 do gerador (trecho_pdc_linhas_273_291.py, sha256 0a9eca45259d0569…) com entradas SINTETICAS, sem operadores da teoria; (2) dois sh minimos sobre traps do Git Bash (o trap de EXIT roda com TERM sem trap de TERM, e roda so no shell principal, nao em $(...) nem em subshell). Nao rodei o trabalhador, o rito, o instalador, a fumaca, os esperados, o ensaio nem o gerador fora da minha pasta. Nenhum processo foi encerrado; as consultas foram so de leitura."
+   ]
+  }
+ ],
+ "novos": [
+  {
+   "severidade": "BAIXO",
+   "arquivo_linha": "C:/IALD/Bancada_Um/investigacao/preregistro_pilar_quantico_03out/gerar_preregistro_pilar_quantico_03out.py (26aba67a…) :676-680 (o MD órfão vai para o lado) e :682-687 (a pasta de evidências que já existe: listdir e sha)",
+   "afirmacao": "O gerador reconhece o estado «tentativa interrompida» (sem o JSON) para o MD, que vai para o lado, mas não para a pasta de evidências. Se uma fonte das evidências mudar entre as tentativas, a tentativa seguinte é recusada sempre, com «nao confere» ou «OUTROS arquivos», embora nada tenha sido congelado (não há JSON). Exemplos: o AFERIDOR recebe o registro do negativo da tentativa 1, como a régua manda; aparece o afericao9_resultado.json; mudam as disposições. A única saída é mover à mão a pasta de evidências no lugar permanente. Além disso, o MD órfão é movido ANTES dessa guarda que recusa, o que contraria o comentário do próprio código «SO AGORA, com todas as guardas passadas».",
+   "evidencia": "caso9b.py (6b3f45e7…) → caso9b.json (7e5ec26a…), numa CÓPIA mínima do pacote na minha pasta, com a cópia do gerador e o transcrito de teste.\n- Tentativa 1, com o .json.tmp travado por 20 s: rc 1. Ficam o MD, a pasta de evidências e o .json.tmp; não há JSON.\n- Entre as tentativas: uma linha sintética acrescentada à CÓPIA do AFERIDOR.\n- Tentativa 2: sai «AVISO: MD orfao … movido para …incompleto_20261004_084118» e, em seguida, «AssertionError: a pasta de evidencias ja existe e nao confere com esta: …aferidor_verbatim.txt». Nenhum V1 é gravado.\n- Tentativa 3: só depois de mover a pasta à mão, rc 0.",
+   "correcao": "Com o JSON do V1 ausente, tratar a pasta de evidências como o MD órfão: movê-la para evidencias_PREREGISTRO_V1.incompleto_<data> e copiar de novo. Ou fazer as duas guardas antes de qualquer movimento. E dizer na disposição que uma nova tentativa exige as fontes das evidências inalteradas.",
+   "origem": "congelamento"
+  },
+  {
+   "severidade": "BAIXO",
+   "arquivo_linha": "gerar_preregistro_pilar_quantico_03out.py (26aba67a…) :710-713 (except BaseException: os.remove(_pth + \".tmp\")); disposicoes_afericoes_v384.json disposicoes_8a_novos['0'] («o temporario apagado se falhar»)",
+   "afirmacao": "Quando a falha é uma trava que persiste (o caso para o qual existem as 40 novas tentativas), a limpeza os.remove(.tmp) falha com o mesmo PermissionError. O .tmp fica, e a exceção que aparece é a do remove; a original fica encadeada em «During handling…». A disposição «o temporario apagado se falhar» não vale nesse caso. Não há consequência para a tentativa seguinte, porque o open «wb» trunca o .tmp.",
+   "evidencia": "casos9_X7.json (69163687…), caso X7b, com o .json.tmp travado 15 s na cópia da minha pasta: rc 1. O traceback termina em «line 712, os.remove(_pth + '.tmp') PermissionError [WinError 32]». tmp_sobrou = true, e continua true depois de a trava acabar. A tentativa seguinte gravou o V1.",
+   "correcao": "Envolver o os.remove em try/except OSError, avisar «temporario nao removido: <erro>» e relançar a exceção ORIGINAL. Ou escrever na disposição «apagado se possível».",
+   "origem": "congelamento"
+  },
+  {
+   "severidade": "BAIXO",
+   "arquivo_linha": "teste_congelamento_v384.py (79c6e872…), bloco F: subprocess.run([sys.executable, gp, TW, TT, TM, HERE, \"--escolha=B_REDUZIDO\"])",
+   "afirmacao": "Os casos F chamam o gerador PERMANENTE com entradas VÁLIDAS. A proteção da pasta permanente depende só da guarda que o próprio teste quer testar. Se uma edição futura quebrar a guarda, rodar o teste de novo grava PREREGISTRO_…_V1_RASCUNHO_B_REDUZIDO.json/.md DENTRO da pasta permanente: HERE é a permanente por outra grafia e, sem ratificação, sai um rascunho. O teste só percebe depois, por «pasta_permanente_intacta»: detecta depois de a pasta mudar, não impede.",
+   "evidencia": "Só por leitura (não rodei isto: seria escrita na pasta permanente se a guarda falhasse).\n- Gerador :13: HERE vem de __file__.\n- :216-217: VER = V1_RASCUNHO_B_REDUZIDO e BASE dentro de HERE.\n- :698-713: grava o MD e o JSON.\n- O teste passa TW, TT e TM existentes (pilar_quantico_worker.py, teste_tempo_v9, teste_motor_v8).\n- A única defesa do teste é sorted(os.listdir) == antes, depois da execução.\nHoje a guarda dispara: os casos F passaram, e guarda9.json confirma.",
+   "correcao": "No caso F, passar um trabalhador inexistente, por exemplo <pacote>/NAO_EXISTE_worker.py. Com a guarda, o gerador recusa em :18. Sem ela, morre em :50 (open(WORKER)) antes de qualquer gravação, e o teste falha sem tocar a pasta permanente.",
+   "origem": "congelamento"
+  },
+  {
+   "severidade": "BAIXO",
+   "arquivo_linha": "gerar_preregistro_pilar_quantico_03out.py (26aba67a…) :580-585 (a seção «A ratificação do operador» do MD)",
+   "afirmacao": "O registro do transcrito (de_teste, caminho, sha256 das linhas) só existe no JSON do V1. O MD não o mostra, e o MD é o documento lido por humanos, onde «a conferência final é a leitura humana do verbatim». O MD de um V1 congelado com transcrito de teste só difere do de um V1 real pelo texto do verbatim.",
+   "evidencia": "O MD do V1 do X0 (sb_X0, cb99edb6…), nas linhas 9-13, mostra só quando, escolha, especificação, verbatim e rascunho. grep por «transcrito_SINTETICO», «sha256_das_linhas» e «de_teste» como chave dá 0. Os 5 acertos de «de_teste» são «variabilidade_teste_tempo_v*». O JSON tem \"de_teste\": true na linha 65.",
+   "correcao": "Acrescentar ao MD uma linha «transcrito lido: <caminho> (de_teste: …; sha256 das linhas: …; tamanho na leitura: …)».",
+   "origem": "congelamento"
+  },
+  {
+   "severidade": "BAIXO",
+   "arquivo_linha": "rito_v384.sh (e18acd113b26c06a…) :89 (rm -f .rito_v384.pid no COMEÇO do religar), contra :15-16 do cabeçalho («Com outro lancador vivo, RECUSA (codigo 16)»), :41 («o religar o remove no fim»), gerador do pré-registro 26aba67a… :520 e MD v9 :133 («com outro lançador vivo, RECUSA — código 16»)",
+   "afirmacao": "O religar() apaga o .rito_v384.pid na primeira coisa que faz (l.89), mas a restauração que vem depois pode durar minutos: até 120 s à espera do vigia, mais 60 s da espera de paradas, mais até 180 s pela porta, mais 30 s de reconferência. Durante esse tempo o lançador A está vivo e sem PID no pacote. Um segundo lançador B passa a guarda 16 e a do um.py, lê o marcador VIVO de A como «de uma rodada anterior que morreu», PARA o servidor que A acabou de religar e gira o log real de A para .anterior enquanto A ainda escreve nele. A linha final de A cai no log de B. O cabeçalho, o comentário da l.41 e o texto do pré-registro afirmam a recusa com outro lançador vivo, o que é falso nessa janela. É a mesma classe do 8N6, em outra janela, e maior.",
+   "evidencia": "Arnês só de stubs, cópia isolada lanc2 (lanc2/casos9.sh d36c6adc…, caso S_religar; S_religar.out 1ee7494a…; logs_fim.txt 51df39e2…). Com A no religar (START feito, porta só depois de 20 s) o arnês registrou: «A vivo? SIM ; .rito_v384.pid existe? NAO ; marcador: … (restaurar=1)». Lançado B:\n- B NÃO recusou 16 (rc=0);\n- B logou «MARCADOR de uma rodada anterior que morreu com o servidor parado (… 08:45:11 …)»;\n- STOP_TASK aparece 3 vezes nos eventos (N0, A e B);\n- há 2 «inicio do rito» entre o log corrente e o .anterior;\n- o .anterior de A termina em «RELIGANDO…» sem desfecho;\n- a última linha do log de B é a de A («08:45:44 servidor de volta», depois do «08:45:39» de B).\nA l.89 já existia antes (.bak_antes_afer6 :52); a frase que a contradiz é desta rodada.",
+   "correcao": "Tirar o rm -f do .rito_v384.pid da l.89 e fazê-lo no FIM do religar, em todos os return. O religar já ignora TERM/HUP/INT (l.86), então manter o PID durante a restauração não custa nada. Ou dizer no cabeçalho e no texto do pré-registro que a recusa 16 não cobre a restauração.",
+   "origem": "lancador_conferidor_runtime"
+  },
+  {
+   "severidade": "BAIXO",
+   "arquivo_linha": "rito_v384.sh (e18acd11…) :45 (LOGS=…log.fase0; : > \"$LOGS\") e :149/:153 (recusas 14 por echo), contra a disposição 8a_novos[\"7\"] («uma tentativa recusada em qualquer ponto nao tira do lugar o registro da anterior»); MD v9 :133 (0 ocorrências de «.fase0»)",
+   "afirmacao": "O registro de uma tentativa recusada DEPOIS da parada (exits 10/11/12, ou um sinal entre l.176 e l.196) vive só no .fase0: o «antes», a PARADA, a recusa e todo o religar. A tentativa seguinte o trunca na l.45 assim que passa as guardas 6-16, mesmo que ela própria seja recusada em 14 sem registrar nada (as recusas 14 usam echo). Assim some o único registro de uma tentativa que parou e religou o servidor. O conferidor nunca lê o .fase0, e o texto do pré-registro não diz que ele existe.",
+   "evidencia": "Arnês S_saidas (S_saidas.out cf36ce2a…). Depois de R11 (VRAM 7000), o .fase0 tem 603 bytes (9877a1593734f855…): «antes:», «PARANDO…», «depois da parada…», «a VRAM usada (7000 MiB)… NAO RODO», «RELIGANDO…», «servidor de volta». A tentativa seguinte, R14c (sonda da tarefa falha, exit 14), deixa o .fase0 com 0 bytes (e3b0c442…; snap_R14c_depois_do_R11/resumo.txt 66394764…). A recusa 14 não aparece em lugar nenhum além do stdout. O log real e o .anterior seguem intactos, então a parte do 8N7 que fala da rodada real está certa. Contagem no MD v9 e no JSON v9: «.fase0» 0.",
+   "correcao": "Antes de truncar na l.45, girar o .fase0 existente (por exemplo mv para .fase0.anterior), ou abrir com uma linha de cabeçalho por tentativa e acrescentar em vez de truncar. Logar as recusas 14 com log() em vez de echo. E dizer no texto do pré-registro onde fica o registro de uma tentativa recusada.",
+   "origem": "lancador_conferidor_runtime"
+  },
+  {
+   "severidade": "BAIXO",
+   "arquivo_linha": "rito_v384.sh (e18acd11…) :117 (comentário) e :120 («ha parada da tarefa ainda em curso ('$sp_')»); conferir_rito_v384.py (7ce681af…) :88 (rótulo «ESCUTA, MAS HAVIA PARADA DA TAREFA EM CURSO»)",
+   "afirmacao": "Com a correção do 8N8, a contagem da l.118 soma também os stop_iald_llama.ps1 vivos, que param o supervisor e o llama-server, não a tarefa. A linha do log e o rótulo do conferidor continuam dizendo «parada DA TAREFA». No caso que motivou o 8N8 (stop_iald_llama.ps1 vivo, nenhum Stop-ScheduledTask), log e conferidor atribuem a parada à tarefa. O cabeçalho (l.17) diz certo: «Stop-ScheduledTask ou stop_iald_llama.ps1».",
+   "evidencia": "Arnês V4 refeito (S_V4.out 95d7b928…; log real b6fb514d…): o stub registra «PS_PARADAS_CONTA_8A stoptask=0 stopps=1», e o lançador loga «AVISO: a porta 8081 escuta, mas ha parada da tarefa ainda em curso ('1')». O bloco do conferidor extraído (classificador9.json 2936e2fb…, caso arnes_S_V4) dá «ESCUTA, MAS HAVIA PARADA DA TAREFA EM CURSO (o marcador ficou) -- conferir a tarefa». Só informação: não decide o tudo_bate.",
+   "correcao": "Na l.120, trocar por «ha parada (Stop-ScheduledTask ou stop_iald_llama.ps1) ainda em curso», ou dizer as duas contagens. No conferidor, casar a forma nova (mantendo a antiga) e rotular «HAVIA PARADA EM CURSO». No comentário da l.117, citar também a classe [a].",
+   "origem": "lancador_conferidor_runtime"
+  },
+  {
+   "severidade": "BAIXO",
+   "arquivo_linha": "gerar_preregistro_pilar_quantico_03out.py (26aba67a…) :520 → MD v9 :133 dos dois rascunhos (1065f582…, 63346b18…)",
+   "afirmacao": "A frase nova do giro foi inserida entre a cláusula do aborto e o seu complemento com travessão. O texto ficou «…não no PowerShell); o log da tentativa e o registro dos sinais só giram (para .anterior) depois da última recusa — o TaskStop da ferramenta da gerência NÃO para o lançador», e o aviso sobre o TaskStop, que é do aborto, passa a ler-se como apêndice do giro. Além disso, «o log da tentativa … gira (para .anterior)» é inexato. O log da tentativa (.fase0) vira o log real; quem vai para .anterior é o log REAL da rodada anterior. E o log de uma tentativa recusada fica no .fase0, o que o texto não diz.",
+   "evidencia": "Diferença de palavras por script da linha «o lançador do rito» entre o .bak_antes_afer8_20261004_080849 e o gerador corrente: 4 inserções, uma delas «; o log da tentativa e o registro dos sinais só giram (para .anterior) depois da última recusa», colada imediatamente antes de « — o TaskStop da ferramenta da gerência NÃO para o lançador». O trecho do MD:133 foi lido por script nos dois rascunhos v9. rito_v384.sh :196-197: mv LOGF → LOGF.anterior; mv .fase0 → LOGF.",
+   "correcao": "Recolocar «— o TaskStop da ferramenta da gerência NÃO para o lançador» junto da cláusula do aborto, e redigir o giro como: «a tentativa escreve num log próprio (.fase0); só depois da última recusa o log real da rodada anterior e o registro dos sinais vão para .anterior e o da tentativa toma o lugar do real; o de uma tentativa recusada fica no .fase0».",
+   "origem": "lancador_conferidor_runtime"
+  },
+  {
+   "severidade": "BAIXO",
+   "arquivo_linha": "scratchpad\\v384\\rito_v384.sh:89 (rm -f .rito_v384.pid no INICIO do religar), :41 (comentario «o religar o remove no fim»), :38 (guarda do codigo 16); gerador do pre-registro :520 (texto «com outro lancador vivo, RECUSA — codigo 16»)",
+   "afirmacao": "Contrato quebrado, anterior a esta rodada mas agora prometido por escrito: o religar apaga o .rito_v384.pid na PRIMEIRA linha (rito_v384.sh:89), antes de esperar o vigia (ate 120 s), da espera de 60 s, do Start-ScheduledTask, da espera da porta (ate 180 s) e da reconferencia de 30 s. Durante essa janela (de segundos a cerca de 6,5 min), um segundo lancador passa pela guarda da linha 38. Ele nao e' recusado com o codigo 16, mas o texto do pre-registro e o cabecalho do lancador dizem que seria.",
+   "evidencia": "Achei `rm -f \"$PK/.rito_v384.pid\"` em rito_v384.sh:89, logo depois de RELIGADO=1. No .bak_antes_afer8 a mesma linha estava na :84, entao vem de antes. A guarda (:36-38) so recusa quando o arquivo existe E o processo vive. Consequencias lidas no codigo: (1) o lancador 2 grava o proprio MARCA (:179) e o religar do lancador 1 pode apaga-lo depois (`rm -f \"$MARCA\"`, :124). Se o lancador 2 morrer a forca, o servidor fica parado sem marcador. (2) O Start-ScheduledTask do lancador 1 (:109) corre contra o Stop do lancador 2 (:181). (3) O giro do lancador 2 (:196) move para .anterior o log real em que o religar do lancador 1 ainda escreve. As linhas seguintes do lancador 1 (como «servidor de volta») vao cair no log real do lancador 2, que e' o que o conferidor le. O texto do gerador (:520) diz «gravado logo depois da guarda (com outro lancador vivo, RECUSA — codigo 16)».",
+   "correcao": "Remover o .rito_v384.pid no FIM do religar, em cada return, e nao na primeira linha. Ou manter a remocao so no trap de saida, depois do religar. Assim o codigo 16 cobre a restauracao inteira. O comentario da :41 passa a ser verdade.",
+   "origem": "regressao"
+  },
+  {
+   "severidade": "BAIXO",
+   "arquivo_linha": "scratchpad\\v384\\rito_v384.sh:45 (`: > \"$LOGS\"` com LOGS=.fase0); disposicoes_afericoes_v384.json, disposicoes_8a_novos[7]",
+   "afirmacao": "O .fase0 e' zerado a cada tentativa. Uma tentativa recusada APAGA o registro da tentativa recusada anterior, inclusive o do religar depois de exit 10, 11 ou 12 (por exemplo, «AVISO: a porta 8081 nao escutou em 180 s»). A disposicao 7 da 8a diz que «uma tentativa recusada em qualquer ponto nao tira do lugar o registro da anterior». Isso vale para o log REAL, nao para o .fase0.",
+   "evidencia": "rito_v384.sh:45 faz `LOGF=\"$LOGS\"; LOGS=\"$PK/rito_servidor_v384.log.fase0\"; : > \"$LOGS\"` sem girar o .fase0. As recusas 10, 11 e 12 (:188, :190, :192) ficam depois de `trap religar EXIT` (:176), entao o religar escreve no .fase0. Na tentativa seguinte, a :45 trunca esse arquivo. O conferidor nao le o .fase0 (conferir_rito_v384.py:85 le so rito_servidor_v384.log).",
+   "correcao": "Girar tambem o .fase0 antes de zera-lo (`[ -f .fase0 ] && mv -f .fase0 .fase0.anterior`). Outra saida: anexar ao .fase0 com um separador datado, sem truncar. A disposicao 7 deve dizer que a garantia e' do log real.",
+   "origem": "regressao"
+  },
+  {
+   "severidade": "BAIXO",
+   "arquivo_linha": "scratchpad\\v384\\rito_v384.sh:118-120; scratchpad\\v384\\conferir_rito_v384.py:88",
+   "afirmacao": "Quando a contagem das paradas em curso NAO e' legivel (sp_ vazio ou com texto de erro do PowerShell), o lancador registra «ha parada da tarefa ainda em curso ('')». O ramo novo do conferidor transforma isso em «ESCUTA, MAS HAVIA PARADA DA TAREFA EM CURSO». A frase afirma uma parada que o numero nao mostrou.",
+   "evidencia": "rito_v384.sh:119 so trata `[ \"$sp_\" = \"0\" ]`. Qualquer outro valor, inclusive '' quando o powershell falha (`2>/dev/null`), cai na :120 com a mesma frase. A espera de 60 s (:107) distingue os casos («ou a contagem nao foi legivel»). A :120 nao distingue. O conferidor (:88) casa a substring «ha parada da tarefa ainda em curso» sem olhar o valor.",
+   "correcao": "Na :120, separar `case \"$sp_\" in ''|*[!0-9]*) log \"AVISO: a contagem das paradas nao foi legivel ...\";; *) log \"... ha parada ... ($sp_)\";; esac`. No conferidor, um rotulo proprio para «contagem ilegivel».",
+   "origem": "regressao"
+  },
+  {
+   "severidade": "BAIXO",
+   "arquivo_linha": "C:\\IALD\\Bancada_Um\\investigacao\\preregistro_pilar_quantico_03out\\gerar_preregistro_pilar_quantico_03out.py:284-291 (frase fixa na :287) e :267-272 (a nota antiga); scratchpad\\v384\\memoria_bloco10_v384.py:20",
+   "afirmacao": "A nota_por_d_e_custo traz uma frase FIXA, nao condicionada ao numero: «(a corrente sendo a mais lenta ali, o orcamento ja usa o pior caso medido ...)». Com outra sonda do mesmo trabalhador, o texto se contradiz no mesmo paragrafo. Alem disso, a nota antiga diz sem escopo «a margem x1.25 ... cobre a dispersao maior/menor», calculado so com d = 64 instancia. No MD ela fica colada a nota nova, que diz «NAO cobre ... d = 64 injecao do T1 (1.264)». Hoje os numeros confirmam a frase fixa: maior_sobre_corrente = 1.0 em d = 32 e 64. O texto, porem, nao depende deles.",
+   "evidencia": "Rodei uma COPIA PURA das linhas 273-291, extraida do gerador por script, na minha pasta (aferidor9_regressao\\trecho_pdc_linhas_273_291.py, sha256 0a9eca45259d0569…), com entradas SINTETICAS: d = 32, a corrente em 1,0 s, outra sonda em 1,40 s. Saida: «a sonda corrente e' a mais lenta de todas em nenhum d; a maior sobre a menor passa da margem em d = 32 instancia (1.474) -- ... (a corrente sendo a mais lenta ali, ...)». No rascunho v9 B_REDUZIDO o MD tem «...cobre a dispersao maior/menor; nao foi medida sob a carga do rito. Por d e por custo ...». O memoria_bloco10_v384.py:20 diz que os numeros sao «lidos por script», mas escreve como texto fixo «NAO cobre ... em d = 32 (instancia) e d = 64 (injecao do T1); a sonda corrente e' a mais lenta ali».",
+   "correcao": "Gerar a frase entre parenteses so quando todo ponto de _pdc_fora_mm tiver _mc <= 1 + eps. Caso contrario, nomear os pontos em que a corrente nao e' a mais lenta. Na nota antiga, escrever «cobre a dispersao maior/menor da instancia em d = 64». No bloco 10 da memoria, uma correcao AO LADO com os pontos lidos do rascunho.",
+   "origem": "regressao"
+  },
+  {
+   "severidade": "BAIXO",
+   "arquivo_linha": "C:\\IALD\\Bancada_Um\\investigacao\\preregistro_pilar_quantico_03out\\gerar_preregistro_pilar_quantico_03out.py:580-585 (secao «A ratificacao do operador» do MD)",
+   "afirmacao": "O MD do V1 nao mostra o campo novo ratificacao_do_operador.transcrito (caminho, de_teste, sha256 das linhas, tamanho). Quem le so o MD nao distingue um V1 ratificado pelo transcrito canonico de um feito com transcrito de TESTE.",
+   "evidencia": "O V1 de teste (teste_congelamento\\A_igual\\PREREGISTRO_PILAR_QUANTICO_20261003_V1.json, sha256 26600887…) tem transcrito.de_teste = true. No .md do mesmo caso, «grep -n transcrito» so acha a linha da afericao (:197) e nenhuma da ratificacao. O bloco `if RAT:` do MD imprime quando, escolha, especificacao, verbatim e rascunho, e nao imprime o transcrito.",
+   "correcao": "Acrescentar ao MD uma linha «transcrito lido: `<caminho>` (de_teste = …; N linha(s), sha256 … — a linha sem o fim de linha; tamanho na leitura …)». O MD nao entra na comparacao com o rascunho, entao isso nao mexe no congelamento.",
+   "origem": "regressao"
+  },
+  {
+   "severidade": "BAIXO",
+   "arquivo_linha": "C:\\IALD\\Bancada_Um\\investigacao\\preregistro_pilar_quantico_03out\\gerar_preregistro_pilar_quantico_03out.py:676-680 (giro do MD orfao) antes de :681-688 (guardas da pasta de evidencias)",
+   "afirmacao": "O giro do MD orfao (complemento 8b) MUDA a pasta permanente, com os.replace para .incompleto_<data>, ANTES das guardas da pasta de evidencias. O comentario da :681 diz «SO AGORA, com todas as guardas passadas». Se a guarda da :685 ou a do hash recusar, a tentativa recusada ja deixou rastro: um rename na pasta permanente.",
+   "evidencia": "Ordem lida no arquivo: :679 `_orf = PMD + \".incompleto_\" ...`; :680 `os.replace(PMD, _orf)`; :681 o comentario «SO AGORA...»; :685 o assert da listagem das evidencias e, logo depois, o do sha256. O teste do congelamento (casos B a E «recusados sem rastro») nao exercita o estado de MD orfao.",
+   "correcao": "Mover o giro do MD orfao para depois das guardas das evidencias, imediatamente antes do laco de gravacao (:698). Fica valendo o «recusado sem rastro» tambem nesse estado.",
+   "origem": "regressao"
+  },
+  {
+   "severidade": "BAIXO",
+   "arquivo_linha": "scratchpad\\v384\\rito_v384.sh:196-197",
+   "afirmacao": "O giro novo nao confere os mv. Se `mv -f \"$LOGF\" \"$LOGF.anterior\"` falhar (arquivo seguro por outro processo no Windows), `LOGS=\"$LOGF\"` passa a apontar para o log da rodada ANTERIOR, e esta rodada anexa nele. O conferidor le um log misturado e pode achar o «servidor de volta» da rodada anterior. Antes, `: > \"$LOGS\"` garantia log limpo.",
+   "evidencia": "Na :196, `[ -f \"$LOGF\" ] && mv -f \"$LOGF\" \"$LOGF.anterior\"` sem `||`. Na :197, `mv -f \"$LOGS\" \"$LOGF\"; LOGS=\"$LOGF\"` sem conferencia. O conferidor (conferir_rito_v384.py:87-90) decide pela primeira substring achada no arquivo inteiro.",
+   "correcao": "Conferir o giro: `mv ... || { log \"FALHA VISIVEL: o log real nao girou\"; exit 17; }`, antes do vigia e ainda dentro do trap religar. Ou, como reserva, `cat .fase0 > \"$LOGF\"` (truncando) quando o mv falhar.",
+   "origem": "regressao"
+  },
+  {
+   "severidade": "BAIXO",
+   "arquivo_linha": "scratchpad\\v384\\rito_v384.sh:103 vs :118; gerador do pre-registro :520",
+   "afirmacao": "Desde a 8a, a reconferencia de 30 s (:118) conta Stop-ScheduledTask OU stop_iald_llama.ps1. A espera de 60 s antes de religar (:103) continua contando so o stop_iald_llama.ps1. O texto do pre-registro diz «espera ate 60 s que nenhuma parada esteja em curso antes de religar», o que e' mais amplo que o codigo.",
+   "evidencia": "Na :103 o filtro e' `-match 'stop_iald_llama\\.ps1'`. Na :118 e' `(... 'Stop-Scheduled[T]ask' ... 'IALD Llama') -or ... 'stop_iald_llam[a]\\.ps1'`. Quando o vigia e' morto aos 120 s (VIGIA_MORTO=1, :94), um Stop-ScheduledTask filho dele pode seguir vivo. A :103 nao o espera, e so a reconferencia da :118 o pega.",
+   "correcao": "Usar na :103 a mesma consulta da :118. Ou ajustar o texto do pre-registro para «espera ate 60 s que nenhum stop_iald_llama.ps1 esteja em curso».",
+   "origem": "regressao"
+  },
+  {
+   "severidade": "BAIXO",
+   "arquivo_linha": "gerador do pre-registro :18; scratchpad\\v384\\gerar_candidato_v384.py:34-36; fumaca_v384.py:14; gerar_esperados_v384.py:17; instalar_v384.py:34",
+   "afirmacao": "As guardas novas desta rodada sao todas `assert`: a do transcrito de TESTE na pasta permanente (inclusive por samefile) e as quatro recusas de de_teste e de caminho nao canonico. Com `python -O` ou PYTHONOPTIMIZE elas somem sem aviso. Nesse caso, «a guarda vem primeiro e recusa antes de qualquer gravacao» (caso F) deixa de valer.",
+   "evidencia": "Medido agora: PYTHONOPTIMIZE vazio e sys.flags.optimize = 0 (Python 3.14.3), entao HOJE as guardas valem, e conferi que a da :18 vem antes de qualquer gravacao. O padrao `assert` ja existia antes desta rodada, e esta rodada acrescentou mais seis guardas no mesmo padrao.",
+   "correcao": "Nas guardas fail-closed que protegem a pasta permanente e a ratificacao, usar `if not (...): raise SystemExit(\"RECUSO: ...\")`. Ou, no topo de cada script, `if sys.flags.optimize: raise SystemExit(\"RECUSO: rodar sem -O\")`.",
+   "origem": "regressao"
+  }
+ ],
+ "verificacao": {
+  "veredictos": [
+   {
+    "i": 0,
+    "refutado": false,
+    "razao": "CONFIRMADO por leitura e por execução própria. Mapa consultado antes («rotas.py consultar pilar»: 18 rotas, 329 registros, cabeça bf085dabe83f1d52, nenhuma rota da 9ª). Gerador 26aba67a2b7ceb74… lido por script: as linhas 676-680 movem o MD órfão com os.replace, e só depois as 682-687 fazem as guardas da pasta de evidências (assert listdir e assert sha); no estado «sem JSON» não existe ramo que gire a pasta. Execução própria: extraí por script as linhas 675-713 (bloco b6f5afc9…) e rodei com fontes SINTÉTICAS na minha pasta, sem transcrito e sem operador (bloco_gravacao_md_com_sha.py c1efc38c… → .json 80a83e02…). T1, com o .json.tmp travado 12 s, deu rc 1 e deixou o MD, a pasta de evidências e o .tmp. Acrescentei uma linha a uma fonte. T2 deu rc 1 com «a pasta de evidencias ja existe e nao confere», e o MD já tinha ido para .incompleto_20261004_085738. T3 deu a mesma recusa: preso. Ressalva: o MD só vai para o lado porque ele MUDA de uma tentativa para outra. No gerador real ele sempre muda, porque leva o horário «gerado» (:577) e o sha256 de cada evidência (:666-667). No meu primeiro ensaio, com o MD fixo (bloco_gravacao.json aa491af1…), o MD ficou onde estava, e mesmo assim a guarda travou. A evidência do achado confere por script: caso9b.py 6b3f45e7…, caso9b.json 7e5ec26a…. É fail-closed (nada se congela errado), mas exige mexer à mão na pasta permanente e contraria o «SO AGORA, com todas as guardas passadas» da :681.",
+    "severidade_ajustada": "BAIXO"
+   },
+   {
+    "i": 1,
+    "refutado": false,
+    "razao": "CONFIRMADO. As linhas 710-713 do gerador (26aba67a…) fazem os.remove(_pth+'.tmp') sem try. Execução própria do bloco 675-713 com um .tmp SINTÉTICO travado 14 s por outro processo (python open 'rb', sem FILE_SHARE_DELETE), em bloco_gravacao.json aa491af1…: rc 1; a exceção que sobe vem da linha 38 do bloco, que é a :712 do gerador (o os.remove); o __context__ é o PermissionError original do os.replace; tmp_sobrou = true. A tentativa seguinte, já sem trava, deu rc 0: o 'wb' trunca o .tmp, como diz o achado. A falha continua visível (o erro original aparece encadeado no traceback). O defeito é só que a disposição 8a_novos['0'] («o temporario apagado se falhar») não vale com trava persistente, e que o erro que aparece em cima passa a ser o do remove. Evidência do achado conferida: casos9_X7.json 69163687….",
+    "severidade_ajustada": "BAIXO"
+   },
+   {
+    "i": 2,
+    "refutado": false,
+    "razao": "CONFIRMADO por leitura (não rodei, porque escreveria na pasta permanente se a guarda falhasse). No teste_congelamento_v384.py (79c6e872…), as linhas 102-105 chamam o gerador permanente pela grafia 8.3 e pelo prefixo \\\\?\\ com TW, TT e TM VÁLIDOS (o trabalhador, teste_tempo_v9, teste_motor_v8), com ESTD = o pacote e --escolha=B_REDUZIDO, sem ratificação. No gerador, a :18 é a única barreira. Sem ela, :216-217 dão VER = V1_RASCUNHO_B_REDUZIDO com BASE dentro de HERE (a permanente, já que HERE vem de __file__), e :698-713 gravam. A prova de que o gerador grava o rascunho na própria pasta com essas entradas é o rascunho_prereg_v9/: o mesmo gerador 26aba67a… está lá ao lado dos rascunhos que gerou. A defesa do teste (:108, sorted(listdir) == antes) só detecta depois que a pasta já mudou. Hoje a guarda dispara: guarda9.json 24d17447…, e os casos F do teste da gerência passaram. A correção proposta (um trabalhador inexistente) é segura: com a guarda, o gerador recusa na :18; sem ela, morre na :50 antes de gravar.",
+    "severidade_ajustada": "BAIXO"
+   },
+   {
+    "i": 3,
+    "refutado": false,
+    "razao": "CONFIRMADO. No gerador (26aba67a…), o bloco `if RAT:` das linhas 581-585 imprime quando, escolha, especificação, verbatim e rascunho, mas não imprime RAT['transcrito'] (gravado só no JSON, :214-215). Conferido no V1 de teste do pacote (teste_congelamento/A_igual): o JSON 26600887… tem \"transcrito\" na :63 e \"de_teste\": true na :65; no MD 150b4f05…, grep por 'transcrito|de_teste|sha256_das_linhas' acha só a :197 (o texto da aferição) e as linhas das evidências variabilidade_teste_tempo_*. Uma parte é exagerada: «só difere pelo verbatim» não é exato, porque os caminhos das cópias das evidências também diferem. O risco é pequeno, porque a :18 impede um V1 de teste na pasta permanente e os quatro passos a jusante recusam de_teste ≠ false. Mesmo assim, o documento humano não mostra o registro.",
+    "severidade_ajustada": "BAIXO"
+   },
+   {
+    "i": 4,
+    "refutado": false,
+    "razao": "CONFIRMADO por leitura do rito_v384.sh (e18acd11…). A :42 grava o PID; a :43 tem trap EXIT com rm; a :176 troca esse trap por `trap religar EXIT`. A partir daí, o PID só é removido na :89, que é a 3ª instrução do religar, ANTES das esperas: o vigia até 120 s (:93), 60 s (:102-106), Start (:109), a porta até 180 s (:111-127) e mais 30 s (:115). A guarda das :36-38 só recusa se o arquivo existe E o processo vive. Nessa janela, um B passa: o um.py de A já acabou ou foi encerrado pelo mata_um, então passa também a guarda 6; B lê o MARCA de A como «rodada que morreu» (:159-162), para o servidor (:181) e gira o log (:196). O arnês do achado confere por script: lanc2/casos9.sh d36c6adc…, S_religar.out 1ee7494a…, logs_fim.txt 51df39e2… («A vivo? SIM ; .rito_v384.pid existe? NAO»; 2 inícios do rito; 3 STOP_TASK; a linha 08:45:44 de A no log de B). Mesmo lendo o «no fim» da :41 como «na restauração final», o texto do pré-registro (:520, «com outro lançador vivo, RECUSA — código 16») e o cabeçalho (:15-16) são falsos nessa janela. A remoção na :89 é antiga (bak_antes_afer8 :84; bak_antes_afer6 :52); a promessa escrita é desta rodada.",
+    "severidade_ajustada": "BAIXO"
+   },
+   {
+    "i": 5,
+    "refutado": false,
+    "razao": "CONFIRMADO. No rito_v384.sh (e18acd11…), a :45 faz `: > \"$LOGS\"` no .fase0 sem girá-lo, depois das guardas 6-16 e antes das sondas 14 (:149, :153), que usam echo e não log(). As recusas 10, 11 e 12 (:188, :190, :192) ficam depois do `trap religar EXIT` (:176) e antes do giro (:196), então o 'antes', a PARADA, a recusa e o religar inteiro ficam só no .fase0. O conferidor (7ce681af…, :85) lê só o rito_servidor_v384.log. O arnês do achado confere: snap_R11/resumo.txt mostra o .fase0 com 603 bytes (9877a159…); snap_R14c_depois_do_R11/resumo.txt (66394764…) mostra 0 bytes (e3b0c442…); S_saidas.out cf36ce2a…. A disposição 8a_novos['7'] («uma tentativa recusada em qualquer ponto nao tira do lugar o registro da anterior») vale para o log REAL da última rodada que rodou, não para o registro de uma tentativa recusada. Atenuante fora do pacote: log() usa tee, então a linha também vai ao stdout do lançador, se alguém o capturou.",
+    "severidade_ajustada": "BAIXO"
+   },
+   {
+    "i": 6,
+    "refutado": false,
+    "razao": "CONFIRMADO. No rito_v384.sh (e18acd11…), a :118 conta (Stop-Scheduled[T]ask E 'IALD Llama') OU stop_iald_llam[a]\\.ps1. A :120 continua a dizer «ha parada da tarefa ainda em curso ('$sp_')». O comentário da :117 cita só a classe [T]. O conferidor (7ce681af…), na :88, casa essa substring e rotula «ESCUTA, MAS HAVIA PARADA DA TAREFA EM CURSO». O cabeçalho (:17) diz certo. É só informação: o bloco é «INFORMACAO (nao decide)» (:84) e o tudo_bate (:102) não o usa. Evidência do achado conferida: S_V4.out 95d7b928…, classificador9.json 2936e2fb….",
+    "severidade_ajustada": "BAIXO"
+   },
+   {
+    "i": 7,
+    "refutado": false,
+    "razao": "CONFIRMADO por diferença de palavras feita por script na linha «o lançador do rito», entre o .bak_antes_afer8_20261004_080849 e o gerador corrente (26aba67a…). Antes estava «PowerShell) — o TaskStop…»; agora é «PowerShell); o log da tentativa e o registro dos sinais só giram (para .anterior) depois da última recusa — o TaskStop…»: a cláusula nova entrou entre o aborto e o complemento dele. No código (rito_v384.sh :196-197), quem vai para .anterior é o log REAL da rodada anterior; o .fase0 (o log da tentativa) toma o lugar do real. «.fase0» tem 0 ocorrências nos dois MD v9 (1065f582…, 63346b18…) e nos dois JSON v9. O mesmo enredo aparece no cabeçalho do lançador (:16, «so gira para o lugar do log real (.anterior)»).",
+    "severidade_ajustada": "BAIXO"
+   },
+   {
+    "i": 8,
+    "refutado": false,
+    "razao": "CONFIRMADO; é o mesmo defeito do [4], visto pela lente de regressão. As consequências (1), (2) e (3) batem com a leitura: o rm -f \"$MARCA\" de A (:124/:98) pode apagar o MARCA de B (:179); o Start de A (:109) corre contra o Stop de B (:181); o giro de B (:196) leva para .anterior o log em que A ainda escreve, e as linhas finais de A caem no log que o conferidor lê (:85). O arnês S_religar (logs_fim.txt 51df39e2…) mostra a (3). A janela máxima de ~6,5 min confere com 120+60+180+30 s, mais as sondas. Por ser duplicata, não soma severidade ao [4].",
+    "severidade_ajustada": "BAIXO"
+   },
+   {
+    "i": 9,
+    "refutado": false,
+    "razao": "CONFIRMADO; é o mesmo defeito do [5], pela lente de regressão. A leitura confere: :45 trunca o .fase0; as recusas 10, 11 e 12 (:188, :190, :192) vêm depois do trap da :176, e o religar escreve no .fase0 (LOGS só é trocado na :197); o conferidor lê só o log real (:85). A ressalva sobre a disposição 7 está certa: a garantia é do log real. Por ser duplicata, não soma severidade.",
+    "severidade_ajustada": "BAIXO"
+   },
+   {
+    "i": 10,
+    "refutado": false,
+    "razao": "CONFIRMADO. No rito_v384.sh, a :119 só trata `[ \"$sp_\" = \"0\" ]`. Um sp_ vazio, por falha do powershell com 2>/dev/null, ou com texto de erro cai na :120 com a mesma frase «ha parada da tarefa ainda em curso ('')». A espera de 60 s (:107) distingue «ou a contagem nao foi legivel»; a reconferência não. O conferidor (:88) casa a substring sem olhar o valor. A consequência prática é conservadora (o marcador fica e manda conferir a tarefa), e o bloco é só informação. O defeito é afirmar no log uma parada que a contagem não mostrou. É complementar ao [6], não duplicata.",
+    "severidade_ajustada": "BAIXO"
+   },
+   {
+    "i": 11,
+    "refutado": false,
+    "razao": "CONFIRMADO na parte principal, refutado em parte na secundária. Execução própria: extraí por script as linhas 273-291 do gerador (26aba67a…) e rodei com tempos SINTÉTICOS de sonda, sem operador nenhum (nota_pdc_sintetica.py ca57c6d7… → .json 7fcb0916…). Com uma outra sonda mais lenta, o texto diz «a sonda corrente e' a mais lenta de todas em nenhum d», depois «passa da margem em d = 32 …» e, no mesmo parágrafo, «(a corrente sendo a mais lenta ali, o orcamento ja usa o pior caso medido…)». Com nenhum ponto fora, diz «passa da margem em nenhum ponto -- nesses pontos a margem NAO cobre … (a corrente sendo a mais lenta ali…)». A frase é fixa (:287). HOJE os números a confirmam: no rascunho v9 B_REDUZIDO (c2a17102…), maior_sobre_corrente = 1.0 em d = 32 e d = 64, e os pontos fora são d = 32 instância (1.323) e d = 64 injeção (1.264). O defeito é latente. Parte secundária: a nota antiga traz «(instancia)» logo antes de «cobre a dispersao maior/menor», e no MD o parágrafo abre com «(d = 64; …)». O escopo está dito, mas fica colado à nota nova, que diz «NAO cobre … d = 64 injecao». O memoria_bloco10_v384.py (e9173fc5…), na :20, traz os pontos «d = 32 (instância) e d = 64 (injeção do T1)» e «a sonda corrente é a mais lenta ali» como texto fixo; só a margem vem de número.",
+    "severidade_ajustada": "BAIXO"
+   },
+   {
+    "i": 12,
+    "refutado": false,
+    "razao": "CONFIRMADO; é duplicata do [3]. O V1 de teste A_igual (JSON 26600887…) tem transcrito.de_teste = true na :65. No MD (150b4f05…), «transcrito» só aparece na :197, que é da aferição; o bloco `if RAT:` (:581-585) não imprime o campo. É inócuo para o congelamento, porque o MD fica fora da comparação com o rascunho (:556-564 comparam DOC e RASC, o MD não). Por ser duplicata, não soma severidade.",
+    "severidade_ajustada": "BAIXO"
+   },
+   {
+    "i": 13,
+    "refutado": false,
+    "razao": "CONFIRMADO; é a segunda metade do [0]. Pela ordem lida, :679-680 fazem o os.replace do MD, :681 tem o comentário «SO AGORA, com todas as guardas passadas», :685 o assert de listdir e :687 o de sha. Execução própria (bloco_gravacao_md_com_sha.json 80a83e02…): na T2, o .incompleto_20261004_085738 já existia quando a guarda das evidências recusou (t2_md_movido_antes_da_recusa = true). Os casos B-E do teste da gerência («recusados sem rastro») não passam por esse estado.",
+    "severidade_ajustada": "BAIXO"
+   },
+   {
+    "i": 14,
+    "refutado": false,
+    "razao": "CONFIRMADO por execução própria, numa regressão real desta rodada. Script giro_preso.sh (cb38cbf4…), saída giro_preso.out (e3fd7386…), na minha pasta, com arquivos SINTÉTICOS. Com o log real PRESO por um leitor (python open 'rb', sem FILE_SHARE_DELETE), as duas linhas copiadas das :196-197 deram «mv: cannot move … Device or resource busy» nas duas (rc 1 e rc 1). A linha desta rodada foi anexada ao log da rodada ANTERIOR, que já tinha «servidor de volta», e o .fase0 ficou de lado. A forma antiga, `: > real.log`, com o mesmo leitor segurando, deu rc 0 e o log ficou só com a linha nova: o «antes garantia log limpo» do achado vale nesse cenário. O conferidor (:87-90) decide pela substring no arquivo inteiro. Atenuante: um AVISO desta rodada ainda viraria «RELIGADO COM AVISO» (:95-96), então não seria silêncio total.",
+    "severidade_ajustada": "BAIXO"
+   },
+   {
+    "i": 15,
+    "refutado": false,
+    "razao": "CONFIRMADO. No rito_v384.sh (e18acd11…), o filtro da :103 é só -match 'stop_iald_llama\\.ps1'. O da :118 é (Stop-Scheduled[T]ask E 'IALD Llama') OU stop_iald_llam[a]\\.ps1. O texto do pré-registro (:520, «espera até 60 s que nenhuma parada esteja em curso antes de religar») é mais amplo que o código. A disposição 8a_novos['8'] («a mesma consulta da espera de 60 s») também é inexata: a da :118 é um superconjunto. O caminho é real: o vigia roda Stop-ScheduledTask (:211) ANTES do stop_iald_llama.ps1 (:212); morto aos 120 s (:94), o powershell filho do Windows segue vivo e a :103 não o espera. Só a reconferência de 30 s (:113-120, ativada por VIGIA_MORTO=1) o pega.",
+    "severidade_ajustada": "BAIXO"
+   },
+   {
+    "i": 16,
+    "refutado": false,
+    "razao": "CONFIRMADO, como endurecimento. Lido: as guardas desta rodada são assert. São elas: gerador :18; gerar_candidato_v384.py (72afcb5c…) :33-36; fumaca_v384.py (92ac5569…) :12-14; gerar_esperados_v384.py (d44a6062…) e instalar_v384.py (53915233…) nas linhas do de_teste. grep por 'sys.flags.optimize|PYTHONOPTIMIZE|__debug__' dá 0 ocorrências nos cinco arquivos, e o rito não usa python -O (0 ocorrências). Medido agora: sys.flags.optimize = 0, PYTHONOPTIMIZE ausente, Python 3.14.3. HOJE as guardas valem, e a da :18 vem antes de qualquer gravação: :19-50 só leem, e a 1ª escrita é :689/:698. O risco depende de alguém rodar com -O. Com -O, porém, cairia também a recusa da ratificação ausente no gerar_candidato não-ensaio.",
+    "severidade_ajustada": "BAIXO"
+   }
+  ]
+ }
+}

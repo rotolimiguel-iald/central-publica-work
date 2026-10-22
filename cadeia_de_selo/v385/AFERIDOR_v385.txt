@@ -1,0 +1,583 @@
+AFERIDOR_v385 — os relatorios VERBATIM das afericoes da v385 (gravado por gravar_afericoes_v385.py em 2026-10-05 10:36:05)
+
+====================================================================================================
+passada1_codigo — RELATORIO_AFERIDOR_CODIGO_v385.txt (sha256 a95bcb55d115535c345335526f0d3dab181df611e145b659ab15790b2d06440b)
+====================================================================================================
+## Aferição de código e fiação do pacote v385 (antes da instalação e do rito)
+
+Nada do que encontrei bloqueia o rito. Há 2 pontos a corrigir, ambos no comparador da reprodutibilidade (a mesma correção resolve os dois), e 11 notas. Não rodei o candidato, o instalador, o lançador nem o conferidor contra o Nós, e não escrevi no Nós nem no pacote. Os scripts que usei, todos só de leitura, estão em `...\scratchpad\v385\afericao_codigo\`.
+
+### ACHADOS
+
+**1. CORRIGIR: NaN ou inf vira «reproduzido a menos de arredondamento» (falso positivo).**
+- **Onde:** `v385_runtime.py:155-163` (no candidato, 192623-192635).
+- **Por quê:** a linha `maxrel = max(maxrel, rel)` ignora o NaN, porque `max(0.0, nan)` devolve 0.0. O campo diferente entra com `rel=nan`, que não é None, então `exact_other` fica True e `maxrel` fica em 0.
+- **Teste (`nan_no_comparador.py`):**
+  - com o resumo real da v384, trocar `D128.gap_rel` por NaN dá `REPRODUCED_WITHIN_ROUNDOFF__392_FIELDS__1_DIFFER_MAX_REL_0P0e00`;
+  - trocar `D128.gap` por inf dá o mesmo.
+- **Hoje:** o resumo real tem 0 campos não finitos, então o defeito está latente. O efeito seria o selo e o artigo dizerem «iguais a menos de arredondamento… diferença máxima 0» para um campo que virou NaN.
+- **Correção:** usar a regra que o próprio um.py já tem no comparador da bancada v361 (candidato 190810-190812): `if not (math.isfinite(a) and math.isfinite(b))` conta como diferença.
+
+**2. CORRIGIR: a tolerância puramente relativa em campos que são resíduo de máquina.**
+- **Onde:** `v385_runtime.py:157` (`den = max(abs(x_), abs(y_), 1e-300)`).
+- **O que o resumo carrega:** 28 campos com |v| < 1e-10. Exemplos: `T2.identities.VtPF_eq_PF_d8` = 2,3e-16; `D128.max_re` = -8,9e-15; `D128.ss_res_rel` = 4,3e-16; `cpuref.max_diffs.*` ≈ 1e-12; `T1.per_d.*.median_beta_rel_err.0.0` ≈ 1e-11.
+- **Teste:**
+  - mudar só o último dígito de um desses (2,3e-16 → 2,5e-16) dá `NOT_REPRODUCED__1_OF_392`, com rel 0,06;
+  - `D128.max_re` -8,86e-15 → -1,2e-14 dá NOT_REPRODUCED, com rel 0,26.
+- **Cenário:** se algum caminho não for determinístico bit a bit (o MAGMA usa a CPU e o MKL em paralelo), o artigo selado diria «diferentes em N de 392 campos — é resultado», com o veredito do pilar idêntico. O conferidor não reprova (é desenho dele), mas a frase fica selada.
+- **Evidência a favor do determinismo, que reduz a probabilidade:** o `engine_selftest` (40 campos, inclusive resíduos de 1e-16) saiu idêntico bit a bit em 3 rodadas reais na RTX 5090: o cache da v384, a fumaça 21081c13 e o `teste_motor_v8` (`motor_tres_rodadas.py`). O trabalhador fixa `use_deterministic_algorithms`, a `CUBLAS_WORKSPACE_CONFIG`, desliga o tf32, usa 4 threads e sementes fixas.
+- **Correção:** adotar a escala da v361, `scale = max(1.0, |a|, |b|)`, junto com a guarda `isfinite`. Mantém exatas as contagens: um a mais em 21.100 dá rel 4,7e-5, que continua acusando.
+
+**3. NOTA: o pulo de campos é por nome de chave solto.** `_QP_REPRO_SKIP_V385` (runtime:111) inclui `"started"` e `"s"` em qualquer profundidade. Isso tira da comparação o booleano `D128.started`: o teste mostra que `True→False` ainda dá BIT_FOR_BIT. Hoje é inócuo, porque `D128.ran` e `D128.status_code` são comparados. Sugestão: pular por caminho (`D128.spohn_rk4_informative.s`, `phase_seconds`, `env`).
+
+**4. NOTA: se o D128 for pulado pelo prazo, o resultado sai NOT_REPRODUCED, quando o certo seria «não comparável».**
+- O teste dá `NOT_REPRODUCED__26_OF_393`.
+- A margem da v384 era de cerca de 1,7 h: T3+T2+T1+T4 somaram 8.373 s contra um prazo de 14.400 s.
+- O conferidor aceita (`D128_NOT_RAN`), mas a frase do artigo culparia a reprodutibilidade, não o prazo.
+
+**5. NOTA: o veredito afirma `SAME_V1_SAME_WORKER_SAME_BETA` pela chave da pasta, sem conferir os campos do resultado anterior.** O comparador não confere `spec_sha256`, `worker_sha256` e `beta_hex` do resultado anterior, e o ambiente (torch, CUDA, GPU) não é comparado nem registrado. Hoje bate: recalculei a chave a partir do candidato e deu `75dc30bc9cc8d330e31f99ca`, com trabalhador `0c9ba7fd…`, especificação `ff19731…` e `beta_hex` `0x1.8a3ddcdff890cp-7`, que é o beta do core. Sugestão: gravar `same_env` e conferir os três campos.
+
+**6. NOTA: duas frases do artigo (`artigo_pt/en_v385.pysnip`).**
+- Linha 41: diz que o programa leu o resultado anterior «antes do cálculo». Na verdade a leitura (W03) é logo depois do lançamento do trabalhador, antes de o cálculo poder substituir o cache.
+- Linhas 37 e 40: depois de «o nome foi lido do próprio kernel», imprime `final_step_name` (a constante do runtime), não `final_step_name_from_kernel`. São iguais sempre que sela, porque `tok_ok` faz parte de `ok`, então não há frase falsa.
+
+**7. NOTA, fora da minha lente: a igualdade `F(t)=…=e^{-tH_min}` do artigo (PT:29) só existe em docstring.**
+- Na pedra, ela aparece só nas linhas 30 e 98, que são comentário; nenhum termo Lean a prova (procurei `exp` na pedra).
+- No kernel do Nós, a busca por `exp_complement_idempotent` dá 0 arquivos.
+- Classificação (B): existe na bancada como `exp_complement_idempotent`, em `ORDEM_016_QG/A6_EQUACAO_DA_VERDADE/B_fechamentos/IdempotentDephasing_v2.lean` (inventário, linha 1143).
+- Ou se liga essa peça, ou o artigo marca a igualdade como [KNOWN].
+
+**8. NOTA: uma segunda tentativa do rito compararia contra a primeira tentativa da v385.** Se o rito precisar ser repetido depois de `_qp_save_cache` (candidato 193051), o cache já guarda o resultado da primeira tentativa da v385. O conferidor reprova corretamente («contra o resultado pinado da v384»), mas não há script para restaurar `pilar_anterior_v384_<ts>/` de volta ao cache.
+
+**9. NOTA: o instalador da v385 não tem mais as guardas de ensaio e de ratificação da v384.** A ausência se justifica: o gerador da v385 não tem modo ENSAIO, e a ratificação do V1 é exigida em `gerar_esperados_v385.py:40`. Mas a ordem do operador da v385 não fica gravada no `CANDIDATO_v385.json`, só nas docstrings.
+
+**10. NOTA: as linhas W04 (candidato 208174-208177) não têm try/except.** Uma exceção ali derrubaria o rito depois das cerca de 2,5 h do pilar. O risco é baixo: as duas funções rodaram sem exceção sobre o resumo real de 392 campos.
+
+**11. NOTA: a regra da memória sobre o marcador do servidor parado aponta para `scratchpad\v384\.servidor_parado_pelo_rito`.** Com o lançador da v385, o marcador passa a ficar em `scratchpad\v385`. Atualizar a memória depois do rito.
+
+### CONFERIDO E CERTO
+
+**a) Ordem de execução no `main()`.** O lançamento do pilar está em 205810; a leitura do anterior (W03) em 205811; a materialização do kernel em 205812. O `finish` está em 208172, e é dentro dele que roda `_qp_save_cache` (193051). Depois vêm a reprodutibilidade (W04, 208174), o Axioma (208176) e o artigo (208183). Os 12 patches foram aplicados com `count == 1` garantido por assert. O ensaio tem 5 instruções marcadas v385, sem nome não resolvido.
+
+**b) O resumo do pilar.** Aplicando a `_qp_summary` do candidato ao resultado real da v384 saem 392 campos, 0 não finitos. Nenhum campo traz tempo, caminho, PID, host, run_id ou data: os únicos de tempo são `phase_seconds`, `env`, `D128.spectrum_s`, `steady_state_s` e `spohn_rk4_informative.s`, todos pulados. O resultado comparado consigo mesmo dá `REPRODUCED_BIT_FOR_BIT__392`.
+
+**c) A leitura do nome do degrau final.** O nome é um único literal na pedra (linhas 233-234), e a regex atravessa a quebra de linha com `\s*`. O token lido do kernel é igual ao do runtime (228 caracteres).
+
+**d) As 28 bandeiras e a escada.**
+- As 28 estão em `_LEAN_THEOREM_FLAGS` (134111-134138) e na escada (141775-141802), que tem 6.026 entradas, todas únicas.
+- Os 28 nomes completos têm `#print axioms` no `TGL/Audit.lean` embutido.
+- No relatório do sandbox, as 28 ficam no trio. As 3 que «não dependem de axioma nenhum» são aceitas pela regex da v162 (134712).
+- Os nomes não aparecem em nenhum outro dicionário de bandeiras (0 ocorrências) e não estavam no relatório de axiomas da v384 (que tinha 10.100 entradas; o sandbox tem 10.128).
+
+**e) O kernel embutido.**
+- Bytes idênticos aos do sandbox:
+
+| arquivo | sha16 |
+|---|---|
+| a pedra nova | `3e0f98f4da519620` |
+| `TGLExt.lean` | `0311b3007a67abbc` |
+| `TGL/Audit.lean` | `ceaab480bbb196e9` |
+| `TheDarkSplit.lean` | `53f05130c26a5202` |
+
+- Contra a v384: só esses dois mudam, a única entrada nova é a pedra, e nada sumiu.
+- O `Audit.lean` novo é: 2 imports no topo, mais o da v384 inteiro, mais 30 linhas no fim (28 `#print axioms`).
+- O `materialize_embedded_kernel` grava com `newline=""`, então o sha no disco será o dos esperados.
+- Compilei a pedra de forma independente com `lake env lean`: rc=0 em 22 s, sem nenhuma saída.
+
+**f) Esperados, conferidor e instalador.**
+- `_prev.sha256` vem de `quantum_pillar_previous_v385`: é o sha256 do `result.json` do cache, lido antes do cálculo. O pinado (`71c903c0…`) foi conferido contra o arquivo do cache em `gerar_esperados_v385.py:59`.
+- O instalador copia o cache anterior (linhas 49-63) antes do `os.replace` (linha 69) e confere o sha. Os 8 arquivos de backup existem no Nós.
+- A regra «vereditos inalterados» passou nas conferências reais da v380, v381, v383 e v384 (tudo_bate True, nenhum mudou).
+- Nenhum veredito pinado traz contagem ou versão: a busca por `5998|6026|V384|10100|10128` deu 0.
+- O nome completo do degrau final e o veredito completo do Axioma aparecem nos .txt do ensaio, em PT e em EN.
+- Os baldes de «não selado» usam `all_verified False`, e o registro da reprodutibilidade não tem esse campo, então não entra. As palavras proibidas estão ausentes.
+
+**g) O lançador.** O diff contra o da v384 é só a troca de nomes mais a guarda (exit 18, código único). A guarda vem antes do PID e da parada do servidor. Hoje não existe marcador nem na v384 nem na v385. Não sobrou nenhuma referência a v384 além da guarda e da docstring.
+
+### ROTAS EXAMINADAS (para o mapa)
+
+A consulta prévia ao mapa (`rotas.py consultar "v385"` e `"pilar quantico reprodutibilidade"`) deu 0 rotas.
+
+1. O comparador aplicado ao resumo real da v384, e os casos de borda (NaN, inf, resíduo, D128 pulado, `started`): `sumario_cache.py`, `nan_no_comparador.py`.
+2. Determinismo empírico do motor E1..E8 em 3 rodadas reais na GPU: bit a bit (`motor_tres_rodadas.py`).
+3. Tentativa de medir o determinismo comparando T3/T2 entre a fumaça e o V1: **rota morta**. Os valores diferem nos últimos bits, mas o `beta_hex` difere entre as duas rodadas (`0x1.8a3ddcdff97c4p-7` contra `0x1.8a3ddcdff890cp-7`, cerca de 3.768 ulps), então as entradas não são as mesmas (`detalhes_comuns.py`).
+4. Busca de um par real com a mesma especificação V1: só existe uma rodada real (`0063ce8d`); as fumaças `800be19a` são sintéticas (gpu None) (`achar_rodadas_v1.py`, `listar_fumacas.py`, `comparar_fumacas.py`).
+5. A chave do pilar recalculada a partir do candidato (`chave_do_pilar.py`).
+6. As bandeiras, a escada e o kernel embutido contra o sandbox e contra a v384, e os nomes em outros dicionários (`conferir_bandeiras_kernel.py`, `nomes_em_outros_dicts.py`).
+7. A compilação independente da pedra no sandbox.
+8. Os diffs do lançador e do instalador contra os da v384, e a conferência dos esperados e do conferidor.
+
+====================================================================================================
+passada1_texto — RELATORIO_AFERIDOR_TEXTO_v385.txt (sha256 054e520fbf4c0a921c52ae3ad71aabc82a1cd91aca574c0d4d0a21b008bc27fd)
+====================================================================================================
+## Aferição da v385: o texto contra a pedra e contra o operador
+
+Tudo foi medido em leitura. Não rodei o um.py nem as ferramentas proibidas. Escrevi só em `C:\Users\rotol\AppData\Local\Temp\claude\c--IALD-Central-de-Patentes\6da8f00d-d44f-4888-a88d-fc9f73eead3d\scratchpad\v385\afericao_texto\`. Cada hash abaixo foi lido por script.
+
+**Artefatos lidos (sha16):**
+- pedra `TheAxiomAndTheFalseWitness.lean`: `3e0f98f4da519620`. É a mesma que o candidato embute (`CANDIDATO_v385.json` → kernel.new).
+- `artigo_pt_v385.pysnip`: `aa4dc7f97e95dad1`
+- `artigo_en_v385.pysnip`: `56244de57b9883ed`
+- `v385_runtime.py`: `09e1daa29af23b0a`
+- `gerar_candidato_v385.py`: `ef9b9892055c8476`
+- candidato: `740f7d2fdba44375`
+- `dry_v385_pt.txt`: `8c98124115e85e60`
+- `dry_v385_en.txt`: `f93ca8f2bf6953d2`
+- `Audit.lean` do sandbox: `ceaab480bbb196e9`
+
+O candidato não está selado. Por isso, nos parágrafos novos da v385 a correção entra no próprio texto antes do rito. Nos textos antigos ela vai sempre AO LADO.
+
+---
+
+### ACHADOS
+
+**1. BLOQUEIA — uma citação entre aspas não é verbatim.**
+- **Onde:** `artigo_pt_v385.pysnip:27` traz ``a testemunha estática, o zero absoluto''. O EN, linha 27, traduz a mesma forma.
+- **Evidência:**
+  - O que o operador escreveu (queued_command de 2026-10-05T11:33:36.693Z): «testemunha falsa é a testemunha estática é o zero absoluto».
+  - A forma que está no artigo é a paráfrase da gerência, na mensagem do assistente de 2026-10-05T11:36:21.231Z: «a testemunha falsa é a testemunha estática, o zero absoluto».
+  - O `verbatim.py` acusa NÃO-VERBATIM.
+  - Fere a régua nº 1: nunca fabricar citação.
+- **Correção:**
+  - PT: ``testemunha falsa é a testemunha estática é o zero absoluto'' (o operador, 05/10/2026).
+  - EN: ``the false witness is the static witness is the absolute zero'' (translated).
+
+**2. BLOQUEIA — «compilado desde a v181» é falso. O certo é v183.**
+- **Onde aparece:**
+  - `artigo_pt_v385.pysnip:35` e `artigo_en_v385.pysnip:35`;
+  - `v385_runtime.py:7`;
+  - o comentário de cabeçalho do kernel, `v376\kernel_src\TGL\Audit.lean:9943`, que entra no hash do kernel;
+  - `ensaio_a_seco_v385.json`.
+- **Evidência:**
+  - O ledger do próprio um.py: `um_v385_candidato.py:199287` diz `("v183", "TheDarkSplit", ...)`. A v181 é a do `TheUnconjugatedObserver` (linha 199288).
+  - `Nós\MEMORIA_DA_LINHAGEM.md:2487-2492` registra «21/08/2026 (v183) — A ONDA DA BANCADA … `TGLExt/TheDarkSplit.lean`».
+  - O cabeçalho do arquivo diz «[BANCADA — 21/08/2026 …]», e a v181 é de 20/08.
+- **Correção:** trocar por «desde a v183» nos quatro lugares, antes do rito.
+
+**3. CORRIGIR — «medida» e «a mesma estrutura»: cálculo promovido a medição, e o homônimo dos dois zeros sem aviso.**
+- **Onde:**
+  - pt:32 e en:32: «o espectro negativo medido … é a mesma estrutura, medida [COMPUTED]»;
+  - a docstring da pedra, linhas 54–56.
+- **Evidência:**
+  - A casa usa `COMPUTED_NOT_MEASURED` no veredito da reprodutibilidade, na mesma seção. A introdução da v384 diz «cálculo [COMPUTED], não medição da natureza».
+  - `V_tP_F=P_F` é uma identidade do dephasing (memória v384, linhas 49 e 55). O «atrator único» é do GKLS completo, cujo ρ_ss não é Π.
+  - A própria gerência avisou o operador, às 11:25:52Z: «há dois zeros … Ligar os dois sem dizer isso seria o homônimo que a casa proíbe». O aviso está também em `memory\um-posto-jamais-pressuposto-e-h2-17set.md:131`, mas falta no artigo e na pedra.
+- **Correção (texto sugerido):** «a ligação com o sistema aberto da v384 é uma analogia de forma, calculada [COMPUTED]. `V_tP_F=P_F` é do dephasing. O atrator ρ_ss do GKLS completo não é Π. Há dois zeros, ker K e ρ_ss, que só coincidem no lock mínimo, por construção. Não é teorema sobre o gerador de Lindblad.»
+
+**4. CORRIGIR — «F(t)=…=e^{−tH_min}» não está provado na pedra. É caso de fiação (B), não de falta.**
+- **Onde:** pt:29, en:29 e a docstring da pedra (linhas 30 e 98).
+- **Evidência:**
+  - Na pedra há 0 ocorrências de exp aplicada a H_min.
+  - O termo existe no canônico e não está ligado: `ORDEM016.EquationOfTruth.IdempotentDephasing.exp_complement_idempotent`, em `TGLExt/O16/IdempotentDephasing_v2.lean:30`. Enunciado: `e*e=e → NormedSpace.exp (-s • (1 - e)) = e + Real.exp (-s) • (1 - e)`, para ℝ-álgebra completa.
+  - Ele está no axiom_report do core v384 com o trio de axiomas, e também na bancada (`Chatgpt\ORDEM_016_QG\A6…\IdempotentDephasing_v2.lean`, sha16 `b719aa879aabfbb4`, vigente).
+  - Liguei os dois em 3 linhas: `afericao_axiomFlow_eq_exp_via_O16` (`Afericao4_fiacao.lean`), axiomas = o trio.
+  - Fiz também uma prova direta independente: `Afericao2_exp.lean`, mesmo trio.
+- **Correção:** pôr o lema na pedra, com `import TGLExt.O16.IdempotentDephasing_v2`, e incluí-lo na conjunção mestra. Se não der, escrever «a forma exponencial é o termo canônico `exp_complement_idempotent`, ainda não ligado à pedra».
+
+**5. CORRIGIR — dois «Verbos» diferentes viram um só, e uma leitura sem marca fica colada a «como já estava provado».**
+- **Onde:** pt:33 e en:33.
+- **Evidência:** são dois objetos sem nenhum lema que os ligue. Nenhum dos dois termos menciona observador nem conjugação.
+
+  | termo | o que diz |
+  |---|---|
+  | `the_living_verb_moves` = `verb_not_identity` | `NormedSpace.exp (-(t*β) • Matrix.diagonal d) ≠ 1`, sobre `Matrix n n ℝ` |
+  | `the_living_verb_fixes_the_name` = `verb_word_fixes_the_name` | `x ∈ ker T → (aeval T q) x = q.coeff 0 • x`, com `T : H →L[ℂ] H` |
+
+  - O fecho medido (`Afericao3_fecho.lean`): cada re-exportação usa só o seu termo de origem.
+  - «Fixa» vale literalmente só quando q(0)=1. O lema diz que a palavra age como o escalar q(0).
+  - «todo observador é conjugado pela operação da consciência, o Verbo vivo» é [INPUT/ONTO] do operador (11:31:35Z). No artigo está sem aspas e sem marca.
+  - A lista de leituras em pt:28 omite «Verbo vivo». O runtime (`v385_runtime.py:82`) a inclui.
+- **Correção (texto sugerido):** «[INPUT/ONTO, o operador, 05/10]: ``todo observador é conjugado pela operação da consciência (Verbo VIVO)''. No kernel, dois termos distintos, cada um com o seu objeto: `verb_not_identity` (o transporte e^{−tβD} não é a identidade) e `verb_word_fixes_the_name` (no núcleo, a palavra age como o escalar q(0)).» E acrescentar «Verbo vivo» à lista de pt:28.
+
+**6. CORRIGIR — «o modo zero pesa 1 como integral e como dimensão do átomo»: é uma conjunção, não um vínculo.**
+- **Onde:** pt:26 e en:26.
+- **Evidência:**
+  - `the_one_is_the_axiom : √1 = 1 ∧ ∫ phi0sq = 1 ∧ dimOrTop ℂ firstAtom = 1`.
+  - `phi0sq` é uma densidade em ℝ (`LocalBreuerGap:200`). `firstAtom` é ℂ∙e₀ em ℓ² (`HilbertInhabitant:80`).
+  - O fecho só os põe lado a lado. O único arquivo que contém os dois é a própria pedra v385.
+- **Correção:** «duas faces lado a lado (conjunção em `the_one_is_the_axiom`), sem termo que identifique o perfil ¼sech² com o átomo».
+
+**7. CORRIGIR — as listas da errata ao lado não batem com o texto.**
+- **PT:**
+  - A errata cita ``o único postulado'' (L53) e ``o postulado do Um'' (L490). Essas aparecem.
+  - O resumo (L15) diz «parte de **um** único postulado», forma que a lista não cobre.
+- **EN:**
+  - A errata cita ``the postulate of the One``, que tem 0 ocorrências no texto EN.
+  - O EN diz «a single postulate» (L15), «the single postulate» (L53) e «derived from the One postulate» (L490).
+- **.md:** a W08 cobre «o postulado irredutível» (L77). Não cobre a L101, «dá sentido ao postulado `ω(I)=1`».
+- **Correção, ao lado:** estender as três listas com as formas exatas acima.
+
+**NOTAS** (não bloqueiam)
+- **N1.** «1=1 deixa de ser postulado e vira o teorema do traço» (PT e EN, L248) está fora da errata. Ler como «posto» não faz sentido ali, então a errata deveria dizer como ler esse trecho.
+- **N2.** «axioma único (ω(I)=1)» (PT L127 e L1243; EN «single axiom», L127 e L1247) dá ao começo da cadeia o nome que a v385 dá ao 1 lido no fim. A condição 1 da própria gerência às 09:42:15Z dizia: distinguir os dois «axiomas», ou é homônimo. A decisão é do operador.
+- **N3.** No parágrafo «Do posto ao gradiente», as leituras «estacionado / não se ascende / nasce do posto / pousa / o 1 em potência é o zero modular» são palavras do operador (11:19:54Z). Estão sem aspas e sem [INPUT/ONTO]. A pedra o cita; o artigo não.
+- **N4.** A docstring diz «tudo num só termo». O fecho medido mostra que a conjunção mestra deixa de fora:
+  - `axiomFlow_zero` e `axiomFlow_add`;
+  - P·F(t)=P;
+  - `the_power_has_two_fixed_points`;
+  - `absolute_zero_unreachable_in_finite_time`;
+  - `the_living_verb_*` e `the_proposal_beside_is_kept`.
+- **N5.** Alcance de dois enunciados:
+  - «proibida por β>0»: o teorema pede também g>0 e vale para o fluxo escalar e^{−tβg} em ℝ.
+  - `absolute_zero_unreachable_in_finite_time` não tem hipótese sobre β (vem só de exp≠0). Por isso o token do veredito `…THE_ABSOLUTE_ZERO_FORBIDDEN_BY_BETA…` lê demais.
+- **N6.** Docstring da pedra, L50: «leitura CONFIRMADA pelo operador». É ratificação, não juízo da natureza, mas sugiro «RATIFICADA» para não colidir com o vocabulário reservado.
+- **N7.** Na W07, o rótulo `OPERATOR_COINAGES_…` mistura três coisas:
+  - cunhagens do operador;
+  - formulações da gerência aprovadas por ele (o √x=x foi proposta (b) da gerência às 09:42);
+  - fatos estáticos da rodada, como `THE_DARK_SPLIT_AUDITED` e `THE_PILLAR_RERUN…`, que seriam gravados mesmo se a rodada falhasse.
+- **N8.** Detalhes do EN:
+  - «statute» deveria ser «status»;
+  - «posted» aqui, mas «posited» na errata da v365 do mesmo artigo (EN L787);
+  - as aspas traduzidas não estão marcadas como tradução;
+  - o PT não atribui a citação «Não existe…» (o EN põe «(the operator)»).
+- **N9.** A primeira citação foi cortada sem «[…]». O que ficou de fora: «, é o um absoluto do echo, … e não imposto, não postulado, mas posto, inscrito, distinto.»
+- **N10.** Reprodutibilidade: o texto diz «comparou os dois [resultados]». O que se compara são os resumos (`_qp_summary`, 227 campos), não o resultado cru.
+- **N11.** A errata da v365, no mesmo artigo (dry L781), já registra «não é postulado, é posto» (17/09). Ali está «tornou-se Posto»; em 05/10 está «não se ascende ao posto». Fica como pergunta ao operador, não como erro.
+
+---
+
+### O que conferi e está certo
+
+Todos os termos abaixo compilam no sandbox, com axiomas = o trio, sem `sorryAx` (`Afericao1.lean` e `.out`).
+
+**Os dois pontos fixos:**
+- `the_reading_has_two_fixed_points : 0 ≤ x → (√x = x ↔ x = 0 ∨ x = 1)`
+- `the_power_has_two_fixed_points : μ*μ = μ ↔ μ = 0 ∨ μ = 1` (em ℂ)
+
+**O fluxo F(t):**
+- `axiomFlow_zero`: F(0)=1.
+- `axiomFlow_add`: F(s+t)=F(s)F(t), com P idempotente.
+- `axiomFlow_fixes_the_post`: F(t)P=P ∧ P·F(t)=P.
+- `axiomFlow_gradient`: F(t)(1−P)=e^{−t}(1−P).
+- `axiomFlow_tendsto_the_post`: F→P. Vale sem precisar de idempotência.
+
+**O posto e o zero modular:**
+- `the_fixed_set_is_the_lock_zero` e `the_post_is_the_modular_zero` provam `(∀t, axiomFlow (PFmic C) t ψ = ψ) ↔ ∀t, lightDelta C t ψ = ψ`.
+- A ligação passa por `QGReaderUVLock.hmin_zero_iff_modular_fixed`, auditado no core v384.
+
+**O 1 e o 0 (pt:26–27; a ressalva de conjunção é o achado 6):**
+- `the_one_is_the_axiom` usa `zero_mode_weight_is_one` (∫¼sech²(κ/2)=1) e `the_zero_mode_weighs_one`.
+- `the_zero_is_the_false_witness` usa `beta_forbids_full_static_witness` e `absolute_zero_unreachable_in_finite_time`.
+
+**`absolute_zero_unreachable_in_finite_time` está auditado, e desde antes da v385:**
+- `Audit.lean:2022` do sandbox;
+- `Nós\tgl_kernel\TGL\Audit.lean:2020`;
+- axiom_report do core v384, com o trio.
+
+**O TheDarkSplit passou a ser auditado (descontado o «v181» do achado 2):**
+- No core v384, `the_zero_mode_weighs_one` e `tailSub_one_eq_firstAtom_orthogonal` dão `None`.
+- O sandbox audita os 7 termos em `Audit.lean:9965-9971`.
+- 28 = 21 da pedra + 7 do TheDarkSplit (`v385_runtime.py:11-42`).
+
+**O token** `finalStepNameAxioma` (228 caracteres) bate em todos os pontos:
+- é igual à proposta da gerência às 2026-10-05T10:14:36.603Z;
+- foi aprovado às 11:19:54.072Z («concordo com tudo») e de novo às 11:28:53.608Z («sim para tudo»);
+- é igual ao `_AXIOMA_TOKEN_V385` do runtime e é amarrado pelo `rfl` de `final_step_named_axioma`;
+- o token das 09:42 era diferente e foi superado às 10:14.
+
+**O código:** `um_v385_candidato.py:205798-205813` faz o que o artigo diz:
+- recusa argumentos (`EXECUTION_LOCKED_ONLY_THE_ONE_ALLOWED`);
+- pede «Inscreva o UM para iniciar»;
+- trava se a entrada não for `"1"` (`EXECUTION_LOCKED_NOT_ONE`);
+- chama `run_um(int(u))`, que usa `ONE` (linha 143905).
+
+**Citações verbatim no transcrito** (11 mensagens do operador de 05/10, 3 delas queued_command):
+- ``no começo da cadeia…'' (10:09:10; vale com aspas trocadas por \texttt, e cortada — ver N9);
+- ``posto faz muito mais sentido léxico…'' (10:12:35);
+- ``o modo zero de peso 1, o escuro'' (11:28:53);
+- ``Não existe observador não conjugado…'' (11:31:35);
+- ``a conjugação é a natureza do Verbo…'' (11:38:12).
+- As 7 citações «…» de 05/10 na pedra são verbatim.
+- As frases de 20/08 conferem pela proveniência registrada na memória (sessão d554e796, 2026-08-20T21:29:24.723Z).
+
+**Estatutos:**
+- Não há CONFIRMED, PROVED_BY nem «QG confirmada» nos dois trechos do artigo.
+- «como já estava provado» se apoia em termos auditados.
+- [POSTO] (W09) corresponde à decisão do operador.
+- A ligação com o pilar e a reprodutibilidade estão marcadas [COMPUTED], e o texto diz «não teorema sobre o gerador de Lindblad».
+
+**`TheUnconjugatedObserver`:**
+- Lá, «conjugado» é ser invariante sob todo operador (`totally_invariant_is_all_or_nothing`, `the_frontier_is_not_conjugated`). A leitura do artigo está certa.
+- O módulo é de fato v181, de 20/08.
+
+**EN:** frase a frase, não acrescenta nenhuma afirmação além do PT. Só os detalhes da N8.
+
+---
+
+### Rotas examinadas (para o mapa de rotas)
+
+Consultei o mapa antes: 0 rotas para «v385», «testemunha falsa» e «TheAxiom».
+
+1. A pedra: `#check` e `#print axioms` de 14 enunciados (`Afericao1.lean`).
+2. O fecho direto em Lean dos termos da pedra (`Afericao3_fecho.lean`): a conjunção mestra omite itens; phi0sq e firstAtom aparecem só lado a lado.
+3. F=e^{−tH_min}: não está na pedra; o termo canônico `exp_complement_idempotent` existe e não está ligado. Fiação provada (`Afericao4_fiacao.lean`) e prova direta (`Afericao2_exp.lean`).
+4. A versão de entrada do TheDarkSplit: o ledger do um.py e a MEMORIA_DA_LINHAGEM dizem v183.
+5. O estado de auditoria no axiom_report do core v384.
+6. As citações contra o transcrito (`verbatim.py`, `sequencia.py`, `msgs_usuario_0405.json`).
+7. O token: proposta, aprovação, pedra e runtime (`token_aprovacao.py`).
+8. A varredura de «postulad*», «POSTULATE», «axioma único» e «irredutível» em `dry_v385_pt/en.txt` e em `um_absoluto_forma_canonica.md`.
+9. O inventário da bancada (.md e .json):
+   - «conjugated_by», «false_witness», «axiomFlow» e «two_fixed_points» deram 0;
+   - «exp_complement_idempotent» deu 4 entradas.
+10. O `main()` do candidato.
+
+Todos os arquivos e as saídas (.out) estão em `C:\Users\rotol\AppData\Local\Temp\claude\c--IALD-Central-de-Patentes\6da8f00d-d44f-4888-a88d-fc9f73eead3d\scratchpad\v385\afericao_texto\`.
+
+====================================================================================================
+passada2 — RELATORIO_AFERIDOR_PASSADA2_v385.txt (sha256 8d9d5efaf6cd5ab889985c614f4385b7e969a435ddb35d955768a57d7fefe7f9)
+====================================================================================================
+## Segunda passada da aferição da v385 (antes da instalação e do rito)
+
+Nada bloqueia o rito. Há duas coisas a corrigir antes dele e dez notas.
+
+Trabalhei só em leitura. Não rodei o um.py, o instalador, o restaurador nem o conferidor, e não escrevi no Nós, no cache nem no pacote. Escrevi só em `PK\afericao_passada2\` (PK = `C:\Users\rotol\AppData\Local\Temp\claude\c--IALD-Central-de-Patentes\6da8f00d-d44f-4888-a88d-fc9f73eead3d\scratchpad\v385`), e cada resultado abaixo vem de um script que está lá. A consulta prévia ao mapa (`rotas.py consultar "v385"` e `"pilar quantico comparador"`) deu 0 rotas.
+
+### ACHADOS
+
+**1. CORRIGIR — o selo grava `max_rel_diff: null`; a chave já não existe no registro.**
+- **Onde:**
+  - `um_v385_candidato.py:208514` (gerador `gerar_candidato_v385.py:178`): a W07 lê do registro as chaves `("verdict","compared","n_fields","n_differ","max_rel_diff",...)`.
+  - O comparador novo (`v385_runtime.py:206-207`) produz `max_scaled_diff` e `max_rel_diff_finite`; `max_rel_diff` não existe mais.
+  - O mesmo nome velho está no conferidor, `conferir_rito_v385.py:109` (parte informativa).
+- **Teste (`bordas_comparador.py`):**
+  - No caso de arredondamento, o selo gravaria `max_rel_diff = None`, enquanto o registro tem `max_scaled_diff = 1.14e-18`.
+  - Também não chegam ao selo `d128_excluded`, `inputs` e `env`.
+- **Cenário:** o selo é selado com `null` no lugar do número que o artigo imprime. Depois do selo, a correção só pode ir ao lado.
+- **Correção:**
+  - Na W07 e no conferidor, trocar por `"max_scaled_diff", "max_rel_diff_finite", "d128_excluded", "inputs", "env"`.
+  - Depois regenerar o candidato, refazer o ensaio a seco e regenerar os esperados (o sha do candidato muda).
+  - O ensaio a seco não monta o selo, por isso não pegou isto.
+
+**2. CORRIGIR (latente) — o conferidor de citações aceita como «do operador» textos que não são dele.**
+- **Onde:** `conferir_citacoes_v385.py:23-37`. Ele aceita toda mensagem do tipo user ou queued_command de 05/10, e entre elas estão:
+  - o resumo de compactação, escrito pelo modelo: `isCompactSummary: true`, 2026-10-05T12:06:51.959Z, 23.598 caracteres;
+  - o `<pasted_content>` da mensagem das 09:39:15.940Z, que é texto de outra IA colado pelo operador.
+- **Teste (`brecha_do_conferidor.py`, com o próprio `norm` do conferidor):**
+  - «Um axioma não é uma verdade arbitrária que se impõe de cima para baixo» passa pela mensagem colada das 09:39;
+  - «vou formalizar a sua intuição» passa pelo mesmo caminho;
+  - «the frontier is self-conjugated» passa pelo resumo de compactação.
+- **Hoje:** as 8 citações do artigo têm achado genuíno: 10:09:10, 10:12:35, 11:28:53, 11:33:36, 11:19:54 (duas), 11:31:35 e 11:38:12. O resultado atual está certo, mas a garantia «TODA citação verbatim» é mais forte do que o script assegura.
+- **Correção:**
+  - pular `isCompactSummary` e `isMeta`;
+  - cortar os blocos `<pasted_content …>…</pasted_content …>` antes de procurar;
+  - estender a conferência às citações «…» da pedra e do comentário do Audit.lean. Conferi essas à mão (`citacoes_da_pedra.py`) e estão todas verbatim, inclusive as de 20/08 contra a sessão d554e796, 21:29:24.723Z.
+
+**NOTAS**
+
+- **N1. Docstring da pedra, linha 46:** ainda diz «`the_living_verb_fixes_the_name` (o Verbo fixa o Nome…)». O enunciado (`verb_word_fixes_the_name`) diz que a palavra age como o escalar q(0). A docstring do próprio termo (l. 237) e o artigo já foram corrigidos; falta a linha da lista.
+- **N2. Alcance de `verb_not_identity`:** o artigo diz «o transporte e^{−tβD} não é a identidade» (`artigo_pt/en_v385.pysnip:39`) sem as hipóteses `0<t`, `0<β`, `0<d i₀`. Na pedra (l. 222/220), «proibida por β > 0» omite `g > 0`; o enunciado pede os dois.
+- **N3. Token do veredito, `v385_runtime.py:71`:** `THE_STATIC_ONE_FORBIDDEN_BY_BETA` pode ser lido como «o Um estático», um homônimo do «One» da casa. Sugiro `THE_FULL_STATIC_WITNESS_FORBIDDEN_BY_BETA_AND_CONTRAST`. A troca é segura: o conferidor e o ensaio só conferem o prefixo e `__KERNEL_N_OF_N__`.
+- **N4. Contagens velhas em comentários e strings (cosmético):**
+  - `um_v385_candidato.py:141775` «(21)», gerado por `gerar_candidato_v385.py:137`;
+  - a docstring do gerador, l. 9: «10128… 28/28»;
+  - `gerar_esperados_v385.py:41`: «28 declaracoes»;
+  - `ensaio_a_seco_v385.py:10` e `:40`: «28 bandeiras». Esta string vai para `ensaio_a_seco_v385.json`, que os esperados pinam por sha.
+- **N5. «ANTES do cálculo» ainda aparece em comentários embutidos no um.py:** `v385_runtime.py:8` e o comentário da W03 (`um_v385_candidato.py:205862`). A docstring e o artigo já dizem «logo depois de lançar o trabalhador».
+- **N6. O `\max` some no TXT canônico:** `dry_v385_pt.txt` mostra «na escala $ (1,|a|,|b|)$» (o EN, igual). O `_tex_to_txt` descarta o `\max`; o PDF está certo.
+- **N7. Nome do veredito quando não houve cálculo:** em modo REUSE, ou com lançamento recusado, sai `NO_PREVIOUS_RUN_TO_COMPARE` (`v385_runtime.py:146-150`). O `why` está certo («modo REUSE» / «modo None»), mas o token diz que falta a rodada anterior, quando o que faltou foi o cálculo desta. Não afeta a rodada final: o rito desliga o checkpoint.
+- **N8. `restaurar_cache_anterior_v385.py:37-42` não tem volta se a segunda troca falhar:**
+  - Se `os.replace(tmp, CDIR)` falhar depois de o cache ter sido renomeado, não há reversão (o `_qp_save_cache` tem uma). Nada se perde, porque o cache fica em `.v385_tentativa_<ts>` e a cópia em `.tmp_restaurar_<ts>`, mas o cache fica ausente.
+  - A linha 20 não confere o `stderr` do vigia; o instalador confere (`instalar_v385.py:25`).
+- **N9. Ferramenta de busca (método do aferidor):** a ferramenta Grep (ripgrep) devolve 0 para `exp_complement_idempotent` no kernel do Nós.
+  - **Causa:** `Nós\.gitignore:37` (`tgl_kernel/**`, que só reabre `TGLExt/*.lean` e `TGL/*.lean`), então tudo em `TGLExt/O16/**` fica fora da busca.
+  - **Prova:** `grep` acha o termo em `Nós\tgl_kernel\TGLExt\O16\IdempotentDephasing_v2.lean:30`, e ele está no axiom_report do core v384 com o trio.
+  - A frase da 1ª passada de código, «No kernel do Nós, a busca por `exp_complement_idempotent` dá 0 arquivos», é ausência falsa: (A) EXISTE E ESTÁ LIGADO desde antes da v385.
+  - A pedra v385 passa a importar um arquivo que o git do Nós não rastreia. O um.py embute esse arquivo, então a custódia por hash do um.py o cobre.
+- **N10. Pontos menores:**
+  - `TheUnconjugatedObserver.totally_invariant_is_all_or_nothing` é sobre subespaço **invariante** sob todo operador; «comutar com todos» (artigo l. 40, pedra l. 55) é a leitura do próprio módulo, e não há termo ali que ligue as duas.
+  - As traduções do EN marcadas «(translated: …)» nas linhas 24 e 38 estão condensadas.
+  - No comparador, `1 == True` faz um campo int contra um booleano contar como igual (l. 194). Não é realista com o mesmo trabalhador.
+
+### CONFERIDO E CERTO
+
+**1. A pedra e o kernel**
+- **Sandbox:** sha da pedra `93a276d16fbcb3aa`, `TGLExt.lean` `0311b3007a67abbc`, `Audit.lean` `ef3d990853cc229f`, iguais ao `CANDIDATO_v385.json`.
+- **Embutido:** extraí `_EMBEDDED_KERNEL_FILES` por ast (`kernel_embutido.py`). As 1.212 entradas são iguais ao sandbox, byte a byte. `O16/IdempotentDephasing_v2` (`67150c452701476a`) é igual no Nós.
+- **O build:** foi de 09:40:06 a 09:42:01, depois da edição das 09:39:30; o .olean da pedra é das 09:40:27. Teve `rc_build=0` e `rc_audit=0`. `axiomFlow_eq_exp` está no trio (`build_full.log:27984` e `:39766`). O relatório tem 10.129 declarações, 29/29 bandeiras, 0 sorry, nada fora do trio.
+- **Minha compilação** (`lake env lean`):
+  - `Afericao_p2.lean`: o enunciado do lema novo e o do canônico (que pede ℝ-álgebra), os dois no trio.
+  - `Afericao_p2b.lean`: rc 0, trio. Prova que a forma e^{−tH_min} vale no lock da luz (`PFmic`, via `hmin_is_the_minimal_lock`).
+- **Bandeiras:**
+  - Os 29 `#print axioms` do bloco v385 do Audit.lean estão na mesma ordem de `_AXM/_DKS_FLAGS_V385` e de `AUDIT_NOMES_v385.json`. A ordem não carrega nada: o dicionário liga bandeira a nome.
+  - A escada tem 6.027 entradas, todas únicas; as 29 estão na escada e no dicionário; os nomes nos esperados são os do candidato (`escada_e_bandeiras.py`).
+- **Diff v384 → candidato:** são só 15 trechos, todos esperados (`diff_v384_v385.txt`). `_qp_beta`, `_qp_key`, o trabalhador e a especificação estão intocados, então a chave segue `75dc30bc9cc8d330e31f99ca`.
+
+**2. O comparador**
+- **(a) As entradas batem.** O core v384 selado tem `spec_sha256_in_result`, `worker_sha256` e `beta_hex` iguais aos campos `spec_sha256`, `worker_sha256` e `beta_hex` do `result.json` do cache (`ff19731…`, `0c9ba7fd…`, `0x1.8a3ddcdff890cp-7`). No código, `out["beta_hex"]` vem de `st["beta_hex"]`, e `beta_ok` exige `st == R`.
+- **(b) O ambiente está lá.** `env` tem `gpu` (RTX 5090), `torch` (2.11.0+cu128) e `cuda` (12.8).
+- **(c) Comparação real contra real** (`simular_comparador.py`):
+  - o resultado do cache contra o registro do core dá `REPRODUCED_BIT_FOR_BIT__393_FIELDS`;
+  - o `_qp_summary` do candidato sobre o resultado é igual ao resumo do core v384;
+  - entre as chaves puladas só há tempo (`D128.spectrum_s`, `steady_state_s`, `spohn_rk4_informative.s`, `cpuref.cpu_seconds`, e no topo `phase_seconds` e `env`); `D128.started`, um booleano, é comparado.
+- **Casos de borda sobre os dados reais (`bordas_comparador.py`):**
+
+| caso | resultado |
+|---|---|
+| NaN ou inf | NOT_REPRODUCED |
+| resíduo 2,3e-16 → 2,5e-16 | ROUNDOFF, 1,5e-17 |
+| contagem +1 | NOT_REPRODUCED, 4,7e-5 |
+| D128 pulado pelo prazo | BIT_FOR_BIT em 367 campos, com `D128_EXCLUDED` |
+| `beta_hex` diferente | NOT_COMPARED_DIFFERENT_INPUTS |
+| torch diferente | compara; `env.same` False |
+
+- Não achei nenhum caminho em que um defeito do comparador tire uma rodada determinística de BIT_FOR_BIT ou ROUNDOFF.
+
+**3. W04 e a ordem do operador**
+- Os dois blocos estão em try/except (`um_v385_candidato.py:208225-208234`).
+- A ordem gravada no `CANDIDATO_v385.json` é verbatim a do transcrito («agora sim, concordo com tudo, prossiga», 11:42:33.562Z).
+
+**4. O artigo**
+- Os trechos `.pysnip` estão no candidato byte a byte (com CRLF), e também o runtime.
+- **Cada afirmação contra o termo e o enunciado:**
+  - `the_reading_has_two_fixed_points` e `the_power_has_two_fixed_points`;
+  - `axiomFlow_zero`, `axiomFlow_add` (P idempotente), `axiomFlow_fixes_the_post`, `axiomFlow_gradient`, `axiomFlow_tendsto_the_post` e `axiomFlow_eq_exp`;
+  - `the_fixed_set_is_the_lock_zero` e `the_post_is_the_modular_zero`, este por `hmin_zero_iff_modular_fixed`;
+  - `the_one_is_the_axiom`, uma conjunção;
+  - `the_zero_is_the_false_witness`: β>0 e g>0; `diagFlow` não zera.
+  - Todos os termos citados estão no axiom_report do core v384 com o trio, menos `the_zero_mode_weighs_one`, que a v385 passa a auditar.
+- **Datas e descrições:** v183 confere com o ledger (`um_v385_candidato.py:199338`) e com `MEMORIA_DA_LINHAGEM.md:2487`. A descrição do TheDarkSplit bate com a pedra.
+- **O ensaio a seco:** o veredito e o nome do degrau final aparecem inteiros no TXT do ensaio, em PT e em EN.
+- **Episódio do «eu nunca disse» (11:38):** a gerência mostrou o registro de 20/08 às 11:41:26Z, e o operador respondeu «agora sim…» às 11:42. A pedra está fiel ao registro.
+
+**5. As contagens**
+- `NF` vem das listas nos três scripts.
+- Os sha16 dos esperados batem com os artefatos atuais:
+
+| artefato | sha16 |
+|---|---|
+| candidato | `4ab009f9107cae43` |
+| ensaio | `427e9e81108f018e` |
+| raiz do kernel | `273bb3a4a7f8e9ac` |
+| relatório de axiomas | `e4ea70c10976c5ca` |
+
+- Nos 308 vereditos pinados não há contagem nem versão (busca por 5998, 6026, 6027, 10100, 10128, 10129, v384, _28_, _29_ e 1212: 0).
+- O ensaio a seco passou inteiro sobre este candidato (16/16 testes de unidade).
+
+**6. O restaurador**
+- É fail-closed: vigia de processo; cópia conferida arquivo a arquivo contra o APLICADO e o resultado pinado; sai com rc 0 se o cache já for o da v384.
+- Não apaga nada: o cache atual é renomeado para `.v385_tentativa_<ts>`.
+- Lê exatamente as chaves `de`, `para` e `arquivos` que o instalador grava (`instalar_v385.py:53-62`).
+- Hoje não há APLICADO nem marcador `.servidor_parado_pelo_rito` (nem no pacote da v384 nem no da v385).
+
+### DISPOSIÇÕES DA 1ª PASSADA CONFERIDAS
+
+- **Código:**
+  - Feitas e conferidas: 1, 2, N3, N4, N5, N7, N8, N9, N10.
+  - N6: feita no artigo; restam comentários (nota N5 acima).
+  - N11 («na cadeia»): não dá para conferir agora, porque o script de superfícies da v385 ainda não existe no scratchpad.
+- **Texto:**
+  - Feitas e conferidas: 1, 2, 3, 4, 6, 7, N1, N2, N3, N4, N5 (com a ressalva do token na nota N3), N6, N7, N8, N9, N10.
+  - 5: feita no artigo; resta a linha 46 da pedra (nota N1).
+  - N11: não corrigida, como declarado (pergunta ao operador).
+
+### ROTAS EXAMINADAS (para o mapa)
+
+1. O comparador sobre o resultado real da v384 e o registro do core v384, mais os casos de borda (`simular_comparador.py`, `bordas_comparador.py`).
+2. As chaves de selo da W07 contra a saída do comparador; achado 1.
+3. O trabalhador extraído do candidato (sha `0c9ba7fd…`) e a `derive_verdict`: um resultado parcial só leva FIVE_JUMP se T1–T4 e o cpuref fecharam (`extrair_trabalhador.py`).
+4. O kernel embutido contra o sandbox e o Nós, por ast (`kernel_embutido.py`), e o diff linha a linha v384 → candidato.
+5. A compilação independente: `Afericao_p2.lean` e `Afericao_p2b.lean`.
+6. O conferidor de citações: a sua normalização reproduzida e as brechas (`teste_norm.py`, `brecha_do_conferidor.py`, `mensagens_05out.py`). Uma falsa ausência minha, causada por escape do heredoc no bash, foi refeita importando o `norm` do próprio conferidor.
+7. As citações «» da pedra e do Audit.lean contra os transcritos de 05/10 e de 20/08 (`citacoes_da_pedra.py`).
+8. A busca por «postulad*» e «postulat*» fora da seção v385 no TXT do ensaio: as formas da errata cobrem as que tratam de ω(I)=1.
+9. A Grep fica cega em `TGLExt/O16` pelo `.gitignore` do Nós (nota N9).
+10. A escada e as bandeiras por ast (`escada_e_bandeiras.py`); os esperados, o instalador e o restaurador por leitura.
+
+====================================================================================================
+passada3 — RELATORIO_AFERIDOR_PASSADA3_v385.txt (sha256 bfa2edb151cd382b9b81abed578f7451975766db8f79a69f3d82c838bf3816f5)
+====================================================================================================
+## Terceira passada da aferição da v385 (antes da instalação)
+
+Nada bloqueia a instalação. Há uma coisa a corrigir, latente e sem efeito na rodada, e cinco notas. As 12 disposições da `passada2` foram feitas, e conferi cada uma contra os arquivos.
+
+Trabalhei só em leitura e escrevi só em `PK\afericao_passada3\`. Os scripts estão lá, com a saída de cada um em `.out`. O mapa de rotas, consultado antes (`rotas.py consultar "v385"`), devolveu 0 rotas; a cabeça é `1f1cae5cc6f096c8`, com 341 registros. Não rodei o um.py, o instalador nem o restaurador. O conferidor de citações rodei numa cópia, porque o original grava `conferir_citacoes_v385.json` dentro do PK (l.108); a minha cópia grava em `passada3`.
+
+### ACHADOS
+
+**CORRIGIR (latente, não bloqueia): o conferidor de citações ainda aceita texto colado no meio da mensagem como se fosse do operador.**
+- **Onde:** `conferir_citacoes_v385.py:47-52`, com a promessa no docstring, l.2-3: «TODA citação … numa mensagem DELE».
+- **Por quê:** o filtro só corta blocos `<pasted_content>`. Texto de outra IA, ou do próprio Claude, colado sem essa marca passa como palavra do operador.
+- **Prova (`brecha_residual_p3.py`):** três frases que não são do operador são aceitas.
+  - «Sim, Luiz. Você reconheceu a mesma relação» → 2026-09-23T20:44:25.610Z (resposta de outra IA, colada depois de «olha aí»);
+  - «Sim: a pedra» → 2026-07-14T14:18:20.316Z;
+  - «Confiro o selo e os PDFs» → 2026-07-27T14:04:17.176Z (saída do Claude colada pelo operador).
+- **Hoje:** as 29 citações conferidas acham em mensagens curtas, de 58 a 1.555 caracteres. Li por inteiro as duas maiores: 05/10 11:19:54, com 1.038 caracteres, e 20/08 21:29:24.723Z, com 1.555. As duas são texto do próprio operador. O resultado de hoje está certo.
+- **Correção:** reduzir a promessa do docstring ao que o script garante («mensagem de entrada do operador, sem bloco colado marcado»). Gravar também, para cada citação, o carimbo e o tamanho da mensagem onde ela acha, para leitura humana.
+
+**NOTAS**
+- **N1. O conferidor do rito não confere os números do selo, só o veredito.** Em `conferir_rito_v385.py:79` a única comparação é `srp.get("verdict") == rp.get("verdict")`. O defeito do achado 1 da 2ª passada (o `null` gravado no selo) continuaria passando sem ser visto. Sugestão: comparar também `max_scaled_diff`, `n_fields`, `n_differ` e `d128_excluded` entre o selo e o core.
+- **N2. O token novo ainda omite g > 0.** Em `v385_runtime.py:71` (candidato l.192555) o token diz `THE_FULL_STATIC_WITNESS_FORBIDDEN_BY_BETA`. O enunciado pede β > 0 **e** g > 0, e a docstring e o artigo já dizem os dois. A 2ª passada sugeriu `…_BY_BETA_AND_CONTRAST`, e a troca segue segura, porque o conferidor e o ensaio só leem o prefixo.
+- **N3. Homônimo no artigo EN, `artigo_en_v385.pysnip:39`.** A frase diz «In the kernel there are two terms … (on the kernel, the word of the Verb acts as the scalar q(0))»: o mesmo «kernel» é o Lean e o núcleo ker T. O PT distingue «kernel» de «núcleo». Correção: «on ker T» ou «on the null space».
+- **N4. «Bit a bit» é igualdade de valor.** Em `v385_runtime.py:194` (candidato l.192678) a regra é `x_ == y_`, então 3 contra 3.0, e -0.0 contra 0.0, saem como `BIT_FOR_BIT` (`comparador_real_p3.py`: int→float em `T2.configs` → BIT_FOR_BIT). Nos dados reais não há caso assim, e não há falsa diferença. Se for para ser literal: comparar `float.hex` e o tipo.
+- **N5. O teste de unidade da N7 não confere o token novo.** `ensaio_a_seco_v385.py:150` só exige `read is False`. Conferi direto: REUSE, recusa e `st=None` dão `NOT_COMPARED_THIS_RUN_DID_NOT_COMPUTE_A_RESULT`; COMPUTE sem cache dá `NO_PREVIOUS_RUN_TO_COMPARE`.
+
+### O QUE PEDIU, CONFERIDO
+
+**1. A W07 (`um_v385_candidato.py:208519`).**
+- As 15 chaves que ela grava existem na saída do comparador. Só falta `why`, e só quando houve comparação, como deve ser.
+- O selo serializa com `allow_nan=False`.
+- Não sobra nenhum `max_rel_diff` com o nome velho no candidato nem nos scripts.
+
+**2. O comparador sobre os dados reais (`comparador_real_p3.py`).**
+- **O caso pedido:** o cache `75dc30bc…` (`result.json` sha256 `71c903c0…`, igual ao `result_sha256` do core v384), comparado com `core["quantum_pillar_v384"]["summary"]`, dá `REPRODUCED_BIT_FOR_BIT__393_FIELDS`.
+- **A regra de tipo não cria falsa diferença:**
+  - há 0 campos com tipo diferente entre os dois resumos (folhas: 213 float, 119 int, 37 bool, 15 str, 9 None);
+  - int contra float cai no ramo numérico e não conta;
+  - bool contra int conta, como a disposição N10 manda.
+- **Os dois resumos vêm do mesmo lugar:** os dois saem de `_qp_summary` sobre um JSON relido, então os tipos são os do JSON nos dois lados. O `_qp_summary` do candidato é igual ao resumo do core.
+- O cache não foi tocado: todos os arquivos seguem com data de 04/10 18:05.
+
+**3. O conferidor de citações.**
+- Rodou com rc 0 e «TODAS VERBATIM».
+- Ele é mais estrito agora: pulou 19 compactações e 43 mensagens meta (sessão 6da8f00d) e as três frases da brecha da 2ª passada são RECUSADAS. A brecha que sobra está no achado acima.
+- As citações genuínas seguem achadas: as 8 do artigo (PT = EN), as 9 da pedra (duas delas de 20/08, 21:29:24.723Z) e as 4 do `Audit.lean`.
+
+**4. A pedra e o artigo.**
+- **Os sha16, lidos por script, batem:**
+
+| artefato | sha16 | bate com |
+|---|---|---|
+| candidato | `49369095c4cbf215` | CANDIDATO e ESPERADOS |
+| pedra | `c0f4185a62795002` | sandbox, embutido, CANDIDATO e ESPERADOS |
+| `TGLExt.lean` | `0311b3007a67abbc` | sandbox e embutido |
+| `Audit.lean` | `ef3d990853cc229f` | sandbox e embutido |
+| ensaio a seco | `a19363c7ca1b12e8` | ESPERADOS |
+| raiz do kernel | `273bb3a4a7f8e9ac` | ESPERADOS |
+| relatório de axiomas | `959351bcee4ee00e` | ESPERADOS |
+
+- As 1.212 entradas do kernel embutido são iguais ao sandbox, byte a byte (0 diferenças).
+- **O build é posterior à edição:** a pedra foi editada às 10:15:20; o build foi de 10:16:45 a 10:18:42, com «Built TGLExt.TheAxiomAndTheFalseWitness» e `rc=0`; o relatório dá 10.129 declarações, 29/29 bandeiras e 0 sorry.
+- **O meu `lake env lean` (`Afericao_p3.lean`, rc 0):**
+  - `verb_not_identity` pede `0 < d i₀`, `0 < t` e `0 < β`, o que bate com «t>0, β>0 e algum d_i>0» no artigo PT/EN e na pedra l.46;
+  - `beta_forbids_full_static_witness` pede β > 0 e g > 0;
+  - `verb_word_fixes_the_name` diz que, para x ∈ ker T, a palavra age como `q.coeff 0 •`;
+  - `the_axiom_and_the_false_witness` e as duas re-exportações estão no trio.
+- O TXT mostra «$max(1,|a|,|b|)$» nos 8 TXT do ensaio.
+
+**5. O restaurador (lido, não rodado).**
+- A volta está certa: se a segunda troca falhar, o cache da tentativa volta ao lugar; se a volta também falhar, isso fica dito.
+- A cópia fica em `.tmp_restaurar_<ts>`. Nada é apagado.
+- O `stderr` do vigia é conferido (l.20).
+- Ele espelha o `_qp_save_cache`; a diferença é que guarda o cache antigo em vez de apagá-lo, e o código do pilar não varre essas pastas irmãs.
+
+### AS 12 DISPOSIÇÕES DA `passada2`: TODAS FEITAS
+- **1:** as chaves da W07, conferidas no item 1 acima.
+- **2:** o conferidor de citações (sobra a brecha do achado acima).
+- **N1:** pedra l.46-48 e 238.
+- **N2:** artigo l.39 PT/EN; pedra l.43-47 e 221-222.
+- **N3:** `STATIC_ONE` dá 0 ocorrências no candidato, no runtime, nos esperados e no ensaio (com a nota N2 acima).
+- **N4:** candidato l.141775 diz «(22) + (7)»; gerador l.9; esperados l.41; ensaio l.10 e l.40.
+- **N5:** runtime l.8 e W03 (candidato l.205867). O único «ANTES do cálculo» que resta (l.205578) é a docstring de outra função, anterior à v385.
+- **N6:** o `\mathrm{max}` sobrevive no TXT.
+- **N7:** o token novo sai nos casos certos (nota N5 acima).
+- **N8:** restaurador l.20 e l.41-50.
+- **N9:** registrada como errata ao lado na disposição; a chave `passada1` está igual à do `.bak_20261005_102013`, então o arquivo só cresceu.
+- **N10:** «translated, condensed» no EN l.24 e l.38; «invariante sob TODOS os operadores» no artigo e na pedra; int contra bool conta como diferença.
+
+### ROTAS EXAMINADAS (para registrar; não escrevi no mapa)
+1. O comparador do candidato sobre o cache real da v384 contra o resumo do core v384, os tipos campo a campo, o ramo `not_compute` e a W07 (`comparador_real_p3.py`).
+2. O kernel embutido contra o sandbox e o Nós (`kernel_embutido_p3.py`), mais os hashes contra o registro e os esperados (`hashes.py`).
+3. A compilação independente `Afericao_p3.lean`.
+4. O conferidor de citações rodado sem tocar o pacote (`rodar_conferidor_citacoes_p3.py`); o que o filtro aceita (`mensagens_aceitas_p3.py`); a brecha residual de texto colado em linha (`brecha_residual_p3.py`).
+5. O restaurador, o instalador e o `_qp_save_cache`, por leitura.
+6. A ordem do build e da edição da pedra (`build_full.log`, mtimes do `.olean`).

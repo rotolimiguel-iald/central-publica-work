@@ -1,0 +1,453 @@
+================================================================================
+AFERICAO DA v383 (o agente da 3a afericao da v382, so leitura, 02/10/2026, noite; recebido pela gerencia como mensagem do agente e gravado aqui VERBATIM, indentacao do harness removida)
+================================================================================
+
+# Aferição da v383 (candidato `3f62b37fe961141a`), só leitura
+
+**Recomendação: CORRIGIR ANTES.** É uma correção só de texto: os dois snippets do artigo, e depois regenerar candidato, ensaio a seco e ESPERADOS. Feito isso, INSTALAR. O kernel e o pré-registro V1.4 estão certos e não precisam de nada.
+
+O motivo é um único achado MÉDIO: o parágrafo do artigo resume as nove rotas sem os qualificadores que o V1.4 traz. O artigo é o texto que o rito sela e publica, e é justamente o ponto que o operador levantou (ver M-1).
+
+Não escrevi nada. Não rodei o rito, o `um.py`, `lake build` nem as ferramentas da cadeia. Rodei em memória o bloco v383 do candidato sobre o core v381 (com stubs) e a lógica do conferidor contra o Nós atual.
+
+**O que consultei:**
+- **Mapa:** registros 285–290 lidos (290 registros, cabeça `95aa7197a983cdfd`, cadeia encadeada).
+  - Os artefatos de 288 e 290 batem com o disco.
+  - O `AFERIDOR_v382.txt` cresceu depois de 284/286; isso é esperado, porque o arquivo é só-acréscimo.
+  - `consultar "v383"` devolveu 289 e 290.
+- **Memória:** `v382-custodia-suspensa.md`, com o marcador `decisao_operador_v383`.
+- **Base v381:** os backups de bytes do instalador da v382 batem com o registro de instalação (`APLICADO_…174400`).
+  - um.py `961a79881089c9e6`, core `638e05b4112593b4`, selo `3a887ef6d048d5ea`.
+  - O selo diz `v381` e cita o `um.py` `961a…`.
+- **Nós atual (a v382, só local):** um.py `201985ae9edc7282`, core `dbebdb1edf5f4f18`, selo `2d261dc7f10f092b`.
+- **Pré-registros:** V1, V1.1, V1.2 e V1.3 intocados (mesmos hashes e mtimes). V1.4: JSON `4a0019a3db649e01`, MD `fc132b8f3e2d531b`.
+
+## (1) A decisão está cumprida exatamente
+
+- **O livro tem 11 cobranças** (R1–R4, R6, F1, F2, F3a–c, F4).
+  - Comparei com o V1.3: são campo a campo idênticas.
+- **As 9 rotas** (ECO_a…i, que eram R5a…i) têm a mesma chave, token, caminho e número que o V1.3; só `desfecho` virou `estado`.
+- **Os motivos foram lidos das fontes, não digitados.** Conferi um a um:
+  - o estatuto de cada amplitude e das leis KMS e MAY, iguais ao pré-registro da Fase 6 (`47457358…`);
+  - a lei DEC e o seu estatuto, iguais a `emenda_v5` no core;
+  - a errata GWECO-05 e a consequência «eco fora da cadeia» da v381, iguais às do core;
+  - a definição de 16/09, que fica.
+- **O verbatim do operador** («eu não quero publicar…», «prefiro a primeira opção») e o texto da opção são idênticos no V1.4, no runtime, na memória e nos registros 288 e 289 do mapa.
+- **A v382 fica só local:** está dita no V1.4 (`v382_so_local`), no runtime (`base_and_local_seal`), no artigo e na leitura do selo. O conferidor exige que a chave da v382 esteja ausente do core.
+  - O candidato tem 0 ocorrências de `prove_the_ledger_of_charges_v382` e da leitura do selo da v382.
+  - O selo é montado do zero pelo código (candidato:207320, depois :207678), então a leitura da v382 não sobrevive.
+- **A base é a v381:** o gerador do candidato lê o backup `961a…`. O ensaio parte do core v381. ESPERADOS traz `base_build 961a…` e `origem 201985ae…`.
+
+## (2) Honestidade da moldura
+
+- **Os dados excluem os pares, e isso não está escondido.**
+  - O V1.4 cita o rótulo com FALSIFIED (`rotulo_da_fase6_citado`).
+  - O artigo diz «excluída pelos dados, $z_{\rm excl}$ = …» e remete ao parágrafo da v380, que imprime `FALSIFIED_AT_DELAY_LAW` (3 ocorrências no dry).
+  - Nenhum texto apresenta os pares como resultado da TGL.
+- **`EXCLUDED_BY_DATA` é um rótulo fiel ao que foi medido.** Os 5 pares têm z_excl ≥ 5, poder ≥ 5, sistemática ≤ 0,3 e controles < 5 (RESULTADO V3/V4/V5). O rótulo da Fase 6 fica citado ao lado. A ressalva do ECO_e está no M-1.
+
+**M-1 — MÉDIO — o artigo resume as rotas sem os qualificadores do V1.4.** O PT está em `artigo_pt_v383.pysnip:20` e :25; o EN em :21 e :26. Conferi no dry renderizado. Faltam quatro coisas que o V1.4 diz (MD:45, :47 e JSON das rotas):
+- **ECO_e** sai como «excluída pelos dados, 8,75». Não diz que o FALSIFIED vem da V4, que **não é cega**, nem que o veredito V3 pré-registrado para o mesmo par é INCONCLUSIVE_SYSTEMATICS.
+- **ECO_g** sai como «inconclusiva, 0,88». Não diz que, pela cláusula V5 não aplicada, a leitura honesta seria «sem poder, não falsificado».
+- **O motivo comum** dá o estatuto de KMS e DEC, mas omite o da lei MAY, que é **[INPUT, maio/2026]**. É a única lei por trás de ECO_e, ECO_f e ECO_i.
+- **A frase «a leitura R6 ratificada diz que isso põe o custo na face»** atribui à R6 uma aplicação ao eco que o V1.4 marca como «[a ligação é DERIVED de leitura, gerência]». O artigo perde esse marcador.
+
+**Correção:** em `_rotas2`, ler o qualificador da rota (V4 não cega; V5 → «sem poder, não falsificado»). Acrescentar «a lei de maio é [INPUT, maio/2026]» e o marcador DERIVED. Depois, regenerar candidato, ensaio a seco e ESPERADOS.
+
+**Observação para o operador (não é defeito):** a v383 cumpre a opção escolhida, que é tirar os pares do livro. Mas o módulo da v380, o parágrafo da v380 e a leitura do selo da v380 — herdados, pinados pelo conferidor e públicos desde a custódia da v380 — continuam a dizer `FALSIFIED_AT_DELAY_LAW / PAIR_FALSIFIED_NOT_THE_THEORY`. Convém que ele saiba disso antes de autorizar a custódia.
+
+## (3) Correção
+
+- **Runtime embutido:**
+  - o bloco v383 está verbatim no candidato, sem nenhum `__PREREG_`;
+  - os dois snippets também (1 ocorrência cada);
+  - rodado sobre o core v381: `all_verified = True`, e o veredito é igual ao de ESPERADOS.
+- **Contagens:**
+  - por desfecho: NOT_FALSIFIED 6, FALSIFIED 0, INCONCLUSIVE 2, AWAITING 2, EXCLUDED 1;
+  - na regra 10 (INCONCLUSIVE 1 = F2), ao lado 1 (R6);
+  - por modo: 4 por token, 5 por número, 2 declaradas; por lado: reflexo 4, face 7;
+  - 10 chaves, com 10/10 tokens no core;
+  - rotas: 9 = 5 excluídas pelos dados + 4 inconclusivas; `sources_in_core_ok` verdadeiro.
+- **Recálculo independente:**
+  - as 11 cobranças e as 9 rotas batem com o V1.4 em todos os campos (lado, chave, token, `caminho_veredito`, modo, `regra_id`, caminho, controle, `controle_ok`, valor, estado), sem nenhuma diferença;
+  - 7 cobranças têm canal futuro com FALSIFIED.
+- **Conferidor, avaliado em memória contra o Nós atual (v382) como controle:**
+  - **«deve mudar»: 9 de 16 passam e 7 reprovam.** Os 7 que reprovam são os que discriminam: o sha do `um.py`, a leitura do selo v383, o módulo v383, a ausência da chave v382, o .md listando o v383, o carimbo v383 e o veredito. Os 9 que passam não discriminam, porque o kernel é idêntico.
+  - **«não pode mudar»: 70 de 70 passam.**
+  - **No rito real:** as mesmas condições que a v382 passou (15/15 e 70/70), com 328 módulos esperados (327 + 1).
+- **Instalador e rito:** o instalador exige que o canônico seja `201985ae…` e faz backup de bytes dos arquivos da v382. O rito confere o candidato contra ESPERADOS.
+- **Artefatos copiados da v382:** `build_full.log`, `AUDIT_NOMES` e o relatório de axiomas são cópias por bytes. Isso é aceitável: as fontes do sandbox são idênticas às embutidas (`5ee94242`, `0a4e909a`, `30ac324e`, `ef201782`).
+
+## (4) O kernel
+
+- **É idêntico ao da v382:** o dict embutido e o texto do bloco são iguais (1.211 entradas). O índice da IALD não muda no dry.
+- **As menções «v382» são aceitáveis:**
+  - Nas pedras («para o canônico na v382», «aferidor da v382»), são historicamente certas, e mudá-las mudaria o kernel, contra a decisão.
+  - O registro de pedras (candidato:197298) imprime «v382» na tabela de pedras do artigo (dry PT/EN). Sugiro uma nota de rodapé na tabela: «escritas na v382, selada só no Nós; públicas a partir da v383». Ver B-3.
+
+## (5) Regressões em relação à v382
+
+Nenhuma de lógica. Nenhum check foi perdido: o de eco virou o check das rotas, e entraram o do R4 e o da base.
+
+**BAIXOS:**
+- **B-1:** no V1.4, `alpha_lido_de.um_py_sha256` aponta para `201985ae…`, a v382 não custodiada (gerador v1_4:302, via `fontes`), embora a base seja a v381. O valor de α é o mesmo; convém ler α do backup da v381.
+- **B-2:** `rotulo_da_fase6_citado` de ECO_a–g é o token do módulo v380 no core (gerador v1_4:273), não o rótulo próprio da Fase 6 (`TGL_ECHO_RADICAL_V3__FALSIFIED_AT_DELAY_LAW`, em `fase6.veredito_principal` e nos vereditos das emendas). Renomear o campo ou citar os dois.
+- **B-3:** a tabela de pedras do artigo mostra «v382» sem nota (ver (4)).
+- **B-4:** a docstring do conferidor diz «Contra o selo v381 (controle)» (conferir:3); o controle agora é a v382 do Nós.
+- **B-5:** comentários renomeados mecanicamente: instalar:16 («v383 (aferidor B1/C2)»), rito:4 («aferidor v383 C1/C2») e o cabeçalho do snippet («as duas aferições da v382 acolhidas»).
+- **B-6:** o motivo (v) das rotas (gerador v1_4:142) cita a R6 inteira, inclusive «o custo não está nele», trecho já corrigido ao lado (erratas F1/B11 e da 3ª aferição). Sugiro citar só «τ★ = GM/c³ põe o custo na face…; M não se nomeia», ou anotar a correção.
+
+## Resumo
+
+**ALTO 0 · MÉDIO 1 (M-1) · BAIXO 6.**
+
+**Recomendação: CORRIGIR ANTES** o M-1 (só texto). Os BAIXOS são facultativos. Depois, INSTALAR.
+
+PROVADA ≠ CONFIRMADA; NOT_FALSIFIED nunca é CONFIRMED.
+
+**Para registro no mapa (o que examinei):**
+- o mapa 285–290;
+- a memória da suspensão e da decisão;
+- os backups de bytes da v381;
+- os pré-registros V1 a V1.4 e a diferença entre os geradores v1_3 e v1_4;
+- o runtime v383 contra o v382, rodado em memória sobre o core v381;
+- a comparação campo a campo das 11 cobranças e das 9 rotas;
+- as fontes dos motivos (Fase 6, emenda V5, GWECO-05, v381);
+- o candidato contra a v382 do Nós (14 trechos fora do bloco do runtime) e o kernel idêntico;
+- o conferidor avaliado contra o controle v382;
+- instalador, rito, ensaio a seco e ESPERADOS;
+- o dry renderizado em PT/EN.
+
+`olhou_dados = false`.
+
+--------------------------------------------------------------------------------
+DISPOSICOES DA GERENCIA SOBRE A AFERICAO DA v383 (02/10/2026 19:33) -- recomendacao: CORRIGIR ANTES; acolhida. Cada ponto conferido no core e nos arquivos antes de acolher.
+--------------------------------------------------------------------------------
+M-1 (o artigo resumia as rotas sem os qualificadores do V1.4): ACOLHIDO -- o runtime le, para cada rota, o ROTULO PROPRIO da Fase 6 (fase6.veredito_principal /
+emenda_v4.vereditos_todos / emenda_v5.vereditos_todos_DEC) e exige o mesmo estado; ECO_e le no core que a exclusao vem da emenda V4, NAO cega, e que o veredito V3 do
+mesmo par e INCONCLUSIVE_SYSTEMATICS; ECO_g le que a clausula V5 esta no pre-registro, NAO foi aplicada pelo pipeline, e que o poder de R3 e < 5; as leis de maio
+levam [INPUT, maio/2026] no V1.4. O artigo PT/EN imprime os dois qualificadores (so se as leituras do core passarem), o estatuto da lei de maio e a R6 so no
+trecho que a rota usa, com a ligacao ao eco marcada [DERIVED de leitura, gerencia].
+B-1 (a proveniencia de alpha no V1.4 e o um.py da v382): ACOLHIDO AO LADO -- o V1.4 nao se reescreve; ERRATA no mapa (corrige 290); o runtime confere que o beta do
+V1.4 e o alpha do V1.4 vezes raiz de e (1e-15) e que o alpha do V1.4, o literal CODATA 2018, concorda com o alpha do core (calculado pelo motor da identidade) a 1e-9
+relativo; nota ao lado no modulo. (A primeira tentativa usou o nome ALPHA_FINE_CODATA_2018 como global do modulo; ele so existe como texto de um script embutido,
+e o teste em memoria reprovou -- corrigido antes do candidato.)
+B-2 (o campo rotulo_da_fase6_citado e o token do modulo v380): ACOLHIDO AO LADO -- ERRATA no mapa; o runtime le e cita, ao lado, o rotulo proprio da Fase 6.
+B-3 (a tabela de pedras mostra v382 sem nota): ACOLHIDO -- uma frase no paragrafo da v383 (PT/EN): as duas pedras aparecem como da v382, escritas e aferidas na
+v382, que ficou so no Nos; publicas a partir desta versao. O registro de pedras nao muda (o texto das pedras diz v382).
+B-4 (a docstring do conferidor dizia controle v381): ACOLHIDO -- o controle e o selo da v382 que esta no Nos.
+B-5 (comentarios renomeados mecanicamente): ACOLHIDO -- instalar e rito voltam a «v382 (aferidor B1/C2)» e «aferidor v382 C1/C2»; o cabecalho do snippet diz «as
+afericoes da v382 acolhidas».
+B-6 (o V1.4 cita a R6 inteira, com o trecho «o custo nao esta nele», ja corrigido ao lado): ACOLHIDO AO LADO -- ERRATA no mapa; nota no modulo
+(R6_in_the_routes); o artigo cita so o trecho que a rota usa.
+A OBSERVACAO PARA O OPERADOR (o modulo, o paragrafo e a leitura do selo da v380, herdados e publicos, dizem FALSIFIED_AT_DELAY_LAW / PAIR_FALSIFIED_NOT_THE_THEORY):
+levada a ele no relatorio da gerencia, antes de autorizar a custodia; o paragrafo da v383 diz, ao lado, que esse rotulo nomeia o par, nao a teoria.
+Depois: candidato b425fe335f61e134 (era 3f62b37fe961141a), ensaio a seco TUDO PASSOU; ESPERADOS regenerado. PROVADA != CONFIRMADA; o gate nao se move.
+
+
+================================================================================
+2a PASSADA -- A DIFERENCA DO CANDIDATO E A CADEIA DO SELO -- v383 (o mesmo agente, so leitura, 02/10/2026, noite; VERBATIM, indentacao do harness removida)
+================================================================================
+
+# Duas conferências (só leitura): a diferença do candidato e a cadeia do selo da v383
+
+**(A) O candidato `b425fe335f61e134`: INSTALAR.** 0 ALTO, 0 MÉDIO, 2 BAIXO. A diferença corresponde exatamente às disposições e as conferências novas passam no núcleo de um rito real.
+
+**(B) A cadeia do selo: 0 ALTO, 2 MÉDIO, 7 BAIXO.** Corrigir os dois MÉDIOs antes de rodar a cadeia. Nenhum deles toca o candidato nem o rito, então dá para corrigir enquanto o rito roda.
+
+**Um desvio meu:** escrevi um arquivo por engano. Um `diff > /tmp/_never_written` gravou `C:\Users\rotol\AppData\Local\Temp\_never_written` (21 018 B, a saída do diff). Removi em seguida. Fora isso não escrevi nada nem rodei o rito, o um.py, o lake ou as ferramentas da cadeia.
+
+**O que consultei antes:**
+- Mapa, seq 291–292: cadeia de hash íntegra; a 291 corrige a 290; o artefato da 292 (`AFERIDOR_v383.txt`, `161737779dee6a9d`) bate com o disco.
+- O meu relatório dentro do `AFERIDOR_v383.txt` é idêntico ao que entreguei (9 657 caracteres; comparei com o transcrito do subagente).
+
+## (A) A diferença do candidato
+
+**Cada trecho corresponde a uma disposição, e nada mais mudou.**
+- Recalculei o diff entre `3f62b37fe961141a` e `b425fe335f61e134`: 12 trechos, idêntico byte a byte a `diff_candidato_3f62b37f_b425fe33.txt`.
+- Os trechos, por disposição:
+  - **Cabeçalhos dos snippets** (PT 167949, EN 171487): B-5.
+  - **`_qual2` e `_rotas2`** (PT 167968–70, EN 171509–11): M-1.
+  - **Parágrafo PT 167975 e EN 171516:** M-1 (estatuto `[INPUT]` da lei de maio; R6 só no trecho usado, com `[DERIVED]`), B-3 (nota da tabela de pedras) e B-6.
+  - **Runtime 192202–17:** B-2 (`_V383_ROUTE_PHASE6_LABEL`) e M-1 (`_V383_ROUTE_QUALIFIERS`).
+  - **Runtime 192244–46:** as três notas ao lado (B-6, B-1, B-2).
+  - **Runtime 192388–98 e 192400–02:** lê o rótulo próprio da Fase 6, os qualificadores e o estatuto da lei; `state_ok` passa a exigi-los.
+  - **Runtime 192416–22:** `alpha_pr_ok` (B-1).
+  - **Runtime 192477–85:** o check da base com α e o check novo.
+- Fora do um.py: no conferidor só mudou a docstring (`:3`, B-4); no instalador (`:16`) e no rito (`:4`) só os comentários (B-5).
+- O runtime está embutido verbatim. Só os dois `__PREREG_` foram trocados, pelos hashes do V1.4, que conferem com os arquivos. Os snippets também estão verbatim, uma ocorrência cada.
+
+**As conferências novas não reprovariam por engano no rito real.**
+- **Rodei o bloco novo em memória sobre dois núcleos.** O bloco foi extraído do candidato; o único stub foi o das bandeiras de kernel.
+  - Núcleo v381 com as bandeiras do núcleo v382: `all_verified` True, 61/61, veredito igual ao de ESPERADOS.
+  - Núcleo v382 do Nós, que é produto de um rito real com o mesmo módulo v380: o mesmo resultado.
+- **O que as conferências novas leem:**
+  - **Campos que `prove_bancada_fases_5_6_7_v380` monta dos 18 arquivos do cache, lidos por hash.** Strings vêm do JSON; booleanos vêm de `any()` ou `endswith()`, então `is False/True` funciona; o poder vem de `round()`.
+    - Os 18 arquivos estão byte a byte iguais aos que o rito da v382 leu (0 de 18 diferem).
+    - O veredito do v380 é igual nos núcleos v381 e v382.
+    - A ordem de chamada é 207156 → 207158 → 207160 (v380 → v381 → v383).
+  - **`core["alpha"]`**, que vem da inversão de Lagrange (0,0072973525692960365). A diferença relativa para o α do V1.4 é 5,4e-13, contra uma tolerância de 1e-9.
+  - **O V1.4**, por hash.
+  - Nada depende de ida e volta pelo JSON.
+- **Conferidor contra o controle (a v382 do Nós):**
+  - «Deve mudar»: 9 de 16 passam e 7 reprovam. Os 7 que reprovam são os que discriminam.
+  - «Não pode mudar»: 70 de 70 passam.
+- **ESPERADOS:** só mudaram o sha16 e os bytes do candidato.
+- **Ensaio a seco:** TUDO PASSOU; só mudaram tamanhos e o sha.
+- **O artigo do dry** (tex PT e EN) imprime os dois qualificadores, o `[INPUT]` de maio de 2026, o `[DERIVED]` e a nota das pedras.
+
+**BAIXOS de (A):**
+- **A-1. O rótulo do check diz mais do que ele confere.** O rótulo (`um_v383_candidato.py:192477`) e a nota `alpha_in_the_preregistration` (`v383_runtime.py:178`) dizem «o alpha do V1.4, o literal CODATA 2018».
+  - O código só confere a concordância com o α do núcleo a 1e-9. Essa tolerância não distinguiria o CODATA 2022 (7,2973525643e-3, diferença relativa de 6,9e-10 `[KNOWN]`).
+  - O fato é verdadeiro: li que o α do V1.4 é exatamente 7,2973525693e-3.
+  - A global existe: `SEALED_CODATA_ALPHA` (um.py:95), já usada pelo módulo v381 (:194010).
+  - Correção facultativa: acrescentar `float(_rg["alpha"]) == SEALED_CODATA_ALPHA`. Se mexer, é preciso regerar candidato, ensaio e ESPERADOS; também pode ficar para a v384.
+- **A-2 (facultativo, achado novo).** O qualificador de ECO_e no V1.4 começa com «controles max |z| = 4.81 < 5». O artigo não imprime esse número, embora ele já esteja em `numbers_read.controles_max_z`. O parágrafo da v380 já o diz.
+
+## (B) A cadeia do selo da v383
+
+**Como conferi:**
+- **Leitura e diferenças contra a v382:** li os 13 arquivos e comparei cada um com o da v382 depois da troca mecânica v382→v383. Linhas de conteúdo que mudaram:
+  - leitura: 26;
+  - manifesto: 4;
+  - superfícies: 4;
+  - cadeia: 3;
+  - espera e arquivar: 0.
+- **Chaves e textos:**
+  - Conferência estática: nenhum campo sem chave no leitor. As exceções são os argumentos locais `a/b/na/nb` e um `{chave}` dentro de comentário.
+  - Rodei as 13 funções de texto com valores fictícios: não sobrou nenhum marcador sem preencher, além do `Δ^{it}`, que é intencional.
+- **Patches da árvore e do índice:** simulei em memória sobre os arquivos de ferramentas.
+  - As âncoras são únicas (1 cada).
+  - O resultado passa no `ast.parse`.
+  - As contagens dão 2 e 2.
+- **Leitor e selo:**
+  - Os 5 tokens que o leitor exige estão no veredito esperado.
+  - A chave `the_ledger_of_charges_reading_v383` está no candidato (:207433) e `UM_VERSION` é "v383" (:96).
+  - Os campos do APLICADO batem com o instalador.
+  - O conferidor grava `tudo_bate` e `um_py_sha16` onde o leitor procura (cadeia:37–40).
+- **Superfícies e mapa:**
+  - As superfícies existem. Hoje `grep -c "v383"` dá 0 em todas e `grep -c "v382"` na linhagem dá 0, então o check novo (cadeia:70) discrimina.
+  - A rota `kernel.livro_de_cobrancas.otica` não existe no mapa, então a guarda de idempotência do registro não vai pular.
+
+**Os textos não dizem mais do que o núcleo.**
+- «Levava os nove pares do eco no livro, ao lado» confere com o núcleo v382: 9 R5x com `in_rule` False, 5 FALSIFIED e 4 INCONCLUSIVE.
+- «Não são cobranças da teoria» se apoia no verbatim do operador («o que foi falsificado foi alguma rota…») e na opção que ele aceitou.
+
+**MÉDIO B-M1. Falta folga no MEMORY.md.**
+- Simulei as superfícies sobre o MEMORY.md atual: 23 695 B, modificado às 19:45, quando entrou a linha da v384.
+- Com o marcador da missão, o índice vai a 23 966 B. Das 34 candidatas a mover (`superficies_v383.py:95–105`), nenhuma é mais linha integral, então nada sai. O assert (:116) passa com 34 B de sobra.
+- **Primeira consequência:** se o índice crescer mais de 34 B antes da cadeia, o ensaio da etapa 4 para a cadeia. É fail-closed e nada real é tocado, mas a cadeia para.
+- **Segunda consequência:** mesmo sem crescer, o handoff não cabe no índice.
+  - A linha do handoff (344 B) levaria o índice a 24 310 > 24 000 e vai para o fim do MEMORY_2 (`handoff_v383.py:47–57`).
+  - A marca DECIDIDO (85 B) levaria a 24 051 e não é gravada (:65–70); o script só imprime.
+  - A linha da suspensão (MEMORY.md:61) continua dizendo «até o operador decidir». O que vocês descreveram («marca DECIDIDO») não acontece com os tamanhos de hoje.
+- **Correção:** liberar pelo menos cerca de 430 B. Opções:
+  - mover para o MEMORY_2, inteira, a linha 62 (329 B, superada pela 64 «CUSTODIADO»), com uma chave que só case com ela, e mais uma linha;
+  - ou encurtar a descrição do marcador da missão;
+  - ou aplicar o DECIDIDO dentro das superfícies, dentro do orçamento.
+- E o handoff deveria falhar à vista, não só imprimir, quando o DECIDIDO não couber.
+
+**MÉDIO B-M2. A custódia da prova das aferições depende do scratchpad.**
+- `arquivar_v383.py:13` arquiva só `v383` e `v383_selo`. A v382 nunca foi arquivada: não existe `work\cadeia_de_selo\v382`, ao passo que v380 e v381 estão lá.
+- O `AFERIDOR_v382.txt` (89 714 B: as três aferições, a verificação e a conferência final) e o `APLICADO_AO_CANONICO_20261002_174400.json` só existem no scratchpad da sessão. É justamente o AFERIDOR que os textos dizem «valer para as pedras e para o livro» (`textos_v383.py:26`, `handoff_v383.py:21`).
+- O handoff cita caminhos relativos ao scratchpad (`handoff_v383.py:21`).
+- As duas pedras são publicadas pela primeira vez na v383; o registro das aferições delas não pode depender de um diretório temporário.
+- **Correção:** incluir `v382` e `v382_selo` no laço do arquivar (71 + 28 arquivos, cerca de 15,3 MB; os candidatos de 33 MB são pulados pelo tamanho). E apontar o handoff para `C:\IALD\Central de Patentes\work\cadeia_de_selo\v38x\AFERIDOR_v38x.txt`.
+
+**BAIXOS de (B):**
+- **b1. Marcas de backup com 382.** Aparecem `_sup382` (`superficies_v383.py:20` e cadeia:61), `_p382` e `tmp_p382` (`patch_arvore_indice_v383.py:4,15,25,27` e cadeia:57) e `_handoff382` (`handoff_v383.py:49,54`; a linha :66 já usa `_handoff383_susp`).
+  - O precedente é por versão: `_sup380/_sup381/_p381/_handoff381` estão no disco.
+  - Não existe backup da v382, então não há colisão. Mas os backups da v383 levariam nome da v382. Trocar para 383.
+- **b2.** `_i382p` e `_i382` nomeiam o manifesto da v383 (`patch:57`). É cosmético, porque as variáveis `_iNNN` não são lidas em nenhum lugar, mas quebra o padrão.
+- **b3.** `espera_rito_v383.py:14,20` tem «# v383 (aferidor B1/C2)». É a mesma renomeação mecânica que o B-5 corrigiu no instalador e no rito.
+- **b4.** `registrar_resultado_v383.py:18` diz `dados="core v381 (…)"`, herdado da v382. Os desfechos vêm do núcleo montado no rito da v383. Como o mapa é só-acréscimo, convém escrever «núcleo da rodada v383».
+- **b5. Contagens digitadas.** «Onze» e «nove» estão digitados em `textos:46,69`, `handoff:15,39`, `superficies:91`, `registrar:16,26` e `patch:62`, enquanto `textos:2` diz «nunca digitado aqui».
+  - O leitor guarda os dois valores (`leitura:190` exige `rot_n == 9`; `:201` exige `n_ledger == 11`), então não divergem em silêncio.
+  - Corrigir o cabeçalho ou ler os números de V.
+- **b6. «Os V1 a V1.3 ficam locais» é derivação da gerência.** Aparece em `handoff:27`, `textos:110–111` e `registrar:37`. A decisão só diz «a v382 ficaria selada só localmente».
+  - Marcar como `[DERIVED de leitura, gerência]` e deixar para o operador confirmar: o V1.4 cita o V1.3 por hash, e um leitor público não poderá conferir essa substituição.
+  - Conferi o conteúdo: o V1 tinha 1 cobrança de eco, o V1.1 tinha 7, o V1.2 e o V1.3 tinham 9. «Traziam os pares do eco no livro» vale, em graus diferentes.
+- **b7. Cosméticos.** `superficies:2–3` lista tópicos antigos e `:88` fala em «marcador v376». O arquivar pula o `diff_candidato_*.txt`, que é a prova da correção do M-1 (`arquivar:19`); incluí-lo é facultativo.
+
+## Resumo
+
+- **(A):** ALTO 0, MÉDIO 0, BAIXO 2. Recomendação: **INSTALAR**.
+- **(B):** ALTO 0, MÉDIO 2, BAIXO 7. **Corrigir B-M1 e B-M2 antes de rodar a cadeia**; os BAIXOS são facultativos.
+- Fora da folga do índice (B-M1), nenhuma conferência do leitor ou da cadeia reprovaria por engano.
+
+PROVADA ≠ CONFIRMADA; NOT_FALSIFIED nunca é CONFIRMED.
+
+**Para registro no mapa (o que examinei):**
+- o mapa 291–292;
+- o `AFERIDOR_v383.txt` contra o relatório entregue;
+- o diff recalculado (12 trechos);
+- o runtime v383 em memória sobre os núcleos v381 e v382 (61/61);
+- os 18 artefatos do cache contra os hashes do núcleo v382;
+- o conferidor contra o controle v382;
+- os diffs de ESPERADOS e do ensaio;
+- o dry PT/EN;
+- os 13 scripts da cadeia, os diffs contra a v382, a conferência estática de chaves e os textos renderizados;
+- os patches simulados sobre `arvore_da_prova.py` e `atlas_indice.py`;
+- o orçamento simulado do MEMORY.md;
+- o conteúdo do V1 ao V1.4;
+- os ids de rota no mapa;
+- o estado do `work\cadeia_de_selo`.
+
+`olhou_dados = false`.
+
+--------------------------------------------------------------------------------
+DISPOSICOES DA GERENCIA SOBRE A 2a PASSADA (02/10/2026 20:09) -- (A) INSTALAR, acolhida, com os dois BAIXOS corrigidos ANTES de instalar (nada selado com residuo);
+(B) os dois MEDIOS e os sete BAIXOS corrigidos ANTES da cadeia.
+--------------------------------------------------------------------------------
+O DESVIO DO AFERIDOR, dito por ele: um diff gravou por engano C:\Users\rotol\AppData\Local\Temp\_never_written (21 018 B) e ele o removeu; fica registrado.
+A-1 (o rotulo do alpha dizia «o literal CODATA 2018» e so conferia 1e-9): ACOLHIDO -- a conferencia passa a exigir alpha do V1.4 == SEALED_CODATA_ALPHA do programa
+(o literal CODATA 2018, global em um.py:95), exato; o rotulo e a nota ao lado o dizem.
+A-2 (o maximo |z| dos controles de ECO_e nao estava no artigo): ACOLHIDO -- o qualificador de ECO_e imprime «controles com |z| maximo de 4,81, abaixo de 5», lido do core.
+O candidato novo (58abcf20651f4777) e o conferido (b425fe335f61e134) com EXATAMENTE as cinco trocas (tres no runtime, uma em cada snippet), provado por script; ensaio a seco TUDO PASSOU;
+ESPERADOS regenerado; instalado as 20:04 (origem a v382 do Nos) e o rito lancado.
+B-M1 (a folga do indice): ACOLHIDO -- cinco linhas do MEMORY.md (o handoff v381 superado, o v381 CUSTODIADO, a linha do β, a da suspensao e a da v384) foram INTEIRAS,
+verbatim, para o fim do MEMORY_2.md, ficando ponteiros curtos (23 695 -> 23 160 B; regra dos dois arquivos); e o DECIDIDO que nao couber falha A VISTA (sys.exit 3).
+B-M2 (a prova das afericoes no scratchpad): ACOLHIDO -- o arquivar inclui v382 e v382_selo (o AFERIDOR e o APLICADO da v382) e o diff do candidato; o handoff aponta
+para C:\IALD\Central de Patentes\work\cadeia_de_selo\v38x\AFERIDOR_v38x.txt (o arquivar roda antes do handoff).
+b1 marcas de backup _sup383/_p383/_handoff383; b2 _i383p/_i383; b3 os comentarios historicos da espera voltam a v382; b4 «nucleo da rodada v383, base v381»;
+b5 as contagens lidas de V (n_ledger, rot_n, pr_label) nos textos, no handoff, nas superficies, no registro e no patch; b6 «os V1 a V1.3 ficam locais» marcado
+[DERIVED de leitura, gerencia; a confirmar pelo operador] -- e levado a ele; b7 o comentario «marcador v376» e o diff no arquivo. Testes: as 13 funcoes de texto, o corpo
+e a linha do handoff, as frases do registro e das superficies, com um dicionario de teste; nenhuma chave sobrando; todos compilam. PROVADA != CONFIRMADA.
+
+
+================================================================================
+3a PASSADA -- AS CORRECOES DA CADEIA E AS CINCO TROCAS DO CANDIDATO -- v383 (o mesmo agente, so leitura, durante o rito; VERBATIM, indentacao do harness removida)
+================================================================================
+
+# Terceira passada da v383 (só leitura, com o rito rodando)
+
+**Recomendação: RODAR A CADEIA.** 0 ALTO, 0 MÉDIO, 5 BAIXO, todos na ordem pós-rito; um deles é só uma nota. Nenhum bloqueia. O B-1 é um comando a mais depois do handoff e o B-4 é questão de ordem; o B-2 e o B-3 são facultativos.
+
+O que fiz:
+- Não escrevi nada, nem no Temp. Todo o Python correu por stdin, com `PYTHONDONTWRITEBYTECODE=1`.
+- No Nós li só os backups do instalador (`um_absoluto.json.bak_20261002_174400` e `.bak_20261002_200400`), nenhum arquivo vivo.
+- Mapa, seq 293: a cadeia de hash está íntegra (cabeça `b69f75b86287e604`) e o artefato confere: `AFERIDOR_v383.txt`, `2079f3cc9760c1aa`, 28 685 B.
+
+## (1) As cinco trocas do candidato: certas, e cada uma diz só o que confere
+
+**As cinco trocas.** O diff entre `b425fe335f61e134` e `58abcf20651f4777` tem exatamente cinco:
+- duas nos snippets, PT 167968 e EN 171509: o qualificador de ECO_e passa a imprimir os controles;
+- três no runtime: a nota (192245), o check (192422) e o rótulo (192477).
+
+O runtime e os dois snippets estão verbatim no candidato.
+
+**`globals()` funciona no rito real.**
+- `globals()` dentro de `prove_the_ledger_of_charges_v383` devolve o `__globals__` da função, que é o espaço do módulo um.py; no rito, isso é o `__main__`.
+- `SEALED_CODATA_ALPHA` é atribuída só na linha 95, nível de módulo, antes de `main()` rodar.
+- Nenhuma reatribuição em lugar algum: busquei `=`, `global`, `globals()[...]`, `setattr` e `+=`. O um.py não tem nenhum `exec(`.
+- O padrão `globals().get` já existe no programa (168798 e 172341).
+
+**A comparação é exata.** O α do V1.4, 0.0072973525693, é igual ao literal 7.2973525693e-3.
+
+**Em memória, sobre os núcleos v381 e v382:**
+- `all_verified` True, 61/61, veredito igual ao de ESPERADOS.
+- O rótulo agora diz «o alpha do V1.4 = SEALED_CODATA_ALPHA do programa … (exato)».
+- Controle negativo: sem a constante no espaço do módulo, só o check da base reprova e `all_verified` fica False (fail-closed).
+
+**O artigo do dry:**
+- PT: «(controles com $|z|$ máximo de 4{,}81, abaixo de 5)».
+- EN: «… of 4.81, below 5».
+- O valor vem de `numbers_read.controles_max_z`, que é 4.80799. O «abaixo de 5» é texto fixo, mas está garantido: o `state_ok` de ECO_e exige o token `CONTROLS_MAX_Z_4P81`.
+
+**Instalação, ensaio e ESPERADOS:**
+- ESPERADOS: só mudaram `candidato_sha16` e `candidato_bytes`.
+- Ensaio a seco: TUDO PASSOU; só mudaram tamanhos e o sha.
+- APLICADO (20261002_200400): a origem é `201985ae9edc7282`, a v382; núcleo e selo da v382 têm backup; o candidato instalado é `58abcf20651f4777`.
+
+**Para o rito que está rodando: nada muda.**
+
+## (2) A cadeia: todas as correções feitas, nenhuma regressão
+
+Diferença contra cada `.bak_*_afer2(b)`:
+
+| Item | Onde | Situação |
+|---|---|---|
+| b1 | `_sup383` (superficies:20), `_p383`/`tmp_p383` (patch:4,15,25,27), `_handoff383` (handoff:49,54), mensagens da cadeia (57, 61) | feito |
+| b2 | `_i383p` (patch:57) | feito |
+| b3 | espera:14,20 voltam a «v382 (aferidor…)» | feito |
+| b4 | registrar:18, «nucleo da rodada v383, base v381» | feito |
+| b5 | contagens lidas de V em textos, handoff (15, 23, 25, 39), superficies:91, registrar (16, 26) e patch:62 | feito; nenhum «onze» ou «nove» sobra em linha de código |
+| b6 | `[DERIVED de leitura, gerência; a confirmar pelo operador]` em handoff:27, textos:111 e registrar:37 | feito |
+| b7 | superficies:88; arquivar:19 com `diff_candidato_` | feito |
+| B-M2 | arquivar:13 inclui `v382` e `v382_selo`; handoff:21 aponta para `C:\IALD\Central de Patentes\work\cadeia_de_selo\v38x\AFERIDOR_v38x.txt` (conferido avaliando o literal) | feito |
+| B-M1 | handoff:70 sai com `sys.exit(3)` quando o DECIDIDO não cabe | feito |
+
+**Sem regressão.** Os 15 `.py` compilam e o `bash -n` da cadeia passa. As 13 funções de texto e o corpo do handoff rendem sem marcador sobrando; o `{rot_n}` do `core_txt` é formatado pelo `.format` externo. Não sobra nenhuma marca 382 nem menção a scratchpad.
+
+**A compactação do índice está certa.**
+- Mudaram exatamente 5 linhas; cada linha velha está verbatim no acréscimo do MEMORY_2 (1 602 B).
+- O MEMORY_2 é o backup mais o acréscimo; os backups `_comp383` existem.
+- A âncora do handoff v381 aparece 1 vez; a linha da suspensão e a da missão, 1 vez cada.
+- Nenhum dos novos ponteiros «íntegra no MEMORY_2.md» casa com as 34 chaves candidatas das superfícies, então nenhum ponteiro seria movido como se fosse linha integral.
+
+**A folga agora basta.** Simulação com os tamanhos de hoje:
+
+| Passo | Índice |
+|---|---|
+| hoje | 23 160 B |
+| + marcador da missão (+266) | 23 426 B (as superfícies não movem nada) |
+| + linha do handoff (+339) | 23 765 B (fica no MEMORY.md) |
+| + DECIDIDO (+85) | 23 850 B |
+
+Ficam 150 B de folga. A linha final fica assim: «… NÃO custodia a v382 · íntegra no MEMORY_2.md (movida 02/10) · **02/10: DECIDIDO — a v383 `58abcf20651f4777` supera; …**».
+
+**Nota.** Uma das cinco linhas movidas é a primeira de «Ler primeiro», a cunhagem β. A regra dos dois arquivos permite, e o ponteiro mantém o essencial, mas é a primeira lição do índice.
+
+## (3) A ordem pós-rito: sem furo que bloqueie
+
+- **B-1. A porta da memória roda antes do handoff e do registro.** Ela é a etapa 9 da cadeia. Depois dela, o handoff cria `handoff-v383-custodia.md` e muda o MEMORY.md (a linha do handoff e o DECIDIDO), e o espelho derivado fica sem isso. Correção: rodar `porta_memoria.py` de novo depois do handoff e do registro, antes do arquivar final.
+- **B-2. O handoff não pode ser rerodado depois de falhar no meio.** Ele grava primeiro o tópico (:33–34, com `assert not exists`), depois o documento no Nós e a linha do índice, e só por último tenta o DECIDIDO. Se o DECIDIDO der `exit 3`, o estado fica pela metade e uma nova rodada para no assert.
+  - Com 150 B de folga não deve acontecer, mas outra sessão já escreveu no MEMORY.md hoje (a linha da v384, às 19:45).
+  - Correção facultativa: medir o tamanho final antes da primeira gravação.
+- **B-3.** O handoff não confere que os dois AFERIDOR arquivados existem; a ordem os garante. Um `assert os.path.exists(...)` deixaria o passo fail-closed (facultativo).
+- **B-4.** Se esta 3ª passada e as disposições forem acrescentadas ao `AFERIDOR_v383.txt`, façam isso antes do arquivar final, que é idempotente e atualiza a cópia.
+- **B-5 (nota).** O «abaixo de 5» de ECO_e é texto fixo, mas garantido pelo token pinado. Nenhuma ação.
+
+O resto da ordem confere:
+- o conferidor grava onde o leitor lê;
+- as âncoras da árvore e do índice são únicas;
+- as superfícies hoje têm 0 «v383» e a linhagem tem 0 «v382», então os greps finais discriminam;
+- a rota `kernel.livro_de_cobrancas.otica` não existe, então o registro grava;
+- arquivar antes do handoff faz os caminhos citados existirem.
+
+## Resumo
+
+**(1) e (2): 0 ALTO, 0 MÉDIO, 0 BAIXO. (3): 0 ALTO, 0 MÉDIO, 5 BAIXO.**
+
+**RODAR A CADEIA.** Em seguida: arquivar, handoff, registro, porta da memória de novo e arquivar outra vez.
+
+PROVADA ≠ CONFIRMADA.
+
+**Para registro no mapa (o que examinei):**
+- o mapa até a seq 293;
+- as disposições da 2ª passada;
+- o diff `b425`→`58ab`;
+- o runtime em memória sobre os núcleos v381 e v382, com controle negativo sem a constante;
+- as atribuições de `SEALED_CODATA_ALPHA` e os usos de `exec` e `globals()`;
+- o dry PT/EN;
+- ESPERADOS e ensaio;
+- o APLICADO de 20:04;
+- os diffs de cada script da cadeia contra o seu backup;
+- a compilação dos 15 `.py` e o `bash -n`;
+- a renderização dos textos e do handoff;
+- a compactação do MEMORY.md (as 5 linhas verbatim e os backups);
+- a simulação do orçamento do índice.
+
+`olhou_dados = false`.
+
+--------------------------------------------------------------------------------
+DISPOSICOES DA GERENCIA SOBRE A 3a PASSADA (02/10/2026 20:19) -- recomendacao: RODAR A CADEIA; acolhida.
+--------------------------------------------------------------------------------
+B-1 (a porta da memoria roda antes do handoff e do registro): ACOLHIDO -- a ordem pos-rito passa a ser: conferidor -> cadeia (ate a porta e o grep) -> arquivar -> handoff
+-> registrar -> porta da memoria DE NOVO -> arquivar de novo (idempotente).
+B-2 (o handoff nao pode ser rerodado se falhar no meio): ACOLHIDO -- o handoff confere ANTES da primeira gravacao que o indice comporta a linha e a marca DECIDIDO
+(senao recusa sem gravar nada); a definicao da linha subiu para antes das gravacoes, o texto nao mudou.
+B-3 (o handoff nao conferia os AFERIDOR arquivados): ACOLHIDO -- recusa sem gravar se algum dos dois nao existir no arquivo da Central.
+B-4 (esta passada antes do arquivar final): ACOLHIDO -- gravada aqui, antes de qualquer arquivar.
+B-5 (nota sobre o «abaixo de 5» de ECO_e): acolhida como nota; nenhuma acao.
+A nota sobre a linha do β no indice (a primeira de «Ler primeiro»): o ponteiro guarda o essencial e a linha inteira esta no MEMORY_2.md; fica dito.

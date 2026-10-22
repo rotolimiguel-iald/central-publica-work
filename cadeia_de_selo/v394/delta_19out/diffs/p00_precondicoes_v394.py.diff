@@ -1,0 +1,71 @@
+--- ANTES/p00_precondicoes_v394.py
++++ DEPOIS/p00_precondicoes_v394.py
+@@ -4,9 +4,10 @@
+ import ast, hashlib, json, os, shutil, subprocess, sys
+ sys.stdout.reconfigure(encoding="utf-8")
+-HERE = os.path.dirname(os.path.abspath(__file__)); WK = os.path.dirname(os.path.dirname(HERE)); sys.path.insert(0, os.path.join(WK, "v390_pacote"))
++HERE = os.path.dirname(os.path.abspath(__file__)); WK = os.path.dirname(os.path.dirname(HERE)); sys.path.insert(0, os.path.join(WK, "v390_pacote")); sys.path.insert(0, HERE)
+ from carregar_embutido import carregar  # noqa: E402
++import delta19_v394 as DL  # noqa: E402   (DELTA 19/10: geracao d19)
+ C = "C:" + os.sep
+ NOS = os.path.join(C, "IALD", "Artigo", "Haja_Luz", "A Ponte e o Um", "Nós"); NK = os.path.join(NOS, "tgl_kernel")
+-KS = os.path.join(C, "t", "k394", "final"); KA = os.path.join(C, "t", "k394", "arvore")
++KS = DL.SANDBOX; KA = DL.ARVORE; KDIR = os.path.join(HERE, DL.KERNEL_DIR)
+ sha = lambda b: hashlib.sha256(b).hexdigest()
+ rd = lambda p: open(p, "rb").read()
+@@ -28,5 +29,6 @@
+ chk("a copia base_v393 == o Nos (um.py, core, selo)", all(rd(os.path.join(bb, f)) == rd(os.path.join(NOS, f)) for f in ("um.py", "um_absoluto.json", "um_absoluto_selo.json")))
+ ESP = json.load(open(os.path.join(HERE, "ESPERADOS_v394.json"), encoding="utf-8")); CM = json.load(open(os.path.join(HERE, "CANDIDATO_v394.json"), encoding="utf-8")); PB = json.load(open(os.path.join(HERE, "PINOS_BN_v394.json"), encoding="utf-8"))
+-cand = os.path.join(HERE, "um_v394_candidato.py"); cb = rd(cand)
++cand = os.path.join(HERE, DL.CANDIDATO); cb = rd(cand)
++chk("o candidato em exame (%s) segue INTACTO como registro, em arquivo proprio, e difere do novo" % DL.CANDIDATO_ANTERIOR_SHA16, sha(rd(os.path.join(HERE, "um_v394_candidato.py")))[:16] == DL.CANDIDATO_ANTERIOR_SHA16 and sha(cb)[:16] != DL.CANDIDATO_ANTERIOR_SHA16)
+ chk("o candidato: sha16 == ESPERADOS == CANDIDATO == PINOS_BN; sha256 == o pino", sha(cb)[:16] == ESP["candidato_sha16"] == CM["sha16"] and sha(cb) == CM["sha256"] == PB["candidato"]["sha256"], [sha(cb)[:16], len(cb)])
+ chk("ESPERADOS e PINOS_BN pinam os arquivos que estao em disco", all(sha(rd(PB[k]["path"])) == PB[k]["sha256"] for k in ("criterios", "kernel_recibo", "candidato", "esperados", "pins_do_candidato", "esboco_R3_3", "bateria")), [k for k in PB if isinstance(PB[k], dict) and PB[k].get("sha256")][:9])
+@@ -40,20 +42,32 @@
+ E1, _, _, h1 = carregar(cand)
+ nov = json.load(open(os.path.join(HERE, "kernel_modulos_novos_v394.json"), encoding="utf-8"))["novos"]
+-chk("o kernel embutido do candidato == o sandbox construido (189 novos, raiz, Audit e os demais, byte a byte)", all(rd(os.path.join(KS, *k.split("/"))) == v.encode("utf-8") for k, v in E1.items()) and len(E1) == 1421, len(E1))
+-chk("nenhum dos 189 modulos novos esta no kernel do Nos; as 3 pedras da v393 estao", not any(os.path.exists(os.path.join(NK, *p.split("/"))) for p in nov) and all(os.path.exists(os.path.join(NK, "TGLExt", n + ".lean")) for n in ("RuleTruthContract", "TheRuleAndTheFigureOfTruth", "TheRuleInTheContinuousMotor")))
++chk("o kernel embutido do candidato == o sandbox construido (os modulos novos, raiz, Audit e os demais, byte a byte)", all(rd(os.path.join(KS, *k.split("/"))) == v.encode("utf-8") for k, v in E1.items()) and len(E1) == CM["formal_files_n"], len(E1))
++chk("nenhum dos modulos novos (%d, com a pedra do delta) esta no kernel do Nos; as 3 pedras da v393 estao" % len(nov), not any(os.path.exists(os.path.join(NK, *p.split("/"))) for p in nov) and all(os.path.exists(os.path.join(NK, "TGLExt", n + ".lean")) for n in ("RuleTruthContract", "TheRuleAndTheFigureOfTruth", "TheRuleInTheContinuousMotor")))
+ chk("a raiz e o Audit do Nos == os da v393 embutida (o ANTES)", sha(rd(os.path.join(NK, "TGLExt.lean")))[:16] == CM["kernel"]["raiz_v393_sha16"] and sha(rd(os.path.join(NK, "TGL", "Audit.lean")))[:16] == CM["kernel"]["audit_v393_sha16"])
+-pb = json.load(open(os.path.join(HERE, "kernel", "POS_BUILD_v394.json"), encoding="utf-8"))
+-chk("pos-build do kernel VERDE (rc 0, zero sorry, trio, .olean Lean 4.31.0, 189 compilados) e a arvore so-fontes existe", pb["ok"] is True and pb["jobs_built_novos"] == 189 and os.path.isdir(KA), [pb["ok"], pb["jobs_built_novos"], pb["githash_lean"]])
+-KR = json.load(open(os.path.join(HERE, "kernel", "KERNEL_RECIBO_v394.json"), encoding="utf-8"))
+-chk("o recibo do kernel pina logs e arvore que existem e conferem", sha(rd(KR["build_full_log"]["path"])) == KR["build_full_log"]["sha256"] and sha(rd(KR["audit_log"]["path"])) == KR["audit_log"]["sha256"] and os.path.isdir(KR["arvore"]) and len(KR["pedras"]) == 189)
++pb = json.load(open(os.path.join(KDIR, "POS_BUILD_v394.json"), encoding="utf-8"))
++chk("pos-build do kernel VERDE (rc 0, zero sorry, trio, .olean Lean 4.31.0, todos os modulos novos COMPILADOS a frio) e a arvore so-fontes existe", pb["ok"] is True and pb["jobs_built_novos"] == len(nov) and os.path.isdir(KA), [pb["ok"], pb["jobs_built_novos"], pb["githash_lean"]])
++KR = json.load(open(os.path.join(KDIR, "KERNEL_RECIBO_v394.json"), encoding="utf-8"))
++chk("o recibo do kernel pina logs e arvore que existem e conferem", sha(rd(KR["build_full_log"]["path"])) == KR["build_full_log"]["sha256"] and sha(rd(KR["audit_log"]["path"])) == KR["audit_log"]["sha256"] and os.path.isdir(KR["arvore"]) and len(KR["pedras"]) == len(nov))
+ r8 = os.path.join(C, "IALD", "Central de Patentes", "Chatgpt", "TUNEL", "DO_CHATGPT", "ORDEM_019", "F1.FECHO_20261015", "coverage_candidate_r8", "um_v394_prechecked.py")
+ chk("a candidata r8 do Codex (termo de comparacao) segue a mesma (01ca38fd1c327eb8)", sha(rd(r8))[:16] == "01ca38fd1c327eb8")
+ MI = json.load(open(os.path.join(HERE, "MANIFESTO_INSUMOS_v394.json"), encoding="utf-8"))
+-chk("os insumos duraveis == as origens (sha256) e os pinados nos registros conferem", all(sha(rd(os.path.join(HERE, "insumos", k))) == v["sha256"] and (not os.path.exists(v["origem"]) or sha(rd(v["origem"])) == v["sha256"] or k == "KH_N1_v394.json") for k, v in MI.items()), len(MI))
++chk("os insumos duraveis == as origens (sha256) e os pinados nos registros conferem", all(sha(rd(os.path.join(HERE, "insumos", k))) == v["sha256"] and (not os.path.exists(v["origem"]) or sha(rd(v["origem"])) == v["sha256"] or k == DL.KH_N1_INSUMO) for k, v in MI.items()), len(MI))
+ cd = json.load(open(os.path.join(HERE, "cunhagens_v394_dados.json"), encoding="utf-8"))
+-chk("as 46 cunhagens: arquivo duravel == sha256; fonte original (onde existe) == o mesmo sha256", all(sha(rd(i["arquivo"])) == i["sha256"] and (not os.path.exists(i["fonte_original"]) or not i["fonte_original"][1:3] == ":\\" or sha(rd(i["fonte_original"])) == i["sha256"] or i["declarado"] if "declarado" in i else True) for i in cd["itens"]) and len(cd["itens"]) == 46, len(cd["itens"]))
++chk("as cunhagens (as 46 anteriores e as 2 de 19/10): arquivo duravel == sha256; fonte original (onde existe) == o mesmo sha256", all(sha(rd(i["arquivo"])) == i["sha256"] and (not os.path.exists(i["fonte_original"]) or not i["fonte_original"][1:3] == ":\\" or sha(rd(i["fonte_original"])) == i["sha256"] or i["declarado"] if "declarado" in i else True) for i in cd["itens"]) and len(cd["itens"]) == cd["n"] == len(ESP["cunhagens"]), len(cd["itens"]))
+ pr = json.load(open(os.path.join(HERE, "PINO_RECIBO_PRE_SELO_v394.json"), encoding="utf-8"))
+ chk("o pino do recibo pre_selo confere com o arquivo (e NAO e' utilizavel pelo B(n): flag false, dita)", sha(rd(pr["path"])) == pr["sha256"] and pr["utilizavel_como_recibo_pre_selo_do_B_n"] is False, pr["veredito"])
+ chk("pdflatex e lake no PATH; Lean 4.31.0", bool(shutil.which("pdflatex")) and bool(shutil.which("lake")) and "4.31.0" in subprocess.run(["lean", "--version"], capture_output=True, text=True, cwd=KS).stdout)
++chk("a pedra do delta: a fonte autoral == a copia duravel pinada (insumos) == a EMBUTIDA no candidato == a do sandbox", sha(rd(DL.STONE_SRC)) == sha(rd(os.path.join(HERE, "insumos", DL.STONE_INSUMO))) == sha(E1[DL.STONE_REL].encode("utf-8")) == sha(rd(os.path.join(KS, *DL.STONE_REL.split("/")))) and sha(rd(DL.STONE_SRC))[:16] == ESP["pedra_do_delta"]["sha16"], ESP["pedra_do_delta"])
++chk("o hash formal que o RITO vai gerar (a arvore do Nos depois do rito) tem %d entradas, com os residuais %s; o pino h8 do candidato bate" % (ESP["h8_entradas"], ESP["h8_residuais_do_nos"]), len(ESP["h8_residuais_do_nos"]) + CM["formal_files_n"] == ESP["h8_entradas"] and all(os.path.exists(os.path.join(NK, *r_.split("/"))) for r_ in ESP["h8_residuais_do_nos"]), ESP["h8_entradas"])
++sim = json.load(open(os.path.join(HERE, "SIMULACAO_ARVORE_NOS_%s.json" % CM["sha16"]), encoding="utf-8"))
++chk("simular_arvore_do_nos DESTE candidato: o kh_n1_cobertura_v394 sela na arvore simulada do Nos e o hash formal tem %d entradas" % ESP["h8_entradas"], sim["candidato_sha16"] == CM["sha16"] and sim["formal_files_n_no_rito_real"] == ESP["h8_entradas"] and sim["kh_n1_cobertura_v394"]["all_verified"] is True and sim["kf_all_verified"] is True, sim["formal_files_n_no_rito_real"])
++exm = json.load(open(os.path.join(HERE, "EXAME_PONTOS_%s.json" % CM["sha16"]), encoding="utf-8"))
++chk("exame_pontos_v394 DESTE candidato: nenhum ponto de chamada real da falso", exm["sha256"] == CM["sha256"] and exm.get("algum_falso") == [], exm.get("algum_falso"))
++for f in ("delta19_v394.py", "preparar_kernel_v394.py", "pos_build_kernel_v394.py", "registros_v394.py", "montar_cunhagens_delta19_v394.py", "copiar_insumos_v394.py", "diff_e_pinos_v394.py", "gerar_esperados_v394.py", "derivar_instalar_rito_v394.py", "simular_arvore_do_nos.py", "exame_pontos_v394.py"):
++    try:
++        ast.parse(open(os.path.join(HERE, f), encoding="utf-8").read()); s_ = True
++    except SyntaxError:
++        s_ = False
++    chk("ast.parse de %s" % f, s_)
+ for f in ("instalar_v394.py", "reverter_v394.py", "refazer_arvore_v394_pos_selo.py", "conferir_rito_v394.py", "gerar_candidato_v394.py", "ensaio_a_seco_v394.py"):
+     try:
+@@ -62,5 +76,5 @@
+         s_ = False
+     chk("ast.parse de %s" % f, s_)
+-for f in ("rito_v394.sh", "refazer_sandbox_v394.sh", "refazer_sandbox_v394_pos_selo.sh", os.path.join("pos_rito", "chain_pos_rito_v394.sh")):
++for f in ("rito_v394.sh", "refazer_sandbox_v394.sh", "refazer_sandbox_v394_pos_selo.sh", "construir_kernel_v394.sh", os.path.join("pos_rito", "chain_pos_rito_v394.sh")):
+     chk("sh -n de %s" % f, subprocess.run(["sh", "-n", os.path.join(HERE, f)], capture_output=True).returncode == 0)
+ bm = json.load(open(os.path.join(C, "IALD", "Bancada_Um", "canonical_contracts.json"), encoding="utf-8"))

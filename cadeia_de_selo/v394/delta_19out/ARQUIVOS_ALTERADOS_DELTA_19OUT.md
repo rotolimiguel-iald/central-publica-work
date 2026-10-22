@@ -1,0 +1,70 @@
+| arquivo | sha16 antes | sha16 depois | bytes antes -> depois |
+|---|---|---|---|
+| `CANDIDATO_v394.json` | `7c367c75ebaf6699` | `0c600ce861bfd181` | 14859 -> 16963 |
+| `COMPARACAO_R8_v394.json` | `d5c1ab9ae0962750` | `91478404bd7a026a` | 12261 -> 17608 |
+| `COMPARACAO_R8_v394.txt` | `ba22cc1ed2eb7f9b` | `90a557af8d7924a2` | 8077 -> 12334 |
+| `COMPARACAO_V393_v394.json` | `c754e254d2dcff2e` | `accf0e8180cec5b5` | 598 -> 627 |
+| `DERIVACAO_v394.json` | `673bf776b1913110` | `df2318b1b69acbf4` | 4669 -> 4759 |
+| `DIFF_KERNEL_v394.txt` | `983f719908474f1c` | `0fce8cc7e9e8ca0e` | 15683 -> 15879 |
+| `ESPERADOS_v394.json` | `70268d9481fd7a1d` | `44ec7c1d613a3c2e` | 875975 -> 765582 |
+| `ESTADO_V394.md` | `af8f7124dae4c1ae` | `9b5f79f3b89c0cf3` | 25949 -> 35536 |
+| `FORMAL_MAP_v394.json` | `f414ffd37a9563ac` | `79bc8366287ba1e7` | 153598 -> 153714 |
+| `MANIFESTO_INSUMOS_v394.json` | `360476268d7a42c4` | `76a479082a893196` | 2669 -> 2946 |
+| `PINOS_BN_v394.json` | `43f51eabd6abcc7a` | `d50e8fd0932d4501` | 2979 -> 2983 |
+| `PRECONDICOES_v394.json` | `de512f51d38c40d0` | `b89c52525bc1028b` | 4055 -> 6373 |
+| `artigo_en_v394.pysnip` | `4c3ee3692432f00e` | `52d9c522297ed73b` | 6087 -> 7804 |
+| `artigo_pt_v394.pysnip` | `319a6d3cd3b2bacc` | `a9293f2720e667f5` | 6065 -> 7676 |
+| `comparar_r8_v394.py` | `9e03104e51928de7` | `9132e3467500a54d` | 5927 -> 5983 |
+| `comparar_v393_v394.py` | `e5e397e896a96392` | `4b49c1fc5c6dbbc4` | 1840 -> 1896 |
+| `conferencia_rito_v394_CONTROLE_NEGATIVO_PRE_RITO.json` | `00def118b0d01143` | `4b750aafc9b875e9` | 3361 -> 3769 |
+| `conferir_citacoes_v394.json` | `d0c9f4b84316052b` | `b96be666cf1c513f` | 6441 -> 7039 |
+| `conferir_citacoes_v394.py` | `7a65ea14cf7f8f3d` | `ef11d1f92635f893` | 2787 -> 2935 |
+| `conferir_rito_v394.py` | `cc5311d714de880b` | `c759e58489dce2d8` | 11253 -> 13206 |
+| `construir_kernel_v394.sh` | `1fe5e9f1c660497d` | `80f342f7863c807d` | 1346 -> 1448 |
+| `copiar_insumos_v394.py` | `9fe208df3a55d9db` | `b8fb4dc85862fb6c` | 2344 -> 2759 |
+| `cunhagens_v394_dados.json` | `110cfa4dd39a696c` | `49ec69a05354ed80` | 40651 -> 42052 |
+| `derivar_instalar_rito_v394.py` | `87337d404a44f0e3` | `d5a0826e063fbe9a` | 25083 -> 26886 |
+| `diff_e_pinos_v394.py` | `effba83a1988e866` | `6a7997bde9999d64` | 4440 -> 4491 |
+| `ensaio_a_seco_v394.json` | `a9cfca7b29a7abcc` | `ef463e8ef5d58c15` | 16638 -> 21879 |
+| `ensaio_a_seco_v394.py` | `1b3285ad8c70e6ef` | `180a32797ceac4ee` | 31770 -> 42778 |
+| `ensaio_out.txt` | `f960c95055bae81f` | `28ce2ccaf065c54b` | 4991 -> 5183 |
+| `explicacoes_r8_v394.json` | `11d1cb044be545c2` | `e9fe91d949f9032e` | 3593 -> 5585 |
+| `gerar_candidato_v394.py` | `def9b225dd682606` | `55c0a58c9e7d833a` | 30695 -> 38321 |
+| `gerar_esperados_v394.py` | `41af48ac73d236ca` | `09c51d4b34810a52` | 7615 -> 9084 |
+| `instalar_v394.py` | `4242638483e42391` | `ee88f93e9dce0aaf` | 7143 -> 7244 |
+| `kernel_modulos_novos_v394.json` | `d66c40a61abffb37` | `7ac1a46c19abe22a` | 10046 -> 10334 |
+| `kernel_modulos_novos_v394.lista.json` | `29abf05c44c8a00e` | `0e68fd062bb103de` | 9833 -> 9883 |
+| `p00_precondicoes_v394.py` | `15525c0632e907bd` | `d9f7478a42aebec6` | 7930 -> 10425 |
+| `pos_build_kernel_v394.py` | `17d6a0164c58e00d` | `71e77ef35b060637` | 23830 -> 30531 |
+| `preparar_kernel_v394.py` | `3ff6b1dffe2a6a58` | `80bef2944c6c68ab` | 5993 -> 7190 |
+| `refazer_arvore_v394_pos_selo.py` | `70f765d22c825403` | `e987d96aff778c4e` | 2165 -> 2167 |
+| `refazer_sandbox_v394.sh` | `047334c3b3a7a471` | `74e03a38d298b70a` | 1267 -> 1329 |
+| `registros_v394.py` | `c4dc344c41710245` | `a2f5571b04120393` | 14422 -> 24386 |
+| `reverter_v394.py` | `db452dc6655dd27d` | `017ba31e595c7605` | 4795 -> 4863 |
+| `rito_v394.sh` | `52ae67feeabbed39` | `a86fc2f75adfabf7` | 22959 -> 23031 |
+| `v394_pins.py` | `a4a22c19a740a0a1` | `571de055c380f6e5` | 1044342 -> 1059387 |
+| `vinculo/CRITERIOS_v394.json` | `cba609ddb17e9cb5` | `a382796078d4c643` | 891 -> 891 |
+| `kernel/FLAGS_v394.json` | `3fdc49b398ff2c30` | `59f60ec21b41cf21` | 546351 -> 819290 |
+| `kernel/KERNEL_RECIBO_v394.json` | `ef69c385196b2276` | `11e6a3ff28f2eca2` | 276900 -> 277222 |
+| `kernel/KH_N1_v394.json` | `2f32cef63817e007` | `8af9669213d1ad53` | 997 -> 1150 |
+| `kernel/POS_BUILD_v394.json` | `d538f3dc0ea9976f` | `41fca0c4a807efd9` | 6932 -> 8475 |
+| `kernel/audit.log` | `b90f4e03d83e23a0` | `50294c5e8a474aad` | 6833563 -> 6833783 |
+| `kernel/build_full.log` | `f0bbc1fb5fe1f655` | `b7abf24017fca9dc` | 17277824 -> 17278505 |
+| `kernel/construir_marcas.txt` | `b67042e7034cf6e6` | `bcf3fe7759b78466` | 174 -> 174 |
+| `kernel/lake_build.log` | `80a0cfd363f9b84e` | `38d3ccc5d350d924` | 10451845 -> 10452308 |
+| `pos_rito/textos_v394.py` | `419e9f5aabfd25ac` | `3175c59f35c1ec3b` | 51664 -> 52437 |
+
+NOVOS na raiz:
+
+| arquivo | sha16 | bytes |
+|---|---|---|
+| `EXAME_PONTOS_972e81f22dd8cc68.json` | `e30c878f5c60cf1d` | 41307 |
+| `SIMULACAO_ARVORE_NOS_972e81f22dd8cc68.json` | `3884440e69326d0d` | 1467 |
+| `delta19_v394.py` | `68bf9e9d48c01f1e` | 7139 |
+| `exame_pontos_v394.py` | `f65302c39ae3b9c2` | 22601 |
+| `gerar_candidato_out_d19c.txt` | `bd9bbb099df68013` | 953 |
+| `montar_cunhagens_delta19_v394.py` | `892b375361d75d06` | 2799 |
+| `simular_arvore_do_nos.py` | `19e8759318bbe25b` | 4747 |
+| `um_v394_candidato_d19.py` | `972e81f22dd8cc68` | 37885889 |
+
+Pastas novas ou tocadas (por mtime): `delta_19out`, `dry_v394_d19`, `imp_972e81f22dd8cc68`, `insumos`, `kernel`, `pos_rito`, `sim_972e81f22dd8cc68`, `superado_7abb7ba986c098c7`, `vinculo`. `pos_rito` aparece porque OUTRO agente escreveu nela (antes das 13:00) e porque, na rodada final, a gerencia AUTORIZOU a aplicacao da proposta em `pos_rito\textos_v394.py` (a unica escrita minha ali, com backup de bytes `.bak_<STAMP>_c1d19c`).

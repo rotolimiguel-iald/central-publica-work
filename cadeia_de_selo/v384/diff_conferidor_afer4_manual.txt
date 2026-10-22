@@ -1,0 +1,26 @@
+--- conferir_rito_v384.py.bak_antes_afer4	2026-10-03 14:19:18.127064000 -0300
++++ conferir_rito_v384.py.bak_antes_afer5	2026-10-03 15:16:00.169312000 -0300
+@@ -45,6 +45,10 @@
+     "o beta do trabalhador e' o do core (bit a bit) e a marca da rodada esta no resultado": qp.get("beta_matches_core") is True and bool(qp.get("run_id")),
+     "o resultado do pilar esta no Nos e no hash do selo": (lambda p_: os.path.exists(p_) and (selo.get("sha256") or {}).get("um_absoluto_pilar_quantico.json") == hashlib.sha256(open(p_, "rb").read()).hexdigest() == qp.get("result_sha256"))(os.path.join(NOS, "um_absoluto_pilar_quantico.json")),
+     "o terceiro balde da custodia de sentido existe e esta vazio": (selo.get("not_sealed_this_run") or {}).get("computacao_nao_concluida") == [],
++    # os artefatos da rodada que o result.json amarra por hash (4a afericao): details.jsonl e cpuref.json na pasta da rodada, conferidos contra o disco
++    "details.jsonl e cpuref.json da rodada batem com os sha256 do resultado": bool(qp.get("run_dir")) and all(
++        os.path.exists(os.path.join(qp["run_dir"], f_)) and hashlib.sha256(open(os.path.join(qp["run_dir"], f_), "rb").read()).hexdigest() == qp.get(k_)
++        for f_, k_ in (("details.jsonl", "details_sha256"), ("cpuref.json", "cpuref_sha256"))),
+     "o artigo PT e EN trazem a introducao e a nota": all(m in txt[l] for l in ("pt", "en") for m in ESP["artigo_marcas"][l]),
+     "a memoria canonica .md com o carimbo v384 e o pilar listado": ESP["md_carimbo"] in fc and ESP["md_carimbo"] in mf and "quantum_pillar_v384" in fc,
+     "carimbo do .md = sha16 do um.py do disco": ("sha256/16 `%s`" % umsha) in fc and ("sha256/16 `%s`" % umsha) in mf,
+@@ -77,6 +81,12 @@
+         print("  [%s] %s" % ("OK " if v else "NAO", k))
+ if dif:
+     print("vereditos que mudaram:", json.dumps(dif, ensure_ascii=False)[:3000])
++# INFORMACAO (nao decide): o servidor do modelo nativo depois do rito, lido do log do lancador (4a afericao)
++_lg = os.path.join(HERE, "rito_servidor_v384.log")
++_lt = open(_lg, encoding="utf-8", errors="replace").read() if os.path.exists(_lg) else ""
++res["servidor_depois_do_rito"] = ("RELIGADO (a porta 8081 escuta)" if "servidor de volta" in _lt else ("nao religado: nao estava ligado antes" if "nao religo" in _lt
++                                  else ("AVISO: a porta 8081 nao escutou -- conferir a tarefa" if "AVISO: a porta 8081" in _lt else "sem registro no log do lancador")))
++print("servidor do modelo nativo depois do rito (informacao):", res["servidor_depois_do_rito"])
+ ok = all(DEVE_MUDAR.values()) and all(NAO_PODE_MUDAR.values())
+ res["tudo_bate"] = ok
+ tag = sys.argv[1] if len(sys.argv) > 1 else ""

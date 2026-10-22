@@ -1,0 +1,1 @@
+assert hashlib.sha256(_V392_FOOTER_B.encode("utf-8")).hexdigest() == _V392_FOOTER_B_SHA256, "rodape B adulterado"

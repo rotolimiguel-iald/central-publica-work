@@ -1,0 +1,4 @@
+import TGLExt.PostoRankAdendo
+#print axioms TGLExt.PostoRankAdendo.A4_reading_rank_one
+#print axioms TGLExt.PostoRankAdendo.concrete_reading_rank_one
+#print axioms TGLExt.PostoRankAdendo.identity_reading_rank_two

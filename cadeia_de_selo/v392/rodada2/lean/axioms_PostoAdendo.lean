@@ -1,0 +1,9 @@
+import TGLExt.PostoAdendo
+#print axioms TGLExt.PostoAdendo.A1a_readoutZero_eq_rhoStar
+#print axioms TGLExt.PostoAdendo.A1b_qubitReduction_eq_diagExpect
+#print axioms TGLExt.PostoAdendo.A1c_nameOp_rhoStar_eq_diagExpect
+#print axioms TGLExt.PostoAdendo.A1d_endpoint_is_the_name_of_the_one
+#print axioms TGLExt.PostoAdendo.A2_typed_collapse_raises_rank_of_superposition
+#print axioms TGLExt.PostoAdendo.A3_nondephasing_poles_are_rank_one_units
+#print axioms TGLExt.PostoAdendo.A4_rank_not_preserved_unconditional
+#print axioms TGLExt.PostoAdendo.A5_control_mixture_rank_unchanged

@@ -1,0 +1,140 @@
+--- ANTES/derivar_instalar_rito_v394.py
++++ DEPOIS/derivar_instalar_rito_v394.py
+@@ -11,9 +11,13 @@
+ import ast, hashlib, json, os, re, subprocess, sys, time
+ sys.stdout.reconfigure(encoding="utf-8")
+-HERE = os.path.dirname(os.path.abspath(__file__)); CAD = os.path.dirname(HERE); V3 = os.path.join(CAD, "v393")
++HERE = os.path.dirname(os.path.abspath(__file__)); CAD = os.path.dirname(HERE); V3 = os.path.join(CAD, "v393"); sys.path.insert(0, HERE)
++import delta19_v394 as DL  # noqa: E402   (DELTA 19/10: sandbox k394d, logs em kernel_d19, candidato novo, pedra do delta)
+ STAMP = time.strftime("%Y%m%d_%H%M%S")
+ C = "C:" + os.sep
+ NOS = os.path.join(C, "IALD", "Artigo", "Haja_Luz", "A Ponte e o Um", "Nós")
+-SB = os.path.join(C, "t", "k394", "final")
++SB = DL.SANDBOX
++_NJ = json.load(open(os.path.join(HERE, "kernel_modulos_novos_v394.json"), encoding="utf-8"))
++assert isinstance(_NJ.get("novos"), list) and DL.STONE_REL in _NJ["novos"] and len(set(_NJ["novos"])) == len(_NJ["novos"]), "kernel_modulos_novos_v394.json tem de trazer a LISTA, com a pedra do delta (preparar_kernel_v394.py)"
++N_NOVOS = len(_NJ["novos"])   # LIDO da lista dos modulos novos (189 do Codex + a pedra do delta de 19/10): nada digitado
+ sha16 = lambda b: hashlib.sha256(b).hexdigest()[:16]
+ # nomes que NAO sobem de versao (registros/chaves historicos do core e arquivos de versoes passadas)
+@@ -55,5 +59,5 @@
+ # ----------------------------------------------------------------------------- o tempo esperado: PARAMETRO lido de kernel/construir_marcas.txt (nunca inventado)
+ def tempo_build():
+-    p = os.path.join(HERE, "kernel", "construir_marcas.txt")
++    p = os.path.join(HERE, DL.KERNEL_DIR, "construir_marcas.txt")
+     if not os.path.isfile(p):
+         return {"estado": "a medir", "fonte": None}
+@@ -80,9 +84,9 @@
+                        TEMPO["build_s"], TEMPO["audit_s"], TEMPO["passagem_s"], TEMPO["rito_3_passagens_min"]))
+ elif TEMPO["estado"] == "parcial":
+-    LINHA_TEMPO = ("# TEMPO ESPERADO (v394, parametro lido de kernel/construir_marcas.txt por derivar_instalar_rito_v394.py): no sandbox, 1 lake build (frio nos 190 modulos novos) = %d s; o Audit e o total do rito: a medir "
++    LINHA_TEMPO = ("# TEMPO ESPERADO (v394, parametro lido de kernel/construir_marcas.txt por derivar_instalar_rito_v394.py): no sandbox, 1 lake build (frio nos modulos novos) = %d s; o Audit e o total do rito: a medir "
+                    "(rederivar quando kernel/construir_marcas.txt trouxer o fim do Audit). O rito faz 3 passagens de lake build + Audit; o timeout do lake build DENTRO do um.py (candidato) tem de caber no tempo medido." % TEMPO["build_s"])
+ else:
+     LINHA_TEMPO = ("# TEMPO ESPERADO (v394): a medir (kernel/construir_marcas.txt ainda nao traz o fim do build e do Audit do sandbox; rederivar depois). O rito faz 3 passagens de lake build + Audit e agora compila "
+-                   "189 modulos a mais que a v393; o timeout do lake build DENTRO do um.py (candidato) tem de caber no tempo medido.")
++                   "os modulos novos a mais que a v393; o timeout do lake build DENTRO do um.py (candidato) tem de caber no tempo medido.")
+ 
+ # ----------------------------------------------------------------------------- a lista dos 189 modulos novos (sandbox x Nos, so' leitura)
+@@ -101,12 +105,12 @@
+     novos = sorted(lean_de(SB) - lean_de(os.path.join(NOS, "tgl_kernel")))
+     removidos = sorted(lean_de(os.path.join(NOS, "tgl_kernel")) - lean_de(SB))
+-    assert len(novos) == 189 and not removidos, ("o sandbox nao traz exatamente 189 modulos novos e nenhum a menos", len(novos), removidos[:3])
++    assert not removidos and sorted(novos) == sorted(_NJ["novos"]) and DL.STONE_REL in novos, ("o sandbox (sandbox x Nos) nao traz exatamente os modulos novos da lista (com a pedra do delta) e nenhum a menos", len(novos), len(_NJ["novos"]), removidos[:3])
+     assert all(x.startswith("TGLExt/") for x in novos)
+     nj = json.load(open(os.path.join(HERE, "kernel_modulos_novos_v394.json"), encoding="utf-8")) if os.path.exists(os.path.join(HERE, "kernel_modulos_novos_v394.json")) else {}
+     n_dito = nj.get("novos") if isinstance(nj.get("novos"), int) else (len(nj["novos"]) if isinstance(nj.get("novos"), list) else None)
+-    assert n_dito in (None, 189), ("kernel_modulos_novos_v394.json diz outro numero", n_dito)
++    assert n_dito in (None, len(novos)), ("kernel_modulos_novos_v394.json diz outro numero", n_dito)
+     if isinstance(nj.get("novos"), list):
+         assert sorted(nj["novos"]) == novos, "a lista de kernel_modulos_novos_v394.json difere da calculada (sandbox x Nos)"
+-    doc = {"novos": novos, "n": len(novos), "fonte": "diferenca dos .lean de TGLExt/ entre o sandbox C:/t/k394/final e o tgl_kernel do Nos (v393 instalada); so' leitura",
++    doc = {"novos": novos, "n": len(novos), "fonte": "diferenca dos .lean de TGLExt/ entre o sandbox " + SB.replace(os.sep, "/") + " e o tgl_kernel do Nos (v393 instalada); so' leitura",
+            "lista_sha16": sha16("\n".join(novos).encode("utf-8")), "campo_novos_do_json_preparar": ("lista" if isinstance(nj.get("novos"), list) else "so a contagem %r (defeito do json.dump de preparar_kernel_v394.py: **info sobrescreve 'novos')" % (nj.get("novos"),))}
+     grava("kernel_modulos_novos_v394.lista.json", json.dumps(doc, ensure_ascii=False, indent=1))
+@@ -117,8 +121,9 @@
+ t = sobe(src)
+ t = troca(t, "(ato da gerencia c1, 13/10/2026)", "(ato da gerencia c1, 19/10/2026)", nome="data do instalar")
+-t = troca(t, "(a v394 traz 3 pedras: o proprio rito as materializa a partir do corpo embutido)", "(a v394 traz 189 modulos novos de kernel: o proprio rito os materializa a partir do corpo embutido)", nome="docstring pedras")
++t = troca(t, "(a v394 traz 3 pedras: o proprio rito as materializa a partir do corpo embutido)", "(a v394 traz %d modulos novos de kernel: o proprio rito os materializa a partir do corpo embutido)" % N_NOVOS, nome="docstring pedras")
++t = troca(t, 'CAND = os.path.join(HERE, "um_v394_candidato.py")', 'CAND = os.path.join(HERE, "%s")' % DL.CANDIDATO, nome="candidato novo")
+ OLD_G = ('assert os.path.exists(os.path.join(NOS, "tgl_kernel", "TGLExt", "Verdade.lean")) and os.path.exists(os.path.join(NOS, "tgl_kernel", "TGLExt", "Posto.lean")), "as pedras da v393 (Verdade, Posto) nao estao no kernel do Nos -- nao instalo"\n'
+          'assert not [rel for rel in ESP["pedras_sha256"] if os.path.exists(os.path.join(NOS, "tgl_kernel", *rel.split("/")))], "alguma das 3 pedras da regra (v394) ja esta no kernel do Nos -- nao instalo"\n')
+-NEW_G = '''# v394: (a) as 3 pedras da v393 (a regra) JA estao no kernel do Nos (a base instalada e' a v393 selada); (b) NENHUM dos 189 modulos novos da v394 esta la ainda.
++NEW_G = '''# v394: (a) as 3 pedras da v393 (a regra) JA estao no kernel do Nos (a base instalada e' a v393 selada); (b) NENHUM dos modulos novos da v394 (os do Codex e a pedra do criterio binario de parada) esta la ainda.
+ # A lista dos modulos novos: kernel_modulos_novos_v394.json (campo 'novos', gerado por preparar_kernel_v394.py) se vier como LISTA; se vier so' a contagem (defeito conhecido do json.dump), a lista de
+ # kernel_modulos_novos_v394.lista.json (derivar_instalar_rito_v394.py: sandbox x Nos); por fim ESPERADOS.pedras_sha256 / ESPERADOS.kernel.new. Fail-closed em tudo.
+@@ -139,7 +144,7 @@
+ 
+ NOVOS_V394, _N_DITO, _FONTE_NOVOS = _modulos_novos()
+-assert len(NOVOS_V394) == _N_DITO == 189 and len(set(NOVOS_V394)) == 189 and all(x_.startswith("TGLExt/") and x_.endswith(".lean") for x_ in NOVOS_V394), ("a lista dos modulos novos nao e' a de 189 .lean de TGLExt/", len(NOVOS_V394), _N_DITO, _FONTE_NOVOS)
++assert len(NOVOS_V394) == _N_DITO and len(set(NOVOS_V394)) == _N_DITO and ESP["kernel"]["modulos_novos"] == _N_DITO and all(x_.startswith("TGLExt/") and x_.endswith(".lean") for x_ in NOVOS_V394), ("a lista dos modulos novos nao e' a do ESPERADOS (.lean de TGLExt/)", len(NOVOS_V394), _N_DITO, _FONTE_NOVOS)
+ assert set(NOVOS_V394) == set(ESP.get("pedras_sha256") or NOVOS_V394), "a lista dos modulos novos difere de ESPERADOS.pedras_sha256 -- nao instalo"
+-assert not [rel for rel in NOVOS_V394 if os.path.exists(os.path.join(NOS, "tgl_kernel", *rel.split("/")))], "algum dos 189 modulos novos (v394) ja esta no kernel do Nos -- nao instalo"
++assert not [rel for rel in NOVOS_V394 if os.path.exists(os.path.join(NOS, "tgl_kernel", *rel.split("/")))], "algum dos modulos novos (v394) ja esta no kernel do Nos -- nao instalo"
+ '''
+ t = troca(t, OLD_G, NEW_G, nome="guardas das pedras")
+@@ -152,6 +157,6 @@
+ r = sobe(src)
+ r = troca(r, "(ato da gerencia c1, 13/10/2026)", "(ato da gerencia c1, 19/10/2026)", nome="data do rito")
+-r = troca(r, "3 pedras novas de kernel (a regra) materializadas", "189 modulos novos de kernel (TimeGraviton*, RuleQuadraticResidual, F1Fecho394/*) materializados", nome="pedras no rito")
+-r = troca(r, "os registros por spec e os registros v394 (a regra e o coracao)", "os registros por spec e os cinco registros novos do core v394 (tempo_frequencia_v394, regra_quadratica_v394, rede_fock_v394, cunhagens_v394, kh_n1_cobertura_v394)", nome="registros no rito")
++r = troca(r, "3 pedras novas de kernel (a regra) materializadas", "%d modulos novos de kernel (TimeGraviton*, RuleQuadraticResidual, F1Fecho394/* e a pedra do criterio binario de parada) materializados" % N_NOVOS, nome="pedras no rito")
++r = troca(r, "os registros por spec e os registros v394 (a regra e o coracao)", "os registros por spec e os seis registros novos do core v394 (tempo_frequencia_v394, regra_quadratica_v394, rede_fock_v394, cunhagens_v394, kh_n1_cobertura_v394, criterio_binario_de_parada_v394)", nome="registros no rito")
+ r = troca(r, "# (3a a 10a afericoes, 03-04/10/2026)\n", "# (3a a 10a afericoes, 03-04/10/2026)\n" + LINHA_TEMPO + "\n", nome="linha do tempo")
+ EXP_SET = 'set -- "/c/IALD/Central de Patentes/work/cadeia_de_selo/v393" "/c/IALD/Central de Patentes/work/cadeia_de_selo/v394"'
+@@ -163,13 +168,13 @@
+ src = rd(V3, "reverter_v393.py"); h_rev = sha16(src.encode("utf-8"))
+ v = sobe(src)
+-v = troca(v, "e poe as 3 pedras da regra em QUARENTENA (nunca apaga).", "e poe os 189 modulos novos de kernel da v394 em QUARENTENA (nunca apaga; guarda o caminho relativo).", nome="doc quarentena")
++v = troca(v, "e poe as 3 pedras da regra em QUARENTENA (nunca apaga).", "e poe os %d modulos novos de kernel da v394 em QUARENTENA (nunca apaga; guarda o caminho relativo)." % N_NOVOS, nome="doc quarentena")
+ v = troca(v, "Confere ao fim que o um.py voltou a ser a v393 selada (b590c0aa80055e2a).", "Confere ao fim que o um.py voltou a ser a v393 selada (o sha16 e' LIDO de ESPERADOS_v393.json do pacote anterior, nunca digitado).", nome="doc ancora")
+ v = troca(v, 'T2 = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")\n',
+           '''T2 = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+-# --- tudo o que decide a reversao e' LIDO ANTES de qualquer escrita (fail-closed): ESPERADOS_v394, a lista dos 189 modulos novos e a ancora do hash da v393 selada
++# --- tudo o que decide a reversao e' LIDO ANTES de qualquer escrita (fail-closed): ESPERADOS_v394, a lista dos modulos novos e a ancora do hash da v393 selada
+ esp = json.load(open(os.path.join(CAD, "ESPERADOS_v394.json"), encoding="utf-8"))
+ _aplic = AP.get("modulos_novos_v394") or {}
+ _lista = list(_aplic.get("lista") or []) or list(esp.get("pedras_sha256") or [])
+-assert len(_lista) == len(set(_lista)) == 189 and all(x_.startswith("TGLExt/") and x_.endswith(".lean") for x_ in _lista), ("a lista dos modulos novos da v394 nao tem 189 .lean de TGLExt/", len(_lista))
++assert len(_lista) == len(set(_lista)) == len(esp["pedras_sha256"]) and set(_lista) == set(esp["pedras_sha256"]) and all(x_.startswith("TGLExt/") and x_.endswith(".lean") for x_ in _lista), ("a lista dos modulos novos da v394 difere de ESPERADOS.pedras_sha256", len(_lista))
+ try:
+     ANCORA = json.load(open(os.path.join(os.path.dirname(CAD), "v393", "ESPERADOS_v393.json"), encoding="utf-8"))["candidato_sha16"]   # o sha16 do um.py da v393 selada, lido do pacote anterior
+@@ -201,5 +206,7 @@
+ src = rd(V3, "refazer_arvore_v393_pos_selo.py"); h_arv = sha16(src.encode("utf-8"))
+ a = sobe(src)
+-assert a.count(r'ARV = r"C:\t\k394\arvore"') == 1, "ARV nao ficou em k394"
++a = a.replace(r'ARV = r"C:\t\k394\arvore"', r'ARV = r"C:\t\k394d\arvore"').replace('refaz C:/t/k394/arvore', 'refaz C:/t/k394d/arvore')
++assert a.count(r'ARV = r"C:\t\k394d\arvore"') == 1, "ARV nao ficou em k394d"
++a = troca(a, '"kernel", "KERNEL_RECIBO_v394.json"', '"%s", "KERNEL_RECIBO_v394.json"' % DL.KERNEL_DIR, nome="recibo na pasta d19")
+ ast.parse(a); ARVORE = a
+ 
+@@ -209,9 +216,11 @@
+ L = s.split("\n")
+ assert L[0] == "#!/bin/sh" and L[1].startswith("# refaz do ZERO o sandbox B do kernel da v394") and L[2].startswith("# um unico lake build"), L[:3]
+-L[1] = ("# refaz do ZERO o sandbox B do kernel da v394: copia o kernel que o Nos TEM (a v393 instalada), acrescenta os 189 modulos do Codex (TimeGraviton*, RuleQuadraticResidual, F1Fecho394/*) e GERA a raiz e o Audit")
++L[1] = ("# refaz do ZERO o sandbox B do kernel da v394 (C:/t/k394d/final): copia o kernel que o Nos TEM (a v393 instalada), acrescenta os 189 modulos do Codex (TimeGraviton*, RuleQuadraticResidual, F1Fecho394/*) e a pedra do criterio binario de parada e GERA a raiz e o Audit")
+ L[2] = ("# (preparar_kernel_v394.py gerar: conferido byte a byte contra a arvore candidate_r8 do Codex), UM unico lake build + Audit (construir_kernel_v394.sh) e o pos-build (pos_build_kernel_v394.py). USAR ANTES de instalar_v394.py: "
+         "o `gerar` le o um.py do Nos como a base v393.")
+ s = "\n".join(L)
+ s = troca(s, "preparar_kernel_v394.py final", "preparar_kernel_v394.py gerar", nome="modo gerar")
++s = s.replace("/c/t/k394", "/c/t/k394d").replace("C:\\t\\k394\\", "C:\\t\\k394d\\")
++assert s.count("/c/t/k394d") == 1 and s.count("C:\\t\\k394d\\final") == 1 and s.count("C:\\t\\k394d\\robocopy_final.log") == 1 and "k394\\" not in s.replace("k394d\\", ""), "os caminhos do sandbox nao ficaram em k394d"
+ GUARDA_SB = ('[ -f "$V/pos_build_kernel_v394.py" ] || { echo "falta pos_build_kernel_v394.py em $V (gerado a parte) -- NAO RODO"; exit 9; }\n'
+              '[ -f "$V/preparar_kernel_v394.py" ] && [ -f "$V/construir_kernel_v394.sh" ] || { echo "falta preparar_kernel_v394.py ou construir_kernel_v394.sh -- NAO RODO"; exit 9; }\n')
+@@ -245,11 +254,11 @@
+ # invariantes do molde que TEM de sobreviver (fail-closed, backup de bytes, temporario -> substituir, guardas)
+ INV = {"instalar_v394.py": ["RECUSO: rodar sem -O", "VIGIA_OK", "o canonico nao e a v393 selada", "open(b, \"wb\").write(data); assert open(b, \"rb\").read() == data", "os.replace(tmp, um)", "tmp = um + \".tmp_instalar_v394_\" + ts",
+-                            "pilar_anterior_v393_", "APLICADO_AO_CANONICO_%s.json", "CM[\"base_v393_sha16\"]", "ESPERADOS_v394.json", "CANDIDATO_v394.json", "um_v394_candidato.py", "kernel_modulos_novos_v394.json",
+-                            "RuleTruthContract", "TheRuleAndTheFigureOfTruth", "TheRuleInTheContinuousMotor", "== 189", "NOVOS_V394", "modulos_novos_v394"],
++                            "pilar_anterior_v393_", "APLICADO_AO_CANONICO_%s.json", "CM[\"base_v393_sha16\"]", "ESPERADOS_v394.json", "CANDIDATO_v394.json", DL.CANDIDATO, "kernel_modulos_novos_v394.json",
++                            "RuleTruthContract", "TheRuleAndTheFigureOfTruth", "TheRuleInTheContinuousMotor", "== _N_DITO", "NOVOS_V394", "modulos_novos_v394"],
+        "rito_v394.sh": ['set -- "/c/IALD/Central de Patentes/work/cadeia_de_selo/v393" "/c/IALD/Central de Patentes/work/cadeia_de_selo/v394"', 'PK="/c/IALD/Central de Patentes/work/cadeia_de_selo/v394"', "exit 18", "exit 16", "exit 17", "exit 10", "exit 11", "exit 12",
+                         "rodada_v394_stdout.txt", "RITO_RC=", ".rito_v394.pid", "rito_servidor_v394.log", "ESPERADOS_v394.json", "echo 1 | python um.py", "trap 'religar; rm -f", "TEMPO ESPERADO (v394"],
+-       "reverter_v394.py": ["APLICADO_AO_CANONICO_*.json", "backup ausente ou alterado", "quarentena_pedras_", "tentativa_v394_rito_falhou_", "RECIBO_REVERSAO_", "rodada_v394_stdout.txt", "ESPERADOS_v394.json", "ANCORA", "ESPERADOS_v393.json", "== 189"],
+-       "refazer_arvore_v394_pos_selo.py": ["KERNEL_RECIBO_v394.json", "shutil.rmtree(ARV)", "assert os.path.normpath(R[\"arvore\"]) == os.path.normpath(ARV)", "chk(\"links\", links, [])"],
+-       "refazer_sandbox_v394.sh": ["/c/t/k394", r"C:\t\k394\final", "preparar_kernel_v394.py gerar", "construir_kernel_v394.sh", "pos_build_kernel_v394.py", "robocopy"],
++       "reverter_v394.py": ["APLICADO_AO_CANONICO_*.json", "backup ausente ou alterado", "quarentena_pedras_", "tentativa_v394_rito_falhou_", "RECIBO_REVERSAO_", "rodada_v394_stdout.txt", "ESPERADOS_v394.json", "ANCORA", "ESPERADOS_v393.json", "set(_lista) == set(esp[\"pedras_sha256\"])"],
++       "refazer_arvore_v394_pos_selo.py": ["KERNEL_RECIBO_v394.json", r'ARV = r"C:\t\k394d\arvore"', "shutil.rmtree(ARV)", "assert os.path.normpath(R[\"arvore\"]) == os.path.normpath(ARV)", "chk(\"links\", links, [])"],
++       "refazer_sandbox_v394.sh": ["/c/t/k394d", r"C:\t\k394d\final", "preparar_kernel_v394.py gerar", "construir_kernel_v394.sh", "pos_build_kernel_v394.py", "robocopy"],
+        "refazer_sandbox_v394_pos_selo.sh": ["refazer_arvore_v394_pos_selo.py"]}
+ conf = {}

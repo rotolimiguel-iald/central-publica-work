@@ -1,0 +1,15 @@
+# PATCH v393 — onde e como `prove_heart_and_gravity_seal` entra no um.py (NÃO aplicado)
+
+Âncoras de leitura no um.py v392 (b590c0aa80055e2a): `ALPHA_FINE_CODATA_2018` l.5584, `BETA_TGL` l.5586, `SQRT_E` l.1521/6536, rito de área/Newton l.8100-8665, `qg_closure` no core. Reconferir as linhas antes de aplicar (o arquivo muda a cada versão).
+
+1. **Colar a função** (e `chi_from_alpha`, `_chk`, `_pinch`, `_T`, `_superop`, `_gravity_links`, `_finish`) junto dos demais `prove_*`, depois do bloco de `area_scale_newton_equivalence` (que ela lê). Só usa numpy e math, já importados. Remover o `import` de cabeçalho duplicado.
+2. **Chamada no fim do rito**, depois de `core["qg_closure"]`, `core["einstein_and_rg"]` e `core["area_scale_newton_equivalence"]` estarem preenchidos e antes do selo:
+   `chi = chi_from_alpha(ALPHA_FINE_CODATA_2018)`  (lido da constante do próprio programa; nunca literal)
+   `core["heart_and_gravity_seal_v393"] = prove_heart_and_gravity_seal(core, "CODATA_RECONSTRUCTED", chi)`
+   Quando existir χ espectral independente: `("SPECTRAL_INDEPENDENT", chi_espectral, {"origem":..., "metodo":..., "incerteza":...})`; sem os três campos, reprova (fail-closed).
+3. **Registro no selo** (`um_absoluto_selo.json`): copiar `verdict`, `all_verified`, `previsao_independente`, `G_derivado`. `does_not_gate_core = True`: não entra no gate nem muda `qg_closure`.
+4. **Auto-teste de fail-closed do um.py**: acrescentar o controle negativo (χ·1,001 deve dar `all_verified False`).
+5. **Artigo (PT/EN)**: inserir `QUADRO_DO_CORACAO.md` no topo e uma seção «O coração e o selo gravitacional» que imprime os checks, a tabela de elos com rótulos (DERIVADO / LEITURA_INTERNA / VALIDACAO_EXTERNA / NORMALIZACAO) e o recibo (provado / executado / medido / interpretado). Mesmo texto no README do the_boundary (ato do operador).
+6. **Kernel**: nenhuma pedra nova é necessária. Citar por nome: `ContinuousModularZero.one_eq_q_sq_add_alpha_sq`, `TheWholeIsOne.half_nat_volume_is_the_radical`, `PolarMinimalPeriod_v2.faithful_period_iff`, `TheStation.station_never_closes`, `Palavra.the_face_does_not_close`, `Palavra.the_read_face_closes`. Os dois últimos e o primeiro nomes vêm do LEVANTAMENTO e da errata de memória; conferir por grep no kernel na instalação (o script só os cita, não os executa).
+7. **Chaves do core lidas** (todas presentes na v392): `einstein_and_rg.values.beta_runtime`, `einstein_and_rg.statuses.beta_never_literal`, `einstein_and_rg.all_verified`, `qg_closure.all_verified`, `qg_closure.formal_flags.{concrete_modular_four_frame_constructed, concrete_solder_field_constructed, concrete_emergent_einstein_proved}`, `area_scale_newton_equivalence.{all_verified, verdict, statute}`. Se uma faltar, o check correspondente reprova dizendo qual.
+8. **Ressalvas a levar ao texto**: o elo «assinatura (1,3)» é só o four-frame/solda concretos (um boost preserva (1,3) e (2,2); não seleciona); os elos «ω(I)=1» e «meia-nat» lêem flags gerais de `qg_closure` (proxy), não um termo próprio; a derivação de π do operador não foi localizada, só o que o kernel prova. Mudança de versão, selo e custódia são atos da gerência/operador.

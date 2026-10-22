@@ -1,0 +1,36 @@
+--- ANTES/conferir_rito_v394.py
++++ DEPOIS/conferir_rito_v394.py
+@@ -1,5 +1,5 @@
+ # -*- coding: utf-8 -*-
+ """conferir_rito_v394.py -- confere, DEPOIS do rito v394, o que tinha de mudar e o que NAO podia (ESPERADOS_v394.json; so leitura do Nos). Molde: conferir_rito_v393.py.
+-Mudancas ditas: +5 chaves (tempo_frequencia_v394, regra_quadratica_v394, rede_fock_v394, cunhagens_v394, kh_n1_cobertura_v394) no core e no selo (+ registros_v394); a escada 7045 -> 10752; os 189 modulos no kernel
++Mudancas ditas: +6 chaves (tempo_frequencia_v394, regra_quadratica_v394, rede_fock_v394, cunhagens_v394, kh_n1_cobertura_v394, criterio_binario_de_parada_v394) no core e no selo (+ registros_v394); a escada 7045 -> a dos ESPERADOS; os modulos novos (189 do Codex + a pedra do delta) no kernel
+ do Nos (sha pinados), a raiz e o Audit do candidato; os vereditos da TROCA DITA (so' numeros); o veredito do indice (mudanca declarada); artigo, sumario, .md. NENHUM outro veredito da v393 muda.
+ uso: python -I -B -X utf8 conferir_rito_v394.py [sufixo]   (o sufixo vai no nome do JSON; antes do rito, o controle negativo deve dar tudo_bate falso)"""
+@@ -33,5 +33,9 @@
+ pedras_ok = all(_sha_k(rel) == s for rel, s in ESP["pedras_sha256"].items())
+ RN = sorted(ESP["registros_v394"])
+-trocas_ok = all(((core.get(k) or {}).get("all_verified") is True) and V(k) != ESP["vereditos_v393"][k] and _num(_nc(V(k))) == _num(_nc(ESP["vereditos_v393"][k])) for k in ESP["troca_dita"])   # MUDOU de fato e so' em numeros
++TP = ESP.get("troca_de_palavra") or {}   # a TROCA DE PALAVRA declarada pela gerencia (THEOREMS -> FLAGS em estatuto_da_prova_v391): so' o que os ESPERADOS declaram
++_pw = lambda k, s_: s_.replace(TP[k][0], TP[k][1]) if k in TP else s_
++trocas_ok = all(((core.get(k) or {}).get("all_verified") is True) and V(k) != ESP["vereditos_v393"][k] and _num(_nc(V(k))) == _num(_nc(_pw(k, ESP["vereditos_v393"][k]))) and (k not in TP or (TP[k][1] in V(k) and TP[k][0] not in V(k))) for k in ESP["troca_dita"])   # MUDOU de fato e so' em numeros (mais a palavra declarada)
++CB = core.get("criterio_binario_de_parada_v394") or {}
++# (n in axr): a lista VAZIA (declaracao sem axioma algum) e' valida; so' a AUSENCIA reprova. Achado do teste positivo de 19/10: o antigo `set(axr.get(n) or ["?"])` reprovava as bandeiras de lista vazia (12 das 3707 do candidato anterior; 2 das 2287 de agora).
+ DEVE = {
+     "um.py = o candidato (sha16 %s)" % ESP["candidato_sha16"]: umsha == ESP["candidato_sha16"],
+@@ -39,4 +43,8 @@
+         and all(((selo.get("registros_v394") or {}).get(n) or {}).get("verdict") == V(n) and bool(V(n)) for n in RN),
+     "os registros por spec v394 SELARAM e cada veredito == o do ensaio": all((core.get(n) or {}).get("all_verified") is True and V(n) == v for n, v in ESP["registros_v394"].items()),
++    "o registro criterio_binario_de_parada_v394 SELOU: veredito == o do ensaio; as duas falas de 19/10 embutidas por sha256 (embedded_ok e sha256 == os ESPERADOS); a bandeira e o teorema da pedra no kernel do rito, no trio": CB.get("all_verified") is True and V("criterio_binario_de_parada_v394") == ESP["criterio_binario"]["verdict"]
++        and all(((CB.get("verbatim") or {}).get(k_) or {}).get("embedded_ok") is True and ((CB.get("verbatim") or {}).get(k_) or {}).get("sha256") == v_["sha256"] for k_, v_ in ESP["criterio_binario"]["verbatim"].items()) and len(ESP["criterio_binario"]["verbatim"]) == 2
++        and kf.get(ESP["bandeira_do_delta"]) is True and (ESP["teorema_do_delta"] in axr and set(axr[ESP["teorema_do_delta"]] or []) <= TRIO) and ((kf.get("declaration_sources_v394") or {}).get(ESP["teorema_do_delta"]) == ESP["pedra_do_delta"]["path"]),
++    "o hash formal do rito (a arvore do Nos depois do rito: embutidos + residuais que o hash conta) tem exatamente %d entradas, com os residuais %s" % (ESP["h8_entradas"], ESP["h8_residuais_do_nos"]): len(kf.get("formal_files_sha256") or {}) == ESP["h8_entradas"] and all(r_ in (kf.get("formal_files_sha256") or {}) for r_ in ESP["h8_residuais_do_nos"]),
+     "tempo_frequencia_v394, regra_quadratica_v394 e rede_fock_v394 SELARAM e cada veredito == o do ensaio; nenhum certificado inteiro da rede": all((core.get(n) or {}).get("all_verified") is True and V(n) == v for n, v in ESP["vereditos_novos_v394"].items()) and rf.get("whole_certificate_inhabited") is False,
+     "as contagens formais == as do ensaio (tempo, quadratica, rede, fontes da rede)": {"tempo": len(tf.get("formal_theorems") or {}), "quadratica": len(rq.get("formal_theorems") or {}), "rede": len(rf.get("formal_declarations") or {}), "rede_fontes": len(rf.get("embedded_sources") or {})} == ESP["n_formais"],
+@@ -47,5 +55,5 @@
+     "os %d modulos novos no kernel do Nos com os sha do candidato" % len(ESP["pedras_sha256"]): pedras_ok,
+     "a raiz e o Audit do Nos == os do candidato": _sha_k("TGLExt.lean")[:16] == ESP["kernel"]["raiz_sha16"] and _sha_k("TGL/Audit.lean")[:16] == ESP["kernel"]["audit_sha16"],
+-    "as %d bandeiras novas True e as declaracoes delas no trio" % ESP["n_bandeiras_novas"]: len(ESP["bandeiras_novas_chaves"]) == ESP["n_bandeiras_novas"] and all(kf.get(k) is True for k in ESP["bandeiras_novas_chaves"]) and all(set(axr.get(n) or ["?"]) <= TRIO for n in ESP["bandeiras_novas_nomes"]),
++    "as %d bandeiras novas True e as declaracoes delas no trio" % ESP["n_bandeiras_novas"]: len(ESP["bandeiras_novas_chaves"]) == ESP["n_bandeiras_novas"] and all(kf.get(k) is True for k in ESP["bandeiras_novas_chaves"]) and all((n in axr) and set(axr[n] or []) <= TRIO for n in ESP["bandeiras_novas_nomes"]),
+     "os 5 registros da v393 (pedras, consumidor, coracao, cunhagens da regra, cobertura v393) seguem selados e iguais (ou so' numeros)": all((core.get(n) or {}).get("all_verified") is True for n in ("pedras_v393", "regra_consumidor_v393", "coracao_e_selo_gravitacional_v393", "cunhagens_regra_v393", "kh_n1_cobertura_v393"))
+         and all(V(n) == ESP["vereditos_v393"][n] or n in ESP["troca_dita"] for n in ("pedras_v393", "regra_consumidor_v393", "coracao_e_selo_gravitacional_v393", "cunhagens_regra_v393", "kh_n1_cobertura_v393")),

@@ -1,0 +1,804 @@
+{
+ "lentes": [
+  {
+   "lente": "registro",
+   "resumo": "REGISTRO DO RAMO B, INTEIRO (lente registro_ramo_b, 05/10/2026). Lido por script: core v385 (sha256 475ac8d218b3a5c8…, 4.845.762 B), V1/V2 do dephasing (502c80fe2a37427e / ff15f023dd91d8c7), pipelines v1/v2 (31a9f41da1b72321 / 0793c58d6995194b), C6 (781a3741a68875eb), catálogo (895250e9d404a240), mapa de rotas (cabeça b43d3d46d596671a; ringdown.dephasing com 15 registros, não 14 — o 15º é a decisão de 05/10, seq 352). (1) O ramo B em código SEMPRE foi k = 1, M = M_f,det (massa final do remanescente no detector, SEOBNRv4 das medianas do catálogo): δ_B = −½βτ★ω²τ_GR = −β·Q·(Mω), independe da massa, só do spin (x = 0,0212 a a = 0,7). BRANCH_B_PRED_M0P0194 = média ponderada do ensemble (−0,019367) sobre 15 séries da janela 3 ms; POWER_0P2 = |δ_B|/σ = 0,178 com σ = 0,1089 só de ruído (40 injeções fora da fonte; cache de maio, 170 npz, 169 fontes); DELTA_TAU_0P1766 = τ_obs/τ_GR − 1 empilhado = 0,1766 ± 0,1089 (z vs RG 1,62) com viés relativo 0,240 > 0,2 ⇒ INCONCLUSIVE_SYSTEMATICS. Ramo A −2,15e−42 (invisível). (2) Os «3 valores concorrentes» NÃO são três k nem três M: são três previsões efetivas do mesmo ramo B segundo a identificação do observável — ensemble/envoltória −0,0194 [REAL], difusão de fase por realização −0,010 (CT-02, grade ±1%) e −0,005 (CTV-02/RD-01, grade ±5%, fração 0,25–0,27) [DECLARADO]; lidos pelo um.py v376 do registro da auditoria. (3) RD-01…RD-07, RDV-01, CT-02, CTV-02: só RD-04 foi corrigido por função (ringdown_scope_v376); RD-01/CT-02/RDV-01 ditos ao lado; RD-06 errata na v380; RD-02, RD-05, RD-07 abertos. CT-02 fixa um ponto duro: como PROPAGAÇÃO o ramo B dá 2,26e17 e-folds (excluído trivialmente) — só é testável como efeito LOCAL na fonte; a decisão propagação×fonte e ensemble×realização é do operador e tem de entrar no pré-registro. (4) C6 GW250114: strain na fonte, 220+440, ln B(R-B/RG) = −0,0026 (10 t_M, 1e-20), INCONCLUSIVE_SYSTEMATICS por portão de calibração de duas famílias não satisfeito e, estruturalmente, NON_IDENTIFIABLE_SINGLE_220 (R-B imitado por Kerr 1,25 % mais leve); o 440 não informa (poder 0,06σ); o modo com informação é o 221. (5) ORDEM 013/013-bis/015: GWTC-5.0 (31 ev) δτ̂ comum +0,072 (sinal oposto a todo dephasing), R-B ln B −1,81; z_comb R-B 0,654; N90(5σ) = 335 GW250114-like ou ~3300 O4; sistemática de família 7× o piso (vermelha); pré-registro RINGDOWN_5SIGMA_V1 (e1be6b0409720c68) e V1.1 escritos; piloto, injeção e PE cega NUNCA rodaram (T15 σ_jit = null; T-10: só-220 com (M_f,a_f) livres não identifica δτ). (6) Fase 6: os 9 pares do eco não usaram τ★; usaram leis de ATRASO k·GM_f/c³ com k = 8,84 (MAY), 29,9 (KMS, 2π/κ de Kerr) e 166,2 (DEC); 5 pares falsificados, 4 sem poder; fora do livro por decisão do operador. (7) R6 ratificada 02/10 «ENCERRADO… M não se nomeia» ganhou errata ao lado em 05/10 (memória, Atlas l.31633, mapa seq 352): REABERTO POR PRÉ-REGISTRO; R2 (propagação, τ★ = t_P: Γ(100 Hz) = 1,28e−40 s⁻¹) segue AWAITING. (8) Kernel: zero termo de ringdown/QNM; τ★ entra «pela conversão tempo-modular → tempo-próprio (KMS/Unruh)» [CONJECTURE] — o lugar onde «tempo emparelhado à gravidade sobre c³» pode nascer (2π/κ = k(a)·GM/c³), com a objeção Kay–Wald já registrada. Os relógios v369 já excluem GM/c³ com M = Terra e tornam invisível M = átomo: «o ramo B exige nomear M». O k = 8π (Hawking) citado pela gerência em 05/10 está AUSENTE no código (grep um.py: 0 ocorrências de beta_H). Arquivos gravados só na pasta da lente.",
+   "itens": [
+    {
+     "tema": "Lei e observável do ramo B no protocolo selado",
+     "achado": "Γ_ω = ½βτ★ω² somada à taxa de decaimento do modo 220: τ_obs/τ_GR − 1 = −Γτ_GR (identificação de ENVOLTÓRIA, declarada na docstring); ramo A τ★ = t_P; ramo B τ★ = G·M_f/c³ (k = 1; M = massa final do remanescente, referencial do detector, de SimIMREOBFinalMassSpin/SEOBNRv4 sobre as medianas do catálogo; f_220, Q_220 por Berti-Cardoso-Will 2006)",
+     "estatuto": "[REAL na forma da lei; INPUT τ★; KNOWN Kerr]",
+     "onde": "core.ringdown_dephasing_protocol (hash a3d941e56d3d33c5); um.py v385 l.209231; ringdown_dephasing_v2.py l.141 e l.202 (sha16 0793c58d6995194b)",
+     "evidencia": "core: hypothesis.law/observable/branch_A/branch_B lidos por script; v2.py: `delta_B = -0.5 * BETA * gm * w_gr ** 2 * tau_gr`, `gm = G*Mf_det*MSUN/C**3`, `Mf_det = mfrac*(m1+m2)*(1+z)`; BETA = ALPHA*sqrt(e) em runtime",
+     "proposta": "no pré-registro V1 do ramo B declarar k, M e a identificação (envoltória do ensemble OU difusão de fase por realização) como campos obrigatórios, lidos pelo um.py por hash"
+    },
+    {
+     "tema": "BRANCH_B_PRED_M0P0194 — o que é e como foi calculado",
+     "achado": "−0,019366930169705913 = média ponderada (pesos do empilhamento por variância inversa) da previsão por série δ_B; algebricamente δ_B = −β·Q·(Mω), independe da massa, só do spin (x = 0,0211559 para a = 0,7); V1 dava −0,0209 (23 séries)",
+     "estatuto": "[REAL — lido por hash]",
+     "onde": "core.ringdown_dephasing_result_v2.stacks['3.0'].delta_pred_B; result_sha16 ff15f023dd91d8c7; ringdown_scope_v376.delta_pred_B_v2",
+     "evidencia": "stacks 3.0: n_used 15, delta_pred_B −0,019366930169705913, delta_pred_A −2,153334673399951e−42; auditoria RD «15/15 séries batem com −β·Q·Mω»; C1 R-B GW250114: Γ 4,949 s⁻¹, x 0,02025, δτ −0,01985",
+     "proposta": "citar; não recalcular"
+    },
+    {
+     "tema": "POWER_0P2_OF_5_SIGMA — com que σ, de que dado",
+     "achado": "power_B = |δ_B|/σ = 0,17785 (0,2 de 5σ); σ = 0,10889 = variância inversa das σ_rel por série, obtidas de 40 injeções do ringdown ajustado em janelas fora da fonte ([−15,5; −3] s); só ruído (RD-02: Kerr do catálogo +4 % → 0,1136; H1/L1 do mesmo evento como independentes; 11 eventos/15 séries); dado: cache de maio/2026 (GWOSC via gwpy, 32 s @ 4096 Hz), 89 eventos com massas, 169 fontes H1+L1 com sha256; executado 2026-09-10 16:03:23 no WSL /opt/lal_env, lalsuite 7.7.1; para poder 5 precisaria σ ≤ 0,00387 (~790× a informação)",
+     "estatuto": "[REAL — lido por hash]",
+     "onde": "core.ringdown_dephasing_result_v2 (power_B, sigma, n_events 89, n_sources 169, instrument, executed); strain_cache 170 npz em C:\\IALD\\projetos_pyhton\\IALD\\strain_cache",
+     "evidencia": "um.py l.209404: `power_B = (abs(pB) / sg)`; RD-02 verificador: σ 0,1089 → 0,1136 com termo de catálogo",
+     "proposta": "o pré-registro deve declarar o poder com σ publicada (posteriores pSEOB, não injeção de ruído) e tratar H1+L1 como bloco"
+    },
+    {
+     "tema": "DELTA_TAU_0P1766 — o que é",
+     "achado": "δτ = τ_obs/τ_GR − 1 empilhado, janela [t_pico+3 ms, +6τ_GR], 15 séries usadas, 84 excluídas na borda, SNR de ancoragem médio 11,1: 0,1766 ± 0,1089 (z vs RG 1,62; z vs B 1,80); δf = −0,0325 ± 0,0127 (z −2,56, referência de Kerr?); χ²/dof 0,87; viés relativo 0,240 > 0,2 ⇒ INCONCLUSIVE_SYSTEMATICS (único motivo gravado); janela 6 ms: 6 séries, 0,0313 ± 0,1755; sistemática 3×6 ms 0,1454 contra σ comb. 0,2066 (passa só pela regra afrouxada: RDV-01/RD-05)",
+     "estatuto": "[REAL — lido por hash]",
+     "onde": "core.ringdown_dephasing_result_v2.stacks e reasons; um.py l.209397-209409 (matriz)",
+     "evidencia": "stacks lidos por script (ver REGISTRO_RAMO_B_INTEIRO.json); RD-05: nas MESMAS 6 séries δ(3 ms) 0,3911 ± 0,1434 vs δ(6 ms) 0,0313 ± 0,1755 → 0,360 > 0,2266 (1,59σ) reprova",
+     "proposta": "o V1 do ramo B deve pré-registrar a sistemática do início com σ da DIFERENÇA por injeção pareada nas mesmas séries, sem soma em quadratura"
+    },
+    {
+     "tema": "Os «3 valores concorrentes» do ramo B",
+     "achado": "NÃO são três k nem três M; são três previsões efetivas de δτ para o MESMO ramo B (k = 1, M = M_f,det) conforme a identificação do observável e a grade do estimador: −0,019367 (ensemble/envoltória, V2 selada); −0,010 (CT-02: difusão de fase por realização, grade f ±1 %, recupera 51–59 %); −0,005 (CTV-02/RD-01: grade ±5 % como a V2, fração 0,247–0,273; ORDEM 013: ~0,3×, tremor ~2 % em δf̂). Com difusão de fase o poder cai de 0,18 para ~0,04–0,05 e o observável vira a largura populacional de δf̂",
+     "estatuto": "[REAL] o primeiro; [DECLARADO — auditoria 28/09, reproduzido por dois agentes] os outros dois",
+     "onde": "core.ringdown_scope_v376.branch_B_concurrent_values (lidos pelo um.py l.195141-195154 de AUDITORIA_28SET_REGISTRO.json, nunca digitados); ANEXO_ACHADOS.md l.373-379, 724-730, 797, 815, 846",
+     "evidencia": "branch_B_concurrent_values = [['V2 selada (media do ensemble)', −0.019366930169705913], ['auditoria 28/09 [DECLARADO]', −0.01], ['auditoria 28/09 [DECLARADO]', −0.005]]",
+     "proposta": "a escolha ensemble × realização é identificação [ONTO] do operador: entra DECLARADA no pré-registro; se difusão de fase, calibrar por injeção de difusão de fase e pré-registrar a previsão efetiva que sair (CTV-02)"
+    },
+    {
+     "tema": "k e M já usados na linhagem para τ (ou τ★) = k·GM/c³",
+     "achado": "k = 1 com M = M_f,det (V1/V2; C1 R-B com M_src/t_M); k = 1 com M = m_Planck (= ramo A, pedra 84_ G·m_P/c³ = t_P); k = 1 com M = Terra (relógios v369: EXCLUÍDO, Γ_Sr 6,47e17 s⁻¹) e M = átomo (invisível, 1,57e−32 s⁻¹); k = 2π/κ_H em GM/c³ = 4π(1+√(1−a²))/√(1−a²) (R-MOD [CONJECTURE]; lei KMS do eco); k = 2 ln(1/β) = 8,84 (MAY, eco); k = 2/β = 166,2 (DEC, eco [DECLARADO]); k = 8π (β_H de Hawking): só no próximo passo da rota (seq 352), AUSENTE no código",
+     "estatuto": "[INPUT] k=1; [REAL] exclusões v369; [CONJECTURE] R-MOD; [INPUT/ONTO/DECLARADO] leis do eco; [OPEN/AUSENTE] 8π",
+     "onde": "core.clock_test_protocol_v369.record.tau_star_alternatives; clock_test_result_v369.tau_star_alternatives; um.py l.155706 (kms_factor); echo_anchored_v5.py l.58-60; C1_LEITURAS.md (a640e0c9ab336dab); psi-nome-da-luz… leitura (d)",
+     "evidencia": "tau_star_alternatives: «t_P (canonico), t_P/beta (Artigo A), t_mod Unruh-g com g terrestre, G M/c^3 com M = Terra e com M = o atomo (o ramo B exige nomear M)»; GM_earth_excluded = true; Gm_atom_invisible = true; Grep um.py `beta_H|8 \\* math\\.pi \\* G|8 pi G M` → 3 linhas, nenhuma de ringdown (l.162597 é Clausius κdA/(8πG))",
+     "proposta": "fixar k e M POR PRINCÍPIO no pré-registro (tempo térmico/modular do horizonte: 2π/κ de Kerr é k(a); Hawking β_H = 8πGM/c³ é k = 8π) e declarar que M = M_f,det é a única leitura já medida; registrar que todo τ★ universal já é decidido pelos relógios v369"
+    },
+    {
+     "tema": "RD-04 — escopo do ringdown no ramo canônico",
+     "achado": "«NATURE_DECIDES_RINGDOWN_NEXT» (v374/v375) sobreafirmava: com τ★ = t_P o ringdown só devolve a correspondência com a RG (δ ≈ −2e−42); o kernel NÃO tem termo de ringdown/QNM (8 menções, todas comentário/docstring; kernel_ringdown_declarations = []). Verificador refuta a generalização: vale para a lei de dephasing, não para os ritos do eco com amplitude √β do kernel",
+     "estatuto": "[REAL — corrigido ao lado na v376]",
+     "onde": "prove_ringdown_scope_v376 (um.py l.195121-195186); core.ringdown_scope_v376.verdict/scope_fixed_in_writing/erratum_beside; mapa seq 88 e 249",
+     "evidencia": "verdict TGL_RINGDOWN_SCOPE_V376__CANONICAL_BRANCH_TAU_STAR_PLANCK_RETURNS_GR_CORRESPONDENCE_ONLY__NOT_A_BETA_TEST__BRANCH_B_TAU_STAR_GM_OVER_C3_IS_INPUT_M_TO_BE_NAMED__3_CONCURRENT_BRANCH_B_VALUES__NO_RINGDOWN_TERM_IN_KERNEL__C6_GW250114_READ_BY_HASH_INCONCLUSIVE_SYSTEMATICS__ERRATUM_BESIDE_NATURE_DECIDES_RINGDOWN_NEXT__NOT_FALSIFIED_IS_NOT_CONFIRMED__GATE_UNTOUCHED",
+     "proposta": "«se o ringdown entrar como condição, a condição pede um observável tipado no kernel (identificação ensemble/realização, τ★ nomeado), não uma docstring» (texto do próprio core)"
+    },
+    {
+     "tema": "RD-01, RD-02, RD-03, RD-05, RD-06, RD-07, RDV-01 — o que cada um diz e o que foi corrigido",
+     "achado": "RD-01 (PARCIAL, BAIXO): −0,0194 é do ensemble; a errata da ORDEM 013 não chegou ao um.py (grep 'ORDEM[ _]013' = 0) — DITO ao lado na v376. RD-02 (PARCIAL, BAIXO): σ só de ruído; +4 % com catálogo; H1/L1 correlacionados — ABERTO. RD-03 (PARCIAL, BAIXO): ln B ≈ 0 do C6 é a degenerescência do 220 (R-B imitado por Kerr 1,25 % mais leve, Δa ≈ −0,019; razão de massa 1,01323 C6 vs 1,01253 BCW) — JÁ_REGISTRADO (ORDEM 013), sem errata no C6. RD-05 (SUSTENTADO, MEDIO): sistemática 3×6 ms mistura amostras (15 vs 6); na interseção reprova (0,360 > 0,227) — ABERTO. RD-06 (SUSTENTADO, BAIXO): docstring 6/52 % vs medido 5 de 23/48,1 %, SNR 5,07–8,63 — errata ao lado na v380. RD-07 (SUSTENTADO, INFO): 220+440 bem posto mas o 440 não informa no GW250114 (resíduo τ440 5,9–6,9 %; poder 0,06σ; ρ440 proxy INPUT); o 221 é o modo com informação — ABERTO. RDV-01 (MEDIO): a emenda V2 afrouxou o critério da sistemática depois de a V1 reprovar; pela regra da V1 a V2 reprova (0,145 > 0,109) — DITO ao lado",
+     "estatuto": "[REAL — auditoria 28/09, verificação adversarial]",
+     "onde": "mapa ringdown.dephasing seq 85, 86, 89, 90, 92; ringdown.modo_unico.degenerescencia seq 87, 91; ANEXO_ACHADOS.md l.341-431; core.ringdown_scope_v376.audit_ringdown_contradictions_declared; bancada_fases_5_6_7_v380.errata_beside_v380_da_auditoria['ringdown_dephasing_v2__docstring']",
+     "evidencia": "mapa seq 249 (01/10): «RD-04 corrigido ao lado por ringdown_scope_v376; RD-01/CT-02/RDV-01 ditos em audit_ringdown_contradictions_declared; abertos RD-02, RD-06, RD-07»; v380 corrigiu RD-06 ao lado depois",
+     "proposta": "o V1 do ramo B herda as correções propostas: posteriores propagados até τ_GR; H1+L1 como bloco; massa/spin da inspiral (teste IMR); sistemática na interseção; cortes de seleção dentro das injeções; 221 em vez de 440"
+    },
+    {
+     "tema": "CT-02 — propagação × fonte; ensemble × realização",
+     "achado": "Se o ramo B agisse na PROPAGAÇÃO (leitura do operador de 16/09 «β está na propagação»), Γ_B = 4,9965 s⁻¹ × tempo de viagem = 2,26e17 e-folds — excluído trivialmente pela detecção de qualquer onda (ramo A: 3,65e−23); logo o ramo B só é testável como efeito LOCAL na fonte (amortecimento do 220). Por realização com difusão de fase o estimador vê 22–27 % do ensemble; os nulos da V2 (seno amortecido puro) não calibram isso; a desdobragem (unitária aleatória) não é fixada pela equação de Lindblad",
+     "estatuto": "[REAL — auditoria 28/09; PARCIAL, MEDIO]; a decisão é [INPUT] do operador",
+     "onde": "mapa seq 132 e 141; ANEXO_ACHADOS.md l.724-730 e 797; core.ringdown_scope_v376.audit_ringdown_contradictions_declared",
+     "evidencia": "recompute.py/sim_phase2.py do aferidor e simulação independente do verificador (GW150914-like M_f,det 67,8 M☉, f 251 Hz, D_L 440 Mpc)",
+     "proposta": "DECISÃO DO OPERADOR no pré-registro: (a) a lei do ramo B age na FONTE (então o canal é o amortecimento/difusão do 220) ou na propagação (então o ringdown não é o canal e o ramo B está excluído por 10^17 e-folds); (b) ensemble ou realização"
+    },
+    {
+     "tema": "Leitura C6 do GW250114",
+     "achado": "Arquivo cache\\gw\\C6_RESULTS_GW250114.json (sha16 781a3741a68875eb, texto == bytes, 50.604 B; idêntico ao C6_RESULTS.json da ORDEM 013; registration ded00f09b5010d62…; code d3aa76afdc419ff3…): modelo condicional de ringdown em ensemble sobre o STRAIN na fonte (on_source_strain_read = true), 220+440 deformados juntos, (M,a) integrados com priors largos, quadraturas gaussianas por detector; início primário 10 t_M, amplitude 1e-20: ln B vs RG = R-GLOBAL 0,0; R-B −0,0026; R-RAIZ-0 −0,043; R-LIN −0,091; R-MOD −0,252; medianas R-GLOBAL M 64,12 a 0,596 / R-B M 64,97 a 0,615; em 6 t_M ln B(R-B) +0,16…+0,22 (toda a varredura |ln B| ≤ 0,25: ruído); status INCONCLUSIVE_SYSTEMATICS, reason «Prespecified two-IMR-family calibration criterion was not met; no exclusion or confirmation is permitted»; estruturalmente NON_IDENTIFIABLE_SINGLE_220 (RD-03) e efeito fraco (correção/σ = 0,34); do_not_combine: janelas do mesmo evento",
+     "estatuto": "[REAL — lido por hash; DECLARADO pela bancada Codex quanto ao método; reproduzido pela gerência (reproduce_c6 diff 0,0)]",
+     "onde": "core.ringdown_scope_v376.c6_*; ler_c6.py desta lente; mapa seq 249; ORDEM 013 (22/09) e auditoria RD-03",
+     "evidencia": "c6_primary_start_lnB_vs_GR lido do core; C6_RESULTS.json flatten (status, reason, convergence 5 inícios passed, results[*])",
+     "proposta": "não combinar com os posteriores publicados do mesmo evento; para o ramo B no GW250114 usar (M,a) da inspiral (IMR) ou o 221; o 440 não informa"
+    },
+    {
+     "tema": "ORDEM 013 / 013-bis / 015 — o que já foi medido rumo ao 5σ",
+     "achado": "GWTC-5.0 (31 eventos pSEOB220): deformação comum δτ̂ = +0,072 [+0,015; +0,134] (90 %), linhas MAIS estreitas, sinal oposto a todo dephasing; RG HPD 0,983 (~2,4σ); R-B ln B −1,81 (31) / −2,48 (33) INCONCLUSIVE_SYSTEMATICS; GWTC-3 (18): R-B −5,40; união distinta 39 eventos. Portão da ampliação [DERIVED; NÃO-CEGO]: z_comb R-B 0,654 (R-LIN 2,32); N90(5σ, R-B) = 335 GW250114-like ou ~3300 O4; O5 3 anos 2,2–3,1σ; 3G ~207 eventos; offset fixo em 0 PROIBIDO (5σ espúrio em ~112 eventos contra R-B e ~191 contra a RG); nuisance c(σ) = −0,061 ± 0,068 + (0,79 ± 0,37)σ; sistemática de família 0,029 = 7× piso 0,0040 (VERMELHA); rota de menor N = largura de δf̂ (N90 59/38/21). Pré-registro RINGDOWN_5SIGMA_V1 (sha256 e1be6b0409720c68…, 2026-09-22T21:44:43Z) e V1.1; nulos 1,609e9 desenhos; Parte A PAGA (128/128 hashes); o CORAÇÃO (piloto IMR, calibração, PE cega) NUNCA rodou: parede = caixa de prior do pSEOBNRv4HM_PA (dtau440 > ~1 aborta) → receita só-220; ORDEM 015: T-10 só-220 com (M_f,a_f) livres NÃO identifica δτ (posto 2); T15 σ_jit = null (covariância H1 offsource 0,955 % acima de 1e12); T09 (440 livre) sem a linha do operador; σ(c) = null; gate_changed = false",
+     "estatuto": "[REAL — reproduzido pela gerência (7–9 dígitos)] portão e C4; [DECLARADO] entregas da bancada; [NÃO-CEGO] dito",
+     "onde": "ordem-013-confrontacao-ringdown.md; C4_CATALOG_COMBINATION.json (f3d8c1959ded3efd); C4_GWTC3_COMBINATION.json (f88c2aa84f988917); ENTREGA_013BIS_RELATORIO_FINAL.md (e41cbc01fe277591); ENTREGA_013BIS_E2_REGISTRO_V1.md; ENTREGA_015_RELATORIO_FINAL.md (84e65658012f0ba1); ENTREGA_015_P_sigma_jit_T15.md; ENTREGA_015_MEDIDA_T10_aprime_posto_espectral.md",
+     "evidencia": "C4: GR_HPD_content 0,983 (31, ESS 743), 0,990 (33); R-B lnB −1,808/−2,476; GWTC-3 R-B −5,397; ENTREGA_015_RELATORIO_FINAL l.37: «sigma(c)=null; não há z conjunto calibrado de 5σ»",
+     "proposta": "o pré-registro do ramo B pode HERDAR o desenho de RINGDOWN_5SIGMA_V1.1 (caixa só-220, (M,a) da inspiral, nuisance c(σ), proibição do offset fixo, portão sistemático) e declarar o poder com N90 já calculado"
+    },
+    {
+     "tema": "Fase 6 (ECO V3–V5): usaram τ★ = GM/c³? qual lei de atraso?",
+     "achado": "NÃO usaram τ★ (tempo de dephasing); usaram leis de ATRASO do eco τ_eco = k·GM_f,det/c³ (M_f UIB2016, a_f HBR2016 por evento): MAY k = 2 ln(1/β) = 8,84 [INPUT]; KMS k = 4π(1+√(1−a²))/√(1−a²) = 2π/κ de Kerr (a = 0,69 → 29,9) [KNOWN κ; ONTO retorno]; DEC k = 2/β = 166,2 [DECLARADO]. 9 pares = 3 amplitudes (√β; sin 2θ_M = 1,9879√β [CONJECTURE]; β [ONTO]) × 3 leis; 244 BBH; 5 FALSIFIED_AT_DELAY_LAW (√β×KMS 9,67; sin2θ×KMS 19,36; √β×DEC 8,95; sin2θ×DEC 16,83; sin2θ×MAY 8,75 na V4 não cega com controles a ~4,8σ), 4 inconclusivos ((√β,MAY) limite do estimador; os três com amplitude β sem poder, cláusula V5 não aplicada, dito). Pela regra matriz (02/10) e decisão do operador (v383) as 9 rotas estão FORA do livro: não são cobranças da teoria",
+     "estatuto": "[REAL — pré-registrado, lido por hash]; leis [INPUT/ONTO/DECLARADO]",
+     "onde": "echo_anchored_v5.py l.58-60 (efa2d774bd7b79c4); core.bancada_fases_5_6_7_v380 (emenda_v5.lei_nova); fase6-eco-radical-01out.md; the_ledger_of_charges_v383.echo_routes_outside_the_ledger",
+     "evidencia": "`delay_laws`: {'MAY': 2.0*gm*log(1/BETA), 'KMS': 4.0*pi*(1+sq)/sq*gm, 'DEC': 2.0*gm/BETA}; laws no RESULTADO: MAY '(2GM_f/c^3) ln(1/beta) [INPUT]', KMS '2 pi/kappa(M_f, a_f) por evento', DEC '2GM_f/(beta c^3) [DECLARADO]'",
+     "proposta": "para o ramo B: o banco de GW residente (gw.py exporta f_qnm_220_hz, tau_d_220_ms, Mf_det, a_f por evento) e o estimador com poder gravado antes de abrir são reaproveitáveis; as exclusões de k = 8,84/29,9/166,2 valem para a AMPLITUDE do eco, não para τ★ no dephasing (observável diferente) — dizer isso no pré-registro para não confundir"
+    },
+    {
+     "tema": "R6 de 02/10 e a errata de 05/10",
+     "achado": "R6 ratificada (core v383/v385 readings_ratified_20261002.R6): «ENCERRADO — o ringdown é a face (pagamento = correspondência com a RG); o custo não está nele; τ★ = GM/c³ põe o custo na face e contradiz a chave; M não se nomeia; a rota viva de β em GW é a propagação»; correção ao lado 02/10: que o custo esteja no ringdown (Γ ~ 1e−40) é leitura [ONTO]; o core lê o ringdown canônico como correspondência com a RG (ringdown_scope_v376); R2 runtime: τ★ = t_P, Γ(100 Hz) = 1,280e−40 s⁻¹, acumulado 1 Gpc 1,318e−23 — AWAITING; F2 do livro INCONCLUSIVE pela sistemática da MEDIDA. Errata 05/10 (decisão do operador, verbatim lido do transcrito): REABERTO POR PRÉ-REGISTRO (lei, k, M, estimador, poder antes de abrir; sem CONFIRMED); gravada em beta-e-a-regra-matriz-02out.md (<!-- ramo_b_reaberto_05out -->), ramo-b-reaberto-05out.md, TGL_ATLAS.md l.31633-31640, mapa seq 352 e rota kernel.livro_de_cobrancas.otica; v385 fica como registro; gate não se move",
+     "estatuto": "[INPUT/ONTO — ratificação e decisão do operador]; números [REAL lidos do core]",
+     "onde": "core.the_ledger_of_charges_v383 (readings_ratified_20261002, corrections_beside_20261002, ledger[6].numbers_read); DECISAO_OPERADOR_RAMO_B_05out.json (sha256 a5d548235522c112…)",
+     "evidencia": "ledger: «RUNTIME (R2, o poder em numero, dito): tau* = t_Planck = 5.3911e-44 s; Gamma(100 Hz) = 1.280e-40 s^-1; acumulado sobre 1 Gpc = 1.318e-23»; Atlas l.31634 «O RAMO B DO RINGDOWN REABERTO POR DECISÃO DO OPERADOR»",
+     "proposta": "na v386: errata ao lado de R6 no core (não por cima) e nova cobrança no livro para o ramo B com lado/lei/leitura/desfecho, status AWAITING_PREREGISTRATION até o V1 existir"
+    },
+    {
+     "tema": "Ancoragens do operador para «tempo emparelhado à gravidade sobre c³»",
+     "achado": "16/09 (verbatim): o gráviton «é apenas o gráviton em regime da constante da luz ao cubo»; leitura (d) da gerência [REAL álgebra; ONTO identificação]: «c³ sozinho não é velocidade; com G é tempo por massa: τ = G·m/c³; ramo A (m = m_P) dá t_Planck (pedra 84_), ramo B (m = M_f) dá GM/c³ — a mesma dobra c³ em duas massas»; 16/09 noite (verbatim): «betatgl está de fato na propagação da onda e ligada ao ringdown»; 16/09 III (verbatim): «RG não é um modelo quântico … quando um modelo quântico calcula e sua previsão identifica-se à RG ISSO É A PROVA»; Atlas: τ★ «entra pela conversão tempo-modular → tempo-próprio (KMS/Unruh); τ★ ~ invariante × t_Planck» [PRINCIPLED IDENTIFICATION/CONJECTURE]; R-MOD (τ★ = 2π/κ_H) já proposta e rebaixada a [CONJECTURE] pela objeção Kay–Wald 1991 (sem estado Hadamard estacionário em Kerr) e por ser o mesmo relógio da Unruh-g que os relógios v369 excluem se universal",
+     "estatuto": "[ONTO — cunhagem do operador]; [CONJECTURE] R-MOD; [KNOWN] Kay–Wald, Connes–Rovelli",
+     "onde": "psi-nome-da-luz-graviton-verbo-vivo-16set.md l.8-10; onda-e-eco-definicao-16set.md l.15-21; TGL_ATLAS.md l.2239-2242 e l.644-649; ordem-013-confrontacao-ringdown.md l.38-42; C1_LEITURAS.md (R-MOD)",
+     "evidencia": "verbatim lidos; Atlas verbete τ★ e I.9",
+     "proposta": "o pré-registro deve nomear o PRINCÍPIO que fixa k (2π/κ de Kerr ou β_H = 8π) e M (M_f,det) e registrar a objeção Kay–Wald ao lado, sem escolher depois do dado"
+    },
+    {
+     "tema": "Relógios v369 — o que já decide todo τ★ universal",
+     "achado": "TGL_CLOCKS_V1: P1 NOT_FALSIFIED_UNDERPOWERED, P2 EXCLUDED_IN_READING, P3 NO_LOCAL_OBSERVABLE; τ★ ≤ 4,8e12 t_P (95 %, 2,59e−31 s), 1,9e9 t_P nominal (Zn-67); alternativas: t_P/β, Unruh-g terrestre (EXCLUÍDO), GM/c³ com M = Terra (EXCLUÍDO, Γ_Sr 6,47e17 s⁻¹) e M = átomo (invisível, 1,57e−32); «o ramo B exige nomear M»; ORDEM 013: «todo τ★ universal já é decidido pelos relógios v369; o ringdown só testa relógios escalados pela fonte (R-B, R-MOD, com tendências de spin OPOSTAS)»",
+     "estatuto": "[REAL — lido do core]",
+     "onde": "core.clock_test_protocol_v369.record.tau_star_alternatives; clock_test_result_v369 (P1, P2, tau_star_alternatives); dephasing_reach.verdict",
+     "evidencia": "ler_core_relogios.py desta lente",
+     "proposta": "o ramo B só é consistente se τ★ for escalado pela FONTE (não universal): dizer isso como premissa do pré-registro"
+    },
+    {
+     "tema": "Kernel — o que existe para o ramo B",
+     "achado": "Nenhum termo de ringdown/QNM (8 menções, todas comentário/docstring; declarations = []); o dephasing tipado é canal de Schur que preserva a diagonal (TGLExt.Ergodicity.dephase, dephase_tendsto_expectation; taxa de Davies β|log λ_i − log λ_j|) sem ponte ao modo 220; Γ_ω = ½βτ★ω² [REAL na forma]; a identificação de Γ com dissipação é [ONTO] (v381/v383: SPEC_S_THETA_TO_HMINMIC_NO_TERM; DISSIPATION_IDENTIFICATION_IS_ONTO)",
+     "estatuto": "[REAL — medido no kernel embutido pelo um.py v376 e pelo verificador RD-04]",
+     "onde": "core.ringdown_scope_v376.kernel_ringdown_mentions/declarations; ANEXO_ACHADOS.md l.424-429",
+     "evidencia": "grep -i 'ringdown|quasinormal|QNM' em tgl_kernel/*.lean: 7 linhas de comentário (Audit.lean:9606, 9748; LightOneParticleByTerm.lean:12; QGSolutionComplete.lean:14, 39; TetelestaiOneObject.lean:17, 39; TheImportedSecondQuantization.lean:18)",
+     "proposta": "se o ramo B entrar como cobrança, o observável (δτ_220 ou largura de δf̂) e τ★ nomeado precisam de termo tipado — ou entram como [INPUT] declarado, sem fingir kernel"
+    },
+    {
+     "tema": "AUSÊNCIAS aferidas (com a consulta)",
+     "achado": "(a) k = 8π (Hawking) para τ★: AUSENTE no código — Grep um.py `beta_H|8 \\* math\\.pi \\* G|8\\*math\\.pi\\*G|8 pi G M|Hawking.*GM/c|kappa_H|2 pi / kappa|2\\*np\\.pi/kappa` → 3 linhas (l.155706/155713 KMS do eco; l.162597 Clausius), nenhuma de τ★; (b) termo de ringdown no kernel: AUSENTE (RD-04); (c) nulos com difusão de fase: AUSENTES na V2 (bloco 'unchanged' injeta seno amortecido puro); (d) estimador de δf̂ populacional: AUSENTE (T15: σ_jit,rec = null, zero injeções); (e) 221 na QNM_GRID: AUSENTE (T-10: «contém 220 e 440, não contém 221»); (f) h5 de posteriores em disco: PRESENTES (Zenodo 17018009 extraído: b9971bcd7d72fdd4 59,2 MB + controle e2373f81973401ad 64,3 MB) — não é ausência",
+     "estatuto": "[REAL — consultas citadas]",
+     "onde": "ver consultas",
+     "evidencia": "saídas dos greps e listagens desta sessão (REGISTRO_RAMO_B_INTEIRO.json)",
+     "proposta": "o V1 do ramo B precisa construir (c) e (d) antes de abrir qualquer dado; (e) pede grade com 221 (qnm 0.4.4 já usado pela auditoria)"
+    }
+   ],
+   "consultas": [
+    "python C:\\IALD\\MAPA_DE_ROTAS\\rotas.py consultar \"ringdown\" → 16 rotas (cabeça b43d3d46d596671a, 353 registros)",
+    "python C:\\IALD\\MAPA_DE_ROTAS\\rotas.py consultar \"ramo B\" → 4 rotas (ringdown.dephasing, kernel.livro_de_cobrancas.otica, kernel.regra_matriz.cadeia_unica, auditoria.testes_passados_28set)",
+    "python C:\\IALD\\MAPA_DE_ROTAS\\rotas.py ver ringdown.dephasing → 15 registros lidos TODOS (seq 24,25,26,27,44,85,86,88,89,90,92,132,141,249,352; erratas 86,88,89,90,132,141)",
+    "python C:\\IALD\\MAPA_DE_ROTAS\\rotas.py ver ringdown.modo_unico.degenerescencia → 3 registros (seq 58, 87 RD-03, 91 RD-07)",
+    "script ler_core_chaves.py / ler_core_ringdown.py / ler_core_ledger.py / ler_core_relogios.py sobre Nós\\um_absoluto.json (sha256 475ac8d218b3a5c83c9c032b5ff1cca93db19066236f2de211fa58da8263a9b5, 4.845.762 B): chaves ringdown_dephasing_protocol, _result, _amendment_v2, _result_v2, ringdown_scope_v376 (inclui audit_ringdown_contradictions_declared e branch_B_concurrent_values), the_ledger_of_charges_v383 (R1–R6, corrections_beside, ledger[6]), bancada_fases_5_6_7_v380, clock_test_protocol/result_v369, dephasing_reach",
+    "Get-FileHash: ringdown_dephasing_v1.py 31a9f41da1b72321; v2.py 0793c58d6995194b; RINGDOWN_DEPHASING_V1_RESULT.json 502c80fe2a37427e; V2 ff15f023dd91d8c7; C6_RESULTS(_GW250114).json 781a3741a68875eb (dois caminhos, idênticos); gwtc_full_catalog.csv 895250e9d404a240; gw.py ea7c849c7f2c10b8; gw_stack.py 0a636d439a03f016; echo_anchored_v5.py efa2d774bd7b79c4; PREREGISTRO_FASE6 47457358d72dd9dc; RESULTADO_V5 e8c16a3f567a6b96; PREREG_DOIS_LADOS_V1_4.json 4a0019a3db649e01; C1_LEITURAS.md a640e0c9ab336dab; INVESTIGACAO_PRIORIDADES_20260928.md 99e70f454eccdcf7; QNM_GRID.json 4f34367a09060238; RINGDOWN_5SIGMA_V1.json e1be6b0409720c68; V1_1 96571187bec3c1d7; C4_CATALOG_220.json 93bdc413130d294a; C4_CATALOG_COMBINATION.json f3d8c1959ded3efd; C4_GWTC3_220.json d9dc9b09a8d91dc7; C4_GWTC3_COMBINATION.json f88c2aa84f988917; C5_FISHER_v3.json ef7a800369ba0732; assessment.json (T05) 920076efbebf912b; ENTREGA_013BIS_RELATORIO_FINAL.md e41cbc01fe277591; ENTREGA_015_RELATORIO_FINAL.md 84e65658012f0ba1; ORDEM_015 c903681d01eec5ed; reproduce_c6.py (v3_3) c9477017041da663; posterior_samples.h5 GW250114 b9971bcd7d72fdd4 (59.249.916 B) e controle e2373f81973401ad (64.331.592 B)",
+    "Read um.py v385 l.195121-195186 (prove_ringdown_scope_v376) e l.209374-209420 (prove_ringdown_dephasing_result_v2); Grep um.py 'def prove_ringdown_*' → l.209231/209273/209324/209374/195121",
+    "Grep um.py 'beta_H|8 \\* math\\.pi \\* G|8\\*math\\.pi\\*G|8 pi G M|Hawking.*GM/c|kappa_H|2 pi / kappa|2\\*np\\.pi/kappa' → 3 linhas (155706, 155713, 162597), nenhuma de τ★ do ringdown",
+    "Read ringdown_dephasing_v1.py l.1-120 e v2.py l.1-140; Grep v2.py 'tau_star|G \\* M|branch|prediction|M_f' → l.40, 157, 159, 202",
+    "Read memórias: ordem-013-confrontacao-ringdown.md (inteira), ramo-b-reaberto-05out.md, auditoria-testes-passados-28set.md, fase6-eco-radical-01out.md, onda-e-eco-definicao-16set.md, psi-nome-da-luz-graviton-verbo-vivo-16set.md l.1-20, beta-e-a-regra-matriz-02out.md l.36-97 (R1–R6, ratificação, erratas, errata 05/10); MEMORY_2.md grep 'ramo B|GM/c³|R-MOD' → 1 linha (l.16)",
+    "Read work\\auditoria_28set\\RELATORIO_AUDITORIA_E_INVESTIGACAO_20260928.md l.70-150; ANEXO_ACHADOS.md l.341-431 (ringdown) e l.724-735 (CT-02); grep 'RD-0[1-7]|CT-02|CTV-02|RDV-01'",
+    "TGL_ATLAS.md: grep verbetes ringdown/τ★/Γ_ω/dephasing (l.644-649, 778, 1101, 1149, 2239-2242); 'ramo B' 69 ocorrências (verbete v346 l.4207 e espelhos); 'REABERTO' → l.31633-31640 (append 05/10 presente)",
+    "Bancada Um: listagens de investigacao\\ (fase6_eco_radical_01out, preregistro_dois_lados_02out), bancada\\ (gw.py exporta f_qnm_220_hz/tau_d_220_ms/Mf_det/a_f_HBR2016), ferramentas\\; Grep 'ringdown|GM/c|tau_star' em investigacao → 28 arquivos; contagem strain_cache 170 npz; gwosc_o4 703 arquivos",
+    "Chatgpt\\ORDEM_013_RINGDOWN: listagens, C1_LEITURAS.md (10 leituras), C6_RESULTS.json (flatten por script), C4_*_COMBINATION.json (por script), TUNEL DO_CHATGPT (ENTREGA_013*, ENTREGA_015* 74 arquivos), PARA_CHATGPT (ORDEM_013, 013BIS, 015, RECIBO_015_MAQUINA_LIVRE); ENTREGA_013BIS_E2_REGISTRO_V1.md; ENTREGA_015_P_sigma_jit_T15.md; ENTREGA_015_MEDIDA_T10_aprime_posto_espectral.md; grep no ENTREGA_015_RELATORIO_FINAL.md",
+    "INVESTIGACAO_PRIORIDADES_20260928.md §2.3 l.76-90 (bancada oficial)",
+    "Busca recursiva '*posterior*.h5|*posterior_samples*' em Chatgpt → 2 arquivos (Zenodo 17018009 extraído); em Bancada_Um → só Planck DR2 (não GW)"
+   ],
+   "arquivos_escritos": [
+    "C:\\Users\\rotol\\AppData\\Local\\Temp\\claude\\c--IALD-Central-de-Patentes\\6da8f00d-d44f-4888-a88d-fc9f73eead3d\\scratchpad\\v386\\ramo_b\\registro_ramo_b\\REGISTRO_RAMO_B_INTEIRO.json",
+    "C:\\Users\\rotol\\AppData\\Local\\Temp\\claude\\c--IALD-Central-de-Patentes\\6da8f00d-d44f-4888-a88d-fc9f73eead3d\\scratchpad\\v386\\ramo_b\\registro_ramo_b\\REUTILIZAVEL_PARA_O_PREREGISTRO.md",
+    "C:\\Users\\rotol\\AppData\\Local\\Temp\\claude\\c--IALD-Central-de-Patentes\\6da8f00d-d44f-4888-a88d-fc9f73eead3d\\scratchpad\\v386\\ramo_b\\registro_ramo_b\\core_ringdown_dump.txt",
+    "C:\\Users\\rotol\\AppData\\Local\\Temp\\claude\\c--IALD-Central-de-Patentes\\6da8f00d-d44f-4888-a88d-fc9f73eead3d\\scratchpad\\v386\\ramo_b\\registro_ramo_b\\ler_core_chaves.py",
+    "C:\\Users\\rotol\\AppData\\Local\\Temp\\claude\\c--IALD-Central-de-Patentes\\6da8f00d-d44f-4888-a88d-fc9f73eead3d\\scratchpad\\v386\\ramo_b\\registro_ramo_b\\ler_core_ringdown.py",
+    "C:\\Users\\rotol\\AppData\\Local\\Temp\\claude\\c--IALD-Central-de-Patentes\\6da8f00d-d44f-4888-a88d-fc9f73eead3d\\scratchpad\\v386\\ramo_b\\registro_ramo_b\\ler_core_ledger.py",
+    "C:\\Users\\rotol\\AppData\\Local\\Temp\\claude\\c--IALD-Central-de-Patentes\\6da8f00d-d44f-4888-a88d-fc9f73eead3d\\scratchpad\\v386\\ramo_b\\registro_ramo_b\\ler_core_relogios.py",
+    "C:\\Users\\rotol\\AppData\\Local\\Temp\\claude\\c--IALD-Central-de-Patentes\\6da8f00d-d44f-4888-a88d-fc9f73eead3d\\scratchpad\\v386\\ramo_b\\registro_ramo_b\\ler_c6.py",
+    "C:\\Users\\rotol\\AppData\\Local\\Temp\\claude\\c--IALD-Central-de-Patentes\\6da8f00d-d44f-4888-a88d-fc9f73eead3d\\scratchpad\\v386\\ramo_b\\registro_ramo_b\\ler_c4.py"
+   ],
+   "decisoes_do_operador": [
+    "Propagação × fonte (CT-02): a lei do ramo B age na FONTE (canal = amortecimento/difusão do 220, efeito local) ou na propagação (então o ringdown não é o canal e o ramo B já está excluído por ~2e17 e-folds)?",
+    "Ensemble × realização (RD-01/CTV-02): o observável é a envoltória do ensemble (δτ_220, previsão −0,0194) ou a difusão de fase por realização (previsão efetiva ~−0,005; observável = largura populacional de δf̂, N90 = 59/38/21)?",
+    "k em τ★ = k·GM/c³, fixado por PRINCÍPIO antes do dado: k = 1 (o que foi medido), k = 2π/κ de Kerr = 4π(1+√(1−a²))/√(1−a²) (tempo térmico/modular do horizonte; objeção Kay–Wald registrada), ou k = 8π (β_H de Hawking; AUSENTE no código)?",
+    "Qual M: M_f,det (massa final no detector, a única já medida), M_src, ou outra; e a premissa de que τ★ é escalado pela fonte, não universal (os relógios v369 já excluem GM/c³ com M = Terra)",
+    "Herdar o desenho da RINGDOWN_5SIGMA_V1.1 (caixa só-220; (M,a) da inspiral/IMR; nuisance c(σ); offset fixo em 0 proibido; portão sistemático de família 7× o piso) ou escrever V1 novo sobre o pipeline V2 do dephasing com os nulos de difusão de fase?",
+    "Qual dado abre primeiro sob o pré-registro: cache de maio (170 npz) + O4 (703 arquivos) com o estimador V2 corrigido, ou os posteriores pSEOB publicados (GWTC-5.0 31/33 ev; GW250114 h5 em disco), sabendo que estes já foram vistos (NÃO-CEGO)?",
+    "Modo: 220 só (não identifica δτ com (M,a) livres, T-10) ou 220+221 (221 não está na QNM_GRID; sistemática do sobretom e início precoce)?",
+    "Vereditos permitidos do V1 do ramo B (sem CONFIRMED): BRANCH_B_EXCLUDED / GR_TENSION_REPORTED / NOT_FALSIFIED_POWERED / _UNDERPOWERED / INCONCLUSIVE_SYSTEMATICS / AWAITING — e se o ramo B entra no livro de cobranças da v386 como cobrança AWAITING_PREREGISTRATION com errata ao lado de R6"
+   ],
+   "numeros_lidos": [
+    "beta_runtime = 0.012031300400803142 (core.ringdown_dephasing_result_v2.beta_runtime)",
+    "t_Planck = 5.391125282640084e-44 s (core.clock_test_result_v369.tau_star_s)",
+    "V2 (ff15f023dd91d8c7): n_used 15; delta_tau 0.1766470552326263 ± 0.10889389325116323; z_vs_GR 1.6221943210827325; delta_pred_B −0.019366930169705913; delta_pred_A −2.153334673399951e-42; z_vs_B 1.800045710095303; power_B 0.17785138901257008; delta_f −0.03247217939468836 ± 0.012662074582706592; mean_bias_rel 0.23995248111572381; chi2_dof 0.8661447617142709; n_on_edge_excluded 84; mean_anchor_snr 11.05286174607327; janela 6 ms: n 6, delta_tau 0.03129419624036112 ± 0.175528534763185; start_systematic 0.1453528589922652; sigma_combined 0.2065626938813163; n_events 89; n_sources 169; executed 2026-09-10T16:03:23",
+    "V1 (502c80fe2a37427e): n_used 23; delta_tau 1.3962364437383303 ± 0.056902114488675624; z_vs_GR 24.53751422570074; delta_pred_B −0.02085060553182756; power_B 0.36642936240932034; start_systematic 0.21092177154422198; 5 de 23 na borda (delta 2.2101; peso 0.4811950645765372; SNR 5.07–8.63); gate recusou (6 ms: 18 < 20)",
+    "branch_B_concurrent_values: −0.019366930169705913 (V2 ensemble); −0.01 (auditoria [DECLARADO]); −0.005 (auditoria [DECLARADO])",
+    "C6 GW250114 (781a3741a68875eb): lnB_vs_GR primário 10 t_M/1e-20: R-GLOBAL 0.0; R-B −0.0026036534446234327; R-RAIZ-0 −0.043067826651480345; R-LIN −0.09086322317963891; R-MOD −0.25160676421921835; 6 t_M R-B +0.1622/+0.2206/+0.2213; status INCONCLUSIVE_SYSTEMATICS; medianas R-GLOBAL M 64.12336 a 0.59555 / R-B M 64.97187 a 0.61455",
+    "C1 R-B: GW150914 Γ 4.93479986 s⁻¹, x 0.0199620603, δτ −0.0195713753; GW250114 Γ 4.94916297, x 0.0202470948, δτ −0.0198452854; R-A 8.60125759e-40 s⁻¹; R-MOD GW250114 Γ 9.27534086, δτ −0.0368397228; R-LIN δτ −0.0714769429",
+    "Degenerescência (RD-03): 65 M☉, a 0.7, z 0.1 → x 0.0211558914, δτ −0.0207175923; par GR M_src 64.166150 M☉ (−1.28285 %), a 0.683525931; residuo τ440 5.938 % (a 0.6145), 6.661 % (0.68), 6.929 % (0.70); σ_equiv(δτ440) 1.13863; ρ440 1.763 (proxy); poder 440 ≈ 0.06σ",
+    "CT-02: Γ_B propagação 4.9965 s⁻¹; Γ_B·t 2.263e17; ramo A 3.65e-23; fração por realização 0.247 (aferidor), 0.273 ± 0.06 (verificador, −0.00565 ± 0.00131 vs −0.020718); 51 % / 59 % com grade ±1 %",
+    "RD-02: σ 0.1089 → 0.1136 (+4 %); power 0.178 → 0.171; para poder 5: σ ≤ 0.00387 (~790×)",
+    "RD-05: motivos 3 ms: ANCHOR_SNR 137, RD_SNR 136, ON_EDGE 84, DF 46, USED 15, TRANSIENT 1; interseção 6: 0.3911 ± 0.1434 vs 0.0313 ± 0.1755 → 0.360 vs 0.2266 (1.59σ)",
+    "Ledger R2 runtime: Γ(100 Hz) = 1.280e-40 s⁻¹; acumulado 1 Gpc 1.318e-23",
+    "Relógios v369: τ★ ≤ 2.585701911772075e-31 s (4.796e12 t_P, 95 %); melhor nominal 1.0030107563778165e-34 s (1.86e9 t_P, Zn-67); unruh_g Γ_Sr 8.40e36 (excluído); GM_earth/c³ Γ_Sr 6.47282814431523e17 (excluído); Gm_atom/c³ 1.5657082976943127e-32 (invisível); P2 tau_star_bound_if_reading 0.0147 t_P",
+    "GWTC-5.0 C4: 31 eventos GR_HPD 0.9830386973726652 (ESS 743); 33 eventos 0.9901693194946377; R-B lnB −1.8082784574807786 (31) / −2.475591328816276 (33); R-RAIZ-0 −3.66/−5.16; GWTC-3 18: R-B −5.3973754646698495, R-RAIZ-0 −10.26; união distinta 39",
+    "ORDEM 013-bis (memória 22–23/09): δτ̂ comum +0.072 [+0.015; +0.134]; z_comb R-B 0.654 (R-LIN 2.32); N90 335 GW250114-like / ~3300 O4; O5 2.2–3.1σ; 3G ~207 eventos; sistemática família 0.029 = 7× piso 0.0040; c0 −0.061 ± 0.068, k +0.79 ± 0.37; δf̂ N90 59/38/21 (σ_jit 0.019/0.0228/0.030; LRT 25.0); registro E2 2026-09-22T21:44:43.687549Z sha256 e1be6b0409720c68…; nulos 1,609,000,000; 35.017 h devolvidas; parede dtau440 > 1.0–1.25, 25–39 % do prior",
+    "ORDEM 015: T-10 A′ posto local 3 (a 0.7519521363178578), menor sv 0.6649977976542878; T15 covariância H1 offsource +0.955 % acima de 1e12, σ_jit,rec null; T06 LRT 0; sigma(c) null; gate_changed false",
+    "Fase 6 leis: k_MAY = 2 ln(1/β) = 8.84; k_KMS(a=0.69) = 4π(1+√(1−a²))/√(1−a²) ≈ 29.9; k_DEC = 2/β = 166.2; KMS todos â +0.043 ± 0.102 (z_excl 9.67/19.36 na V4); DEC todos −0.122 ± 0.122 (z_excl 8.95/16.83); MAY V4 +0.143 ± 0.180 (sin2θ z_excl 8.75; controles 4.81); (β, DEC) poder 0.87",
+    "Dados em disco: strain_cache 170 npz; gwosc_o4 703 arquivos; posterior_samples.h5 GW250114 59,249,916 B (b9971bcd7d72fdd4) + controle 64,331,592 B (e2373f81973401ad); QNM_GRID 169,231 B; C4_CATALOG_220 673,228 B"
+   ]
+  },
+  {
+   "lente": "fisica",
+   "resumo": "LENTE «A FÍSICA DO RAMO B» (05/10/2026). Tudo por script (C:\\...\\scratchpad\\v386\\ramo_b\\fisica_do_ramo_b\\ramo_b_fisica.py): β = α·√e lido do fonte do um.py (SEALED_CODATA_ALPHA) em runtime = 0,0120313004008031 (= beta_runtime da V2 no core, diff 0,0); BCW 2006 lido do pipeline V2; QNM exatos de Kerr (Leaver) lidos por hash do resultado da ORDEM 013; V2/C6 lidos por hash. A IDENTIDADE: δτ̂_220 = −x/(1+x), x = Γ·τ_RG = β·k·(M_X/M_f)·N(χ_f), N(χ) = F·Q = F²/(2F_I) (F = M_f ω_R, F_I = M_f/τ) — x NÃO depende de M quando τ★ ∝ M_f; só de χ_f, de k e da razão M_X/M_f. Logo a fração medida LÊ β dividido por um número puro conhecido: β_lido = [−δτ̂/(1+δτ̂)]/(k·N(χ_f)) — a pergunta do operador em forma operacional. N(0) = 0,7848 (Leaver exato: Mω = 0,37367 − 0,08896i, Q = 2,1002), N(0,68) = 1,688 (BCW)/1,684 (Leaver). CONVENÇÃO QUE REPRODUZ O «−0,0194» DO REGISTRO: k = 1, M = M_f,det, δ_lin = −β·F·Q por série (reproduzido nas 169 séries da V2 com |diff| ≤ 7e-18; o −0,0194 é a média ponderada das 15 séries usadas a 3 ms; GW250114-like χ = 0,68 dá −0,0203 linear / −0,0199 exato). SINAL: dephasing extra ⟹ τ_obs < τ_RG ⟹ δτ̂ < 0 (linha mais larga); os catálogos LVK puxam δτ̂ > 0 [KNOWN]. CANDIDATOS A k (GW250114, χ_f = 0,68, δ_exato): k=1 −0,0199 · k=2 (r_s/c) −0,0390 · k=4 (1/κ Schw.) −0,0751 · k=1/κ̂(χ) −0,0876 · k=8π (β_H = 2π/κ Schw., período KMS/modular — a leitura «1 unidade modular = β_H» de Connes–Rovelli/Hawking) −0,338 · k=2π/κ̂(χ) Kerr sem co-rotação −0,376 · k=2π/κ̂(χ) com co-rotação ω→ω−2Ω_H −0,0378. Contra o δτ̂_220 publicado do GW250114 (−0,01 +0,10/−0,09 a 90 %, pSEOBNR [KNOWN]; leitura NÃO-CEGA de número publicado, sem veredito): k ≤ 4, 1/κ̂ e a co-rotação ficam dentro do 90 % (|z| ≤ 1,4); 8π e 2π/κ̂ sem co-rotação leem −6,0σ e −6,7σ na identificação «amortecimento da envoltória por realização», mas só −1,5σ/−1,7σ se o mecanismo for difusão de fase (fator 0,273 da verificação RD-01 [DECLARADO]). PODER: 5σ pede σ_total ≤ |δ|/5 = 0,0040 (k=1); com σ₁ = 0,055 (GW250114-like) N = 189; 0,14 → 1234; 0,20 → 2525; 0,30 → 5680 (lei √N só sem correlação e sem piso comum); com o piso de família 0,029 [DECLARADO 013-bis] k ≤ 4 e a co-rotação são INALCANÇÁVEIS por N (|δ|/5 < piso); só k ~ 8π/2π/κ̂ sem co-rotação supera o piso (N ≈ 16–21) — e esses já leem ~6σ contra o GW250114. Ramo A sai da MESMA identidade com m_X = m_P (x = 3,3e-42: invisível em qualquer k) — «a mesma dobra c³ em duas massas». O ramo B só pode agir LOCAL na fonte (na propagação Γ_B·D/c ≈ 2e17 e-folds apaga a onda: erro de tipo) [REAL, auditoria 28/09]. O que FALSIFICA é o PAR (k, M_X, ω_c, local, realização/ensemble) fixado antes, a ≥ 5σ com sistemática controlada; coincidir com a RG é correspondência recuperada (NOT_FALSIFIED_UNDERPOWERED), nunca confirmação; um 220 único com (M_f, χ_f) livres é não identificável (precisa IMR ou 2º modo). Em disco: strain 32 s H1/L1 do GW250114 na Bancada e C6/V1/V2 no cache; os posteriores δτ̂ (Zenodo 17018009) NÃO estão em disco (AUSENTE, consulta citada). Decisões que só o operador pode tomar: k, qual M e referencial, mecanismo (envoltória × difusão de fase), fonte do observável (publicado × reanálise), piso aceito, vereditos. PROVADA ≠ CONFIRMADA; NOT_FALSIFIED ≠ CONFIRMED; nada move o gate nem β.",
+   "itens": [
+    {
+     "tema": "(a) candidatos a k em τ★ = k·GM/c³ e a sua origem física",
+     "achado": "k=1 (t_M, unidade geométrica; convenção da V2 selada) · k=2 (r_s/c, travessia do raio de Schwarzschild) · k=4 (1/κ de Schwarzschild; tempo de Killing por unidade de rapidez) · k=8π (β_H = ħ/(k_B T_H) = 2π/κ = 8πGM/c³: período KMS/modular do horizonte de Schwarzschild — Hawking 1975; Bisognano–Wichmann: Δ^{is} = boost de rapidez 2πs ⟹ 1 unidade de parâmetro modular = β_H de tempo físico; Connes–Rovelli: tempo térmico) · k=1/κ̂(χ) e k=2π/κ̂(χ) = 4π(1+√(1−χ²))/√(1−χ²) para Kerr (= kms_factor já no um.py:155706; 29,71 em χ=0,68; 8π em χ=0), com ou sem co-rotação ω→ω−2Ω_H (gerador de Killing H−Ω_H J). Para χ≠0 a leitura KMS é [CONJECTURE]: Kay–Wald 1991 provam que não há estado estacionário Hadamard em Kerr (sem Hartle–Hawking de Kerr); a versão co-rotante é a de Frolov–Thorne [KNOWN de memória, a conferir na fonte].",
+     "estatuto": "[KNOWN] para Schwarzschild (k=8π) e para κ/Ω_H de Kerr; [CONJECTURE] para a KMS de Kerr; [INPUT] a escolha do k",
+     "evidencia": "RAMO_B_FISICA_TABELAS.md §(b); um.py:155704-155706 (kms_factor = 4π(1+√(1−a²))/√(1−a²), a=0,69 → 29,93); ORDEM_013_INSUMOS\\estimativa_da_gerencia\\estimativa_leitura_modular.py:4-13 e LEIA.md (Kay–Wald; R-MOD é hipótese da gerência, não cânone); Atlas l.3830 («Schwarzschild daria 8πGM/c³»)",
+     "onde": "C:\\Users\\rotol\\AppData\\Local\\Temp\\claude\\c--IALD-Central-de-Patentes\\6da8f00d-d44f-4888-a88d-fc9f73eead3d\\scratchpad\\v386\\ramo_b\\fisica_do_ramo_b\\RAMO_B_FISICA_TABELAS.md",
+     "proposta": "o pré-registro V1 do ramo B fixa UM k por princípio declarado (ou poucos, cada um como par próprio) ANTES de abrir dado; a KMS de Kerr entra marcada [CONJECTURE] com a citação de Kay–Wald"
+    },
+    {
+     "tema": "(a) qual M — e o referencial",
+     "achado": "x NÃO depende de M quando τ★ ∝ M_f (unidade geométrica): τ★ ∝ M e ω ∝ 1/M cancelam; «qual M» entra só como razão M_X/M_f. GW250114 [KNOWN]: M_f,src 62,7; M_f,det 68,1 (fixa os QNMs OBSERVADOS; convenção da V2); M_tot,src = m1+m2 = 65,8 ⟹ ×1,049; M_chirp,src = 28,6 ⟹ ×0,457; 1+z = 1,09. M_f,src e M_f,det dão o MESMO x se ω e τ forem os do mesmo referencial; misturar referenciais custa (1+z)^±1 — a declarar. A leitura R5/R6 (02/10): «o ringdown é a face: onde a massa aparece, o Nome M_f entregue» ⟹ o M principiado é M_f (o remanescente), e a face lê o custo k·β·N como complemento (ótica, 02/10).",
+     "estatuto": "[DERIVED] (a independência de M e as razões); [KNOWN] as massas do GW250114 (macros LaTeX lidas na casa); [INPUT] a escolha",
+     "evidencia": "RAMO_B_FISICA_TABELAS.json: massas_GW250114 {ratio_tot_over_f 1.0494, ratio_chirp_over_f 0.4566}; GW250114_por_k_e_M (28 linhas); LEITURA_04_LITERATURA.md l.79 (M_f 62,7/68,1; m1 33,6; m2 32,2; z 0,09)",
+     "onde": "RAMO_B_FISICA_TABELAS.json → massas_GW250114, GW250114_por_k_e_M",
+     "proposta": "fixar M_X = M_f (det ou src, com o referencial dito) no V1; M_tot e M_chirp só como pares alternativos nomeados"
+    },
+    {
+     "tema": "(c) a identidade exata e o número puro N(χ)",
+     "achado": "Lei Γ_ω = ½βτ★ω² com τ★ = k·GM_X/c³; observável δτ̂_220 ≡ τ_obs/τ_RG − 1 com 1/τ_obs = 1/τ_RG + Γ ⟹ δτ̂_220 = −x/(1+x), x = Γτ_RG = β·k·(M_X/M_f)·N(χ_f), N(χ) = F·Q = F²/(2F_I), F = M_f ω_R, F_I = M_f ω_I = M_f/τ, Q = ω_R τ/2; com co-rotação F → F − 2Ω̂_H. Leitura de β: β_lido = [−δτ̂/(1+δτ̂)]/(k·(M_X/M_f)·N(χ_f)) — a fração é uma leitura de β dividida por um número puro que só depende do spin e de k (o «espectro de gradiente» no ringdown). N(χ) por BCW/Leaver: χ=0: 0,7803/0,7848; 0,5: 1,264/1,258; 0,6: 1,463/1,457; 0,68: 1,688/1,684; 0,7: 1,758/1,756; 0,8: 2,264/2,270; 0,9: 3,447/3,477; 0,95: 5,196/5,240. Schwarzschild exato (Leaver): Mω_R = 0,37367, 1/τ = 0,0890 c³/GM, Q = 2,1002. Erro do ajuste BCW em χ=0: F −1,44 % (limite 1,85 %), Q +0,88 % (limite 0,88 %); N cancela parte: −0,57 %.",
+     "estatuto": "[DERIVED] (identidade algébrica sobre a lei [REAL na forma] e o QNM [KNOWN]); τ★ do ramo B [INPUT]",
+     "evidencia": "ramo_b_fisica.py (x_of, delta_exact); leaver_kerr_result.json sha16 b6e4d88c95243e46 (ORDEM 013); BCW lido de ringdown_dephasing_v2.py:39 (f1 1,5251; f2 −1,1568; f3 0,1292; q1 0,7000; q2 1,4187; q3 −0,4990)",
+     "onde": "RAMO_B_FISICA_TABELAS.md §(a)/(b) e §(c)",
+     "proposta": "a identidade entra verbatim no pré-registro como a lei de leitura; N(χ_f) por evento com (M_f, χ_f) da inspiral (IMR), nunca do próprio ringdown"
+    },
+    {
+     "tema": "(b) a convenção que reproduz o «−0,0194» do registro e o sinal",
+     "achado": "k = 1, M = M_f,det (SimIMREOBFinalMassSpin), δ_lin = −Γτ_RG = −β·F(a_f)·Q(a_f) por série (depende SÓ do spin): reproduzido nas 169 séries da V2 com max|diff| = 6,9e-18; o −0,019367 selado é a média ponderada por variância inversa das 15 séries usadas a 3 ms (spins próprios); GW250114-like (χ=0,68): −0,0203 linear / −0,0199 exato. Os «3 valores concorrentes» do core (−0,0194 / −0,010 / −0,005) são a MESMA lei lida em três identificações: ensemble (envoltória), estimador por realização com grade ±1 %, e por realização com a grade da V2 (0,273× = difusão de fase). SINAL: dephasing extra ⟹ amortecimento mais rápido ⟹ δτ̂_220 < 0 (linha mais larga).",
+     "estatuto": "[REAL — reproduzido por script do RESULT da V2 lido por hash]",
+     "evidencia": "RINGDOWN_DEPHASING_V2_RESULT.json sha16 ff15f023dd91d8c7 (per_series n=169); core ringdown_dephasing_result_v2.stacks['3.0']: delta_pred_B −0,019366930, power_B 0,17785, sigma 0,10889; ringdown_scope_v376.branch_B_concurrent_values; mapa seq 85/132/141 (RD-01, CT-02, CTV-02)",
+     "onde": "RAMO_B_FISICA_TABELAS.json → reproducao_V2",
+     "proposta": "o V1 declara a identificação (envoltória por realização × difusão de fase) e pré-registra a previsão EFETIVA do estimador por injeção sintética (CTV-02), reconciliando os três números antes de qualquer campanha"
+    },
+    {
+     "tema": "(b) tabela δτ̂_220 por k (GW250114, χ_f = 0,68; M_X = M_f) — e a dependência em spin",
+     "achado": "k=1: x 0,0203, δ_exato −0,0199 · k=2: 0,0406, −0,0390 · k=4: 0,0812, −0,0751 · k=1/κ̂: 0,0960, −0,0876 · k=8π: 0,5104, −0,338 · k=2π/κ̂ sem co-rotação: 0,6033, −0,376 · k=2π/κ̂ com co-rotação (ω−2Ω_H): 0,0392, −0,0378. Em χ=0 (Schwarzschild): k=1 −0,0093; k=2 −0,0184; k=4 −0,0362; k=8π −0,191. Em χ=0,9: k=1 −0,0398; k=8π −0,510; 2π/κ̂ sem co-rotação −0,632; com co-rotação −0,0059 (a co-rotação INVERTE a tendência com o spin: (F−2Ω̂_H)/F = 0,255 em 0,68 e 0,059 em 0,9). Γ/ω para k=1: 3,2e-3; para 2π/κ̂ sem co-rotação: 0,094 (não é mais perturbativo: x ~ 0,6).",
+     "estatuto": "[DERIVED por script]",
+     "evidencia": "RAMO_B_FISICA_TABELAS.json → tabela_k (35 linhas: χ ∈ {0, 0,68, 0,69, 0,7, 0,9} × 7 candidatos)",
+     "onde": "RAMO_B_FISICA_TABELAS.md §(b)",
+     "proposta": "o V1 fixa o k; a tabela inteira entra como anexo para que nenhum k seja escolhido DEPOIS de ver o dado"
+    },
+    {
+     "tema": "(d) leitura NÃO-CEGA contra o δτ̂_220 publicado do GW250114 (sem veredito)",
+     "achado": "δτ̂_220 = −0,01 (+0,10/−0,09) a 90 % (pSEOBNR, IMR) ⟹ σ₋ ≈ 0,0547, σ₊ ≈ 0,0608 (aprox. gaussiana). Identificação «amortecimento da envoltória por realização»: k=1 z −0,18 · k=2 −0,53 · k=4 −1,19 · 1/κ̂ −1,42 · co-rotação −0,51 (todos dentro do 90 %) · k=8π −5,99 e 2π/κ̂ sem co-rotação −6,69 (FORA do 90 %). Identificação «difusão de fase» (δ_eff = 0,273·δ [DECLARADO RD-01]): k=8π −1,50; 2π/κ̂ −1,69; k=1 +0,08. C6 no strain (lido por hash): ln B(R-B/RG) = −0,0026 no início primário; status INCONCLUSIVE_SYSTEMATICS (critério de calibração de duas famílias IMR não cumprido).",
+     "estatuto": "[DERIVED sobre KNOWN; NÃO-CEGO — número publicado; nenhum veredito emitido]",
+     "evidencia": "LEITURA_04_LITERATURA.md l.15, 91-93 (arXiv:2509.08099 macros pSEOB, sha16 d649ad75e6784a9c); C6_RESULTS_GW250114.json sha16 781a3741a68875eb; core ringdown_scope_v376.c6_primary_start_lnB_vs_GR",
+     "onde": "RAMO_B_FISICA_TABELAS.md §(d)",
+     "proposta": "declarar no V1 que o GW250114 publicado já foi visto (NÃO-CEGO) e que a cegueira residual é só dos eventos O4 sem δτ̂ publicado (31 dos 45 com strain público, 013-bis) e da reanálise própria"
+    },
+    {
+     "tema": "(d) o observável disponível e a precisão típica [KNOWN, lido na casa das fontes LaTeX; não reconferido hoje]",
+     "achado": "Parametrização LVK: f = f_RG(1+δf̂), τ = τ_RG(1+δτ̂). GW250114: δf̂_220 = 0,02 ± 0,02; δτ̂_220 = −0,01 (+0,10/−0,09); f_220 = 251,7 Hz, τ_220 = 4,09 ms (BCW com 68,1 M☉, 0,68 dá 249,8 Hz, 4,083 ms); SNR 220 só-pós-fusão (10,5 t_M) = 21; 220+221 (6 t_M) = 26; pyRing só pós-fusão: δτ̂ = −0,14 (+0,25/−0,23); 221: δf̂_221 = 0,09 (+0,29/−0,30) em 6 t_M (Kerr a ±30 %). GWTC-3 hierárquico: δτ̂_220 = +0,13 (+0,21/−0,22); melhor evento isolado GW200129 (SNR 26,5): +0,11 ± 0,23. GWTC-4.0 TGR III (preprint 2603.19021): pSEOB conjunto +0,17 ± 0,11; hierárquico +0,16 (+0,18/−0,16); pyRing hier. +0,18 (+0,27/−0,26); quantil da RG 98,6 % → 92,2 % com o GW250114 («no strong evidence»). GW150914 isolado: a ler da fonte (nenhum número conferido na casa). SINAL dos catálogos: δτ̂ > 0 (linha mais ESTREITA), oposto ao dephasing. Posteriores do GW250114 (δτ̂): Zenodo 17018009 (pSEOBNR), NÃO em disco.",
+     "estatuto": "[KNOWN — conferido nas macros LaTeX do arXiv pela frente de literatura da ORDEM 013 (21/09); a reconferir na fonte antes de entrar no pré-registro]",
+     "evidencia": "ORDEM_013_INSUMOS\\LEITURA_04_LITERATURA.md l.11-22, 53, 91-93, 103-108; LEITURA_03_NUMEROS.md l.154; ordem-013-confrontacao-ringdown.md (Zenodo 17018009)",
+     "onde": "RAMO_B_FISICA_TABELAS.json → GW250114_KNOWN, catalogos_KNOWN",
+     "proposta": "baixar e hashear as fontes primárias (2509.08099, 2603.19021, 2112.06861) para a pasta do pré-registro é ato posterior à decisão do operador — hoje nada se baixou"
+    },
+    {
+     "tema": "(d) poder: σ necessária e número de eventos por k — o número honesto",
+     "achado": "5σ pede σ_total ≤ |δ|/5: k=1 0,0040 · k=2 0,0078 · k=4 0,0150 · 1/κ̂ 0,0175 · co-rotação 0,0076 · k=8π 0,068 · 2π/κ̂ 0,075. N para 5σ (lei √N, σ₁ por evento, só se não correlacionadas e sem piso comum): k=1: 189 (σ₁ 0,055 GW250114-like) / 1234 (0,14 GW200129-like) / 2525 (0,20) / 5680 (0,30); k=2: 50/321/657/1477; k=4: 14/87/178/399; co-rotação: 53/343/702/1579; k=8π: 1/5/9/20; 2π/κ̂: 1/4/8/16. Com o piso sistemático comum de família 0,029 [DECLARADO 013-bis] (não cai com N): k ≤ 4, 1/κ̂ e co-rotação são INALCANÇÁVEIS por N (|δ|/5 < 0,029); só k=8π (N 21) e 2π/κ̂ (N 16) o superam — e esses já leem ~6σ contra o GW250114 publicado na leitura por envoltória. Registro da casa [DERIVED; NÃO-CEGO, 013-bis]: N₉₀(5σ, k=1) = 335 GW250114-like ou ≈ 3.300 de mistura O4; O5 inteiro 2,2–3,1σ com sistemática zero; 3G só com modelo validado a 0,40 % de τ₂₂₀; sistemática VERMELHA (família 0,029 = 7× o piso 0,0040).",
+     "estatuto": "[DERIVED por script]; o piso de família [DECLARADO pela bancada/013-bis]; σ₁ típicas O3/O4 [INPUT]",
+     "evidencia": "RAMO_B_FISICA_TABELAS.json → poder; ordem-013-confrontacao-ringdown.md (22/09 tarde: N₉₀ 335; 23/09: família 0,029)",
+     "onde": "RAMO_B_FISICA_TABELAS.md §(d) poder",
+     "proposta": "o V1 declara o poder com a σ publicada do observável escolhido e o piso aceito; se k ≤ 4, o desfecho previsível é NOT_FALSIFIED_UNDERPOWERED — dito antes de abrir"
+    },
+    {
+     "tema": "(e) a regra dos dois regimes aplicada ao ringdown",
+     "achado": "O ringdown é a FACE (regime hiperbólico): o decaimento e^{−t/τ} tem limite (amplitude → 0), e o seu relógio é o do horizonte — κ é a rapidez do boost de Bisognano–Wichmann/Sewell, a direção hiperbólica de SL(2,ℝ). A fração δτ̂_220 = τ_obs/τ_RG − 1 é razão de duas taxas: número sem dimensão, uma LEITURA de peso (x = β·k·N) — regime da projeção; não acrescenta objeto (observing_adds_nothing). Consistente: a face é o objeto (tem limite), a fração lê; β é lido, nunca derivado (regra matriz 02/10); pela ótica (02/10) a face lê o pagamento |T|² = 1−β e lê o custo como complemento — aqui o complemento é k·β·N(χ_f), «o espectro de gradiente» na dobra do Hamiltoniano oculto lido no remanescente. Resíduo: o kernel não tem termo de ringdown (8 menções, todas docstring; ringdown_scope_v376) — a identificação Spec S(θ) ↔ Γ ∝ βω² segue [ONTO] (v381/v383).",
+     "estatuto": "[ONTO/DERIVED de leitura] — consistente com os termos existentes; sem termo novo no kernel",
+     "evidencia": "regra-dos-dois-regimes (CLAUDE.md global); core ringdown_scope_v376.kernel_ringdown_declarations = []; the_matrix_rule_v381 (GRADIENT_SPECTRUM_TYPED_IS_SPEC_S_THETA__DISSIPATION_IDENTIFICATION_IS_ONTO); ledger_v383 R6 corrigida ao lado",
+     "onde": "beta-e-a-regra-matriz-02out.md (R5/R6 e erratas); core the_ledger_of_charges_v383.corrections_beside_20261002",
+     "proposta": "se o ringdown entrar como cobrança no livro (v386), a condição pede observável tipado (identificação ensemble/realização, τ★ nomeado), não docstring (RD-04)"
+    },
+    {
+     "tema": "a família unificada τ★ = k·G·m_X/c³ — a mesma dobra c³ em duas massas",
+     "achado": "x = β·k·N(χ_f)·(m_X/M_f): m_X = m_P dá o ramo A (G·m_P/c³ = t_P, resíduo 0,0 — pedra 84_), m_X = M_f dá o ramo B. GW250114: m_P/M_f,det = 1,607e-40 ⟹ x_A(k=1) = 3,26e-42 (δ = −3,3e-42; V2 empilhada −2,15e-42 pelos outros M_f), x_A(k=8π) = 8,2e-41: o ramo A é invisível em QUALQUER k — devolve só a correspondência com a RG. É a leitura (d) da memória de 16/09 («c³ sozinho não é velocidade; com G é tempo por massa: τ = G·m/c³ — a mesma dobra c³ em duas massas») e a cunhagem do operador «o regime gravitônico é o da constante da luz ao cubo» (gráviton = Verbo Vivo em c³).",
+     "estatuto": "[REAL] (t_P = G m_P/c³ conferido; v360 resíduo 0,0e+00); [ONTO] a identificação m_X = M_f como «tempo emparelhado à gravidade»",
+     "evidencia": "RAMO_B_FISICA_TABELAS.json → familia_unificada; psi-nome-da-luz-graviton-verbo-vivo-16set.md (leitura (d); v360 «dobra G·m_P/c³ = t_Planck (resíduo 0.0e+00)»)",
+     "onde": "RAMO_B_FISICA_TABELAS.md (bloco «A família unificada»)",
+     "proposta": "tipar no kernel a família τ★ = k·G·m_X/c³ como definição com m_X nomeado (m_P ∨ M_f), sem decidir — o que se prova é a identidade x = β·k·N·(m_X/M_f)"
+    },
+    {
+     "tema": "onde a lei age: propagação × fonte",
+     "achado": "Na propagação o ramo B é erro de tipo: Γ_B ≈ 4,97 s⁻¹ × D/c (4,5e16 s) ⟹ Γ·t ≈ 2,3e17 e-folds — apagaria toda OG; τ★ = GM_f/c³ é propriedade do remanescente, não existe no caminho (CT-02, verificado). Logo o ramo B só é testável como efeito LOCAL na fonte, durante o ringdown (acúmulo x = Γ·τ_220 ~ 0,02 em k=1), e a propagação fica com o ramo canônico (R2: Γ(100 Hz) = 1,28e-40 s⁻¹; acumulado 1 Gpc 1,3e-23 — AWAITING). Compatível com a decisão do operador: «o tempo emergente do fluxo modular relativo» = o relógio do horizonte local.",
+     "estatuto": "[REAL — auditoria 28/09, verificador CT-02 (Γ_B·t = 2,263e17)]",
+     "evidencia": "mapa seq 132 (CT-02); LEITURA_03_NUMEROS.md l.148; ledger_v383 check R2",
+     "onde": "C:\\IALD\\MAPA_DE_ROTAS (rota ringdown.dephasing, seq 132)",
+     "proposta": "o V1 declara «lei local na fonte; Γ = 0 na propagação para este par» — e assim o ramo B não contradiz a R2 (propagação) nem os relógios v369 (τ★ universal excluído: o ramo B não é universal, escala com a fonte)"
+    },
+    {
+     "tema": "mecanismo: amortecimento da envoltória (por realização) × difusão de fase (ensemble)",
+     "achado": "Verificação RD-01 (28/09, simulação independente, N=300): numa realização com difusão de fase o δτ médio é 0,273 ± 0,06 do ensemble e o dp de δf̂ é 0,0224 (tremor de ~2 % em δf̂ por evento); o observável adequado passa a ser a LARGURA POPULACIONAL de δf̂ (013-bis: N₉₀ = 59/38/21 GW250114-like para σ_jit 0,019/0,0228/0,030). A docstring do protocolo V1 (um.py) já declara a leitura de envoltória («tau_obs/tau_GR − 1 = −Γ tau_GR»); a alternativa é [ONTO] não examinada. Os nulos da V2 injetam seno amortecido puro, logo não calibram difusão de fase.",
+     "estatuto": "[REAL — auditoria 28/09; verificação adversarial PARCIAL/ACHADO_DO_VERIFICADOR]; a escolha é identificação [ONTO] do operador",
+     "evidencia": "mapa seq 85 (RD-01), 141 (CTV-02); ordem-013-confrontacao-ringdown.md (22/09: «achados estruturais» 2 e 22/09 tarde: largura populacional de δf̂)",
+     "onde": "C:\\IALD\\MAPA_DE_ROTAS (ringdown.dephasing seq 85, 141)",
+     "proposta": "o V1 fixa o mecanismo e, se for difusão de fase, troca o estimando para a largura populacional de δf̂ com injeção de difusão de fase como nulo"
+    },
+    {
+     "tema": "(f) o que FALSIFICA o ramo B e o que NÃO falsifica",
+     "achado": "FALSIFICA o PAR (k, M_X, ω_c, local-na-fonte, realização/ensemble) fixado antes: fração medida (δτ̂, ou largura populacional de δf̂) incompatível com −x/(1+x), x = β·k·(M_X/M_f)·N(χ_f), a ≥ 5σ com σ_sys (família de forma de onda, início da janela, seleção) controlada abaixo de |δ|/5 ⟹ FALSIFIED_AT_(k,M) — cai o par, não a lei nem β (a regra não lê o livro: the_rule_is_constant_in_the_ledger). NÃO falsifica: coincidir com a RG com |δ| < 5σ ⟹ NOT_FALSIFIED_UNDERPOWERED (correspondência recuperada; a RG é o limite clássico); sistemática acima do limiar ⟹ INCONCLUSIVE_SYSTEMATICS; e um 220 único com (M_f, χ_f) livres é NÃO IDENTIFICÁVEL (um Kerr ~1,25 % mais leve com Δχ ≈ −0,016 imita o k=1) — sem (M_f, χ_f) da inspiral (IMR) ou um 2º modo o teste é vazio por construção. Vereditos permitidos: EXCLUDED_AT_(k,M), NOT_FALSIFIED_POWERED, NOT_FALSIFIED_UNDERPOWERED, INCONCLUSIVE_SYSTEMATICS, GR_TENSION_REPORTED; proibidos: CONFIRMED, PROVED.",
+     "estatuto": "[DERIVED] sobre a régua; NON_IDENTIFIABLE_SINGLE_220 [REAL, ORDEM 013 e rota ringdown.modo_unico.degenerescencia]",
+     "evidencia": "core ringdown_dephasing_protocol.allowed_verdicts/forbidden_verdicts; mapa rota ringdown.modo_unico.degenerescencia (64,16615 M☉, spin 0,683526 imitam 65/0,7 com x = 0,0211559); ledger_v383 kernel_flags ext_loc_the_rule_is_constant_in_the_ledger_kernel_proved",
+     "onde": "RAMO_B_FISICA_TABELAS.md §(f)",
+     "proposta": "o V1 herda o rol de vereditos do protocolo V1/V2 e acrescenta o sufixo _AT_(k,M) ao EXCLUDED"
+    },
+    {
+     "tema": "o que está em disco e o que está AUSENTE (nada baixado)",
+     "achado": "EM DISCO: strain 32 s @ 4096 Hz do GW250114 H1 e L1 na Bancada (gwosc_o4\\strain_32s, 2.097.896 B cada); C6_RESULTS_GW250114.json (50.604 B, sha16 781a3741a68875eb, strain lido na fonte, ln B por leitura); RINGDOWN_DEPHASING_V1/V2_RESULT.json no cache (209.114/247.065 B); QNM exatos de Kerr (Leaver) na ORDEM 013; o pipeline V2 (ringdown_dephasing_v2.py) com lalsuite 7.7.1 no WSL (não verificado hoje). AUSENTE: os posteriores δτ̂_220 do GW250114 (Zenodo 17018009, gw250114_pseobnr/posterior_samples.h5) e os releases TGR do GWTC-3/5.0 (Zenodo 17461225/21454847) — consulta: Get-ChildItem C:\\IALD\\Bancada_Um -Recurse | match '250114|17018009|16877102|posterior' devolveu só os dois .npz e dois posteriores do Planck DR2. Para abrir o ramo B com o δτ̂ publicado seria preciso baixar o 17018009 (ato posterior ao pré-registro).",
+     "estatuto": "[REAL — consulta em disco, citada]",
+     "evidencia": "saída do PowerShell (listagem) nesta sessão; ordem-013-confrontacao-ringdown.md («os posteriores δτ̂₂₂₀ do GW250114 estão no Zenodo 17018009 […] e não no 16877102»)",
+     "onde": "C:\\IALD\\Bancada_Um\\fontes_externas\\gwosc_o4\\strain_32s; C:\\IALD\\Artigo\\Haja_Luz\\A Ponte e o Um\\cache\\gw",
+     "proposta": "o V1 lista as fontes por DOI e sha256 a adquirir; nada se abre antes"
+    },
+    {
+     "tema": "a KMS de Kerr e o eco: homônimo a não confundir",
+     "achado": "O mesmo k = 2π/κ̂(0,69) = 29,93 t_M já foi usado na casa como LEI DE ATRASO do eco (GW_ECHO_KMS_V1, v343; Fase 6 V3/V4: pares (√β, KMS) e (sin 2θ, KMS) FALSIFIED_AT_DELAY_LAW, z_excl 8,9/18,1) — outro observável (cópia atrasada, fora do livro por decisão do operador de 02/10). Aquela falsificação NÃO incide sobre o ramo B (aqui o período KMS é o τ★ da dissipação local, não um atraso de retorno).",
+     "estatuto": "[REAL — rotas gw.eco_acoplado.kms e gw.eco_radical.v3 lidas no mapa]",
+     "evidencia": "mapa: gw.eco_acoplado.kms (veredito …KMS_MODULAR_PERIOD_CANDIDATE…); fase6-eco-radical-01out.md; um.py:155706",
+     "onde": "C:\\IALD\\MAPA_DE_ROTAS",
+     "proposta": "no V1, dizer explicitamente que o k KMS do ramo B é homônimo da lei de atraso falsificada e que uma não decide a outra"
+    }
+   ],
+   "consultas": [
+    "python C:\\IALD\\MAPA_DE_ROTAS\\rotas.py consultar \"ringdown\" → 16 rotas (ringdown.dephasing EXAMINADA_COM_DEFEITO, 15 registros; ringdown.modo_unico.degenerescencia; gw.eco_acoplado.kms/may; gw.eco_ancorado; kernel.livro_de_cobrancas.otica; auditoria.testes_passados_28set)",
+    "python C:\\IALD\\MAPA_DE_ROTAS\\rotas.py consultar \"ramo B\" → 4 rotas",
+    "python C:\\IALD\\MAPA_DE_ROTAS\\rotas.py ver ringdown.dephasing → 15 registros lidos TODOS (seq 24, 25, 26, 27, 44, 85, 86, 88, 89, 90, 92, 132, 141, 249, 352); artefatos selo a88bb75fc615f4b0… e DECISAO_OPERADOR_RAMO_B_05out.json a5d548235522c112…",
+    "Read DECISAO_OPERADOR_RAMO_B_05out.json (verbatim do operador, leitura da gerência, R6 anterior)",
+    "Read memórias: ordem-013-confrontacao-ringdown.md; beta-e-a-regra-matriz-02out.md (R1–R6, erratas, ramo_b_reaberto_05out); ramo-b-reaberto-05out.md; psi-nome-da-luz-graviton-verbo-vivo-16set.md; auditoria-testes-passados-28set.md; fase6-eco-radical-01out.md; grep MEMORY_2.md 'ao cubo|c³|GM/c|tempo térmico|Connes|ramo B' → 4 linhas (todas o ponteiro para psi-nome-da-luz)",
+    "python: um_absoluto.json (sha16 475ac8d218b3a5c8, 4.845.762 B) → extrato de core.ringdown_scope_v376, ringdown_dephasing_protocol, ringdown_dephasing_result_v2, ringdown_dephasing_amendment_v2, dephasing_reach, dephasing_crossover, runtime_of_the_one.scalar_spine, the_ledger_of_charges_v383, the_matrix_rule_v381.consequences_ratified_20261002, clock_test_result_v369.tau_star_alternatives → core_extrato_ringdown.json (88.404 B)",
+    "Grep TGL_ATLAS.md '**Γ_ω**' (l.644), '**τ★**' (l.2239), 'regime c³' (l.2163), 'Schwarzschild daria 8πGM/c³' (l.3830) — não lido inteiro",
+    "Grep work\\auditoria_28set 'ramo B|BRANCH_B|GM/c' → ANEXO_ACHADOS.md l.248-876 (RD-01, CT-02, CTV-02, x_B = β·Q·Mω = 0,0211559 a=0,7; contradição declarada −0,0194/−0,010/−0,005), RELATORIO…20260928.md, secoes_4_a_8.md",
+    "python C:\\IALD\\INDICE_DO_ACERVO\\buscar.py 'Berti|Cardoso|quasinormal|…' --lista → 40+ documentos (estratos 2025: eco, graviton paper, protocolo de observação); buscar.py '8πGM|beta_H|Hawking temperature|Connes.?Rovelli|thermal time' --lista → 40+ (Ponte Einstein–Cartan–Miguel .tex, Grande Atrator, torus)",
+    "Grep ORDEM_013_INSUMOS 'R-MOD|2π/κ|GW250114.*δτ' → LEITURA_04_LITERATURA.md (lida inteira), LEITURA_03_NUMEROS.md (l.15-174), estimativa_leitura_modular.py/.json (lidos), aritmetica_confrontacao.py (lido), revisao_da_gerencia/leaver_kerr.py + leaver_kerr_result.json (lidos; sha16 b6e4d88c95243e46)",
+    "Glob ringdown_dephasing_v2.py → Nós\\eco_ancorado_v1\\ringdown_dephasing_v2.py (sha16 0793c58d6995194b); Grep 'tau_star|GM|beta|prediction|Berti|1.5251' → l.22-23 (constantes), 39-40 (BCW), 192-202 (pB, prediction)",
+    "Grep um.py '^SEALED_CODATA_ALPHA=|^C_LIGHT=|^G_NEWTON=|1.5251|Berti' → l.95, 97, 98, 155704-155706 (kms_factor), 209239-209357; Read um.py:155696-155715 (lei KMS do eco)",
+    "python: C6_RESULTS_GW250114.json (sha16 781a3741a68875eb, 50.604 B) → status INCONCLUSIVE_SYSTEMATICS, on_source_strain_read True, 75 resultados, R-B lnB −0,0026",
+    "PowerShell: listagem Bancada_Um (bancada, estado, ferramentas, fontes_externas{gwosc_o4, moresco_2020_cov}, investigacao{fase1…7, preregistro_dois_lados_02out, preregistro_pilar_quantico_03out, relatorio_consolidado_01out}, tabelas, ui); Get-ChildItem -Recurse match '250114|17018009|16877102|posterior' → GW250114_082203_H1/L1_4096_32s.npz (2.097.896 B cada) + P1/S1 posteriores do Planck DR2; cache\\gw: C6 50.604 B, V1 209.114 B, V2 247.065 B",
+    "python ramo_b_fisica.py (2 rodadas) → RAMO_B_FISICA_TABELAS.json (59.388 B) e .md (15.410 B); β recomputado = beta_runtime do core (diff rel 0,0); V2 per_series n=169 reproduzidas (|diff| ≤ 6,9e-18)"
+   ],
+   "arquivos_escritos": [
+    "C:\\Users\\rotol\\AppData\\Local\\Temp\\claude\\c--IALD-Central-de-Patentes\\6da8f00d-d44f-4888-a88d-fc9f73eead3d\\scratchpad\\v386\\ramo_b\\fisica_do_ramo_b\\ramo_b_fisica.py (28.532 B — o script: β/constantes lidos do fonte por regex; BCW do pipeline V2; Leaver/V2/C6/core por hash)",
+    "C:\\Users\\rotol\\AppData\\Local\\Temp\\claude\\c--IALD-Central-de-Patentes\\6da8f00d-d44f-4888-a88d-fc9f73eead3d\\scratchpad\\v386\\ramo_b\\fisica_do_ramo_b\\RAMO_B_FISICA_TABELAS.json (59.388 B — tabelas N(χ), k × χ, GW250114 por k e M, identidade, família unificada, reprodução da V2, poder, falsificação, decisões)",
+    "C:\\Users\\rotol\\AppData\\Local\\Temp\\claude\\c--IALD-Central-de-Patentes\\6da8f00d-d44f-4888-a88d-fc9f73eead3d\\scratchpad\\v386\\ramo_b\\fisica_do_ramo_b\\RAMO_B_FISICA_TABELAS.md (15.410 B — as mesmas tabelas em markdown)",
+    "C:\\Users\\rotol\\AppData\\Local\\Temp\\claude\\c--IALD-Central-de-Patentes\\6da8f00d-d44f-4888-a88d-fc9f73eead3d\\scratchpad\\v386\\ramo_b\\fisica_do_ramo_b\\core_extrato_ringdown.json (88.404 B — extrato só-leitura das chaves de ringdown do core v385)"
+   ],
+   "decisoes_do_operador": [
+    "k em τ★ = k·GM/c³: 1 (unidade geométrica, a convenção da V2) · 2 (r_s/c) · 4 (1/κ) · 8π (β_H = 2π/κ, o período KMS/modular de Schwarzschild — a leitura literal de «tempo emergente do fluxo modular»: 1 unidade modular = β_H) · 2π/κ̂(χ_f) de Kerr com ou sem co-rotação ω→ω−2Ω_H (para χ≠0 é [CONJECTURE]: Kay–Wald 1991). Os números por k já leem muito diferente (−0,02 a −0,38 em χ = 0,68): o k precisa ser fixado por princípio ANTES de abrir dado",
+    "qual M e em que referencial: M_f,det (fixa os QNMs observados; V2) ou M_f,src (repouso) — x idêntico se tudo no mesmo referencial; M_tot (×1,05) ou M_chirp (×0,46) só como pares alternativos nomeados; misturar referenciais custa (1+z)^±1",
+    "onde a lei age: local na fonte, durante o ringdown (na propagação o ramo B apaga a onda — erro de tipo) — e, com isso, a compatibilidade com a R2 (propagação canônica, AWAITING) e com os relógios v369 (τ★ universal excluído; o ramo B escala com a fonte)",
+    "mecanismo e estimando: amortecimento da envoltória por realização (δτ̂ lê x inteiro) ou difusão de fase (por realização ~0,27x; o estimando passa à largura populacional de δf̂) — a previsão EFETIVA do estimador fixada por injeção sintética (CTV-02) antes de qualquer campanha",
+    "fonte do observável: o δτ̂_220 publicado (pSEOBNR IMR; posteriores Zenodo 17018009 — ausentes em disco; baixar é ato posterior) ou reanálise própria (só-220 com (M_f, χ_f) da inspiral; a receita R0–R9 da ORDEM 015 contra a parede do pSEOBNRv4HM_PA) — e a declaração de NÃO-CEGUEIRA quanto ao GW250114 publicado e aos 89 eventos da V2",
+    "o piso sistemático aceito (família SEOB×Phenom 0,029 [DECLARADO 013-bis]; início da janela; seleção): com ele k ≤ 4 e a co-rotação são inalcançáveis por N e o desfecho previsível é NOT_FALSIFIED_UNDERPOWERED — dito antes; só k ~ 8π/2π/κ̂ sem co-rotação supera o piso, e esses já leem ~6σ contra o GW250114 publicado na leitura por envoltória (sem veredito)",
+    "vereditos permitidos do par (EXCLUDED_AT_(k,M), NOT_FALSIFIED_POWERED/UNDERPOWERED, INCONCLUSIVE_SYSTEMATICS, GR_TENSION_REPORTED; CONFIRMED proibido) e se o ringdown entra no livro de cobranças da v386 como cobrança da face com observável tipado (RD-04) — ou segue ao lado"
+   ],
+   "numeros_lidos": [
+    "β_TGL = SEALED_CODATA_ALPHA (um.py:95 = 7,2973525693e-3) × √e = 0,0120313004008031 (runtime); core ringdown_dephasing_result_v2.beta_runtime = 0,012031300400803142; diff rel 0,0",
+    "hashes lidos por script: um.py sha16 d406ae5725105145; um_absoluto.json 475ac8d218b3a5c8 (4.845.762 B); ringdown_dephasing_v2.py 0793c58d6995194b; leaver_kerr_result.json b6e4d88c95243e46; C6_RESULTS_GW250114.json 781a3741a68875eb (50.604 B); RINGDOWN_DEPHASING_V2_RESULT.json ff15f023dd91d8c7; selo um_absoluto_selo.json a88bb75fc615f4b0 (55.382 B, via mapa); DECISAO_OPERADOR_RAMO_B_05out.json a5d548235522c112 (2.719 B)",
+    "constantes do fonte: C_LIGHT 2,99792458e8; G_NEWTON 6,674e-11; MSUN 1,98892e30 e HBAR 1,054571817e-34 (pipeline V2); t_P = 5,391125e-44 s; GM☉/c³ = 4,926533e-6 s; G·m_P/c³ − t_P resíduo 0,0",
+    "BCW 2006 (l=m=2, n=0) lido de ringdown_dephasing_v2.py:39: f1 1,5251, f2 −1,1568, f3 0,1292 (erro máx 1,85 %), q1 0,7000, q2 1,4187, q3 −0,4990 (0,88 %)",
+    "Leaver (ORDEM 013): χ=0: Mω = 0,37367 − 0,08896i, Q 2,1002; χ=0,68: 0,52398 − 0,08151i, Q 3,2141; χ=0,7: 0,53260 − 0,08079i; χ=0,9: 0,67161 − 0,06487i",
+    "N(χ) = F·Q (BCW/Leaver): 0: 0,7803/0,7848; 0,5: 1,264/1,258; 0,6: 1,463/1,457; 0,65: 1,594/1,589; 0,68: 1,688/1,684; 0,69: 1,722/—; 0,7: 1,758/1,756; 0,8: 2,264/2,270; 0,9: 3,447/3,477; 0,95: 5,196/5,240",
+    "Kerr: κ̂(0,68) = 0,21152, Ω̂_H = 0,19617, 2π/κ̂ = 29,71, (F−2Ω̂_H)/F = 0,255; κ̂(0) = 0,25, 2π/κ̂ = 8π = 25,13; um.py:155706 kms_factor(0,69) = 29,93",
+    "GW250114 χ=0,68, M_X = M_f (δ_exato / z vs mediana publicada, envoltória / z difusão de fase ×0,273): k=1 −0,0199 / −0,18 / +0,08; k=2 −0,0390 / −0,53; k=4 −0,0751 / −1,19; 1/κ̂ −0,0876 / −1,42; 8π −0,338 / −5,99 / −1,50; 2π/κ̂ −0,376 / −6,69 / −1,69; 2π/κ̂ co-rot −0,0378 / −0,51",
+    "GW250114 [KNOWN, LEITURA_04]: M_f,src 62,7 (+1,0/−1,1); M_f,det 68,1 (+0,8/−0,9); χ_f 0,68 ± 0,01; z 0,09; m1 33,6; m2 32,2; D_L 403 Mpc; SNR 80; SNR 220 só-pós-fusão 21; δf̂_220 0,02 ± 0,02; δτ̂_220 −0,01 (+0,10/−0,09) 90 %; f_220 251,7 Hz; τ_220 4,09 ms; pyRing pós-fusão δτ̂ −0,14 (+0,25/−0,23); σ₋ ≈ 0,0547, σ₊ ≈ 0,0608 (gauss. aprox.)",
+    "Catálogos [KNOWN]: GWTC-3 hier. δτ̂_220 +0,13 (+0,21/−0,22); GW200129 +0,11 ± 0,23 (SNR 26,5); GWTC-4.0 pSEOB conj. +0,17 ± 0,11; hier. +0,16 (+0,18/−0,16); pyRing hier. +0,18 (+0,27/−0,26); quantil RG 98,6 % → 92,2 % com GW250114",
+    "V2 selada (core): 15 séries a 3 ms, δτ = 0,1766 ± 0,1089 (z vs RG 1,62), delta_pred_B −0,019367 (z vs B 1,80; poder 0,178), delta_pred_A −2,153e-42, δf = −0,0325 ± 0,0127, viés 0,240, sistemática 0,1454 (σ comb. 0,2066), 84 na borda, 89 eventos, 169 fontes; janela 6 ms: 6 séries, 0,0313 ± 0,1755; reprodução por série: n=169, max|δ_B_file + β·F·Q| = 6,9e-18",
+    "C6 GW250114 (core/arquivo): ln B vs RG no início primário: R-GLOBAL 0,0; R-B −0,0026; R-RAIZ-0 −0,0431; R-LIN −0,0909; R-MOD −0,2516; status INCONCLUSIVE_SYSTEMATICS",
+    "auditoria 28/09 (mapa): Γ_B = 4,9965 s⁻¹, Γ_B·t = 2,263e17 (propagação); ramo A 3,65e-23; realização/ensemble 0,273 ± 0,06; x = β·F·Q = 0,02072 (a=0,69), 0,0211559 (a=0,7); Kerr 64,16615 M☉ / 0,683526 imita 65 / 0,7",
+    "poder: σ p/ 5σ: k=1 0,0040; k=2 0,0078; k=4 0,0150; 1/κ̂ 0,0175; co-rot 0,0076; 8π 0,068; 2π/κ̂ 0,075. N(5σ) k=1: 189 / 1234 / 2525 / 5680 para σ₁ = 0,055 / 0,14 / 0,20 / 0,30; k=8π: 1/5/9/20; com piso 0,029: k ≤ 4 impossível; 8π N=21; 2π/κ̂ N=16. Registro 013-bis: N₉₀ 335 GW250114-like; ≈3.300 O4; família 0,029 = 7× o piso 0,0040",
+    "R2 (ledger v383, lido): τ★ = t_P → Γ(100 Hz) = 1,280e-40 s⁻¹; acumulado 1 Gpc 1,318e-23; família unificada GW250114: m_P/M_f,det = 1,607e-40, x_A(k=1) = 3,26e-42, x_A(k=8π) = 8,2e-41",
+    "clock_test_result_v369.tau_star_alternatives: unruh_g_excluded True; GM_earth_excluded True; Gm_atom_invisible True; t_P/β vs relógio 5σ: 10,54 ordens",
+    "em disco: GW250114_082203_H1/L1_4096_32s.npz 2.097.896 B cada (Bancada_Um\\fontes_externas\\gwosc_o4\\strain_32s); V1 RESULT 209.114 B; V2 RESULT 247.065 B; AUSENTE: Zenodo 17018009 (posteriores δτ̂)"
+   ]
+  },
+  {
+   "lente": "dados",
+   "resumo": "LENTE «OS DADOS NA CASA» (v386, ramo B τ★ = k·GM/c³) — inventário por script, nada baixado, nada escrito fora da pasta da lente. Achado central: a casa JÁ TEM em disco o que um pré-registro do ramo B pede, salvo posteriors IMR por evento de O4. (1) Catálogos com M_f por evento: catalogo_v3.csv (244 BBH O1–O4, e6a0ba6a870e2a40), remanescentes_v3.json (244 eventos com Mf_det, a_f HBR2016, f_220, τ_220; 68069f8892a80d56), GWOSC_ALLEVENTS (671 evento-versões, 415 com final_mass_source; 731f167b5545db5b), gwtc_full_catalog.csv (89; 895250e9d404a240) e a previsão de Kerr por série já computada no RINGDOWN_DEPHASING_V2_RESULT.json (170 séries; ff15f023dd91d8c7). Só medianas; posteriors IMR de O4: AUSENTES (1 só evento, GW231206_233901, 189,6 MB). (2) Resultados publicados de ringdown EM DISCO (pasta Chatgpt\\ORDEM_013_RINGDOWN\\cache\\public, só leitura): GWTC-5.0 TGR pSEOB (Zenodo 21454847) — 33 posteriors por evento extraídos (1,08 GB; pSEOB.tar.gz ee1d64487597132f) + RD.tar.gz (9810e0e45cd35824) e QNMRF.tar.gz NÃO extraídos; GWTC-3 TGR rin v2 (17461225) — 18 h5 (1,23 GB; zip 108c4a4266bc0e38); GW250114 (17018009) — pSEOB posterior_samples.h5 (N 40.776; b9971bcd7d72fdd4) + 9 .dat do pyRing; os posteriors do 221 estão SÓ DENTRO do tar.gz (18d740c816285451), não extraídos; GWTC-4.0 TGR III (DCC P2600130) só hierárquico. Os δτ̂₂₂₀ por evento já estão tabulados (C4_CATALOG_220.json, 33 eventos, quantis 5/50/95; C4_GWTC3_220.json, 18) e a combinação dos 31 da GWTC-5.0 dá δτ̂₂₂₀ = +0,072 [+0,016; +0,132] com a RG fora do 95% — tudo NÃO-CEGO. AUSENTES: GWTC-2 TGR (dispensável por sobreposição) e GWTC-4.0 TGR III por evento. (3) Strain local: cache de maio 170 npz (357 MB); O4 352 hdf5 (41,3 GB) + 350 npz de 32 s (734 MB) com manifesto por sha256 (a795cf04ca3b2f6a), inclusive GW250114 H1/L1; ORDEM 013/015: GW250114 on/off-source + strain on/off de 32 eventos de calibração (19,2 GB). Banco residente da Bancada (gw.py/gw_stack.py): janelas branqueadas 20–1024 Hz na RAM, sem ajuste de ringdown (o ajuste vive no WSL). Instrumento: Windows python 3.14 sem nada de GW; WSL /opt/lal_env com lalsuite 7.26.15 (lal 7.7.1, lalsimulation 6.2.1), bilby 2.8.2, dynesty 3.1.0, gwpy, gwosc, h5py; /opt/pycbc_env pycbc 2.11.0; pSEOBNRv4HM_PA com DTau220/440 [DECLARADO] e sua parede medida (dtau440 ≳ 1 aborta); pyseobnr 0.3.7 [DECLARADO T14, venv não localizado]. (4) O leitor C6 do GW250114 lido por hash pelo um.py: cache\\gw\\C6_RESULTS_GW250114.json, 781a3741a68875eb, 50.604 B, INCONCLUSIVE_SYSTEMATICS («critério de calibração de duas famílias IMR não cumprido»), 5 leituras × 5 inícios × 3 níveis, ln B(R-B/GR) = −0,0026 no início primário, 10 grades de strain com sha256 conferidos; origem ORDEM 013 C6, estrain-fonte = os mesmos bytes do banco O4. Estado selado: V2 = 15 séries, δτ = 0,1766 ± 0,1089, previsão B −0,0194 (ensemble), poder 0,18σ, viés 0,240 > 0,2; os 3 valores concorrentes do ramo B (−0,0194 / −0,010 / −0,005) são ensemble × realização, não dado novo. Pré-registros reutilizáveis: RINGDOWN_5SIGMA_V1 (44 candidatos O4 com strain público e SEM δτ̂ publicado = reservatório cego), PORTAO_DA_AMPLIACAO_V1 (N90 R-B ≈ 335 GW250114-like), NUISANCE_V1, C1_LEITURAS_v4 (10 relógios, inclusive R-B e R-MOD = 2π/κ_H), REGISTRO_C4 (regra de exclusão); a PE cega (T16 da ORDEM 015) nunca rodou por falta de ratificação do operador.",
+   "itens": [
+    {
+     "tema": "(1) Catálogo M_f por evento — amostra da Fase 6",
+     "achado": "EXISTE E LIGADO: catalogo_v3.csv com 244 BBH (10 O1O2 + 57 O3 da cache de maio + 177 O4), colunas commonName, version, catalog.shortName, GPS, mass_1/2_source (±), network_matched_filter_snr, chi_eff (±), final_mass_source, redshift, p_astro, far, era, src, files_4k (URLs GWOSC H1/L1). Sem a_f e sem posteriors. Inclui GW250114_082203 (GWTC-5.0 v2: m1 33,76, m2 32,26, SNR 78,6, χ_eff −0,03, M_f 62,9, z 0,09).",
+     "estatuto": "[REAL — lido; conteúdo KNOWN (GWOSC)]",
+     "evidencia": "C:\\IALD\\Bancada_Um\\investigacao\\fase6_eco_radical_01out\\catalogo_v3.csv — sha16 e6a0ba6a870e2a40, 99.817 B, 245 linhas (head/wc por script); AMOSTRA_FASE6.json (2f6424f3adf57e76) seleção «BBH m2≥3; SNR≥8; p_astro≥0,5 (senão FAR≤1/ano); H1 e L1 a 4 kHz»",
+     "onde": "Bancada_Um\\investigacao\\fase6_eco_radical_01out\\",
+     "proposta": "REUTILIZÁVEL JÁ como lista-mãe do pré-registro (a seleção e os hashes já estão pré-registrados na Fase 6)."
+    },
+    {
+     "tema": "(1) Remanescentes por evento (M_f, a_f, f_220, τ_220) — 244 eventos",
+     "achado": "EXISTE E LIGADO: remanescentes_v3.json traz por evento Mf_det (catálogo·(1+z); UIB2016 se faltar), a_f_HBR2016 (lalinference nrutils de m1_det, m2_det, χ_eff, χ_eff), m1_det, m2_det, chi_eff, z, snr_net, era, src, f_qnm_220_hz, tau_d_220_ms (Berti+2006), τ MAY/KMS. Ex.: GW150914 Mf_det 67,65, a_f 0,6712, f_220 249,83 Hz, τ_220 4,041 ms. Inclui os 177 de O4 e GW250114_082203. São medianas, não posteriors.",
+     "estatuto": "[REAL — lido; a_f e QNM = KNOWN sobre medianas]",
+     "evidencia": "C:\\IALD\\Artigo\\Haja_Luz\\A Ponte e o Um\\cache\\bancada_01out\\remanescentes_v3.json — sha16 68069f8892a80d56, 117.167 B; n=244; formulas.a_f = bbh_final_spin_non_precessing_HBR2016; catalog_sha256 e6a0ba6a… (= catalogo_v3.csv); carregado na RAM pelo banco residente (gw.py._ler_remanescentes)",
+     "onde": "A Ponte e o Um\\cache\\bancada_01out\\ (cópia lida pelo rito v380 por hash)",
+     "proposta": "REUTILIZÁVEL JÁ para a previsão de Kerr do ramo B por evento (τ_GR, ω_220) — com a ressalva RD-02 (propagar posteriors, não medianas) dita no pré-registro."
+    },
+    {
+     "tema": "(1) Previsão de Kerr por série já computada (ringdown V2)",
+     "achado": "EXISTE E LIGADO: RINGDOWN_DEPHASING_V2_RESULT.json.per_series (170 séries de 89 eventos GWTC-1..3) traz Mf_det, a_f (SimIMREOBFinalMassSpin/SEOBNRv4 das medianas), f_gr, tau_gr_ms, q_gr, delta_pred_A (t_P), delta_pred_B (GM_f/c³), anchor_snr, e por início (3/6 ms) f_obs, tau_obs_ms, snr, delta_obs, delta_f, on_edge, bias_rel, sigma_rel, used, reason. 169 OK + 1 NAN_OR_FS (GW170817_L1). Catálogo-fonte gwtc_full_catalog.csv (89 eventos; tem final_mass_source nas colunas 41–43).",
+     "estatuto": "[REAL — lido por hash no um.py v346+: ff15f023dd91d8c7]",
+     "evidencia": "cache\\gw\\RINGDOWN_DEPHASING_V2_RESULT.json sha16 ff15f023dd91d8c7, 247.065 B; instrument {lalsuite 7.7.1, final_state SimIMREOBFinalMassSpin, qnm Berti-Cardoso-Will 2006, anchor_template IMRPhenomXAS, python 3.12.3, env WSL /opt/lal_env}; catalog {/mnt/c/IALD/projetos_pyhton/IALD/gwtc_full_catalog.csv, sha256 895250e9d404a240…}; gwtc_full_catalog.csv sha16 895250e9d404a240, 27.787 B, 90 linhas",
+     "onde": "A Ponte e o Um\\cache\\gw\\; projetos_pyhton\\IALD\\gwtc_full_catalog.csv",
+     "proposta": "REUTILIZÁVEL JÁ como controle (ramo canônico) e como base do estimador; o pré-registro deve dizer que a V2 é vista (não cega) para O1–O3."
+    },
+    {
+     "tema": "(1) Posteriors IMR por evento (M_f, a_f por amostragem) — O4",
+     "achado": "AUSENTE (com uma exceção): só UM PE data release completo de O4 em disco — GWTC-4.0 GW231206_233901 (189,6 MB). Os outros 176 BBH de O4 da amostra não têm posteriors IMR na casa; os 33 pSEOB da GWTC-5.0 TGR trazem o remanescente pSEOB (ver item 2).",
+     "estatuto": "AUSENTE — consulta citada",
+     "evidencia": "find ORDEM_013_RINGDOWN -maxdepth 4 -iname '*.h5' -size +100k e find cache/public -maxdepth 7 (h5/hdf5/tar.gz/zip/dat/npz): só IGWN-GWTC4p0-38214bd95_724-GW231206_233901-combined_PEDataRelease.hdf5 (sha16 ca144927366031ef, 189.649.148 B) + 33 pSEOB + 18 rin + GW250114. Censo T08 da ORDEM 015 [DECLARADO]: 74 eventos, 70 com PE público listado, 40,77 GB, ~7,5 h só de transferência.",
+     "onde": "Chatgpt\\ORDEM_013_RINGDOWN\\bis\\015\\t08\\",
+     "proposta": "PRECISA DE DADO NOVO se o pré-registro exigir propagar (m1, m2, χ, z) até τ_GR por amostragem (RD-02): GWTC-4.0/5.0 PE data releases (IGWN 'combined_PEDataRelease.hdf5' por evento, GWOSC/Zenodo; ID não verificado aqui). Alternativa sem download: usar as incertezas ± do catálogo (já no csv) como termo de catálogo — a auditoria mediu +4% em σ (RD-02 verificador)."
+    },
+    {
+     "tema": "(2) GWTC-5.0 TGR — posteriors pSEOB por evento (33)",
+     "achado": "EXISTE NA CASA (pasta Chatgpt\\, só leitura): 33 metafiles PESummary pSEOB_<evento>_Prod0.h5 extraídos do pSEOB.tar.gz (Zenodo 21454847): GW150914_095045 GW170104_101158 GW190519_153544 GW190521_074359 GW190630_185205 GW190828_063405 GW190910_112807 GW191109_010717 GW200129_065458 GW200208_130117 GW200224_222234 GW200311_115853 GW230628_231200 GW230914_111401 GW230927_153832 GW231028_153006 GW231102_071736 GW231206_233901 GW231226_101520 GW240511_031507 GW240514_121713 GW240615_113620 GW240621_195059 GW240705_053215 GW240716_034900 GW240919_061559 GW240920_124024 GW241006_015333 GW241127_061008 GW241129_021832 GW241225_082815 GW250114_082203 GW250119_025138. RD.tar.gz e QNMRF.tar.gz presentes e NÃO extraídos (0 h5 em extracted/RD).",
+     "estatuto": "[REAL — contagem/bytes/hash por script; conteúdo KNOWN (LVK)]",
+     "evidencia": "C:\\IALD\\Central de Patentes\\Chatgpt\\ORDEM_013_RINGDOWN\\cache\\public\\21454847\\: pSEOB.tar.gz sha16 ee1d64487597132f 711.331.923 B; extracted\\pSEOB\\metafiles n=33, 1.080.193.759 B; RD.tar.gz 9810e0e45cd35824 415.283.962 B; QNMRF.tar.gz 2f617507f65b9e3e 1.214.239 B; rec_21454847.json (API Zenodo, 2026-07-22, CC-BY-4.0)",
+     "onde": "Chatgpt\\ORDEM_013_RINGDOWN\\cache\\public\\21454847\\",
+     "proposta": "REUTILIZÁVEL JÁ (pSEOB) / APÓS EXTRAÇÃO (RD, QNMRF) como conjunto de CALIBRAÇÃO do ramo B — mas NÃO cego: a C4 já leu δτ̂₂₂₀ de todos (dizer no pré-registro)."
+    },
+    {
+     "tema": "(2) δτ̂₂₂₀ por evento já tabulados e a combinação dos 31 (NÃO-CEGO)",
+     "achado": "EXISTE E LIGADO (à ORDEM 013): C4_CATALOG_220.json — 33 eventos, 608.681 amostras, por evento N, prior (Uniform[-0,8; 2,0] ou [-0,8; 4,0]), quantis 5/50/95 de dtau220, GR_HPD, GR_inside_95 (ex.: GW250114 N 40.776, q = [−0,103; −0,013; +0,087], 440 livre; GW191109 e GW231028 com GR fora do 95%). ln B por leitura (soma condicional): R-A 0; R-B −2,48; R-RAIZ-0 −5,16; R-LIN −11,90; R-MOD −4,74; R-GLOBAL 0 — veredito PENDING. C4_CATALOG_COMBINATION.json: deformação comum dos 31 da figura: dtau220 = +0,0163 / +0,0721 / +0,1317 (5/50/95), GR_HPD_content 0,983 (GR fora do 95%); 33: +0,0145/+0,0548/+0,1058; df220 ≈ +0,011. C4_GWTC3_220.json: 18 eventos do GWTC-3 (12 sobrepõem; união 39 distintos); C4_GWTC3_SELECTION: 10 eventos pela Tabela 13 do artigo.",
+     "estatuto": "[REAL — lido; NÃO-CEGO; ln B não é σ; DECLARADO pela bancada Codex, conferido pela gerência em 22–23/09 (memória)]",
+     "evidencia": "ORDEM_013_RINGDOWN\\C4_CATALOG_220.json sha16 93bdc413130d294a 673.228 B (status CONDITIONAL_SECTOR_CATALOG__NOT_COMPLETE); C4_CATALOG_COMBINATION.json f3d8c1959ded3efd 12.167 B; C4_GWTC3_220.json d9dc9b09a8d91dc7 402.498 B; C4_GWTC3_SELECTION.json ef18f3b0495d58bf; REGISTRO_C4.json 2bebc171ddbcef43 (regra de exclusão BF 100 + região 95% da GR; NOT_BLIND)",
+     "onde": "Chatgpt\\ORDEM_013_RINGDOWN\\ (raiz)",
+     "proposta": "REUTILIZÁVEL JÁ como CALIBRAÇÃO/controle declarado não-cego; o sinal do catálogo (+0,072, linhas mais estreitas) é OPOSTO a todo dephasing — o pré-registro deve fixar a nuisance c(σ) (NUISANCE_V1) e proibir offset fixo em 0 (falsificador espúrio medido em 22/09)."
+    },
+    {
+     "tema": "(2) GWTC-3 TGR ringdown (Zenodo 17461225)",
+     "achado": "EXISTE NA CASA: IGWN-GWTC3-TGR-v2-rin.zip + 18 h5 pSEOBNRv4HM extraídos (S150914, S170104, S190421ar, S190503bf, S190519bj, S190521g, S190521r, S190602aq, S190630ag, S190706ai, S190727h, S190828j, S190910s, S191109d, S200129m, S200208q, S200224ca, S200311bg).",
+     "estatuto": "[REAL — bytes/hash; KNOWN]",
+     "evidencia": "cache\\public\\17461225\\IGWN-GWTC3-TGR-v2-rin.zip sha16 108c4a4266bc0e38 2.210.047.740 B (= source_archive_sha256 da C4_GWTC3_220); extracted\\rin n=18, 1.230.299.092 B",
+     "onde": "Chatgpt\\ORDEM_013_RINGDOWN\\cache\\public\\17461225\\",
+     "proposta": "REUTILIZÁVEL JÁ como controle auxiliar (legado; 6 eventos só aqui: GW190602, GW190521_030229, GW190706, GW190421, GW190727, GW190503)."
+    },
+    {
+     "tema": "(2) GW250114 — pSEOB, pyRing e o 221",
+     "achado": "EXISTE NA CASA: posterior_samples.h5 do pSEOB (df220/dtau220 conjuntos, 440 livre; N 40.776) — bytes idênticos ao pSEOB_GW250114_082203_Prod0.h5 da GWTC-5.0; 9 posteriors .dat do pyRing selecionados (o Kerr 220 df/dtau: N 84.701, prior Uniform[-1,1], GR_HPD 0,54). O 221 (Kerr_221_domega_dtau_221 em inícios 1M…18M, várias sementes) está no release — 1.122 linhas com «221» na listagem do tar — mas SÓ DENTRO do tar.gz, não extraído (RD-07: o 221 é o modo com informação segundo a LVK; o 440 não tem: poder ≈ 0,06σ).",
+     "estatuto": "[REAL — bytes/hash; KNOWN; RD-07 = auditoria 28/09 SUSTENTADO]",
+     "evidencia": "cache\\public\\17018009\\TGR_companion_S250114ax_results.tar.gz sha16 18d740c816285451 1.671.496.586 B; extracted\\…\\gw250114_pseobnr\\posterior_samples.h5 b9971bcd7d72fdd4 59.249.916 B (= pSEOB_GW250114_082203_Prod0.h5); selected\\3ec4616b581f990b.dat 9a7ad336682b4703 36.253.805 B; selected n=9 .dat 157.810.811 B; grep -c '221' tar_17018009_list.txt = 1122; find 17018009 -iname '*221*' → só 3464e0ef0c1221e7.ini; rec_17018009.json (MIT; arXiv:2509.08099)",
+     "onde": "Chatgpt\\ORDEM_013_RINGDOWN\\cache\\public\\17018009\\",
+     "proposta": "REUTILIZÁVEL JÁ (220) / APÓS EXTRAÇÃO (221) — sem baixar nada; o 221 pede decisão do operador (RD-07) e ressalva do início precoce."
+    },
+    {
+     "tema": "(2) GWTC-4.0 TGR III e GWTC-2 TGR",
+     "achado": "GWTC-4.0 TGR III (LIGO-P2600130-v1, «Tests of the Remnants»): só o produto hierárquico/populacional (pseob_hier*.npz GWTC3/GWTC4 com e sem GW250114, plots, notebook) — AUSENTE por evento. GWTC-2 TGR: AUSENTE (dispensável: GW150914 e GW170104 estão na GWTC-5.0 pSEOB e os O3a no GWTC-3 rin).",
+     "estatuto": "AUSENTE (por evento) — consultas citadas",
+     "evidencia": "cache\\public\\DCC_P2600130_v1\\pSEOBNR.tar.gz sha16 946f0ec0052d935f 14.923.249 B; tar tzf → pSEOB/hierarchical/{pSEOB_GWTC4_without_GW190910, pSEOB_GWTC4_with_GW250114, pSEOB_GWTC3, pSEOB}/pseob_hier(.npz, _pop.npz), plots/, pSEOBNR_main_figure.ipynb; release.html título «LIGO-P2600130-v1: Data release for GWTC-4.0: Tests of General Relativity. III. Tests of the Remnants»; ls cache\\public → só 17018009, 17461225, 21454847, DCC_P2600130_v1",
+     "onde": "Chatgpt\\ORDEM_013_RINGDOWN\\cache\\public\\",
+     "proposta": "PRECISA DE DADO NOVO só se o operador quiser os posteriors por evento do GWTC-4.0 TGR III (Zenodo do paper III; ID não verificado aqui) — a GWTC-5.0 (cumulativa, 33) já cobre."
+    },
+    {
+     "tema": "(3) Strain local — cache de maio, O4 e ORDEM 013/015",
+     "achado": "EXISTE E LIGADO: (a) cache de maio O1–O3: 170 npz de 32 s @ 4096 Hz (85 eventos × H1/L1; 169 OK, GW170817_L1 NaN), sha256 por série nos resultados; (b) O4: 352 hdf5 GWOSC de 4096 s (41,3 GB) + 350 npz de 32 s (734 MB), manifesto com 354 jobs (336 OK, 14 NAN_IN_WINDOW, 4 WINDOW_OUTSIDE_FILE), 177 eventos, incl. GW250114_082203 H1/L1 (hdf5 40.961.487 / 40.678.340 B; sha256 db0b394f… / d95a6ebf…; t0 1420878125,2; n 131072); (c) acom gw_cache: 25 hdf5 GWTC-1 (2,28 GB; fonte do v340); (d) ORDEM 013: GW250114 on/off-source (4 hdf5, 339 MB; on-source = mesmos bytes do banco O4) e ORDEM 015 T07: 176 hdf5 on/off (H1/L1/V1) dos 32 eventos de calibração (19,2 GB).",
+     "estatuto": "[REAL — contagens/bytes por script; manifesto lido por hash na v380]",
+     "evidencia": "C:\\IALD\\projetos_pyhton\\IALD\\strain_cache n=170 356.642.320 B; C:\\IALD\\Bancada_Um\\fontes_externas\\gwosc_o4\\hdf5 n=352 41.327.837.881 B; …\\strain_32s n=350 734.263.600 B; GWOSC_O4_32S_V1.manifest.json sha16 a795cf04ca3b2f6a 253.528 B (cópias idênticas em Bancada_Um e cache\\gw); C:\\IALD\\projetos_pyhton\\acom\\gw_cache n=25 2.277.772.006 B; ORDEM_013_RINGDOWN\\cache\\gwosc n=4 338.993.680 B; ORDEM_013_RINGDOWN\\bis\\015\\t07\\strain n=176 19.234.127.539 B (32 pastas de evento)",
+     "onde": "ver evidência",
+     "proposta": "REUTILIZÁVEL JÁ: todo o reservatório cego do ramo B (44 candidatos O4 sem δτ̂ publicado, em RINGDOWN_5SIGMA_V1.test_candidates) tem strain em disco — nenhum download é preciso para a PE."
+    },
+    {
+     "tema": "(3) Banco residente da Bancada Um (gw.py) e o pipeline de ringdown",
+     "achado": "EXISTE E LIGADO: bancada/gw.py mantém na RAM as janelas de 32 s pré-condicionadas e branqueadas EXATAMENTE como echo_anchored_v3 (passa-alta 15 Hz, Tukey 0,1, Welch 4 s Hann, banda 20–1024 Hz, PSD em t_rel ∈ (−14,4; −2,0) s), os remanescentes por evento e os estágios da Fase 6 (empilhamento/veredito pela mesma função gw_stack.py; MCP gw_*). NÃO contém ajuste de ringdown nem moldes: «isso roda no WSL (/opt/lal_env) e entra por arquivo». O pipeline de ringdown da casa é Nós\\eco_ancorado_v1\\ringdown_dephasing_v2.py (filtro casado IMRPhenomXAS, seno amortecido branqueado, grade f×[0,6;1,4] × τ×[0,3;4] log, 40 injeções fora da fonte) + rite_ringdown_v346.py (protocolo, emenda V2, leitura por hash).",
+     "estatuto": "[REAL — lido]",
+     "evidencia": "C:\\IALD\\Bancada_Um\\bancada\\gw.py sha16 ea7c849c7f2c10b8 19.614 B (docstring e constantes FS 4096, SEG_S 2,5, F_LO/F_HI 20/1024, BETA = ALPHA·√e); gw_stack.py 0a636d439a03f016 7.697 B (LAWS MAY/KMS/DEC); Nós\\eco_ancorado_v1\\ringdown_dephasing_v2.py 0793c58d6995194b 18.415 B; ringdown_dephasing_v1.py 31a9f41da1b72321; rite_ringdown_v346.py dd95a416f5d74e52 23.673 B; wsl_setup_lal.sh 953264c81b15b298",
+     "onde": "Bancada_Um\\bancada\\; Nós\\eco_ancorado_v1\\",
+     "proposta": "REUTILIZÁVEL JÁ: o estimador do ramo B pode herdar o V2 (com as correções RD-02/RD-05/RDV-01: H1+L1 como bloco, sistemática na MESMA amostra por injeção pareada, calibração por injeção de difusão de fase — CT-02/CTV-02) ou usar a PE pSEOBNRv4HM_PA só-220 no WSL; o banco residente serve para consulta em tempo real, não para o ajuste."
+    },
+    {
+     "tema": "(3) Instrumento — o que está instalado e o que é declarado",
+     "achado": "Windows python 3.14.3: SEM pycbc, lal, lalsimulation, gwpy, gwosc, qnm, bilby, h5py, astropy (ModuleNotFoundError em todos). WSL Ubuntu-24.04: /opt/lal_env python 3.12.3, lalsuite 7.26.15 (lal 7.7.1, lalsimulation 6.2.1), bilby 2.8.2, dynesty 3.1.0, gwpy 4.0.2, gwosc 0.8.3, h5py 3.16.0, astropy 8.0.1, numpy 2.5.3, scipy 1.18.1; /opt/pycbc_env pycbc 2.11.0 (lalsuite 7.26.15, numpy 2.3.5). pSEOBNRv4HM_PA com DTau220/DTau440 [DECLARADO 22/09; minha sondagem GetStringFromApproximant deu RuntimeError]; parede medida [REAL 23/09]: aborta sse (1+dtau440) > ~2,1·max(1, 1+dtau220); só-220 0/120 abortos; fmax_gen 1024 → EDOM 4,4%. pyseobnr 0.3.7 [DECLARADO T14: instalado rc=0] NÃO está no pip list do /opt/lal_env (venv próprio não localizado). pyRing só como vendor pinado (cache/pyring_oracle); qnm não instalado, mas QNM_GRID.json (grade exata) existe.",
+     "estatuto": "[REAL — medido onde dito; DECLARADO onde marcado]",
+     "evidencia": "python -c 'import pycbc…' (9 ModuleNotFoundError); wsl -d Ubuntu-24.04 /opt/lal_env/bin/pip list; /opt/pycbc_env/bin/python -c 'import pycbc' → 2.11.0; H2_REPRODUCTION_V1_RESULT.instrument.env = «WSL Ubuntu /opt/pycbc_env»; ORDEM_013_RINGDOWN\\C7_COHERENT_SOURCE_REPRODUCTION\\QNM_GRID.json sha16 4f34367a09060238 169.231 B; ENTREGA_015_RELATORIO_FINAL.md T14/T02",
+     "onde": "WSL /opt; Chatgpt\\ORDEM_013_RINGDOWN\\cache\\pyring_oracle\\",
+     "proposta": "REUTILIZÁVEL JÁ para PE só-220 (bilby+dynesty+pSEOBNRv4HM_PA) — custo estimado 2,6–3,3 h de parede por piloto [DECLARADO T09]; a caixa 440 (b) e o pyseobnr pedem decisão/localização."
+    },
+    {
+     "tema": "(4) O leitor C6 do GW250114 lido por hash pelo um.py",
+     "achado": "EXISTE E LIGADO: cache\\gw\\C6_RESULTS_GW250114.json — status INCONCLUSIVE_SYSTEMATICS, reason «Prespecified two-IMR-family calibration criterion was not met; no exclusion or confirmation is permitted»; registration_sha256 ded00f09b5010d62…; on_source_strain_read true; code_sha256 d3aa76afdc419ff3…; 75 linhas = 5 leituras (R-B, R-GLOBAL, R-LIN, R-MOD, R-RAIZ-0) × 5 inícios (6, 8, 10, 10,5, 12 t_M) × 3 níveis de prior de amplitude; convergência passou nos 5 inícios (|Δln B| < 5e-6); ln B vs GR no início primário (core v376): R-GLOBAL 0,0; R-B −0,0026; R-RAIZ-0 −0,0431; R-LIN −0,0909; R-MOD −0,2516; scope «conditional ensemble ringdown model; both modes deformed together; mass/spin integrated with shared broad priors; independently Gaussian detector quadratures»; do_not_combine com análises anteriores do mesmo evento. Os 10 arquivos de grade declarados existem na raiz da ORDEM 013 e seus sha256 CONFEREM. Origem: ORDEM 013 C6 «pré-portão» (bancada Codex 21–22/09), reproduzido pela gerência (reproduce_c6.py --run, diferença 0,0, 23/09); RD-03: ln B ≈ 0 é a degenerescência analítica do 220 em (M, a) (R-B imitado por Kerr ~1,25% mais leve, Δχ ≈ −0,016).",
+     "estatuto": "[REAL — lido; o um.py v376 lê texto e bytes = 781a3741a68875eb]",
+     "evidencia": "C:\\IALD\\Artigo\\Haja_Luz\\A Ponte e o Um\\cache\\gw\\C6_RESULTS_GW250114.json sha16 781a3741a68875eb 50.604 B; core.ringdown_scope_v376.c6_sha16_text/bytes = 781a3741a68875eb; ORDEM_013_RINGDOWN\\C6_STRAIN_{6,8,10,10.5,12}M_GRID_{0,1}.json (≈10 KB cada; sha256 confere ×10); strain-fonte ORDEM_013_RINGDOWN\\cache\\gwosc\\on_source\\{H,L}-?1_GWOSC_O4b_4KHZ_R1-1420877824-4096.hdf5 (40.961.487 / 40.678.340 B = banco O4)",
+     "onde": "A Ponte e o Um\\cache\\gw\\; Chatgpt\\ORDEM_013_RINGDOWN\\",
+     "proposta": "REUTILIZÁVEL JÁ como controle «modo único 220 é vazio por construção» (NON_IDENTIFIABLE_SINGLE_220): o ramo B precisa de (M, a) da inspiral (IMR) ou de um 2º modo (221)."
+    },
+    {
+     "tema": "(5) Estado selado do ringdown (V1/V2) e os 3 valores do ramo B",
+     "achado": "V2 (selada): 15 séries a 3 ms (11 eventos; 84 na borda excluídas): δτ = 0,1766 ± 0,1089 (z vs RG 1,62), previsão B −0,0194 (média do ensemble; z vs B 1,80; poder 0,18σ), ramo A −2,15e-42, δf = −0,0325 ± 0,0127, χ²/dof 0,87, viés 0,240 > 0,2 → INCONCLUSIVE_SYSTEMATICS; 6 ms: 6 séries, 0,0313 ± 0,1755; sistemática 0,1454 (σ comb. 0,2066). V1: 23 séries, δτ 1,396 ± 0,057 (gate recusou: 18 < 20 a 6 ms; autópsia 5 na borda com 48% do peso). Os «3 valores concorrentes» do ramo B no core são −0,0194 (V2, ensemble), ≈ −0,010 (CT-02) e ≈ −0,005 (CTV-02, por realização; fator 0,27 ± 0,06 medido pelo verificador) — são leituras ensemble × realização [ONTO], não dado novo. Γ_B(GW150914-like) ≈ 5,0 s⁻¹ vs Γ_A ≈ 1e-40 s⁻¹: como propagação o ramo B está excluído por ~10¹⁷ e-folds (CT-02) — só é testável como efeito LOCAL na fonte.",
+     "estatuto": "[REAL — lido do core v385 e dos resultados por hash; CT-02/CTV-02 = auditoria 28/09]",
+     "evidencia": "core.ringdown_dephasing_result_v2 (um_absoluto.json sha16 475ac8d218b3a5c8, 4.845.762 B): stacks 3.0 {n_used 15, delta_tau 0,17665, sigma 0,10889, z_vs_GR 1,6222, delta_pred_B −0,019367, power_B 0,17785, delta_f −0,032472, mean_bias_rel 0,23995, n_on_edge_excluded 84}; core.ringdown_scope_v376.branch_B_concurrent_values = [[V2, −0,019367], [auditoria CT-02, −0,01], [auditoria CTV-02, −0,005]]; mapa ringdown.dephasing seq 24–27, 44, 85–92, 132, 141, 249, 352 (lidos todos)",
+     "onde": "Nós\\um_absoluto.json; mapa de rotas ringdown.dephasing",
+     "proposta": "O pré-registro fixa ensemble × realização e propagação × fonte ANTES de abrir (RD-01/CT-02), calibra o estimador por injeção de difusão de fase e pré-registra a previsão efetiva que sair dessa injeção (CTV-02)."
+    },
+    {
+     "tema": "(5) Pré-registros e portões já existentes (ORDEM 013-bis/015)",
+     "achado": "EXISTE NA CASA (Chatgpt\\, só leitura): RINGDOWN_5SIGMA_V1.json (registrado 2026-09-22T21:15:30Z, «REGISTERED_NONBLIND_DESIGN_FOR_BLIND_TEST»): 48 eventos de calibração + 44 candidatos de teste O4 (strain público, SEM δτ̂ publicado) = reservatório CEGO; cadeia V1.1 → V1.1.3 (T03), 0 células de nulos aceitas; PORTAO_DA_AMPLIACAO_V1.json: N90 por leitura/população (R-B ≈ 335 GW250114-like ou ~3.300 de mistura O4 [memória 22/09]), cortes de qualidade SNR ≥ 12, Mf_det ≥ 40, χ_f < 0,98 (prioridade SNR ≥ 30); NUISANCE_V1.json: c(σ) = c0 + k·σ (c0 −0,061 ± 0,068; k +0,79 ± 0,37) — offset fixo em 0 proibido; C1_LEITURAS_v4.json: 10 relógios (R-A t_P; R-B τ★ = G·M_src/c³ com t_M no detector; R-MOD 2π/κ_H de Kerr; R-RAIZ-0/EP4/REST/COHERENT; R-LIN; R-GLOBAL; R-PROP), nenhum selecionado; REGISTRO_C4.json: regra de exclusão (BF 100 + GR dentro de 95%). ORDEM 015 (relatório final): T16 PE cega NÃO_PAGO («no V1.1 ratification by operator»), T15 σ_jit infeasível (H1 B2 > 1e12), T09 caixa 440 (b) não autorizada, T05 440 sem informação, T06 rota IV (33 posteriors, LRT 0); 13,65 h debitadas de 35,02 h.",
+     "estatuto": "[REAL — lidos; estatutos internos DERIVED NÃO-CEGO; T-itens = DECLARADO pela bancada]",
+     "evidencia": "ORDEM_013_RINGDOWN\\RINGDOWN_5SIGMA_V1.json sha16 e1be6b0409720c68 183.005 B (test_candidates n=44; calibration_event_ids n=48); PORTAO_DA_AMPLIACAO_V1.json 710028a7d2af7b64 903.525 B; NUISANCE_V1.json 83f860bbfa904c00 1.437.250 B; C1_LEITURAS_v4.json 126270a896d85898 35.419 B; REGISTRO_C4.json 2bebc171ddbcef43 2.768 B; bis\\E7_FULLSAMPLE_RESULT_V1.json c2f96864c18f3aea 384.193 B; TUNEL\\DO_CHATGPT\\ENTREGA_015_RELATORIO_FINAL.md 84e65658012f0ba1 15.309 B",
+     "onde": "Chatgpt\\ORDEM_013_RINGDOWN\\; Chatgpt\\TUNEL\\DO_CHATGPT\\",
+     "proposta": "REUTILIZÁVEL JÁ como esqueleto do pré-registro do ramo B: lei Γ = ½βτ★ω² com τ★ = k·GM/c³ (k e M do operador), observável δτ̂₂₂₀ (e largura populacional de δf̂, a rota de menor N), calibração = 33 pSEOB (ditos vistos), teste cego = os 44 candidatos O4 com strain em disco, controles = ramo canônico + injeções só-RG + c(σ), vereditos sem CONFIRMED."
+    },
+    {
+     "tema": "(5) Ancoragens do operador e erratas pertinentes",
+     "achado": "16/09 (operador, verbatim): «betatgl está de fato na propagação da onda e ligada ao ringdown»; 16/09: gráviton = ψ particularizado em regime c³ = VERBO VIVO; 02/10 R6 (gerência, ratificada): ramo B ENCERRADO; errata ao lado 02/10 noite: «o custo está nele, Γ ≈ 10⁻⁴⁰ s⁻¹ a 100 Hz no ramo canônico»; 05/10 (operador, verbatim): ramo B não proibido — investigar se β emerge do tempo emparelhado à gravidade sobre c³. Auditoria 28/09: RD-02 (σ só ruído: catálogo +4%; H1/L1 bloco; δf empilhado −0,0325 ± 0,0127, z −2,56, maior que o efeito de 2%), RD-05/RDV-01 (sistemática 3×6 ms reprova na amostra comum: 0,360 vs 0,2266), RD-07 (440 sem informação; o 221 tem).",
+     "estatuto": "[ONTO/INPUT — operador; REAL — auditoria]",
+     "evidencia": "memory\\onda-e-eco-definicao-16set.md sha16 cb01ce16967ea560 (linhas 15–21); psi-nome-da-luz-graviton-verbo-vivo-16set.md 8a90d67461951c70; beta-e-a-regra-matriz-02out.md fe20a0d5ac3ea8eb (linhas 54, 70, 73, 96); ramo-b-reaberto-05out.md 1e3fe044b8420aaa; work\\auditoria_28set\\ANEXO_ACHADOS.md 3683ce03f78e94c8 (§Ringdown, linha 341+); DECISAO_OPERADOR_RAMO_B_05out.json a5d548235522c112 (lido)",
+     "onde": "memória da sessão; Central\\work\\auditoria_28set\\",
+     "proposta": "Entram verbatim no pré-registro como [INPUT/ONTO]; os achados RD-* como correções obrigatórias do estimador."
+    },
+    {
+     "tema": "(6) Acervo indexado",
+     "achado": "buscar.py devolve 917 documentos para «GW250114|GWTC|TGR|ringdown|QNM|dtau|delta.?tau|quasinormal» (cp1252 quebra sem PYTHONIOENCODING=utf-8); os pertinentes são históricos pré-v346 (tgl_observables_paper out/2025 com figure2_ringdown_simulation.tex; eco_gravitacional_v1.tex; tgl_v9/v10_3 dez/2025; Manifesto/Unificação jan/2026; «protocolo de observacao tgl.docx» = o protocolo de outubro de 2025 do Atlas v346) — NÃO lidos nesta lente. O índice NÃO cobre Chatgpt\\ORDEM_013_RINGDOWN (1 documento para «ORDEM_013_RINGDOWN|C4_CATALOG_220|RINGDOWN_5SIGMA»). MCMC_V2_RAZAO\\35_dephasing_ringdown.json: ramo canônico → DEPHASING_INOBSERVAVEL_EM_RINGDOWN (Γ 5,3e-42 s⁻¹ p/ 65 M☉).",
+     "estatuto": "[REAL — contagens; DECLARADO — conteúdo dos históricos]",
+     "evidencia": "python C:\\IALD\\INDICE_DO_ACERVO\\buscar.py … --lista (917 blocos «===»); C:\\IALD\\Artigo\\MCMC_V2_RAZAO\\35_dephasing_ringdown.json sha16 1ccc757b7757dcae 1.313 B",
+     "onde": "INDICE_DO_ACERVO; Artigo\\MCMC_V2_RAZAO\\",
+     "proposta": "Registrar no mapa que a pasta ORDEM_013_RINGDOWN está fora do índice do acervo (14+ GB de insumos do ringdown invisíveis ao buscar.py)."
+    },
+    {
+     "tema": "Classificação por uso (síntese)",
+     "achado": "REUTILIZÁVEL JÁ: catalogo_v3.csv, remanescentes_v3.json, GWOSC_ALLEVENTS/INVENTARIO, gwtc_full_catalog.csv, RINGDOWN V2 per_series, 33 pSEOB GWTC-5.0, 18 rin GWTC-3, GW250114 pSEOB + pyRing 220, C4_CATALOG_220/COMBINATION/GWTC3, C6 + 10 grades, strain O1–O4 completo (41,3 GB + 357 MB + 734 MB), banco residente, pipelines V2/v346, QNM_GRID, scripts da auditoria, RINGDOWN_5SIGMA_V1/PORTAO/NUISANCE/C1_LEITURAS_v4/REGISTRO_C4, /opt/lal_env e /opt/pycbc_env. REUTILIZÁVEL APÓS EXTRAÇÃO (sem baixar): RD.tar.gz, QNMRF.tar.gz, o 221 do GW250114 (dentro do tar.gz), hierárquico GWTC-4.0 III. PRECISA DE DADO NOVO: posteriors IMR por evento de O4 (GWTC-4.0/5.0 PE releases, ~40,8 GB) se a RD-02 for exigida. AUSENTE: GWTC-2 TGR (dispensável); GWTC-4.0 TGR III por evento; posteriors de eventos O4 além dos 33 da GWTC-5.0 TGR (os 44 candidatos cegos só têm strain — é o que os torna cegos).",
+     "estatuto": "[REAL — síntese das consultas acima]",
+     "evidencia": "INVENTARIO_DADOS_NA_CASA_RAMO_B_v386.json (54.494 B) e .md (24.511 B) na pasta da lente, gerados por gerar_inventario.py com hash/bytes lidos de cada artefato",
+     "onde": "scratchpad\\v386\\ramo_b\\dados_na_casa\\",
+     "proposta": "O pré-registro do ramo B pode ser escrito HOJE só com o que está em disco; a única compra de dado é opcional (posteriors IMR de O4)."
+    }
+   ],
+   "consultas": [
+    "python C:\\IALD\\MAPA_DE_ROTAS\\rotas.py consultar \"ringdown\" (16 rotas) e consultar \"ramo B\" (4 rotas)",
+    "python C:\\IALD\\MAPA_DE_ROTAS\\rotas.py ver ringdown.dephasing (15 registros, todos lidos: seq 24, 25, 26, 27, 44, 85, 86, 88, 89, 90, 92, 132, 141, 249, 352)",
+    "Get-Content scratchpad\\v386\\ramo_b\\DECISAO_OPERADOR_RAMO_B_05out.json (verbatim do operador)",
+    "Get-ChildItem -Recurse C:\\IALD\\Bancada_Um (941 linhas; filtradas por gw|strain|hdf5|npz)",
+    "Get-ChildItem C:\\IALD\\Artigo\\Haja_Luz\\A Ponte e o Um\\cache (subpastas) e cache\\gw, cache\\bancada_01out, cache\\bancada_30set, cache\\auditoria",
+    "inspecionar_gw.py / inspecionar_gw2.py (estrutura, chaves e hashes dos JSON de GW: C6, RINGDOWN V1/V2, H2, ECHO V3/PE/SEARCH, manifestos GWOSC, remanescentes_v3, AMOSTRA_FASE6, PREREGISTRO_FASE6, CHAIN_OF_CUSTODY)",
+    "PYTHONIOENCODING=utf-8 python C:\\IALD\\INDICE_DO_ACERVO\\buscar.py \"GW250114|GWTC|TGR|ringdown|QNM|dtau|delta.?tau|quasinormal\" --lista (917 docs; sem UTF-8 o buscar.py quebra em cp1252)",
+    "python buscar.py \"ORDEM_013_RINGDOWN|C4_CATALOG_220|RINGDOWN_5SIGMA\" --lista (1 doc → pasta fora do índice)",
+    "python -c import pycbc/lal/lalsimulation/gwpy/gwosc/qnm/bilby/h5py/astropy (Windows 3.14.3: 9× ModuleNotFoundError); where python; py -0p; wsl -l -v",
+    "wsl -d Ubuntu-24.04 -- /opt/lal_env/bin/pip list; /opt/lal_env/bin/python -c 'import lal, lalsimulation'; /opt/pycbc_env/bin/python -c 'import pycbc'",
+    "grep -oE '\"(python|env|lalsuite|pycbc_version…)\"' nos resultados de GW (env = WSL /opt/lal_env e /opt/pycbc_env)",
+    "python: json.load um_absoluto.json → chaves core ringdown_dephasing_protocol/result/amendment_v2/result_v2, ringdown_scope_v376, the_ledger_of_charges_v383, bancada_fases_5_6_7_v380, gw_echo_rite, gw_echo_kms_rite; audit_ringdown_contradictions_declared NÃO é chave própria (vive dentro de ringdown_scope_v376)",
+    "grep -n -iE 'ringdown|τ★|ramo B|Γ_ω|dephasing|GW250114' memory\\TGL_ATLAS.md (443 / 68 / 14 ocorrências; linhas 556, 644, 2239–2241, 4207 lidas)",
+    "cat/grep das memórias: ordem-013-confrontacao-ringdown.md, ramo-b-reaberto-05out.md, h2-reproducao-v350.md, fase6-eco-radical-01out.md, eco-gw-100sigma-v340.md, beta-e-a-regra-matriz-02out.md (R2/R5/R6 e erratas), auditoria-testes-passados-28set.md, psi-nome-da-luz-graviton-verbo-vivo-16set.md, onda-e-eco-definicao-16set.md; grep MEMORY_2.md 'ramo B|3 valores|GM/c|221' (0 pertinentes)",
+    "sed -n 341,470p work\\auditoria_28set\\ANEXO_ACHADOS.md (§Ringdown: RD-01..RD-07, RDV-01) + grep RD-07/221",
+    "ls Nós\\eco_ancorado_v1; ls acom\\tgl_pycbc_env; find /c/IALD -name GW150914_H1_4096_32s.npz → projetos_pyhton\\IALD\\strain_cache",
+    "ls/du/find em Chatgpt\\ORDEM_013_RINGDOWN (bis 19 GB, cache 15,6 GB; cache\\public: 17018009, 17461225, 21454847, DCC_P2600130_v1; find h5/hdf5/tar.gz/zip/dat >1 MB)",
+    "python: sha16 das 4 archives públicas + posterior_samples.h5 + .dat do pyRing + pSEOB_GW250114 (3,9 s); contagem/bytes dos 33 pSEOB, 18 rin, 0 RD extraídos",
+    "python: C4_CATALOG_220.json (33 linhas: evento, N, prior, quantis dtau220, GR_HPD), C4_CATALOG_COMBINATION.json (31 e 33), C4_GWTC3_220.json (18), C4_GWTC3_SELECTION.json, C4_PYRING.json, REGISTRO_C4.json, RINGDOWN_5SIGMA_V1.json, PORTAO_DA_AMPLIACAO_V1.json, C1_LEITURAS_v4.json (chaves e hashes)",
+    "grep nas ENTREGA_013_C4a_REGISTRO_POSTERIORES.md, ENTREGA_013BIS_RELATORIO_FINAL.md, ENTREGA_013BIS_TESTE_O4_cegos.md, ENTREGA_015_RELATORIO_FINAL.md, ENTREGA_015_T19_ATUALIZACAO_DADO_PUBLICO.md, ENTREGA_015_FASE_L_CONCLUIDA.md, RECIBO_015_MAQUINA_LIVRE.md; ls ORDEM_013_INSUMOS\\dados_localizados (LEIA.md, rec_17018009/17461225/21454847.json, tar_17018009_list.txt: grep -c 221 = 1122)",
+    "head catalogo_v3.csv / gwtc_full_catalog.csv (cabeçalhos; final_mass_source nas colunas 41–43); json GWOSC_ALLEVENTS (671; contagem de não-nulos por campo; catálogos por nome); GWOSC_INVENTARIO",
+    "manifesto O4: séries GW250114_082203 H1/L1 (hdf5/npz, sha256, t0, n); totais 354/336 OK; catálogo e eventos; remanescentes_v3: 177 de O4, GW250114 presente",
+    "tar tzf cache\\public\\DCC_P2600130_v1\\pSEOBNR.tar.gz; grep <title> release.html; ls QNMRF.tar.gz; ls scratchpad\\auditoria_28set\\ringdown{,_verif}; find QNM_GRID.json; du bis\\015\\t07",
+    "gerar_inventario.py (hash/bytes de 70 artefatos e contagem de 10 pastas; conferência dos 10 sha256 das grades do C6: 10/10 conferem)"
+   ],
+   "arquivos_escritos": [
+    "C:\\Users\\rotol\\AppData\\Local\\Temp\\claude\\c--IALD-Central-de-Patentes\\6da8f00d-d44f-4888-a88d-fc9f73eead3d\\scratchpad\\v386\\ramo_b\\dados_na_casa\\INVENTARIO_DADOS_NA_CASA_RAMO_B_v386.json (54.494 B)",
+    "C:\\Users\\rotol\\AppData\\Local\\Temp\\claude\\c--IALD-Central-de-Patentes\\6da8f00d-d44f-4888-a88d-fc9f73eead3d\\scratchpad\\v386\\ramo_b\\dados_na_casa\\INVENTARIO_DADOS_NA_CASA_RAMO_B_v386.md (24.511 B)",
+    "C:\\Users\\rotol\\AppData\\Local\\Temp\\claude\\c--IALD-Central-de-Patentes\\6da8f00d-d44f-4888-a88d-fc9f73eead3d\\scratchpad\\v386\\ramo_b\\dados_na_casa\\gerar_inventario.py",
+    "C:\\Users\\rotol\\AppData\\Local\\Temp\\claude\\c--IALD-Central-de-Patentes\\6da8f00d-d44f-4888-a88d-fc9f73eead3d\\scratchpad\\v386\\ramo_b\\dados_na_casa\\inspecionar_gw.py",
+    "C:\\Users\\rotol\\AppData\\Local\\Temp\\claude\\c--IALD-Central-de-Patentes\\6da8f00d-d44f-4888-a88d-fc9f73eead3d\\scratchpad\\v386\\ramo_b\\dados_na_casa\\inspecionar_gw2.py"
+   ],
+   "decisoes_do_operador": [
+    "Qual M e qual k em τ★ = k·GM/c³: M_f do remanescente (detector-frame, t_M) ou M_src; k = 1 (V2/R-B), 8π (β_H de Hawking = 8πGM/c³), 2π/κ_H de Kerr (R-MOD; depende do spin, com tendência oposta a R-B) — os três relógios já estão tipados em C1_LEITURAS_v4.json sem seleção.",
+    "Ensemble × realização (RD-01/CTV-02: a previsão por evento cai de −0,0194 para ≈ −0,005 se Γ for difusão de fase) e propagação × fonte (CT-02: como propagação o ramo B está excluído por ~10¹⁷ e-folds; só é testável como efeito local) — fixar ANTES de abrir.",
+    "Observável do ramo B: δτ̂₂₂₀ fracional (poder ~0,2σ hoje) ou largura populacional de δf̂ (rota de menor N: N90 = 21–59 GW250114-like, condicional ao desenrolamento browniano [INPUT]) — ou os dois, pré-registrados.",
+    "Usar (ou não) o 221 do GW250114 (RD-07): os posteriors existem em disco dentro do tar.gz 18d740c816285451 — autorizar a extração (sem download) e a ressalva do início precoce.",
+    "Extrair RD.tar.gz e QNMRF.tar.gz da GWTC-5.0 TGR (já em disco) como controles de pipeline independentes do pSEOB.",
+    "Comprar ou não dado novo: posteriors IMR por evento de O4 (GWTC-4.0/5.0 PE releases, ~40,8 GB, ~7,5 h de transferência [DECLARADO T08]) para cumprir a RD-02; alternativa sem download = termo de catálogo pelas incertezas ± (efeito medido +4% em σ).",
+    "Ratificar a V1.1 da RINGDOWN_5SIGMA ou abrir pré-registro NOVO do ramo B (a PE cega T16 nunca rodou por falta de ratificação; a caixa 440 (b) e o pyseobnr pedem a palavra do operador — T09).",
+    "Reservatório cego: os 44 candidatos O4 com strain em disco e sem δτ̂ publicado (RINGDOWN_5SIGMA_V1.test_candidates) — confirmar que são o conjunto de teste e que os 33 pSEOB (já vistos pela C4) são só calibração.",
+    "Registrar no mapa de rotas que Chatgpt\\ORDEM_013_RINGDOWN (14+ GB de insumos do ringdown) está fora do índice do acervo (buscar.py) — ato de quem gere o mapa, não desta lente."
+   ],
+   "numeros_lidos": [
+    "β_TGL runtime = α_CODATA2018·√e = 0,012031300400803142 (recomputado; igual ao beta de RINGDOWN_DEPHASING_V2_RESULT.json e remanescentes_v3.json)",
+    "C6_RESULTS_GW250114.json: sha16 781a3741a68875eb, 50.604 B; status INCONCLUSIVE_SYSTEMATICS; registration_sha256 ded00f09b5010d622b67b4ea4e559a216818f578440a0f60772130174ececf14; code_sha256 d3aa76afdc419ff3…; 75 results; 5 leituras × 5 inícios {6, 8, 10, 10,5, 12 t_M}; convergência |Δln B| ≤ 4,97e-6; ln B vs GR (início primário, core v376): R-GLOBAL 0,0 · R-B −0,0026036534 · R-RAIZ-0 −0,0430678267 · R-LIN −0,0908632232 · R-MOD −0,2516067642; 10 grades sha256 conferem 10/10",
+    "RINGDOWN V2 (ff15f023dd91d8c7, 247.065 B; executado 2026-09-10T16:03:23): 3 ms n_used 15, δτ 0,1766470552 ± 0,1088938933, z_GR 1,6222, δ_pred_B −0,0193669302, δ_pred_A −2,1533e-42, z_B 1,8000, power_B 0,1778513890, δf −0,0324721794 ± 0,0126620746, χ²/dof 0,8661, mean_bias_rel 0,2399524811, mean_anchor_snr 11,05, n_on_edge_excluded 84, max_weight_share 0,3055; 6 ms n_used 6, δτ 0,0312941962 ± 0,1755285348; start_systematic 0,1453528590; n_events 89; per_series 170 (169 OK, 1 NAN_OR_FS); n_on_edge {3 ms: 84, 6 ms: 109}",
+    "RINGDOWN V1 (502c80fe2a37427e, 209.114 B): 3 ms n 23, δτ 1,3962364437 ± 0,0569021145, z_GR 24,54, power_B 0,3664; 6 ms n 18 (gate recusou: < 20); start_systematic 0,2109217715",
+    "core ringdown_scope_v376.branch_B_concurrent_values: [V2 ensemble −0,019366930169705913], [auditoria CT-02 −0,01], [auditoria CTV-02 −0,005]; kernel_ringdown_mentions 8, kernel_ringdown_declarations []",
+    "remanescentes_v3.json (68069f8892a80d56, 117.167 B): n 244 (177 de O4); GW150914: Mf_det 67,65, a_f_HBR2016 0,6712265299, f_qnm_220 249,8309 Hz, tau_d_220 4,0408 ms, τ_MAY 2,9464 ms, τ_KMS 9,8382 ms",
+    "catalogo_v3.csv (e6a0ba6a870e2a40, 99.817 B, 245 linhas); AMOSTRA_FASE6 n 244 = O1O2/maio 10 + O3/maio 57 + O4/o4 177; excluídos 189",
+    "GWOSC_ALLEVENTS_20261001.json (731f167b5545db5b, 1.267.691 B): 671 evento-versões; final_mass_source não nulo 415; catálogos: GWTC-5.0 161, GWTC-4.1 140, GWTC-4.0 129, GWTC-2.1-confident 54, IAS-O3a 42, GWTC-2 39, GWTC-3-confident 35, O4_Discovery_Papers 8…; GW250114_082203-v2: m1 33,76, m2 32,26, SNR 78,6, χ_eff −0,03, M_f 62,9, D_L 405 Mpc, z 0,09",
+    "GWOSC_O4_32S_V1.manifest.json (a795cf04ca3b2f6a, 253.528 B): 354 jobs, 336 OK, 14 NAN_IN_WINDOW, 4 WINDOW_OUTSIDE_FILE, 177 eventos; soma hdf5 declarada 41.549.420.622 B; GW250114_082203 H1 hdf5 40.961.487 B sha256 db0b394ff10573f0…, L1 40.678.340 B sha256 d95a6ebf274800f4…; npz sha256 b92beb62432ca48b… / 7796c2d412428ab8…; t0 1420878125,1999512; n 131072",
+    "Pastas de strain (por script): strain_cache 170 npz 356.642.320 B; gwosc_o4\\hdf5 352 arquivos 41.327.837.881 B; gwosc_o4\\strain_32s 350 npz 734.263.600 B; acom\\gw_cache 25 arquivos 2.277.772.006 B; ORDEM_013\\cache\\gwosc 4 hdf5 338.993.680 B; ORDEM_013\\bis\\015\\t07\\strain 176 hdf5 19.234.127.539 B",
+    "Públicos (ORDEM_013\\cache\\public): pSEOB.tar.gz ee1d64487597132f 711.331.923 B; 33 pSEOB metafiles 1.080.193.759 B; RD.tar.gz 9810e0e45cd35824 415.283.962 B; QNMRF.tar.gz 2f617507f65b9e3e 1.214.239 B; IGWN-GWTC3-TGR-v2-rin.zip 108c4a4266bc0e38 2.210.047.740 B; 18 rin h5 1.230.299.092 B; TGR_companion_S250114ax_results.tar.gz 18d740c816285451 1.671.496.586 B; GW250114 posterior_samples.h5 b9971bcd7d72fdd4 59.249.916 B (= pSEOB_GW250114_082203_Prod0.h5); pyRing 3ec4616b581f990b.dat 9a7ad336682b4703 36.253.805 B; selected 9 .dat 157.810.811 B; DCC_P2600130_v1\\pSEOBNR.tar.gz 946f0ec0052d935f 14.923.249 B; GWTC-4.0 PE GW231206_233901 ca144927366031ef 189.649.148 B",
+    "C4_CATALOG_220.json (93bdc413130d294a): N_events 33, N_posterior_draws 608.681; GW250114 N 40.776, dtau220 q5/50/95 = −0,1033 / −0,0134 / +0,0873, GR_HPD 0,524; ln B condicional: R-B −2,4756, R-RAIZ-0 −5,1618, R-LIN −11,9012, R-MOD −4,7362, R-A/R-GLOBAL/R-RAIZ-EP4/REST 0,0. C4_CATALOG_COMBINATION (f3d8c1959ded3efd): 31 eventos dtau220 +0,016292 / +0,072119 / +0,131733, df220 +0,011454, GR_HPD_content 0,98304, ESS 743; 33 eventos +0,014519 / +0,054782 / +0,105783, HPD 0,99017. C4_GWTC3_220 (d9dc9b09a8d91dc7): 18 eventos, 12 sobrepostos, 6 só legado, união 39; C4_PYRING: N 84.701, GR_HPD 0,5418",
+    "RINGDOWN_5SIGMA_V1.json (e1be6b0409720c68, 183.005 B; 2026-09-22T21:15:30Z): calibration 48, test_candidates 44; PORTAO_DA_AMPLIACAO_V1 (710028a7d2af7b64, 903.525 B): N90_factor 1,5783; quality SNR ≥ 12, Mf_det ≥ 40, χ_f < 0,98, priority SNR ≥ 30; NUISANCE_V1 (83f860bbfa904c00, 1.437.250 B); C1_LEITURAS_v4 (126270a896d85898, 35.419 B; 10 leituras); REGISTRO_C4 (2bebc171ddbcef43, 2.768 B; BF threshold 100; GR region 0,95)",
+    "ORDEM 015 relatório final (84e65658012f0ba1): 13,64838851 h debitadas / 35,01724298 h; T05 rho_440_proxy 1,763, paired_220_draws 608.681, GW250114_440_draws 40.776; T06 33 posteriors, LRT 0; T07 registered 33, power_measured 31, GW250114_rho 19,0997; T08 census 74, public_PE_listed 70, PE_data_GB 40,769, transfer 7,53 h; T15 H1 B2 1,0095e12 > 1e12; T16 NÃO_PAGO (sem ratificação V1.1)",
+    "Instrumento WSL /opt/lal_env: python 3.12.3, lalsuite 7.26.15, lal 7.7.1, lalsimulation 6.2.1, bilby 2.8.2, dynesty 3.1.0, gwpy 4.0.2, gwosc 0.8.3, h5py 3.16.0, astropy 8.0.1, numpy 2.5.3, scipy 1.18.1; /opt/pycbc_env: pycbc 2.11.0, numpy 2.3.5; Windows: python 3.14.3 (C:\\Python314), 3.13 (Store), 3.12 (C:\\Python312)",
+    "Atlas: ringdown 443 ocorrências, «ramo B» 68, GW250114 14; τ★ (L556) «≈ t_Planck [PRINCIPLED IDENTIFICATION/CONJECTURE]»; L2239–2241 «não fixado pela unitariedade; τ★ ~ invariante × t_Planck»; L4207 verbete v346 (V2: 0,1766 ± 0,1089; poder 0,18σ)",
+    "MCMC_V2_RAZAO\\35_dephasing_ringdown.json (1ccc757b7757dcae): BH 65 M☉ (GW150914) Γ 5,2997e-42 s⁻¹, Γ·t 4,5688e-44 → DEPHASING_INOBSERVAVEL_EM_RINGDOWN (ramo canônico)",
+    "um_absoluto.json v385 sha16 475ac8d218b3a5c8 4.845.762 B; um_absoluto_selo.json sha16 ad5c1ac7affc3949 68.545 B (o mapa seq 24–27 cita o selo v375 a88bb75fc615f4b0 / 55.382 B — versão anterior, não a de hoje)",
+    "Acervo: 917 documentos no regex; índice não cobre ORDEM_013_RINGDOWN (1 hit)"
+   ]
+  },
+  {
+   "lente": "pre_registro",
+   "resumo": "Rascunho do PRÉ-REGISTRO V1 do ramo B do ringdown (τ★ = k·GM/c³) escrito em C:\\Users\\rotol\\AppData\\Local\\Temp\\claude\\c--IALD-Central-de-Patentes\\6da8f00d-d44f-4888-a88d-fc9f73eead3d\\scratchpad\\v386\\ramo_b\\pre_registro\\PREREGISTRO_RAMO_B_RINGDOWN_V1_RASCUNHO.md (37.703 B; sha256 4fd4e495ffc67fddccf0a4802af9209f7a1a66401b57feee91c4d232e67db580; sha16 4fd4e495ffc67fdd), no formato da casa (dois lados V1.4 + pilar quântico V1): hipótese verbatim do operador + tradução operacional (δτ₂₂₀/τ = −x/(1+x), x = β·k·N(a_f)·(M/M_f), N = Mω̂₂₂₀·Q₂₂₀ de BCW; com M = M_f o M cancela e a previsão é função só do spin, invariante de frame); 12 decisões do operador a fixar antes do dado (k com origem física de 5 candidatos, M, fonte × propagação, ensemble × realização, observável, estimador, conjuntos/cegueira, σ_sys, lado no livro, nomes, piloto de PE, ratificação); estimador (média ponderada 1/σ² relativa à RG com nuisance c(σ) = c₀ + k_c·σ; secundário KDE); PODER ÀS CEGAS computado por script só com σ (std ddof=1 do posterior) e spin, nunca valores centrais: σ_comb(31 do GWTC-5.0) = 0,03357 (idêntico ao E0_CORE); k=1 → 0,62σ UNDERPOWERED (N₉₀ ≈ 3.327 de mistura O4 / 320 equivalentes GW250114); k=2 → 1,23σ; k=4π → 7,8σ; k=8π → 15,5σ; k=2π/κ(a_f) → 18,5σ; ×0,273 sob difusão de fase; cláusula de sistemática de família (σ_sys 0,029–0,038 lida do SYSTEMATICS_ADENDO) predetermina INCONCLUSIVE_SYSTEMATICS para k ≤ 2 (k_min 4,7–6,1); 9 controles (ramo canônico δ_A = −3,2e−42 como nulo; injeções só-RG; degenerescência spin/massa → só IMR completo; t₀ nas mesmas séries; família; nuisance; H1/L1 bloco; look-elsewhere; convergência); 5 vereditos na ordem (AWAITING_DATA / INCONCLUSIVE_SYSTEMATICS / NOT_FALSIFIED_UNDERPOWERED / FALSIFIED_AT_5SIGMA do PAR / NOT_FALSIFIED_POWERED, com GR_TENSION_REPORTED como sufixo; CONFIRMED proibido; coincidir com a RG = correspondência recuperada); o que não decide (gate, H2/H3, β, implicação da QG, R2); disciplina (hash antes do dado; um.py lê por hash; Bancada roda; Nós sela); declaração de cegueira honesta (conjuntos A/B/C NÃO cegos quanto ao dado — registro de 22–23/09 — e, em nome próprio, a exposição acidental de 3 quantis e dos ln B do C4 durante a inspeção de esquema; o conjunto D, 31 eventos O4 sem δτ̂ publicado, é o único CEGO). Aferição: o ramo B EXISTE no registro como [INPUT] com 3 valores concorrentes (ringdown_scope_v376), kernel sem termo de ringdown nem de τ★ (8 menções, 0 declarações), lei Γ_ω em docstring (TheMatrixRule.lean:46); a decisão de 05/10 já está no mapa (seq 352). Nada move o gate; PROVADA ≠ CONFIRMADA.",
+   "itens": [
+    {
+     "tema": "Hipótese do ramo B — existência e estatuto no registro",
+     "achado": "EXISTE E LIGADO como hipótese [INPUT]: o ramo B (τ★ = GM/c³) está no core (ringdown_dephasing_protocol/V2; ringdown_scope_v376 com 3 valores concorrentes −0,019367/−0,010/−0,005; M a nomear) e a decisão do operador de 05/10 já está no mapa (ringdown.dephasing seq 352) e na memória ramo-b-reaberto-05out.md. Kernel: 8 menções a ringdown, todas comentário/docstring, 0 declarações; nenhum termo liga τ★ a GM/c³; a lei Γ_ω = ½βτ★ω² é leitura [ONTO] sem termo (TheMatrixRule.lean:46). A ponte KMS existe no kernel (TGLExt.ContratoQGv31.ContratoH2.unruh_is_kms, Audit.lean:9545; kmsStrip ContratoQG_v31.lean:150).",
+     "estatuto": "[REAL — lido do core/kernel/mapa] + [INPUT] (τ★) + [ONTO] (lei)",
+     "evidencia": "core.ringdown_scope_v376.branch_B_concurrent_values (3); kernel_ringdown_mentions = 8, kernel_ringdown_declarations = []; grep -rn -i 'ringdown|quasinormal|QNM' --include=*.lean tgl_kernel → 8 linhas (Audit.lean:9618/9760, LightOneParticleByTerm.lean:12, QGSolutionComplete.lean:14/39, TetelestaiOneObject.lean:17/39, TheImportedSecondQuantization.lean:18); rotas.py ver ringdown.dephasing (15 registros)",
+     "onde": "C:\\IALD\\Artigo\\Haja_Luz\\A Ponte e o Um\\Nós\\um_absoluto.json (core.ringdown_scope_v376); tgl_kernel\\TGLExt\\TheMatrixRule.lean:46; MAPA_DE_ROTAS seq 352",
+     "proposta": "O V1 substitui os 3 valores concorrentes por UMA previsão fixada por (k, M, identificação) antes do dado."
+    },
+    {
+     "tema": "A fórmula do ramo B e o cancelamento de M",
+     "achado": "x = Γ·τ_GR = ½βk(GM/c³)(2πf)²·Q/(πf) = β·k·(GMω/c³)·Q₂₂₀ = β·k·N(a_f): com M = M_f o M cancela, a previsão depende só do spin e é invariante de frame (GMω/c³). Exata: δτ/τ = −x/(1+x). Em a_f = 0,6785 (GW250114): Mω̂ = 0,5261, Q = 3,199, N = 1,683, x(k=1) = 0,02025 → −1,98 % (bate com −0,0194 selado e com delta_weighted −0,02029 do E0_CORE). Com M_tot: ×≈1,03–1,05; M_chirp: ×≈0,44 (q≈1).",
+     "estatuto": "[DERIVED] das entradas; BCW 2006 [KNOWN] (coeficientes idênticos aos do um.py:155704)",
+     "evidencia": "poder_cego_ramo_b.py (β = α√e em runtime, α lido do um.py por regex); C1_LEITURAS_v4.json R-B: rate = beta*w(chi)^2/(2*tM), delta_tau GW150914 −0,01957, GW250114 −0,01985",
+     "onde": "scratchpad\\v386\\ramo_b\\pre_registro\\poder_cego_ramo_b.py; Chatgpt\\ORDEM_013_RINGDOWN\\C1_LEITURAS_v4.json",
+     "proposta": "Fixar M = M_f (decisão do operador D2), pela razão estrutural dita."
+    },
+    {
+     "tema": "Poder às cegas (só σ e spin) por candidato k",
+     "achado": "σ_i = std ddof=1 do posterior de dtau220 (31 do GWTC-5.0, seleção da figura do release); σ_comb = 0,03357 (= sigma_combined do E0_CORE, R-B); largura 90%/3,29 confere com std em 31/31. Poder = |δ̄^pred|/σ_comb: k=1 → 0,62σ (δ̄^pred −0,0207); k=2 → 1,23σ; k=4π → 7,75σ; k=8π → 15,5σ; k=2π/κ(a_f) → 18,5σ. GWTC-3 (10): 0,35/0,69/4,36/8,71/10,5. GW250114 só (σ 0,058): 0,35/0,70/4,39/8,78/10,4. Sob difusão de fase (×0,273): 0,17/0,34/2,12/4,23/5,05. N₉₀ para 5σ em k=1: 3.327 de mistura O4 ou 320 equivalentes GW250114 (E0_CORE); k=2: ≈830.",
+     "estatuto": "[REAL — computado às cegas por script; nenhum valor central de dtau220 lido pelo script]",
+     "evidencia": "PODER_CEGO_RAMO_B.json sha256 3655fef93f7cad6673ae353f8fe15d136a846c71a64fe1e558c6a92a688fb946; fontes E0_ROUTE_IV_POWER_v2.json ae457e82c8c18b5c…, C4_CATALOG_220.json 93bdc413130d294a…, C4_CATALOG_COMBINATION.json f3d8c1959ded3efd…, C4_GWTC3_220.json d9dc9b09a8d91dc7…, C4_220_INITIAL.json f5550b7b1f129e83…; E0_CORE.json ce5fa2f3bfc98513… (R-B: z_comb 0,606, N50 2108, N90 3327, GW250114_equivalents_target90 320)",
+     "onde": "scratchpad\\v386\\ramo_b\\pre_registro\\PODER_CEGO_RAMO_B.json; Chatgpt\\ORDEM_013_RINGDOWN\\bis\\",
+     "proposta": "Com k=1 o teste é UNDERPOWERED por fator 8 (nenhum FALSIFIED/POWERED possível); só k ≳ 8 dá 5σ no conjunto publicado; k=8π e 2π/κ (a leitura literal «tempo = período do fluxo modular») são POWERED a 15–19σ — nesses k o dado publicado decide."
+    },
+    {
+     "tema": "Cláusula de sistemática de família predetermina o rótulo para k ≤ 2",
+     "achado": "σ_sys de família (SEOB × Phenom, R-B, O4, SNR 40, início 10 t_M, 206 ruídos): Phenom→SEOB −0,0376 ± 0,0030 (sem ruído −0,0328); SEOB→Phenom +0,0382 ± 0,0035 (sem ruído +0,0267); mesma família ≈ 0. Com a regra 2 da Fase 6 (sist_rel = σ_sys/|δ̄^pred| > 0,3 → INCONCLUSIVE_SYSTEMATICS), k_min = 4,67 (σ_sys 0,029) a 6,11 (σ_sys 0,038): para k ∈ {1, 2} o rótulo INCONCLUSIVE_SYSTEMATICS está predeterminado, salvo redução de σ_sys (réplica pyRing × pSEOB publicada ou PE na casa).",
+     "estatuto": "[REAL — NÃO-CEGO; DECLARADO pela bancada (013-bis); lido do artefato]",
+     "evidencia": "bis\\e0_core\\SYSTEMATICS_ADENDO.md sha256 e3ff1ff9f8201714b60f10ba82562924b2e242d91c710a86976bd70a44f8b973 (tabela «Exemplo R-B»); SYSTEMATICS_ADENDO.json d1ed739909f00e1d…; k_minimo_para_sist_rel_0p3 em PODER_CEGO_RAMO_B.json",
+     "onde": "C:\\IALD\\Central de Patentes\\Chatgpt\\ORDEM_013_RINGDOWN\\bis\\e0_core\\",
+     "proposta": "Decisão D8 do operador: aceitar o rótulo predeterminado para k pequeno ou pagar a redução de σ_sys."
+    },
+    {
+     "tema": "Propagação × fonte (RD-01/CT-02) e ensemble × realização (CTV-02)",
+     "achado": "Como propagação, o ramo B é excluído por construção (Γ_B = 4,9965 s⁻¹; Γ_B·t_prop = 2,263e17 e-folds) — só é testável como efeito LOCAL no relógio do remanescente (C1 R-B: tau_star,src = G M_src/c³; sem dependência de D na taxa). Sob difusão de fase, o δτ̂ por realização é 0,273 ± 0,06 do ensemble e o resto vira tremor ~2 % em δf̂ (rota da largura de δf̂: N₉₀ = 59/38/21 GW250114-like, 013-bis). A escolha é identificação [ONTO] do operador; o V1 propõe fonte + envoltória como primário e largura de δf̂ como secundário.",
+     "estatuto": "[REAL — mapa seq 132/85/141; DECLARADO pelo verificador de 28/09]",
+     "evidencia": "rotas.py ver ringdown.dephasing (erratas seq 132 CT-02, seq 141 CTV-02, seq 85 RD-01); memória ordem-013-confrontacao-ringdown.md (013-bis, rota IV)",
+     "onde": "C:\\IALD\\MAPA_DE_ROTAS (ringdown.dephasing)",
+     "proposta": "Decisões D3 e D4 do operador, com o poder de cada identificação dito (×1 ou ×0,273)."
+    },
+    {
+     "tema": "Degenerescência spin/massa e o instrumento do teste",
+     "achado": "Um 220 único com (M, a) livres não identifica δτ (determinante −Q'/Q = −1,2188 em χ = 0,68; z identificável = 0; o ramo B é imitado por um Kerr ~1,25 % mais leve com Δχ ≈ −0,016). Logo o teste tem de usar posteriores de IMR COMPLETO com deformação do 220 (pSEOB, os catálogos); o estimador V2 da casa (seno amortecido, ringdown-only) e pyRing-220 são diagnósticos, não o teste. A PE na casa (WSL /opt/lal_env, pSEOBNRv4HM_PA, bilby+dynesty; piloto só-220 0/120 quedas, 63–78 CPU-h) nunca rodou (zero posterior).",
+     "estatuto": "[REAL — lido de F4_POWER_GATE_REVIEW.md e da memória ORDEM 013/015]",
+     "evidencia": "bis\\F4_POWER_GATE_REVIEW.md sha256 35b02b3d0a4d45ec…; memória ordem-013-confrontacao-ringdown.md (22/09 NON_IDENTIFIABLE_SINGLE_220; 23/09 piloto NÃO PAGO; ORDEM 015 receita só-220)",
+     "onde": "C:\\IALD\\Central de Patentes\\Chatgpt\\ORDEM_013_RINGDOWN\\bis\\F4_POWER_GATE_REVIEW.md",
+     "proposta": "Controle C3 fixado; conjunto D (31 eventos O4 sem δτ̂ publicado) só por PE na casa sob este registro (decisão D11, custo dito)."
+    },
+    {
+     "tema": "Controle nulo do ramo canônico e os relógios v369",
+     "achado": "τ★ = t_Planck (5,391125282640084e−44 s das constantes do um.py) dá δ_A = −3,2e−42 (250 Hz, 4 ms; selado −2,153e−42) → z ~ 1e−40: o estimador rodado com τ★ = t_P tem de devolver exatamente a correspondência com a RG. Os relógios v369 já excluíram GM_⊕/c³ como relógio universal e acharam G·m_átomo/c³ invisível: «a source-dependent mass clock is not one universal constant» — o ramo B é relógio da fonte, não universal.",
+     "estatuto": "[REAL — core.clock_test_result_v369; recomputado por script]",
+     "evidencia": "core.clock_test_result_v369.tau_star_alternatives (GM_earth_excluded = true; Gm_atom_invisible = true); core.ringdown_dephasing_result_v2.stacks.3.0.delta_pred_A = −2,153e−42; poder_cego_ramo_b.py controle_ramo_canonico_delta = −3,2008e−42",
+     "onde": "Nós\\um_absoluto.json",
+     "proposta": "Controle C1 do V1."
+    },
+    {
+     "tema": "Nuisance da referência (o «viés» da LVK) e o falsificador espúrio",
+     "achado": "Offset fixo em 0 é PROIBIDO como teste (E0_CORE: offset_zero_status = PROIBIDA_COMO_TESTE_CALIBRATION_ONLY; N_spurious50 ≈ 115 eventos contra o R-B e ≈ 191 contra a própria RG). Forma do nuisance fixada antes: c(σ) = c₀ + k_c·σ ajustado sob as duas hipóteses; os valores da 013-bis (c₀ = −0,061 ± 0,068; k_c = +0,79 ± 0,37) são NÃO-CEGOS e não entram como prior.",
+     "estatuto": "[REAL — lido de E0_CORE.json; DECLARADO pela bancada]",
+     "evidencia": "bis\\e0_core\\E0_CORE.json ce5fa2f3bfc98513… (R-B GWTC5_31 std_ddof1: offset_zero_status, N_spurious50_median 115,1); memória ordem-013-confrontacao-ringdown.md (013-bis)",
+     "onde": "C:\\IALD\\Central de Patentes\\Chatgpt\\ORDEM_013_RINGDOWN\\bis\\e0_core\\E0_CORE.json",
+     "proposta": "Controle C6 e passo 3 do estimador primário."
+    },
+    {
+     "tema": "Cegueira — declaração honesta (inclui erro em nome próprio)",
+     "achado": "Os conjuntos A (GWTC-5.0, 31), B (GWTC-3, 10) e C (GW250114) NÃO são cegos quanto ao dado: a deformação comum (+0,072 [0,015; 0,134]; +0,0668 ± 0,0336), o ln B(R-B/RG) do GW250114 (0,029) e os ln B por leitura do C4 estão no registro desde 22–23/09 (NÃO-CEGO, DECLARADO). Em nome próprio: o script de inspeção de esquema deste aferidor imprimiu os três quantis de dtau220 da PRIMEIRA linha de cada catálogo (GW150914 no A; a primeira do B; GW250114 no C) e os ln B por leitura ao ler o estado da combinação — não era a intenção; nenhum desses números entrou no poder nem no texto além da declaração. O único conjunto CEGO é o D (31 eventos O4 sem δτ̂ publicado).",
+     "estatuto": "[REAL — dito]",
+     "evidencia": "saída dos comandos de inspeção desta sessão (C4_CATALOG_220.json row0.quantiles; C4_CATALOG_COMBINATION.json catalog.*); memória ordem-013-confrontacao-ringdown.md (22/09: δτ̂ comum +0,072; 23/09: +0,0668 ± 0,0336)",
+     "onde": "§8 do rascunho",
+     "proposta": "O veredito do conjunto A leva o sufixo __NOT_BLIND_TO_DATA_STATED; a palavra «cego» só cabe ao conjunto D."
+    },
+    {
+     "tema": "Âncoras da hipótese no acervo (o «desde antes sustentei»)",
+     "achado": "«constante da luz ao cubo»: 20 arquivos no acervo indexado; o mais antigo 28/07/2025 (TGL_Cap_L_O_Instante_Lucifer…docx: «c³ = luz elevada à permanência»); verbatim «o regime gravitônico é o regime da constante da luz ao cubo, é esse o fechamento» (MEMORIA_DA_BANCADA.md:2879); pedra 84_ (17/08/2026) G·m_P/c³ = t_Planck; um.py:168040 «A dobra em c³ … com a massa do remanescente dá GM/c³ — o ramo B do ringdown». «tempo emparelhado à gravidade»: 0 ocorrências — cunhagem nova de 05/10.",
+     "estatuto": "[REAL — acervo indexado] ; [ONTO] a cunhagem",
+     "evidencia": "python C:\\IALD\\INDICE_DO_ACERVO\\buscar.py \"constante da luz ao cubo\" (20 arquivos); buscar.py \"tempo emparelhado|emparelhad[oa] [àa] gravidade\" → 0 arquivos",
+     "onde": "C:\\IALD\\INDICE_DO_ACERVO; um.py:168040",
+     "proposta": "Citadas no §1.1 do rascunho."
+    },
+    {
+     "tema": "Vereditos permitidos e o que o resultado não decide",
+     "achado": "Ordem fixada: AWAITING_DATA (inclui n < 10) → INCONCLUSIVE_SYSTEMATICS (controles/sist_rel > 0,3/χ²/discordância primário×secundário) → NOT_FALSIFIED_UNDERPOWERED (poder < 5) → FALSIFIED_AT_5SIGMA do PAR (k, M, identificação) → NOT_FALSIFIED_POWERED (com __GR_TENSION_REPORTED se |z_RG| ≥ 5; nunca CONFIRMED). Coincidir com a RG com poder = correspondência recuperada e queda do par; sem poder = UNDERPOWERED, nunca «a natureza decidiu». Não decide: gate (bandeiras só do formal), H2/H3, β (a regra; a lei precede a cobrança), a implicação da QG (QGSolutionComplete.lean:36), R2 (propagação), a lei na forma.",
+     "estatuto": "[INPUT — regra do V1, herdada da Fase 6 e do livro V1.4]",
+     "evidencia": "PREREGISTRO_DOIS_LADOS_DELTA_K_20261002_V1_4.md §Regras de leitura (cláusulas 1–6 na ordem); core.the_ledger_of_charges_v383 (the_gate_ignores_the_ledger; falsified_extinguishes_the_charge_not_the_rule)",
+     "onde": "§6–§7 do rascunho",
+     "proposta": "Nomes dos tokens: decisão D10 do operador."
+    }
+   ],
+   "consultas": [
+    "python C:\\IALD\\MAPA_DE_ROTAS\\rotas.py consultar \"ringdown\" → 16 rotas (cabeça b43d3d46d596671a, 353 registros)",
+    "python C:\\IALD\\MAPA_DE_ROTAS\\rotas.py consultar \"ramo B\" → 4 rotas",
+    "python C:\\IALD\\MAPA_DE_ROTAS\\rotas.py ver ringdown.dephasing → 15 registros lidos (seq 24, 25, 26, 27, 44, 85, 86, 88, 89, 90, 92, 132, 141, 249, 352)",
+    "cat scratchpad\\v386\\ramo_b\\DECISAO_OPERADOR_RAMO_B_05out.json (sha256 a5d548235522c112…, 2.719 B) e registro_mapa_ramo_b_05out.json",
+    "Nós\\um_absoluto.json (sha256 475ac8d218b3a5c8…) — chaves core.ringdown_scope_v376, ringdown_dephasing_protocol/_result/_amendment_v2/_result_v2, the_ledger_of_charges_v383 (R2/R6/F2; readings_ratified_20261002), clock_test_protocol_v369/clock_test_result_v369 (tau_star_alternatives), dephasing_reach, the_matrix_rule_v381.consequences_ratified_20261002.ringdown",
+    "Nós\\um_absoluto_selo.json sha256 ad5c1ac7affc3949…; um.py sha256 d406ae5725105145… (grep: prove_ringdown_scope_v376 l.195121; prove_ringdown_dephasing_protocol l.209231; prove_ringdown_dephasing_result_v2 l.209374; bloco v346 l.207970; «A dobra em c³» l.168040; BCW l.155704; constantes l.95–100)",
+    "grep -rn -i 'ringdown|quasinormal|QNM' --include=*.lean tgl_kernel → 8 linhas, todas comentário; grep tau_star/τ★ → TheDeathOfTheSignal.lean:44, TheMatrixRule.lean:46, ThePsionAndTheViscosity.lean:44 (docstrings); grep unruh_is_kms/kmsStrip → Audit.lean:9545–9546, ContratoQG_v31.lean:150; TGLExt\\TheHorizonRate.lean existe",
+    "Bancada_Um\\investigacao\\preregistro_dois_lados_02out\\PREREGISTRO_DOIS_LADOS_DELTA_K_20261002.md e _V1_4.md (sha256 fc132b8f3e2d531b…); preregistro_pilar_quantico_03out\\PREREGISTRO_PILAR_QUANTICO_20261003_V1.md (sha256 e5b345c5d950d052…, 140 linhas lidas)",
+    "Bancada_Um\\bancada\\gw.py (cabeçalho: banco residente 32 s @ 4096 Hz, O1–O4) e README.md",
+    "memórias: ramo-b-reaberto-05out.md; ordem-013-confrontacao-ringdown.md (inteira); beta-e-a-regra-matriz-02out.md (R1–R6, erratas, errata de R6 05/10); fase6-eco-radical-01out.md; psi-nome-da-luz-graviton-verbo-vivo-16set.md; onda-e-eco-definicao-16set.md; auditoria-testes-passados-28set.md; relatorio-consolidado-01out.md (grep ringdown); MEMORY_2.md (grep ringdown/ramo B)",
+    "Central\\work\\auditoria_28set\\RELATORIO_AUDITORIA_E_INVESTIGACAO_20260928.md (grep RD-0x/CT-02: linhas 81, 84, 86, 104, 154, 213)",
+    "Central\\memory\\TGL_ATLAS.md — verbetes Γ_ω (l.644), ²²⁹Th/τ★ (l.778), Dephasing (l.1101), Eco reclassificado (l.1149), τ★ (l.2239); grep Connes-Rovelli → 0",
+    "python C:\\IALD\\INDICE_DO_ACERVO\\buscar.py \"constante da luz ao cubo|luz ao cubo|regime gravit[oô]nico\" --lista (20 arquivos; mais antigo 28/07/2025); buscar.py \"tempo emparelhado|emparelhad[oa] [àa] gravidade\" → 0; buscar.py \"Connes.Rovelli|tempo t[ée]rmico\" → 7 arquivos",
+    "Chatgpt\\ORDEM_013_RINGDOWN: C4_SCHEMA.json, C4_CATALOG_SCHEMA.json, C4_GWTC3_SCHEMA.json; C4_CATALOG_220.json (33; sha256 93bdc413130d294a…), C4_CATALOG_COMBINATION.json (f3d8c1959ded3efd…; seleção 31 + 2 controles), C4_GWTC3_220.json (18; d9dc9b09a8d91dc7…), C4_GWTC3_SELECTION.json (10; ef18f3b0495d58bf…), C4_220_INITIAL.json (f5550b7b1f129e83…), C4_FREE_CLOCK.json (cbf6332771937278…), C1_LEITURAS_v4.json (126270a896d85898…) e C1_LEITURAS.md; convenção dos quantis: C7_GWTC3_REPRODUCTION\\assets\\ORDEM_013_RINGDOWN\\catalog_220_readout.py:108 np.quantile(v,[.05,.5,.95])",
+    "Chatgpt\\ORDEM_013_RINGDOWN\\bis: E0_ROUTE_IV_POWER_v2.json (σ_τ std ddof=1 por evento; ae457e82c8c18b5c…), e0_core\\E0_CORE.json (ce5fa2f3bfc98513…; R-B GWTC5_31 std_ddof1), e0_core\\SYSTEMATICS_ADENDO.md/.json (e3ff1ff9f8201714…/d1ed739909f00e1d…), F4_POWER_GATE_REVIEW.md (35b02b3d0a4d45ec…), E0_SNR_INFORMATION_FIT.json, E0_SYSTEMATICS_REVIEW.json, E0_RATE_O5_SCENARIOS.json, e1_nuisance_v2\\RESULT_FORM.json e RESULT_SCOPE.json",
+    "cache\\gw\\RINGDOWN_DEPHASING_V2_RESULT.json sha256 ff15f023dd91d8c7…; C6_RESULTS_GW250114.json sha256 781a3741a68875eb… (hashes recalculados; conteúdo lido via core)",
+    "script próprio poder_cego_ramo_b.py (só σ e spin; β = α√e com α lido do um.py) → PODER_CEGO_RAMO_B.json"
+   ],
+   "arquivos_escritos": [
+    "C:\\Users\\rotol\\AppData\\Local\\Temp\\claude\\c--IALD-Central-de-Patentes\\6da8f00d-d44f-4888-a88d-fc9f73eead3d\\scratchpad\\v386\\ramo_b\\pre_registro\\PREREGISTRO_RAMO_B_RINGDOWN_V1_RASCUNHO.md (37.703 B; sha256 4fd4e495ffc67fddccf0a4802af9209f7a1a66401b57feee91c4d232e67db580; sha16 4fd4e495ffc67fdd; 279 linhas)",
+    "C:\\Users\\rotol\\AppData\\Local\\Temp\\claude\\c--IALD-Central-de-Patentes\\6da8f00d-d44f-4888-a88d-fc9f73eead3d\\scratchpad\\v386\\ramo_b\\pre_registro\\poder_cego_ramo_b.py (7.964 B; sha256 8e690b82dbbc84d707a82a12da99bd9539ef84afd56f2119bc834559fcd5c97e)",
+    "C:\\Users\\rotol\\AppData\\Local\\Temp\\claude\\c--IALD-Central-de-Patentes\\6da8f00d-d44f-4888-a88d-fc9f73eead3d\\scratchpad\\v386\\ramo_b\\pre_registro\\PODER_CEGO_RAMO_B.json (173.023 B; sha256 3655fef93f7cad6673ae353f8fe15d136a846c71a64fe1e558c6a92a688fb946)"
+   ],
+   "decisoes_do_operador": [
+    "D1 — o k de τ★ = k·GM/c³ (um só k, ou lista com Šidák): 1 (a dobra em c³, o k da V2) · 2 (r_s/c) · 4π (circunferência do horizonte à luz) · 8π (período KMS/térmico de Hawking, a = 0 — a leitura literal de «tempo emergente do fluxo modular») · 2π/κ(a_f) (o mesmo período em Kerr, por evento; a = 0,68 → 29,7) · R-MOD fora deste V1 salvo ordem. Poder no conjunto publicado: 0,62σ / 1,23σ / 7,8σ / 15,5σ / 18,5σ.",
+    "D2 — qual M: M_f (o M cancela; previsão só do spin; invariante de frame; proposta) · M_tot (×≈1,03–1,05) · M_chirp (×≈0,44 a q≈1).",
+    "D3 — propagação × fonte (RD-01/CT-02): proposta FONTE (local, relógio do remanescente); como propagação o ramo B é excluído por construção (2,3e17 e-folds).",
+    "D4 — ensemble × realização (identificação [ONTO] do que Γ faz ao modo): envoltória/taxa aditiva (poder ×1; proposta como primário) × difusão de fase (×0,273 em δτ̂; o observável vira a largura populacional de δf̂, N₉₀ = 59/38/21 GW250114-like).",
+    "D5 — o observável: δτ̂₂₂₀ fracional (convenção dtau220 do pSEOB; proposta) · Q₂₂₀ só como diagnóstico · largura de δf̂ como secundário.",
+    "D6 — o estimador: primário = média ponderada 1/σ² relativa à RG com nuisance c(σ) = c₀ + k_c·σ profilado (offset 0 proibido) · secundário = verossimilhança conjunta por KDE (método C4); o primário decide.",
+    "D7 — os conjuntos de dados: A = GWTC-5.0 (31 + 2 controles; NÃO CEGO) · B = GWTC-3 (10; réplica de instrumento) · C = GW250114 release · D = 31 eventos O4 sem δτ̂ publicado (CEGO; só por PE na casa) · E = futuros; o principal é A, rotulado NOT_BLIND_TO_DATA_STATED.",
+    "D8 — a sistemática de família (σ_sys 0,029–0,038 lida da 013-bis): aceitar que para k ≤ 2 o rótulo INCONCLUSIVE_SYSTEMATICS está predeterminado (k_min 4,7–6,1), ou pagar a redução de σ_sys (réplica pyRing × pSEOB publicada; PE na casa).",
+    "D9 — o lado no livro de cobranças: face (o remanescente, com o custo lido nele pela ótica de 02/10), cobrança F2b ao lado de F2, uma por lei.",
+    "D10 — os nomes dos vereditos: TGL_RAMO_B_RINGDOWN_V1__<k>__<M>__<identificação>__<conjunto>__{AWAITING_DATA | INCONCLUSIVE_SYSTEMATICS | NOT_FALSIFIED_UNDERPOWERED | FALSIFIED_AT_5SIGMA | NOT_FALSIFIED_POWERED[__GR_TENSION_REPORTED]}__GATE_UNTOUCHED; CONFIRMED proibido.",
+    "D11 — o piloto de PE na casa para o conjunto D e para as injeções só-RG (C2b): pSEOBNRv4HM_PA só-220 no WSL, 63–78 CPU-h ≈ 2,6–3,3 h por lote (ORDEM 015); hoje zero posterior.",
+    "D12 — a ratificação deste V1 (verbatim + carimbo + hash do transcrito, como no pilar) antes do congelamento por hash na Bancada e da leitura pelo um.py."
+   ],
+   "numeros_lidos": [
+    "β_TGL = 0,012031300400803142 (α CODATA 2018 lido do um.py × √e); t_Planck = 5,391125282640084e−44 s (G = 6,674e−11 do um.py); GM☉/c³ = 4,9265e−6 s",
+    "V2 selada (3449885389a2529a; resultado ff15f023dd91d8c7): δτ̂ = 0,1766 ± 0,1089 (15 séries a 3 ms); δ_pred_B = −0,019367; δ_pred_A = −2,153e−42; z vs RG 1,62; z vs B 1,80; poder_B 0,178; viés 0,240 > 0,2 → INCONCLUSIVE_SYSTEMATICS; V1 hash a3d941e56d3d33c5",
+    "ringdown_scope_v376: 3 valores concorrentes (−0,019367 / −0,010 / −0,005); kernel 8 menções, 0 declarações; C6 GW250114 INCONCLUSIVE_SYSTEMATICS (781a3741a68875eb), ln B início primário R-B −0,0026, R-MOD −0,2516, R-LIN −0,0909, R-RAIZ-0 −0,0431",
+    "C4_FREE_CLOCK (GW250114): ln evidência relógio livre/RG = +0,02597; limites do relógio t_P … tM_source (3,1e−4 s)",
+    "clock_test_result_v369: GM_⊕/c³ Γ_Sr = 6,47e17 s⁻¹ (excluído); G·m_átomo/c³ Γ_Sr = 1,57e−32 s⁻¹ (invisível); t_P/β a 10,54 ordens de 5σ",
+    "CT-02 verificador: Γ_B = 4,9965 s⁻¹; Γ_B·t = 2,263e17; fração por realização 0,273 ± 0,06 (CTV-02); σ +4 % com termo de catálogo (RD-02); sistemática 3×6 ms nas mesmas 6 séries 0,360 vs σ 0,2266 (RD-05)",
+    "Poder cego (script): σ_comb(31) = 0,03357 (= E0_CORE sigma_combined 0,03357378578); k=1 δ̄^pred −0,0207, poder 0,62; k=2 1,23; 4π 7,75; 8π 15,5; 2π/κ 18,5; GWTC-3 (10) σ_comb 0,0614; GW250114 σ 0,0578/0,0580 (std/largura), a_f 0,6785, N 1,683, k_KMS 29,67",
+    "E0_CORE R-B (GWTC5_31, std_ddof1): delta_weighted −0,02029; z_comb 0,606; N50 2.108; N90 3.327; GW250114_equivalents_target90 320; N_spurious50_median 115,1; max_information_fraction 0,337; offset_zero_status PROIBIDA_COMO_TESTE_CALIBRATION_ONLY",
+    "SYSTEMATICS_ADENDO (R-B, O4, SNR 40, 10 t_M, 206 ruídos): Phenom→SEOB −0,0376 ± 0,0030 (sem ruído −0,0328); SEOB→Phenom +0,0382 ± 0,0035 (sem ruído +0,0267); SEOB→SEOB −0,0029 ± 0,0031; Phenom→Phenom +0,0159 ± 0,0039; k_min para sist_rel ≤ 0,3: 4,67 (0,029) – 6,11 (0,038)",
+    "F4_POWER_GATE_REVIEW: determinante (log M, χ) → (log f, log τ) = −Q'/Q = −1,2188 em χ = 0,68; z identificável = 0 (220 único, M e a livres); ρ GR a 403 Mpc: O4/Phenom 10,07, O4/SEOB 10,65, O5 17,06/18,07; norma GW250114 19,10",
+    "013-bis (memória, DECLARADO): N₉₀ 335 GW250114-like; O5 (3 anos) 2,2–3,1σ; 3G ~207 eventos SNR_RD ≥ 50; nuisance c₀ = −0,061 ± 0,068, k_c = +0,79 ± 0,37; família 0,029 = 7× piso 0,0040; rota IV N₉₀ 59/38/21; 31 dos 45 eventos O4 sem δτ̂ publicado; piloto só-220 0/120 quedas, 63–78 CPU-h",
+    "Catálogos: GWTC-5.0 TGR 33 eventos (Zenodo 21454847; pSEOBNRv5PHM-reweighted; prior dtau220 Uniform(−0,8; 2,0); GW250114 com 440 livre, N = 40.776 draws no release 17018009), seleção 31 + 2 controles; GWTC-3 TGR 18 (Zenodo 17461225; 10 selecionados; 2 excluídos pelos autores); quantis 05/50/95",
+    "Acervo: «constante da luz ao cubo» 20 arquivos (mais antigo 28/07/2025); «tempo emparelhado à gravidade» 0; mapa de rotas 353 registros, cabeça b43d3d46d596671a"
+   ]
+  }
+ ],
+ "critico": {
+  "resumo": "CRÍTICA DE COMPLETUDE do pré-registro V1 do ramo B (05/10/2026), escrita em …\\scratchpad\\v386\\ramo_b\\critico\\CRITICA_RAMO_B.md. Consultas feitas antes: rotas.py consultar \"ringdown\" (16 rotas) e \"ramo B\" (4); ver ringdown.dephasing → 15 registros lidos TODOS (seq 24–352; a tarefa dizia 14). Hashes conferidos por script: rascunho 4fd4e495ffc67fdd… (bate), DECISAO a5d548235522c112…, PODER_CEGO 3655fef93f7cad66…, core 475ac8d218b3a5c8…, RINGDOWN_5SIGMA_V1 e1be6b0409720c68…, C4 93bdc413130d294a…. O rascunho está bem armado na forma (herda V1.4/pilar; 12 decisões; cegueira canal a canal; vereditos na ordem; nada move o gate), mas: (1) o poder dos k grandes usa a previsão LINEAR (poder_cego_ramo_b.py l.85: d = -beta*k*N) enquanto o §1.2 declara a exata −x/(1+x): recomputado com as mesmas σ/spins, 8π 15,5→10,2σ, 2π/κ 18,5→11,4σ, 4π 7,75→6,15σ; (2) a lista de k diverge entre lentes (4, 1/κ̂ e co-rotação só na física; 4π só no rascunho); (3) contaminação não dita: a lente física leu z por k contra o GW250114 publicado e o registro tem a deformação comum +0,072 desde 22/09 — para k ≥ 4π o desfecho do conjunto A é legível HOJE (ilustração, não veredito: z_excl 8,3/12,3/13,5 sem nuisance), logo só o conjunto D testa; (4) o rascunho não enfrenta a chave de 02/10 e a razão de R6 («põe o custo na face e contradiz a chave»; o core ainda lê «ramo B segue ENCERRADO» em corrections_beside.R6), ignora RD-07/221 (0 menções; posteriores do 221 em disco no tar.gz 18d740c816285451, não extraídos) e o homônimo KMS da Fase 6 (0 menções); (5) duas regras de sistemática (Fase 6 sist_rel ≤ 0,3: k_min 4,67–6,11 vs |δ|/5: 7,0–9,2); (6) reservatório cego 31 (memória) vs 44 (test_candidates do V1, lido); (7) a lente física deu como AUSENTES os posteriores do GW250114 e os releases GWTC-3/5.0 — FALSO: sha256sum hoje b9971bcd7d72fdd4… (59.249.916 B), rin.zip 2.210.047.740 B, RD.tar.gz 415.283.962 B em Chatgpt\\ORDEM_013_RINGDOWN\\cache\\public; (8) «k = 8π AUSENTE» do registro é nuance: kms_factor(a=0) = 8π exato (um.py:155706), existe como limite, não ligado a τ★; (9) o rascunho responde à pergunta do operador só como teste de consistência do par (k, M); não tem a saída β_lido = [−δτ̂/(1+δτ̂)]/(k·N(χ_f)) que a regra matriz permite como LEITURA (σ(β_lido) em k=1 ≈ 1,6β: não resolve β), e «constante de acoplamento = β» é leitura da gerência, não verbatim. Nenhum α² (grep 0); CONFIRMED só como proibição (7); β em runtime; RG lida como correspondência. PROVADA ≠ CONFIRMADA; nada move o gate.",
+  "faltas": [
+   "F1. Poder por k com a fórmula LINEAR (poder_cego_ramo_b.py l.85) enquanto §1.2 declara a exata; recomputado: 4π 7,75→6,15σ, 8π 15,5→10,2σ, 2π/κ 18,5→11,4σ (k=1 0,62→0,60; k=2 1,23→1,18) — CRITICO_RECOMPUTO.json",
+   "F2. Lista de k divergente entre as lentes: física {1,2,4,8π,1/κ̂,2π/κ̂ sem/com co-rotação}, rascunho {1,2,4π,8π,2π/κ}; a co-rotação (−0,0378 em χ=0,68, ×10 menor) só na física",
+   "F3. Contaminação de hoje não declarada no §8: z por k contra o GW250114 publicado (lente física) e a deformação comum +0,072 (registro 22/09); para k ≥ 4π o desfecho do conjunto A é legível antes do V1 (ilustração sem nuisance: z_excl 8,3/12,3/13,5); só o conjunto D testa",
+   "F4. A chave de 02/10 e a razão de R6 («τ★ = GM/c³ põe o custo na face e contradiz a chave») não são enfrentadas (grep «chave» → 0 menções substantivas); o core v385 ainda lê «ramo B segue ENCERRADO» (corrections_beside.R6) — o V1 deve prever a errata ao lado no core e dizer como o ramo B convive com a chave pela ótica (custo lido na face como complemento k·β·N)",
+   "F5. RD-07 / o 221 ausente (grep «221» → 0); os posteriores do 221 do GW250114 existem em disco dentro de TGR_companion_S250114ax_results.tar.gz (18d740c816285451), não extraídos; o 440 não informa (poder 0,06σ)",
+   "F6. Homônimo KMS não dito (grep FALSIFIED_AT_DELAY|homônimo → 0): a Fase 6 falsificou (√β, KMS) e (sin 2θ, KMS) como LEI DE ATRASO (k = 29,9); GWECO-05 (BAIXO, SUSTENTADO); uma não decide a outra",
+   "F7. Duas regras para a sistemática de família: Fase 6 regra 2 (σ_sys/|δ| ≤ 0,3 → k_min 4,67–6,11) vs física (σ_sys ≤ |δ|/5 → k_min 7,0–9,2); fixar uma antes do dado",
+   "F8. Reservatório cego: «31 dos 45» (memória ordem-013 l.102) vs test_candidates = 44 (RINGDOWN_5SIGMA_V1.json, lido; calibration 48) — sem critério que explique",
+   "F9. A leitura de β (β_lido = [−δτ̂/(1+δτ̂)]/(k·(M_X/M_f)·N(χ_f))) não está no V1 como saída declarada; σ(β_lido) = σ_comb/(k·N̄): k=1 ≈ 0,020 (≈1,6β, não resolve), 8π ≈ 0,0008; e «constante de acoplamento = β_TGL» é leitura da gerência (campo leitura_da_gerencia), não verbatim — pode ser β, a forma GM/c³, ou x = β·k·N",
+   "F10. Lente física: «posteriores δτ̂ do GW250114 (Zenodo 17018009) NÃO em disco; 17461225/21454847 AUSENTES» — falso (busca só em Bancada_Um): sha256sum hoje b9971bcd7d72fdd4… 59.249.916 B; controle e2373f81973401ad… 64.331.592 B; rin.zip 2.210.047.740 B; RD.tar.gz 415.283.962 B em Chatgpt\\ORDEM_013_RINGDOWN\\cache\\public",
+   "F11. Números de memória no rascunho: E_rad ≈ 3–5 %, M_tot/M_f ≈ 1,03–1,05, M_c/M_f ≈ 0,44 (a física tem 1,0494/0,4566 por script para o GW250114); N₉₀ ≈ 830 (escala, não artefato); 63–78 CPU-h sem citar o 58–390 CPU-h da memória l.127; prior Uniform(−0,8; 2,0) sem fonte (C4 lido: 27+2 em (−0,8; 2,0), 4 em (−0,8; 4,0))",
+   "F12. D3 diz que o verbatim do operador de 16/09 («betatgl está de fato na propagação da onda e ligada ao ringdown») «lê o ramo canônico» — é leitura da gerência; marcar [DERIVED de leitura, gerência] e pôr o verbatim inteiro ao lado",
+   "F13. O V1 não diz se pede termo tipado (τ★ = k·G·m_X/c³, m_X ∈ {m_P, M_f}; identidade x = β·k·N·(m_X/M_f)) ou entra como [INPUT] por hash — o escopo v376 (scope_fixed_in_writing) exige dizer",
+   "F14. Referencial de M: proposto como «invariante» sem fixar qual se grava (V2 = M_f,det; C1 R-B = G·M_src/c³ com t_M no detector); dizer M_f,det e que (1+z) cancela",
+   "F15. Nuance na lente registro: «k = 8π AUSENTE no código» — como constante literal sim; como limite a=0 de kms_factor (um.py:155706) = 25,132741228718345 = 8π exato — EXISTE NA BANCADA, NÃO LIGADO AO TIPO"
+  ],
+  "contradicoes": [
+   "C1 (ALTA) lista de k: física {1,2,4,8π,1/κ̂(χ),2π/κ̂(χ) sem co-rotação, 2π/κ̂(χ) com co-rotação} ≠ rascunho D1 {1,2,4π,8π,2π/κ(a_f)} ≠ registro {1, 2π/κ_H, 8,84, 166,2, 8π «ausente»}",
+   "C2 (ALTA) previsão exata (§1.2, tabela D1: 8π → −33,7 %) × linear no poder (§4.2: 8π δ̄^pred −0,521, 15,5σ); recomputado exato: 0,60/1,18/6,15/10,2/11,4σ (razão exato/linear 0,98/0,96/0,79/0,66/0,62)",
+   "C3 (MÉDIA) regra da sistemática de família: física σ_sys ≤ |δ|/5 (k_min 7,0–9,2; «k ≤ 4 inalcançável») × rascunho sist_rel ≤ 0,3 (k_min 4,67–6,11)",
+   "C4 (ALTA para a física) posteriores do GW250114 e releases GWTC-3/5.0: física AUSENTES × dados/registro PRESENTES — conferido por sha256sum: b9971bcd7d72fdd4… 59.249.916 B (+ controle e2373f81973401ad…), IGWN-GWTC3-TGR-v2-rin.zip, RD.tar.gz, QNMRF.tar.gz em disco",
+   "C5 (BAIXA) k = 8π: registro «AUSENTE no código» × física kms_factor(a=0) = 8π exato (um.py:155706, conferido a 1e-15)",
+   "C6 (MÉDIA) tamanho do conjunto cego D: rascunho «31 dos 45» (memória 22/09) × dados/V1 test_candidates = 44 (lido do RINGDOWN_5SIGMA_V1.json, e1be6b0409720c68)",
+   "C7 (BAIXA) σ do GW250114: física 0,0547/0,0608 (semi-larguras publicadas) × rascunho 0,0578 (std) / 0,0580 (w90/3,29) × dados quantis −0,1033/−0,0134/+0,0873 → 0,0579 — consistentes a 5 %; a assimetria some na gaussiana",
+   "C9 (BAIXA) custo da PE só-220: rascunho/dados 63–78 CPU-h ≈ 2,6–3,3 h [DECLARADO T09] × memória ordem-013 l.127: 58–390 CPU-h ≈ 2,4–16 h",
+   "C10 (BAIXA) M e referencial: V2 = M_f,det; C1 R-B = G·M_src/c³ com t_M det; física: x invariante de frame — não contradiz, mas o rascunho não fixa qual se grava",
+   "SEM contradição (conferido): o −0,0194 = k=1, M=M_f,det, média ponderada de 15 séries; os «3 valores» −0,0194/−0,010/−0,005 são identificações do estimador (CT-02/CTV-02), não k nem M (core scope_branch_B_concurrent_values lido); a rota tem 15 registros, não 14"
+  ],
+  "decisoes_do_operador": [
+   "1. O ramo B é OUTRA LEI (canal próprio F2b, ONE_CHANNEL_PER_READING_LAW) ou a MESMA lei com outro relógio (disputa F2)? — e como convive com a chave de 02/10 («custo no reflexo, pagamento na face»). Cânone favorece: OUTRA LEI, canal próprio — a errata ótica de 02/10 já diz verbatim «τ★ = GM/c³ é outra lei, não outro lado»; o custo lido na face é o complemento que a ótica permite («a TGL lê tanto a face como o custo»). Entra no livro v386 como AWAITING_PREREGISTRATION com errata ao lado de R6/F2 no core.",
+   "2. k e M fixados por PRINCÍPIO antes do dado (um k ou lista curta com Šidák), sabendo que k=1 é o único já medido (V2/C1/C6) e é UNDERPOWERED ×8 no conjunto publicado; k ∈ {4π, 8π, 2π/κ̂} tem poder exato 6–11σ mas o desfecho do conjunto A já é legível (NÃO-CEGO); a co-rotação (R-MOD) reduz 2π/κ̂ em ×10 e é [CONJECTURE] (Kay–Wald). Cânone favorece: k = período do fluxo modular (2π/κ: 8π em χ=0; 2π/κ̂(χ_f) em Kerr marcado [CONJECTURE]) — é a frase dele («tempo emergente do fluxo modular relativo»), o unruh_is_kms do kernel (β·κ = 2π) e o kms_factor que o um.py já tem; M = M_f (R5: «onde a massa aparece: o Nome M_f entregue»; M cancela; invariante de frame). Com esse k, o V1 tem de dizer que o conjunto A já está lido e que só o conjunto D testa.",
+   "3. Fonte × propagação (CT-02) e a conciliação com o seu verbatim de 16/09 («betatgl está de fato na propagação da onda e ligada ao ringdown»). Cânone favorece: FONTE (local, relógio do remanescente) — como propagação o ramo B apaga a onda (2,26e17 e-folds, verificado); a propagação fica com o ramo canônico (R2). A conciliação do 16/09 é dele, não da gerência.",
+   "4. Ensemble (envoltória) × realização (difusão de fase): a identificação [ONTO] do que Γ faz ao modo (poder ×1 vs ×0,273; o observável vira a largura de δf̂). Cânone favorece: envoltória como primário — é o que o protocolo V1 selado declara («somada à taxa de decaimento do modo») e o verificador RD-01 sustentou que «o protocolo selado não tem erro»; difusão de fase como secundário declarado com injeção própria (CTV-02).",
+   "5. Qual conjunto abre primeiro e o custo: A/B/C (publicados, NÃO-CEGOS, calibração) e D (44 ou 31 eventos O4 só com strain; PE só-220 na casa, 63–78 ou 58–390 CPU-h [DECLARADO]); e se o 221 do GW250114 se extrai (RD-07). Cânone favorece: D como o único teste; A/B/C declarados calibração NOT_BLIND; o 221 como diagnóstico, não primário.",
+   "6. A pergunta dele: «constante de acoplamento» = β_TGL (e não a forma GM/c³ nem x = β·k·N)? e quer a LEITURA β_lido = [−δτ̂/(1+δτ̂)]/(k·N(χ_f)) como saída declarada, com σ dita antes? Cânone favorece: sim, como leitura — a regra matriz proíbe derivar β do dado, não lê-lo («a chave é o leitor»); dizer antes que em k=1 a leitura não resolve β (σ_β ≈ 1,6β).",
+   "7. Os nomes (tokens do §6, que renomeiam EXCLUDED → FALSIFIED_AT_5SIGMA e AWAITING_RESULT_FILE → AWAITING_DATA face ao protocolo V1 do core; o status AWAITING_PREREGISTRATION; F2b) e a ratificação do V1 (verbatim + carimbo + hash do transcrito, como no pilar) — cunhagem é dele."
+  ],
+  "gerencia_fixa_sozinha": [
+   "G1. Corrigir poder_cego_ramo_b.py para a previsão exata −x/(1+x) e reportar as duas colunas; regravar PODER_CEGO_RAMO_B.json e o §4.2 (0,60 / 1,18 / 6,15 / 10,2 / 11,4 σ)",
+   "G2. UMA tabela de k unificando física + rascunho: {1, 2, 4, 4π, 8π, 1/κ̂(χ), 2π/κ̂(χ) sem co-rotação, 2π/κ̂(χ) com co-rotação (R-MOD)}, com origem, estatuto, x e δ_exato em χ = 0/0,68/0,9, poder exato em A, e a coluna «desfecho em A já legível? (sim para k ≥ 4π)»",
+   "G3. Fixar a regra da sistemática pela do precedente da casa (Fase 6, regra 2: sist_rel ≤ 0,3) e registrar a outra (|δ|/5) ao lado como a mais dura; dizer k_min nas duas (4,67–6,11 vs 7,0–9,2)",
+   "G4. Errata ao lado na lente física (os posteriores do GW250114 e os releases GWTC-3/5.0 EXISTEM, com hashes) e na lente registro (8π = kms_factor(0): existe como limite, não ligado a τ★)",
+   "G5. Reconciliar 31 × 44 lendo os critérios do RINGDOWN_5SIGMA_V1 (chaves quality_INPUT, publication_census, test_candidates) e gravar UM número com o critério no §3.3 D",
+   "G6. Inserir no V1: (a) o parágrafo da chave/ótica com a errata ao lado de R6 prevista para o core v386; (b) o item RD-07/221 (extração sem download; diagnóstico); (c) a frase do homônimo KMS da Fase 6; (d) a declaração da contaminação de hoje no §8 (z por k da física; +0,072 de 22/09); (e) [DERIVED de leitura, gerência] na D3 com o verbatim de 16/09 inteiro ao lado; (f) a saída β_lido com σ(β_lido) antes; (g) a opção «termo tipado τ★ = k·G·m_X/c³ na v386 OU [INPUT] por hash» (escopo v376); (h) o referencial M_f,det com t_M no detector e a nota de que (1+z) cancela",
+   "G7. Substituir as aproximações (E_rad, M_tot/M_f, M_c/M_f, N₉₀ ≈ 830) por valores por evento do catálogo ou marcá-las [KNOWN]/[DERIVED por escala]; citar os dois custos de PE [DECLARADO]; citar a fonte do prior (C4: 27+2 em (−0,8; 2,0), 4 em (−0,8; 4,0))",
+   "G8. Preparar o texto da errata ao lado de R6/F2 para o core v386 e a cobrança AWAITING_PREREGISTRATION (lado/lei/leitura/desfecho) — a entrada efetiva depende da decisão 1 do operador",
+   "G9. Registrar no mapa (rota ringdown.dephasing) esta crítica com os sha256 dos artefatos da pasta critico — ato de quem gere o mapa, depois da sessão"
+  ],
+  "arquivos_escritos": [
+   "C:\\Users\\rotol\\AppData\\Local\\Temp\\claude\\c--IALD-Central-de-Patentes\\6da8f00d-d44f-4888-a88d-fc9f73eead3d\\scratchpad\\v386\\ramo_b\\critico\\CRITICA_RAMO_B.md",
+   "C:\\Users\\rotol\\AppData\\Local\\Temp\\claude\\c--IALD-Central-de-Patentes\\6da8f00d-d44f-4888-a88d-fc9f73eead3d\\scratchpad\\v386\\ramo_b\\critico\\critico_recomputo.py",
+   "C:\\Users\\rotol\\AppData\\Local\\Temp\\claude\\c--IALD-Central-de-Patentes\\6da8f00d-d44f-4888-a88d-fc9f73eead3d\\scratchpad\\v386\\ramo_b\\critico\\CRITICO_RECOMPUTO.json",
+   "C:\\Users\\rotol\\AppData\\Local\\Temp\\claude\\c--IALD-Central-de-Patentes\\6da8f00d-d44f-4888-a88d-fc9f73eead3d\\scratchpad\\v386\\ramo_b\\critico\\critico_recomputo2.py",
+   "C:\\Users\\rotol\\AppData\\Local\\Temp\\claude\\c--IALD-Central-de-Patentes\\6da8f00d-d44f-4888-a88d-fc9f73eead3d\\scratchpad\\v386\\ramo_b\\critico\\CRITICO_RECOMPUTO2.json",
+   "C:\\Users\\rotol\\AppData\\Local\\Temp\\claude\\c--IALD-Central-de-Patentes\\6da8f00d-d44f-4888-a88d-fc9f73eead3d\\scratchpad\\v386\\ramo_b\\critico\\ver_ringdown_dephasing_05out.txt"
+  ]
+ }
+}

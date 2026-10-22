@@ -1,0 +1,1 @@
+"""Consume actual kernel evidence for the constructed Fock network components."""

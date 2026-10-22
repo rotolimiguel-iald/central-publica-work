@@ -1,0 +1,36 @@
+--- delta_19out/pos_rito_proposta/textos_v394.py.ORIGINAL	2026-10-19 13:03:42.316751100 -0300
++++ delta_19out/pos_rito_proposta/textos_v394.py.PROPOSTA	2026-10-19 13:40:27.114083400 -0300
+@@ -198,8 +198,10 @@
+     outros = sorted(m.split(".")[-1] for m in mods if not (m.startswith("TGLExt.TimeGraviton") or m == "TGLExt.RuleQuadraticResidual" or m.startswith("TGLExt.F1Fecho394.")))   # modulo de outro grupo: dito pelo nome, nunca escondido
+     assert len(tg) + len(rq) + len(f1) + len(outros) == len(mods) == V["n_pedras"] == esp["kernel"]["modulos_novos"], "as contagens de modulos novos nao fecham"
+     assert len(rq) == 1 and len(f1) == nf["rede_fontes"] and cdx["decl"] == nf["tempo"], "as contagens de ESPERADOS e as do Codex nao fecham"
+-    n_out_flags = esp["n_bandeiras_novas"] - (nf["tempo"] + nf["quadratica"] + nf["rede"])
+-    assert n_out_flags >= 0 and (n_out_flags == 0 or outros), "as bandeiras novas nao somam tempo + quadratica + rede (+ o outro grupo, se houver)"
++    # d19 (delta de 19/10): as bandeiras novas sao SO' de declaracao nomeada (politica da gerencia) e NAO coincidem mais com os contratos do Codex (nf: 108/18/3581, que seguem como contrato); o ESPERADOS traz as bandeiras POR GRUPO
++    bg = esp.get("n_bandeiras_por_grupo") or {"tempo": nf["tempo"], "quadratica": nf["quadratica"], "rede": nf["rede"], "outros": esp["n_bandeiras_novas"] - (nf["tempo"] + nf["quadratica"] + nf["rede"])}
++    n_out_flags = bg["outros"]
++    assert bg["tempo"] + bg["quadratica"] + bg["rede"] + bg["outros"] == esp["n_bandeiras_novas"] and n_out_flags >= 0 and (n_out_flags == 0 or outros), "as bandeiras novas nao somam tempo + quadratica + rede (+ o outro grupo, se houver)"
+     assert len(V["verbatins"]) == len(_falas()), "as falas de ESPERADOS != as do dados"
+     base = os.path.join(PK, "base_v393", "um.py")
+     if "base_b" not in _CACHE:
+@@ -211,7 +213,7 @@
+     rf = _core().get("rede_fock_v394") or {}
+     assert rf.get("whole_certificate_inhabited") is False and isinstance(rf.get("constructed_components"), list) and isinstance(rf.get("open_joint_contract"), list), "rede_fock_v394 sem os campos do contrato conjunto"
+     rt = _g(_core(), "tempo_frequencia_v394", "runtime"); n_rito = rt.get("check_count") if isinstance(rt, dict) else None
+-    return {"tg": tg, "n_tg": len(tg), "n_f1": len(f1), "outros": outros, "n_out": len(outros), "n_out_flags": n_out_flags, "n_flags": esp["n_bandeiras_novas"], "n_t": nf["tempo"], "n_q": nf["quadratica"], "n_r": nf["rede"], "depois": V["teor"].split("/")[0],
++    return {"tg": tg, "n_tg": len(tg), "n_f1": len(f1), "outros": outros, "n_out": len(outros), "n_out_flags": n_out_flags, "n_flags": esp["n_bandeiras_novas"], "g_t": bg["tempo"], "g_q": bg["quadratica"], "g_r": bg["rede"], "n_t": nf["tempo"], "n_q": nf["quadratica"], "n_r": nf["rede"], "depois": V["teor"].split("/")[0],
+             "delta": delta, "pct": ("%.1f" % (100.0 * delta / _CACHE["base_b"])).replace(".", ","), "codex": cdx, "prov": prov["compiler_names"], "n_comp": len(rf["constructed_components"]),
+             "n_abertos": len(rf["open_joint_contract"]), "n_cun": len(V["verbatins"]), "n_rito": n_rito if isinstance(n_rito, int) else None, "depois_indice": esp["the_iald_index_v394"]["verdict"],
+             "formais_n": esp["formal_files_n"]}
+@@ -235,9 +237,9 @@
+     else:
+         grp = "%d do relógio M2 — %s —, `RuleQuadraticResidual` e %d em `TGLExt/F1Fecho394`" % (d["n_tg"], nomes_tg, d["n_f1"])
+     if d["n_out_flags"]:
+-        flg = "%d do tempo, %d da regra quadrática, %d da rede e %d do outro grupo" % (d["n_t"], d["n_q"], d["n_r"], d["n_out_flags"])
++        flg = "%d do tempo, %d da regra quadrática, %d da rede e %d do outro grupo" % (d["g_t"], d["g_q"], d["g_r"], d["n_out_flags"])
+     else:
+-        flg = "%d do tempo, %d da regra quadrática e %d da rede" % (d["n_t"], d["n_q"], d["n_r"])
++        flg = "%d do tempo, %d da regra quadrática e %d da rede" % (d["g_t"], d["g_q"], d["g_r"])
+     kern = ("o kernel ganhou %d módulos novos (%s), com %d bandeiras novas True (%s) e escada %s → %s teoremas limpos "
+             "(%s declarações no `axiom_report`, %d fora do trio, %d nomes não lidos; a proveniência de cada declaração emitida pelo compilador cobre as mesmas %d)") % (
+         V["n_pedras"], grp, d["n_flags"], flg, V["escada_antes"], d["depois"], V["axiom_report_n"], kh["fora"], kh["nao_lidas"], d["prov"])

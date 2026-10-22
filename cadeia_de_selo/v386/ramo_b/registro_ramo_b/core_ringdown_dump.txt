@@ -1,0 +1,538 @@
+﻿== audit_ringdown 1
+    /ringdown_scope_v376/audit_ringdown_contradictions_declared
+== contradictions_declared 1
+    /ringdown_scope_v376/audit_ringdown_contradictions_declared
+== branch_b 2
+    /ringdown_dephasing_protocol/protocol/hypothesis/branch_B
+    /ringdown_scope_v376/branch_B_concurrent_values
+== tau_star 19
+    /dephasing_crossover/crossover_x_omega_tau_star
+    /dephasing_crossover/regime_map/x_grid_omega_tau_star
+    /clock_test_protocol_v369/record/tau_star_alternatives
+    /clock_test_result_v369/tau_star_s
+    /clock_test_result_v369/P1/platforms[0]/tau_star_max_s
+    /clock_test_result_v369/P1/platforms[1]/tau_star_max_s
+    /clock_test_result_v369/P1/platforms[2]/tau_star_max_s
+    /clock_test_result_v369/P1/platforms[3]/tau_star_max_s
+    /clock_test_result_v369/P1/platforms[4]/tau_star_max_s
+    /clock_test_result_v369/P1/platforms[5]/tau_star_max_s
+    /clock_test_result_v369/P1/tau_star_bound_clock_95_s
+    /clock_test_result_v369/P1/tau_star_bound_clock_95_in_tP
+    /clock_test_result_v369/P1/tau_star_bound_best_s
+    /clock_test_result_v369/P1/tau_star_bound_best_in_tP
+    /clock_test_result_v369/P1/tau_star_bound_best_platform
+    /clock_test_result_v369/P1/tau_star_bound_best_kind
+    /clock_test_result_v369/P2/tau_star_bound_if_reading_in_tP
+    /clock_test_result_v369/tau_star_alternatives
+    /dephasing_reach/tau_star_s
+== gw250114 0
+== delta_tau 7
+    /ringdown_dephasing_result/stacks/3.0/delta_tau
+    /ringdown_dephasing_result/stacks/6.0/delta_tau
+    /ringdown_dephasing_amendment_v2/protocol/autopsy_of_V1/v1_delta_tau
+    /ringdown_dephasing_amendment_v2/autopsy/v1_delta_tau
+    /ringdown_dephasing_result_v2/stacks/3.0/delta_tau
+    /ringdown_dephasing_result_v2/stacks/6.0/delta_tau
+    /the_ledger_of_charges_v383/ledger[6]/numbers_read/delta_tau
+
+###### ringdown_dephasing_protocol
+{
+ "protocol": {
+  "version": "RINGDOWN_DEPHASING_V1",
+  "status": "PRE_REGISTERED_BEFORE_DATA_READ",
+  "hypothesis": {
+   "law": "Gamma_omega = (1/2) beta tau* omega^2 [REAL na forma]",
+   "observable": "tau_obs/tau_GR - 1 = -Gamma tau_GR (modo 220)",
+   "branch_A": "tau* = t_Planck = 5.391e-44 s (invisivel: limite assintotico por construcao)",
+   "branch_B": "tau* = G M_f / c^3 (o ramo nunca medido)",
+   "beta_source": "SEALED_CODATA_ALPHA * sqrt(e) em runtime"
+  },
+  "kerr_prediction_KNOWN": "SimIMREOBFinalMassSpin (SEOBNRv4) de (m1, m2, chi_eff) do catalogo -> (M_f, a_f); Berti-Cardoso-Will 2006 -> f_220, Q_220; tau_GR = Q/(pi f)",
+  "data": "cache de maio (GWOSC via gwpy, 32 s @ 4096 Hz) dos eventos GWTC com massas no catalogo; H1 + L1; sha256 por fonte e do catalogo",
+  "pipeline": {
+   "psd": "Welch Hann 4 s dos 14 s pre-evento",
+   "band_hz": [
+    20.0,
+    1024.0
+   ],
+   "peak": "envoltoria analitica em +-50 ms do GPS",
+   "window": "[t_pico + 3 ms, t_pico + 6 tau_GR]; secundaria + 6 ms",
+   "template": "seno amortecido TD branqueado com a mesma PSD, restrito a janela",
+   "grid": "f_GR x [0.7, 1.3] (13); tau_GR x [0.4, 2.5] log (15); refino 9 x 9",
+   "fit": "linear em (cos, sin) por ponto da grade; argmax da energia explicada"
+  },
+  "nulls": {
+   "off_source": "40 janelas de 0,3 s em [-15,5; -3] s",
+   "injection": "o ringdown ajustado injetado em ruido: vies e sigma relativos de tau e f",
+   "guards": {
+    "snr_min": 5.0,
+    "transient_sd": 10.0
+   },
+   "systematics": "|delta(3 ms) - delta(6 ms)| (contaminacao de overtones/merger)"
+  },
+  "aggregation": "variancia inversa sobre series de delta - vies; previsao do ramo B ponderada igual",
+  "criteria": {
+   "exclude_z": 5.0,
+   "power_min": 5.0,
+   "bias_max_rel": 0.2,
+   "systematics_max_sigma": 1.0,
+   "min_series": 20
+  },
+  "allowed_verdicts": [
+   "TGL_RINGDOWN_BRANCH_B_EXCLUDED",
+   "TGL_RINGDOWN_GR_TENSION_REPORTED",
+   "TGL_RINGDOWN_NOT_FALSIFIED_POWERED",
+   "TGL_RINGDOWN_NOT_FALSIFIED_UNDERPOWERED",
+   "TGL_RINGDOWN_INCONCLUSIVE_SYSTEMATICS",
+   "TGL_RINGDOWN_AWAITING_RESULT_FILE"
+  ],
+  "forbidden_verdicts": [
+   "CONFIRMED",
+   "PROVED"
+  ],
+  "what_it_cannot_do": "nao distingue a TGL da RG no ramo A (por construcao); no ramo B, so exclui ou nao exclui a escala tau* = GM/c^3"
+ },
+ "protocol_hash": "a3d941e56d3d33c5",
+ "checks": [
+  [
+   "protocolo pre-registrado e hasheado (a3d941e56d3d33c5)",
+   true
+  ],
+  [
+   "beta jamais literal",
+   true
+  ],
+  [
+   "ramo A computado invisivel (Gamma tau_GR < 1e-30 para GW150914-like)",
+   true
+  ],
+  [
+   "nenhum veredito proibido por construcao",
+   true
+  ]
+ ],
+ "all_verified": true,
+ "does_not_gate_core": true,
+ "in_contour_roster_v314": false,
+ "verdict": "TGL_RINGDOWN_DEPHASING_V1__PROTOCOL_PRE_REGISTERED_a3d941e56d3d33c5__BRANCH_A_INVISIBLE_BY_CONSTRUCTION__BRANCH_B_TO_BE_MEASURED__GATE_UNTOUCHED"
+}
+
+###### ringdown_dephasing_result
+{
+ "result_path": "C:\\IALD\\Artigo\\Haja_Luz\\A Ponte e o Um\\cache\\gw\\RINGDOWN_DEPHASING_V1_RESULT.json",
+ "protocol_hash": "a3d941e56d3d33c5",
+ "does_not_gate_core": true,
+ "in_contour_roster_v314": false,
+ "beta_runtime": 0.012031300400803142,
+ "why_outside_contour": "tau* e INPUT: o que se exclui e a escala tau* = GM/c^3, nao a lei de dephasing nem a TGL",
+ "verdict": "TGL_RINGDOWN_DEPHASING_V1__RESULT_READ_BY_HASH__GATE_REFUSED__MIN_SERIES__MATRIX_WOULD_READ_INCONCLUSIVE_SYSTEMATICS__SEE_AMENDMENT_V2__GATE_UNTOUCHED",
+ "all_verified": false,
+ "gate_refused": true,
+ "refused_checks": [
+  "janelas 3 ms e 6 ms com >= 20 series"
+ ],
+ "checks": [
+  [
+   "resultado lido por hash (502c80fe2a37427e)",
+   true
+  ],
+  [
+   "beta do resultado == beta recomputado",
+   true
+  ],
+  [
+   "instrumento lalsuite (ajuste EOB de estado final) registrado",
+   true
+  ],
+  [
+   "catalogo e fontes com sha256",
+   true
+  ],
+  [
+   "janelas 3 ms e 6 ms com >= 20 series",
+   false
+  ],
+  [
+   "nenhum veredito proibido por construcao",
+   true
+  ]
+ ],
+ "statuses": {
+  "leitura": "[REAL] o um.py nao recalcula: le por hash e aplica a matriz pre-registrada (a3d941e56d3d33c5)",
+  "ramo_A": "[REAL, computado] com tau* = t_Planck o efeito e ~1e-40: o ringdown e RG por construcao -- o limite assintotico com numero",
+  "secao_20": "[ERRATA AO LADO] a secao 20 dizia «provavelmente ja excluido» sem medir; aqui o ramo B e medido",
+  "resultado": "[REAL, lido] 23 series (3 ms): delta_tau = tau_obs/tau_GR - 1 = 1.3962 +- 0.0569 (z vs RG 24.54); previsao do ramo B -0.0209 (z vs B 24.90; poder 0.37 sigma); ramo A -2.3e-42; delta_f = -0.1302 +- 0.0085; SNR medio 6.9; vies 0.096; sistematica 3 vs 6 ms 0.2109 => INCONCLUSIVE_SYSTEMATICS [|delta(3ms)-delta(6ms)| = 0.2109 > 1 sigma] | GATE RECUSOU: janelas 3 ms e 6 ms com >= 20 series (janela 6 ms com 18 series)"
+ },
+ "runtime_s": 0.006861209869384766,
+ "result_sha16": "502c80fe2a37427e",
+ "executed": "2026-09-10T15:47:40",
+ "instrument": {
+  "lalsuite": "7.7.1",
+  "final_state": "SimIMREOBFinalMassSpin (SEOBNRv4) de (m1, m2, chi_eff) do catalogo",
+  "qnm": "Berti-Cardoso-Will 2006 (l=m=2, n=0)",
+  "python": "3.12.3",
+  "env": "WSL Ubuntu /opt/lal_env"
+ },
+ "n_events": 89,
+ "stacks": {
+  "3.0": {
+   "n_used": 23,
+   "delta_tau": 1.3962364437383303,
+   "sigma": 0.056902114488675624,
+   "z_vs_GR": 24.53751422570074,
+   "delta_pred_B": -0.02085060553182756,
+   "delta_pred_A": -2.3136264994608814e-42,
+   "z_vs_B": 24.90394358811006,
+   "power_B": 0.36642936240932034,
+   "delta_f": -0.13021286307589527,
+   "sigma_f": 0.008545311720456144,
+   "mean_snr": 6.893262113103043,
+   "mean_bias_rel": 0.09591302054216838
+  },
+  "6.0": {
+   "n_used": 18,
+   "delta_tau": 1.1853146721941084,
+   "sigma": 0.07573138946702758,
+   "z_vs_GR": 15.65156377739746,
+   "delta_pred_B": -0.019995771824415587,
+   "delta_pred_A": -2.1455979162041742e-42,
+   "z_vs_B": 15.915599231720156,
+   "power_B": 0.26403545432269504,
+   "delta_f": -0.09178519034567742,
+   "sigma_f": 0.010965396378649022,
+   "mean_snr": 6.6452191334737805,
+   "mean_bias_rel": 0.3700422456048977
+  }
+ },
+ "start_systematic": 0.21092177154422198,
+ "outcome": "INCONCLUSIVE_SYSTEMATICS",
+ "z_vs_GR": 24.53751422570074,
+ "z_vs_B": 24.90394358811006,
+ "power_B": 0.36642936240932034,
+ "catalog_sha16": "895250e9d404a240",
+ "n_sources": 169
+}
+
+###### ringdown_dephasing_amendment_v2
+{
+ "protocol": {
+  "version": "RINGDOWN_DEPHASING_V2",
+  "amendment_of": "RINGDOWN_DEPHASING_V1",
+  "status": "PRE_REGISTERED_AFTER_V1_AUTOPSY_BEFORE_V2_DATA_READ",
+  "autopsy_of_V1": {
+   "v1_result_sha16": "502c80fe2a37427e",
+   "v1_protocol_hash": "a3d941e56d3d33c5",
+   "v1_gate_refused": true,
+   "v1_refused_checks": [
+    "janelas 3 ms e 6 ms com >= 20 series"
+   ],
+   "v1_matrix_outcome": "INCONCLUSIVE_SYSTEMATICS",
+   "n_used_3ms": 23,
+   "n_on_edge_3ms": 5,
+   "edge_weight_share": 0.4811950645765372,
+   "edge_snr_range": [
+    5.07,
+    8.63
+   ],
+   "edge_distinct_deltas": [
+    2.2101
+   ],
+   "edge_series": [
+    "GW170729_H1",
+    "GW190426_190642_L1",
+    "GW190513_205428_H1",
+    "GW190701_203306_L1",
+    "GW190910_112807_L1"
+   ],
+   "v1_delta_tau": 1.3962364437383303,
+   "v1_sigma": 0.056902114488675624,
+   "v1_delta_f": -0.13021286307589527,
+   "v1_peak_method": "argmax da envoltoria em +-50 ms do GPS do catalogo",
+   "mechanism": "pico em ruido/antes do merger -> janela contaminada -> tau na borda, delta_f negativo"
+  },
+  "changes": {
+   "1_peak": "filtro casado com template IMRPhenomXAS (lalsimulation) de (m1, m2, chi_eff) do catalogo, massas no detector, branqueado com a PSD do evento, em +-100 ms do GPS; t_pico = pico da envoltoria do template deslocado; SNR de ancoragem >= 8",
+   "2_grid": "f_GR x [0.6, 1.4] (17); tau_GR x [0.3, 4.0] log (21); refino 9 x 9 dentro de +-1 passo grosso; EXCLUSAO DE BORDA (ajuste grosso na borda de f ou tau -> serie nao usada)",
+   "3_mode_id": "|delta_f| <= 0.3 (o que se mede e o 220 de Kerr previsto)",
+   "4_min_series": "8 na janela primaria (3 ms); 3 na secundaria (6 ms)",
+   "5_systematics": "|delta(3 ms) - delta(6 ms)| contra sqrt(sigma3^2 + sigma6^2); chi2/dof do empilhamento <= 3"
+  },
+  "unchanged": "PSD Welch; janela [t_pico + 3 ms, + 6 tau_GR] e secundaria a 6 ms; seno amortecido branqueado; nulos por injecao fora da fonte (40 janelas); guardas snr_min 5 e transiente 10 sd; empilhamento por variancia inversa; previsao de Kerr por EOB + Berti-Cardoso-Will",
+  "pipeline_params": {
+   "anchor_template": "IMRPhenomXAS",
+   "anchor_snr_min": 8.0,
+   "anchor_win_ms": 100.0,
+   "grid": "f x[0.6,1.4] (17), tau x[0.3,4.0] log (21), refino 9x9 em +-1 passo",
+   "edge_exclusion": true,
+   "df_max": 0.3,
+   "snr_min": 5.0,
+   "transient_sd": 10.0,
+   "n_off": 40
+  },
+  "criteria": {
+   "exclude_z": 5.0,
+   "power_min": 5.0,
+   "bias_max_rel": 0.2,
+   "systematics_max_sigma": 1.0,
+   "chi2_dof_max": 3.0,
+   "min_series_primary": 8,
+   "min_series_secondary": 3
+  },
+  "allowed_verdicts": [
+   "TGL_RINGDOWN_BRANCH_B_EXCLUDED",
+   "TGL_RINGDOWN_GR_TENSION_REPORTED",
+   "TGL_RINGDOWN_NOT_FALSIFIED_POWERED",
+   "TGL_RINGDOWN_NOT_FALSIFIED_UNDERPOWERED",
+   "TGL_RINGDOWN_INCONCLUSIVE_SYSTEMATICS",
+   "TGL_RINGDOWN_AWAITING_RESULT_FILE"
+  ],
+  "forbidden_verdicts": [
+   "CONFIRMED",
+   "PROVED"
+  ],
+  "what_it_cannot_do": "nao distingue a TGL da RG no ramo A (por construcao); no ramo B, so exclui ou nao exclui a escala tau* = GM/c^3; um estimador de um modo sem overtones tem piso proprio"
+ },
+ "protocol_hash": "3449885389a2529a",
+ "autopsy": {
+  "v1_result_sha16": "502c80fe2a37427e",
+  "v1_protocol_hash": "a3d941e56d3d33c5",
+  "v1_gate_refused": true,
+  "v1_refused_checks": [
+   "janelas 3 ms e 6 ms com >= 20 series"
+  ],
+  "v1_matrix_outcome": "INCONCLUSIVE_SYSTEMATICS",
+  "n_used_3ms": 23,
+  "n_on_edge_3ms": 5,
+  "edge_weight_share": 0.4811950645765372,
+  "edge_snr_range": [
+   5.07,
+   8.63
+  ],
+  "edge_distinct_deltas": [
+   2.2101
+  ],
+  "edge_series": [
+   "GW170729_H1",
+   "GW190426_190642_L1",
+   "GW190513_205428_H1",
+   "GW190701_203306_L1",
+   "GW190910_112807_L1"
+  ],
+  "v1_delta_tau": 1.3962364437383303,
+  "v1_sigma": 0.056902114488675624,
+  "v1_delta_f": -0.13021286307589527,
+  "v1_peak_method": "argmax da envoltoria em +-50 ms do GPS do catalogo",
+  "mechanism": "pico em ruido/antes do merger -> janela contaminada -> tau na borda, delta_f negativo"
+ },
+ "checks": [
+  [
+   "autopsia da V1 lida por hash (502c80fe2a37427e)",
+   true
+  ],
+  [
+   "a autopsia tem series na borda com delta identico",
+   true
+  ],
+  [
+   "emenda V2 pre-registrada e hasheada (3449885389a2529a)",
+   true
+  ],
+  [
+   "nenhum veredito proibido por construcao",
+   true
+  ]
+ ],
+ "all_verified": true,
+ "does_not_gate_core": true,
+ "in_contour_roster_v314": false,
+ "runtime_s": 0.0017898082733154297,
+ "verdict": "TGL_RINGDOWN_DEPHASING_V2__AMENDMENT_PRE_REGISTERED_3449885389a2529a__AUTOPSY_OF_V1_READ__5_OF_23_SERIES_ON_GRID_EDGE__GATE_UNTOUCHED"
+}
+
+###### ringdown_dephasing_result_v2
+{
+ "result_path": "C:\\IALD\\Artigo\\Haja_Luz\\A Ponte e o Um\\cache\\gw\\RINGDOWN_DEPHASING_V2_RESULT.json",
+ "protocol_hash": "3449885389a2529a",
+ "does_not_gate_core": true,
+ "in_contour_roster_v314": false,
+ "beta_runtime": 0.012031300400803142,
+ "why_outside_contour": "tau* e INPUT: o que se exclui e a escala tau* = GM/c^3, nao a lei de dephasing nem a TGL",
+ "verdict": "TGL_RINGDOWN_DEPHASING_V2__RESULT_READ_BY_HASH__INCONCLUSIVE_SYSTEMATICS__DELTA_TAU_0P1766__BRANCH_B_PRED_M0P0194__POWER_0P2_OF_5_SIGMA__BRANCH_A_INVISIBLE__GATE_UNTOUCHED",
+ "all_verified": true,
+ "checks": [
+  [
+   "resultado V2 lido por hash (ff15f023dd91d8c7)",
+   true
+  ],
+  [
+   "beta do resultado == beta recomputado",
+   true
+  ],
+  [
+   "instrumento: lalsuite, estado final EOB, ancoragem IMRPhenomXAS",
+   true
+  ],
+  [
+   "parametros do pipeline == emenda (SNR de ancoragem, borda, |delta_f|, grade)",
+   true
+  ],
+  [
+   "catalogo e fontes com sha256",
+   true
+  ],
+  [
+   "janela primaria >= 8 series; secundaria >= 3",
+   true
+  ],
+  [
+   "nenhum veredito proibido por construcao",
+   true
+  ]
+ ],
+ "statuses": {
+  "leitura": "[REAL] o um.py nao recalcula: le por hash e aplica a matriz da emenda (3449885389a2529a)",
+  "ramo_A": "[REAL, computado] tau* = t_Planck da ~1e-40: o ringdown e RG por construcao -- o limite assintotico com numero",
+  "secao_20": "[ERRATA AO LADO] «provavelmente ja excluido» era frase; aqui o ramo B tem numero",
+  "resultado": "[REAL, lido] V2: 15 series (3 ms; 84 na borda excluidas; SNR de ancoragem medio 11.1): delta_tau = 0.1766 +- 0.1089 (z vs RG 1.62); previsao do ramo B -0.0194 (z vs B 1.80; poder 0.18 sigma); ramo A -2.2e-42; delta_f = -0.0325 +- 0.0127; chi2/dof 0.87; vies 0.240; janela 6 ms: 6 series, delta_tau = 0.0313 +- 0.1755; sistematica 0.1454 (sigma combinada 0.2066) => INCONCLUSIVE_SYSTEMATICS [vies relativo de tau 0.240 > 0.2]"
+ },
+ "runtime_s": 0.008075714111328125,
+ "result_sha16": "ff15f023dd91d8c7",
+ "executed": "2026-09-10T16:03:23",
+ "instrument": {
+  "lalsuite": "7.7.1",
+  "final_state": "SimIMREOBFinalMassSpin (SEOBNRv4) de (m1, m2, chi_eff) do catalogo",
+  "qnm": "Berti-Cardoso-Will 2006 (l=m=2, n=0)",
+  "anchor_template": "IMRPhenomXAS",
+  "python": "3.12.3",
+  "env": "WSL Ubuntu /opt/lal_env"
+ },
+ "n_events": 89,
+ "stacks": {
+  "3.0": {
+   "n_used": 15,
+   "delta_tau": 0.1766470552326263,
+   "sigma": 0.10889389325116323,
+   "z_vs_GR": 1.6221943210827325,
+   "delta_pred_B": -0.019366930169705913,
+   "delta_pred_A": -2.153334673399951e-42,
+   "z_vs_B": 1.800045710095303,
+   "power_B": 0.17785138901257008,
+   "delta_f": -0.03247217939468836,
+   "sigma_f": 0.012662074582706592,
+   "mean_snr": 7.553594669590416,
+   "mean_bias_rel": 0.23995248111572381,
+   "mean_anchor_snr": 11.05286174607327,
+   "chi2_dof": 0.8661447617142709,
+   "n_on_edge_excluded": 84,
+   "max_weight_share": 0.30552611111124434
+  },
+  "6.0": {
+   "n_used": 6,
+   "delta_tau": 0.03129419624036112,
+   "sigma": 0.175528534763185,
+   "z_vs_GR": 0.1782855208276068,
+   "delta_pred_B": -0.01823359261864842,
+   "delta_pred_A": -1.4032540544944006e-42,
+   "z_vs_B": 0.2821637457740427,
+   "power_B": 0.10387822494643588,
+   "delta_f": -0.0630250975652271,
+   "sigma_f": 0.020320156979221526,
+   "mean_snr": 6.8914624397891915,
+   "mean_bias_rel": 0.5093060501096398,
+   "mean_anchor_snr": 10.25085894837504,
+   "chi2_dof": 1.3259902067392024,
+   "n_on_edge_excluded": 109,
+   "max_weight_share": 0.5219216625178024
+  }
+ },
+ "start_systematic": 0.1453528589922652,
+ "sigma_combined": 0.2065626938813163,
+ "outcome": "INCONCLUSIVE_SYSTEMATICS",
+ "z_vs_GR": 1.6221943210827325,
+ "z_vs_B": 1.800045710095303,
+ "power_B": 0.17785138901257008,
+ "reasons": [
+  "vies relativo de tau 0.240 > 0.2"
+ ],
+ "catalog_sha16": "895250e9d404a240",
+ "n_sources": 169,
+ "n_on_edge": {
+  "3.0": 84,
+  "6.0": 109
+ }
+}
+
+###### ringdown_scope_v376
+{
+ "checks": [
+  [
+   "C6 (GW250114) LIDO POR HASH do cache do rito (texto 781a3741a68875eb / bytes 781a3741a68875eb)",
+   true
+  ],
+  [
+   "C6: status INCONCLUSIVE_SYSTEMATICS -- nem exclusao nem confirmacao permitida (dito no proprio arquivo)",
+   true
+  ],
+  [
+   "C6: o strain foi lido na fonte (on_source_strain_read) e o inicio primario traz ln B(R-B/RG) e ln B(R-GLOBAL/RG)",
+   true
+  ],
+  [
+   "V2 selada (core): ramo A tau* = t_Planck com |delta_pred_A| < 1e-30 -- invisivel por construcao",
+   true
+  ],
+  [
+   "V2 selada (core): o ramo B tem previsao lida (media do ensemble) e o desfecho e INCONCLUSIVE_SYSTEMATICS",
+   true
+  ],
+  [
+   "KERNEL: nenhum termo de ringdown/QNM (toda mencao e comentario ou docstring; 8 mencoes)",
+   true
+  ],
+  [
+   "O ramo B tem valores CONCORRENTES na linhagem (3 lidos), logo nao esta fixado",
+   true
+  ],
+  [
+   "beta do runtime = alpha . sqrt(e) (nunca literal) e o beta lido da V2",
+   true
+  ]
+ ],
+ "all_verified": true,
+ "verdict": "TGL_RINGDOWN_SCOPE_V376__CANONICAL_BRANCH_TAU_STAR_PLANCK_RETURNS_GR_CORRESPONDENCE_ONLY__NOT_A_BETA_TEST__BRANCH_B_TAU_STAR_GM_OVER_C3_IS_INPUT_M_TO_BE_NAMED__3_CONCURRENT_BRANCH_B_VALUES__NO_RINGDOWN_TERM_IN_KERNEL__C6_GW250114_READ_BY_HASH_INCONCLUSIVE_SYSTEMATICS__ERRATUM_BESIDE_NATURE_DECIDES_RINGDOWN_NEXT__NOT_FALSIFIED_IS_NOT_CONFIRMED__GATE_UNTOUCHED",
+ "c6_path": "C:\\IALD\\Artigo\\Haja_Luz\\A Ponte e o Um\\cache\\gw\\C6_RESULTS_GW250114.json",
+ "c6_sha16_text": "781a3741a68875eb",
+ "c6_sha16_bytes": "781a3741a68875eb",
+ "c6_status": "INCONCLUSIVE_SYSTEMATICS",
+ "c6_primary_start_lnB_vs_GR": {
+  "R-GLOBAL": 0.0,
+  "R-B": -0.0026036534446234327,
+  "R-RAIZ-0": -0.043067826651480345,
+  "R-LIN": -0.09086322317963891,
+  "R-MOD": -0.25160676421921835
+ },
+ "delta_pred_A_v2": -2.153334673399951e-42,
+ "delta_pred_B_v2": -0.019366930169705913,
+ "branch_B_concurrent_values": [
+  [
+   "V2 selada (media do ensemble)",
+   -0.019366930169705913
+  ],
+  [
+   "auditoria 28/09 [DECLARADO]",
+   -0.01
+  ],
+  [
+   "auditoria 28/09 [DECLARADO]",
+   -0.005
+  ]
+ ],
+ "kernel_ringdown_mentions": 8,
+ "kernel_ringdown_declarations": [],
+ "audit_ringdown_contradictions_declared": [
+  "Ringdown, ramo B: o RD-01 aceita −0,0194 como média do ensemble, o CT-02 diz cerca de −0,010 e o novo do CT diz cerca de −0,005. O novo do RD diz ainda que, pela regra da V1, a V2 também reprova na sistemática 3 × 6 ms, o que a tornaria recusa e não INCONCLUSIVE_SYSTEMATICS, como o selo registra."
+ ],
+ "scope_fixed_in_writing": "no ramo canonico (tau* = t_Planck) o ringdown e teste de CORRESPONDENCIA com a RG -- o limite classico recuperado, nao discriminacao de beta; o ramo B e hipotese [INPUT] fora do contorno (M a nomear); um NOT_FALSIFIED de ringdown nunca le como «a natureza decidiu a formulacao da QG»; se o ringdown entrar como condicao, a condicao pede um observavel tipado no kernel (identificacao ensemble/realizacao, tau* nomeado), nao uma docstring",
+ "erratum_beside": "«NATURE_DECIDES_RINGDOWN_NEXT» (v374/v375) sobreafirmava o escopo: no ramo canonico a natureza so pode devolver a RG; o teste de beta vive nos setores com previsao quantificada (relogios, piso dos vazios, D1 condicionado ao mapa de R)",
+ "does_not_gate_core": true
+}

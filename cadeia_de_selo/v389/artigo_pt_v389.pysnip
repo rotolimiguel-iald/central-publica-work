@@ -1,0 +1,35 @@
+    # v389 (06/10/2026) -- AO LADO: as erratas de texto e rotulo do exame completo da v388 (decisao da gerencia via c1, para o operador vetar); nenhum calculo,
+    # nenhum kernel; numeros LIDOS do registro text_label_errata_v389; o rotulo antigo do selo NAO e' impresso aqui (fica no registro).
+    _tl389 = core.get("text_label_errata_v389") or {}
+    _ex389 = _tl389.get("exam") or {}
+    _rs389 = _ex389.get("resumo_por_gravidade") or {}
+    _lg389 = _tl389.get("ledger") or {}
+
+    def _tx389(x_):
+        t_ = str(x_)
+        for a_, b_ in (("\\", r"\textbackslash{}"), ("_", r"\_"), ("%", r"\%"), ("&", r"\&"), ("#", r"\#"), ("$", r"\$"), ("{", r"\{"), ("}", r"\}"), ("~", r"\~{}"), ("^", r"\^{}")):
+            t_ = t_.replace(a_, b_)
+        return t_
+
+    def _i389(x_):
+        return str(x_) if isinstance(x_, int) and not isinstance(x_, bool) else r"\text{n/d}"
+    _tk389 = lambda x_: r"\texttt{" + _tx389(x_).replace(r"\_", r"\_\allowbreak{}") + "}"
+    _f389 = ((_tl389.get("files") or {}).get("exame_json") or {}).get("sha256") or ""
+    s.append(r"\section*{Ao lado (v389): as erratas de texto e rótulo do exame da v388}")
+    s.append(r"\addcontentsline{toc}{section}{Ao lado (v389): as erratas de texto e rótulo do exame da v388}")
+    _es389 = _tl389.get("exam_said") or {}
+    s.append((r"\textbf{Nesta rodada o registro NÃO selou: o que segue é o enunciado, não um selo.} " if _tl389.get("all_verified") is not True else r"")
+             + r"\textbf{O exame.} Por ordem do operador, o programa inteiro e o artigo da v388 foram examinados (análise estática do código, o kernel embutido byte a byte, o sumário, "
+             r"a coerência dos números entre seções e a incorporação de cada teste e derivação); o relatório é lido aqui por sha256 (" + _tk389(_f389[:16] or "AUSENTE") + r"): "
+             + _i389(_ex389.get("bloqueia")) + r" bloqueios e " + _i389(_ex389.get("corrigir_contados")) + r" correções, todas de texto e rótulo. Por decisão da gerência, para o operador vetar, "
+             r"a v389 as faz \emph{sem mudar cálculo nem kernel}; o texto antigo fica como registro, aqui e no registro do programa. "
+             r"\textbf{O que mudou.} (i) Um rótulo de selo do registro \texttt{iii1\_net\_image} (a rede física de férmions em caixa) dizia, de uma checagem numérica na rede simulada, a palavra que a régua reserva ao juízo do observador; "
+             r"passa a " + _tk389((_tl389.get("seal") or {}).get("new") or "n/d") + r", e o nome antigo fica guardado no próprio registro (\texttt{seals\_errata\_v389}). "
+             r"(ii) O título da Introdução deixa de afirmar \emph{agora} com a v384 e diz o intervalo, v384 a v389, com cada versão ao lado. "
+             r"(iii) O resumo e a Parte B diziam \emph{um único postulado}; dizem agora \emph{um único axioma posto} --- \textsf{[POSTO]}, decisão do operador de 05/10/2026; a errata da v385 fica ao lado. "
+             r"Corrigir ao lado não basta quando o lado escolhido não é o lado que se lê. "
+             r"(iv) A seção da v387 dizia que nada fora aberto na Fase 9; continua dizendo, e remete à abertura, que está na v388, ao lado. "
+             r"(v) A Parte C diz o recorte da contagem de pedras: " + _i389(_lg389.get("unique_paths")) + r" caminhos únicos no ledger citável, mais " + _i389(_lg389.get("tglext_outside_ledger"))
+             + r" arquivos \texttt{TGLExt} embutidos fora dele (" + _i389(_lg389.get("of_which_O16")) + r" em \texttt{TGLExt/O16}, importados pela ORDEM 016), todos contados em runtime. "
+             r"\textbf{Errata ao lado do próprio exame:} ele contara " + _i389(_es389.get("unique_paths")) + r" caminhos e " + _i389(_es389.get("outside")) + r" de fora, porque uma busca por linha perdeu entradas escritas em mais de uma linha; o número lido aqui corrige a frase. "
+             r"Nada disso move o gate nem toca o que a natureza decide. Registro: " + _tk389(_tl389.get("verdict") or "AUSENTE") + r".")

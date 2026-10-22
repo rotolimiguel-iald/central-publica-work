@@ -1,0 +1,72 @@
+PATCH B v392 (conserto B da PROPOSTA_V392): rodape que le o axioma de toda declaracao do modulo + `example` -> `theorem` nos controles POSITIVOS
+Aplicacao: 5 substituicoes EXATAS em prove_bench_lean_controls / run_one de um_v392_candidato.py (o candidato e' CRLF; cada ancora ocorre UMA vez; verificado por gerar_patch_B.py:
+o fonte remendado faz ast.parse e a constante reproduz o sha256 f44787d703aa0fbab0e1095d73cf9b002471b5cc443e00d344ac417b9cab538a).
+NAO e' edicao de gerar_candidato_v392.py: a gerencia o encaixa como patch novo (ancoras = as linhas ANTES abaixo, sem o fim de linha).
+Efeito medido (RESULTADO_B_v392.json): todos os 52 positivos compilam; os 10 pedidos passam a ter linha(s) de axioma lida(s) pelo regex do um.py; o negativo artificial `by sorry` revela sorryAx;
+os 2 negativos de controle mantem o veredito. SEM o `example`->`theorem`, 7 dos 10 pedidos (os Good*, so `example`) NAO deixam constante: o rodape sozinho nao os cobre.
+Campos novos no registro de cada controle: `footer` {applied, sha256, examples_rewritten, total_line}. `ok` do POSITIVO passa a exigir `not bad_ax` (com o nome normalizado) e `footer_ok`.
+Cuidado: `#print axioms` de constante com universos escreve `Classical.choice.{u}` / `Quot.sound.{u}` (28 dos 52 positivos): sem a normalizacao `split('.{')[0]`, `bad_ax` acusaria falso positivo.
+
+====================================================================================================
+
+--- SUBSTITUICAO 1: ANTES (uma ocorrencia; indentacao exata) ---
+            src = re.sub(r"^import\s+(\S+)", _sub, src, flags=re.M)
+--- DEPOIS ---
+            src = re.sub(r"^import\s+(\S+)", _sub, src, flags=re.M)
+            # v392, conserto B: nos POSITIVOS (a) cada `example` vira `theorem _bench_example_N` (um `example` nao deixa constante no ambiente: o rodape nao o veria) e (b) o rodape le o axioma de TODA
+            # declaracao do modulo. O sha256 CONFERIDO acima e' o do corpus; o fonte transposto muda e isso fica REGISTRADO no campo `footer` (como a transposicao `TGLV350. -> TGLExt.V350`).
+            footer_b = (kind == "POSITIVO"); ex_n = 0
+            if footer_b:
+                _cnt = [0]
+                def _ex_b(m_):
+                    _cnt[0] += 1; return "theorem _bench_example_%d" % _cnt[0]
+                src = re.sub(r"(?m)^example\b", _ex_b, src); ex_n = _cnt[0]
+                src = src.rstrip("\n") + "\n" + _V392_FOOTER_B
+
+--- SUBSTITUICAO 2: ANTES (uma ocorrencia; indentacao exata) ---
+            ok = (pr.returncode == 0 and not errs and not sorry) if kind == "POSITIVO" else (pr.returncode != 0 and bool(sem) and not envbad)
+--- DEPOIS ---
+            ftot_b = re.search(r"TGL_FOOTER_B_TOTAL decl=(\d+) fora_do_trio=(\d+)", out); footer_ok = (not footer_b) or bool(ftot_b)   # v392: o rodape tem de ter RODADO (a linha total)
+            ok = (pr.returncode == 0 and not errs and not sorry and not bad_ax and footer_ok) if kind == "POSITIVO" else (pr.returncode != 0 and bool(sem) and not envbad)
+
+--- SUBSTITUICAO 3: ANTES (uma ocorrencia; indentacao exata) ---
+            sorry_ax = any("sorryAx" in v_ for v_ in ax_seen.values()); bad_ax = sorted({a_ for v_ in ax_seen.values() for a_ in v_ if a_ not in ("propext", "Classical.choice", "Quot.sound")})
+--- DEPOIS ---
+            sorry_ax = any("sorryAx" in v_ for v_ in ax_seen.values())
+            # v392: `#print axioms` de constante com universos escreve `Classical.choice.{u}`; o nome do axioma e o que vem antes de `.{`
+            bad_ax = sorted({a_ for v_ in ax_seen.values() for a_ in v_ if a_.split(".{")[0] not in ("propext", "Classical.choice", "Quot.sound")})
+
+--- SUBSTITUICAO 4: ANTES (uma ocorrencia; indentacao exata) ---
+"sorry_message": sorry_msg, "sorryAx_in_print_axioms": sorry_ax, "axioms_outside_trio": bad_ax, "print_axioms_read": len(ax_seen)})
+--- DEPOIS ---
+"sorry_message": sorry_msg, "sorryAx_in_print_axioms": sorry_ax, "axioms_outside_trio": bad_ax, "print_axioms_read": len(ax_seen),
+                        "footer": {"applied": footer_b, "sha256": (_V392_FOOTER_B_SHA256 if footer_b else None), "examples_rewritten": ex_n, "total_line": (list(map(int, ftot_b.groups())) if ftot_b else None)}})
+
+--- SUBSTITUICAO 5: ANTES (uma ocorrencia; indentacao exata) ---
+def prove_bench_lean_controls(ONE, core):
+--- DEPOIS ---
+_V392_FOOTER_B = r"""
+-- RODAPE B (v392; conserto B da PROPOSTA_V392): o axioma de TODA declaracao deste modulo, no formato do #print axioms
+open Lean Elab Command in
+run_cmd do
+  let env ← getEnv
+  let mut n_decl := 0
+  let mut n_fora := 0
+  for (n, _) in env.constants.map₂.toList do
+    let axs ← liftCoreM (collectAxioms n)
+    n_decl := n_decl + 1
+    unless axs.all (fun a => a == `propext || a == `Classical.choice || a == `Quot.sound) do n_fora := n_fora + 1
+    if axs.isEmpty then
+      IO.println ("'" ++ n.toString ++ "' does not depend on any axioms")
+    else
+      IO.println ("'" ++ n.toString ++ "' depends on axioms: [" ++ String.intercalate ", " (axs.toList.map Name.toString) ++ "]")
+  IO.println ("TGL_FOOTER_B_TOTAL decl=" ++ toString n_decl ++ " fora_do_trio=" ++ toString n_fora)
+"""
+_V392_FOOTER_B_SHA256 = "f44787d703aa0fbab0e1095d73cf9b002471b5cc443e00d344ac417b9cab538a"   # sha256 de RODAPE_B_v392.lean (conserto_B); conferido por assert abaixo
+assert hashlib.sha256(_V392_FOOTER_B.encode("utf-8")).hexdigest() == _V392_FOOTER_B_SHA256, "rodape B adulterado"
+
+
+def prove_bench_lean_controls(ONE, core):
+
+====================================================================================================
+RODAPE_B_v392.lean sha256 f44787d703aa0fbab0e1095d73cf9b002471b5cc443e00d344ac417b9cab538a

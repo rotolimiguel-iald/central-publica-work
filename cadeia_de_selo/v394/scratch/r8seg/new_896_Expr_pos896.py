@@ -1,0 +1,1 @@
+"""Consumer for the proved M2 reading residual; all tests are synthetic."""

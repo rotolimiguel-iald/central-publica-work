@@ -1,0 +1,26 @@
+--- ANTES/diff_e_pinos_v394.py
++++ DEPOIS/diff_e_pinos_v394.py
+@@ -5,11 +5,12 @@
+ import ast, difflib, hashlib, json, os, sys
+ sys.stdout.reconfigure(encoding="utf-8")
+-HERE = os.path.dirname(os.path.abspath(__file__)); sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(HERE)), "v390_pacote"))
++HERE = os.path.dirname(os.path.abspath(__file__)); sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(HERE)), "v390_pacote")); sys.path.insert(0, HERE)
+ from carregar_embutido import carregar  # noqa: E402
++import delta19_v394 as DL  # noqa: E402
+ NOS = os.path.join("C:" + os.sep, "IALD", "Artigo", "Haja_Luz", "A Ponte e o Um", "Nós")
+ sha = lambda b: hashlib.sha256(b).hexdigest()
+ if sha(open(os.path.join(NOS, "um.py"), "rb").read())[:16] != "18be2ddb06c60f90":   # o Nos ja nao e' a v393 (rito em curso): a v393 selada vem da copia base_v393
+     NOS = os.path.join(HERE, "base_v393")
+-E0, _, _, h0 = carregar(os.path.join(NOS, "um.py")); E1, _, _, h1 = carregar(os.path.join(HERE, "um_v394_candidato.py"))
++E0, _, _, h0 = carregar(os.path.join(NOS, "um.py")); E1, _, _, h1 = carregar(os.path.join(HERE, DL.CANDIDATO))
+ novos = sorted(set(E1) - set(E0)); removidos = sorted(set(E0) - set(E1)); mudados = sorted(k for k in set(E0) & set(E1) if E0[k] != E1[k])
+ out = ["DIFF DO KERNEL EMBUTIDO v393 (%s) -> v394 (%s)" % (h0, h1), "", "novos (%d):" % len(novos)] + ["  + %s  %s  %d B" % (k, sha(E1[k].encode())[:16], len(E1[k].encode())) for k in novos]
+@@ -27,6 +28,6 @@
+       "pino_do_pino": f(os.path.join(HERE, "PINO_RECIBO_PRE_SELO_v394.json")), "motivos": pr.get("motivos_de_nao_ser_utilizavel")}
+ assert rp["sha256"] == pr["sha256"], "o recibo pre-selo mudou desde o pino"
+-pn = {"criterios": f(os.path.join(V, "CRITERIOS_v394.json")), "kernel_recibo": f(os.path.join(HERE, "kernel", "KERNEL_RECIBO_v394.json")),
+-      "candidato": f(os.path.join(HERE, "um_v394_candidato.py")), "esperados": f(os.path.join(HERE, "ESPERADOS_v394.json")), "pins_do_candidato": f(os.path.join(HERE, "v394_pins.py")),
++pn = {"criterios": f(os.path.join(V, "CRITERIOS_v394.json")), "kernel_recibo": f(os.path.join(HERE, DL.KERNEL_DIR, "KERNEL_RECIBO_v394.json")),
++      "candidato": f(os.path.join(HERE, DL.CANDIDATO)), "esperados": f(os.path.join(HERE, "ESPERADOS_v394.json")), "pins_do_candidato": f(os.path.join(HERE, "v394_pins.py")),
+       "esboco_R3_3": f(os.path.join(os.path.dirname(HERE), "v392", "vinculo", "sincronizar_bancada.py")), "bateria": f(os.path.join(os.path.dirname(HERE), "v392", "vinculo", "BATERIA_VINCULO.json")),
+       "recibo_pre_selo": rp,

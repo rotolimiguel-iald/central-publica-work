@@ -1,0 +1,805 @@
+{
+ "grupos": [
+  {
+   "lente": "trabalhador_runtime",
+   "itens": [
+    {
+     "id": "#3",
+     "estado": "RESOLVIDO",
+     "evidencia": "Trabalhador corrente, sha256 b3bdecab… lido por script. É o mesmo que o candidato de ENSAIO embute e o mesmo que o spec v4 B congela (conferir_embutidos.json, f70d121f…).\n- Docstring de generator_from_propagator (301-305): τ‖(L̂−L̂†)/2i‖ é «só INFORMAÇÃO», ccp_min_rel é «LEGITIMIDADE» e gen_rel_dev é «o CERTIFICADO do ramo principal, a posteriori».\n- O comentário do t1_instance (700) diz «a posteriori».\n- branch_ok (702-703): com σ = 0 usa gen_rel_dev ≤ branch_dev_sigma0 (spec 1e-6) e ccp ≥ −ccp_rel; com σ > 0 usa gen_rel_dev ≤ 1e-3. τ‖Im L̂‖ não entra.\n- O E4 (444) exige gen_rel_dev ≤ 1e-8.\n- `del J, K` está na linha 330, dentro de `if checks:`.\n- MD v4 B:79: «O RAMO do logaritmo é CERTIFICADO pelo arnês … τ‖(L̂ − L̂†)/2i‖ fica registrado como informação».\n- a4_puras.json (e9acc727…), em torch na CPU com o amortecimento analítico de 2 níveis: as quatro combinações de checks e S_true rodam sem erro, com gen_rel_dev 2,1e-15.\n- teste_motor_v5/result.json (trabalhador b3bdecab): E4 com gen_rel_dev 3,9e-14 e ccp −9,1e-14.",
+     "falta": ""
+    },
+    {
+     "id": "#6",
+     "estado": "PARCIAL",
+     "evidencia": "Já corrigido no trabalhador b3bdecab:\n- A docstring de classify (208-210) diz que n0 = 0 é VIOLAÇÃO.\n- identity_check (549-551) inclui ZERO_MODE.\n- O D128 calcula zero_mode_ok (890) e o derive_verdict o lê (1088).\n- O resumo do runtime (243) conta todas as chaves conferidas. Em a4_runtime.json (9318de48…), summary.T2.identities_checked traz ZERO_MODE.\n\nderive_verdict sintético (a4_puras.json):\n- D128 com ran = True e zero_mode_ok = False dá TGL_QUANTUM_PILLAR_V1__IDENTITY_VIOLATED_1__ENGINE_SUSPECT__RESULTS_VOID.\n- D128 com ran = False, zero_mode_ok = False e status_code NOT_RUN_ERROR_RUNTIMEERROR dá «…FIVE_JUMP_GKLS…IDENTITIES_HOLD…D128_NOT_RUN_ERROR_RUNTIMEERROR…CPU_REFERENCE_AGREES…».",
+     "falta": "[BAIXO] Em 1088, a violação só conta com `bool(ran)`. Se o D128 mede n0 = 0 e depois cai no estacionário ou no RK4, a violação já medida some e o veredito diz IDENTITIES_HOLD.\n\nCorreção: tirar a condição `ran`. O zero_mode_ok é gravado logo depois do classify, e `is False` já exclui a ausência. O hash do trabalhador muda; regenerar o spec.\n\nO status NO_ZERO_EIGENVALUE não foi criado. A justificativa da disposição se sustenta: a violação anula o resultado e diz a causa."
+    },
+    {
+     "id": "#15",
+     "estado": "RESOLVIDO",
+     "evidencia": "- O spec v4 B (sha 83b5488e…) tem cpuref.tol = {cci 1e-9, purity 1e-9, folds_n_c1 1e-9, gap_rel_rel 1e-6, choi_min 1e-9, min_gap_rel_for_compare 1e-6}, sem folds_n_c2.\n- compare_cpuref (1013) só decide pelas chaves que estão em tol e devolve informative_only = ['folds_n_c2'].\n- O E8 (463-478) passou em teste_motor_v5 e teste_tempo_v6, ambos com o trabalhador b3bdecab.\n- O MD:98 diz n(c²) e n(c³) «só como INFORMAÇÃO», com a medida marcada [DECLARADO pela aferição].\n- Reaplicação: a4_rebin_cpuref.py e .json (e052de04…) passam pelo compare_cpuref CORRENTE as linhas já medidas na 2ª passada: 1.350 linhas, 758 comparadas, operadores aleatórios de modo lento, MAGMA × LAPACK.\n- Arquivos: verif_cpuref_tol.json (687af093…), _bidir (bf61e91d…), _ponta_a_ponta (bcbe5812…).\n- Resultado: 0 discordâncias nos três. Máximos: n(c¹) 1,37e-10, CCI 6,7e-11, gap_rel_rel 8,2e-10. O n(c²) chega a 9,24e-6 e fica só como informação.",
+     "falta": "Nada obrigatório. O autoteste pedido «com operadores aleatórios de modo lento» virou o E8 com linhas sintéticas. Ele confere a lógica do comparador; a margem numérica é a medida da aferição [DECLARADO].\n\n[OPEN] A discordância MAGMA × LAPACK em d = 32 e d = 64 (8 linhas do cpuref) não foi medida por ninguém."
+    },
+    {
+     "id": "#36",
+     "estado": "PARCIAL",
+     "evidencia": "- O trabalhador grava cpuref_sha256 (1229) e details_sha256 (1233) no result.json.\n- O runtime leva details_sha256, cpuref_sha256 e run_dir ao core (321-323).\n- O registro do selo no candidato de ENSAIO tem essas chaves (linha 208042), e a lista hasheada inclui um_absoluto_pilar_quantico.json (208334).\n- Caso A do a4_runtime.json: o arquivo do Nós tem o mesmo sha256 do result.json desta rodada (922ab471…).\n- A cadeia por hash fecha: selo → arquivo do Nós (= result.json) → details_sha256 e cpuref_sha256.",
+     "falta": "(1) details.jsonl e cpuref.json continuam só em run_dir, fora da lista do selo, e nenhum script os copia. A disposição diz que isso fica «dito no handoff», mas nenhum handoff da v384 existe ainda (grep no pacote e na memória). Uma custódia que copie só a lista do selo guarda os hashes sem os dois artefatos.\n(2) Nem o runtime nem o conferir_rito_v384.py conferem details_sha256 ou cpuref_sha256 contra os arquivos em disco: 0 conferências no conferidor.\n(3) No REUSE, run_dir é o cache_dir. Esse diretório muda: _qp_save_cache o apaga e o troca na próxima rodada completa com a mesma chave. O cpuref.json novo traz outro run_id e outros segundos, então o run_dir de um selo intermediário pode passar a apontar para arquivos de outro hash. No selo final (COMPUTE), o run_dir não muda."
+    },
+    {
+     "id": "#37",
+     "estado": "RESOLVIDO",
+     "evidencia": "- summarize_T1 conta n_nonfinite_beta por σ (745).\n- _qp_summary leva por d e σ max_beta_rel_err e n_nonfinite_beta (257-258). Em a4_runtime.json, summary.T1.per_d['64'] tem n_nonfinite_beta {'1e-08': 1} e mediana Infinity.\n- O artigo usa _t1nz4 (pysnip 35-44) e a frase 94-95.\n- a4_artigo_t1.json (b16b86b1…), arnês sintético do artigo (cópia de simular.py):\n  - caso I, PT: «a maior mediana finita … é 5,0×10^{-6} e 5,0×10^{-4} …; a 10^{-8}, sem solução finita em d=64: 1 de 1»;\n  - caso J: «n/d e n/d» e a lista k de n por dimensão;\n  - o EN espelha o PT.\n- Nenhuma exceção.",
+     "falta": ""
+    },
+    {
+     "id": "N0",
+     "estado": "RESOLVIDO",
+     "evidencia": "No código:\n- ParentGone(BaseException) na linha 86.\n- O main tem `except (Exception, ParentGone)` com parent_gone (1253-1255).\n- A espera da CPU é feita em fatias de 20 s com prog.set(force=True) (1217-1224).\n- O RK4 do D128 chama prog.set a cada 50 passos (905-906).\n\na4_puras.json, com funções puras e o PID de um processo morto:\n- issubclass(ParentGone, Exception) = False.\n- Um `except Exception` NÃO o engole.\n- A guarda do main dá TGL_QUANTUM_PILLAR_V1__NOT_RUN__PARENT_GONE__GATE_UNTOUCHED.\n- No RK4, a chamada sem force não levanta dentro de 20 s e levanta depois.\n\na4_espera_cpu.json (b082e5d1…) executa o TEXTO EXATO das linhas 1217-1224 com um processo falso:\n- com o pai morto, o ParentGone sai na 1ª fatia (0,011 s);\n- com o pai vivo e prazo curto, o processo é morto após 5 fatias.\n\nO MD v4 B:106 e o :132 descrevem as janelas, inclusive a que fica sem conferência, uma única chamada longa de espectro ou estacionário.",
+     "falta": ""
+    },
+    {
+     "id": "N1",
+     "estado": "RESOLVIDO",
+     "evidencia": "`del J, K` está na linha 330, dentro de `if checks:`. Em a4_puras.json, generator_from_propagator(checks=False, S_true=S) roda sem UnboundLocalError e devolve gen_rel_dev 2,1e-15.",
+     "falta": ""
+    },
+    {
+     "id": "N4",
+     "estado": "RESOLVIDO",
+     "evidencia": "- _qp_out_marker (runtime 226-232) grava o marcador por temporário e substituição.\n- Ele é chamado nos caminhos refused (289-292) e NO_RESULT_FILE (310-315, sem o return antigo antes do marcador) e em todo caminho sem copied_to_out (373-377). A cópia do resultado também é atômica (346-348).\n\nEm a4_runtime.json, com o arquivo da rodada A no Nós:\n- caso C (sem resultado): o Nós passa a ser o marcador NOT_RUN__NO_RESULT_FILE com o run_id DESTA rodada (nos_ainda_e_o_de_A false);\n- caso D (corrompido): marcador FINISH_FAILED;\n- caso E (recusa): marcador LAUNCH_FAILED.",
+     "falta": "O cenário do achado está fechado. Resta um resíduo, quando o próprio marcador falha ao ser gravado; ele vai como achado novo."
+    },
+    {
+     "id": "N5",
+     "estado": "RESOLVIDO",
+     "evidencia": "- O filho é lançado com --parent-pid str(os.getpid()) (1188).\n- O main repassa parent_pid ao run_cpuref (1154).\n- run_cpuref confere parent_alive antes de cada item e levanta ParentGone (966-967); o handler do filho grava cpuref_error.json com NOT_RUN__PARENT_GONE.\n- parent_alive(morto) = False (a4_puras).\n\nA granularidade é por item: um item de d = 64 custa minutos na CPU. O MD:132 diz «a referência na CPU o vê e sai».",
+     "falta": ""
+    },
+    {
+     "id": "N6",
+     "estado": "RESOLVIDO",
+     "evidencia": "É duplicata do N0. Os três furos estão fechados:\n- espera da CPU em fatias (1217-1224);\n- o D128 não engole o ParentGone, que é BaseException e não é pego pelo except Exception da linha 928;\n- as fases também não o engolem (except Exception da linha 1205).\n\nA evidência está em a4_puras e a4_espera_cpu.",
+     "falta": ""
+    },
+    {
+     "id": "N8",
+     "estado": "PARCIAL",
+     "evidencia": "_qp_save_cache (211-220) envolve a troca. Na falha, devolve o antigo (os.replace(old, cdir)), apaga o tmp e relança.\n\na4_runtime.json:\n- Caso B2 (falha só a troca tmp → cdir): o cache volta igual, com sha 15be909d… antes e depois; sobras []; cache_error registrado.\n- Caso B3 (falham a troca E a volta): o cdir fica ausente e o .old_20261003_144109 sobra. O cache_error só cita a 1ª falha, porque o erro da volta é engolido por `except Exception: pass` (216-218).",
+     "falta": "[BAIXO] A correção pedia «registrando os dois erros», e o erro da volta não é registrado. Nada se perde, porque o .old_ fica no disco, mas a disposição («o cache antigo volta ao lugar») não vale quando a própria volta falha, e isso fica sem registro.\n\nCorreção: guardar o erro da volta junto no erro relançado."
+    },
+    {
+     "id": "N12",
+     "estado": "RESOLVIDO",
+     "evidencia": "- compare_cpuref devolve read, compared = n − near e not_comparable (1015).\n- derive_verdict tem o ramo CPU_REFERENCE_NOT_COMPARABLE (1093-1094).\n- O artigo tem o ramo «não pôde comparar nenhum ponto» (pysnip 100-101), e o MD:114 dá o ramo 8 com NOT_COMPARABLE.\n- a4_puras, caso all_near: read 1, compared 0, not_comparable True; o veredito é …CPU_REFERENCE_NOT_COMPARABLE__RESULTS_VOID….",
+     "falta": "A precedência desse ramo sobre «não é desta rodada» é tratada à parte, como achado novo."
+    },
+    {
+     "id": "N17",
+     "estado": "RESOLVIDO",
+     "evidencia": "Duplicata do N4. a4_runtime: casos C e D, o arquivo da rodada anterior é substituído pelo marcador desta rodada.",
+     "falta": ""
+    },
+    {
+     "id": "N27",
+     "estado": "RESOLVIDO",
+     "evidencia": "A escrita final do progresso (1247-1250) está em try/except Exception: pass, depois do write_result. Uma falha ali não chega ao except do main e não reescreve o result.json.",
+     "falta": ""
+    },
+    {
+     "id": "N28",
+     "estado": "RESOLVIDO",
+     "evidencia": "Duplicata do N1 (linha 330; a4_puras sem erro). A docstring foi reescrita (301-305), como no #3.",
+     "falta": ""
+    },
+    {
+     "id": "N29",
+     "estado": "RESOLVIDO",
+     "evidencia": "Duplicata do N0:\n- o RK4 confere o pai a cada 50 passos, com no máximo 20 s entre conferências (905-906);\n- a espera da CPU é em fatias;\n- o ParentGone não é engolido.\n\nO espectro e o estacionário do D128 seguem sem conferência no meio da chamada. O MD:132 diz isso.",
+     "falta": ""
+    },
+    {
+     "id": "N30",
+     "estado": "RESOLVIDO",
+     "evidencia": "Duplicata do N4 (a4_runtime, casos C, D e E).",
+     "falta": ""
+    },
+    {
+     "id": "N31",
+     "estado": "RESOLVIDO",
+     "evidencia": "O runtime (243) soma todas as chaves de identities_checked. Em a4_runtime, summary.T2.identities_checked traz ZERO_MODE, CP, TP, NONRETURN, PSD, SS_RES e SPOHN.",
+     "falta": ""
+    },
+    {
+     "id": "N35",
+     "estado": "RESOLVIDO",
+     "evidencia": "Duplicata do N12. O _cpu4 (pysnip:101) tem o ramo not_comparable antes de «discorda»; o EN é idêntico em estrutura.",
+     "falta": ""
+    }
+   ],
+   "examinado": [
+    "Mapa de rotas consultado antes de examinar (python C:\\IALD\\MAPA_DE_ROTAS\\rotas.py consultar \"pilar\"): 5 rotas, cabeça af5e8bd20c96a5b5. Nenhuma rota cobre ParentGone, o marcador do Nós ou a precedência NOT_COMPARABLE. Nada foi registrado no mapa.",
+    "pilar_quantico_worker.py, sha256 b3bdecab06c180064588c65e9d80712ed32a5bfa19635bfaa7e3d4f1162d331d. Igual ao embutido no candidato de ENSAIO e ao spec.worker_sha256 do rascunho v4 B (conferir_embutidos.json, f70d121f30c8609b85ec2fd9bc1840ce472a90640d18f60c45eb72fb8d826bd0).",
+    "pilar_quantico_worker_auditado_3a_passada.py, sha256 569c6eb422fe78d3d7305842d1d29e6940dabae46e5e2c5cf67e95eb97a4b21f. O diff contra o corrente está em diff_worker_3a_corrente.txt (ffa5aa42722963d23a2c087c3181def823ee65f6d1010faf9ccc8f06e32ba3ee).",
+    "v384_runtime.py, sha256 10dea1131c66981ce52304cd062ac4a92287f07678492349058451636cf43515; .bak_antes_afer3, sha256 7ce2975c17efc96afcf942eb1dcfd38d37f73ca7da2f8e081b3aa97b00a311d8. As 374 linhas que não são marcadores de substituição estão idênticas no candidato de ENSAIO.",
+    "um_v384_candidato_ENSAIO.py, sha256 e112b8779693fb3d435af0cef9ff0e9b1037c9979f11af6690f8617064a4b1c8. Lido só por grep e faixa: runtime 192291-192670, ligação 205405 e 207766, registro do selo 208042, lista do selo 208334.",
+    "artigo_pt_v384.pysnip (242b3aba…) e artigo_en_v384.pysnip (76f8d185…).",
+    "conferir_rito_v384.py (b0a63f36…), só lido. Não confere details_sha256 nem cpuref_sha256.",
+    "Rascunho v4 B .json (7d28e2c8…; spec sha 83b5488e…) e .md (53f5892d…), linhas 69, 79, 98, 106, 114 e 132. O rascunho A (.json 8f8e904d…) também foi lido no spec.",
+    "teste_motor_v5/result.json (48dfb7ef…) e teste_tempo_v6/result.json (0dcd4fd2…): E1..E8 passaram, com o trabalhador b3bdecab.",
+    "afericao2_resultado.json (081e97bc…), afericao3_resultado.json (a4dc5181…), disposicoes_afericoes_v384.json (1a1f9df7…) e AFERIDOR_v384.txt (e6de796f…).",
+    "a4_puras.py (da8a3aa4…) → a4_puras.json (e9acc727…). Funções PURAS da cópia pqw_copia.py (b3bdecab), com entradas sintéticas: ParentGone/Progress/parent_alive, generator_from_propagator em torch na CPU (CUDA_VISIBLE_DEVICES=-1, amortecimento analítico de 2 níveis), classify, identity_check, summarize_T2, summarize_T1, compare_cpuref e derive_verdict.",
+    "a4_espera_cpu.py (a8bfe86a…) → a4_espera_cpu.json (b082e5d1…). O texto exato das linhas 1217-1224 rodou com um processo falso.",
+    "a4_runtime.py (8b3ffb56…) → a4_runtime.json (9318de48…). quantum_pillar_finish_v384, _qp_save_cache, _qp_out_marker e _qp_summary do candidato rodaram em sandbox com resultados sintéticos e falhas injetadas. derive_verdict rodou num subprocesso, via _qp_rederive, sobre a cópia materializada.",
+    "a4_rebin_cpuref.py (da19e6cc…) → a4_rebin_cpuref.json (e052de04…). As diferenças medidas na 2ª passada passaram pelo compare_cpuref corrente.",
+    "a4_artigo_t1.py (463e036a…) → a4_artigo_t1.json (b16b86b1…), com a cópia simular_copia.py do arnês do artigo e cores sintéticos, sem pdflatex.",
+    "NÃO rodei o trabalhador em modo algum. NÃO chamei five_jumps, canonical_H, t1_instance, t4_instance, run_T1-T4, run_D128 nem run_cpuref. NÃO rodei os scripts do rito nem os geradores. NÃO usei a GPU (o torch rodou só na CPU). Escrevi só em scratchpad\\v384\\aferidor4_trabalhador_runtime\\."
+   ]
+  },
+  {
+   "lente": "lancador",
+   "itens": [
+    {
+     "id": "#9",
+     "estado": "PARCIAL",
+     "evidencia": "rito_v384.sh corrente (sha256 21584e80923edc9b…; antes 2d671965497bd1a1…). Arnês com stubs na minha pasta (rito_teste.sh 4ac1bfed0223bf48 = cópia com 4 trocas apenas: PK, NOS, caminho do ESPERADOS e 'sleep 60'→${VIGIA_SLEEP}; powershell.exe/taskkill/nvidia-smi por PATH para stubs conferidos antes de rodar; um.py e trabalhador FALSOS). O que foi RESOLVIDO: (1) o trap vem antes da parada (:84-85 antes de :88-89). No S9, um TERM durante o Stop-ScheduledTask leva a START_TASK (eventos 665c8aaa13134aa3). (2) O vigia sai quando o lançador morre (:104, :109). No S7 (kill -KILL no sh), o log mostra 'VIGIA: o lancador morreu -- o vigia sai' e o marcador fica (eventos 0072531d842c320f). (3) O marcador é relido pela rodada seguinte: no S6, com restaurar=1, sai START_TASK (645748ada8f47b01). (4) Existe `kill $VPID; wait $VPID` (:47). O que RESTA: (a) S10 (eventos 252e371e8fa7c7ee). O vigia entrou no ramo de parada; o stop é simulado por um filho NATIVO que dorme 8 s. Depois vêm religar, kill+wait (o wait volta na hora), START_TASK às 14:48:42.501, o log 'servidor de volta', a remoção do marcador e a saída rc=0. Às 14:48:46.348 o filho nativo órfão do vigia faz 'servidor 1->0'. No MSYS, matar o subshell não mata o powershell nativo que ele rodava: o servidor recém-religado cai, e sem marcador. É a corrida que a 2ª passada mandou fechar com a correção 1. (b) S13 (9cc70feb06fa208e): um TERM dentro do religar, antes do Start, aborta a restauração (exit dentro do trap EXIT). O Start-ScheduledTask nunca é emitido e o servidor fica 0. Só o marcador cobre esse caso. (c) O marcador só é lido pelo próprio rito_v384.sh. Grep por 'servidor_parado_pelo_rito' em scratchpad\\v384 (fora do rito, só textos de aferição), em C:\\IALD\\projetos_pyhton\\IALD (*.ps1/py/bat/cmd), em memory\\ e em C:\\LAR_MIGUEL (*.py/ps1/json) deu 0 leitores. Além disso, o marcador mora no scratchpad da sessão.",
+     "falta": "(1) Antes do Start-ScheduledTask, esperar que nenhum processo com 'stop_iald_llama\\.ps1' na linha de comando esteja vivo (Get-CimInstance em laço com prazo), ou o vigia gravar o PID nativo do stop para o religar esperar por ele. (2) Na 1ª linha do religar, `trap '' TERM HUP INT`, para a restauração não ser abortada por sinal (S13). (3) Se a «rodada seguinte» não for garantida, um leitor do marcador fora do rito_v384.sh (SINAL/LAR ou nota de memória), como pedia a correção 4 da 2ª passada. (4) A semântica do marcador: ver o achado novo sobre restaurar=0."
+    },
+    {
+     "id": "#14",
+     "estado": "PARCIAL",
+     "evidencia": "RESOLVIDO no núcleo. Com tarefa ausente e servidor vivo, a recusa vem com o código 13 ANTES de qualquer parada: no S5, nenhum STOP_TASK, rc=13 (eventos 3330654dd0329c4c). Se a sonda da tarefa falha, o código é 14 (S5c, 50b6d6fe2c19a8a8). RESTA o sub-caso que o verificador da 2ª passada incluiu, a tarefa DESABILITADA. Get-ScheduledTask devolve tarefas desabilitadas (TAREFA_EXISTE=1), e o lançador não confere o State: grep -c 'Disabled' rito_v384.sh = 0. No S12 (tarefa existe, não rodando, llama-server manual vivo, Start-ScheduledTask falhando como numa tarefa desabilitada; stub; [KNOWN] o Agendador não executa tarefa desabilitada), há STOP_TASK e STOP_PS1, o START falha, o AVISO sai depois de 180 s e o lançador termina rc=0 com o servidor parado (eventos 64f3ce7c05f75359; log dc034105142b8204…). O AVISO continua fora da conferência: grep -c -E 'AVISO|rito_servidor' conferir_rito_v384.py = 0.",
+     "falta": "Recusar com código próprio, antes de parar, se `(Get-ScheduledTask ...).State -eq 'Disabled'` e o servidor estiver vivo. Fazer o conferir_rito_v384.py ler o AVISO do rito_servidor_v384.log, ou o lançador sair com código distinto quando a restauração falhar."
+    },
+    {
+     "id": "N3",
+     "estado": "REGRESSAO",
+     "evidencia": "O NÚCLEO está resolvido. O rito roda em segundo plano com wait (:126-128), e TERM/HUP agem na hora no MSYS. No S3 TERM (eventos 6256cbf52da6b616): ENVIO_TERM às 14:42:28.831, PS_MATA_UM_CONSULTA, TASKKILL //T //F do um falso VIVO (mortos=[um, trabalhador]) às 14:42:30.260, orfaos, START_TASK com um=MORTO às 14:42:31.420, trailer RITO_RC=SINAL_TERM, rc=143. HUP idêntico (f4bb22179db712f8). O MD:133 não chama mais o trabalhador vivo de «órfão». A REGRESSÃO introduzida pela correção: sinal() (:64-69) grava o trailer (:67) sempre que rodada_v384_stdout.txt existe, sem saber a fase. (i) S8 (TERM durante a espera da porta 8081, depois de um rito rc=0): o stdout termina em 'RITO_RC=0' / 'RITO_RC=SINAL_TERM' (sha256 2f883b94e8e0b6d2…), o log diz 'o rito esta perdido' e o rc é 143. (ii) S13: o mesmo trailer duplo (5945b5e570…); o Start nunca é emitido. (iii) S9 (TERM durante o Stop-ScheduledTask, com o stdout da tentativa ANTERIOR presente, terminando em RITO_RC=0): 'RITO_RC=SINAL_TERM' é anexado ao stdout ANTERIOR (a7114fe4af06e232…) antes de ele virar tentativaN. Antes da correção (bak 2d671965…) não havia trap de TERM, e nenhum desses anexos acontecia. grep -c -i '\\bFASE\\b' rito_v384.sh = 0.",
+     "falta": "Dar fase ao manejador. FASE=rito antes do `( ... ) &`, limpa logo depois do `echo RITO_RC=$rc`. sinal() só chama mata_um e só grava RITO_RC=SINAL_x se FASE=rito; antes do rito, só registra e sai, sem tocar no stdout; dentro do religar, os sinais ficam ignorados (`trap '' TERM HUP INT`). Severidade da regressão: MEDIO (trailer falso no stdout canônico, inclusive no da tentativa anterior, e a frase 'o rito esta perdido' num rito que terminou rc=0)."
+    },
+    {
+     "id": "N7",
+     "estado": "RESOLVIDO",
+     "evidencia": "A trava agora exige número: rito_v384.sh:97 tem `case \"$mem\" in ''|*[!0-9]*) ... exit 12`, e :98-100 recusa acima de 6000 com o código 11. Stubs: no S4a (nvidia-smi rc=9 com o texto 'NVIDIA-SMI has failed…'), o log diz 'a VRAM usada nao e' legivel (...) -- NAO RODO', rc=12 e START_TASK (eventos 2bb1fc50cd17551e). No S4b (saída vazia), rc=12 e START_TASK (12fe6e6caafa9dac). O controle S4c (31000) dá rc=11 (39db532446a44997). O cabeçalho (:7) e o MD:133 (A b7b0b6f0…, B 53f5892d…) dizem 'VRAM usada LEGÍVEL e ≤ 6 000 MiB (senão não roda)'.",
+     "falta": ""
+    },
+    {
+     "id": "N34",
+     "estado": "RESOLVIDO",
+     "evidencia": "O estado anterior agora é lido pela TAREFA e pelo processo, e sonda vazia conta como «ligado» (:72-76). S11a (tarefa rodando=1, llama-server vivo=0, o supervisor no intervalo de reinício): 'restaurar no fim=1' e START_TASK (f15f870256f56427). S11b (as duas sondas vazias): restaurar=1 e START_TASK (0a160a4140fcdbb3). Controle S11c (tarefa existe, servidor desligado): 'nao religo' (1acbb0dd31900991). Servidor ligado sem tarefa: recusa 13 antes de parar (S5). Sonda da tarefa ilegível: 14 (S5c). Cabeçalho reescrito (:6-10).",
+     "falta": ""
+    }
+   ],
+   "examinado": [
+    "Mapa de rotas (só consulta): 'pilar' devolveu 5 rotas (quantica.inventario_gkls_um_py_kernel, quantica.pilar_v384_decisao_operador_03out, infra.gpu_cusolver_geev_queda_n64, infra.gpu_sonda_tempo_v384, outro.evento2_e_mcmc_cruz), nenhuma sobre o lançador. 'lancador' e 'rito_v384' deram 0. Cabeça af5e8bd20c96a5b5, 314 registros.",
+    "rito_v384.sh sha256 21584e80923edc9b9170eb1d46dd0b2b0544e86590158ae5b14425888e4812e3 (corrente). .bak_antes_afer3 2d671965497bd1a108917b104bfec4ced9cc1ab1ce146d78ac5c2e769de1bad0, .bak_antes_afer2 c547782584253bcdf3b9fd9fc0debad425577471f4ba02b5f6baba0f46149265. Diff corrente × bak_antes_afer3 lido.",
+    "afericao2_resultado.json 081e97bc1d18d835a3c0bd5cdb757e4ab494d29fc70072d5b33b1dcec853a104 (sobreviventes #9 e #14). afericao3_resultado.json a4dc51810d510ac70a06fdc0167c1051e582c8e2f41c9f28470cb48c68aaaba7 (novos[3], [7] e [34], com os veredictos i=3, 7 e 34). disposicoes_afericoes_v384.json 1a1f9df78340f7701769be1c62fb9ac32ca5ea3798a507ae8def1369882d1ea7. AFERIDOR_v384.txt e6de796fd1cc6ea30a574d0b1529c06f97e81eaab3870469c47830d9fc1a1519.",
+    "Pré-registro, MD:133. RASCUNHO_A.md b7b0b6f009a8fc8cf49a04ded6ccf87fa19086e96797a1d5d93222496bb403af; RASCUNHO_B_REDUZIDO.md 53f5892d21500a52e3f16476c4551bb69c1fa3b10acdcfd061fa0c1c7538a7f7; gerador gerar_preregistro_pilar_quantico_03out.py 7273641895f26a6b340934ae3ded8e12bd38ae1e0604c1011b1c445faf6b98e7 (a frase do lançador está na linha 394).",
+    "conferir_rito_v384.py b0a63f367a326237cb36f6317ecf6ba28d5066fe71270920a5e80b6461b2a56c: não lê RITO_RC, AVISO nem rito_servidor_v384.log (grep = 0).",
+    "Leitores do marcador .servidor_parado_pelo_rito (Grep): só o rito_v384.sh. Fora dele, só textos de aferição (AFERIDOR, disposições, gravar_afericoes). Zero em C:\\IALD\\projetos_pyhton\\IALD (*.ps1/py/bat/cmd), em memory\\ e em C:\\LAR_MIGUEL (*.py/ps1/json).",
+    "Nós (só leitura, ls/grep/tail): os rodada_v38x_stdout.txt existem, e o rodada_v383_stdout.txt termina em 'RITO_RC=0'.",
+    "Arnês da minha pasta aferidor4_lancador\\ (sha16): montar.py 9907448719776154, rito_teste.sh 4ac1bfed0223bf48 (4 trocas, ver montagem.json d79b284e7a76a12a), casos.sh 3089abd95d52934f, util.py 7ef437887604b823, bin/powershell.exe 13b5af915b475fd2, bin/taskkill 4da92b0b8aae7d9d, bin/nvidia-smi 8da60cc5afea02a5, Nos_falso/um.py (FALSO) 66c865e241d29249, Nos_falso/pilar_quantico_worker.py (FALSO, sem torch) 389f167dda343141, sonda_int/probe_int.sh 8cf5098600962368.",
+    "Cenários com stubs (sha16 do eventos.log em casos\\<nome>\\):\n- S1 normal 8a88c7e6d235773b\n- S2 falha do rito 9a42e3883321b9d7\n- S3 TERM 6256cbf52da6b616\n- S3 HUP f4bb22179db712f8\n- S3 INT e77071a7d1884128\n- S4a 2bb1fc50cd17551e\n- S4b 12fe6e6caafa9dac\n- S4c 39db532446a44997\n- S5 sem tarefa 3330654dd0329c4c\n- S5c 50b6d6fe2c19a8a8\n- S6 marcador 645748ada8f47b01\n- S6b f4ae249547dcf2d6\n- S6c 8563745c3b1160f2\n- S7 kill -9 0072531d842c320f\n- S8 04fa3a730c0cc17f\n- S9 665c8aaa13134aa3\n- S10 252e371e8fa7c7ee\n- S11a f15f870256f56427\n- S11b 0a160a4140fcdbb3\n- S11c 1acbb0dd31900991\n- S12 64f3ce7c05f75359\n- S13 9cc70feb06fa208e\n- S14 560635b0aa6f7ee9",
+    "Conformidade com as proibições:\n- Não rodei o trabalhador, o um.py, o rito_v384.sh nem nenhum gerador ou instalador.\n- Nenhum Stop-ScheduledTask, Start-ScheduledTask, stop_iald_llama.ps1 ou taskkill de verdade. Os stubs só encerram processos FALSOS desta pasta, por pid lido do estado e com o coração batendo.\n- Nenhuma função do trabalhador foi importada.\n- Ao final, não há falso vivo (consulta Get-CimInstance, só leitura).\n- DECLARO um deslize: numa sonda de PATH, com o PATH ainda em forma C:/, o powershell.exe REAL rodou `-NoProfile -Command \"x y\"`. Devolveu só o erro 'x não é reconhecido', sem efeito.\n- Uma busca grep em segundo plano (C:\\LAR_MIGUEL e IALD) estourou o tempo e terminou com exit 2. Era só leitura.",
+    "Limites: a «tarefa desabilitada» foi emulada por Start falhando, com base em [KNOWN]. O comportamento do console (Ctrl-C ou fechamento da janela entregues direto ao python nativo) não foi medido. O modo real de lançamento do rito é [OPEN]."
+   ]
+  },
+  {
+   "lente": "cadeia",
+   "itens": [
+    {
+     "id": "#12",
+     "estado": "RESOLVIDO",
+     "evidencia": "gerar_candidato_v384.py (sha256 5071bec3…) linhas 31-36: fora do ENSAIO, assert de que o caminho do pré-registro começa por C:/IALD/Bancada_Um/investigacao/preregistro_pilar_quantico_03out/ e não contém RASCUNHO, /TEMP/ nem SCRATCHPAD. A reprodução fora da máquina deixou de dar CUSTODY_CHAIN_INCOMPLETE: em v384_runtime.py:326-329 (sha256 10dea113…), on_disk_matches é só informativo e saiu de same_code. O rascunho v4 B .md:136 diz isso e diz que só o conferidor da versão final exige os arquivos em disco (conferir:42). O caminho de TEMP existe só no candidato de ENSAIO (linha 192306, rascunho_prereg_v4), e esse candidato não é instalável.",
+     "falta": "Nada no código. O V1 ainda não existe no lugar permanente (os.path.exists = False), e a guarda só pode ser exercida depois da ratificação."
+    },
+    {
+     "id": "#13",
+     "estado": "RESOLVIDO",
+     "evidencia": "fumaca_v384.py (c6eef34b…), conferido linha a linha. :24-25: RUN_ID = uuid4, e cada chamada cria pasta nova com os.makedirs(exist_ok=False). :38: o --run-id é passado. :39-40: o result.json só é lido se existir, com assert R['run_id'] == RUN_ID. :48-50: sys.exit(1) se rc != 0 ou se o resultado faltar. A fumaça já não pode ler saída velha.",
+     "falta": ""
+    },
+    {
+     "id": "#27",
+     "estado": "RESOLVIDO",
+     "evidencia": "A guarda de caminho é a do #12 (gerar_candidato:31-36). O candidato antigo 0dd43652 agora se chama um_v384_candidato_PRE_AFER2.py e o manifesto, CANDIDATO_v384_PRE_AFER2.json (9de77607…). Conferi por script que nenhum nome padrão existe: um_v384_candidato.py, CANDIDATO_v384.json, ESPERADOS_v384.json e ensaio_a_seco_v384.json dão todos False. Avaliei a guarda extraída do gerar_esperados:13-16 e do instalar:30-33 sobre os dois manifestos existentes (sim_guarda_esperados_instalar.py): ambos recusados.",
+     "falta": "Imprecisão sem efeito: o manifesto PRE_AFER2 não tem a chave 'ensaio' e é recusado com a mensagem «o candidato e' de ENSAIO». A recusa está certa; o motivo dito, não."
+    },
+    {
+     "id": "#28",
+     "estado": "RESOLVIDO",
+     "evidencia": "ensaio_a_seco_v384.py (d2753058…) :55-61, quatro conferências antes de usar a fumaça: run_id presente; spec_fumaca.json com id terminado em __FUMACA; RF.spec_sha256 igual ao sha256 do arquivo e diferente do _QP_SPEC_SHA256 do candidato; RF.worker_sha256 igual ao sha256 do _QP_WORKER_SRC embutido; veredito que começa por TGL_QUANTUM_PILLAR_V1__FIVE_JUMP_GKLS__. Do lado da fumaça, run_id, pasta nova e saída com 1 estão no #13.",
+     "falta": ""
+    },
+    {
+     "id": "#31",
+     "estado": "RESOLVIDO",
+     "evidencia": "Ratificação gravada no pré-registro: gerador :176-184 grava ratificacao_do_operador com quando, verbatim, escolha, spec_sha256_ratificada e rascunho_apresentado com sha256. Exigida em gerar_candidato:32-33 e 40-42, gerar_esperados:14-20, instalar:31-37 e fumaca:11-13. Leitura do selo no ENSAIO: o candidato e112b877… tem na linha 208041 PREREGISTRATION_V1_DRAFT_SPEC_HASH_…_DRY_RUN_CANDIDATE_NOT_RATIFIED, e grep 'PREREGISTRATION_V1_FROZEN_BY_HASH_' dá 0. O rascunho v4 .md mantém «PENDENTE».",
+     "falta": ""
+    },
+    {
+     "id": "N9",
+     "estado": "RESOLVIDO",
+     "evidencia": "Gerador (7273641…): --rascunho obrigatório (:21). Exige mensagem POSTERIOR a gerado_utc e a mesma spec e escolha (:179-181). Grava gerado com fuso e gerado_utc (:313-314). gerar_candidato:41 exige spec_sha256_ratificada == SPEC_SHA == spec_sha256_do_rascunho_apresentado e a_especificacao_ratificada_e_a_do_rascunho is True. Exercido com uma CÓPIA do gerador na minha pasta (gerador_copia/), com --ratificacao-prefixo='Concordo com tudo, vamos de rito robusto' e --rascunho=<v4 B>: rc 1, «a mensagem do operador (2026-10-03T12:53:05.321Z) nao e' POSTERIOR ao rascunho apresentado (2026-10-03T17:30:52.000Z)» (saida_rat_antiga.txt a2739e4a…). Nada foi gravado. Sem ratificação, a mesma cópia reproduz spec_sha256 83b5488e… igual ao do rascunho B (saida_rascunho_reproduzido.txt 82d32285…): a especificação é determinística, e a ratificação não vai falhar por deriva. Também medi a lacuna fila→entrega no transcrito (sondar_transcrito_fila.py): no máximo 4,1 s, sem efeito sobre a guarda temporal.",
+     "falta": ""
+    },
+    {
+     "id": "N10",
+     "estado": "RESOLVIDO",
+     "evidencia": "conferir_rito_v384.py (b0a63f36…) :38 usa o prefixo TGL_QUANTUM_PILLAR_V1__NOT_RUN__ e não a substring. :26-31: com o D128 não rodado, cache_ok vem de not_cached_code começando por D128_NOT_RAN. Extraí o bloco e os dois itens do arquivo (sim_conferidor.py) e os avaliei sobre registros sintéticos. D128_NOT_RUN_DEADLINE, D128_NOT_RUN_ERROR_OUTOFMEMORYERROR e D128_INTERRUPTED: veredito True e cache True. NOT_RUN__LAUNCH_FAILED: False. D128 rodado com cache_error: False. A política está no rascunho v4 B, JSON resultados_negativos_honestos[5] e MD:127.",
+     "falta": ""
+    },
+    {
+     "id": "N18",
+     "estado": "REGRESSAO",
+     "evidencia": "No um.py o W08c está certo. Candidato ENSAIO, linha 208308: «| computacao nao concluida: %s». Executei o bloco da custódia de sentido no seu contexto (sim_bloco_custodia.py) sobre um core sintético; com o pilar falho, a saída nomeia quantum_pillar_v384. O problema é que a linha nova do W08c leva o comentário '# v384: o terceiro balde nomeado (regra v303)' na PRIMEIRA linha do enunciado. Com isso o ensaio_a_seco (:85-86) a classifica em `comeca` e a EXECUTA fora de main(), onde _not_sealed, _formais, _recusas e _computacao não existem. Reprodução sem importar o candidato (sim_mainflow_ensaio.py, saída cb6d91ec…): comeca = [205405, 207766, 207767, 208308], nenhum dos quatro nomes ligado no módulo nem em 'global', e o exec dá NameError(\"name '_not_sealed' is not defined\"). Ver novos_achados[0].",
+     "falta": "Corrigir no ensaio, sem regenerar o candidato: tirar de `comeca` os enunciados que contêm _computacao e executar o bloco inteiro da custódia de sentido, de `_not_sealed = sorted(` ao print W08c, sobre core sintético com seal={} (pilar falho e pilar concluído), conferindo a linha impressa."
+    },
+    {
+     "id": "N19",
+     "estado": "PARCIAL",
+     "evidencia": "Feito: os enunciados do terceiro balde passam pela checagem de nomes (ensaio:98-105; balde = 208305, 208306, 208307). O artigo é construído com FIX em forma de sucesso (:62-66) e com as variantes falha, reaproveitado e t1_sem_solucao (:157-179). Em cópia do arnês simular.py com registros na forma do ensaio (sim_artigo/casos_ensaio.json eaed8166…), o DEVE e as frases das variantes saem todas, PT e EN, com faltam = []. Não feito: o bloco da custódia de sentido não é executado sobre core sintético. O único enunciado dele que roda é o W08c, por acidente, e quebra (N18). O ramo do D128 RODADO e o ramo «não foi guardado (o ponto d=128 não rodou…)» também não são construídos: o FIX traz saved_to_cache='ENSAIO_SEM_CACHE' com o D128 da fumaça não rodado, e nenhuma variante tem D128 RAN nem not_cached_code.",
+     "falta": "Executar o bloco da custódia de sentido com contexto (ver N18). Acrescentar duas variantes: uma com D128 {ran: True, status_code: 'RAN', status, cci, spectrum_s} e uma com reuse.not_cached_code = 'D128_NOT_RAN:NOT_RUN_DEADLINE' e not_cached_because, cada uma com as suas frases no DEVE."
+    },
+    {
+     "id": "N25",
+     "estado": "PARCIAL",
+     "evidencia": "As duas causas nomeadas estão corrigidas. O DEVE tem «três coisas»/«ao mesmo tempo» e «three things»/«at the same time» (ensaio:130-133). O FIX tem forma de sucesso, com _ok4 verdadeiro (:62-66). Há as variantes de falha e de T1 inf (:157-168). A fumaça é conferida, inclusive o trabalhador igual ao embutido (:59-61). Pelo arnês sintético, 'Os quatro testes' e 'A escala e a referência' saem. Mesmo assim, o ensaio continua reprovando de modo determinístico o candidato corrigido, agora por outra causa: o NameError do W08c executado fora de main() (N18; novos_achados[0]). rep['mainflow']['erro'] fica não nulo, ok = False, o veredito é «FALHOU», e gerar_esperados:22 bloqueia.",
+     "falta": "Corrigir a seleção de enunciados do ensaio (novos_achados[0]) e rodar o ensaio no candidato final depois da ratificação e da fumaça, antes de gerar_esperados."
+    },
+    {
+     "id": "N26",
+     "estado": "RESOLVIDO",
+     "evidencia": "gerar_esperados_v384.py (a71bb416…) :13-20 e instalar_v384.py (4c93ba11…) :30-37 exigem, nos dois scripts: ensaio is False; verbatim e quando da ratificação; sha256 do V1 do lugar permanente igual a CM.prereg_sha256.json; spec e trabalhador iguais aos do V1; verbatim igual. O candidato antigo foi renomeado *_PRE_AFER2, e nenhum nome padrão existe (sim_guarda_esperados_instalar.py: os dois manifestos existentes são recusados; um sintético ratificado passa a guarda e segue para o V1).",
+     "falta": "Só a mensagem: o manifesto antigo é recusado como «de ENSAIO»."
+    },
+    {
+     "id": "N33",
+     "estado": "RESOLVIDO",
+     "evidencia": "O conferidor aceita o D128 não rodado com not_cached_code, conforme a simulação do N10. O runtime grava not_cached_code = 'D128_NOT_RAN:<status>' e not_cached_because (:363-367). O artigo diz a razão nas duas línguas (artigo_pt:61-64, artigo_en:61-64). Na cópia do arnês, caso B: PT «não foi guardado para reaproveitamento (o ponto $d=128$ não rodou nesta rodada, NOT_RUN_DEADLINE; o cache só guarda o resultado completo com ele)»; EN «it was not stored for reuse (the $d=128$ point did not run in this run…)» (sim_artigo/caso_b_cache.py).",
+     "falta": ""
+    }
+   ],
+   "examinado": [
+    "Mapa de rotas consultado antes, sem registrar: python C:\\IALD\\MAPA_DE_ROTAS\\rotas.py consultar \"pilar\". Na 1ª consulta, 5 rotas (quantica.inventario_gkls_um_py_kernel, quantica.pilar_v384_decisao_operador_03out, infra.gpu_cusolver_geev_queda_n64, infra.gpu_sonda_tempo_v384, outro.evento2_e_mcmc_cruz). Na consulta do fim, n = 10 e cabeça aaea264c47c4466c: outros registraram no intervalo.",
+    "Entradas lidas (sha256 por script): gerar_candidato_v384.py 5071bec333ff4ea11f95d0c3ca224e0b8a771ee412000098eb8a8094ad9656d9 (bak_antes_afer3 0b589c4c7d38485b…); gerar_esperados_v384.py a71bb4165ad665f1ad88f38ac2ab5acc21059456cad83553a38a332611c3cb77 (bak 556122d1…); instalar_v384.py 4c93ba11bc66936651ca5b1822bd8c96fe6fef0082fd8a873c2aacb2c9b71da9 (bak 1cfbff94…); fumaca_v384.py c6eef34bbd17e72b90568acaa3996f1dc36fd8cf15e8a9e5081b5322ff7eafba (bak 0e019683…); ensaio_a_seco_v384.py d2753058e50570dc392b5792b6b389ba322dba37405679b088d7fffb30e76f49 (bak dc45742c…); conferir_rito_v384.py b0a63f367a326237cb36f6317ecf6ba28d5066fe71270920a5e80b6461b2a56c (só bak_antes_afer2 c4af6d11…); rito_v384.sh 21584e80923edc9b9170eb1d46dd0b2b0544e86590158ae5b14425888e4812e3 (bak 2d671965…, lido, não rodado); v384_runtime.py 10dea1131c66981ce52304cd062ac4a92287f07678492349058451636cf43515; artigo_pt_v384.pysnip 242b3ababaaaf770…; artigo_en_v384.pysnip 76f8d185d4e7c056…; pilar_quantico_worker.py b3bdecab06c180064588c65e9d80712ed32a5bfa19635bfaa7e3d4f1162d331d (só leitura de derive_verdict e main; NÃO rodado nem importado).",
+    "Candidato de ENSAIO um_v384_candidato_ENSAIO.py e112b8779693fb3d435af0cef9ff0e9b1037c9979f11af6690f8617064a4b1c8, só Grep e AST. Patches W01..W11 localizados: 96, 192306 (_QP_PREREG para rascunho_prereg_v4 B), 205405, 207766-7, 165676/169277, 208041 (DRAFT; FROZEN = 0), 208305-208307, 208308 (W08c), 208334 (W09), 172993, 2× texttt{evidence. Conferido por script: o trabalhador embutido é igual byte a byte ao pilar_quantico_worker.py; spec embutida 83b5488e… igual à do rascunho B; runtime e trechos PT/EN correntes embutidos íntegros. CANDIDATO_v384_ENSAIO.json 11d0cde2…; CANDIDATO_v384_PRE_AFER2.json 9de77607….",
+    "Pré-registro: gerador permanente 7273641895f26a6b340934ae3ded8e12bd38ae1e0604c1011b1c445faf6b98e7, idêntico à cópia em rascunho_prereg_v4. Rascunho B JSON 7d28e2c808ca6f31… e MD 53f5892d21500a52…; rascunho A JSON 8f8e904dceeddd9d…. V1 permanente ainda inexistente. Base v383 Nós/um.py 58abcf20651f477715404a0801ffdf4b26ad18a76d6ae49bfa950c602938a427 (só leitura).",
+    "Achados e disposições: afericao2_resultado.json 081e97bc…, afericao3_resultado.json a4dc5181…, disposicoes_afericoes_v384.json 1a1f9df7…, AFERIDOR_v384.txt e6de796f…; sonda teste_motor_v5/result.json 48dfb7ef….",
+    "Artefatos meus, em aferidor4_cadeia/: sim_mainflow_ensaio.py 430be5f6… (saída .json cb6d91ec…); sim_bloco_custodia.py (core sintético; bloco e14e0b66…); sim_conferidor.py 770d73c6…; sim_guarda_esperados_instalar.py 9cdbd541…; sondar_transcrito_fila.py c5f706a4… (só leitura do transcrito da sessão); sim_artigo/casos_ensaio.py 9df144a2… (saída eaed8166…) e caso_b_cache.py 8e63d039…, sobre CÓPIA do simular.py (daf24c01…), só cores SINTÉTICOS, sem pdflatex; gerador_copia/: CÓPIA do gerador do pré-registro rodada na minha pasta (recusa da ratificação antiga: saida_rat_antiga.txt a2739e4a…; rascunho B reproduzido com spec 83b5488e…: saida_rascunho_reproduzido.txt 82d32285…).",
+    "Não rodei o trabalhador em modo algum nem funções que constroem operadores da teoria. Não importei o candidato. Não rodei rito_v384.sh, instalar, conferir, gerar_esperados, fumaça nem ensaio. Não toquei tarefas agendadas, servidor nem taskkill. Nada foi escrito fora de scratchpad\\v384\\aferidor4_cadeia\\."
+   ]
+  },
+  {
+   "lente": "artigo",
+   "itens": [
+    {
+     "id": "#2",
+     "estado": "RESOLVIDO",
+     "evidencia": "artigo_pt_v384.pysnip:93 e artigo_en_v384.pysnip:93 (sha16 242b3ababaaaf770 / 76f8d185d4e7c056) dizem agora: «injeções em que $n_c$, β, o espectro de K na periferia, o banho e J são sorteados (a lei injetada é a raiz, expoente 1/2; o controle N3 injeta a linear); o estimador recebe só o propagador do sistema inteiro, τ, o espectro de K injetado e γ_anti, não vê β nem o expoente». O EN é paralelo. Conferi no trabalhador corrente (b3bdecab06c18006). t1_instance:674-678 sorteia nc, beta_inj, kper (k_range), gd e jseed. A linha 699 é fit_root_law(M, k, op.get('anti_gamma')). run_T1:712 tem law_power=0.5 por padrão e main:1202 o chama sem expoente; o N3 (787) usa law_power=1.0. A frase bate com o código e com testes.T1.o_que do rascunho B (JSON 7d28e2c808ca6f31). grep 'escondid|hidden|expoente da lei|exponent of the law|a forma da teoria|theory's form' dá 0 nos dois trechos. Simulação: sim4/E2E_misto_nao_finito_pt.txt (dae19c3433028fb3) traz a frase.",
+     "falta": ""
+    },
+    {
+     "id": "#17",
+     "estado": "RESOLVIDO",
+     "evidencia": "Parte (1), a cegueira do T1: a mesma evidência do #2 (PT/EN:93). Parte (2), as dobras: PT:106 «vale para todo estado com dois autovalores não nulos distintos (num estado plano no seu suporte vale a igualdade)», EN:106 paralelo, coerente com folds() (worker:338-350). A regressão que a 3ª passada mediu («o expoente da lei» sorteado) saiu: grep 0.",
+     "falta": ""
+    },
+    {
+     "id": "#26",
+     "estado": "RESOLVIDO",
+     "evidencia": "Parte do artigo, ou seja o que faltava na 3ª passada. PT:69: «a face matricial do mesmo sistema \\textsf{[ONTO]}», com [COMPUTED] só para o cálculo. PT:72: «o Nome como matriz \\textsf{[ONTO]}». PT:75: «ρ_ss é o atrator (a leitura «a inscrição que habita o Nome» é [ONTO])». PT:98: «a morte térmica é ponto fixo [ONTO]». O EN é paralelo nas mesmas linhas. grep 'Nome como estado' e 'Name as a state' dá 0. Todas as ocorrências restantes de «Nome» (72, 75, 79-81) designam Π. Diff contra o .bak_antes_afer3 conferido.",
+     "falta": "Nada obrigatório. Opcional: ligar no texto do T2 o token NAME_IN_CORE_k_OF_n, que a caixa do veredito imprime, à frase que ele mede («o atrator guarda ao menos metade do peso em Π»)."
+    },
+    {
+     "id": "#37",
+     "estado": "RESOLVIDO",
+     "evidencia": "v384_runtime.py (10dea1131c66981c) _qp_summary:253-258 leva por d e σ os campos n_by_sigma, median_beta_rel_err, max_beta_rel_err e n_nonfinite_beta, este vindo de summarize_T1:745. O trecho PT/EN:35-44 (_t1nz4) separa a maior mediana FINITA das dimensões com estimativas sem solução, e PT/EN:94-95 imprimem «a maior mediana finita … é X e Y; a 10^{-8}, sem solução finita em d=32: 3 de 20, d=64: 1 de 1». Teste ponta a ponta com funções PURAS e entradas sintéticas: summarize_T1 da cópia do trabalhador, mais json Infinity/NaN de ida e volta, mais o _qp_summary extraído por ast. Casos: sim4/E2E_misto_nao_finito_pt/en (dae19c34…/42643274…) e E2E_mediana_inf_d32 (mediana inf em d=32, listada à parte). No arnês base, I e J (todas falham) dão '$\\text{n/d}$' e a lista completa. Nada é descartado em silêncio. 0 exceções e PDF ok nos casos.",
+     "falta": ""
+    },
+    {
+     "id": "#38",
+     "estado": "RESOLVIDO",
+     "evidencia": "A mesma frase do #2 (PT/EN:93). O estimador recebe τ, o espectro de K injetado e γ_anti; o expoente é fixo (law_power=0.5, worker:712 e 1202); o espectro de K na periferia está na lista de sorteados. Paridade EN conferida no texto e no esqueleto de código: paridade_esqueleto.py (02ffa92d7688be63) acha só as duas diferenças da vírgula decimal (.replace em PT:6 e PT:14).",
+     "falta": ""
+    },
+    {
+     "id": "N12",
+     "estado": "RESOLVIDO",
+     "evidencia": "Avaliada só a parte do artigo. compare_cpuref (worker:1015) devolve read, compared = read − near e not_comparable. derive_verdict:1093-1094 dá CPU_REFERENCE_NOT_COMPARABLE__RESULTS_VOID. O artigo tem o ramo «não pôde comparar nenhum ponto» (PT/EN:100-101) e a frase «leu R pontos do T2, comparou C (N perto do limiar…)» (PT/EN:104). Ponta a ponta sintético (compare_cpuref com todas as linhas em gap_rel=1e-8, depois derive_verdict): sim4/E2E_cpu_nao_comparavel_pt.txt (abfc2a507728a0ba) traz «não produziu resultado válido (TGL_QUANTUM_PILLAR_V1__CPU_REFERENCE_NOT_COMPARABLE__RESULTS_VOID…)» e não traz «discorda». Nota: como o veredito de sucesso exige cpuref ok (derive_verdict:1092), o ramo _cpu4 'não pôde comparar' na prática não se alcança; quem diz o caso é o veredito impresso. Não é defeito.",
+     "falta": ""
+    },
+    {
+     "id": "N15",
+     "estado": "PARCIAL",
+     "evidencia": "Avaliada só a parte do artigo. PT:91 «há ao menos um ponto de atrator único da grade (os pontos não precisam ser contíguos) em que o atrator guarda ao menos metade do peso em Π em X das Y configurações, e um com as dobras…»; EN:91 paralelo. A unicidade e o «ao menos um ponto» estão certos (summarize_T2:640-643 usa um & …). Mas a disposição diz «intervalo relatado, não necessariamente contíguo … no artigo», e o artigo não relata intervalo nenhum: grep 'intervalo'/'interval' dá 0 e grep 'cci_half_window' dá 0 nos trechos, embora o _qp_summary:245-246 o leve por configuração. O parêntese «(os pontos não precisam ser contíguos)» fica órfão: fala de «os pontos» depois de afirmar a existência de UM ponto, e a contiguidade não se aplica.",
+     "falta": "Ou relatar o intervalo [γ_min, γ_max] e a contagem (por exemplo os extremos sobre as configurações, de _s4['T2']['cci_half_window']) e manter o parêntese, ou tirar o parêntese. Considerar pôr «em X das Y configurações» no começo («em X das Y configurações há ao menos um ponto…»). PT e EN."
+    },
+    {
+     "id": "N16",
+     "estado": "RESOLVIDO",
+     "evidencia": "Avaliada só a parte do artigo. PT:104 «Uma referência na CPU, independente na álgebra linear (numpy/LAPACK, processo à parte, com a mesma construção dos operadores)»; EN:104 «independent in the linear algebra (…, with the same construction of the operators)». Bate com run_cpuref:961-989: canonical_H, five_jumps, Engine.classify e folds do mesmo módulo; superop_np; np.linalg.eigvals/solve; scipy expm.",
+     "falta": "Nada obrigatório. Opcional: dizer também «e o mesmo classificador» (Engine.classify:973), como a correção pedida sugeria; o qualificativo «na álgebra linear» já impede a leitura de independência total."
+    },
+    {
+     "id": "N21",
+     "estado": "RESOLVIDO",
+     "evidencia": "A frase do T1 (PT/EN:93) é a correção pedida quase literalmente: n_c, β, o espectro de K na periferia, o banho e J sorteados; «a lei injetada é a raiz, expoente 1/2; o controle N3 injeta a linear»; «o espectro de K injetado». Código: worker:674-678, 699, 712, 787 e 1202, como no #2.",
+     "falta": ""
+    },
+    {
+     "id": "N22",
+     "estado": "RESOLVIDO",
+     "evidencia": "PT:102: `((r\"$\\mathrm{CCI}=\" + _f4(...) + r\"$\") if _fin4(_d8.get(\"cci\")) else r\"CCI não definido\")`; EN: «CCI undefined». run_D128:891-897 só grava o cci se o status não for DEGENERATE. Sintético: sim4/E2E_D128_degenerado_pt.txt (7be3054ec9a289c1) dá «atrator DEGENERATE, CCI não definido, espectro inteiro em 11,7 min»; E2E_D128_cci_nan dá «atrator UNIQUE, CCI não definido». Não há 'n/d' em modo matemático; PDF ok, 0 Overfull.",
+     "falta": ""
+    },
+    {
+     "id": "N23",
+     "estado": "RESOLVIDO",
+     "evidencia": "PT/EN:111 sem o .replace(\\allowbreak); grep 'allowbreak' dá 0 nos trechos. O preâmbulo do candidato de ENSAIO (e112b8779693fb3d), linha 165535, redefine \\_ como \\UMunderscore\\allowbreak. Medido por script: em 52 TXT sintéticos (28 do arnês base, 22 de E2E e 2 do T1 negativo), a linha do veredito no TXT é idêntica ao veredito em todos. 0 'Overfull' nos .log (grep -l Overfull sim/*.log → 0; simular4.json overfull 0).",
+     "falta": ""
+    },
+    {
+     "id": "N24",
+     "estado": "PARCIAL",
+     "evidencia": "O núcleo foi corrigido. PT:67 e EN:67 escrevem, quando há summary_error, «Os números desta rodada não puderam ser resumidos para o artigo (<erro>); o veredito e o resultado estão no selo e em um_absoluto_pilar_quantico.json», e o runtime:340-343 grava summary_error no nível que o trecho lê (_q4). Visto em sim/L_resumo_com_erro_pt.txt (57f5b9e0740efc97) e em sim4/E2E_reuse_summary_error_pt.txt (b65ffd1f282b642b). Resta um sintoma que a própria afirmação do N24 listava. Na mesma rodada, PT:86-87 continua a dizer «o motor confere … e o comparador da referência na CPU: sem registro nesta rodada» (EN: «no record in this run»), embora o registro exista: está em R['engine_selftest'], só não foi resumido.",
+     "falta": "Quando _q4.get('summary_error') existir, trocar «sem registro nesta rodada» por «não resumido nesta rodada (ver acima)», ou omitir a contagem; PT e EN. Opcional, como já pedido: condicionar «foi calculado …» a _ran4."
+    },
+    {
+     "id": "N33",
+     "estado": "RESOLVIDO",
+     "evidencia": "Avaliada só a parte do artigo; a do conferidor fica fora desta lente. O runtime:363-367 grava not_cached_code = 'D128_NOT_RAN:<status_code>', e o trecho (PT/EN:60-64) compõe a razão na língua: «não foi guardado para reaproveitamento (o ponto d=128 não rodou nesta rodada, NOT_RUN_DEADLINE; o cache só guarda o resultado completo com ele)» / «it was not stored for reuse (the d=128 point did not run in this run, …)». Casos: sim/B_completo_sem_cache_D128_prazo_pt.txt (72fb2c5e7debda6c) e o ponta a ponta sintético sim4/E2E_D128_erro_pt.txt (abeea7146ea9ba64), com o veredito de sucesso …D128_NOT_RUN_ERROR_RUNTIMEERROR… rederivado por derive_verdict e a frase da razão nas duas línguas. Na falha de gravação aparece «a gravação falhou: …».",
+     "falta": ""
+    }
+   ],
+   "examinado": [
+    "MAPA DE ROTAS consultado antes: python C:\\IALD\\MAPA_DE_ROTAS\\rotas.py consultar \"pilar\" devolveu 5 rotas (quantica.inventario_gkls_um_py_kernel, quantica.pilar_v384_decisao_operador_03out, infra.gpu_cusolver_geev_queda_n64, infra.gpu_sonda_tempo_v384, outro.evento2_e_mcmc_cruz); nenhuma cobre o texto do artigo. Não registrei nada.",
+    "Itens e disposições (sha16 por script): afericao2_resultado.json 081e97bc1d18d835 (sobreviventes #2, #17, #26, #37, #38); afericao3_resultado.json a4dc51810d510ac7 (novos[12, 15, 16, 21, 22, 23, 24, 33] e verificacao.veredictos; grupos com o estado da 3ª); disposicoes_afericoes_v384.json 1a1f9df78340f770; AFERIDOR_v384.txt e6de796fd1cc6ea3.",
+    "Arquivos correntes lidos: artigo_pt_v384.pysnip 242b3ababaaaf770 e artigo_en_v384.pysnip 76f8d185d4e7c056, inteiros, mais o diff contra .bak_antes_afer3 (0d6fbc11f4eed1ce / f36c086c652b48a9); pilar_quantico_worker.py b3bdecab06c18006 (five_jumps, folds, fit_root_law, E1..E8, pipeline, identity_check, run_T2/summarize_T2, t1_instance/run_T1/summarize_T1, run_T3, run_D128, run_cpuref/compare_cpuref, derive_verdict, main); v384_runtime.py 10dea1131c66981c (_qp_summary, quantum_pillar_finish_v384); um_v384_candidato_ENSAIO.py e112b8779693fb3d, só por faixa: embedding dos trechos nas linhas 165644/169245, preâmbulo 165535, _tex_guard_nan/_tex_to_txt 172969+, emit_article/compile_pdf 197863-197890, trava do PDF 207776-207795, _QP_SPEC_SHA256/_QP_PREREG 192305-192307; CANDIDATO_v384_ENSAIO.json 11d0cde2388b1ccb; rascunho B JSON 7d28e2c808ca6f31 / MD 53f5892d21500a52 e rascunho A JSON 8f8e904dceeddd9d (spec T1/T2/T3/T4/D128/cpuref, testes.T1, ratificação); teste_motor_v5/result.json 48dfb7ef7f542596 (E1..E8 todos True); base v383 Nós/um.py 58abcf20651f4777, só o hash, nada mais lido.",
+    "Simulação, toda na pasta aferidor4_artigo. simular.py (cópia do arnês da 3ª passada, daf24c012e46e166) rodou os 28 casos base: 28 TXT e 28 PDF ok, 0 Overfull; saída simular.json 9d9abf4d14f453c4. simular4.py (57a922b0245b153b) acrescentou 11 casos ponta a ponta × 2 línguas (misto não finito, mediana inf em d=32, D128 com erro, D128 DEGENERATE, D128 cci NaN, CPU não comparável, summary_error unicode, cache_error com caminho, reaproveitado com summary_error, parcial no D128) e simular4b.py (4d43ccfc032b9211) o T1 negativo; saídas simular4.json bbb8d8804423471f e simular4b.json b780982964b198f7. paridade_esqueleto.py (02ffa92d7688be63) confere a paridade de código PT/EN: só as duas diferenças da vírgula decimal.",
+    "Funções PURAS chamadas com entradas SINTÉTICAS sobre a cópia worker_copia.py (b3bdecab06c18006, idêntica ao corrente): summarize_T1, summarize_T2, compare_cpuref e derive_verdict. Chamei também _qp_summary, extraído por ast do v384_runtime.py corrente e executado isolado. Nenhum operador da teoria foi construído (nada de five_jumps, canonical_H, t1_instance, t4_instance, run_*). O trabalhador não rodou em modo algum. Nenhum rito, instalador, conferidor, gerador, fumaça, ensaio, tarefa agendada ou taskkill foi executado. Escrita só em ...\\scratchpad\\v384\\aferidor4_artigo\\ (sim/, sim4/ e os scripts e saídas listados)."
+   ]
+  },
+  {
+   "lente": "preregistro",
+   "itens": [
+    {
+     "id": "N2",
+     "estado": "RESOLVIDO",
+     "evidencia": "Nos dois rascunhos, MD:106 e JSON arvore_de_vereditos[0], o texto agora diz: «0. recusas e falhas fora das fases (antes, entre ou DEPOIS delas) … WORKER_FATAL (exceção fora das fases; se vier depois delas, os dados de T1–T4 continuam no result.json, mas o veredito é NOT_RUN)». No código do trabalhador (b3bdecab…), derive_verdict testa R['fatal'] antes de tudo, e o handler do main, `except (Exception, ParentGone)`, grava o R inteiro. Teste com função pura e entrada sintética (aferidor4_preregistro/puras_sinteticas.py bbc96d31…, saída 113cacc8…, sobre uma cópia do trabalhador b3bdecab…, chamando só derive_verdict): um R com T1–T4, D128 e fatal dá TGL_QUANTUM_PILLAR_V1__NOT_RUN__WORKER_FATAL__GATE_UNTOUCHED. A troca de rótulo era opcional e foi mantida (fail-closed). Resta uma nuance que não muda o estado: se o fatal for a falha do write_result final e a nova tentativa no handler também falhar, não sobra result.json; o um.py lê então o result_partial.json (D128 STARTED) e emite D128_INTERRUPTED + PARTIAL_RESULT_WORKER_DIED_RC_1. Continua fail-closed.",
+     "falta": ""
+    },
+    {
+     "id": "N11",
+     "estado": "RESOLVIDO",
+     "evidencia": "O AFERIDOR_v384.txt tem agora 379 205 B (sha256 e6de796fd1cc6ea3…). O backup .bak_20261003_142523 (15 578 B, sha256 aeec43d66d98ef7b…) é prefixo byte a byte do arquivo atual, conferido por script: só acréscimo. O arquivo traz as DISPOSICOES da 1ª passada (linha 178), a 2ª passada verbatim com disposições (200) e a 3ª (1233). As 48 afirmações da 2ª, as 37 da 3ª e as 37 disposições da 3ª estão presentes verbatim. O texto da aferição (MD:193; JSON 'afericao') vem de disposicoes_afericoes_v384.json['texto_para_o_pre_registro'], com sha256 1a1f9df78340f770…, igual ao citado. As contagens batem com os arquivos:\n- 1ª passada: 17 disposições ACOLHIDO.\n- 2ª passada: 48 sobreviventes.\n- Estado medido na 3ª: 32 RESOLVIDO, 13 PARCIAL e 3 REGRESSAO, sem divergência entre lentes; as 3 regressões são a frase pysnip:75.\n- 3ª passada: 37 novos e 0 refutados em verificacao.veredictos.\n«todos corrigidos» virou «tratados», com a contagem medida.",
+     "falta": ""
+    },
+    {
+     "id": "N13",
+     "estado": "RESOLVIDO",
+     "evidencia": "B_REDUZIDO, MD:163 e JSON desvio_do_plano_B.razao: «… dá cerca de 256 min (320 com a margem) e, com a margem, NÃO cabe no prazo congelado de 5 h; e, mesmo SEM margem, as fases do plano B antes do D128 levam cerca de 238 min, acima do prazo de início de 180 min: o D128 não rodaria». Recalculei por script (aferidor4_preregistro/recalc_orcamento.py d145ba81…, saída 43fc3212…) a partir de teste_tempo_v6/result.json (0dcd4fd2…) e planejar_carga_v384.json (9d1d2c30…): o plano B dá 256,27 min, 320,34 com margem e 237,64 antes do D128 sem margem. Regenerei os dois rascunhos com uma cópia do gerador na minha pasta (7273641…, idêntico ao da Bancada): os quatro arquivos saem iguais byte a byte, exceto 'gerado' e 'gerado_utc'. No rascunho A a mesma frase fica enganosa, porque lá o prazo é de 240 min; isso vai como achado novo.",
+     "falta": ""
+    },
+    {
+     "id": "N14",
+     "estado": "PARCIAL",
+     "evidencia": "A spec.linalg.nota, dentro do hash, diz agora «n = 4096 com 14 chamadas: 5 no estresse e 9 nas sondas de tempo deste trabalhador». Conferi por script:\n- Estresse: eigvals_magma_4096 com reps 3 e eig_magma_4096 com reps 2, somando 5.\n- teste_tempo_v6 (trabalhador b3bdecab…, linalg_magma_up_to_n = 1e9): reps 3 em d = 64.\n- run_timing faz 3 chamadas _nonherm por repetição (pipeline→spectrum e duas vezes generator_from_propagator→eig), o que dá 9.\n- A sonda teste_tempo_v6_abortado parou no engine_selftest (progress.json) e não somou chamadas.\nO recorte «deste trabalhador» é exato. A parte do T1 já tinha sido refutada pelo verificador.",
+     "falta": "A linha da Execução (MD:137, JSON execucao[5]), que o N14 citava como JSON:184, continua dizendo «o MAGMA não caiu em nenhum tamanho TESTADO — volume por tamanho do superoperador n = d²: {… \"4096\": 5}». O mesmo documento dá 5 e 14 para o volume testado em n = 4096. Ou a linha passa a 14 (5 no estresse + 9 na sonda v6), ou o dicionário ganha o rótulo «volume do estresse». A linha está fora do hash: basta regenerar os rascunhos."
+    },
+    {
+     "id": "N15",
+     "estado": "RESOLVIDO",
+     "evidencia": "O texto agora diz o que o código faz:\n- MD:32 / JSON terminologia.CCI: «conta as configurações (d, n_c) com AO MENOS UM ponto da grade de atrator ÚNICO e CCI ≥ 1/2 (a «janela» relatada é o intervalo [menor γ, maior γ] desses pontos, com a contagem; os pontos não precisam ser contíguos)».\n- MD:74: «… relatados o menor e o maior γ desses pontos e a contagem, que não precisam ser contíguos); idem para as dobras».\n- MD:124: «NAME_IN_CORE k < 12: em alguma configuração, entre os pontos de atrator ÚNICO da grade, nenhum guarda metade do peso no núcleo».\nNo código, summarize_T2.span devolve [min, max, contagem] da máscara um & …, e cci, n1 e n2 são NaN fora de UNIQUE. O artigo PT/EN (pysnip:90) diz «há ao menos um ponto de atrator único da grade (os pontos não precisam ser contíguos)». O negativo do FOLDS_WINDOW (MD:125) não repete «de atrator único», mas «janela» está definida como pontos de atrator único (MD:32/74).",
+     "falta": ""
+    },
+    {
+     "id": "N16",
+     "estado": "REGRESSAO",
+     "evidencia": "A independência ficou corrigida. MD:98 / JSON testes.CPU.o_que diz «INDEPENDENTE NA ÁLGEBRA LINEAR (numpy/LAPACK contra torch/MAGMA…), com a MESMA construção dos operadores e o mesmo classificador do trabalhador», e o artigo (pysnip:104) diz «independente na álgebra linear … com a mesma construção dos operadores».\n\nA correção, porém, inseriu uma garantia falsa: «a construção é conferida pelas fontes por sha256 e pelo E1..E8, não pela CPU».\n- No engine_selftest (worker:410-479), E1 a E6 usam σz/σ− e H próprios, E7 roda fit_root_law em matrizes sintéticas de posto um e E8 roda compare_cpuref em linhas sintéticas.\n- Nenhum deles chama canonical_H ou five_jumps. As únicas chamadas estão nas linhas 602, 608, 620, 683, 758-759, 882-883 e 969-970: T2, T1, T3, D128 e cpuref.\n- Fixar as fontes por sha256 não compara a construção com elas.\n- Nenhum script do pacote confronta five_jumps com os validadores: o grep 'build_system|validator' só acha a docstring e os registros.\nA transcrição dos operadores foi conferida por LEITURA na 1ª aferição (rota quantica.pilar_v384_decisao_operador_03out do mapa). Um defeito de construção continua invisível ao E1..E8 e à CPU, que era o ponto do N16, e o texto agora diz o contrário ao operador.",
+     "falta": "Trocar a cláusula por «a construção foi conferida por leitura, contra as fontes fixadas por sha256, na 1ª aferição; nem o E1..E8 nem a CPU a conferem». A cláusula está fora do hash: basta regenerar os rascunhos."
+    }
+   ],
+   "examinado": [
+    "Mapa de rotas: python C:\\IALD\\MAPA_DE_ROTAS\\rotas.py consultar \"pilar\" devolveu 5 rotas (cabeça af5e8bd20c96a5b5), entre elas quantica.pilar_v384_decisao_operador_03out (a transcrição dos operadores conferida por leitura na 1ª aferição) e infra.gpu_cusolver_geev_queda_n64. Nada registrado.",
+    "Rascunhos (lidos inteiros, MD e JSON): RASCUNHO_B_REDUZIDO.json 7d28e2c808ca6f31a59c49200913c716d038c3d1d41e30cdcaa0476f278b1539; .md 53f5892d21500a52e3f16476c4551bb69c1fa3b10acdcfd061fa0c1c7538a7f7; RASCUNHO_A.json 8f8e904dceeddd9de325d320da6afdc386338197994489ca36b8d71948b872f2; .md b7b0b6f009a8fc8cf49a04ded6ccf87fa19086e96797a1d5d93222496bb403af. O spec_sha256 foi recalculado (B 83b5488e…, A b2ea21e5…) e bate; o worker_sha256 da spec bate com o arquivo.",
+    "Gerador do pré-registro, C:\\IALD\\Bancada_Um\\…\\gerar_preregistro_pilar_quantico_03out.py, 7273641895f26a6b340934ae3ded8e12bd38ae1e0604c1011b1c445faf6b98e7 (o de rascunho_prereg_v4 é idêntico). Uma CÓPIA, rodada só na minha pasta (aferidor4_preregistro/regen), reproduz os 4 rascunhos byte a byte, exceto 'gerado' e 'gerado_utc'. Com a mesma cópia, testei a guarda da ratificação: uma mensagem anterior ao rascunho é recusada (AssertionError «nao e' POSTERIOR»), e o prefixo sem --rascunho também é recusado. Nada foi escrito fora da minha pasta.",
+    "Trabalhador pilar_quantico_worker.py b3bdecab06c180064588c65e9d80712ed32a5bfa19635bfaa7e3d4f1162d331d (1265 linhas, LF), lido: derive_verdict, compare_cpuref, run_cpuref, run_D128, engine_selftest, run_T1–T4, summarize_T1/T2, identity_check, run_timing e main. Uma cópia (worker_copia.py, mesmo sha) foi importada e só compare_cpuref, derive_verdict e Engine.classify foram chamadas, com entradas SINTÉTICAS (puras_sinteticas.py bbc96d3106287a463268bae4f5ed61dcd9172d76c15921b85dbde7f60ae0da33, saída 113cacc8de6eecd4cef3e796980152c6a514fa18b0702d1a1135cf6ed771d744). Nenhum operador da teoria foi construído; o trabalhador não rodou em modo nenhum.",
+    "v384_runtime.py 10dea1131c66981ce52304cd062ac4a92287f07678492349058451636cf43515; conferir_rito_v384.py b0a63f367a326237cb36f6317ecf6ba28d5066fe71270920a5e80b6461b2a56c; rito_v384.sh 21584e80923edc9b9170eb1d46dd0b2b0544e86590158ae5b14425888e4812e3 (lido, não rodado); gerar_candidato_v384.py 5071bec333ff4ea11f95d0c3ca224e0b8a771ee412000098eb8a8094ad9656d9 (guardas da ratificação e do lugar permanente); CANDIDATO_v384_ENSAIO.json 11d0cde2388b1ccb182c41e22cf29d8e7f09d1f8294a15930d31d7fe6d27f45b (spec 83b5488e… = B); um_v384_candidato_ENSAIO.py, só grep (o terceiro balde nas linhas 208294-208310).",
+    "Orçamento e plano B recalculados por script: recalc_orcamento.py d145ba81cc04feff6469771d23e3e0c0188941eb579f5a173e5aefb27cb72c15, saída 43fc321239934cc9ad1e8fc85dabb50c4d9b8500e1b77fe61600ae8142fe5fb5. Fontes: teste_tempo_v6/result.json 0dcd4fd21664bc97754d037934d9f4ffe1ce517fb7edaba8566cdc23ff544609 (trabalhador b3bdecab, MAGMA 1e9); planejar_carga_v384.json 9d1d2c3095d2121817c62065acfcc47b24f5919e02660bf4cb3aa0586c45f3af. Resultados: B 94,76/118,45 min, antes do D128 95,16 com margem; A 156,45/195,56 e 172,27; plano B 256,27/320,34, com 237,64 antes do D128 sem margem. Todos batem com os rascunhos.",
+    "Volume do MAGMA e estresses: estresse_eig.json 9ec8d704…, estresse_eig_grande.json 11ec6735…, caracterizar_queda_cusolver.json 00e4daef… (cuSOLVER caiu em 8 de 9 tamanhos; MAGMA com 16 500 chamadas), variantes_cusolver.json 65118c79… (mesma semente, mesma queda), durabilidade_pipeline.json 6387377c… (7710). Em n = 4096: 5 chamadas no estresse e 9 na sonda v6. teste_motor_v5/result.json 48dfb7ef7f542596596c8a2936cfe6132ecc281a30764695754733355ce8a2d3 (E1..E8 ok; E7 n = 6000; trabalhador b3bdecab).",
+    "Aferição e disposições: disposicoes_afericoes_v384.json 1a1f9df78340f7701769be1c62fb9ac32ca5ea3798a507ae8def1369882d1ea7; AFERIDOR_v384.txt e6de796fd1cc6ea30a574d0b1529c06f97e81eaab3870469c47830d9fc1a1519 (o .bak aeec43d6… é prefixo byte a byte); afericao2_resultado.json 081e97bc…; afericao3_resultado.json a4dc5181… (estados 32/13/3 e 0 refutados, contados por script).",
+    "Fontes da teoria citadas no rascunho: os 9 sha256 foram recalculados e batem (A_fronteira_v5.tex bf824b9a…, validadores v1–v5.2, um.py v383 58abcf20651f477715404a0801ffdf4b26ad18a76d6ae49bfa950c602938a427).",
+    "Kernel (cético aferidor), sobre os nomes do N1. O grep em Nós\\tgl_kernel por 'tgl_fix_iff|spectral_preserves_every_diagonal' deu 0 ocorrências nos fontes materializados (só os .olean e .ilean do build existem). Os textos Lean EMBUTIDOS no um.py v383, lidos por lean_nomes.py (bf780d19…), trazem theorem tgl_fix_iff em IALDRhoStar.lean:255 e theorem spectral_preserves_every_diagonal em ModularDephasingBridge.lean:18, como o rascunho cita. Os dois módulos são importados em Nós\\tgl_kernel\\TGLExt.lean (30ac324e…, linhas 1018 e 1042). Classe (A): EXISTE E ESTÁ LIGADO, logo não é achado. O inventário INVENTARIO_BANCADA_CHATGPT.json (05c2afa0…) dá 0 ocorrências desses nomes, porque são pedras da gerência e não da bancada.",
+    "Transcrito da sessão, só leitura (ctx_ratificacao.py 4c02b557…): a mensagem do assistente de 10:51:11Z pedia as três decisões (L_diss vazamento, coeficientes canônicos, «Nível A ou B?»); a do operador de 12:53:05Z respondeu «Concordo com tudo, vamos de rito robusto». A linha 'ratificacao' dos operadores confere.",
+    "Não rodei o trabalhador, o rito_v384.sh, instalar, conferir, gerar_esperados, fumaca, ensaio_a_seco, um.py, atlas_indice, arvore_da_prova nem porta_memoria; não rodei nenhum gerador fora da minha pasta. Escrevi só em …\\scratchpad\\v384\\aferidor4_preregistro\\."
+   ]
+  },
+  {
+   "lente": "regressao",
+   "itens": [],
+   "examinado": [
+    "Lente: regressão, sem itens atribuídos. Consultei o mapa de rotas antes de começar (rotas.py consultar 'pilar', 5 rotas lidas, entre elas quantica.pilar_v384_decisao_operador_03out em curso e infra.gpu_cusolver_geev_queda_n64). Nada registrado.",
+    "Sintaxe: ast.parse OK em pilar_quantico_worker.py, v384_runtime.py, gerar_candidato_v384.py, instalar_v384.py, conferir_rito_v384.py, ensaio_a_seco_v384.py, fumaca_v384.py, gerar_esperados_v384.py, teste_artigo_afer3/simular.py, PERM/gerar_preregistro_pilar_quantico_03out.py e no candidato de ENSAIO inteiro (33 MB). Os trechos .pysnip PT/EN passam no ast depois do dedent. sh -n e bash -n OK em rito_v384.sh.",
+    "Diffs lidos (corrente vs backup): trabalhador b3bdecab06c180064588c65e9d80712ed32a5bfa19635bfaa7e3d4f1162d331d vs auditado_3a 569c6eb422fe78d3d7305842d1d29e6940dabae46e5e2c5cf67e95eb97a4b21f; runtime 10dea1131c66981ce52304cd062ac4a92287f07678492349058451636cf43515 vs bak 7ce2975c17efc96afcf942eb1dcfd38d37f73ca7da2f8e081b3aa97b00a311d8; artigo PT 242b3ababaaaf770c298efb201be145a6ad213f822a0a792fcfc5a4a7813a75c vs 0d6fbc11f4eed1ce5d894e7a64b53815550b2c7f7374e2e4c55365f982e49983; artigo EN 76f8d185d4e7c0560eb0d79b053b8ab07f30aa719f78a28523495ea187eab30b vs f36c086c652b48a949af45ad12d29976352fdad791a923d966b4ce9523b6c785; gerar_candidato 5071bec333ff4ea11f95d0c3ca224e0b8a771ee412000098eb8a8094ad9656d9 vs 0b589c4c7d38485bb866921fdc69ddea6879681b0d626083988d1c75fbaea233; rito 21584e80923edc9b9170eb1d46dd0b2b0544e86590158ae5b14425888e4812e3 vs 2d671965497bd1a108917b104bfec4ced9cc1ab1ce146d78ac5c2e769de1bad0; instalar 4c93ba11bc66936651ca5b1822bd8c96fe6fef0082fd8a873c2aacb2c9b71da9 vs 1cfbff941009a5e9b0110d6ff241c7b0e9a23cb8ffa03375a354679c7c42ed49; ensaio d2753058e50570dc392b5792b6b389ba322dba37405679b088d7fffb30e76f49 vs dc45742c0fc11fc6daf362f0656b68e7e22eaca6a7c5bd3da71f40966b7bd02f; fumaca c6eef34bbd17e72b90568acaa3996f1dc36fd8cf15e8a9e5081b5322ff7eafba vs 0e019683c70c324822645895333ce09b3fb1d3b5b5cd538c40bf6625d44448bb; esperados a71bb4165ad665f1ad88f38ac2ab5acc21059456cad83553a38a332611c3cb77 vs 556122d1c113475df009b98e1b3fa2b7d723d5b5da1848820d839999bebe7e44; conferidor b0a63f367a326237cb36f6317ecf6ba28d5066fe71270920a5e80b6461b2a56c vs bak_antes_afer2 c4af6d11762f51c3ed2457e44eac7a524ca0e8a5d53ad3c841589d5422053821 (não há bak_antes_afer3); gerador do pré-registro 7273641895f26a6b340934ae3ded8e12bd38ae1e0604c1011b1c445faf6b98e7 vs bak_antes_afer3 12237cdeef124d6c46627de06fd8965fcc75b3d90e251b721bb59207b7f53d58.",
+    "Contratos conferidos sem achado: spec × trabalhador (varredura por regex de spec/s1/s2/s3/s4/sd/sc/op/tol[...]: nenhuma chave lida falta no rascunho B); cpuref.tol do rascunho contra o E8 (min_gap_rel_for_compare 1e-6; folds_n_c2 fora da tolerância: o E8 passa com a spec); campo read/compared do trabalhador → runtime → artigo e fumaça; n_nonfinite_beta e max_beta_rel_err do trabalhador → _qp_summary → artigo; identities_checked dinâmico (sem consumidor de chave fixa); not_cached_code do runtime → artigo → conferidor; cpuref_sha256 e run_dir → W07 do selo; W08/W08b/W08c no candidato (_computacao definido antes do print; o 'balde' do ensaio não é vazio: 3 enunciados em main, l.208305-208307); W09 contra a lista hasheada do selo da v383 (l.207722); chaves que gerar_candidato, gerar_esperados, instalar e fumaca exigem da ratificação (verbatim, quando, spec_sha256_ratificada, spec_sha256_do_rascunho_apresentado, a_especificacao_ratificada_e_a_do_rascunho) e que o gerador do pré-registro grava; desvio_do_plano_B.esta_especificacao.escolha presente nos dois rascunhos; o preâmbulo da v383 redefine \\_ com \\allowbreak (l.165535 e 169028), de modo que remover o allowbreak da caixa do veredito não é regressão; ParentGone(BaseException) não é engolido em nenhum ponto (o único finally é o do _nonherm); del J, K agora correto com checks=False; a contagem 37/37 da 3ª no texto da aferição confere com verificacao.veredictos (refutado=False em 37).",
+    "Funções puras chamadas numa CÓPIA do trabalhador na minha pasta, com entradas SINTÉTICAS (nenhum operador da teoria construído; cuidado declarado): compare_cpuref, derive_verdict (corrente e auditado_3a) e Engine.classify. Script aferidor4_regressao/teste_puro_regressao.py (sha256 50b297bd3e2fed9bc83def80e31f620bc14172c2ed9d0273c18939d82b6c5f9e), saída teste_puro_regressao.json (sha256 6d1131786609d2703befa92f15d020722e50b805b05191e25036a5bfb2cc390e).",
+    "Lançador testado em cópia com stubs (powershell.exe, taskkill, nvidia-smi, python) e PK/NOS/ESPERADOS dentro de aferidor4_regressao/lancador/: rito_teste.sh sha256 3c53426e48dbbadc7373b80f398528082c0f52f04a3850e22e0ed311ba876191. Cinco cenários: normal; TERM antes do rito; TERM durante o rito; VRAM ilegível; servidor desligado antes. Nenhum Stop/Start-ScheduledTask, taskkill ou um.py real foi executado.",
+    "Artigo: arnês teste_artigo_afer3/simular.py copiado para aferidor4_regressao/sim_artigo/simular.py (sha256 af278938cda412ebb742f0418f5bc327975b267afba175cef1b62e1607bc50d5), com cores sintéticos. Os 28 casos PT/EN geraram TeX/TXT e compilaram com pdflatex. simular.json sha256 9d9abf4d14f453c4e8b1bf94a6c57a017f0ab89e2fb02099c860cf74ee1472e3 (idêntico ao da gerência).",
+    "Lidos também: rascunhos v4 B (7d28e2c808ca6f31a59c49200913c716d038c3d1d41e30cdcaa0476f278b1539) e A (8f8e904dceeddd9de325d320da6afdc386338197994489ca36b8d71948b872f2); disposicoes_afericoes_v384.json (1a1f9df78340f7701769be1c62fb9ac32ca5ea3798a507ae8def1369882d1ea7); afericao3_resultado.json (a4dc51810d510ac70a06fdc0167c1051e582c8e2f41c9f28470cb48c68aaaba7); teste_motor_v5/result.json (48dfb7ef7f542596596c8a2936cfe6132ecc281a30764695754733355ce8a2d3; E1..E8 ok, worker b3bdecab…); teste_tempo_v6/result.json; candidato de ENSAIO e112b8779693fb3d435af0cef9ff0e9b1037c9979f11af6690f8617064a4b1c8 (só leitura e ast); CANDIDATO_v384_ENSAIO.json; base v383 um.py 58abcf20651f477715404a0801ffdf4b26ad18a76d6ae49bfa950c602938a427 (só leitura).",
+    "Não rodei: o trabalhador em nenhum modo, run_*, five_jumps, canonical_H, t1/t4_instance, rito_v384.sh real, instalar, conferir, gerar_esperados, fumaca, ensaio e os geradores. Nada escrito fora de scratchpad/v384/aferidor4_regressao/."
+   ]
+  }
+ ],
+ "novos": [
+  {
+   "severidade": "BAIXO",
+   "arquivo_linha": "v384_runtime.py:226-232 (_qp_out_marker), :310-313 e :373-377 (o except só registra out_marker_error); MD v4 B:132 («o arquivo do pilar de uma rodada anterior no Nós nunca sobrevive»); disposição do #36; candidato de ENSAIO:208042 (o registro do selo sem copied_to_out, copy_to_out_error nem out_marker_error)",
+   "afirmacao": "A frase «nunca sobrevive» é falsa quando a gravação do próprio marcador falha. Se o os.replace do .tmp_qp levantar (por exemplo, um leitor ou o antivírus segurando o arquivo do Nós), o arquivo da rodada ANTERIOR fica no Nós e o selo o hasheia como desta rodada. Só o core registra out_marker_error; o registro do selo não leva esse campo.\n\nComo variante, se a CÓPIA do resultado falhar, o Nós recebe um marcador, mas o core e o selo continuam com all_verified = True e custody_chain_ok = True. O selo hasheia então um arquivo diferente do result_sha256 que ele mesmo registra.",
+   "evidencia": "a4_runtime.py (8b3ffb56…), saída a4_runtime.json (9318de48…). O teste executa o runtime extraído do candidato de ENSAIO (linhas 192291-192670) com entradas sintéticas e OUT/CACHE na sandbox.\n- Caso M: o Nós tem o resultado da rodada A; a rodada M não tem resultado; o os.replace do .tmp_qp é injetado para falhar. Saída: out_marker_error = PermissionError('INJETADO…'). O Nós continua com sha 922ab471… e run_id 559aead0… (os da rodada A), com veredito FIVE_JUMP_GKLS. nos_ainda_e_o_de_A = true.\n- Caso N: o copyfile para o .tmp_qp é injetado para falhar. Saída: copy_to_out_error = OSError; all_verified True; custody_chain_ok True; o Nós vira um marcador (3e66ee90…) ≠ result_sha256 (15be909d…).\n- O conferidor (conferir_rito_v384.py:46) só pega o caso na rodada final.",
+   "correcao": "No except do marcador, tentar os.remove(OUT/um_absoluto_pilar_quantico.json): o selo grava então MISSING_THIS_RUN, que é falha visível. Ou remover ou renomear esse arquivo já em quantum_pillar_start_v384.\n\nQuando a cópia falhar, marcar custody_chain_ok/all_verified como False, ou acrescentar __CUSTODY_CHAIN_INCOMPLETE__.\n\nLevar copied_to_out, copy_to_out_error e out_marker_error ao registro do selo (gerar_candidato_v384.py:104).\n\nOu, se nada mudar, trocar «nunca» por «salvo falha de gravação, registrada em out_marker_error» no MD:132 e na docstring.",
+   "origem": "trabalhador_runtime"
+  },
+  {
+   "severidade": "BAIXO",
+   "arquivo_linha": "pilar_quantico_worker.py:12 («E1..E6 … E7»), :16 («engine (so E1..E7)»), :384 (cabeçalho «E1..E7»), :544-545 (docstring do identity_check sem ZERO_MODE), :1081 (comentário do passo 2 do derive_verdict sem o modo zero e sem o D128)",
+   "afirmacao": "Depois da 3ª aferição, o trabalhador ganhou o E8 (o comparador) e a identidade ZERO_MODE, inclusive no D128. As docstrings e os comentários dentro do hash congelado não acompanharam: o modo engine «só E1..E7», a ordem «E1..E6 e E7», e a lista de identidades conferidas sem o modo zero.\n\nO runtime (11, 71), o artigo e o MD:69 já dizem E1..E8.",
+   "evidencia": "Grep no trabalhador b3bdecab: 'E1..E7' aparece 2 vezes (linhas 16 e 384); a linha 12 diz «(E1..E6) e o ESTIMADOR no seu piso (E7)». Em a4_puras.json, module_doc.mentions_E8 = false e engine_mode_says = «engine (so E1..E7)». O identity_check (544-545) descreve só «CP, TP e o não-retorno … PSD, o resíduo do estacionário e Spohn», mas o código acrescenta ZERO_MODE (549-551). O comentário da 1081 lista «CP, TP, não-retorno, PSD, resíduo, Spohn; V_t P_F; sin² θ_M; N2», mas a 1088 conta o modo zero do D128.",
+   "correcao": "Atualizar os cinco textos: E1..E8, com o E8 como o comparador da CPU, e o ZERO_MODE na lista de identidades. O hash do trabalhador muda; regenerar o spec e o candidato.",
+   "origem": "trabalhador_runtime"
+  },
+  {
+   "severidade": "BAIXO",
+   "arquivo_linha": "pilar_quantico_worker.py:1015 (not_comparable = n > 0 and n == near, sem meta_ok, child_rc nem bad) e :1092-1095 (derive_verdict testa not_comparable antes de qualquer outra causa); MD v4 B:114 (ramo 8); artigo_pt_v384.pysnip:100-101 e EN (testa meta_ok e child_rc ANTES de not_comparable)",
+   "afirmacao": "Quando todas as linhas lidas ficam perto do limiar, o veredito é CPU_REFERENCE_NOT_COMPARABLE («não houve discordância nem conferência») mesmo que a referência NÃO seja desta rodada (meta_ok False), que o filho tenha sido morto pelo prazo (child_rc None) ou que haja linhas da GPU faltando (bad).\n\nIsso contradiz o MD:114 («não é desta rodada → DISAGREES_OR_ABSENT»). O artigo, que confere meta_ok e child_rc primeiro, escreveria «não é desta rodada ou não terminou» ao lado de um veredito NOT_COMPARABLE. Os dois anulam o resultado; o defeito é de leitura e a alcançabilidade é quase nula, porque exige todas as ~392 linhas perto do limiar e uma marca errada.",
+   "evidencia": "a4_puras.json (e9acc727…), compare_cpuref e derive_verdict da cópia b3bdecab com linhas sintéticas:\n- caso all_near_and_wrong_run_id: meta_ok false, not_comparable true, veredito TGL_QUANTUM_PILLAR_V1__CPU_REFERENCE_NOT_COMPARABLE__RESULTS_VOID__GATE_UNTOUCHED;\n- caso all_near_and_child_killed (child_rc None): mesmo veredito;\n- caso no_items: DISAGREES_OR_ABSENT (correto).",
+   "correcao": "not_comparable = bool(n > 0 and n == near and meta_ok and child_rc == 0 and not bad). Ou, no derive_verdict, ler meta_ok e child_rc antes do not_comparable. O hash do trabalhador muda; regenerar o spec.",
+   "origem": "trabalhador_runtime"
+  },
+  {
+   "severidade": "BAIXO",
+   "arquivo_linha": "rito_v384.sh:77 (leitura do marcador), :79-81 (código 13), :86 (gravação 'restaurar=$ESTAVA_LIGADO')",
+   "afirmacao": "O marcador grava 'restaurar=<0|1>', mas a leitura ignora o valor e força ESTAVA_LIGADO=1. (a) Se a rodada morta tinha restaurar=0 (o servidor estava desligado), a rodada seguinte LIGA o servidor no fim. Isso contradiz o cabeçalho ('RELIGADA SE o servidor estava ligado antes') e o MD:133 ('restaura o estado anterior'). (b) Sem a tarefa, o marcador com restaurar=0 faz o lançador recusar com o código 13 dizendo 'o servidor esta ligado SEM a tarefa', o que é falso. Como a recusa vem antes do trap, o marcador nunca é removido, e a recusa se repete em toda rodada até alguém apagá-lo à mão. A mesma frase falsa sai quando a sonda do processo vem vazia sem tarefa.",
+   "evidencia": "[REAL, stubs; aferidor4_lancador, rito_teste.sh 4ac1bfed0223bf48]\n- S6b (marcador 'restaurar=0'; tarefa existe, não rodando; llama-server ausente): log 'antes: ... llama-server vivo=0 ; restaurar no fim=1', depois START_TASK. O servidor termina ligado (eventos f4ae249547dcf2d6).\n- S6c (sem tarefa e marcador 'restaurar=0'): duas rodadas seguidas saem rc=13 'o servidor esta ligado SEM a tarefa agendada', com o servidor desligado. O marcador continua no pk (rodada 2: 8563745c3b1160f2).\n- S14 (sem tarefa, sonda do processo vazia, servidor desligado): a mesma mensagem 'ligado', rc=13 (560635b0aa6f7ee9).\n- Controle S6d (sem tarefa, desligado, sem marcador): roda e 'nao religo'.",
+   "correcao": "Ler o valor gravado. Com 'restaurar=1': ESTAVA_LIGADO=1. Com 'restaurar=0': registrar e remover o marcador, mantendo a medida das sondas. Na mensagem do código 13, dizer a origem do «ligado» (processo vivo, sonda vazia ou marcador). Se a origem não for o processo vivo, não afirmar «ligado».",
+   "origem": "lancador"
+  },
+  {
+   "severidade": "BAIXO",
+   "arquivo_linha": "rito_v384.sh:85 (trap 'sinal INT' INT) e cabeçalho :8; pré-registro MD:133 (rascunhos A e B)",
+   "afirmacao": "O cabeçalho e o MD:133 dizem que, ao receber TERM/HUP/INT, o lançador «encerra primeiro a árvore do um.py». Isso não vale para INT quando o lançador é iniciado em segundo plano por um shell não interativo (`sh rito_v384.sh &`, `bash -c '...' &`), nem para INT e HUP quando ele é iniciado com nohup. Pelo POSIX, o sinal ignorado na entrada de um shell não interativo não pode ser capturado: o trap fica inerte, e o rito segue até o fim. O efeito é benigno (a restauração acontece no fim normal), mas a frase descreve um comportamento que, nesses modos de lançamento, não existe.",
+   "evidencia": "[REAL, Git Bash 5.2.37 msys] Sonda sonda_int/probe_int.sh (sha256 8cf50986009623…), com trap INT e `wait` num filho em segundo plano:\n- (a) `sh probe &` + kill -INT: FIM_NORMAL;\n- (b) o mesmo sh lançado por pai NATIVO (python Popen): TRAP_INT;\n- (c) nohup ... & + kill -INT e kill -HUP: FIM_NORMAL;\n- (d) `bash -c 'sh probe' &`: FIM_NORMAL.\nNo arnês, S3_INT (o lançador foi iniciado com `sh rito_teste.sh &`): o INT foi enviado às 14:43:16.420 e ignorado. O um falso rodou até UM_FALSO_SAIU_NORMAL, às 14:43:36.973, com RITO_RC=0 e rc=0 (eventos e77071a7d1884128).\nModo de lançamento real do rito: [OPEN]. Não achei, no pacote nem na memória, a linha de comando com que a gerência vai iniciá-lo.",
+   "correcao": "Duas saídas:\n- dizer no cabeçalho e no MD:133 que INT e HUP só valem se o lançador não for iniciado em segundo plano por shell ou com nohup;\n- ou fixar o modo de lançamento (primeiro plano, ou um pai nativo) e registrá-lo no pré-registro.",
+   "origem": "lancador"
+  },
+  {
+   "severidade": "MEDIO",
+   "arquivo_linha": "ensaio_a_seco_v384.py:85-86, 98-99 e 114-124; gerar_candidato_v384.py:116-118 (W08c); um_v384_candidato_ENSAIO.py:208308",
+   "afirmacao": "O ensaio a seco reprova de modo determinístico qualquer candidato gerado pelo gerar_candidato corrente. A linha do W08c leva o comentário 'v384' na primeira linha do enunciado. O ensaio põe esse print em `comeca` e o executa num namespace (vars(um) + core + stubs) onde as variáveis locais de main() _not_sealed, _formais, _recusas e _computacao não existem. O exec quebra com NameError, rep['mainflow']['erro'] fica não nulo, o veredito é «FALHOU» e gerar_esperados:22 bloqueia a cadeia. O comentário do ensaio (:98) afirma que «W08/W08b/W08c nao levam a marca na linha», o que é falso para o W08c. A checagem de nomes (:106-113) não acusa o problema, porque assigned_before aceita nomes de main() que o exec não tem. A falha só aparece depois da ratificação e da fumaça, que é cálculo na GPU com os operadores da teoria.",
+   "evidencia": "aferidor4_cadeia/sim_mainflow_ensaio.py (430be5f6…) copia as linhas 81-87 e 116-124 do ensaio e as aplica ao candidato ENSAIO e112b877…, sem importá-lo. Saída sim_mainflow_ensaio.json (cb6d91ec…): comeca = [205405, 207766, 207767, 208308]; _not_sealed, _formais, _recusas e _computacao não estão ligados no módulo nem em 'global'; erro_do_exec = NameError(\"name '_not_sealed' is not defined\"); o W04 rodou antes (quantum_pillar_v384 entrou no core). O mesmo bloco, executado no seu contexto (sim_bloco_custodia.py, bloco e14e0b66…), funciona. Logo o defeito é do ensaio, não do um.py.",
+   "correcao": "Só no ensaio (o candidato não muda de hash). Excluir de `comeca` todo enunciado que contenha '_computacao', ou que leia nomes locais de main() ausentes de vars(um). Executar à parte o bloco inteiro da custódia de sentido, de `_not_sealed = sorted(` ao print W08c, extraído do candidato, com {'core': <sintético>, 'seal': {}}, em dois casos: pilar NOT_RUN e pilar concluído. Exigir que a linha impressa nomeie quantum_pillar_v384 no primeiro caso e diga 'nenhuma' no segundo. Corrigir o comentário :98.",
+   "origem": "cadeia"
+  },
+  {
+   "severidade": "BAIXO",
+   "arquivo_linha": "conferir_rito_v384.py (sha256 b0a63f36…, mtime 14:19) — sem conferir_rito_v384.py.bak_antes_afer3",
+   "afirmacao": "O conferidor mudou depois da 3ª passada (N10/N33) sem backup da versão auditada. A 3ª passada auditou o conferir_rito_v384.py com sha256 fe466024df3e5827… (AFERIDOR_v384.txt, lista do examinado [integracao]). Esse arquivo não existe mais em lugar nenhum do pacote. O único backup é o .bak_antes_afer2 (c4af6d11…, anterior à 2ª correção), e nenhum aplicar_afer3_*.py toca o conferidor, ou seja, a edição foi manual e sem script. É falsa, para este arquivo, a afirmação de que cada arquivo mudado tem .bak_antes_afer3. O diff da correção do conferidor contra a versão auditada não pode ser reconstruído.",
+   "evidencia": "Varri por script todos os .py e os arquivos 'conferir*' sob scratchpad\\v384 (inclusive as pastas dos aferidores) procurando sha16 fe466024df3e5827: 0 ocorrências. A única ocorrência de c4af6d11… é o .bak_antes_afer2. grep 'conferir' em aplicar_afer3_*.py: 0 ocorrências; só aplicar_afer2_ensaio_e_molde.py:111 tocou o conferidor. Os demais arquivos mudados têm .bak_antes_afer3 com o sha auditado: gerar_candidato 0b589c4c…, gerar_esperados 556122d1…, instalar 1cfbff94…, fumaca 0e019683…, ensaio dc45742c…, rito 2d671965….",
+   "correcao": "Declarar a lacuna no registro de disposições. Daqui em diante, o .bak_antes_afer<N> de bytes antes de tocar o conferidor, e a mudança feita por script aplicar_* com count(old) == 1, como nos outros arquivos. Se alguma pasta de aferidor tiver cópia da versão fe466024, restaurá-la como .bak_antes_afer3.",
+   "origem": "cadeia"
+  },
+  {
+   "severidade": "BAIXO",
+   "arquivo_linha": "gerar_preregistro_pilar_quantico_03out.py:374, :404 e :523 (rascunho_prereg_v4 B .md:109, :141 e :187)",
+   "afirmacao": "O pré-registro que vai ser congelado por hash chama o autoteste do motor de «E1..E7». O trabalhador congelado (b3bdecab…) tem OITO verificações: E8_cpu_reference_comparator_selftest. O runtime e o artigo dizem E1..E8 ou contam oito. O rótulo está digitado no gerador e não vem da contagem lida da sonda. A própria linha 187 do MD diz «autoteste E1..E7:» e lista 8 itens.",
+   "evidencia": "teste_motor_v5/result.json (48dfb7ef…): ENGINE_SELFTEST_PASSED, worker b3bdecab06c18006, 8 checks (E1…E8). grep no rascunho v4 B .md: linhas 109 («3. motor E1..E7 falhou»), 141 («o motor (E1..E7) roda de novo») e 187 («autoteste E1..E7:» seguido de 8 itens). v384_runtime.py:11 e :71 dizem E1..E8. O artigo (pysnip PT:86-87) descreve 6 modelos + piso + comparador = 8.",
+   "correcao": "Antes da ratificação: no gerador, derivar o rótulo da contagem lida, \"E1..E%d\" % len(ENG_CHECKS), nas três frases, e regenerar os rascunhos. A especificação não muda (o rótulo não está em SPEC), mas o JSON e o MD apresentados mudam e têm de ser os reapresentados ao operador.",
+   "origem": "cadeia"
+  },
+  {
+   "severidade": "BAIXO",
+   "arquivo_linha": "artigo_pt_v384.pysnip:94 e artigo_en_v384.pysnip:94 (contra v384_runtime.py:253, pass_sigma0 por d)",
+   "afirmacao": "No desfecho negativo pré-registrado do T1 (o veredito de forma de sucesso …T1_INSTRUMENT_DOES_NOT_RECOVER_INJECTED_LAW…), o artigo escreve só «sem ruído, recupera os dois em menos de 100% das injeções» («less than 100%») e não dá o número. O resumo tem a fração por d (pass_sigma0) e o n, e o texto esconde se a fração é 99,3% ou 10%.",
+   "evidencia": "simular4b.py (sha16 4d43ccfc032b9211), só com funções puras e dados sintéticos: em d=16, 7 de 1000 injeções sem ruído têm beta_rel_err=1e-3. summarize_T1 dá pass_sigma0=0,993 e derive_verdict dá …T1_INSTRUMENT_DOES_NOT_RECOVER_INJECTED_LAW… O TXT sim4/E2E_T1_negativo_pt.txt (8ed31e1a7ccd40e6) traz «sem ruído, recupera os dois em menos de 100% das injeções»; o EN traz «less than 100%». Saída: simular4b.json (b780982964b198f7). grep 'menos de 100'/'less than 100' dá 0 na afericao2, na afericao3 e no AFERIDOR_v384.txt, logo não estava listado.",
+   "correcao": "Compor o número a partir de _t1['per_d']. Por exemplo «sem ruído, recupera os dois em 100% das injeções de d=8, 32 e 64 e em 99,3% (993 de 1000) em d=16», ou «no mínimo X% (d=…)». O mesmo no EN («in X% (k of n) at d=…»).",
+   "origem": "artigo"
+  },
+  {
+   "severidade": "BAIXO",
+   "arquivo_linha": "artigo_pt_v384.pysnip:109 e artigo_en_v384.pysnip:109 (contra v384_runtime.py:282)",
+   "afirmacao": "«O pré-registro está congelado por hash (83b5488e82878116)» imprime o hash da ESPECIFICAÇÃO canônica (spec_sha256), não o do documento do pré-registro. As «três honestidades» que a mesma frase diz terem sido ditas no pré-registro estão na prosa do documento, que tem outros hashes (JSON 7d28e2c8…, MD 53f5892d… no rascunho B). Esses hashes já estão no core (preregistration.files) e o artigo não os imprime.",
+   "evidencia": "O trecho imprime `_q4.get(\"preregistration\", {}).get(\"spec_sha256\")[:16]`. No candidato de ENSAIO (e112b8779693fb3d), a linha 192305 tem _QP_SPEC_SHA256 = \"83b5488e8287…\" e as linhas 192306-192307 têm _QP_PREREG json sha256 7d28e2c8…, md 53f5892d…. O runtime:282 grava os dois em out['preregistration']. Por script: sha256 do canônico de spec = 83b5488e828781161b00e2879554c7ec26d049a0472f0a0d9ac005cf70945bec, igual ao spec_sha256 declarado; sha256 dos arquivos = 7d28e2c808ca6f31… e 53f5892d21500a52…. São objetos distintos.",
+   "correcao": "PT: «A especificação do pré-registro está congelada por hash (spec 83b5488e…); o documento, por 7d28e2c8… (JSON) e 53f5892d… (MD)», com os valores lidos de _q4['preregistration']['files']. EN com paridade.",
+   "origem": "artigo"
+  },
+  {
+   "severidade": "BAIXO",
+   "arquivo_linha": "artigo_pt_v384.pysnip:31 (_tx4), usado em :62, :63, :67; idem artigo_en_v384.pysnip",
+   "afirmacao": "O _tx4 se declara «só caracteres seguros (PDF e TXT)», mas deixa passar qualquer letra que str.isalnum() aceita em Unicode (grego, cirílico, CJK). Um caractere desses em summary_error, cache_error ou no código do D128 derruba o pdflatex. Aí compile_pdf devolve False e o rito para com SystemExit(3), sem selo (candidato :207776-207795). Na prática o alcance é improvável: os textos que chegam ali são ASCII ou português Latin-1, que compila; «Nós» e «Acesso negado: …» compilaram no caso E2E_cache_error_caminho.",
+   "evidencia": "Caso sintético E2E_summary_error_unicode (simular4.py 57a922b0245b153b): summary_error = \"KeyError('β_hat') …\". O pdflatex falhou nas duas línguas; o log sim4/E2E_summary_error_unicode_pt.log (e8a38c0d15d82ea2), linha 609, traz «! LaTeX Error: Unicode character β (U+03B2) not set up for use with LaTeX» e «Fatal error occurred, no output PDF file produced!». O caso com acentos latinos compilou (pdf_ok True). grep 'isalnum'/'_tx4' dá 0 nas aferições anteriores.",
+   "correcao": "No _tx4, aceitar só ASCII: `c_ if ((c_.isascii() and c_.isalnum()) or c_ in \" .,:;()'=<>/+-\")`, ou c_ em Latin-1. Assim a frase de falha nunca derruba o PDF que deveria noticiá-la. PT e EN.",
+   "origem": "artigo"
+  },
+  {
+   "severidade": "MEDIO",
+   "arquivo_linha": "pilar_quantico_worker.py:890 (run_D128: zero_mode_ok gravado logo depois do espectro, dentro do try) e :1088 (derive_verdict só conta o modo zero se ran); MD:113 (ramo 7)",
+   "afirmacao": "A árvore diz «7. uma identidade foi violada (inclusive o modo zero no D128) -> IDENTITY_VIOLATED». O código descarta a violação do modo zero do D128 se algum passo posterior do D128 levantar exceção (estacionário em n = 16 384, folds, log_of, RK4): ran vira False, status_code vira NOT_RUN_ERROR_<x>, e derive_verdict ignora zero_mode_ok. O veredito sai do ramo 9 com IDENTITIES_HOLD, e o conferidor da versão final o aceita como negativo honesto. É um caminho que abre quando falha, improvável: exige n0 = 0 em d = 128, tamanho nunca testado, e depois uma exceção.",
+   "evidencia": "Teste com função pura e entrada sintética (aferidor4_preregistro/puras_sinteticas.py bbc96d31…, saída 113cacc8…; cópia do trabalhador b3bdecab…; só derive_verdict):\n- R com D128 = {ran: False, status_code: NOT_RUN_ERROR_OUTOFMEMORYERROR, n0: 0, zero_mode_ok: False} dá «…IDENTITIES_HOLD…D128_NOT_RUN_ERROR_OUTOFMEMORYERROR…CPU_REFERENCE_AGREES…».\n- O controle com ran: True dá «IDENTITY_VIOLATED_1__ENGINE_SUSPECT__RESULTS_VOID».\nO conferir_rito_v384.py aceita esse veredito: a linha 31 tira cache_ok de not_cached_code 'D128_NOT_RAN:…', e as linhas 37-39 só recusam o prefixo NOT_RUN__, VOID, PARTIAL e CUSTODY.",
+   "correcao": "Em derive_verdict, contar `(R.get('D128') or {}).get('zero_mode_ok') is False` independentemente de ran. Está dentro do hash do trabalhador, logo só antes de congelar.",
+   "origem": "preregistro"
+  },
+  {
+   "severidade": "BAIXO",
+   "arquivo_linha": "pilar_quantico_worker.py:1015 (compare_cpuref: not_comparable = n > 0 and n == near) e :1093 (derive_verdict testa not_comparable antes de DISAGREES_OR_ABSENT); MD:98 e MD:114",
+   "afirmacao": "A árvore diz «a referência na CPU discorda, falta ou NÃO É DESTA RODADA -> CPU_REFERENCE_DISAGREES_OR_ABSENT; nenhum ponto comparável -> CPU_REFERENCE_NOT_COMPARABLE (não houve discordância nem conferência)». Mas not_comparable ignora meta_ok, child_rc e as linhas GPU_ROW_MISSING. Uma referência de outra rodada, um filho com código diferente de 0, ou uma linha da GPU ausente, com o resto perto do limiar, sai como NOT_COMPARABLE. Os dois desfechos são RESULTS_VOID; o defeito está no rótulo, e os caminhos são improváveis (pasta nova; linhas ERROR do T2 disparam INSTANCE_ERRORS antes).",
+   "evidencia": "puras_sinteticas.json (só compare_cpuref e derive_verdict, linhas sintéticas com gap_rel 5e-8):\n- run_id 'OUTRA': meta_ok False, not_comparable True.\n- child_rc None: not_comparable True.\n- GPU_ROW_MISSING: disagreements 1, not_comparable True.\nNos três casos o veredito é TGL_QUANTUM_PILLAR_V1__CPU_REFERENCE_NOT_COMPARABLE__RESULTS_VOID__GATE_UNTOUCHED.",
+   "correcao": "not_comparable = n > 0 and n == near and not bad and meta_ok and child_rc == 0 (dentro do hash, antes de congelar). Ou dizer na árvore que NOT_COMPARABLE tem precedência.",
+   "origem": "preregistro"
+  },
+  {
+   "severidade": "BAIXO",
+   "arquivo_linha": "MD:109 (ramo 3), MD:141 (reaproveitamento), MD:187 (motor) dos dois rascunhos; gerador:374, :404 e :523",
+   "afirmacao": "O rascunho diz «3. motor E1..E7 falhou», «ao reaproveitar, o motor (E1..E7) roda de novo» e «autoteste E1..E7: … E8_cpu_reference_comparator_selftest ok». Mas o E8 entra no portão: engine_selftest.all_ok inclui as oito conferências, e ENGINE_SELFTEST_FAILED e o reaproveitamento dependem dele. O próprio documento lista o E8 no E_motor (MD:69).",
+   "evidencia": "worker:479 `\"all_ok\": all(o[1] for o in out)` sobre E1..E8; v384_runtime.py:11 e :71 dizem «E1..E8»; a disposição 8 da 1ª passada em AFERIDOR_v384.txt diz «E1..E7 -> E1..E8 depois da 3a afericao».",
+   "correcao": "Trocar «E1..E7» por «E1..E8» nas três frases do gerador (fora do hash) e regenerar os rascunhos.",
+   "origem": "preregistro"
+  },
+  {
+   "severidade": "BAIXO",
+   "arquivo_linha": "RASCUNHO_A MD:163 e JSON desvio_do_plano_B.razao; gerador:251 e :255 («acima» literal e `10800 / 60`)",
+   "afirmacao": "No rascunho A, a razão diz «mesmo SEM margem, as fases do plano B antes do D128 levam cerca de 238 min, acima do prazo de início de 180 min: o D128 não rodaria». O prazo de início congelado de A é 14 400 s, 240 min (MD:160 e :180 de A), e 237,6 min < 240: sob o prazo de A, o D128 do plano B começaria sem margem. Com margem, 297 > 240, não começaria. O 180 é do B_REDUZIDO, e «acima» é literal, não comparado por script.",
+   "evidencia": "recalc_orcamento.json (43fc3212…): plano_B antes_D128_sem_margem = 237,64 e antes_D128_com_margem = 297,05. A spec do rascunho A tem D128.start_deadline_s = 14400. No gerador, a frase usa `10800 / 60` e a palavra «acima» fixa.",
+   "correcao": "Comparar com SPEC['D128']['start_deadline_s'] e escolher «acima» ou «abaixo» por script. Ou dizer «acima do prazo de início de 180 min do B_REDUZIDO (no A, 240 min: começaria sem margem e não com margem)».",
+   "origem": "preregistro"
+  },
+  {
+   "severidade": "BAIXO",
+   "arquivo_linha": "MD:98 e JSON testes.CPU.o_que (os dois rascunhos); pilar_quantico_worker.py:982 e :1001-1017",
+   "afirmacao": "O rascunho diz «n(c²) e n(c³) só como INFORMAÇÃO». A referência na CPU nem calcula n(c³): grava só folds_n_c1 e folds_n_c2, e compare_cpuref não relata n(c³).",
+   "evidencia": "run_cpuref grava folds_n_c1 e folds_n_c2 (worker:982). Os max_diffs de compare_cpuref são cci, purity, folds_n_c1, folds_n_c2, gap_rel_rel e choi_min (confirmado na saída de puras_sinteticas.json). A disposição 17 da 1ª passada diz «a CPU compara n(c1) e n(c2), nao n(c3)».",
+   "correcao": "«n(c²) só como INFORMAÇÃO (relatado em max_diffs); n(c³) não é calculado pela CPU».",
+   "origem": "preregistro"
+  },
+  {
+   "severidade": "BAIXO",
+   "arquivo_linha": "RASCUNHO_A / B_REDUZIDO: MD:155-165 («Alternativa A (escolha do operador)»); gerador:17-18 e :176-184",
+   "afirmacao": "Há colisão de nome na escolha que o operador vai ratificar. Em 03/10, a gerência perguntou «Nível A ou B?», com A = A_cabe_no_rito, cerca de 40 min, o nível LEVE. O operador respondeu «vamos de rito robusto», isto é, B. Agora «A» / RASCUNHO_A nomeia a variante MAIS pesada que o B_REDUZIDO (156 min contra 95). Uma resposta «A» pode ser lida em sentidos opostos. A escolha gravada vem de --escolha, da gerência, não da mensagem: a guarda confere só prefixo, tempo e spec do rascunho apresentado.",
+   "evidencia": "Leitura só do transcrito (aferidor4_preregistro/ctx_ratificacao.py 4c02b557…): a mensagem do assistente de 2026-10-03T10:51:11.777Z termina com «3. Nível A ou B?», e a do operador de 12:53:05.321Z diz «Concordo com tudo, vamos de rito robusto». planejar_carga_v384.json (9d1d2c30…) traz niveis A_cabe_no_rito e B_robusto. Os rascunhos dizem «Alternativa A … estatística de d = 64 mais forte, rito mais longo».",
+   "correcao": "Renomear a alternativa (por exemplo, B_AMPLIADO_D64) ou dizer nos rascunhos que este «A» não é o «nível A» de 03/10. Na ratificação, exigir que o verbatim nomeie o identificador do rascunho escolhido.",
+   "origem": "preregistro"
+  },
+  {
+   "severidade": "BAIXO",
+   "arquivo_linha": "MD:182 (fonte do orçamento), MD:187-188 (motor), MD:193 (aferição), MD:199-226 (estresse) dos dois rascunhos",
+   "afirmacao": "A proveniência das evidências do pré-registro, que vai ser congelado no lugar permanente, aponta para arquivos que só existem na pasta TEMP da sessão, citados pelo nome base. O resultado do autoteste do motor, de onde saem «E1..E8 ok» e o piso do E7, nem é citado por nome ou hash. O AFERIDOR_v384.txt é citado sem hash. Nenhum passo copia essas evidências para a pasta permanente.",
+   "evidencia": "O DOC['motor'] do gerador não traz arquivo nem sha256 do ENGINE (teste_motor_v5/result.json, 48dfb7ef…). O orçamento cita 'result.json (sha256 0dcd4fd2…)' só pelo nome base. O texto cita 'AFERIDOR_v384.txt' sem hash. Os arquivos estresse_eig*.json, caracterizar_queda_cusolver.json, variantes_cusolver.json, durabilidade_pipeline.json e planejar_carga_v384.json moram em …\\AppData\\Local\\Temp\\claude\\…\\scratchpad\\v384. A pasta C:\\IALD\\Bancada_Um\\investigacao\\preregistro_pilar_quantico_03out só tem o gerador e os .bak. O grep por esses nomes nos scripts do pacote só acha gravar_*, registrar_* e os próprios geradores; nenhum copia.",
+   "correcao": "Ao congelar o V1, copiar as evidências para a pasta permanente, ou citar caminho completo, sha256 e seq do mapa. Citar o ENGINE result por nome e sha256, e dar o sha256 do AFERIDOR_v384.txt.",
+   "origem": "preregistro"
+  },
+  {
+   "severidade": "BAIXO",
+   "arquivo_linha": "MD:116 (último item da árvore); v384_runtime.py:331-336; pilar_quantico_worker.py:1209",
+   "afirmacao": "A árvore diz que o um.py acrescenta __PARTIAL_RESULT_… «quando o resultado é PARCIAL, em qualquer fase» ou __CUSTODY_CHAIN_INCOMPLETE quando algo não confere. O código tem três condições que o texto não diz:\n- PARTIAL só é acrescentado com same_code e veredito rederivado.\n- CUSTODY só é acrescentado se o veredito não tiver __RESULTS_VOID__ nem __NOT_RUN__.\n- O primeiro result_partial.json só é escrito ao fim do T3: uma morte no autoteste do motor ou no T3 dá NOT_RUN__NO_RESULT_FILE, não PARTIAL.\nTudo continua fail-closed (custody_chain_ok fica False).",
+   "evidencia": "v384_runtime.py:331 `if partial and same_code and der:`, e :335 `elif not ok_chain and \"__RESULTS_VOID__\" not in verdict and \"__NOT_RUN__\" not in verdict:`. A primeira escrita de result_partial.json está dentro do laço das fases, depois de cada fase (worker:1209).",
+   "correcao": "Dizer as três condições no último item da árvore. É texto fora do hash.",
+   "origem": "preregistro"
+  },
+  {
+   "severidade": "BAIXO",
+   "arquivo_linha": "MD:90 (T4 o_que) dos dois rascunhos; pilar_quantico_worker.py:825",
+   "afirmacao": "O rascunho diz «em metade delas, uma rotação de base de Haar». No código, cada instância sorteia a rotação com p = 1/2. O número de rotacionadas é aleatório e relatado (rotated), e pode estar longe da metade em d = 64, com 30 instâncias no B_REDUZIDO.",
+   "evidencia": "worker:825 `rot = bool(r.random() < 0.5)`; o resumo do runtime conta 'rotated'.",
+   "correcao": "«em cerca de metade delas (sorteio por instância, p = 1/2; o número de rotacionadas é relatado)».",
+   "origem": "preregistro"
+  },
+  {
+   "severidade": "MEDIO",
+   "arquivo_linha": "scratchpad/v384/rito_v384.sh, função sinal() (≈l.71-75), trap armado em l.84-85 e rotação do stdout antigo em l.123",
+   "afirmacao": "REGRESSÃO da 3ª passada: um sinal (TERM/HUP/INT) que chega depois do trap e antes do rito começar grava 'RITO_RC=SINAL_<x>' no rodada_v384_stdout.txt da TENTATIVA ANTERIOR. Esse arquivo só é renomeado para _tentativaN na l.123. O mesmo sinal também roda mata_um, e o log diz 'durante o rito' sem o rito ter começado.",
+   "evidencia": "Cópia do lançador em aferidor4_regressao/lancador/rito_teste.sh (sha256 3c53426e…), com powershell.exe/taskkill/nvidia-smi/python trocados por stubs. Teste 2: um stdout prévio com 'saida da tentativa ANTERIOR\\nRITO_RC=0' e TERM 2 s depois do início. Saída: EXIT=143 e o arquivo prévio passou a ter 3 linhas: 'saida da tentativa ANTERIOR / RITO_RC=0 / RITO_RC=SINAL_TERM'. stub_t2.log: 'ATO consulta-um.py(mata_um)' e 'ATO Start-ScheduledTask', sem nenhum 'ATO Stop-ScheduledTask' (o servidor nem tinha sido parado). O log diz '14:42:30 SINAL TERM recebido durante o rito'. Os testes 1 (normal), 3 (TERM durante o rito → RITO_RC=SINAL_TERM no stdout desta rodada), 4 (VRAM '[N/A]' → exit 12 com religamento) e 5 (servidor desligado antes → não religa) se comportaram como pretendido. O sinal() não existia no .bak_antes_afer3 (sha256 2d671965…).",
+   "correcao": "Marcar RITO_INICIADO=1 só depois do mv do stdout antigo e imediatamente antes de '( echo 1 | python um.py … ) &'. No sinal(), gravar o trailer e chamar mata_um só se RITO_INICIADO=1; senão, logar 'sinal antes do rito' e sair. Alternativa: rotacionar o stdout antigo antes de armar os traps.",
+   "origem": "regressao"
+  },
+  {
+   "severidade": "BAIXO",
+   "arquivo_linha": "pilar_quantico_worker.py, compare_cpuref (return com not_comparable) e derive_verdict passo 3",
+   "afirmacao": "not_comparable = (n>0 and n==near) ignora meta_ok, child_rc e as linhas GPU_ROW_MISSING. Como derive_verdict testa not_comparable antes, uma referência de OUTRA rodada (marca errada), um filho com rc≠0 ou uma linha da GPU ausente, com todas as linhas lidas perto do limiar, viram CPU_REFERENCE_NOT_COMPARABLE ('não houve discordância nem conferência'). O item 8 da árvore congelada manda 'discorda, falta ou não é desta rodada -> CPU_REFERENCE_DISAGREES_OR_ABSENT'.",
+   "evidencia": "Cópia do trabalhador (aferidor4_regressao/copia_worker.py, sha16 b3bdecab06c18006), chamando só funções puras com entradas sintéticas: teste_puro_regressao.py → teste_puro_regressao.json (sha256 6d113178…). Caso all_near_META_WRONG: not_comparable=true com meta_ok=false. Caso all_near_CHILD_RC_1: not_comparable=true com child_rc=1. Caso all_near_plus_GPU_ROW_MISSING: not_comparable=true com disagreements=1 e first_disagreements=[['b','GPU_ROW_MISSING']]. derive_verdict('not_comparable_META_WRONG'): o corrente dá ...CPU_REFERENCE_NOT_COMPARABLE__RESULTS_VOID...; o auditado na 3ª (569c6eb4…) dava ...CPU_REFERENCE_DISAGREES_OR_ABSENT.... Os dois anulam o resultado, mas o rótulo contradiz a árvore e o texto do pré-registro ('Vale só se a marca da rodada [...] baterem e o filho sair com código 0').",
+   "correcao": "not_comparable = bool(n > 0 and n == near and meta_ok and child_rc == 0 and not bad). Acrescentar a E8 um caso 'tudo perto do limiar + marca errada → not_comparable False'. Isso muda o sha do trabalhador e exige um novo rascunho do pré-registro.",
+   "origem": "regressao"
+  },
+  {
+   "severidade": "BAIXO",
+   "arquivo_linha": "artigo_pt_v384.pysnip / artigo_en_v384.pysnip, definição de _cpu4 (≈l.101-102) dentro de 'if _ran4 and (_ok4 or _part4):'",
+   "afirmacao": "O ramo novo do artigo para a referência não comparável ('não pôde comparar nenhum ponto' / 'could not compare any point') é inalcançável. O parágrafo só existe com _ok4 ou _part4, os dois exigem veredito TGL_QUANTUM_PILLAR_V1__FIVE_JUMP_GKLS__, e derive_verdict só chega ao ramo 9 com cpuref_compare.ok verdadeiro (passo 3). A disposição 12 da 3ª ('o artigo tem o ramo') não se cumpre: o leitor vê só a string do veredito.",
+   "evidencia": "Arnês do artigo copiado para aferidor4_regressao/sim_artigo/simular.py (sha256 af278938…; só o caminho PKG foi ajustado), com cores SINTÉTICOS; os 28 casos PT/EN compilam (pdf_ok true). Caso M_cpu_nao_comparavel_void: grep 'comparar nenhum'/'could not compare' = 0 em PT e em EN; o texto traz só 'não produziu resultado válido (TGL_QUANTUM_PILLAR_V1__CPU_REFERENCE_NOT_COMPARABLE__RESULTS_VOID__GATE_UNTOUCHED)' (M_cpu_nao_comparavel_void_pt.txt, sha256 b1eb47fa…). Em nenhum dos 14 casos PT aparece a frase.",
+   "correcao": "Dizer a situação da referência na CPU também nos vereditos RESULTS_VOID com token CPU_REFERENCE_ (por exemplo, uma frase curta depois do 'não produziu resultado válido', lendo summary.cpuref: read, compared, near_threshold_not_compared). Ou remover o ramo morto e corrigir a disposição 12.",
+   "origem": "regressao"
+  },
+  {
+   "severidade": "BAIXO",
+   "arquivo_linha": "pilar_quantico_worker.py, derive_verdict passo 2 (linha 'nv += int(bool(D128.ran) and D128.zero_mode_ok is False)') e run_D128 (zero_mode_ok gravado antes do steady_state)",
+   "afirmacao": "A identidade do modo zero em d=128 só conta se o D128 terminar (ran=True). Se o espectro sai sem zero (zero_mode_ok=False) e um passo posterior (estacionário, RK4) levanta exceção, ran=False e a violação some. O veredito sai FIVE_JUMP…D128_NOT_RUN_ERROR_*, embora o pré-registro diga 'um espectro sem 0 é violação de identidade, IDENTITY_VIOLATED'.",
+   "evidencia": "teste_puro_regressao.json, caso d128_zero_mode_false_but_later_error (D128={ran:false, status_code:'NOT_RUN_ERROR_RUNTIMEERROR', zero_mode_ok:false, n0:0}). derive_verdict corrente: 'TGL_QUANTUM_PILLAR_V1__FIVE_JUMP_GKLS__…__D128_NOT_RUN_ERROR_RUNTIMEERROR__CPU_REFERENCE_AGREES__…'. Com ran=true (caso d128_zero_mode_false) sai IDENTITY_VIOLATED_1, como pretendido. O texto do D128 está em rascunho_prereg_v4/…RASCUNHO_B_REDUZIDO.json → testes.D128.o_que.",
+   "correcao": "nv += int((R.get('D128') or {}).get('zero_mode_ok') is False). A chave só existe depois de o espectro ser classificado; ParentGone já não passa pelo except Exception do D128.",
+   "origem": "regressao"
+  },
+  {
+   "severidade": "BAIXO",
+   "arquivo_linha": "PERM/gerar_preregistro_pilar_quantico_03out.py l.374, 404, 420, 523; rascunhos B e A (arvore_de_vereditos[3], reaproveitamento[0], motor.autoteste_E1_E7); pilar_quantico_worker.py l.10-11 e l.16 (docstring)",
+   "afirmacao": "A 3ª passada pôs o E8 como porta do motor (all_ok de engine_selftest → ENGINE_SELFTEST_FAILED), e o runtime passou a dizer E1..E8. O texto congelado do pré-registro ficou para trás: '3. motor E1..E7 falhou -> …ENGINE_SELFTEST_FAILED', 'ao reaproveitar, o motor (E1..E7) roda de novo', a chave 'autoteste_E1_E7' (que já lista E8) e a linha do .md 'autoteste E1..E7'. A docstring do trabalhador diz 'engine (so E1..E7)' e 'E1..E6 … E7'.",
+   "evidencia": "Consulta por script aos rascunhos v4: arvore[3] = '3. motor E1..E7 falhou -> ..._ENGINE_SELFTEST_FAILED__NO_RESULT__GATE_UNTOUCHED'; reaproveitamento[0] termina em 'o motor (E1..E7) roda de novo no ambiente presente'; motor.autoteste_E1_E7 lista E1…E8. grep no gerador: l.374, 404, 420, 523. grep no runtime: l.11 e l.71 dizem E1..E8. O E8 roda e passa: teste_motor_v5/result.json (sha256 48dfb7ef…), E8_cpu_reference_comparator_selftest ok=True.",
+   "correcao": "Antes da ratificação, trocar E1..E7 por E1..E8 no texto do gerador (fora da spec: o hash da spec não muda) e regenerar os rascunhos. A docstring do trabalhador muda o worker_sha256: corrigir junto com a próxima mudança de código, ou deixar e declarar.",
+   "origem": "regressao"
+  },
+  {
+   "severidade": "BAIXO",
+   "arquivo_linha": "scratchpad/v384/conferir_rito_v384.py (sem .bak_antes_afer3)",
+   "afirmacao": "O conferidor foi alterado nas correções da 3ª passada sem o backup .bak_antes_afer3 que os demais arquivos têm. Só existe o .bak_antes_afer2, de antes das correções da 2ª. O estado que a 3ª passada auditou não pode ser recuperado byte a byte, e a regressão das disposições 10 e 33 só pode ser aferida contra a base da 2ª.",
+   "evidencia": "Horários lidos (ls --full-iso): afericao3_resultado.json 14:08:00.99; conferir_rito_v384.py 14:19:18.12 (sha256 b0a63f36…); conferir_rito_v384.py.bak_antes_afer2 13:16:31.43 (sha256 c4af6d11…); nenhum conferir_rito_v384.py.bak_antes_afer3. O diff contra o afer2 traz linhas marcadas '(3a afericao)' (o ramo elif not _d128_ran / not_cached_code e o teste por prefixo NOT_RUN__). Nenhum aplicar_afer3_*.py menciona conferir_rito (grep: 0 ocorrências), logo a edição não passou por script com backup. Em conteúdo, o conferidor corrente bate com o runtime (not_cached_code 'D128_NOT_RAN:', summary.D128.status_code, selo.sha256['um_absoluto_pilar_quantico.json']).",
+   "correcao": "Reconstituir e guardar o estado auditado na 3ª: aplicar aplicar_afer2_ensaio_e_molde.py sobre o .bak_antes_afer2 numa pasta à parte e conferir o hash. Registrar nas disposições o diff da 3ª no conferidor. Na próxima passada, backup de bytes antes de tocar qualquer arquivo do pacote.",
+   "origem": "regressao"
+  }
+ ],
+ "verificacao": {
+  "veredictos": [
+   {
+    "i": 0,
+    "refutado": false,
+    "severidade_ajustada": "BAIXO",
+    "razao": "Confirmado por leitura. Não reproduzi a falha de gravação; li o código e constatei o seguinte. No v384_runtime.py (10dea113…), os except de _qp_out_marker (:289-292, :310-313, :373-377) só gravam out_marker_error no core. O registro do selo (gerar_candidato_v384.py:104, tupla de chaves) não leva copied_to_out, copy_to_out_error nem out_marker_error. O selo hasheia o que estiver em OUT (candidato e112b877, :208334-208339) e só grava MISSING_THIS_RUN quando o arquivo falta: se o os.replace do marcador falhar, o arquivo da rodada anterior é hasheado. Na variante, se a cópia falhar, o marcador diz result_file_absent=True com o resultado existindo, e all_verified e custody_chain_ok continuam True. O conferidor:46 só pega o caso na rodada final. Para acontecer, é preciso falhar uma troca de arquivo (arquivo travado no Windows), o que é improvável."
+   },
+   {
+    "i": 1,
+    "refutado": false,
+    "severidade_ajustada": "BAIXO",
+    "razao": "Confirmado no trabalhador b3bdecab06c18006. A linha 12 diz «(E1..E6) e o ESTIMADOR no seu piso (E7)», a 16 diz «engine (so E1..E7)» e o cabeçalho da 384 diz «E1..E7», mas o código tem o E8 (:466-478, e o all_ok da :479 o inclui). A docstring do identity_check não cita ZERO_MODE, que o código confere logo abaixo. O comentário do passo 2 do derive_verdict não cita o modo zero nem o D128, e a :1088 os conta. São só textos dentro do hash, sem efeito no cálculo."
+   },
+   {
+    "i": 2,
+    "refutado": false,
+    "severidade_ajustada": "BAIXO",
+    "razao": "Reproduzido com funções puras e entradas sintéticas: copia_worker.py (b3bdecab06c18006) na minha pasta, script puras_sinteticas.py, saída puras_sinteticas.json (43d6cc9e…). Com todas as linhas perto do limiar, os casos «marca errada», «child_rc None», «child_rc 1» e «+GPU_ROW_MISSING» dão not_comparable=True e o veredito CPU_REFERENCE_NOT_COMPARABLE, contra o MD:114. «Sem itens» dá DISAGREES_OR_ABSENT. Fica REFUTADA a parte do artigo: _cpu4 só é avaliado dentro de `if _ran4 and (_ok4 or _part4)`, que exige FIVE_JUMP, e o artigo nunca escreve aquela frase ao lado de um NOT_COMPARABLE (ver [22]). A alcançabilidade é quase nula: a pasta é nova (FRESH_GUARD + uuid), linhas ERROR do T2 disparam INSTANCE_ERRORS antes, e um cpuref.json com rc≠0 só sai numa janela ínfima. Os dois rótulos anulam o resultado; o defeito é de rótulo."
+   },
+   {
+    "i": 3,
+    "refutado": false,
+    "severidade_ajustada": "BAIXO",
+    "razao": "Reproduzido com uma cópia stubada do lançador (aferidor4_verificacao_adversarial/lanc/rito_teste.sh, 8abecfc1…; powershell, taskkill, nvidia-smi e python trocados por stubs). S6b (marcador «restaurar=0», tarefa existe e parada, servidor morto): o log diz «restaurar no fim=1» e há Start-ScheduledTask no fim (out_S6b.txt d3833e85…). S6c (sem tarefa + marcador restaurar=0): rc=13 com «o servidor esta ligado SEM a tarefa», que é falso, e o marcador fica (out_S6c.txt 5bd62da3…). O controle S6d está correto. A :77 força ESTAVA_LIGADO=1 sem ler o valor. Só acontece depois de o lançador ser morto à força com o servidor desligado."
+   },
+   {
+    "i": 4,
+    "refutado": true,
+    "severidade_ajustada": "NENHUM",
+    "razao": "O comportamento POSIX descrito existe: INT é ignorado na entrada de um processo assíncrono de shell não interativo, e HUP sob nohup. Mesmo assim não é defeito. A garantia que o cabeçalho e o MD:133 sustentam, religar no fim se o servidor estava ligado, vale em todos esses modos, porque o rito termina normalmente e o trap EXIT restaura. O efeito é benigno, como o próprio achado admite. «Caso em que encerra primeiro a árvore» está condicionado a o lançador RECEBER o sinal, e sinal ignorado na entrada não chega a manejador nenhum. O TERM, sinal de parada programática, continua capturável em segundo plano. Um Ctrl-C de teclado nunca atinge um job em segundo plano. Preferência de redação, não defeito."
+   },
+   {
+    "i": 5,
+    "refutado": false,
+    "severidade_ajustada": "MEDIO",
+    "razao": "Reproduzido só por AST, sem importar nem executar o candidato: sim_comeca.py, saída sim_comeca.json (875c43a5…), candidato e112b8779693fb3d. Pelo critério do ensaio (:85-86), comeca = [205405, 207766, 207767, 208308]; a 208308 é o print W08c, que leva «# v384» na linha. _not_sealed, _formais, _recusas e _computacao são locais de main() e não estão no topo do módulo. O exec dá NameError('_not_sealed') depois de quantum_pillar_v384 entrar no core. O ok do ensaio (:194) exige not _mf_err, o veredito sai FALHOU e gerar_esperados_v384.py:22 bloqueia. A checagem de nomes (:106-113) não acusa, porque assigned_before aceita os locais de main. O comentário da :98 é falso para o W08c. O ensaio nunca rodou: não há dry_* nem ensaio_a_seco_*.json. Não gera resultado errado (é fail-closed), mas trava a cadeia de modo certo; a correção fica fora do hash do candidato."
+   },
+   {
+    "i": 6,
+    "refutado": false,
+    "severidade_ajustada": "BAIXO",
+    "razao": "Parcialmente refutado. Confere que não existe conferir_rito_v384.py.bak_antes_afer3 (ls: só o .bak_antes_afer2 c4af6d11…), que nenhum aplicar_afer3_*.py menciona o conferidor (grep, rc=1) e que nenhum arquivo do pacote tem o sha fe466024 (varredura de 317 arquivos). Já a afirmação de que o diff contra a versão auditada «não pode ser reconstruído» é FALSA: aplicando o patch do conferidor de aplicar_afer2_ensaio_e_molde.py sobre o .bak_antes_afer2, na minha pasta, obtive byte a byte o sha256 fe466024df3e582781857db9df0ae7c0889d87cc652b6909d5d5c0b29b4af135 (reconst/conferir_rito_v384.py) e o diff contra o corrente (reconst/diff_auditado3_vs_corrente.txt, f6fa87dc…). Resta só a falha de processo (sem backup, edição sem script) e a frase do pacote «cada um com .bak_antes_afer3»."
+   },
+   {
+    "i": 7,
+    "refutado": false,
+    "severidade_ajustada": "BAIXO",
+    "razao": "Confirmado. O rascunho B .md diz «E1..E7» nas linhas 109, 141 e 187, e a 187 lista 8 itens. O gerador permanente (7273641895f26a6b…, idêntico à cópia do rascunho) tem «E1..E7» digitado nas linhas 374, 404 e 523 e a chave autoteste_E1_E7 na 420. teste_motor_v5/result.json (48dfb7ef…) traz ENGINE_SELFTEST_PASSED, trabalhador b3bdecab06c18006 e 8 checks, de E1 a E8, todos ok. O texto fica fora da spec, e o hash da spec não muda."
+   },
+   {
+    "i": 8,
+    "refutado": false,
+    "severidade_ajustada": "BAIXO",
+    "razao": "Confirmado por leitura: artigo_pt_v384.pysnip:94 e EN:94 escrevem «menos de 100%» / «less than 100%» sem número, embora _t1['per_d'][d]['pass_sigma0'] e n estejam no resumo (runtime:253). Pela régua, o número corrige a frase. O veredito já carrega o token DOES_NOT_RECOVER, por isso o efeito é só de precisão do texto."
+   },
+   {
+    "i": 9,
+    "refutado": false,
+    "severidade_ajustada": "BAIXO",
+    "razao": "Confirmado. Recalculei o canônico da spec do rascunho B: dá 83b5488e8287…, igual ao spec_sha256. As chaves da spec são id, worker_sha256, seed, dtype, eps_H, linalg, operators, tolerances, execution, T2, T1, T3, T4, D128 e cpuref, e nenhuma contém as honestidades: as buscas por dobra, estrutural, hierarq e honest dão False. Os arquivos têm 7d28e2c808ca6f31… (JSON) e 53f5892d21500a52… (MD), e o candidato os embute (:192306). A linha :109 PT/EN imprime só o hash da spec, que não cobre as três honestidades ditas na mesma frase. É imprecisão, não erro de cadeia."
+   },
+   {
+    "i": 10,
+    "refutado": false,
+    "severidade_ajustada": "BAIXO",
+    "razao": "Confirmado. Em Python, isalnum('β'), 'Ж' e '中' dão True. Rodei pdflatex na minha pasta (tex/) com o preâmbulo do artigo (inputenc utf8 + T1 + lmodern, sem DeclareUnicodeCharacter no candidato) e o texto passado por _tx4. «KeyError('β_hat')» dá «Unicode character β (U+03B2)» e Fatal, sem PDF; o caso latino (Acesso negado: Nós) compila. Com compile_pdf False, o rito para com SystemExit(3) sem selo (candidato :207776-207795). Na prática é improvável: as mensagens que chegam ali são ASCII ou Latin-1."
+   },
+   {
+    "i": 11,
+    "refutado": false,
+    "severidade_ajustada": "BAIXO",
+    "razao": "Reproduzido com o derive_verdict puro (copia_worker b3bdecab, puras_sinteticas.json). Com D128={ran:False, NOT_RUN_ERROR_RUNTIMEERROR, n0:0, zero_mode_ok:False} o veredito sai FIVE_JUMP…IDENTITIES_HOLD…D128_NOT_RUN_ERROR_RUNTIMEERROR…CPU_REFERENCE_AGREES; com ran:True sai IDENTITY_VIOLATED_1. Pela linha 31, o conferidor aceita. Baixei de MEDIO para BAIXO por três razões: são precisas duas falhas independentes (o espectro sem zero em d=128 e uma exceção posterior); o zero_mode_ok False fica no result.json e no resumo, e some só do veredito; e o ramo AMBIGUOUS com n0=0 segue para o estacionário, que costuma terminar."
+   },
+   {
+    "i": 12,
+    "refutado": false,
+    "severidade_ajustada": "BAIXO",
+    "razao": "É duplicata de [2], confirmada pela mesma reprodução pura (puras_sinteticas.json): meta errada, rc None ou 1 e GPU_ROW_MISSING levam a NOT_COMPARABLE. O defeito é de rótulo contra o MD:114, numa alcançabilidade quase nula, e os dois desfechos são RESULTS_VOID."
+   },
+   {
+    "i": 13,
+    "refutado": false,
+    "severidade_ajustada": "BAIXO",
+    "razao": "Duplicata de [7]. Confirmado: o worker:479 tem all_ok = all(...) sobre E1..E8, e o MD:69 lista o E8 no E_motor, mas as linhas 109, 141 e 187 e o gerador (374, 404, 523) dizem E1..E7."
+   },
+   {
+    "i": 14,
+    "refutado": false,
+    "severidade_ajustada": "BAIXO",
+    "razao": "Confirmado. Na razão do desvio, o gerador usa `10800 / 60` e a palavra «acima» literais. No rascunho A, spec.D128.start_deadline_s = 14400 (240 min; MD A:160 e :180), e a frase do MD A:163 compara os ~238 min do plano B com 180 min, quando sob o prazo de A o D128 começaria sem margem. Não recalculei os 237,64 por conta própria: os ~238 min vêm do próprio texto. É imprecisão de contexto num rascunho."
+   },
+   {
+    "i": 15,
+    "refutado": false,
+    "severidade_ajustada": "BAIXO",
+    "razao": "Confirmado: run_cpuref grava só folds_n_c1 e folds_n_c2, e os max_diffs do compare_cpuref (cci, purity, folds_n_c1, folds_n_c2, gap_rel_rel, choi_min; ver puras_sinteticas) não têm n(c³). A frase «n(c²) e n(c³) só como INFORMAÇÃO», no MD:98 e no gerador:366, sugere que n(c³) é relatado. Só redação."
+   },
+   {
+    "i": 16,
+    "refutado": false,
+    "severidade_ajustada": "BAIXO",
+    "razao": "Confirmado. planejar_carga_v384.json tem os níveis A_cabe_no_rito (40,1 min com margem) e B_robusto. Os rascunhos chamam de «Alternativa A (escolha do operador)» a variante mais pesada (195,6 min com margem, contra 118,4 do B_REDUZIDO). O gerador aceita --escolha=B_REDUZIDO|A. A guarda da ratificação confere a escolha só contra o rascunho apresentado, e o verbatim não precisa nomeá-lo. A ambiguidade é real, embora a decisão seja humana."
+   },
+   {
+    "i": 17,
+    "refutado": false,
+    "severidade_ajustada": "BAIXO",
+    "razao": "Confirmado. O gerador lê o ENGINE (:15, :47-49: confere worker e PASSED), mas DOC['motor'] (:420-422) não cita arquivo nem sha256. A aferição cita «AFERIDOR_v384.txt» sem hash (:423). O estresse vai por nome base e sha256, e esses arquivos moram no TEMP da sessão. Nenhum passo os copia para a pasta permanente, que tem só o gerador e os .bak. A custódia por hash existe para o estresse, mas a localização é volátil."
+   },
+   {
+    "i": 18,
+    "refutado": false,
+    "severidade_ajustada": "BAIXO",
+    "razao": "Confirmado no runtime: a :331 tem `if partial and same_code and der`, e a :335 só acrescenta CUSTODY sem __RESULTS_VOID__ ou __NOT_RUN__. No trabalhador, result_partial.json é escrito depois de cada fase do laço, a primeira vez ao fim do T3, e no início do D128. Morrer no autoteste ou no T3 dá NO_RESULT_FILE. O MD:116 («em qualquer fase») omite essas condições. Tudo segue fail-closed."
+   },
+   {
+    "i": 19,
+    "refutado": false,
+    "severidade_ajustada": "BAIXO",
+    "razao": "Confirmado: no worker:825, `rot = bool(r.random() < 0.5)` é sorteado por instância, e a contagem vai em rotated (runtime:270). «Em metade delas» (MD:90) é impreciso, sobretudo em d=64 com 30 instâncias. O artigo relata o número real. Só redação."
+   },
+   {
+    "i": 20,
+    "refutado": false,
+    "severidade_ajustada": "BAIXO",
+    "razao": "Reproduzido com a cópia stubada (lanc/rito_teste.sh 8abecfc1…): stdout anterior com «RITO_RC=0» e TERM 2 s depois do início. Resultado: EXIT=143, a 3ª linha «RITO_RC=SINAL_TERM» foi acrescentada ao stdout da tentativa ANTERIOR (t20_stdout_anterior_depois.txt 272940eb…), o log diz «SINAL TERM recebido durante o rito» (t20_out.txt 92da4459…) e houve mata_um e Start-ScheduledTask. O sinal() não existia no .bak_antes_afer3 (2d671965…). Baixei para BAIXO: é acréscimo, não sobrescrita (a linha RITO_RC=0 original fica), e a janela é de ~10-20 s antes do rito."
+   },
+   {
+    "i": 21,
+    "refutado": false,
+    "severidade_ajustada": "BAIXO",
+    "razao": "Duplicata de [2]/[12], reproduzida (puras_sinteticas.json). Não conferi o veredito da versão 569c6eb4 auditada na 3ª. O rótulo contradiz a árvore, mas com alcançabilidade quase nula e os dois desfechos são RESULTS_VOID."
+   },
+   {
+    "i": 22,
+    "refutado": false,
+    "severidade_ajustada": "BAIXO",
+    "razao": "Confirmado por leitura. O derive_verdict só chega ao FIVE_JUMP com cpuref_compare.ok verdadeiro (passo 3). _ok4 e _part4 exigem o prefixo FIVE_JUMP; o resumo usa o mesmo R.cpuref_compare; o REUSE só aceita FIVE_JUMP. Logo, dentro de `if _ran4 and (_ok4 or _part4)`, _cpu4 é sempre «concorda» e os ramos «não pôde comparar», «discorda» e «não é desta rodada» são código morto. A disposição 3a#12 («o artigo tem o ramo») não se cumpre. O leitor vê o token do veredito, que se explica sozinho."
+   },
+   {
+    "i": 23,
+    "refutado": false,
+    "severidade_ajustada": "BAIXO",
+    "razao": "Duplicata de [11], reproduzida (d128_zero_falso_ran_false dá FIVE_JUMP…D128_NOT_RUN_ERROR_RUNTIMEERROR; ran_true dá IDENTITY_VIOLATED_1). Exige duas falhas independentes, e o dado fica no result.json."
+   },
+   {
+    "i": 24,
+    "refutado": false,
+    "severidade_ajustada": "BAIXO",
+    "razao": "Duplicata de [7]/[13], confirmada nos rascunhos e no gerador (:374, :404, :420, :523) e na docstring do trabalhador (:12, :16). O E8 roda e passa (teste_motor_v5/result.json 48dfb7ef…)."
+   },
+   {
+    "i": 25,
+    "refutado": false,
+    "severidade_ajustada": "BAIXO",
+    "razao": "Duplicata de [6]. A falta do .bak_antes_afer3 e a edição sem script se confirmam. Fica REFUTADO que «o estado que a 3ª passada auditou não pode ser recuperado byte a byte»: reconstituí-o na minha pasta, aplicando o patch do conferidor de aplicar_afer2_ensaio_e_molde.py sobre o .bak_antes_afer2, e ele bate com sha256 fe466024df3e5827… (reconst/conferir_rito_v384.py). O diff da 3ª fica em reconst/diff_auditado3_vs_corrente.txt (f6fa87dc…). As regressões 10 e 33 podem, portanto, ser aferidas contra a versão auditada. Resta a falha de processo."
+   }
+  ]
+ }
+}

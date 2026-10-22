@@ -1,0 +1,1 @@
+_V393_NOMES_REGISTROS = ['cunhagens_regra_v393', 'kh_n1_cobertura_v393', 'kh_n1_cobertura_v394']

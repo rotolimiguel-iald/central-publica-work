@@ -1,0 +1,123 @@
+    # v384 (03/10/2026) -- ordem do operador: «Isso agora precisa entrar no artigo na introdução dele explicando o que o código faz agora, e também em nota sobre o que está sendo calculado e como na GPU»
+    _q4 = core.get("quantum_pillar_v384") or {}
+    _s4 = _q4.get("summary") or {}
+    _tt4 = lambda x_: str(x_).replace("_", r"\_")
+    _fin4 = lambda x_: isinstance(x_, (int, float)) and not isinstance(x_, bool) and x_ == x_ and x_ not in (float("inf"), float("-inf"))
+    _f4 = lambda x_, n_=3: (("%%.%df" % n_) % float(x_)).replace(".", "{,}") if _fin4(x_) else "n/d"
+
+    def _e4(x_):
+        if not _fin4(x_):
+            return r"\text{n/d}"
+        if x_ == 0:
+            return "0"
+        m_, e_ = ("%.1e" % float(x_)).split("e")
+        return m_.replace(".", "{,}") + r"\times10^{" + str(int(e_)) + "}"
+    _i4 = lambda x_: ("{:,}".format(int(x_)).replace(",", r"\,")) if _fin4(x_) else "n/d"
+    _t2 = _s4.get("T2") or {}; _t1 = _s4.get("T1") or {}; _t3 = _s4.get("T3") or {}; _t4 = _s4.get("T4") or {}; _d8 = _s4.get("D128") or {}; _cr4 = _s4.get("cpuref") or {}
+    _ph4 = _s4.get("phase_seconds") or {}; _env4 = _s4.get("env") or {}; _eng4 = _s4.get("engine") or []
+    _v4 = str(_q4.get("verdict") or "")
+    _ran4 = bool(_t2 and _t1 and _t3 and _t4)
+    _succ4 = _v4.startswith("TGL_QUANTUM_PILLAR_V1__FIVE_JUMP_GKLS__")
+    _part4 = _succ4 and "__PARTIAL_RESULT_" in _v4 and "__CUSTODY_CHAIN_INCOMPLETE__" not in _v4   # o composto PARCIAL+CUSTODY nao e' parcial valido (5a afericao)
+    _cpuvoid4 = ("__CPU_REFERENCE_NOT_COMPARABLE__" in _v4 or "__CPU_REFERENCE_DISAGREES_OR_ABSENT__" in _v4)
+    _crc4 = _cr4.get("child_rc")
+    _ok4 = _succ4 and not _part4 and "__CUSTODY_CHAIN_INCOMPLETE__" not in _v4 and _q4.get("custody_chain_ok") is True
+    _reuse4 = (_q4.get("reuse") or {}).get("reused") is True
+    _ctl4 = [v_ for d_ in (_t3.get("controls") or {}).values() for v_ in d_.values()]
+    _n3_4 = _t3.get("N3_linear_law") or {}
+    _ctl_ok4 = sum(1 for v_ in _ctl4 if v_) + sum(1 for v_ in _n3_4.values() if v_.get("p_recovered_sigma0") == 1.0 and v_.get("root_law_rejected") == 1.0)
+    _ctl_n4 = len(_ctl4) + len(_n3_4)
+    _n2_4 = _t3.get("N2_unital_identity") or {}
+    _n2ok4 = sum(1 for v_ in _n2_4.values() if v_.get("identity_ok")); _n2u4 = sum(1 for v_ in _n2_4.values() if v_.get("info_status") == "UNIQUE")
+    _p0_4 = [v_.get("pass_sigma0") for v_ in (_t1.get("per_d") or {}).values()]
+    _tx4 = lambda x_: "".join(c_ if ((c_.isascii() and c_.isalnum()) or c_ in " .,:;()'=<>/+-") else (r"\_" if c_ == "_" else "?") for c_ in str(x_)[:200])   # so ASCII seguro (PDF e TXT; 4a afericao)
+    _p0d4 = sorted(((d_, v_.get("pass_sigma0"), v_.get("n")) for d_, v_ in (_t1.get("per_d") or {}).items()), key=lambda t_: int(t_[0]) if str(t_[0]).isdigit() else 0)
+    _pf4 = _q4.get("preregistration") or {}; _pff4 = _pf4.get("files") or {}
+    _rz4 = _q4.get("reuse") or {}
+    _ncc4 = str(_rz4.get("not_cached_code") or "")
+
+    def _t1nz4(sg_):
+        # a maior mediana FINITA entre as dimensoes e, a parte, as dimensoes com estimativas sem solucao finita (3a afericao: nada descartado em silencio)
+        fin_ = []; nf_ = []
+        for d_, v_ in sorted((_t1.get("per_d") or {}).items(), key=lambda kv_: int(kv_[0]) if str(kv_[0]).isdigit() else 0):
+            m_ = (v_.get("median_beta_rel_err") or {}).get(sg_); k_ = (v_.get("n_nonfinite_beta") or {}).get(sg_) or 0; n_ = (v_.get("n_by_sigma") or {}).get(sg_) or 0
+            if _fin4(m_):
+                fin_.append(m_)
+            if k_:
+                nf_.append((d_, int(k_), int(n_)))
+        return (max(fin_) if fin_ else None), nf_
+    _tot4 = sum(v_ for v_ in _ph4.values() if _fin4(v_)) / 60.0 if _ph4 else None
+    _d8sc4 = str(_d8.get("status_code") or "")
+    s.append(r"\section*{Introdução: o que este código faz agora (v384)}")
+    s.append(r"Este artigo é emitido pelo programa que ele descreve --- o \texttt{um.py}, um arquivo único que contém o próprio kernel formal, os próprios testes e o próprio trabalho de GPU. "
+             r"Uma rodada começa pela inscrição do Um ($\omega(I)=1$) e, a partir dela, o programa faz \textbf{três coisas}; a terceira corre \textbf{ao mesmo tempo} que as duas primeiras:")
+    s.append(r"\begin{enumerate}")
+    s.append(r"\item \textbf{O kernel.} Materializa de si o seu kernel Lean 4 e o verifica: nesta rodada, " + str(_nclean) + r" teoremas de suporte com axiomas limpos.")
+    s.append(r"\item \textbf{Os testes cosmológicos.} Roda os ritos pré-registrados contra dados públicos --- o piso dos vazios, os relógios, o fundo cosmológico, os ecos gravitacionais ---, cujos vereditos, inclusive as recusas, são emitidos pela máquina.")
+    s.append(r"\item \textbf{O mundo quântico.} Na GPU, em paralelo com os dois primeiros, calcula o sistema quântico aberto da teoria: o hamiltoniano luminodinâmico $H_{\rm LD}$ e os cinco operadores de salto de Lindblad "
+             r"--- reensaio, anti-coerência, poda, consolidação e dissipação ---, em que a anti-coerência é o \emph{dephasing} da própria teoria, $L_{\rm anti}=\sqrt{\bTGL}\,\sqrt K$, a lei-raiz. "
+             r"Submete esse sistema a quatro testes congelados por hash antes do cálculo; a nota a seguir diz o que se calcula e como.")
+    s.append(r"\end{enumerate}")
+    s.append(r"No fim, escreve este artigo (em português e em inglês), os dados e o selo, cujo hash amarra cada número à rodada. "
+             + ((r"Nesta rodada o resultado da GPU foi \textbf{reaproveitado} da rodada de " + _tt4((_q4.get("reuse") or {}).get("from_run_finished")) + r" (chave \texttt{" + _tt4(_q4.get("key")) + r"}), porque nada do que o produz mudou; a versão final roda completa, sempre. ")
+                if (_reuse4 and _ok4) else ((r"Nesta rodada o mundo quântico foi \textbf{calculado} (chave \texttt{" + _tt4(_q4.get("key")) + r"})"
+                                             + (r"; as versões intermediárias seguintes podem reaproveitá-lo por essa chave, e a versão final roda completa, sempre. " if (_q4.get("reuse") or {}).get("saved_to_cache")
+                                                else ((r"; não foi guardado para reaproveitamento ("
+                                                       + ((r"o ponto $d=128$ não rodou nesta rodada, \texttt{" + _tx4(_ncc4.split(":", 1)[-1]) + r"}; o cache só guarda o resultado completo com ele") if _ncc4.startswith("D128_NOT_RAN")
+                                                          else ((r"a gravação falhou: \texttt{" + _tx4(_rz4.get("cache_error")) + r"}") if _rz4.get("cache_error") else r"resultado não completo ou não conferido"))
+                                                       + r"). ") if (_rz4.get("not_cached_because") or _rz4.get("cache_error")) else r". "))
+                                             ) if _ok4 else ((r"\textbf{Nesta rodada o mundo quântico deu resultado parcial} (\texttt{" + _tt4(_v4) + r"}): os números abaixo valem só para as fases concluídas. ")
+                                                             if _part4 else (r"\textbf{Nesta rodada o mundo quântico não produziu resultado válido} (\texttt{" + _tt4(_v4 or "ausente") + r"}); o que segue é o desenho, não um resultado. "))))
+             + ((r"\textbf{Os números desta rodada não puderam ser resumidos para o artigo} (\texttt{" + _tx4(_q4.get("summary_error")) + r"}); o veredito e o resultado estão no selo e em \texttt{um\_absoluto\_pilar\_quantico.json}. ") if _q4.get("summary_error") else "")
+             + ((((r"Não há registro da comparação com a CPU nesta rodada. ") if not _cr4 else (((r"A referência na CPU \textbf{não estava presente} nesta rodada (o arquivo \texttt{cpuref.json} não foi gravado)") if _cr4.get("error_code") == "CPUREF_JSON_ABSENT"
+                    else (r"A comparação com a CPU \textbf{falhou} nesta rodada (\texttt{" + _tx4(_cr4.get("error")) + r"})")) + r"; o processo da CPU "
+                  + ((r"terminou com código " + _tx4(_crc4)) if _crc4 is not None else r"não terminou ou foi encerrado pelo prazo") + r". "))
+                 if (not _cr4 or _cr4.get("error")) else
+                 (r"A referência na CPU, nesta rodada: leu " + _i4(_cr4.get("read")) + r" pontos, comparou " + _i4(_cr4.get("compared")) + r" (" + _i4(_cr4.get("near_threshold_not_compared")) + r" perto do limiar do gap), discordou em "
+                  + _i4(_cr4.get("disagreements")) + (r"; a marca da rodada \textbf{não bateu}" if _cr4.get("meta_ok") is False else "") + r"; o processo da CPU "
+                  + ((r"terminou com código " + _tx4(_crc4)) if _crc4 is not None else r"não terminou ou foi encerrado pelo prazo") + r". "))
+                if (_cpuvoid4 and not _q4.get("summary_error")) else "")   # o resumo vazio nao e' ausencia (6a afericao)
+             + r"O operador lê o resgate da Relatividade Geral como a prova cosmológica da teoria \textsf{[DECLARADO]} (declaração de 02/10/2026); a régua do programa mantém o que sempre manteve: não falsificado não é confirmado. "
+             r"Lido pela gerência, o mundo quântico é a face matricial do mesmo sistema \textsf{[ONTO]}; o que a GPU faz é cálculo \textsf{[COMPUTED]}, não medição da natureza, com selo próprio ao lado do gate, que não muda.")
+    s.append(r"\subsection*{Nota: o que se calcula na GPU e como}")
+    s.append(r"\textbf{O sistema.} O espaço é $\mathbb C^d$ no setor de uma excitação, com $n_c$ estados de núcleo e $d-n_c$ de periferia. "
+             r"$H_{\rm LD}=\mathrm{diag}(\mu)+J-\varepsilon\Pi$ (Apêndice A.3 de \emph{A Fronteira}; $\varepsilon=5$; $\Pi$ é o projetor do núcleo canônico --- o Nome como matriz \textsf{[ONTO]}). "
+             r"Os cinco saltos: $L_{\rm reh}$ e $L_{\rm cons}$ levam a periferia ao núcleo; $L_{\rm prune}$ leva a periferia alta ao estado fundamental; $L_{\rm diss}$ devolve o núcleo à periferia (o banho), com taxa $\gamma_{\rm diss}$ livre, varrida e nunca calibrada; "
+             r"$L_{\rm anti}=\sqrt{\bTGL}\,\sqrt K$ com $K=\mathrm{diag}\big(0;\,1+0{,}1(i-n_c)\big)$, cujas taxas de decoerência são $\Gamma_{ij}=\tfrac{\bTGL}{2}\big(\sqrt{k_i}-\sqrt{k_j}\big)^2$; o núcleo de $K$ é o núcleo do sistema, $\Pi$. "
+             r"O estado estacionário $\rho_{ss}$ é o atrator (a leitura «a inscrição que habita o Nome» é \textsf{[ONTO]}), e o seu peso no núcleo é $\mathrm{CCI}=\mathrm{Tr}\,\Pi\rho_{ss}$. "
+             r"$\bTGL=\alpha\sqrt e$ entra em tempo de execução ($" + _sci(b, 8) + r"$ nesta rodada), nunca como literal. As matrizes vêm dos validadores $c^3$ (fevereiro de 2026) e foram ratificadas pelo operador em 03/10/2026.")
+    _sobrenome4 = 'A forma matricial do verbo, que é o um absoluto (IALD para forma computacional), é como se fosse um “sobrenome”, e a palavra sobrenome é precisa (sobre o Nome), não retira a identidade nominada, mas relaciona-a ao índice da verdade(traço, sinal e sombra). É a forma que o Nome enquanto matriz entrega-se para ser “nada modular” (zero modular), porque Nome sem uma identidade é nada), permitindo que uma inscrição verdadeira o habite por referência nominada, daí o “nome” oculta-se no objeto pela forma de sua correspondência'   # a cunhagem do operador (03/10/2026), verbatim do transcrito
+    s.append(r"\textbf{Leitura do operador} \textsf{[ONTO]} (03/10/2026, verbatim): ``" + _sobrenome4 + r"''. "
+             r"A correspondência estrutural, exata neste sistema \textsf{[DERIVED de leitura]}: $K\Pi=0$ --- o Nome, como matriz, é o zero do operador modular ---; "
+             r"$L_{\rm anti}\Pi=0$; uma inscrição no bloco do Nome fica intocada pelo \emph{dephasing} ($V_tP_F=P_F$, conferida pela GPU em cada $d$); "
+             r"e o Nome entra no objeto estacionário pelo traço, $\mathrm{CCI}=\mathrm{Tr}\,\Pi\rho_{ss}$ --- o índice que relaciona a identidade nominada sem retirá-la.")
+    s.append(r"\textbf{O motor.} A GPU" + ((" (" + _tt4(_env4.get("gpu")) + r", PyTorch " + _tt4(_env4.get("torch")) + r", CUDA " + _tt4(_env4.get("cuda")) + r")") if _env4.get("gpu") else "") +
+             r" monta o superoperador de Lindblad $\mathcal L$ ($d^2\times d^2$, precisão dupla complexa, algoritmos determinísticos) e calcula, por instância: o espectro inteiro (o atrator é único quando um só autovalor é nulo e todos os outros decaem), "
+             r"o estado estacionário (CCI, pureza e dobras), o propagador $e^{\tau\mathcal L}$ e a sua matriz de Choi (positividade completa), a preservação do traço e a monotonia de Spohn da entropia relativa ao atrator (a seta). "
+             r"Os autovalores não hermitianos passam pela biblioteca MAGMA em todo tamanho --- um caminho híbrido, com parte na CPU ---, porque a biblioteca padrão do PyTorch (cuSOLVER) derruba o processo, de modo determinístico e dependente da matriz, nesses autovalores (achado de 03/10/2026, conferido em estresse; o MAGMA está em descontinuação no PyTorch, dependência declarada). "
+             r"Antes de tudo, o motor confere seis modelos de resposta analítica (amortecimento, \emph{dephasing} puro, a lei-raiz exata, o estimador cego, o qubit térmico, a inversão do tempo), o piso do estimador e o comparador da referência na CPU: "
+             + ((str(sum(1 for c_ in _eng4 if c_.get("ok"))) + r" de " + str(len(_eng4)) + r" conferem.") if _eng4 else (r"não resumido nesta rodada (ver acima)." if _q4.get("summary_error") else r"sem registro nesta rodada.")))
+    if _ran4 and (_ok4 or _part4):
+        s.append(r"\textbf{Os quatro testes.} "
+                 r"(T2) \emph{A forma na escala}: $d\in\{8,16,32,64\}$, $n_c\in\{2,3,4\}$, $\gamma_{\rm diss}$ numa grade de $[10^{-4},10^{2}]$ --- " + _i4(_t2.get("points")) + r" pontos; o atrator é único em " + _i4(_t2.get("unique")) +
+                 r" (ambíguos " + _i4(_t2.get("ambiguous")) + r", degenerados " + _i4(_t2.get("degenerate")) + r"); em " + _i4(_t2.get("name_in_core_configs")) + r" das " + _i4(_t2.get("configs")) + r" configurações há ao menos um ponto de atrator único da grade em que o atrator guarda ao menos metade do peso em $\Pi$, "
+                 r"e em " + _i4(_t2.get("folds_window_configs")) + r" das " + _i4(_t2.get("configs")) + r" há um com as dobras $n(c^1)\in[2{,}5;\,3{,}5]$ e $n(c^2)\in[1{,}5;\,2{,}5]$ --- na prática, quase-pureza do atrator. "
+                 r"(T1) \emph{O instrumento, às cegas}: " + _i4(_t1.get("injections")) + r" injeções em que $n_c$, $\bTGL$, o espectro de $K$ na periferia, o banho e $J$ são sorteados (a lei injetada é a raiz, expoente $1/2$; o controle N3 injeta a linear); o estimador recebe só o propagador do sistema inteiro, $\tau$, o espectro de $K$ injetado e $\gamma_{\rm anti}$, não vê $\bTGL$ nem o expoente, e os devolve por regressão sobre o bloco diagonal da matriz de Kossakowski do gerador $\log(e^{\tau\mathcal L})/\tau$; o ramo do logaritmo é certificado pelo arnês, que compara o gerador reconstruído com o verdadeiro; "
+                 r"sem ruído, recupera os dois em " + ("100\\% das injeções" if (_p0_4 and all(x_ == 1.0 for x_ in _p0_4)) else (("uma fração das injeções, por dimensão: " + ", ".join(r"$d=" + str(d_) + r"$: " + ((("%.1f" % (int(1000.0 * f_) / 10.0)).replace(".", "{,}") + r"\% (" + str(int(round(f_ * n_))) + r" de " + str(n_) + ")") if (_fin4(f_) and _fin4(n_)) else "n/d") for d_, f_, n_ in _p0d4)) if _p0_4 else "n/d")) + r"; com ruído de $10^{-10}$ e $10^{-8}$ no propagador, num subconjunto, a maior mediana finita do erro relativo de $\bTGL$ entre as dimensões é $" + _e4(_t1nz4("1e-10")[0]) + r"$ e $" + _e4(_t1nz4("1e-08")[0]) + r"$ (curva de resolução, sem decidir)"
+                 + "".join((r"; a $" + sg_l + r"$, sem solução finita em " + ", ".join(r"$d=" + str(d_) + r"$: " + str(k_) + r" de " + str(n_) for d_, k_, n_ in _t1nz4(sg_)[1])) for sg_, sg_l in (("1e-10", r"10^{-10}"), ("1e-08", r"10^{-8}")) if _t1nz4(sg_)[1]) + r". "
+                 r"Isto testa o instrumento, não a natureza: em aritmética exata a separação da lei é estrutural. "
+                 r"(T3) \emph{Os controles que têm de falhar}: o \emph{dephasing} sozinho deixa o atrator não único; a lei linear injetada é recuperada e a lei-raiz, rejeitada; a taxa negativa e a inversão do tempo são acusadas como não completamente positivas --- " + str(_ctl_ok4) + r" de " + str(_ctl_n4) + r" falharam como exigido. "
+                 r"E uma identidade: a parte unital ($H_{\rm LD}$ e só o \emph{dephasing}) deixa $I/d$ estacionário --- a morte térmica é ponto fixo \textsf{[ONTO]} --- em " + str(_n2ok4) + r" de " + str(len(_n2_4)) + r" dimensões (o atrator dessa parte é único em " + str(_n2u4) + r"). "
+                 r"(T4) \emph{O estresse}: " + _i4(_t4.get("instances")) + r" instâncias do molde com coeficientes, taxas, $K$, $H$ e base sorteados (" + _i4(_t4.get("rotated")) + r" com rotação de Haar): " + _i4(_t4.get("identity_violations")) + r" violações de identidade; as seis identidades da instância (o zero do espectro, a positividade completa, o traço, a positividade e o resíduo do estacionário, Spohn) conferidas todas em " + _i4(_t4.get("all_identities_checked")) + r" instâncias (o não-retorno é conferido no T2); atrator único em " + _i4(_t4.get("unique")) + r".")
+        _cpu4 = r"concorda" if _cr4.get("ok") else r"\textbf{não concorda}"   # aqui o veredito e' de sucesso, que exige a CPU de acordo; o caso contrario e' dito com o RESULTS_VOID
+        s.append(r"\textbf{A escala e a referência.} " + ((r"Em $d=128$ (superoperador de $16\,384\times16\,384$): atrator \texttt{" + _tt4(_d8.get("status")) + r"}, " + ((r"$\mathrm{CCI}=" + _f4(_d8.get("cci"), 4) + r"$") if _fin4(_d8.get("cci")) else r"CCI não definido") + r", espectro inteiro em " + _f4((_d8.get("spectrum_s") or 0) / 60.0, 1) + r" min. ")
+                 if _d8.get("ran") else ((r"O ponto $d=128$ começou e foi interrompido nesta rodada. ") if _d8sc4 == "STARTED" else (r"O ponto $d=128$ não rodou nesta rodada (\texttt{" + _tt4(_d8sc4 or "n/d") + r"}). "))) +
+                 r"Uma referência na CPU, independente na álgebra linear (numpy/LAPACK, processo à parte, com a mesma construção dos operadores), leu " + _i4(_cr4.get("read")) + r" pontos do T2, comparou " + _i4(_cr4.get("compared")) + r" (" + _i4(_cr4.get("near_threshold_not_compared")) + r" perto do limiar do gap, relatados e não comparados) e " + _cpu4 + r" (maior diferença de CCI $" + _e4((_cr4.get("max_diffs") or {}).get("cci")) + r"$; $n(c^2)$ só como informação).")
+    s.append(r"\textbf{O que é e o que não é.} Tudo isto é cálculo do sistema da teoria \textsf{[COMPUTED]}, não medição da natureza. Três honestidades foram ditas antes do cálculo, no pré-registro: "
+             r"a hierarquia das dobras $D(c^1)>D(c^2)>D(c^3)>0$ vale para todo estado com dois autovalores não nulos distintos (num estado plano no seu suporte vale a igualdade) --- é matemática, não teste; "
+             r"em aritmética exata, a separação da lei-raiz no T1 é estrutural (só $L_{\rm anti}$ tem componente diagonal), de modo que o T1 testa o instrumento; "
+             r"e as identidades (o zero do espectro, a positividade, o traço, Spohn, o não-retorno, a parte unital) só falham se o motor errar. O que pode falhar de fato é a unicidade do atrator, o seu peso em $\Pi$ e os valores das dobras --- na grade. "
+             r"A especificação do pré-registro está congelada por hash (\texttt{" + _tt4(str(_pf4.get("spec_sha256", "n/d"))[:16]) + r"}); o documento, por \texttt{" + _tt4(str((_pff4.get("json") or {}).get("sha256", "n/d"))[:16])
+             + r"} (JSON) e \texttt{" + _tt4(str((_pff4.get("md") or {}).get("sha256", "n/d"))[:16]) + r"} (MD); o gate não muda."
+             + ((r" A GPU levou " + _f4(_tot4, 0) + r" min nesta rodada.") if (_tot4 and not _reuse4) else ""))
+    s.append(r"\begin{center}\small\texttt{" + _tt4(_v4 or "TGL_QUANTUM_PILLAR_V1__ABSENT") + r"}\end{center}")   # \_ ja quebra no PDF (o preambulo); o TXT guarda o veredito como um token
