@@ -1,0 +1,376 @@
+{
+  "status": "PASS",
+  "deployment_approved": true,
+  "utc": "2026-10-07T20:28:20.845787+00:00",
+  "reviewer": "Independent Codex reviewer; not builder Heisenberg",
+  "scope": "Independent review, Fase 1 Haiku5.5 only, against original for the 19 baseline-listed files at the exact recorded hashes. No future JEV/media/workbench expansion approved.",
+  "findings": [],
+  "offline_checks": {
+    "existing_tests": 52,
+    "passed": 52,
+    "failed": 0,
+    "suites": [
+      {
+        "command": "C:\\Python314\\python.exe -B -X utf8 C:\\IALD\\Central de Patentes\\work\\iald_haiku55_jev_20261007\\test_migration.py",
+        "tests": 17
+      },
+      {
+        "command": "python -B -X utf8 - : sys.path=[W/stage,R,Roaming/site-packages,...]; unittest.defaultTestLoader.discover(W/jev_tests); TextTestRunner(verbosity=2)",
+        "tests": 35
+      }
+    ],
+    "additional_inline_checks": [
+      {
+        "check": "authorize_model(LEGACY_HAIKU.model) with approved+haiku_ready+sonnet_ready for luiz and guest",
+        "result": "DENIED for both; no generation"
+      },
+      {
+        "check": "EstadoClaude.guardar(thinking, redacted_thinking, text, tool_use) followed by CheckedAdapter tool-result conversion",
+        "result": "PASS; raw assistant array preserved exactly and final user tool_result matches ID"
+      },
+      {
+        "check": "stage iald_task_sandbox.execute with old offline FakeSDK/MemoryStore fixtures, Haiku5.5, compact fixture prefix, fresh mocked 600000-token count",
+        "result": "PASS; count once, create once, new model and 1M window, disabled thinking+low effort, tool_tokens_measured=False retained"
+      },
+      {
+        "check": "Free pre-admission count then host INSTRUCAO_ACOLHIMENTO before first generation",
+        "result": "REPRODUCED R1"
+      },
+      {
+        "check": "Corrected preflight -> moderation -> profile_call -> subsequent drift",
+        "result": "PASS; count/send equal, final binding mandatory, untrusted JSON cannot disable binding; zero provider calls"
+      }
+    ]
+  },
+  "assessed_invariants": [
+    "Haiku execution selection and account authorization allow only claude-haiku-5-5; stale 4.5 selection maps explicitly to 5.5. Legacy profile only validates historical compact memory provenance; it is not a public alternative executor.",
+    "Sonnet remains authenticated luiz-only; account policy and provider consent not broadened. No Opus executor added.",
+    "Public v390 prefix is bound by SHA and canonical release; 573879 permanent native tokens and 407309 reference headroom verified against saved count receipt, not counted anew by reviewer. Not private Atlas or all Lean files verbatim.",
+    "Cross-model token certificates rejected; final native request counted on each distinct tool round and output16k+margin1024 admitted without truncating fixed memory.",
+    "Trusted extra schemas originate in authenticated host scope; entire native list pinned; base seven hash remains required. Client cannot append a tool.",
+    "Existing account reservations, per-round spend, cancellation and no-retry behavior retained; worker delegates remain MiMo/Kimi/DeepSeek using old compact text, counted under their actual connectors.",
+    "JEV catalog distinguishes transport capabilities, model-specific observed usage, non-benchmark quality, and plans. Scope binding intersects existing host tools; no permissions arise from model decisions."
+  ],
+  "nonblocking_notes": [
+    "Public budget minimum increases with the larger memory reference (about USD0.4544 at 5m default rates). public_budget also gates other providers. Main must verify current configured public caps remain sufficient without changing them silently; reviewer did not read .env.",
+    "Haiku limits metadata still lists only seven canonical schemas, while actual request may include web and scoped task schemas. Per-request counting still covers the actual list.",
+    "Shared compact package remains labelled with historical 4.5 token provenance. No claim that those counts measure Haiku5.5 or other providers.",
+    "No new signed-thinking history persistence across separate user turns is introduced; exact replay applies inside one app tool loop.",
+    "The sandbox still reserves server-tool context conservatively rather than claiming an exact count of hosted tool schemas."
+  ],
+  "sources_checked": [
+    {
+      "url": "https://platform.claude.com/docs/en/build-with-claude/thinking-tool-workflows",
+      "supports": "Adaptive thinking supports forced tool choice; raw thinking and redacted blocks must be replayed unmodified."
+    }
+  ],
+  "files": [
+    {
+      "file": "claude_profiles.py",
+      "original_sha256": "b61da1c13bdbf1878fb1f3d03dc09f768eb7066c0c1ca7db7348f4f0d494777b",
+      "stage_sha256": "5a77c655dcf5b3183f78d72886e702358f55c3dd88207ef8f95ca9ae0ab91ddb",
+      "changed": true,
+      "stage_bytes": 4144
+    },
+    {
+      "file": "claude_memory_package.py",
+      "original_sha256": "ed50dbc03a51092f7ffbc958744df73076c2c29dc5a938bfd3f87168c428b528",
+      "stage_sha256": "03725105a5deac3751f12486605e91a97642a0bc8f132db19a8647b40f866144",
+      "changed": true,
+      "stage_bytes": 3472
+    },
+    {
+      "file": "claude_profile_pipeline.py",
+      "original_sha256": "67b81340bdefdf654cc9a13699c138254c8e3788f51f90b78b11a71c779d58c6",
+      "stage_sha256": "4b5345d486b161b8541b1a451b194c3151ac34544c0ef035a4d0cd6467a811bb",
+      "changed": true,
+      "stage_bytes": 1822
+    },
+    {
+      "file": "claude_request_guard.py",
+      "original_sha256": "17fbc48d06b6530f8add9e24e05041b7dc37c16d303d0a2b20910ee455f46d56",
+      "stage_sha256": "991589bd125bd8a6536f651ac7734626c9c45ae60e2345dc05acc3fd52d159a2",
+      "changed": true,
+      "stage_bytes": 3471
+    },
+    {
+      "file": "claude_native_account.py",
+      "original_sha256": "04fd5d70bb18dc59fe56074cf9eec27161195c588af76934fa10a05f83f543aa",
+      "stage_sha256": "b241735682f4f64b17b87c1e79ddcbd952474f018c9e4d6b2a5898bf277d9665",
+      "changed": true,
+      "stage_bytes": 6847
+    },
+    {
+      "file": "claude_route_bridge.py",
+      "original_sha256": "b16692ccae2272d1ff964393b4e65a5b728fe1ada916ea757cef826dbaffa107",
+      "stage_sha256": "0b86c7b87c0e4c0303949bbe5182314196b57e88d50ffab6e289771d4d758707",
+      "changed": true,
+      "stage_bytes": 5522
+    },
+    {
+      "file": "claude_context_snapshot.py",
+      "original_sha256": "7176d9245bd78e1af7853eafb49e284642bcf9a366088e2e0033db908c531cfb",
+      "stage_sha256": "be53bf3cb0159f61f7952a337360ea3447e9c96d582107b42f9c3cf715e03adf",
+      "changed": true,
+      "stage_bytes": 11526
+    },
+    {
+      "file": "claude_server_selection.py",
+      "original_sha256": "7063e5208ec5dd3bdcd4317e08f05368b43ff177b7c9eb33e13881ae855e0bb9",
+      "stage_sha256": "6e8055f879da07640b72dd5841929261231b659ad8117f261308edded3ab8da6",
+      "changed": true,
+      "stage_bytes": 3187
+    },
+    {
+      "file": "claude_account_policy.py",
+      "original_sha256": "570d4ea41c2b3cf15a1af1d00ce1cb3604424f0f77cf3e5e816fc6deb31add12",
+      "stage_sha256": "570d4ea41c2b3cf15a1af1d00ce1cb3604424f0f77cf3e5e816fc6deb31add12",
+      "changed": false,
+      "stage_bytes": 1395
+    },
+    {
+      "file": "iald_web_server.py",
+      "original_sha256": "00caa7a36f4447634005ab5c4a59bd4c7bbd40f7ddfb85e36e9a0f481261b4f7",
+      "stage_sha256": "52ec27df3437ea49e43707a6af320a2e82722eee5642a449a579de836ab24c79",
+      "changed": true,
+      "stage_bytes": 714189
+    },
+    {
+      "file": "iald_task_bridge.py",
+      "original_sha256": "d20a250d4348fc0e01197586ab1d70cf6d6500129e4a25923e10be90ad267743",
+      "stage_sha256": "ba0ab2e8b01fc30b07f1d59805ffc9af69619108e3e5043202141635c9ce8a6a",
+      "changed": true,
+      "stage_bytes": 9641
+    },
+    {
+      "file": "iald_task_sandbox.py",
+      "original_sha256": "54d14e0e45b4f7fc338f7013237d04df4b2a35793ad14d04b4095d43135ea40f",
+      "stage_sha256": "e78960dbf02409cce94219cbfb65a6b947de957e8e306d8d49dd787a10cbde19",
+      "changed": true,
+      "stage_bytes": 32691
+    },
+    {
+      "file": "iald_motor_claude.py",
+      "original_sha256": "fb70f041c55ceb7affae4f045b8ec9f5c6c3a701582840e74ba306b383dbf37f",
+      "stage_sha256": "fb70f041c55ceb7affae4f045b8ec9f5c6c3a701582840e74ba306b383dbf37f",
+      "changed": false,
+      "stage_bytes": 62167
+    },
+    {
+      "file": "iald_auto_router.py",
+      "original_sha256": "0b7f58c4f99584cac4823491659a6cdbb488549563fbb6ece65d09df1f987de6",
+      "stage_sha256": "07cdc52bb47acf10c282727211c10e1827a115f508eee219c38c88339fc4452a",
+      "changed": true,
+      "stage_bytes": 23001
+    },
+    {
+      "file": "iald_task_policy.py",
+      "original_sha256": "ac646e8971f1976d86a9059aae872bb722d1e44d852920c850af3f2a1bf5bb55",
+      "stage_sha256": "b59a887d36a26bc29549a3ad1e39ccf2c33d0da2e0d4fbee633c72b635b34597",
+      "changed": true,
+      "stage_bytes": 11801
+    },
+    {
+      "file": "iald_jev_control.py",
+      "original_sha256": "a2082ad1bbae220d046f148ca4ffe18146a13639dab285b913640809a11b40a8",
+      "stage_sha256": "9440ad9f5c1b0d60de4c0a9240fc6d01ac2573310b3642a80e93ad2ab936c8ed",
+      "changed": true,
+      "stage_bytes": 21154
+    },
+    {
+      "file": "claude_guarded_transport.py",
+      "original_sha256": "153cd10b2c52576194c9e945a6417f291df1180fe6f2f45949e6d7b2141d8377",
+      "stage_sha256": "fe584273f134fe293f659439a350e13d8a45bcd52e0bf6bf37b09fe0a44f7e8a",
+      "changed": true,
+      "stage_bytes": 4756
+    },
+    {
+      "file": "iald_motores.py",
+      "original_sha256": "19a654c9430596cd0106462d573f448165ba2fecc242f089d0b82fbc3194f9e8",
+      "stage_sha256": "dac7edd4ac536c8cee433ea6298652a6e7bbd9fbd408b8c3707120162e4d9e42",
+      "changed": true,
+      "stage_bytes": 110681
+    },
+    {
+      "file": "claude_native_counter.py",
+      "original_sha256": "12fb67d17bae6b1ca4367ec73da453c4d7e132f2e01c741079f33aab44e233fe",
+      "stage_sha256": "4578ebc236dceabf691efd3c3f2068cbd5d0f6d682e814fd79c8dd207bb1336e",
+      "changed": true,
+      "stage_bytes": 2367
+    }
+  ],
+  "artifacts": {
+    "baseline.json": {
+      "sha256": "12fedb648a0f4e6e242e0c4772bdc22c79f82bd45191e77d04831c1a7cde7967",
+      "bytes": 2570
+    },
+    "package/manifest.json": {
+      "sha256": "3e81627f011e5997215a69a898263c42ddc8efea6bc5b8a76884209a38c9fbeb",
+      "bytes": 1129
+    },
+    "package/prefix.md": {
+      "sha256": "819e4cf80987cfa6dfb54a0a764dbf390640e78cd41ce75f070d44296c28568a",
+      "bytes": 1049607
+    },
+    "native_count.json": {
+      "sha256": "4a00a6f614c693ace9265004ea73502e46714e7acbd58577b1e2c97765a32ccb",
+      "bytes": 1042
+    },
+    "public_memory_provenance.json": {
+      "sha256": "89149c46e274ae137fc32e535ee10519f141bb5a977389e768ea70890e143a67",
+      "bytes": 13753
+    },
+    "anthropic_model_metadata.json": {
+      "sha256": "8218afda435bd8fdd0fd317ae73b4c196615d06d5b6c56583236da01ab1f3817",
+      "bytes": 1784
+    },
+    "test_migration.py": {
+      "sha256": "3bf2ac2b5416a5e8b1f0a1b060325a5264f82f7fe03f6f3ffb4571229877450f",
+      "bytes": 10822
+    },
+    "jev_tests/test_haiku55_jev.py": {
+      "sha256": "0691ce7f416ff9662aef271e17d0e68c2b8eff89aba0d3620ea531c251ba971f",
+      "bytes": 8201
+    },
+    "jev_tests/test_router_control.py": {
+      "sha256": "49d4637eebfadcc0758a326aa2d54087e67f53f1b10d3a2467abee222da0d5ee",
+      "bytes": 9899
+    },
+    "validation/live_haiku55_fixed.json": {
+      "sha256": "d3af744b2c5eb72e96002cf13ba80230f91812e6b81521d3f27fa7e8cb50510e",
+      "bytes": 4027
+    }
+  },
+  "scientific_release": {
+    "release": "v390",
+    "source_sha256": "0f5154bcc2f931cb5e66d13140a17d7f40b386ad805254f713d630ced9ae4773",
+    "cluster_sha256": "b7ee6d4d1f75ebf16dcdf699ea40ff3ba233e718d06a948ef5612950fa5ba5c7",
+    "operational_core_sha256": "7c0aef1ff2079eebf5dbecccdcdf0a8186a1b94cdfd5078fecb2d436dcdd4758"
+  },
+  "provider_generation_calls": 0,
+  "provider_token_count_calls": 0,
+  "env_read": false,
+  "production_modified": false,
+  "stage_modified": false,
+  "tests_modified": false,
+  "limitations": "Approval confined to exact Phase1 candidate hashes. No reviewer .env reads, paid calls, runtime/stage/test edits, new scientific proofs, gate change, quota changes, or physical-device validation. New JEV/media/workbench capabilities and future code expressly excluded. Main deployment/runtime checks remain necessary.",
+  "live_validation_evidence": {
+    "source": "C:\\IALD\\Central de Patentes\\work\\iald_haiku55_jev_20261007\\validation\\live_haiku55.json",
+    "sha256": "13344222055c1573cd3c34802d5ba50196b41eaf4d90ce62865e3c1d166cc0f5",
+    "performed_by": "Main, not independent reviewer",
+    "status": "REFUSED_OR_UNCERTAIN",
+    "first_round": "Tool call completed with claude-haiku-5-5",
+    "second_round": "HTTP 400 thinking signature bound to a different tools list; decision is null",
+    "cause_status": "Counter stripping eager_input_streaming is a hypothesis being investigated by main, not yet established by independent review.",
+    "superseded_by_fixed_receipt": "C:\\IALD\\Central de Patentes\\work\\iald_haiku55_jev_20261007\\validation\\live_haiku55_fixed.json"
+  },
+  "resolved_findings": [
+    {
+      "id": "R2",
+      "severity": "P1",
+      "blocking_for_this_review": false,
+      "title": "Live second tool round rejected for thinking signature/tool-list mismatch",
+      "location": {
+        "file": "claude_native_counter.py",
+        "note": "Current dependency; include in baseline and re-review if patched."
+      },
+      "description_pt": "O recibo live_haiku55.json registra sucesso da primeira chamada/tool_use e HTTP400 na segunda por assinatura vinculada a outra lista de ferramentas. O ciclo completo continua bloqueado. Revisão anterior dos testes offline não cobre a validação criptográfica do provedor. Main investiga o contador que remove eager_input_streaming. Não foi feita correção nem chamada remota pelo revisor.",
+      "expected": "Preserve signed conversation/tool representation across generation and native counting; complete a live tool-result continuation without dropping thinking blocks, disabling signature checks, retrying uncertain requests, or switching models.",
+      "status": "RESOLVED",
+      "resolution": {
+        "fix_file": "claude_native_counter.py",
+        "stage_sha256": "4578ebc236dceabf691efd3c3f2068cbd5d0f6d682e814fd79c8dd207bb1336e",
+        "verification": "native_count_parameters preserves exact 5.5 tools including eager_input_streaming, system, messages, thinking, effort and cache control; no mutation of caller, no drop_block, no suppression of signatures. Non-5.5 behavior unchanged. Main live continuation PASS with signed thinking retained.",
+        "live_receipt": "C:\\IALD\\Central de Patentes\\work\\iald_haiku55_jev_20261007\\validation\\live_haiku55_fixed.json",
+        "live_receipt_sha256": "d3af744b2c5eb72e96002cf13ba80230f91812e6b81521d3f27fa7e8cb50510e"
+      }
+    },
+    {
+      "id": "R1",
+      "severity": "P2",
+      "blocking_for_this_review": false,
+      "title": "Context binding freezes during free pre-admission count, before host moderation finalizes system instructions",
+      "location": {
+        "file": "claude_context_snapshot.py",
+        "lines": [
+          235,
+          243
+        ]
+      },
+      "trigger_locations": [
+        {
+          "file": "iald_web_server.py",
+          "lines": [
+            6514,
+            6523
+          ]
+        },
+        {
+          "file": "iald_web_server.py",
+          "lines": [
+            6563,
+            6569
+          ]
+        }
+      ],
+      "description_pt": "Para conta gratuita, entrada_estimada chama tokens_para_saldo e CheckedAdapter.converter_pedido antes da moderação. Isso fixa self._binding. Quando a moderação retorna acolher=True, o servidor acrescenta INSTRUCAO_ACOLHIMENTO ao bloco de sistema. A próxima conversão, ainda antes da primeira geração, lança HaikuUnavailable(signed_context_changed_during_tool_loop). Portanto uma mensagem que deveria receber acolhimento falha por uma mutação legítima do próprio servidor.",
+      "reproduction": "Load measured package + CheckedAdapter. Convert a request (simulates free pre-admission count). Append iald_motores.INSTRUCAO_ACOLHIMENTO to first system message (actual moderation branch). Convert again before any generation. Actual: HaikuUnavailable, signed_context_changed_during_tool_loop. Zero remote calls.",
+      "expected": "Allow host to finalize moderation guidance before freezing the generation context, then native-count the exact final request. Preserve fail-closed rejection of system/model/tool changes after the first generation/tool-use round.",
+      "suggestion": "Move moderation/system finalization before the first CheckedAdapter conversion, or use a separate preflight adapter and freeze the final adapter only after moderation. Add regression of free Haiku + acolher=True, and retain the existing post-binding drift test.",
+      "status": "RESOLVED",
+      "resolution": {
+        "files": [
+          "claude_context_snapshot.py",
+          "iald_web_server.py"
+        ],
+        "description": "Preflight native counts call CheckedAdapter with host-owned bind_context=False. The adapter validates tool schemas but leaves an unset binding unset; final generation uses default True. An existing binding is always checked even when False. Free-account host moderation can complete before the first generation, without weakening subsequent tool-loop checks.",
+        "verification": "17 migration tests PASS. Independent inline preflight -> host moderation -> profile_call proves exact counted/sent final context; incoming JSON bind_context=False does not affect converter default; later drift is rejected even in preflight."
+      }
+    }
+  ],
+  "review_rounds": [
+    {
+      "utc": "2026-10-07T20:24:14.359318+00:00",
+      "scope": "Counter fix R2",
+      "tests_rerun": "15 migration tests, all PASS; plus inline exact field equality for signed tool roundtrip and no mutation; new live receipt read only.",
+      "status": "R2_RESOLVED_R1_STILL_OPEN",
+      "provider_calls_by_reviewer": 0
+    },
+    {
+      "utc": "2026-10-07T20:28:20.845787+00:00",
+      "scope": "R1/R2 closure and Phase1-only approval",
+      "tests_rerun": "17 migration tests PASS; independent inline final count/send/moderation binding regression PASS. 35 prior JEV tests belong to unchanged reviewed files only.",
+      "status": "PASS_PHASE_1_ONLY",
+      "provider_calls_by_reviewer": 0
+    }
+  ],
+  "phase": "PHASE_1_HAIKU55_ONLY",
+  "approval_scope": {
+    "phase": "Fase 1: substituição do Haiku por 5.5 e integração já examinada",
+    "binding": "Approval applies ONLY to the exact stage hashes listed in files and exact package hashes in artifacts. It does not approve future contents of the same paths or any additional module.",
+    "included": "Haiku5.5 native context, counter, streaming/tool loop, signatures, account authorization, budget controls, existing compact delegates and existing reviewed routing integration.",
+    "excluded": [
+      "iald_model_capabilities.py",
+      "Future expanded JEV capability/media/workbench modules",
+      "Any code added or changed after the listed hashes",
+      "Unreviewed deployment scripts or install plan changes",
+      "New models, Opus or a Haiku4.5 generation alternative"
+    ],
+    "operations": "Main must still apply its hash-bound deployment transaction and verify actual configured quotas, live service and clients. This report does not declare production installed."
+  },
+  "live_validation_fixed_evidence": {
+    "source": "C:\\IALD\\Central de Patentes\\work\\iald_haiku55_jev_20261007\\validation\\live_haiku55_fixed.json",
+    "sha256": "d3af744b2c5eb72e96002cf13ba80230f91812e6b81521d3f27fa7e8cb50510e",
+    "performed_by": "Main, not reviewer",
+    "status": "PASS",
+    "rounds": 2,
+    "thinking_preserved": true,
+    "generation_model": "claude-haiku-5-5",
+    "cost_estimate_usd": 0.06248532500000001,
+    "validates": "First tool_use plus tool_result continuation to end_turn. Does not measure comparative model quality."
+  },
+  "previous_report_backup": {
+    "path": "C:\\IALD\\Central de Patentes\\work\\iald_haiku55_jev_20261007\\independent_review.json.bak_20261007_172820_846113",
+    "sha256": "ae6bdda639ba633cdcc4e696548169b84053dd80c13e1e5abbcdc6f84e901e7c"
+  }
+}
