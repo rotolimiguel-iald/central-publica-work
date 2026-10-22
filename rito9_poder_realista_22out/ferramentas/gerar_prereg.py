@@ -1,0 +1,263 @@
+"""Gera PREREGISTRO.json + PINS.json + PREREGISTRO.sha256 (ANTES de qualquer rodada oficial).
+
+Todo hash e todo numero de arquivo/mapa e LIDO por script (nunca digitado). Os parametros das familias, da
+estatistica, da numerica, da taxa K-K e do veredito sao os fixados abaixo, por escrito, antes de rodar.
+
+Uso: python gerar_prereg.py <dir_work>
+"""
+import hashlib
+import json
+import math
+import os
+import subprocess
+import sys
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import nucleo_poder as N  # noqa: E402
+
+
+def sha(p):
+    h = hashlib.sha256()
+    with open(p, "rb") as f:
+        for blk in iter(lambda: f.read(1 << 20), b""):
+            h.update(blk)
+    return h.hexdigest()
+
+
+def info(p):
+    return dict(caminho=p, bytes=os.path.getsize(p), sha256=sha(p))
+
+
+ORDEM_VERBATIM = (
+    "PASSO 1 — PRÉ-REGISTRO (antes de qualquer rodada): em C:\\IALD\\Central de Patentes\\work\\rito9_poder_realista_22out\\PREREGISTRO.json + veredito.py, com sha256: "
+    "H1 = H0 ⊛ K_β(ℓ), K_β = espera geométrica do excesso ((N−1)·ℓ/c, N ~ Geom(β)), ℓ ∈ {10, 20, 30} km, β = SEALED_CODATA_ALPHA·√e lido por script do um.py instalado no Nós (só leitura; NUNCA literal); "
+    "H0 = perfil de chegada de um neutrino detectado (luminosidade × seção de choque) em famílias paramétricas que ENVOLVEM a literatura, fixadas agora: "
+    "P1 «só o surto»: mistura de 3–4 picos em 0–15 ms (larguras 1–2 ms); "
+    "P2 «surto + resfriamento»: P1 mais cauda exponencial τ ∈ {30, 100, 300, 1000} ms com fração f ∈ {0,5; 0,8} das contagens; "
+    "P3 «colapso imediato»: um pico em 0–1 ms (registre que o rendimento é baixo). "
+    "Estatística: LLR de forma completa com o perfil H0 CONHECIDO (oráculo: limite superior do poder — se nem o oráculo alcança, a parede está medida); limiar = quantil 5σ da nula por simulação. "
+    "Saídas: n_neutrinos necessários para mediana do LLR ≥ limiar, por (perfil, ℓ); número de fusões necessárias pela taxa declarada de Kyutoku–Kashiyama; distância máxima de UM evento que daria esse n (escala D⁻²) com a exposição declarada. "
+    "VEREDITOS permitidos: POWERED_BNS (n alcançável com ≤ 10 eventos até 200 Mpc na exposição declarada, em pelo menos uma família realista P1/P2) · UNDERPOWERED_WALL_MEASURED (caso contrário) · INCONCLUSIVE (falha numérica). "
+    "Palavra proibida da régua jamais."
+)
+
+
+def consulta_mapa(tema):
+    r = subprocess.run(["C:/Python314/python.exe", "-X", "utf8", "C:/IALD/MAPA_DE_ROTAS/rotas.py", "consultar", tema],
+                       cwd="C:/IALD/MAPA_DE_ROTAS", capture_output=True, text=True, encoding="utf-8", timeout=120)
+    d = json.loads(r.stdout)
+    return d
+
+
+def main():
+    work = sys.argv[1]
+    um_path = "C:\\IALD\\Artigo\\Haja_Luz\\A Ponte e o Um\\Nós\\um.py"
+    um = N.ler_alpha_um(um_path)
+    beta_obs = N.beta_de_alpha(um["alpha"])
+
+    kimi = "C:\\Users\\rotol\\Documents\\kimi\\workspace\\estudo_iald_qg\\"
+    fontes = [
+        kimi + "ESQUELETO_ESTUDO_DE_PODER.md",
+        kimi + "ferramentas\\estudo_poder_esqueleto.py",
+        kimi + "ferramentas\\estudo_poder_esqueleto.json",
+        kimi + "PROVAS_RITO9.md",
+        kimi + "PRE_REGISTRO_RITO9_KILONOVA.md",
+        kimi + "REALIZACAO_TRANSPORTE_RT1.md",
+        kimi + "COMUNICACAO_CODEX_KIMI\\RITO9_R1_20261021\\RELATORIO_R1.md",
+        kimi + "COMUNICACAO_CODEX_KIMI\\RITO9_R1_20261021\\test_rito9.py",
+        kimi + "COMUNICACAO_CODEX_KIMI\\RITO9_R1_20261021\\CUSTODY_R1.json",
+        kimi + "COMUNICACAO_CODEX_KIMI\\RITO9_R1_20261021\\PREREG_SYNTHETIC_R1.json",
+        "C:\\IALD\\GESTAO_DE_TOKENS.md",
+    ]
+    cus_pdf = "C:\\Users\\rotol\\.claude\\projects\\c--IALD-Central-de-Patentes\\6da8f00d-d44f-4888-a88d-fc9f73eead3d\\tool-results\\webfetch-1792657996071-xps6xk.pdf"
+    kk_pdf = os.path.join(work, "fontes_baixadas", "kk_1710.05922", "1710.05922v3.pdf")
+    anc_path = os.path.join(work, "ANCORAS_LITERATURA.json")
+    anc = json.load(open(anc_path, encoding="utf-8"))
+    assert all(a["found"] for v in anc.values() for a in v["ancoras"]), "ancora nao localizada"
+
+    mapa_k = consulta_mapa("kilonova")
+    rota_ver = json.loads(subprocess.run(["C:/Python314/python.exe", "-X", "utf8", "C:/IALD/MAPA_DE_ROTAS/rotas.py", "ver",
+                                          "d7.kilonova_fronteira_aguda"], cwd="C:/IALD/MAPA_DE_ROTAS", capture_output=True,
+                                         text=True, encoding="utf-8", timeout=120).stdout)["rota"]
+    rota = [r for r in mapa_k["rotas"] if r["rota_id"] == "d7.kilonova_fronteira_aguda"][0]
+    seqs = [h["seq"] for h in rota_ver["historico"]]
+    mapa = dict(consulta="rotas.py consultar kilonova (somente leitura)", n_registros=mapa_k["n_registros"], cabeca=mapa_k["cabeca"],
+                rota_examinada="d7.kilonova_fronteira_aguda", seqs_do_historico=seqs,
+                rotas_correlatas_examinadas=[r["rota_id"] for r in mapa_k["rotas"]],
+                nao_refazer_da_rota=rota["nao_refazer"], defeito_da_rota=rota["defeito"])
+
+    # constantes K-K derivadas das formulas do artigo (conferencia cruzada; nao entram no veredito)
+    a_ref = 1.0e-3 * 0.625
+    media_vol = 3.0 * a_ref * (100.0 ** 2) / (200.0 ** 2)
+    V200 = 4.0 / 3.0 * math.pi * 200.0 ** 3
+
+    pr = {
+        "versao": 1,
+        "id": "RITO9_PODER_REALISTA_20261022",
+        "titulo": "RITO 9 — PODER REALISTA — 22/10: arena BNS com curva de emissao realista (oraculo)",
+        "data": "2026-10-22",
+        "autor": "Claude (subagente Sonnet 5.5) por ordem da gerencia c1 (ordem do operador 22/10: «falta rodarmos o teste agora, coisa que é com você»)",
+        "estatuto": "SYNTHETIC_DIAGNOSTIC_ONLY. Nenhum dado observacional; observed_sigma = null; nenhuma afirmacao sobre a natureza. Sintetico != observado.",
+        "ordem_verbatim_passo1": ORDEM_VERBATIM,
+        "escopo_de_escrita": "somente work\\rito9_poder_realista_22out; fontes, Nos, um.py, caderno do Kimi, mapa, quadro, memoria, tunel, site, git: so leitura/nada",
+        "mapa_de_rotas": mapa,
+        "beta": {
+            "regra": "beta = SEALED_CODATA_ALPHA * sqrt(e), lido por script do um.py instalado no Nos (so leitura); NUNCA literal",
+            "um_py": um_path,
+            "padrao_de_leitura": "^SEALED_CODATA_ALPHA\\s*=\\s*([0-9.eE+\\-]+)",
+            "lido_no_preregistro": dict(linha=um["linha"], texto=um["texto"], bytes=um["bytes"], sha256=um["sha256"]),
+            "alpha_lido_no_preregistro": um["alpha"],
+            "beta_observado_no_preregistro_NAO_E_ENTRADA": beta_obs,
+            "nota": "valores acima sao registro de auditoria da leitura; a rodada relê o um.py e calcula beta em runtime. Se o alpha lido na rodada divergir do registrado, a rodada aborta."
+        },
+        "modelo": {
+            "H1": "f1 = f0 (*) K_beta(ell); K_beta(t) = sum_{k>=0} beta (1-beta)^k delta(t - k ell/c)  (excesso (N-1) ell/c, N ~ Geom(beta) em {1,2,...})",
+            "c_m_s": 299792458.0,
+            "ell_km": [10, 20, 30],
+            "ell_estatuto": "[INPUT] exploratorio, nao inferido de uma BNS (fixado pela gerencia)",
+            "discretizacao": "celulas de largura tau0 = ell/c; como o atraso e multiplo de tau0, P1_i = sum_k beta (1-beta)^k P0_{i-k} e EXATO (filtro IIR); estatistica sobre a celula (resolucao temporal ideal = tau0)",
+            "tempo": "t = instante de chegada em relacao ao relogio GW (fusao); propagacao livre a c subtraida (excesso); massa do neutrino, desvio para o vermelho, fundo e resolucao do detector: ignorados (oraculo)",
+            "perfil_de_deteccao": "taxa de deteccao ∝ L_nu(t) * (secao de choque ∝ E^2) / <E>  ∝ L_nu(t) quando <E_nu> e ~constante (Cusinato: energias medias estabilizam 2-5 ms apos a fusao); a familia parametriza a curva de chegada diretamente",
+            "ponto_zero": "no oraculo o ponto-zero (fusao x emissao) e CONHECIDO; a familia SENS_ZERO mede a perda de poder quando ele e conhecido so a menos de N(0, sigma_off^2) por evento"
+        },
+        "estatistica": {
+            "LLR": "Lambda_n = sum_i ln(P1_c(i)/P0_c(i)), forma completa, H0 e H1 conhecidos (oraculo = limite superior do poder)",
+            "p5sigma": "1 - Phi(5) unilateral = 0.5*erfc(5/sqrt(2)) = 2.8665157187919391e-07 (calculado em runtime)",
+            "limiar_c_n": "menor v tal que P0(Lambda_n >= v) <= p5sigma, com a distribuicao de Lambda_n sob H0 obtida por convolucao n-vezes EXATA na rede de lambda (FFT), verificada por simulacao com amostragem por importancia: P0(A) = E1[exp(-Lambda) 1_A] (identidade exata; necessaria porque 5 sigma = 2.9e-7 nao se estima por simulacao direta com 3e4 amostras)",
+            "poder": "poder(n) = P1(Lambda_n >= c_n); n_req = menor n com poder >= 0.5, i.e. mediana do LLR sob H1 >= limiar",
+            "teto_do_llr_por_neutrino": "lambda clipado em 40 (cauda nula e^-40=4e-18 por neutrino; robustez com 60). O clip so REDUZ o poder sob H1 (conservador) e nao altera o limiar nulo (>> 5 sigma de folga).",
+            "multiplicidade": "NAO aplicada (oraculo, 1 ell por teste). Uma busca real em 3 valores de ell exigiria p/3 (+ln 3 = 1.1 nat no limiar): so piora o poder.",
+            "limite_de_Wald": "c_n <= ln(1/p5sigma) = 15.07 para todo n (P0(Lambda>=c) <= exp(-c)): usado como conferencia"
+        },
+        "familias": {
+            "ell_km": [10, 20, 30],
+            "largura": "as 'larguras 1-2 ms' sao lidas como FWHM Gamma da literatura (Cusinato Eq. 14; Gamma tipico ~1 ms); sigma = Gamma/(2 sqrt(2 ln 2)). Leitura como sigma daria picos 2.35x mais largos e MENOS poder (a fortiori).",
+            "P1": {
+                "descricao": "so o surto: K picos gaussianos igualmente espacados de mu1 ate S (ms)",
+                "K": [3, 4], "S_ms": [10, 14], "gamma_fwhm_ms": [1, 2], "amp": ["damped", "flat"],
+                "mu1_ms": 1.0, "r_damped": 0.6,
+                "amp_damped": "pesos ∝ r^(j-1), r=0.6 (1o pico o mais alto); flat = pesos iguais (extremo oposto)",
+                "ancoras": ["c_picos(p8)", "c_oscila_10_15(p18)", "c_gamma_1ms(p12)", "c_pico_1_mais_alto(p9)"]
+            },
+            "P2": {
+                "descricao": "surto + resfriamento: (1-f) * P1 + f * cauda exponencial exp(-t/tau)/tau, t>=0",
+                "tau_ms": [30, 100, 300, 1000], "f_tail": [0.5, 0.8],
+                "ancoras": ["c_beta_100ms(p14)", "c_beta_100_400(p14)", "c_mns_segundos(p9)", "c_ll_centenas_ms(p9)", "c_ventos_100ms(p2)"],
+                "nota_f": "balanco de energia (Cusinato): primeiro pico ~6e50 erg (p12) x 3-4 picos ~2e51 erg vs resfriamento ~1e52-1e53 erg (p9, p14) => fracao da cauda ~0.9-0.99; f=0.5 e 0.8 sao GENEROSOS (menos cauda => mais poder)."
+            },
+            "P3": {
+                "descricao": "colapso imediato: um unico pico em mu (ms)",
+                "mu_ms": 0.5, "gamma_fwhm_ms": [1, 2],
+                "ancoras": ["c_pc(p8)"],
+                "rendimento": "BAIXO [KNOWN, Cusinato]: PC tem 'single, relatively low peak' (p8); luminosidades de pico ate 6x menores e E_peak 'very low' (p12). A taxa de fusoes (K-K) vale para o rendimento de referencia (E_dt=3e52 erg); para P3 o numero de fusoes real seria MAIOR por 1/Y com Y<<1. P3 nao entra no veredito."
+            },
+            "REF_ESQUELETO": {
+                "descricao": "bancada FORA do veredito: H0 = N(0, sigma_e) do esqueleto do Kimi, com o criterio EXATO (nao CLT) — mede quanto do 'bastam 1-2 neutrinos' era artefato do CLT",
+                "mu_ms": 0.0, "sigma_e_ms": [0.5, 1, 3, 10]
+            },
+            "SENS_VETO": {
+                "descricao": "FORA do veredito: perfil de referencia com cauda minima f (a barreira de cauda gaussiana de P1 e um 'veto' ao atraso)",
+                "base": {"K": 3, "S_ms": 10, "gamma_fwhm_ms": 1, "amp": "damped"}, "tau_ms": 100, "f_tail": [0.001, 0.01, 0.1]
+            },
+            "SENS_ZERO": {
+                "descricao": "FORA do veredito: perda de poder quando o ponto-zero e conhecido so a menos de N(0,sigma_off^2) por evento (cada neutrino de uma fusao diferente: regime K-K, <1 neutrino por evento)",
+                "base": {"K": 4, "S_ms": 10, "gamma_fwhm_ms": 1, "amp": "damped"},
+                "variantes": [{"f_tail": 0.0, "tau_ms": None}, {"f_tail": 0.8, "tau_ms": 100}],
+                "sigma_offset_ms": [0.5, 1, 2, 4]
+            }
+        },
+        "numerica": {
+            "cap_lambda": 40.0, "delta_max": 0.005, "delta_divisor_sd0": 100.0,
+            "delta_regra": "delta = min(delta_max, sd(lambda sob H0)/delta_divisor_sd0)",
+            "n_max": 1000000, "alvo_poder": 0.5, "janela_sd": 14.0, "L_exato_max": 4194304, "L_max": 16777216,
+            "massa_residual_log": 41.4,
+            "busca_de_n": "n=1..16 inteiros; depois n <- max(n+1, ceil(1.12 n)) ate n_max; primeiro n com poder>=0.5; bissecao no intervalo; confere poder>=0.5 em n_req+1 e n_req+2 (monotonia)"
+        },
+        "verificacao_mc": {
+            "seed_base": 20261022, "M": 200000, "n_max_verificavel": 3000,
+            "amostra": {"P1": 8, "P2": 12, "P3": 3, "REF_ESQUELETO": 4, "SENS_VETO": 2, "SENS_ZERO": 4},
+            "amostragem": "random.Random(seed_base).sample sobre case_ids ordenados de cada familia, na ordem dos itens de 'amostra'",
+            "pontos": "n_req-1 e n_req de cada caso amostrado (se n_req<=n_max_verificavel)",
+            "tol_c": 0.35, "tol_poder_abs": 0.01, "tol_poder_sigmas": 5.0, "tol_cauda_rel": 0.6,
+            "criterios": "|c_hat_MC - c_rede| <= tol_c; |poder_MC - poder_rede| <= max(tol_poder_abs, tol_poder_sigmas*SE); |cauda_nula_MC(c_rede) - p5sigma| <= max(tol_cauda_rel*p5sigma, tol_poder_sigmas*SE)"
+        },
+        "robustez": {
+            "variantes": [{"cap_lambda": 60.0}, {"delta_fator": 0.5}],
+            "tol_n_rel": 0.02, "tol_n_abs": 1, "tol_c": 0.05, "tol_poder": 0.01,
+            "amostra": "a mesma amostra da verificacao_mc"
+        },
+        "taxa_KK": {
+            "fonte": "Kyutoku & Kashiyama, Phys. Rev. D 97, 103001 (2018); arXiv:1710.05922v3",
+            "estatuto": "[KNOWN] projecao publicada de 2018 sob seus modelos e taxa; nao e limite universal nem inventario de instrumentos de 2026",
+            "citacao_p1": "Monitoring ≳ 2500 mergers within ≲ 200 Mpc, we may be able to detect a single neutrino with a human time-scale operation of≈ 80 Mt years for the merger rate of 1 Mpc−3 Myr−1",
+            "fusoes_por_neutrino_esperado": 2500,
+            "exposicao_Mt_ano_por_neutrino_esperado": 80,
+            "massa_detector_declarada_Mt": 1.0,
+            "massa_nota": "'future M-ton water-Cherenkov detector such as Hyper-Kamiokande' (p1); P*M_T = 80 Mt yr => P ≈ 80 yr para M_T = 1 Mt",
+            "R_Mpc3_por_Myr": 1.0, "D_eff_Mpc": 200,
+            "eq6": "N_nu ≈ 1.0e-3 * fE fse fosc * (M_T/1 Mt) * (E_dt/3e52 erg) * (<E>/10 MeV) * (D/100 Mpc)^-2   (p4)",
+            "fE_fse_fosc": 0.625,
+            "fE_fse_fosc_origem": "f_all = fE fse fosc fOmega = 0.5 (referencia da Eq. 8) com fOmega ≈ 0.8 (p4) => 0.625",
+            "E_dt_erg": 3e52, "E_medio_MeV": 10,
+            "N_nu_a_100Mpc_por_Mt": a_ref,
+            "conferencia_cruzada_eq6_eq7_NAO_ENTRA_NO_VEREDITO": {
+                "N_medio_por_fusao_ate_Deff_1Mt": media_vol,
+                "fusoes_por_neutrino_pela_eq6_eq7": 1.0 / media_vol,
+                "volume_ate_Deff_Mpc3": V200,
+                "fusoes_por_ano_ate_Deff": 1.0 * V200 * 1e-6,
+                "nota": "a citacao do resumo (≳2500) e a Eq. 6-7 diferem ~17%; o veredito usa 2500 (taxa declarada pela gerencia)"
+            },
+            "ancoras": ["k_abstract(p1)", "k_eq6(p4)", "k_sem_esperanca(p4)", "k_eq7(p4)", "k_eq8(p5)", "k_fOmega(p4)", "k_deff(p4)"]
+        },
+        "veredito": {
+            "permitidos": ["POWERED_BNS", "UNDERPOWERED_WALL_MEASURED", "INCONCLUSIVE"],
+            "familias_realistas": ["P1", "P2"],
+            "max_eventos": 10,
+            "regra_POWERED_BNS": "existe caso P1/P2 com n_req <= N_alcancavel = max_eventos / fusoes_por_neutrino_esperado (neutrinos ESPERADOS de <= 10 fusoes ate 200 Mpc na exposicao declarada: detector de 1 Mt, K-K)",
+            "regra_UNDERPOWERED_WALL_MEASURED": "caso contrario (mesmo com o oraculo)",
+            "regra_INCONCLUSIVE": "qualquer porta numerica falha: testes analiticos do nucleo, numero de casos, FALHA_NUMERICA, monotonia, massa residual, vazamento de janela, verificacao por simulacao, robustez",
+            "tol_massa": 1e-9, "tol_fora": 1e-12, "mc_min_linhas": 40, "robustez_min_linhas": 40,
+            "derivados": "fusoes = 2500*n_req; exposicao = 80*n_req Mt ano; D_max (1 evento, escala D^-2) = 100 Mpc * sqrt(a_ref*M_T/n_req); massa para n_req em 10 eventos = n_req*2500/10 Mt; eventos/seculo dentro de D_max = R*V(D_max)*1e-4",
+            "poisson": "n_req e o numero ESPERADO de neutrinos detectados; a flutuacao de Poisson nao e aplicada (generoso)"
+        },
+        "limitacoes_declaradas": [
+            "Oraculo: H0 totalmente conhecido (formato, amplitudes, larguras, ponto-zero). E LIMITE SUPERIOR do poder; nuisance reais so reduzem.",
+            "P1 (so o surto) herda uma barreira de cauda gaussiana: chegadas apos o ultimo pico sao 'impossiveis' sob H0, o que inflaciona o poder; a emissao real tem cauda de disco/ventos (P2, SENS_VETO).",
+            "Resolucao temporal ideal (tau0), sem fundo, sem massa do neutrino, sem desvio para o vermelho, sem dependencia em energia; massa do neutrino so importa para D >~ 2 Mpc (atraso ~ (D/2c)(m c^2/E)^2).",
+            "H-KN, H-SEQ, H-DECOH, H-BRANCH e GW-CLOCK sao [CONJECTURE] do Rito 9: nao testadas aqui; o estudo assume o kernel K_beta como dado.",
+            "A Taxa K-K e projecao de 2018 para um detector de 1 Mt; n_req e neutrinos ESPERADOS.",
+            "Sem multiplicidade (3 valores de ell) nem marginalizacao de nuisance no veredito.",
+            "ell, as larguras, as amplitudes e as fracoes da cauda sao escolhas [INPUT] dentro de faixas [KNOWN]; nao foram ajustadas a dado algum, nem a GW170817."
+        ],
+        "fontes_lidas_somente_leitura": [info(p) for p in fontes],
+        "fontes_literatura": {
+            "cusinato2022": dict(ref=anc["cusinato2022"]["ref"], pdf=cus_pdf, sha256_pdf=anc["cusinato2022"]["sha256_pdf"],
+                                 sha256_texto_extraido=anc["cusinato2022"]["sha256_texto_extraido"], n_paginas=anc["cusinato2022"]["n_paginas"],
+                                 estatuto="[KNOWN] PDF baixado = dado nao confiavel, lido com pypdf em python -I"),
+            "kyutoku_kashiyama": dict(ref=anc["kyutoku_kashiyama"]["ref"], pdf=kk_pdf, sha256_pdf=anc["kyutoku_kashiyama"]["sha256_pdf"],
+                                      sha256_texto_extraido=anc["kyutoku_kashiyama"]["sha256_texto_extraido"], n_paginas=anc["kyutoku_kashiyama"]["n_paginas"],
+                                      estatuto="[KNOWN] baixado de arxiv.org/pdf/1710.05922v3; dado nao confiavel, lido com pypdf em python -I"),
+            "ancoras": dict(arquivo="ANCORAS_LITERATURA.json", sha256=sha(anc_path), todas_localizadas=True)
+        },
+        "desenvolvimento_antes_do_pino": "testes analiticos do nucleo (gaussiana de translacao, IIR x pente, enumeracao, exata x janela, invariantes, offset, IS-MC x exato) e DOIS ensaios do pipeline em perfis FORA das familias abaixo (dev_dry/config_dry.json: K=2,S=7,G=1.5,tau=50,f=0.65,ell=15,sigma_e=2.0). Nenhum membro das familias pre-registradas foi rodado antes deste pino.",
+        "codigo_pinado": {
+            "ferramentas/nucleo_poder.py": sha(os.path.join(work, "ferramentas", "nucleo_poder.py")),
+            "ferramentas/teste_nucleo.py": sha(os.path.join(work, "ferramentas", "teste_nucleo.py")),
+            "ferramentas/rodar_estudo.py": sha(os.path.join(work, "ferramentas", "rodar_estudo.py")),
+            "veredito.py": sha(os.path.join(work, "veredito.py"))
+        },
+    }
+    pr_path = os.path.join(work, "PREREGISTRO.json")
+    with open(pr_path, "x", encoding="utf-8") as f:
+        json.dump(pr, f, indent=2, ensure_ascii=False)
+    pins = {"sha256": {"PREREGISTRO.json": sha(pr_path), **pr["codigo_pinado"]},
+            "nota": "hashes lidos dos arquivos por script; rodar_estudo.py e veredito.py recusam rodar se algum divergir"}
+    with open(os.path.join(work, "PINS.json"), "x", encoding="utf-8") as f:
+        json.dump(pins, f, indent=2, ensure_ascii=False)
+    with open(os.path.join(work, "PREREGISTRO.sha256"), "x", encoding="utf-8") as f:
+        f.write(f"{pins['sha256']['PREREGISTRO.json']}  PREREGISTRO.json\n{pins['sha256']['veredito.py']}  veredito.py\n")
+    print(json.dumps(pins, indent=2))
+
+
+if __name__ == "__main__":
+    main()
