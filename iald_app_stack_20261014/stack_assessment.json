@@ -1,0 +1,49 @@
+{
+  "observed_at": "2026-10-14",
+  "scope": "Aplicativo e backend IALD, integrações operacionais, fila científica e distribuição móvel; não é auditoria de toda a máquina ou do acervo jurídico.",
+  "implemented_policy": {
+    "conversation": "Kimi primeiro quando o transporte textual atende; MiMo quando exige ferramentas ou Kimi não está elegível.",
+    "code": "Kimi primeiro para implementação textual delegada; MiMo gerencia ferramentas, artefatos e integração.",
+    "claude": "Fora dos candidatos automáticos para preservar a cota; seleção manual do operador preservada. Sandbox Python Anthropic continua uma ferramenta separada.",
+    "invariants": ["carteira unificada", "consentimento por provedor", "permissões por identidade", "nenhum reenvio automático de chamada incerta", "mesma versão científica e proveniência"]
+  },
+  "observed_limitations": [
+    {"area": "Kimi", "fact": "Conector atual devolve texto acumulado, sem ferramentas interativas ou publicação direta de artefatos.", "source": "iald_app_providers.py / iald_task_policy.py"},
+    {"area": "delegação", "fact": "Fluxo sequencial com tarefas delimitadas; paralelismo entre modelos não implementado.", "source": "iald_execution_guide.py / iald_task_bridge.py"},
+    {"area": "mídia", "fact": "Geração de imagem e vídeo não integrada. Gráficos produzidos por Python são uma capacidade distinta.", "source": "iald_execution_guide.py MEDIA"},
+    {"area": "Google", "fact": "Antigravity existe na fila como cliente textual restrito; não há adaptador Gemini no app nem verificação de model ID Argon no retorno desse cliente.", "source": "iald_orchestrator/antigravity.py / iald_app_providers.py"},
+    {"area": "memória", "fact": "411 tópicos v392 reconstruíveis; 1230 fontes formais recuperáveis. Parte dos campos históricos/formais é referenciada, não literal em todos os prompts. Presença no contexto não equivale a treinamento nem a benchmark de compreensão.", "source": "science_review/DELIVERY.json / REVIEW.txt"}
+  ],
+  "argon": {
+    "statute": "DECLARADO pelo fornecedor; não testado no app",
+    "model_id": "gemini-4-argon",
+    "window_unified": 1048576,
+    "default_sync_output": 65536,
+    "input_types": ["text", "image", "video", "audio", "PDF"],
+    "output_types": ["text"],
+    "capabilities": ["code execution", "function calling", "file search", "Google Search grounding", "URL context", "structured output", "computer use preview"],
+    "not_supported": ["image generation", "audio generation", "Live API", "explicit cache"],
+    "price_usd_per_million_until_20261130": {"input": 2, "output_including_thinking": 10, "implicit_cache_read": 0.1},
+    "price_usd_per_million_from_20261201": {"input": 4, "output_including_thinking": 20, "implicit_cache_read": 0.2},
+    "migration_requirements": ["Use thinking_level LOW/MEDIUM/HIGH, not thinking_budget", "Remove legacy sampling fields unsupported by the model", "Treat long decode continuation_token as a durable continuation, never as permission to replay an uncertain request", "Count input with Google's tokenizer and preserve output room", "Charge actual usage and tool costs to the same task wallet"],
+    "sources": [
+      "https://ai.google.dev/gemini-api/docs/models/gemini-4-argon",
+      "https://ai.google.dev/gemini-api/docs/pricing",
+      "https://ai.google.dev/gemini-api/docs/latest-model",
+      "https://docs.cloud.google.com/gemini-enterprise-agent-platform/models/guides/gemini-4-argon?hl=en",
+      "https://developers.googleblog.com/gemini-4-argon-for-robotics/"
+    ],
+    "recommendation_inference": "Piloto interno como revisor independente de código, pesquisa científica longa e análise multimodal. Não o tornar padrão de conversa sem medir custo por resposta aceita e latência.",
+    "activated": false,
+    "new_credentials": false,
+    "provider_calls": 0
+  },
+  "prioritized_improvements": [
+    {"priority": 1, "change": "Contrato único de capacidades por conector", "benefit": "JEV seleciona somente ações realmente executáveis, incluindo ferramentas, formatos, streaming e consentimentos."},
+    {"priority": 2, "change": "Streaming incremental real no Kimi, mantendo persistência e retomada das tarefas", "benefit": "Reduz espera percebida sem simular que o provedor está transmitindo; matemática continua renderizada por delimitadores estáveis."},
+    {"priority": 3, "change": "Benchmark curto por tipo de tarefa com critérios verificáveis", "benefit": "Escolher por custo por resultado aprovado, tempo até primeiro texto, falhas e correções; evitar ranking baseado somente em marca."},
+    {"priority": 4, "change": "Sandbox independente do modelo para Python e artefatos", "benefit": "Kimi/MiMo geram e revisam código; execução isolada e recibos não dependem de gastar Claude."},
+    {"priority": 5, "change": "Compilação de memória por geração e tokenizer de cada fornecedor", "benefit": "Mesma base essencial, fontes recuperáveis e contexto medido; reservas adaptativas sem truncar silenciosamente."},
+    {"priority": 6, "change": "Argon interno, depois paralelismo delimitado e conectores de mídia", "benefit": "Expansão gradual com uma carteira por tarefa, consentimentos e resultados verificáveis."}
+  ]
+}

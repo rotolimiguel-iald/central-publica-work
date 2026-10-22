@@ -1,0 +1,81 @@
+{
+  "tests": [
+    {
+      "name": "plan_sources_baselines_destinations_and_main_routing_receipt",
+      "passed": true,
+      "details": {
+        "files": 1257,
+        "manifest_last": true,
+        "routing_review": "main receipt validated; routing not independently audited here"
+      }
+    },
+    {
+      "name": "shared_compact_reproduction_fidelity_and_input_privacy",
+      "passed": true,
+      "details": {
+        "reproduced_exactly": true,
+        "topics": 411,
+        "bytes": 626307,
+        "new_topics": 86,
+        "private_atlas_read": false,
+        "historical_details": "explicit source references, not all literal"
+      }
+    },
+    {
+      "name": "JEV_validate_and_install_mapping_load_contract",
+      "passed": true,
+      "details": {
+        "actual_loader_verified_with_plan_path_mapping": true,
+        "source_lines": [
+          7186,
+          7218
+        ],
+        "anchors": 3
+      }
+    },
+    {
+      "name": "main_integration_tests_reexecuted_under_offline_write_guard",
+      "passed": true,
+      "details": {
+        "tests": 9,
+        "live_network": false,
+        "credentials": "mocked for dispatch tests"
+      }
+    },
+    {
+      "name": "adaptive_output_boundaries_and_no_input_truncation",
+      "passed": true,
+      "details": {
+        "maximum": 393216,
+        "minimum": 16384,
+        "boundary_cases": 14,
+        "input_unchanged": true
+      }
+    },
+    {
+      "name": "transaction_concurrent_admission_negative_control",
+      "passed": false,
+      "error": "AssertionError: Transaction reported success with a new running task"
+    },
+    {
+      "name": "inputs_stable_at_end",
+      "passed": true,
+      "details": []
+    }
+  ],
+  "findings": [
+    {
+      "id": "TX-01",
+      "severity": "MEDIO",
+      "file": "C:\\IALD\\Central de Patentes\\work\\iald_app_stack_20261014\\transaction.py",
+      "line": 115,
+      "title": "Ociosidade sem bloqueio de admissao durante a troca",
+      "evidence": "C:\\IALD\\Central de Patentes\\work\\iald_app_stack_20261014\\validation\\transaction_race_reproduction.json",
+      "impact": "Nova tarefa pode iniciar entre quiet() e a ultima escrita; troca in-place dos dois pacotes permite mistura de versoes/falha no meio de trabalho e restart posterior pode ser recusado.",
+      "required_fix": "Adquirir e manter exclusao de admissao/instalacao durante preflight, troca e restart; ou parar o servico de modo controlado antes da troca. Repetir quiet() sozinho nao fecha a corrida."
+    }
+  ],
+  "plan_sha256": "9c1dad910f75778aaae73d96b81aab28099d64c278eaec761c83df14b34d01f6",
+  "provider_calls": 0,
+  "installation_performed": false
+}

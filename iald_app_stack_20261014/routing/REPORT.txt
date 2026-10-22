@@ -1,0 +1,69 @@
+[REAL — staging verificado] F9.APP_STACK_20261014.ROUTING / codex-app-routing
+
+Entrega: patch em três módulos, cópias byte a byte de sete fontes com SHA256,
+22 testes offline aprovados, diff unificado e manifesto de entrega.
+Não houve chamada de rede/provedor, implantação, reinício ou alteração de produção.
+Os sete hashes do runtime continuavam iguais ao baseline na conferência final.
+
+COMPORTAMENTO EXECUTÁVEL
+1. O host fornece candidatos após permissões, consentimento, disponibilidade e
+   cotas. A política nunca acrescenta candidatos: apenas filtra e ordena.
+2. Ordem automática: Kimi > MiMo > OpenAI > DeepSeek > nativa, limitada à aptidão
+   do transporte e aos candidatos admitidos. É preferência do operador, não benchmark.
+3. Conversa textual: Kimi primeiro; sem Kimi elegível, MiMo. Quando o JEV decide
+   que precisa de ferramentas, a projeção de capacidades ocorre antes da preferência.
+4. Código: a política preexistente exige gestor com ferramentas para tarefas
+   classificadas code; MiMo vem primeiro nesse papel. Kimi vem primeiro no worker
+   de código/delegação textual. Não se introduz delegação obrigatória ou chamada extra.
+5. Haiku/Sonnet são excluídos antes de consultar o JEV. Se só há Claude, recusa
+   local sem consulta. A seleção manual de Luiz e os controles de conta não mudam.
+6. Uma resposta JEV válida, mas contrária à preferência, é projetada deterministicamente
+   antes do dispatch; o recibo conserva a escolha JEV, a regra anterior e a regra final.
+   Escolha fora do conjunto, inclusive Claude, é recusada; não há fallback após envio.
+7. iald_execution_guide.py acompanha o patch para remover orientações contraditórias
+   que ainda priorizavam Claude. iald_task_bridge.py e iald_app_providers.py não mudam.
+
+PERMISSÕES E LIMITAÇÕES
+- O allowed(..., provider='kimi') atual permite contas aprovadas não bloqueadas,
+  inclusive plano gratuito. Os caminhos do servidor continuam exigindo consentimento
+  específico, disponibilidade e admissão de orçamento. Nenhum ajuste de permissão
+  pública é necessário para essa preferência. Não foram lidas contas reais.
+- Kimi continua buffered_text, sem ferramentas interativas, arquivos ou execução.
+  Kimi como gestor completo de código exigiria novo transporte/capacidades; não foi
+  simulado nem ampliado neste patch. Com operator_context, o filtro preexistente
+  exige gestor com ferramentas, portanto MiMo também prevalece na conversa de Luiz.
+- A preservação refere-se aos executores conversacionais Claude. O sandbox Python
+  Anthropic existente permanece separado, sujeito ao consentimento e orçamento
+  próprios; o patch não promete consumo Anthropic zero quando ele é solicitado.
+- Não existe prazo automático para encerrar a preservação; a coordenação deverá
+  atualizar a política quando o operador mudar a orientação.
+- O JEV continua sendo consultado para plano, colaboração e capacidades. A política
+  não promete reduzir seu custo nem contorna sua indisponibilidade.
+- Testes de choose usam transporte JEV simulado, contrato/resolução científica e
+  ACOM/carteira simulados. Cobrem hooks preservados e recusa por mudança de fonte;
+  não equivalem a regressão integral de ACOM, carteira ou teste real de provedores.
+- 128 subconjuntos de provedores verificados no teste de ordem/inclusão. Gates
+  públicos testados extraindo as funções reais do baseline, com estado sintético;
+  orçamento testado com SQLite local e reservas pendentes. Sem credenciais reais.
+- A primeira rodada ampliada teve erro de limpeza da fixture SQLite no Windows;
+  corrigido fechando conexões da fixture. A última rodada passou 22/22.
+
+REPRODUÇÃO E INTEGRAÇÃO
+python build_patch.py
+python test_routing.py
+baseline.json: origem, tamanho e SHA256 de cada cópia original.
+patched/: três arquivos completos; routing.patch: diff para revisão.
+runtime_verification.json: hashes da origem relidos depois dos testes.
+DELIVERY.json: hashes dos artefatos entregues e resultado dos testes.
+Antes de integrar, conferir novamente os hashes contra baseline.json; divergência
+exige conciliação com a coordenação, nunca sobrescrita. Não inclui instalador.
+Revisão independente, implantação e aceite são da coordenação, fora desta entrega.
+
+CONTEXTO E ESCOPO
+Unidade reivindicada via iald.py, evento 763. NOS_VIVO informou unidade ausente;
+consulta temática 'roteamento' não devolveu entradas; mapa 'app routing' retornou
+zero resultados. Reutilizadas as fontes reais do app e o Atlas, incluindo registros
+de permissões e carteira. Não foi reconstruído o grafo nem escrita memória global.
+Inscrição própria: memory_reference.json; contexto 9f3f6be8-55ba-5117-b163-9c7bc20be794.
+Somente protocolos expressamente pedidos (memória de sessão e quadro) escrevem fora
+do staging; não houve edição de outras casas, de fontes científicas ou do runtime.
