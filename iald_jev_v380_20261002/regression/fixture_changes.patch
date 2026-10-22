@@ -1,0 +1,101 @@
+--- baseline/test_app_integration.py
++++ regression/test_app_integration.py
+@@ -14,6 +14,7 @@
+ import unittest
+ from unittest.mock import patch
+ import uuid
++import regression_fixtures as cf
+ 
+ STAGE = Path(__file__).resolve().parent
+ ROOT = Path(r'C:\IALD\projetos_pyhton\IALD')
+@@ -67,7 +68,7 @@
+                   authorize=kwargs['authorize'], execute=lambda n, a: {'status': 'ok', 'name': n})
+     env = dict(json=json, hashlib=hashlib, SERVE_DIR=STAGE,
+         load_users_estrito=lambda: current,
+-        app_router=NS(AUTO='automatico', allowed=lambda r, u: bool(r) and not r.get('bloqueado') and not r.get('acesso_bloqueado')),
++        app_router=NS(AUTO='automatico', bind_scope=cf.bind_scope, route_instruction=cf.route_instruction, allowed=lambda r, u: bool(r) and not r.get('bloqueado') and not r.get('acesso_bloqueado')),
+         iald_motores=NS(CLAUDE='claude', consentiu=lambda r, p: not r.get('consent_revoked')),
+         operator_bench=NS(is_operator=is_operator, attach=attach),
+         task_bridge=NS(make_scope=make_scope), task_session=NS(NAMES=BASE_NAMES),
+@@ -111,11 +112,11 @@
+ class RoutingTests(unittest.TestCase):
+     def router(self, folder, seen):
+         desc = {p: p for p in ('mimo', 'kimi', 'nativa', 'claude-haiku', 'claude-sonnet', 'openai', 'deepseek')}
+-        env = dict(ROOT=folder, DESCRIPTIONS=desc, json=json, hashlib=hashlib, math=math,
++        env = dict(ROOT=folder, Path=Path, DESCRIPTIONS=desc, json=json, hashlib=hashlib, math=math, jev_control=cf.control_proxy,
+                    datetime=datetime, timezone=timezone, uuid=uuid, time=time,
+                    backend=lambda: NS(availability=lambda: {'status': 'ready'}, validate_prompt=lambda *a, **k: None,
+                                       _key=lambda: 'synthetic-fixture-key', ENDPOINT='https://fixture.invalid'),
+-                   available=lambda: True, memory_slice=lambda r: ('public fixture', {'coverage': 'fixture'}),
++                   available=lambda: True, memory_slice=lambda r: ('public fixture', {'coverage': 'fixture', 'release': cf.CONTRACT['release'], 'release_source_sha256': cf.CONTRACT['source_sha256'], 'source_sha256': hashlib.sha256(b'public fixture').hexdigest()}),
+                    observations=lambda *a: {},
+                    task_policy=NS(classify=lambda p: 'conversation', eligible_managers=lambda c, t: list(c),
+                                   executor_criteria=lambda c, d, t: {k: d[k] for k in c}))
+@@ -124,9 +125,9 @@
+             body = kwargs['json']; seen.append(copy.deepcopy(body))
+             candidates = list(body['questions']['executor']['criteria'])
+             return NS(status_code=200, close=lambda: None, json=lambda: {
+-                'model': 'jev-1.13.0', 'usage': {'input_tokens': 1}, 'answers': {'executor': {
+-                    'choice': candidates[0], 'confidence': 0.9,
+-                    'probabilities': {p: 1 / len(candidates) for p in candidates}}}})
++                'model': 'jev-1.13.0', 'usage': {'input_tokens': 1}, 'answers': dict(cf.typed_answers(body['questions']), executor={
++                    'type': 'choice', 'choice': candidates[0], 'confidence': 0.9,
++                    'probabilities': {p: 1 / len(candidates) for p in candidates}})})
+         return env['choose'], post
+ 
+     def test_context_filters_managers_and_is_not_read_from_prompt(self):
+@@ -159,7 +160,7 @@
+         def choose(prompt, candidates, **kwargs):
+             calls.append((prompt, candidates, kwargs))
+             if revoke: current['classe_usuario'] = 'usuario'
+-            return 'mimo', {'id': 'fixture-route'}
++            return 'mimo', cf.receipt(operator=(user=='luiz' and is_operator(current,user)))
+         env.update(_consentimento_automatico=lambda *a: {'dado': consent, 'versao': 1, 'provedor': 'JEV', 'texto': 'fixture'},
+                    _sse_aviso=lambda text, kind, *a: NS(kind=kind),
+                    _opcoes_de_motor=lambda *a: [{'id': 'mimo', 'disponivel': True}],
+@@ -200,7 +201,7 @@
+                    MAX_ROUNDS=4, MAX_TOOLS=4, MAX_PARSED_TOOLS=32,
+                    adapter=lambda p: NS(load_mimo=lambda: 'synthetic-fixture-key'),
+                    check_window=lambda *a: 100, usage_cost=lambda *a: {'input_tokens': 1, 'output_tokens': 1})
+-        extract('iald_task_bridge.py', ['encode_task_result'], dict_env := dict(json=json, TASK_RESULT_MAX_CHARS=24000), ROOT)
++        extract('iald_task_bridge.py', ['encode_task_result'], dict_env := dict(json=json, TASK_RESULT_MAX_CHARS=24000), STAGE)
+         env['encode_task_result'] = dict_env['encode_task_result']
+         extract('iald_app_providers.py', ['ProtocolError', 'scoped_task_names', 'Evaluation._api'], env)
+         return env
+@@ -294,7 +295,7 @@
+                     calls.append((name, kwargs))
+                     return json.dumps(result)
+                 codec = extract('iald_task_bridge.py', ['encode_task_result'],
+-                                dict(json=json, TASK_RESULT_MAX_CHARS=24000), ROOT)['encode_task_result']
++                                dict(json=json, TASK_RESULT_MAX_CHARS=24000), STAGE)['encode_task_result']
+                 env = dict(json=json, task_session=NS(NAMES=BASE_NAMES), MAX_AGENT_LOOPS=3,
+                     LLAMA_URL='https://fixture.invalid', PUBLIC_TOOLS=[], AGENT_KEEPALIVE_SEC=0,
+                     AGENT_MAX_RESULT_CHARS=10, _ROTULO_FERRAMENTA={},
+--- baseline/test_actual_app_integration.py
++++ regression/test_actual_app_integration.py
+@@ -20,6 +20,7 @@
+ import iald_task_bridge as bridge
+ import iald_task_session as session
+ import test_app_integration as fixtures
++import regression_fixtures as cf
+ 
+ 
+ class CatalogFixture:
+@@ -38,7 +39,7 @@
+ class ActualIntegrationTests(unittest.TestCase):
+     def setUp(self):
+         # Short default temp path avoids the Windows MAX_PATH artifact regression.
+-        self.temp = tempfile.TemporaryDirectory()
++        self.temp = tempfile.TemporaryDirectory(dir=STAGE, prefix="t")
+         self.addCleanup(self.temp.cleanup)
+         self.root = Path(self.temp.name)
+         self.cat = CatalogFixture()
+@@ -60,7 +61,7 @@
+                    _automatic_budget_available=lambda *a: True)
+         env['app_providers'] = NS(MODELS={'mimo': {}}, allowed=lambda *a: True,
+                                  options=lambda *a: [{'id': 'mimo', 'disponivel': True}])
+-        env['app_router'].choose = lambda *a, **k: ('mimo', {'id': 'fixture-routing'})
++        env['app_router'].choose = lambda *a, **k: ('mimo', cf.receipt(worker=True))
+         self.env = env
+         self.addCleanup(patch.stopall)
+         patch('socket.create_connection', side_effect=AssertionError('Network forbidden')).start()

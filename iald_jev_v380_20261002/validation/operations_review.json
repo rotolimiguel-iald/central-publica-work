@@ -1,0 +1,57 @@
+{
+  "status": "PASS",
+  "reviewed_at_utc": "2026-10-02T15:22:10.537287+00:00",
+  "input_pins": {
+    "restart_web.ps1": {
+      "sha256": "595867106a2660c2d232caab77689e2855b50a06e5479d3ca1870c1e540c09cc",
+      "bytes": 3751
+    },
+    "verify_live.py": {
+      "sha256": "8151babb6d7843cd7a1f2cbf240c224dc60e5f04ba3d29c0db2cb9b55f55b34d",
+      "bytes": 5158
+    },
+    "record_delivery.py": {
+      "sha256": "3a380c683a63f167a6e2ec1faf0eb346cd0e5d6a7d921213c0d3305e8bd7c388",
+      "bytes": 9065
+    },
+    "final_checks.py": {
+      "sha256": "32733e5570d98fe72ae68ce75be55f4a89d329957650830d07d6bbf1d40ed2c9",
+      "bytes": 5375
+    }
+  },
+  "scope": "Static read-only review. No operational scripts executed, no production/memory mutation, no provider/network calls. Report only in W.",
+  "findings": [],
+  "verified_by_reading": [
+    "Restart targets only the exact web child identified by supervisor and original 8082 listener; no llama or bench stop/restart commands.",
+    "Restart writes STOP_REQUESTED before stopping and refuses blind repetition after a receipt exists.",
+    "verify_live checks installed file hashes, source/control binding, Haiku prefix, account-file equality and operator restriction, resident bench snapshot, and HTTP status.",
+    "final_checks pins controller/regression/integration/provider receipts and exact staged bytes; independent plan hash is required.",
+    "record_delivery uses byte backups, verifies preappend bytes, preserves original bytes as prefix, retains line-ending convention and requires growth. Seven named surfaces come from the existing local inventory."
+  ],
+  "nonblocking_notes": [
+    "record_delivery is intentionally not automatically resumable: after a partial append, rerun stops at an existing marker. Reconcile completed surfaces and their immediate backups manually before continuing; do not remove markers or repeat appends blindly.",
+    "final_checks and verify_live reports are evidence gates, not permission to deploy or proof of physical-device/end-user generation testing.",
+    "Operational script pins must be regenerated in final_checks after any accepted correction."
+  ],
+  "previous_review_sha256": "9da8ee934fded6bb64490045e2b6165fa9b548951af75b8f575abc2ed2bacfc1",
+  "resolved_findings": [
+    {
+      "id": "OPS-001",
+      "priority": "P2",
+      "path": "C:\\IALD\\Central de Patentes\\work\\iald_jev_v380_20261002\\restart_web.ps1",
+      "line": 50,
+      "title": "PASS does not bind the healthy listener to the new web process",
+      "detail": "The initial listener owner is verified before Stop-Process. After restart, the code only finds a child with matching parent/path and accepts any 200 from 127.0.0.1:8082/login. If another process acquires 8082 while the new child is still initializing (or failing to bind), this records PASS and new_web_pid without proving that process serves the response.",
+      "minimal_change": "Before recording PASS, reread the 8082 Listen owner and require it equals taskNew[0].ProcessId; retain the existing supervisor/path checks. Prefer a second PID/owner check after the HTTP probe.",
+      "status": "RESOLVED",
+      "resolution": "After HTTP response the script rereads the listener owner and requires the new PID, then revalidates its supervisor parent and exact script path before PASS.",
+      "verified_by": "Static control-flow review and PowerShell AST parse; no restart executed."
+    }
+  ],
+  "syntax": {
+    "python": "PASS",
+    "powershell": "PASS",
+    "executed_operational_scripts": false
+  },
+  "final_checks_scripts_match": true
+}

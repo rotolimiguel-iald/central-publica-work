@@ -1,0 +1,38 @@
+--- a/iald_jev_control.py
++++ b/iald_jev_control.py
+@@ -143,7 +143,7 @@
+     """Verify both local files and the active release/source binding; no cache."""
+     try:
+         root = Path(root).resolve(strict=True)
+-        _, manifest = _read_json(_local_file(root, "iald_nucleo_fixo.json"), 1000000)
++        manifest_raw, manifest = _read_json(_local_file(root, "iald_nucleo_fixo.json"), 1000000)
+         entry, core = manifest["jev_control"], manifest["operational_core"]
+         raw, contract = _read_json(_local_file(root, entry["path"]), MAX_CONTRACT_BYTES)
+         if hashlib.sha256(raw).hexdigest() != _sha(entry["sha256"]):
+@@ -158,6 +158,26 @@
+             actual = hashlib.file_digest(stream, "sha256").hexdigest()
+         if actual != _sha(core["sha256"]):
+             raise ControlError("Active operational core hash mismatch")
++        cluster = manifest["active_cluster"]
++        if (cluster["release"] != contract["release"]
++                or _sha(cluster["release_source_sha256"]) != contract["source_sha256"]):
++            raise ControlError("Active cluster release/source mismatch")
++        # Read only the selected artifacts; do not import or execute scientific code.
++        evidence = manifest["published_evidence"]
++        bound_files = [(cluster, _sha(cluster["sha256"]))]
++        for field, pin in (("program", "source_sha256"), ("result", "result_sha256"),
++                           ("proof_manifest", "proof_manifest_sha256")):
++            bound_files.append((evidence[field], contract[pin]))
++        for item, expected in bound_files:
++            with _local_file(root, item["path"]).open("rb") as stream:
++                actual = hashlib.file_digest(stream, "sha256").hexdigest()
++            if actual != expected:
++                raise ControlError("Active scientific artifact hash mismatch")
++        # Fence the exact bytes captured before verification, never reconstructed
++        # or reread fields whose pins could have changed during artifact reads.
++        current_raw, _ = _read_json(_local_file(root, "iald_nucleo_fixo.json"), 1000000)
++        if current_raw != manifest_raw:
++            raise ControlError("Active manifest changed during verification")
+         return contract
+     except (OSError, KeyError, TypeError) as exc:
+         raise ControlError("Control contract unavailable or invalid") from exc

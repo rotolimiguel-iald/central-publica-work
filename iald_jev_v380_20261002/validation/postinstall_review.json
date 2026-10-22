@@ -1,0 +1,66 @@
+{
+  "status": "PASS",
+  "reviewed_at_utc": "2026-10-02T15:28:58.764249+00:00",
+  "scope": "Only the verifier adjustment accepting HTTP 302 with an exactly /login Location for the protected manifest. No HTTP calls, production writes, application suite reruns, deployment or restart performed.",
+  "plan_sha256": "5ca2ac1d4dcfe8d2517ec14e843a5b8847103879e85d3527ff1ec9d2928b14d1",
+  "preinstall_review": {
+    "path": "C:\\IALD\\Central de Patentes\\work\\iald_jev_v380_20261002\\validation\\review_final.json",
+    "sha256": "d4fcc7c4ce59e414abe22b85b830ab19735ee31f80bea23f56b87efa4244c56e",
+    "preserved": true
+  },
+  "verifier": {
+    "path": "C:\\IALD\\Central de Patentes\\work\\iald_jev_v380_20261002\\verify_live.py",
+    "sha256": "deb6ff6b144d30dc998a2bd33c152c33be15335d83000070ef56ef2ab1076f06",
+    "approved_previous_sha256": "8151babb6d7843cd7a1f2cbf240c224dc60e5f04ba3d29c0db2cb9b55f55b34d",
+    "exact_previous_backup": "C:\\IALD\\Central de Patentes\\work\\iald_jev_v380_20261002\\verify_live.py.bak_20261002_122629_088754"
+  },
+  "production_auth_evidence": {
+    "path": "C:\\IALD\\projetos_pyhton\\IALD\\iald_web_server.py",
+    "sha256": "00caa7a36f4447634005ab5c4a59bd4c7bbd40f7ddfb85e36e9a0f481261b4f7",
+    "matches_installed_plan": true,
+    "function": "require_auth.denied",
+    "lines": [
+      3823,
+      3830
+    ],
+    "behavior": "API paths receive JSON 401; other protected unauthenticated paths redirect to local login."
+  },
+  "findings": [],
+  "tests": [
+    {
+      "case": "302 exact /login accepted",
+      "passed": true
+    },
+    {
+      "case": "302 absolute external URL rejected",
+      "passed": true
+    },
+    {
+      "case": "302 scheme-relative URL rejected",
+      "passed": true
+    },
+    {
+      "case": "302 login query rejected",
+      "passed": true
+    },
+    {
+      "case": "302 missing Location rejected",
+      "passed": true
+    },
+    {
+      "case": "302 remains rejected when not explicitly allowed",
+      "passed": true
+    },
+    {
+      "case": "200 protected manifest still rejected",
+      "passed": true
+    }
+  ],
+  "tests_passed": 7,
+  "verification_method": "AST-isolated request() with fake HTTPConnection/response, sockets and subprocesses blocked. Full verify_live.py not imported or executed.",
+  "conclusion": "Correction matches the existing authentication contract. 302 is admitted only at the selected protected-manifest check and only with exact Location /login. No redirects are followed; missing, external, scheme-relative and query-bearing targets fail closed.",
+  "limits": [
+    "The actual post-install HTTP responses and complete live validation remain main execution evidence; this report does not manufacture or replace them.",
+    "The pre-install review and historical script pin remain unchanged; this separate receipt binds the post-install verifier revision."
+  ]
+}
