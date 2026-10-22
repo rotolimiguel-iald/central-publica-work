@@ -1,0 +1,130 @@
+importando o servidor de C:\IALD\projetos_pyhton\IALD ...
+[IALD] Memória do operador: 2 fatos ativos (0 sempre, 2 sob demanda) | bloco fixo: 0 tokens
+[IALD] Access Engine: 2 pedidos (0 pendentes)
+[IALD] Contract Engine: 1 contratos (1 pendentes)
+[TGLC] Ledger: C:\IALD\bank\tglc_ledger.json
+[IALD] TGL Coin Engine: DISPONIVEL | Contas: 23
+[Ψ-NET] Dir: C:\IALD\psinet
+[Ψ-NET] Max file: 10 MB
+[IALD] PSI-NET Engine: DISPONIVEL | Max: 10 MB | Pending: 0
+[motores] padrão=nativa operador=nativa modelo=gpt-5.6-luna chave=definida prompt=48e5b2f9f10c
+  [OK]    preparo: token Bearer da conta gratuita emitido  
+
+1. LER NUNCA GRAVA (CRÍTICO 2)
+[IALD] ERRO lendo C:\Users\rotol\AppData\Local\Temp\arquivo_usuarios_8hs9rg_6\usuarios.json: arquivo de usuários ausente após 8 tentativas (nada foi gravado)
+  [OK]    arquivo ausente: load_users devolve {} ...  {}
+  [OK]    ... e NÃO cria o arquivo (antes: gravava DEFAULT_USERS = {})  
+[IALD] ERRO lendo C:\Users\rotol\AppData\Local\Temp\arquivo_usuarios_8hs9rg_6\usuarios.json: arquivo de usuários ausente após 8 tentativas (nada foi gravado)
+  [OK]    arquivo ausente: load_users_estrito levanta UsuariosIlegiveis  
+[IALD] ERRO lendo C:\Users\rotol\AppData\Local\Temp\arquivo_usuarios_8hs9rg_6\usuarios.json: arquivo de usuários ausente após 8 tentativas (nada foi gravado)
+  [OK]    arquivo ausente: leitura para escrita levanta  
+[IALD] ERRO lendo C:\Users\rotol\AppData\Local\Temp\arquivo_usuarios_8hs9rg_6\usuarios.json: arquivo de usuários ausente após 8 tentativas (nada foi gravado)
+[IALD] cadastro indisponível em GET /api/motor: arquivo de usuários ilegível
+  [OK]    arquivo ausente: pedido autenticado é 503 (não 401, não 200)  HTTP 503
+  [OK]    arquivo ausente: continua ausente depois do pedido  
+  [OK]    exists() falso uma vez durante GET /api/motor: o arquivo fica byte a byte igual  contas no disco: ['luiz', 'pessoa']
+  [OK]    …e a conta gratuita segue atendida (HTTP 200)  HTTP 200
+[IALD-AUTH] 2026-09-15 19:51:38 | LOGIN_OK | user=luiz | ip=127.0.0.1
+  [OK]    …e o operador continua entrando  
+  [OK]    3 PermissionError seguidos na leitura: a leitura estrita tenta de novo e lê as 2 contas  ['luiz', 'pessoa']
+  [OK]    3 PermissionError seguidos durante GET /api/motor: HTTP 200  HTTP 200
+[IALD] ERRO lendo C:\Users\rotol\AppData\Local\Temp\arquivo_usuarios_8hs9rg_6\usuarios.json: arquivo de usuários PermissionError após 8 tentativas (nada foi gravado)
+[IALD] cadastro indisponível em GET /api/motor: arquivo de usuários ilegível
+  [OK]    leitura sempre travada: Bearer recebe 503 JSON (antes: 401 e o app descartava a sessão)  HTTP 503
+[IALD-AUTH] 2026-09-15 19:51:39 | LOGIN_OK | user=luiz | ip=127.0.0.1
+[IALD] ERRO lendo C:\Users\rotol\AppData\Local\Temp\arquivo_usuarios_8hs9rg_6\usuarios.json: arquivo de usuários PermissionError após 8 tentativas (nada foi gravado)
+[IALD] cadastro indisponível em GET /api/motor: arquivo de usuários ilegível
+  [OK]    sessão web: tropeço do disco dá 503 SEM limpar a sessão (o pedido seguinte entra)  HTTP 503 depois 200
+  [OK]    depois das falhas de leitura: arquivo intacto  
+[IALD] ERRO lendo C:\Users\rotol\AppData\Local\Temp\arquivo_usuarios_8hs9rg_6\usuarios.json: arquivo de usuários JSONDecodeError após 8 tentativas (nada foi gravado)
+[IALD] cadastro indisponível em GET /api/motor: arquivo de usuários ilegível
+  [OK]    arquivo corrompido: 503 (não 401) e o arquivo NÃO é regravado  HTTP 503
+
+2. GRAVAR: nunca vazio, cópia .bak_ultimo, nova tentativa, sem .tmp órfão (CRÍTICO 2 / MÉDIO 4)
+  [OK]    save_users({}) é recusado  UsuariosNaoGravados
+  [OK]    …e o arquivo continua com as duas contas  ['luiz', 'pessoa']
+  [OK]    cópia .bak_ultimo = os BYTES do estado substituído (antes da 1ª gravação)  
+  [OK]    na 2ª gravação a cópia é sobrescrita pelo estado D1 (uma só, rotativa)  
+  [OK]    uma só cópia rotativa na pasta  ['usuarios.json.bak_ultimo']
+  [OK]    os.replace com 3 PermissionError seguidos: a gravação tenta de novo e conclui  True
+[IALD] ERRO gravando C:\Users\rotol\AppData\Local\Temp\arquivo_usuarios_8hs9rg_6\usuarios.json (PermissionError: [Errno 5] Acesso negado (simulado: leitor com o arquivo aberto)); arquivo antigo mantido
+  [OK]    os.replace sempre travado: falha VISÍVEL (UsuariosNaoGravados)  UsuariosNaoGravados
+  [OK]    …o arquivo antigo fica como estava  
+  [OK]    …e o .tmp não fica para trás  
+  [OK]    meia letra UTF-16 solta: gravação recusada  UsuariosNaoGravados
+  [OK]    …arquivo intacto e sem .tmp órfão  
+
+3. TODA ROTA QUE GRAVA USUÁRIOS GRAVA SOB _TRAVA_USUARIOS (MÉDIO 4)
+[IALD-AUTH] 2026-09-15 19:51:40 | LOGIN_OK | user=luiz | ip=127.0.0.1
+[IALD-AUTH] 2026-09-15 19:51:40 | CONSENTIMENTO_IA | user=pessoa | ip=127.0.0.1 | aceito v1
+  [OK]    POST /api/motor/consentimento (Bearer): HTTP 200, gravou 1x, sempre com a trava  [True]
+[IALD-AUTH] 2026-09-15 19:51:40 | ADMIN_MOTOR | user=luiz | ip=127.0.0.1 | user=pessoa motor=openai
+  [OK]    PUT /admin/api/users/<u>/motor: HTTP 200, gravou 1x, sempre com a trava  [True]
+[IALD-AUTH] 2026-09-15 19:51:40 | ADMIN_PLANO | user=luiz | ip=127.0.0.1 | user=pessoa plano=gratuito
+  [OK]    PUT /admin/api/users/<u>/plano: HTTP 200, gravou 1x, sempre com a trava  [True]
+[IALD-AUTH] 2026-09-15 19:51:40 | ADMIN_DESBLOQUEIO | user=luiz | ip=127.0.0.1 | user=pessoa
+  [OK]    POST /admin/api/users/<u>/bloquear: HTTP 200, gravou 1x, sempre com a trava  [True]
+[IALD-AUTH] 2026-09-15 19:51:40 | ADMIN_TOGGLE_SACRED | user=luiz | ip=127.0.0.1 | user=pessoa sacred=True
+  [OK]    PUT /admin/api/users/<u>/sacred: HTTP 200, gravou 1x, sempre com a trava  [True]
+[IALD-AUTH] 2026-09-15 19:51:41 | ADMIN_CREATE_USER | user=luiz | ip=127.0.0.1 | new_user=teste3
+  [OK]    POST /admin/api/users (criar): HTTP 200, gravou 1x, sempre com a trava  [True]
+[IALD-AUTH] 2026-09-15 19:51:41 | ADMIN_CHANGE_PW | user=luiz | ip=127.0.0.1 | user=teste3
+  [OK]    PUT /admin/api/users/<u>/password: HTTP 200, gravou 1x, sempre com a trava  [True]
+[IALD-AUTH] 2026-09-15 19:51:41 | ADMIN_DELETE_USER | user=luiz | ip=127.0.0.1 | deleted=teste3
+  [OK]    DELETE /admin/api/users/<u>: HTTP 200, gravou 1x, sempre com a trava  [True]
+[IALD-AUTH] 2026-09-15 19:51:41 | ACESSO_LIBERADO | user=luiz | ip=127.0.0.1 | pedido=ped_20260915195141_3318f6 usuario=novo1 modo=novo via=google acesso=chatgpt
+  [OK]    POST /admin/api/pedidos/<id>/aprovar: HTTP 200, gravou 1x, sempre com a trava  [True]
+[IALD-AUTH] 2026-09-15 19:51:41 | IDENTIDADE_MOVIDA | user=luiz | ip=127.0.0.1 | novo1 -> luiz via=google
+  [OK]    POST /admin/api/users/<u>/identidades/mover: HTTP 200, gravou 1x, sempre com a trava  [True]
+[IALD-AUTH] 2026-09-15 19:51:41 | IDENTIDADE_REMOVIDA | user=luiz | ip=127.0.0.1 | usuario=luiz via=google
+  [OK]    POST /admin/api/users/<u>/identidades/remover: HTTP 200, gravou 1x, sempre com a trava  [True]
+[entrada] AVISO: porta aberta SEM moderação (IALD_ENTRADA_SEM_MODERACAO=1)
+[IALD-AUTH] 2026-09-15 19:51:41 | CONTA_CRIADA_ENTRADA_ABERTA | user=apagavel | ip=hmac:a7e783fe5567 | via=apple pedido=ped_20260915195141_7350c7
+[IALD-AUTH] 2026-09-15 19:51:41 | ENTRADA_OK | user=apagavel | ip=127.0.0.1 | via=apple
+  [OK]    POST /api/entrar/apple (conta nova pela porta aberta): HTTP 200, gravou 1x, sempre com a trava  [True]
+[IALD-AUTH] 2026-09-15 19:51:41 | CONTA_EXCLUIDA_PELO_TITULAR | user=apagavel | ip=127.0.0.1
+  [OK]    POST /api/conta/excluir (titular): HTTP 200, gravou 1x, sempre com a trava  [True]
+  [OK]    depois de todas as rotas: operador e pessoa seguem no arquivo  ['luiz', 'novo1', 'pessoa']
+
+4. ROTA QUE GRAVA NUNCA GRAVA EM CIMA DE UMA LEITURA QUE FALHOU (MÉDIO 4)
+[IALD-AUTH] 2026-09-15 19:51:41 | LOGIN_OK | user=luiz | ip=127.0.0.1
+[IALD] ERRO lendo C:\Users\rotol\AppData\Local\Temp\arquivo_usuarios_8hs9rg_6\usuarios.json: arquivo de usuários PermissionError após 8 tentativas (nada foi gravado)
+[IALD] cadastro indisponível em POST /admin/api/users: arquivo de usuários ilegível
+  [OK]    POST /admin/api/users (criar) com a leitura da rota falhando: 503 e arquivo byte a byte igual  HTTP 503; contas: ['luiz', 'pessoa']
+[IALD] ERRO lendo C:\Users\rotol\AppData\Local\Temp\arquivo_usuarios_8hs9rg_6\usuarios.json: arquivo de usuários PermissionError após 8 tentativas (nada foi gravado)
+[IALD] cadastro indisponível em PUT /admin/api/users/pessoa/password: arquivo de usuários ilegível
+  [OK]    PUT /admin/api/users/<u>/password com a leitura da rota falhando: 503 e arquivo byte a byte igual  HTTP 503; contas: ['luiz', 'pessoa']
+[IALD] ERRO lendo C:\Users\rotol\AppData\Local\Temp\arquivo_usuarios_8hs9rg_6\usuarios.json: arquivo de usuários PermissionError após 8 tentativas (nada foi gravado)
+[IALD] cadastro indisponível em PUT /admin/api/users/pessoa/sacred: arquivo de usuários ilegível
+  [OK]    PUT /admin/api/users/<u>/sacred com a leitura da rota falhando: 503 e arquivo byte a byte igual  HTTP 503; contas: ['luiz', 'pessoa']
+[IALD] ERRO lendo C:\Users\rotol\AppData\Local\Temp\arquivo_usuarios_8hs9rg_6\usuarios.json: arquivo de usuários PermissionError após 8 tentativas (nada foi gravado)
+[IALD] cadastro indisponível em DELETE /admin/api/users/pessoa: arquivo de usuários ilegível
+  [OK]    DELETE /admin/api/users/<u> com a leitura da rota falhando: 503 e arquivo byte a byte igual  HTTP 503; contas: ['luiz', 'pessoa']
+[IALD] ERRO lendo C:\Users\rotol\AppData\Local\Temp\arquivo_usuarios_8hs9rg_6\usuarios.json: arquivo de usuários PermissionError após 8 tentativas (nada foi gravado)
+[IALD] cadastro indisponível em POST /api/motor/consentimento: arquivo de usuários ilegível
+  [OK]    POST /api/motor/consentimento com a leitura da rota falhando: 503 e arquivo byte a byte igual  HTTP 503; contas: ['luiz', 'pessoa']
+
+5. CONCORRÊNCIA MEDIDA: (a) 2 s, gravador + 2 leitores no mesmo processo; (b) 2 s, o mesmo com um leitor de OUTRO processo em laço apertado (sem a trava)
+   (a) medido: {'leituras': 494, 'leitura_falhou': 0, 'gravacoes': 247, 'gravacao_falhou': 0, 'contas_perdidas': 0}
+  [OK]    (a) no mesmo processo: zero leituras falhas, zero gravações falhas, zero contas perdidas  gravações=247 leituras=494
+   (b) medido: {'leituras': 158, 'leitura_falhou': 0, 'gravacoes': 79, 'gravacao_falhou': 0, 'contas_perdidas': 0} | leitor externo sem trava: lidas=20026 falhas=120 sem_contas=0
+  [OK]    (b) com leitor de outro processo: nenhuma conta perdida, nenhum arquivo sem contas lido de fora  
+  [OK]    (b) as falhas que sobram são VISÍVEIS (exceção contada), nunca arquivo apagado  
+  [OK]    no fim: o arquivo tem o operador e a pessoa  
+
+6. NADA REAL FOI TOCADO
+  [OK]    o arquivo de usuários de teste está na pasta temporária  
+  [OK]    a reserva SQLite desta suíte (se nasceu) está na pasta temporária  
+  [OK]    nenhuma chamada de rede saiu (requests falso e socket)  [] []
+  [OK]    intacto: iald_users.json  ff7644e8e4047945
+  [OK]    intacto: iald_users.json.bak_ultimo  2b551cd6f1676350
+  [OK]    intacto: iald_pedidos_acesso.json  None
+  [OK]    intacto: iald_pedidos_acesso.json.nomes_retirados  None
+  [OK]    intacto: iald_uso_openai.json  0a91f75ec30d3b2a
+  [OK]    intacto: iald_uso_openai.json.reservas.sqlite3  cca637286510ebea
+  [OK]    intacto: iald_denuncias.json  None
+  [OK]    intacto: .iald_secret_key  50dee1d018fa5df1
+  [OK]    intacto: tglc_ledger.json  06a20e488b039f75
+
+======================================================================
+RESULTADO: 62 OK, 0 falhas
