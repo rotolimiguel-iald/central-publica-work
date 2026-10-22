@@ -1,0 +1,34 @@
+<!doctype html><html lang="pt-BR" data-theme="light"><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>IALD — prévia do beta dourado e leitura</title><link rel="stylesheet" href="iald.css"><style>body{display:block;overflow:auto;height:auto;margin:0;padding:20px;font-family:system-ui;background:#fff}.preview{max-width:720px;margin:auto}h1{font-size:20px;margin:0 0 16px}.preview-note{font-size:13px;color:#64748b;margin:12px 0}.msg{margin:18px 0}.preview-controls{display:flex;gap:12px;margin-top:18px}.preview-controls button{padding:10px;border:1px solid #ddd;border-radius:10px;min-height:44px}.beta-wait{margin-top:4px}</style><main class="preview"><h1>IALD · Haja luz</h1><div class="preview-note">Prévia visual local — sem envio de mensagem</div><div class="msg" data-papel="user"><div class="msg-corpo">Gostaria de uma resposta clara e bem organizada.</div></div><div class="msg" data-papel="ai"><div class="msg-corpo md"><p>Esta é uma amostra da nova leitura: a fonte ficou menor e o texto ocupa menos espaço na tela, mantendo uma apresentação leve e organizada.</p><p>Os parágrafos continuam com espaço para acompanhar a resposta. Fórmulas e trechos de código preservam o tamanho anterior.</p><p>Uma fórmula: <span class="katex">β = α × √e</span></p><p>Um trecho: <code>resultado = calcular()</code></p></div></div><div id="indicator"></div><div class="preview-controls"><button id="complete">Concluir prévia</button><button id="dark">Alternar tema</button></div></main><script>function createBetaWaitIndicator({ document, signal, initialState = 'connecting' }) {
+  const node = document.createElement('div');
+  node.className = 'beta-wait';
+  node.setAttribute('role', 'status');
+  node.setAttribute('aria-live', 'polite');
+  node.setAttribute('aria-atomic', 'true');
+  const orbit = document.createElement('span');
+  orbit.className = 'beta-wait__orbit'; orbit.setAttribute('aria-hidden', 'true');
+  const icon = document.createElement('span');
+  icon.className = 'beta-wait__icon';
+  icon.textContent = 'β';
+  orbit.appendChild(icon); node.appendChild(orbit);
+  const label = document.createElement('span');
+  label.className = 'beta-wait__status'; node.appendChild(label);
+  const labels = { connecting: 'Enviando pedido.', queued: 'Pedido na fila.',
+    running: 'Resposta em andamento.', recovery: 'Recuperando o mesmo pedido.' };
+  let stopped = false;
+  function stop() {
+    if (stopped) return;
+    stopped = true; node.dataset.state = 'stopped'; node.remove();
+    signal?.removeEventListener('abort', stop);
+  }
+  function setState(state) {
+    if (stopped) return;
+    if (['completed', 'failed', 'cancelled', 'interrupted', 'expired'].includes(state)) { stop(); return; }
+    if (!Object.hasOwn(labels, state) || node.dataset.state === state) return;
+    node.dataset.state = state; label.textContent = labels[state];
+  }
+  setState(initialState);
+  signal?.addEventListener('abort', stop, { once: true });
+  if (signal?.aborted) stop();
+  return { node, setState, stop };
+}
+;const indicator=createBetaWaitIndicator({document,initialState:'running'});document.querySelector('#indicator').append(indicator.node);document.querySelector('#complete').onclick=()=>indicator.setState('completed');document.querySelector('#dark').onclick=()=>{document.documentElement.dataset.theme=document.documentElement.dataset.theme==='dark'?'light':'dark';document.body.style.background=document.documentElement.dataset.theme==='dark'?'#101821':'#fff'};</script></html>

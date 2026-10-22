@@ -1,0 +1,96 @@
+--- baseline.css
++++ stage.css
+@@ -849,7 +849,7 @@
+ .msg[data-papel="user"] .msg-corpo {
+   max-width: min(80%, 34rem);
+   padding: 11px 16px;
+-  font-size: 15.5px;
++  font-size: 14px;
+   background: var(--bg-bolha-user);
+   color: var(--txt-bolha-user);
+   border-radius: var(--raio-g) var(--raio-g) 8px var(--raio-g);   /* 8 px = a ponta do balão */
+@@ -882,7 +882,7 @@
+   max-width: 100%;
+   min-width: 0;
+   padding: 12px 16px;
+-  font-size: 15.5px;
++  font-size: 14px;
+   line-height: 1.55;
+   background: var(--bg-bolha-ia);
+   border: 1px solid var(--borda-bolha-ia);
+@@ -1005,7 +1005,7 @@
+ 
+ .md code {
+   font-family: var(--fonte-mono);
+-  font-size: .915483871em; /* same inline-code size after prose reduction */
++  font-size: 14.19px; /* preserve inline-code size with compact prose */
+   padding: .12em .4em;
+   border-radius: var(--raio-xs);
+   background: var(--acento-suave);
+@@ -1013,7 +1013,7 @@
+ }
+ 
+ /* fórmulas em dourado, como no app nativo */
+-.md .katex { color: var(--txt-dourado); font-size: 1.107096774em; /* same formula size after prose reduction */ }
++.md .katex { color: var(--txt-dourado); font-size: 17.16px; /* preserve formula size with compact prose */ }
+ .md .katex-display { margin: .9em 0; overflow-x: auto; overflow-y: hidden; padding: 2px 0; }
+ 
+ /* bloco de código com cabeçalho e botão de copiar */
+@@ -2512,12 +2512,19 @@
+ .iald-math-pending { display:inline-block; max-width:100%; overflow-x:auto; vertical-align:middle; }
+ .iald-math-pending code { white-space:pre-wrap; overflow-wrap:anywhere; opacity:.78; }
+ 
+-/* Beta TGL waiting: official asset, no global font/input changes. */
++/* Waiting uses the original golden beta glyph; brand icons stay unchanged. */
+ .beta-wait { display: flex; align-items: center; padding: .5rem 0; min-height: 3.5rem; }
+-.beta-wait__orbit { display: grid; place-items: center; width: 3.25rem; height: 3.25rem;
+-  border: 1px solid var(--borda); border-radius: 50%; background: var(--bg); }
+-.beta-wait__icon { display: block; width: 2.25rem; height: 2.25rem; object-fit: contain;
+-  animation: beta-wait-turn 3.6s linear infinite; }
++.beta-wait__orbit { display: grid; place-items: center; width: 3.25rem; height: 3.25rem; }
++.beta-wait__icon { display: grid; place-items: center; width: 2.75rem; height: 2.75rem;
++  font-family: 'KaTeX_Math', 'Times New Roman', serif; font-size: 2.5rem;
++  font-weight: 600; font-style: italic; line-height: 1; color: #A77912;
++  background: linear-gradient(135deg, #A77912 10%, #E6C462 48%, #B38620 82%);
++  -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
++  transform-origin: center; animation: beta-wait-turn 3.6s linear infinite; }
++:root[data-theme="dark"] .beta-wait__icon { color: #E6C462; }
++@media (forced-colors: active) {
++  .beta-wait__icon { background: none; -webkit-text-fill-color: currentColor; color: CanvasText; }
++}
+ .beta-wait__status { position: absolute; width: 1px; height: 1px; padding: 0;
+   margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; border: 0; }
+ @keyframes beta-wait-turn { to { transform: rotate(360deg); } }
+--- baseline.js
++++ stage.js
+@@ -4387,7 +4387,7 @@
+ }
+ 
+ // Beta waiting indicator: presentation only; no request, polling or retry logic.
+-function createBetaWaitIndicator({ document, iconSrc, signal, initialState = 'connecting' }) {
++function createBetaWaitIndicator({ document, signal, initialState = 'connecting' }) {
+   const node = document.createElement('div');
+   node.className = 'beta-wait';
+   node.setAttribute('role', 'status');
+@@ -4395,9 +4395,9 @@
+   node.setAttribute('aria-atomic', 'true');
+   const orbit = document.createElement('span');
+   orbit.className = 'beta-wait__orbit'; orbit.setAttribute('aria-hidden', 'true');
+-  const icon = document.createElement('img');
+-  icon.className = 'beta-wait__icon'; icon.src = iconSrc; icon.alt = '';
+-  icon.width = 36; icon.height = 36;
++  const icon = document.createElement('span');
++  icon.className = 'beta-wait__icon';
++  icon.textContent = 'β';
+   orbit.appendChild(icon); node.appendChild(orbit);
+   const label = document.createElement('span');
+   label.className = 'beta-wait__status'; node.appendChild(label);
+@@ -4446,7 +4446,7 @@
+   const trilha = corpo.querySelector('.trilha');
+   const conteudo = corpo.querySelector('.conteudo');
+ 
+-  const betaWaiting = createBetaWaitIndicator({ document, iconSrc: ICONE_BETATGL,
++  const betaWaiting = createBetaWaitIndicator({ document,
+     signal: controller.signal, initialState: retomada ? 'recovery' : 'connecting' });
+   turn.betaWaiting = betaWaiting;
+   limparEsperaBackground();
