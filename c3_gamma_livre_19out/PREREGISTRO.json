@@ -1,0 +1,294 @@
+{
+ "id": "c3_gamma_livre_19out",
+ "titulo": "C3 GAMMA LIVRE: o piso das dobras D_folds(c3) do estado estacionario GKLS e uma OITAVA (ln 2)?",
+ "pre_registrado_em": "2026-10-19T13:03:22-0300",
+ "pre_registrado_por": "subagente Claude Sonnet 5.5 a mando da gerencia c1 (teste pre-registrado de 19/10/2026)",
+ "estatuto": "[REAL no modelo simulado]; a leitura 'consciencia' e [ONTO] e nao entra no veredito",
+ "pergunta": "Com o parametro de fuga gamma LIVRE (varrido em logspace(-4,0,25)) e sem calibracao, o observavel O = D_folds(c3) do estado estacionario GKLS das 9 configuracoes do validador v52 fica numa janela de gamma de >= 1 decada em ln 2 +- 0,05 para TODAS as configs, e independente de ln(d/nc) (|inclinacao| < 0,05)?",
+ "rotas_anteriores_lidas_e_nao_refeitas": [
+  "quantica.c3_validator_calibrado (seq 296): o validador calibra gamma* para o peso do core dar 1 - beta: circular; proximo passo nomeado: rodar com gamma livre",
+  "quantica.dobras_c3_hierarquia_e_matematica (seq 307): a hierarquia c1 > c2 > c3 > 0 e matematica; o que pode falhar sao os VALORES com gamma livre"
+ ],
+ "fonte_somente_leitura": {
+  "script": "C:\\IALD\\projetos_pyhton\\acom\\TGL_C3_validator_v52.py",
+  "sha256": "c3a53ef00dd4548d3b9315409acccea46a6e309080b26c8c556302eb00c70083",
+  "rodada_de_fevereiro_json": "C:\\IALD\\projetos_pyhton\\acom\\tgl_c3_v5_results_20260209_121836.json",
+  "rodada_de_fevereiro_sha256": "c77666acb4a88a13a2772de7d7ec734fb6a42c335a8eb703669f9bf1eda620d4",
+  "valores_de_fevereiro_d_folds_c3_no_gamma_calibrado": {
+   "mediana": 0.7005133355954447,
+   "media": 0.6681641504786303,
+   "ln2": 0.6931471805599453,
+   "por_config_na_ordem_da_fonte": [
+    0.5526703689545642,
+    0.5710029785281354,
+    0.6578571330518563,
+    0.7392289838637416,
+    0.718470119551307,
+    0.6120216971628016,
+    0.7005133355954447,
+    0.702327187923395,
+    0.7593855496764275
+   ]
+  }
+ },
+ "componentes": {
+  "observavel_O": {
+   "nome": "O = D_folds(c3) do estado estacionario GKLS",
+   "formula": "p_i = lambda_i^(1/4) / sum_j lambda_j^(1/4); d_eff = 1 / sum_i p_i^2 = (sum lambda^(1/4))^2 / sum lambda^(1/2); O = ln d - ln d_eff",
+   "lambda": "autovalores de rho_ss (hermitiana, traco 1), cortados em max(., 0)",
+   "nivel": "c3 = terceiro nivel (n = 0, 1, 2 no laco; levels[2] da fonte); c1: p ~ lambda, c2: p ~ lambda^(1/2)",
+   "unidade": "nats; oitava = O / ln 2",
+   "fonte": "TGL_C3_validator_v52.py::test_M7_dimensional_folds (d_folds_c3 = levels[2]['d_folds'])",
+   "codigo": "def observable_O(rho):\n    \"\"\"O = ln d - ln d_eff(c3), com p_i = lambda_i^(1/4) / soma_j lambda_j^(1/4) e d_eff = 1 / soma_i p_i^2.\n    Replica o laco de test_M7_dimensional_folds (n = 0, 1, 2; o nivel c3 e o terceiro).\"\"\"\n    d = rho.shape[0]\n    ev = np.maximum(np.linalg.eigvalsh(rho), 0.0)\n    cur = ev.copy()\n    d_eff = float('nan')\n    for n in range(3):\n        if n > 0:\n            cur = np.sqrt(cur)\n        total = np.sum(cur)\n        p = cur / total\n        sum_p2 = np.sum(p ** 2)\n        d_eff = 1.0 / sum_p2\n    return float(np.log(d) - np.log(d_eff)), float(d_eff)\n"
+  },
+  "grade": {
+   "configs_d_nc_eps": [
+    [
+     8,
+     2,
+     5.0
+    ],
+    [
+     10,
+     2,
+     5.0
+    ],
+    [
+     12,
+     2,
+     5.0
+    ],
+    [
+     14,
+     2,
+     5.0
+    ],
+    [
+     16,
+     2,
+     5.0
+    ],
+    [
+     16,
+     3,
+     5.0
+    ],
+    [
+     20,
+     3,
+     5.0
+    ],
+    [
+     24,
+     3,
+     5.0
+    ],
+    [
+     32,
+     4,
+     5.0
+    ]
+   ],
+   "gammas_repr": [
+    "0.0001",
+    "0.0001467799267622069",
+    "0.00021544346900318845",
+    "0.00031622776601683794",
+    "0.00046415888336127773",
+    "0.0006812920690579609",
+    "0.001",
+    "0.0014677992676220691",
+    "0.002154434690031882",
+    "0.0031622776601683794",
+    "0.004641588833612777",
+    "0.006812920690579608",
+    "0.01",
+    "0.01467799267622069",
+    "0.021544346900318822",
+    "0.03162277660168379",
+    "0.046415888336127774",
+    "0.06812920690579609",
+    "0.1",
+    "0.1467799267622069",
+    "0.21544346900318823",
+    "0.31622776601683794",
+    "0.46415888336127775",
+    "0.6812920690579608",
+    "1.0"
+   ],
+   "gammas_definicao": "np.logspace(-4.0, 0.0, 25), taxa da quarta dissipacao",
+   "sementes": [
+    42,
+    43,
+    44,
+    45,
+    46
+   ],
+   "taxas": "[1.0, 0.5, 2.0, gamma]",
+   "pontos_por_conjunto": 1125,
+   "codigo_sistema": "def build_system(d, nc, eps=5.0, seed=42):\n    \"\"\"Sistema de d niveis e nc canais core (logica da fonte, sem alteracao).\"\"\"\n    np.random.seed(seed)\n\n    mu = np.zeros(d)\n    mu[:nc] = -1.0 * np.arange(nc, 0, -1)\n    mu[nc:] = 0.5 + 0.3 * np.arange(d - nc)\n\n    J = np.random.randn(d, d) * 0.2\n    J = (J + J.T) / 2\n    np.fill_diagonal(J, 0)\n    J[:nc, :nc] *= 2\n\n    Pi = np.zeros((d, d))\n    Pi[:nc, :nc] = np.eye(nc)\n\n    H = np.diag(mu) + J - eps * Pi\n    H = (H + H.T) / 2\n\n    ev = np.linalg.eigvalsh(H)\n    E_sc = float(ev[-1] - ev[0])\n\n    L1 = np.zeros((d, d), dtype=complex)\n    for i in range(nc):\n        for j in range(nc, min(nc + d // 2, d)):\n            L1[i, j] = np.sqrt(0.5) * np.exp(-0.2 * (j - nc))\n\n    L3 = np.zeros((d, d), dtype=complex)\n    for i in range(nc + d // 3, d):\n        L3[0, i] = np.sqrt((i - nc) / d)\n\n    L4 = np.zeros((d, d), dtype=complex)\n    for i in range(nc):\n        for j in range(nc, min(nc + d // 2, d)):\n            L4[i, j] = np.sqrt(0.3) * np.exp(-0.3 * abs(j - nc))\n\n    L5 = np.zeros((d, d), dtype=complex)\n    for j in range(nc, min(nc + d // 2, d)):\n        for i in range(nc):\n            L5[j, i] = np.sqrt(0.5) * np.exp(-0.2 * (j - nc))\n\n    return {\n        'H': H, 'Pi': Pi,\n        'L_ops': [L1, L3, L4, L5],\n        'd': d, 'nc': nc, 'E_sc': E_sc\n    }\ndef lindblad_superoperator(sys_dict, gamma_leak):\n    \"\"\"Superoperador de Lindblad no espaco vec(rho) (row-stacking), logica da fonte.\"\"\"\n    d = sys_dict['d']\n    H = sys_dict['H']\n    L_ops = sys_dict['L_ops']\n    gammas = FIXED_RATES + [gamma_leak]\n\n    I = np.eye(d)\n    L_s = -1j * (np.kron(H, I) - np.kron(I, H.T))\n\n    for L, g in zip(L_ops, gammas):\n        Ld = L.conj().T\n        LdL = Ld @ L\n        L_s += g * (\n            np.kron(L, L.conj())\n            - 0.5 * np.kron(LdL, I)\n            - 0.5 * np.kron(I, LdL.T)\n        )\n\n    return L_s\n"
+  },
+  "estado_estacionario": {
+   "metodo": "nucleo do liouvilliano: vetor singular direito do menor valor singular de L_s (SVD completa); normalizado por traco complexo, hermitianizado, renormalizado",
+   "tolerancias": {
+    "s1_rel_max": 1e-09,
+    "s2_rel_min": 1e-08,
+    "herm_max": 1e-08,
+    "trace_raw_min": 1e-06,
+    "trace_err_max": 1e-12,
+    "tp_err_rel_max": 1e-10,
+    "psd_min": -1e-09
+   },
+   "criterio": "ponto converge sse as 6 conferencias passam (s1, s2, herm, traco, preservacao do traco, psd)",
+   "codigo": "def steady_state_kernel(sys_dict, gamma_leak):\n    \"\"\"rho_ss = nucleo de L_s (vetor singular direito do menor valor singular), traco 1, hermitiano.\n    Devolve o estado e as conferencias; ok=True so se TODAS as conferencias passam.\"\"\"\n    d = sys_dict['d']\n    nan = float('nan')\n    res = dict(rho=None, ev=None, ok=False, reason=\"\", s1_rel=nan, s2_rel=nan, herm=nan,\n               trace_raw=nan, trace_err=nan, tp_err_rel=nan, psd_min=nan, lu_diff=nan)\n    try:\n        L_s = lindblad_superoperator(sys_dict, gamma_leak)\n        _, S, Vh = np.linalg.svd(L_s)\n    except Exception as e:  # falha visivel: o ponto fica marcado como nao convergido\n        res[\"reason\"] = \"svd_excecao:%s\" % type(e).__name__\n        return res\n\n    smax = float(S[0])\n    res[\"s1_rel\"] = float(S[-1]) / smax\n    res[\"s2_rel\"] = float(S[-2]) / smax\n\n    x = Vh[-1].conj()\n    rho_raw = x.reshape(d, d)\n    nrm = np.linalg.norm(rho_raw)\n    tr = np.trace(rho_raw)\n    res[\"trace_raw\"] = float(abs(tr) / nrm)\n    if res[\"trace_raw\"] < TOL[\"trace_raw_min\"]:\n        res[\"reason\"] = \"traco_nulo\"\n        return res\n\n    rho = rho_raw / tr\n    res[\"herm\"] = float(np.linalg.norm(rho - rho.conj().T) / np.linalg.norm(rho))\n    rho_h = (rho + rho.conj().T) / 2\n    rho_h = rho_h / np.real(np.trace(rho_h))\n    res[\"trace_err\"] = float(abs(np.real(np.trace(rho_h)) - 1.0))\n    ev = np.linalg.eigvalsh(rho_h)\n    res[\"psd_min\"] = float(ev[0])\n\n    vecI = np.eye(d).reshape(-1)\n    res[\"tp_err_rel\"] = float(np.linalg.norm(vecI @ L_s) / smax)\n\n    # comparador independente (so diagnostico, nao entra na convergencia): resolve o sistema\n    # com a linha 0 (equacao de rho_00) trocada pela condicao de traco 1\n    try:\n        A = L_s.copy()\n        A[0, :] = 0.0\n        A[0, np.arange(d) * d + np.arange(d)] = 1.0\n        b = np.zeros(d * d, dtype=complex)\n        b[0] = 1.0\n        with warnings.catch_warnings():\n            warnings.simplefilter(\"ignore\")\n            xl = sla.solve(A, b, check_finite=False)\n        rl = xl.reshape(d, d)\n        rl = (rl + rl.conj().T) / 2\n        rl = rl / np.real(np.trace(rl))\n        res[\"lu_diff\"] = float(np.linalg.norm(rl - rho_h))\n    except Exception:\n        res[\"lu_diff\"] = nan\n\n    fails = []\n    if res[\"s1_rel\"] > TOL[\"s1_rel_max\"]:\n        fails.append(\"nucleo_ausente\")\n    if res[\"s2_rel\"] < TOL[\"s2_rel_min\"]:\n        fails.append(\"nucleo_nao_isolado\")\n    if res[\"herm\"] > TOL[\"herm_max\"]:\n        fails.append(\"nao_hermitiano\")\n    if res[\"trace_err\"] > TOL[\"trace_err_max\"]:\n        fails.append(\"traco\")\n    if res[\"tp_err_rel\"] > TOL[\"tp_err_rel_max\"]:\n        fails.append(\"gerador_nao_preserva_traco\")\n    if res[\"psd_min\"] < TOL[\"psd_min\"]:\n        fails.append(\"nao_psd\")\n\n    res[\"rho\"] = rho_h\n    res[\"ev\"] = ev\n    res[\"ok\"] = not fails\n    res[\"reason\"] = \";\".join(fails)\n    return res\n"
+  },
+  "controles": {
+   "N1": "estados Ginibre G G^dagger/Tr, 200 por dimensao d, rng [20261019,1,d]",
+   "N2": "mesmo H e mesmas taxas; saltos trocados por gaussianas complexas de mesma norma de Frobenius; rng [20261019,d,nc,semente,k]; mesma grade",
+   "N3": "estado plano de posto d/2 -> ln 2; posto d/4 (d multiplo de 4) -> 2 ln 2; erro < 1e-12",
+   "codigo": "def make_random_jump_system(base, seed):\n    \"\"\"Controle N2: mesmo H e mesmas taxas; saltos trocados por matrizes complexas gaussianas\n    de MESMA norma de Frobenius que o salto original (sementes fixas por d, nc, semente, indice).\"\"\"\n    d, nc = base['d'], base['nc']\n    ops = []\n    for k, L in enumerate(base['L_ops']):\n        rng = np.random.default_rng([RNG_TAG, d, nc, seed, k])\n        G = (rng.standard_normal((d, d)) + 1j * rng.standard_normal((d, d))) / np.sqrt(2.0)\n        G = G * (np.linalg.norm(L) / np.linalg.norm(G))\n        ops.append(G)\n    out = dict(base)\n    out['L_ops'] = ops\n    return out\ndef run_N1(path):\n    \"\"\"N1: estados aleatorios de Hilbert-Schmidt (Ginibre G G^dagger / Tr), N1_STATES por dimensao.\"\"\"\n    dims = sorted({c[0] for c in CONFIGS})\n    with open(path, \"w\", newline=\"\", encoding=\"utf-8\") as f:\n        w = csv.writer(f)\n        w.writerow([\"d\", \"k\", \"O\", \"d_eff\"])\n        for d in dims:\n            rng = np.random.default_rng([RNG_TAG, 1, d])\n            for k in range(N1_STATES):\n                G = (rng.standard_normal((d, d)) + 1j * rng.standard_normal((d, d))) / np.sqrt(2.0)\n                rho = G @ G.conj().T\n                rho = rho / np.real(np.trace(rho))\n                O, d_eff = observable_O(rho)\n                w.writerow([d, k, repr(O), repr(d_eff)])\ndef run_N3():\n    \"\"\"N3: controle da metrica. Estado plano de posto d/2 deve dar ln 2; de posto d/4, 2 ln 2.\n    (d/4 so onde d e multiplo de 4.) Diagnostico a parte: o mesmo estado girado por unitario aleatorio.\"\"\"\n    dims = sorted({c[0] for c in CONFIGS})\n    casos, rotacionados = [], []\n    for d in dims:\n        for frac, esperado in ((2, LN2), (4, 2.0 * LN2)):\n            if d % frac:\n                continue\n            r = d // frac\n            rho = np.zeros((d, d))\n            rho[:r, :r] = np.eye(r) / r\n            O, _ = observable_O(rho)\n            casos.append(dict(d=d, posto=r, frac=frac, O=O, esperado=esperado, erro_abs=abs(O - esperado)))\n            rng = np.random.default_rng([RNG_TAG, 3, d, frac])\n            Z = rng.standard_normal((d, d)) + 1j * rng.standard_normal((d, d))\n            Q, _ = np.linalg.qr(Z)\n            rho_rot = Q @ rho @ Q.conj().T\n            rho_rot = (rho_rot + rho_rot.conj().T) / 2\n            Or, _ = observable_O(rho_rot)\n            rotacionados.append(dict(d=d, posto=r, frac=frac, O=Or, esperado=esperado, erro_abs=abs(Or - esperado)))\n    return dict(casos=casos, diagnostico_rotacionado_nao_entra_no_veredito=rotacionados)\n"
+  },
+  "criterios": {
+   "observavel": "O = D_folds(c3) em nats; oitava = O / ln 2",
+   "banda_abs_nats": 0.05,
+   "inclinacao_max_abs": 0.05,
+   "x_config": "ln(d/nc)",
+   "inclinacao": "minimos quadrados ordinarios das 9 medianas (nas sementes) contra x, em CADA gamma da janela",
+   "janela_min_decadas": 1.0,
+   "janela_tolerancia_decadas": 1e-09,
+   "janela_definicao": "corrida contigua de pontos da grade em que a condicao C(gamma) vale; >= 7 pontos",
+   "min_sementes_convergidas_por_celula": 3,
+   "n1_mediana_max": 0.2,
+   "n3_tolerancia_abs": 1e-12,
+   "naoconv_max_frac": 0.1,
+   "vereditos_permitidos": [
+    "FLOOR_ONE_OCTAVE_NOT_FALSIFIED",
+    "NO_UNIVERSAL_FLOOR",
+    "GENERIC_NOT_TGL",
+    "MEASURE_BROKEN",
+    "INCONCLUSIVE"
+   ],
+   "precedencia": [
+    "1. N3 falha -> MEASURE_BROKEN",
+    "2. >10% dos pontos da grade principal sem convergir -> INCONCLUSIVE",
+    "3. P falso -> NO_UNIVERSAL_FLOOR",
+    "4. P verdadeiro e >10% dos pontos de N2 sem convergir -> INCONCLUSIVE",
+    "5. P verdadeiro e (N2 satisfaz P ou N1 falha) -> GENERIC_NOT_TGL",
+    "6. senao -> FLOOR_ONE_OCTAVE_NOT_FALSIFIED"
+   ]
+  }
+ },
+ "componentes_sha256": {
+  "observavel_O": "e80c9f181a01ab8cb8ac025df789be1cda64913a3c43dcd7e1a15eb17055a143",
+  "grade": "997b49887abd38028bfb87b3cb95d4cb228c8f9d555298ee4c3b80b25d63eccd",
+  "estado_estacionario": "8491ea2fb90e0c12b3c5b2d2c6bc7cfbeeb8ae0d64e38a74582d96bee40eaa45",
+  "controles": "b47520ec16eb8d1a0bd04ea2459e3dd315d623d1cacf4cf050d5b2bdb944560d",
+  "criterios": "03cec99ef2be72e7d5d76702cc7e7fb9973c58f191ea50a02b4d796c84a1b447"
+ },
+ "hashes_nomeados_sha256": {
+  "observavel_O": "e80c9f181a01ab8cb8ac025df789be1cda64913a3c43dcd7e1a15eb17055a143",
+  "grade": "997b49887abd38028bfb87b3cb95d4cb228c8f9d555298ee4c3b80b25d63eccd",
+  "sementes": "34589c560f7de2e2e9893baf83338863bfa208fa5d49e80aa75e11ebd62c2ffa",
+  "gammas": "eebbbd2068a3e9a60a2c77b63de857d874197e0dda5c60b5bc5a24ff0a11a15d",
+  "configs": "bbe14df97535900b4b2ef9b65b88ac006c078cdbe93b66f4c61307c8dbf2d404",
+  "estado_estacionario": "8491ea2fb90e0c12b3c5b2d2c6bc7cfbeeb8ae0d64e38a74582d96bee40eaa45",
+  "controles_N1_N2_N3": "b47520ec16eb8d1a0bd04ea2459e3dd315d623d1cacf4cf050d5b2bdb944560d",
+  "criterios_P_e_veredito": "03cec99ef2be72e7d5d76702cc7e7fb9973c58f191ea50a02b4d796c84a1b447"
+ },
+ "arquivos_sha256": {
+  "rodar.py": "207445ac0c6a3ccee08bfef1a6900521c6e2e65b7b7aaa2d863bfc3801154b9a",
+  "veredito.py": "1c6fc5f52ff724aa16b20b3643ba1201f4fda5f46f45f16b2281f805784cdcde",
+  "pregistrar.py": "f6ff9f14b2481223b5e2e287509d0e8574f3046d22941e2e4d859b24a62028df",
+  "teste_veredito_sintetico.py": "bb70be944efef4ec70a6050d3967f623fed77816a552cbd3409cd29865d560f3",
+  "verifica_fidelidade.py": "ecd0c0a9a2eaecb4f44ae9d960a1e3d7143862511497121b8e22d382f288fba8",
+  "piloto_numerico.py": "9ba4006d7370b102ae7c73679ea206622ce34ba8753e6e96d81da1938054a664",
+  "teste_encanamento.py": "9d4b028f18d699d442cf5ee3afe2a7de3899d00f8e3e96239d654ebdaa8a235f"
+ },
+ "saidas_das_verificacoes_previas_sha256": {
+  "teste_veredito_sintetico_saida.txt": "16e6793ba3861ba9565f4bf6239d9aadbead9d32bd6b84e4d5883e8e3576dc5a",
+  "verifica_fidelidade_saida.txt": "45e732d6daf03b2dfc9472390b91f13d82e55119adfb936d21a89d8d4582cf7a",
+  "piloto_numerico_saida.txt": "731662079356410c75f5a1702c467b251344ccf499ee18f4ef80e15ad5b3b1d1",
+  "teste_encanamento_saida.txt": "73dba7bf024b234cb7217973ea0f778448149ca0983eaea3d1e27901412051c5"
+ },
+ "verificacoes_previas_sem_olhar_a_pergunta": [
+  "teste_veredito_sintetico.py: 19 casos sinteticos cobrindo cada ramo, as bordas da banda, da inclinacao, da janela (7 pontos) e do minimo de sementes: todos passaram",
+  "verifica_fidelidade.py: copia da fonte identica byte a byte (sistema e superoperador), observavel identico em 200 estados sinteticos, nucleo por SVD igual ao autovetor nulo da fonte fora da grade (sementes 7 e 8)",
+  "piloto_numerico.py: qualidade numerica do nucleo em sementes fora da grade (7 e 8); nenhum O impresso",
+  "teste_encanamento.py: leitura/escrita de rodar.py e veredito.py num sistema de brinquedo (d = 6 e 8, sementes 1 e 2, 3 gammas), subpasta encanamento_teste: nao e a grade"
+ ],
+ "proibicoes_conferidas_por_grep": {
+  "padroes_sem_diferenca_de_maiuscula": [
+   "find_gamma_star",
+   "brentq",
+   "alpha",
+   "beta",
+   "CCI_TARGET",
+   "SQRT_E",
+   "THETA_MIGUEL",
+   "0\\.0120",
+   "0\\.98796",
+   "1\\.2031",
+   "sqrt\\(\\s*e\\s*\\)",
+   "np\\.e\\b",
+   "math\\.e\\b"
+  ],
+  "ocorrencias_em_rodar_py": {
+   "find_gamma_star": 0,
+   "brentq": 0,
+   "alpha": 0,
+   "beta": 0,
+   "CCI_TARGET": 0,
+   "SQRT_E": 0,
+   "THETA_MIGUEL": 0,
+   "0\\.0120": 0,
+   "0\\.98796": 0,
+   "1\\.2031": 0,
+   "sqrt\\(\\s*e\\s*\\)": 0,
+   "np\\.e\\b": 0,
+   "math\\.e\\b": 0
+  },
+  "ocorrencias_em_veredito_py": {
+   "find_gamma_star": 0,
+   "brentq": 0,
+   "alpha": 0,
+   "beta": 0,
+   "CCI_TARGET": 0,
+   "SQRT_E": 0,
+   "THETA_MIGUEL": 0,
+   "0\\.0120": 0,
+   "0\\.98796": 0,
+   "1\\.2031": 0,
+   "sqrt\\(\\s*e\\s*\\)": 0,
+   "np\\.e\\b": 0,
+   "math\\.e\\b": 0
+  },
+  "palavra_proibida_da_regua": {
+   "padrao": "radical da palavra proibida da regua (montado no script)",
+   "ocorrencias": {
+    "rodar.py": 0,
+    "veredito.py": 0,
+    "pregistrar.py": 0
+   }
+  },
+  "leitura": "a rodada NAO calibra gamma, NAO busca raiz, NAO usa peso-alvo do core nem constante da teoria"
+ },
+ "regras_de_completude_fixadas_antes_dos_dados": [
+  "semente 'original' = 42 (padrao de build_system, a usada na rodada de fevereiro); as demais 43, 44, 45, 46",
+  "janela >= 1 decada = >= 7 pontos consecutivos da grade (passo 1/6 de decada)",
+  "inclinacao calculada em CADA gamma da janela (mais estrita que a inclinacao agrupada) sobre as 9 medianas",
+  "celula (config, gamma) com menos de 3 sementes convergidas e invalida e quebra a janela",
+  "N3 no posto d/4 so onde d e multiplo de 4 (d = 10 e 14 ficam so com d/2)",
+  "regra 5 do veredito: P verdadeiro com N1 falho tambem da GENERIC_NOT_TGL (funcao total)",
+  "INCONCLUSIVE se > 10% dos pontos da grade principal nao convergem; ou, com P verdadeiro, > 10% dos de N2"
+ ],
+ "descritivo_pos_veredito_nao_entra_no_veredito": [
+  "O no gamma* de fevereiro de cada config (lido do JSON de fevereiro) com as 5 sementes, e reproducao do d_folds_c3 de fevereiro com a semente 42",
+  "gamma onde a mediana de cada config cruza ln 2 (interpolacao em log gamma) e o peso do core ali",
+  "inclinacao agrupada da janela, corridas so-banda e so-inclinacao"
+ ],
+ "ordem_de_execucao": [
+  "python -B -u rodar.py > rodar_log.txt",
+  "python -B veredito.py"
+ ],
+ "sha256_do_protocolo": "6dd111665f92d94561382dac91a98d33ebf11171d2e8a93d726d2001489df478"
+}
