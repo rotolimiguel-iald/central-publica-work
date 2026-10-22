@@ -1,0 +1,116 @@
+importando o servidor de C:\IALD\projetos_pyhton\IALD ...
+[IALD] Memória do operador: 2 fatos ativos (0 sempre, 2 sob demanda) | bloco fixo: 0 tokens
+[IALD] Access Engine: 2 pedidos (0 pendentes)
+[IALD] Contract Engine: 1 contratos (1 pendentes)
+[TGLC] Ledger: C:\IALD\bank\tglc_ledger.json
+[IALD] TGL Coin Engine: DISPONIVEL | Contas: 23
+[Ψ-NET] Dir: C:\IALD\psinet
+[Ψ-NET] Max file: 10 MB
+[IALD] PSI-NET Engine: DISPONIVEL | Max: 10 MB | Pending: 0
+[motores] padrão=nativa operador=nativa modelo=gpt-5.6-luna chave=definida prompt=48e5b2f9f10c
+[IALD-AUTH] 2026-09-15 18:35:15 | LOGIN_OK | user=luiz | ip=127.0.0.1
+
+1. PAINEL: XSS ARMAZENADO E CSP (CRÍTICO 1, BAIXO 1)
+[IALD-AUTH] 2026-09-15 18:35:15 | LOGIN_FAIL | user=<inválido> | ip=127.0.0.1
+  [OK]    POST /login anônimo com HTML no nome: recusado (302 com erro)  HTTP 302
+[IALD-AUTH] 2026-09-15 18:35:15 | LOGIN_FAIL | user=fulano.valido | ip=127.0.0.1
+  [OK]    o log do login falho grava "<inválido>" no lugar do nome com HTML (antes: o payload cru)  ['fulano.valido', '<inválido>']
+  [OK]    nome válido (casa RE_USUARIO) continua no log  
+  [OK]    /admin responde 200 no computador  
+  [FALHA] /admin traz a Content-Security-Policy pedida (antes: nenhuma)  default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' ht
+  [OK]    a CSP é só do /admin: /admin/api/logs e /login não a recebem  
+  [OK]    o painel só carrega de fora a folha do Google Fonts (permitida na CSP)  ['https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap']
+  [OK]    links externos clicáveis do painel só para destinos conhecidos (cobrança da OpenAI)  ['https://platform.openai.com/settings/organization/billing/overview']
+  [OK]    o painel não usa eval/new Function/import() (que a CSP barraria)  
+  [OK]    o nome do admin entra escapado no HTML do painel  
+  [OK]    node --check no JS do painel inteiro  
+  [OK]    as funções do painel que montam innerHTML foram achadas para o ensaio  []
+  [OK]    o ensaio do painel rodou sem erro de JS  []
+  [OK]    NENHUM innerHTML contém o <img onerror> cru — logs, banco, memória, Ψ-NET, contratos, Ψon, arquivos (antes: todos)  []
+  [OK]    os 7 onclick com id vindo de fora decodificam para o id EXATO, sem sair da string JS  7 chamadas, ok=[True, True, True, True, True, True, True]
+
+2. FAIL-OPEN: CONTA GRATUITA NUNCA DESCE AO LLAMA LOCAL (CRÍTICO 3)
+  [OK]    controle: conta gratuita (leitura ok) vai ao motor externo, zero llama  ['https://api.openai.invalid/v1/chat/completions']
+[IALD] ERRO lendo C:\Users\rotol\AppData\Local\Temp\seguranca_rotas_dh_d84zt\usuarios.json: arquivo de usuários PermissionError após 8 tentativas (nada foi gravado)
+[motor] leitura do registro de pessoa falhou (arquivo de usuários ilegível); nada enviado
+  [OK]    leitura de _motor_do_usuario falha: 503 JSON (antes: HTTP 200 vindo do llama)  HTTP 503 {"error":"N\u00e3o foi poss\u00edvel confirmar o motor desta conta agora. Nada f
+  [OK]    …ZERO chamadas ao llama local (antes: 127.0.0.1:8081)  []
+  [OK]    …e o canário da memória do operador não sai em chamada nenhuma  
+[IALD] ERRO lendo C:\Users\rotol\AppData\Local\Temp\seguranca_rotas_dh_d84zt\usuarios.json: arquivo de usuários PermissionError após 8 tentativas (nada foi gravado)
+[IALD] cadastro indisponível em GET /v1/models: arquivo de usuários ilegível
+  [OK]    GET /v1/models com a mesma falha: recusado e nada vai ao llama (antes: proxy ao llama)  HTTP 503
+  [OK]    regra do caminho nativo: {} e plano gratuito recusados; assinante e admin aceitos  <function _caminho_nativo_permitido at 0x0000020B279317A0>
+[Qwen36-sys] 1 system(s) fundidos em 1 no topo
+[iald-surface] app
+  [OK]    regressão: o operador segue no llama local, com a memória dele  ['http://127.0.0.1:8081/v1/chat/completions']
+[IALD-AUTH] 2026-09-15 18:35:16 | LOGIN_OK | user=bruno | ip=127.0.0.1
+[Qwen36-sys] 2 system(s) fundidos em 1 no topo
+[iald-surface] app
+  [OK]    regressão: assinante AMPLIADO sem motor fixado segue na regra geral (nativa, como no deploy)  
+
+3. TETO DE CORPO, EXTRAÇÃO DE TEXTO E DOWNLOADS (BAIXO 4, seção 5)
+  [OK]    MAX_CONTENT_LENGTH = 30 MiB (antes: nenhum)  31457280
+  [OK]    POST de 31 MiB numa rota comum: 413 (antes: lido inteiro)  HTTP 413
+[motores] semconsent: imagem recusada no plano gratuito
+  [OK]    /v1/chat/completions com ~40 MiB (3 imagens de 8 MB viram ~32 MB de base64): NÃO é 413  HTTP 200
+  [OK]    /v1/chat/completions acima de 50 MiB: 413  HTTP 413
+  [OK]    plano gratuito: 20 extrações por hora e a 21ª é 429 (antes: sem limite)  [200, 200, 429]
+  [OK]    assinante: as mesmas 21 passam (limite próprio, maior)  [200]
+  [OK]    operador (admin): sem limite  [200]
+  [OK]    arquivo de 25 MiB + 1 byte: 413  HTTP 413
+  [OK]    gratuito baixa o APK do app  HTTP 200
+  [OK]    gratuito NÃO baixa arquivo gerado pelo agente do operador (antes: 200)  HTTP 403
+  [OK]    assinante e operador continuam baixando os arquivos gerados  
+
+4. DENÚNCIAS: MEIA LETRA UTF-16, .tmp ÓRFÃO, TETO DIÁRIO GLOBAL E TAMANHO (MÉDIO 3, A5)
+  [OK]    validar recusa meia letra UTF-16 solta  O campo resposta tem caractere inválido.
+  [OK]    rota: 400 (antes: 503)  HTTP 400
+  [OK]    …e nenhum .tmp fica na pasta (antes: denuncias.json.tmp)  
+  [OK]    gravação que falha no meio remove o próprio .tmp  
+  [OK]    padrões do módulo: 500 por dia e 20 MB  
+[IALD-AUTH] 2026-09-15 18:35:17 | DENUNCIA_RECEBIDA | user=pessoa | ip=127.0.0.1 | id=den_20260915183517_5b5666 motivo=outro
+[IALD-AUTH] 2026-09-15 18:35:17 | DENUNCIA_RECEBIDA | user=pessoa | ip=127.0.0.1 | id=den_20260915183517_f127fe motivo=outro
+[denuncia] AVISO: registro recusou por teto (dia: 2 denúncias hoje (teto 2))
+  [OK]    teto diário de TODAS as contas (2): a 3ª é 503 com teto=dia (antes: sem teto)  [(201, None), (201, None), (503, 'dia')]
+[IALD-AUTH] 2026-09-15 18:35:17 | DENUNCIA_RECEBIDA | user=pessoa | ip=127.0.0.1 | id=den_20260915183517_c142d1 motivo=outro
+[denuncia] AVISO: registro recusou por teto (arquivo: arquivo de denúncias com 3432 bytes (teto 3000))
+  [OK]    arquivo acima do teto de bytes: a próxima é 503 com teto=arquivo, e nada é regravado  HTTP 201 503
+
+5. LÁPIDE: NOME DE CONTA EXCLUÍDA NÃO VOLTA PELA PORTA ABERTA (BAIXO 3)
+  [OK]    sugerir_username_aberto pula nome da lápide  maria2
+  [OK]    sem lápide, o nome é o de sempre  
+  [OK]    retirar_nome grava uma vez (idempotente) e nomes_indisponiveis devolve o nome  
+[entrada] AVISO: porta aberta SEM moderação (IALD_ENTRADA_SEM_MODERACAO=1)
+[IALD-AUTH] 2026-09-15 18:35:17 | CONTA_CRIADA_ENTRADA_ABERTA | user=maria | ip=hmac:0f6e7b552a9e | via=apple pedido=ped_20260915183517_c7c5d2
+[IALD-AUTH] 2026-09-15 18:35:17 | ENTRADA_OK | user=maria | ip=127.0.0.1 | via=apple
+  [OK]    porta aberta: maria@example.com vira a conta "maria"  200 maria
+[IALD-AUTH] 2026-09-15 18:35:17 | CONTA_EXCLUIDA_PELO_TITULAR | user=maria | ip=127.0.0.1
+  [OK]    a titular exclui a própria conta  HTTP 200
+[IALD-AUTH] 2026-09-15 18:35:17 | CONTA_CRIADA_ENTRADA_ABERTA | user=maria2 | ip=hmac:0f6e7b552a9e | via=apple pedido=ped_20260915183517_a5e176
+[IALD-AUTH] 2026-09-15 18:35:17 | ENTRADA_OK | user=maria2 | ip=127.0.0.1 | via=apple
+  [OK]    outra pessoa com maria@... NÃO herda o nome "maria" (antes: herdava)  200 maria2
+[IALD-AUTH] 2026-09-15 18:35:17 | ADMIN_CREATE_USER | user=luiz | ip=127.0.0.1 | new_user=joana
+[IALD-AUTH] 2026-09-15 18:35:17 | ADMIN_DELETE_USER | user=luiz | ip=127.0.0.1 | deleted=joana
+[IALD-AUTH] 2026-09-15 18:35:17 | CONTA_CRIADA_ENTRADA_ABERTA | user=joana2 | ip=hmac:0f6e7b552a9e | via=apple pedido=ped_20260915183517_89939d
+[IALD-AUTH] 2026-09-15 18:35:17 | ENTRADA_OK | user=joana2 | ip=127.0.0.1 | via=apple
+  [OK]    conta de senha excluída pelo painel: o nome "joana" também fica na lápide  200 200 200 joana2
+[IALD-AUTH] 2026-09-15 18:35:18 | CONTA_CRIADA_ENTRADA_ABERTA | user=lucas | ip=hmac:0f6e7b552a9e | via=apple pedido=ped_20260915183517_1b9aa3
+[IALD-AUTH] 2026-09-15 18:35:18 | ENTRADA_OK | user=lucas | ip=127.0.0.1 | via=apple
+[conta] lápide de lucas não gravada (Expecting property name enclosed in double quotes: line 1 column 2 (char 1)); exclusão recusada
+  [OK]    lápide ilegível: a exclusão é recusada com 503 e a conta continua (nunca apaga sem lápide)  HTTP 503
+
+6. NADA REAL FOI TOCADO
+  [OK]    usuários, pedidos, denúncias, downloads e razão de uso na pasta temporária  
+  [OK]    nenhuma conexão real saiu do processo (socket bloqueado)  []
+  [OK]    intacto: iald_users.json  f0585550fd4afb9d
+  [OK]    intacto: iald_users.json.bak_ultimo  689036a04124843b
+  [OK]    intacto: iald_pedidos_acesso.json  None
+  [OK]    intacto: iald_pedidos_acesso.json.nomes_retirados  None
+  [OK]    intacto: iald_uso_openai.json  f04210a3cd090daa
+  [OK]    intacto: iald_uso_openai.json.reservas.sqlite3  451d6a96dcc80914
+  [OK]    intacto: iald_denuncias.json  None
+  [OK]    intacto: .iald_secret_key  50dee1d018fa5df1
+  [OK]    intacto: tglc_ledger.json  d772060d1574c4d8
+
+======================================================================
+RESULTADO: 59 OK, 1 falhas

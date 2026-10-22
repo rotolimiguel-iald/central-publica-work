@@ -1,0 +1,2418 @@
+/* ══════════════════════════════════════════════════════════════════════════
+   IALD — folha de estilo do app (redesenho 13/09/2026, sobre a interface de 11/09)
+
+   POR QUE O REDESENHO. O operador instalou a 4.1 (13) pelo TestFlight e a achou
+   pior que o app nativo antigo (SwiftUI v3.0): sem o símbolo da IALD no início,
+   com "letras embaralhadas" no cabeçalho, sem a beleza de antes. As três causas
+   foram MEDIDAS, não supostas:
+     1. o logo apontava para "/iald_logo_header.png", ausente do pacote — a imagem
+        falhava e o onerror a removia calado;
+     2. o cabeçalho numa linha só espremia o título a largura ~0 com o selo real
+        do modelo, e "128k de contexto" quebrava letra por letra por cima dele;
+     3. a identidade (azul #1B3A5C, dourado #C5961A, fio dourado, balões) tinha
+        sido trocada por um visual genérico.
+   A referência visual é o IALDTheme.swift da v2.1 e as capturas da App Store v3.0.
+
+   Regras de base, para não se perderem:
+   - Tema claro E escuro. Tokens em :root com os valores CLAROS; o escuro só
+     REDEFINE tokens. Três estados: sistema, [data-theme="light"], [data-theme="dark"].
+   - O LOGO NÃO SE ALTERA (manual de identidade, §2.6): só os PNGs oficiais, sem
+     filtro, sem recolorir, sem recortar a cruz. A troca por tema usa a variante
+     oficial de cada fundo — o mesmo padrão aprovado no site da IALD em 14/07/2026.
+   - Margem segura: no Android o Capacitor 8 injeta --safe-area-inset-* (SystemBars);
+     no iOS vale o env(). Lê-se a variável primeiro e o env() como reserva.
+   - Alvos de toque >= 44 px (regra da Apple) em todo botão de barra.
+   - Nada vem de fora: fonte do sistema (SF no iPhone, Roboto no Android).
+
+   SUAVIZAÇÃO (14/09/2026, ordem do operador: "a interface pode ficar mais bonita e
+   mais harmônica na tela, nas bordas, mais suave"). O que se MEDIU antes de mexer:
+   18 raios soltos (--raio-p e --raio-g com zero usos), bordas sólidas de 1 e 1,5 px,
+   cinco transições com "all", duas famílias de cinza no claro e o foco que achatava
+   todo canto para 4 px. O que mudou: uma escala de raio (--raio-xs…--raio-xg),
+   linhas translúcidas tingidas de azul, sombras em camadas, uma curva e duas
+   durações de movimento (--ease-suave, --dur-1, --dur-2) com lista explícita de
+   propriedades, superfícies do escuro puxadas ao azul-noite do portão, margens
+   seguras em paisagem na folha e no portão. A logo segue intocada: nenhuma regra
+   aqui aplica filtro, cor ou recorte em imagem de logo.
+   ══════════════════════════════════════════════════════════════════════════ */
+
+/* ═══ TOKENS — valores CLAROS ═══ */
+:root {
+  /* identidade IALD (não mudam entre temas) */
+  --iald-azul: #1B3A5C;
+  --iald-azul-escuro: #152E4A;
+  --iald-azul-noite: #0E1F33;
+  --iald-azul-claro: #8AB4D8;
+  --iald-dourado: #C5961A;
+  --iald-dourado-claro: #D4AF37;
+  --iald-dourado-palido: #F2D98A;
+
+  /* superfícies */
+  --bg: #FFFFFF;
+  --bg-cab: #FFFFFF;
+  --bg-sutil: #F6F8FA;
+  --bg-elevado: #FFFFFF;
+  --bg-afundado: #EEF1F5;
+  --bg-agrupado: #F2F4F7;
+  --bg-campo: #F3F5F8;
+  --bg-bolha-ia: #F5F7FA;
+  --borda-bolha-ia: rgba(27, 58, 92, .07);
+  --bg-cartao: #FFFFFF;               /* cartões de sugestão e tabelas */
+  --bg-campo-folha: #F3F5F8;          /* campo dentro de grupo de folha */
+  --bg-acao: rgba(27, 58, 92, .05);   /* pílulas de ação sob a resposta */
+  --bg-bolha-user: linear-gradient(180deg, #1F4268 0%, #1B3A5C 100%);
+  --bg-codigo: #1D2B3A;
+  --bg-overlay: rgba(16, 20, 26, .38);
+
+  /* texto */
+  --txt: #1C1F24;
+  --txt-suave: #5A6069;
+  /* 14/09/2026 (noite), revisão de interface M2: #8E8E93 dava 2,96 a 3,26 sobre os fundos
+     claros (abaixo do AA 4,5). #6B7079 dá 4,52 a 4,98 (conta WCAG no relatório da rodada). */
+  --txt-fraco: #6B7079;
+  --txt-bolha-user: #FFFFFF;
+  --txt-codigo: #C8DCE8;
+  /* dourado para TEXTO pequeno: #C5961A como texto dava 2,48 a 2,71 no claro. O #C5961A
+     segue sendo o dourado da marca em traço, preenchimento e ícone (--iald-dourado). */
+  --txt-dourado: #8A6A0F;
+
+  /* linhas */
+  /* translúcidas (14/09/2026): tingem o fundo em vez de riscar, nos dois temas */
+  --borda: rgba(27, 58, 92, .10);
+  --borda-forte: rgba(27, 58, 92, .18);
+  --borda-foco: var(--iald-dourado);
+  --borda-foco-suave: rgba(197, 150, 26, .55);
+  --fio-dourado: rgba(197, 150, 26, .55);
+
+  /* acento */
+  --acento: #1B3A5C;
+  --acento-hover: #264D73;
+  --acento-suave: rgba(27, 58, 92, .07);
+  --selecionado: #E8EEF4;
+  --dourado-suave: rgba(197, 150, 26, .10);
+  --dourado-borda: rgba(197, 150, 26, .30);
+
+  /* estado */
+  --ok: #34C759;
+  --alerta: #8F5E12;   /* era #B7791F: 3,39 no rótulo "LIMITE DE USO"; agora 5,18 */
+  --erro: #C0392B;     /* era #D64545: 4,08 em "CONTA BLOQUEADA"; agora 5,07 */
+  --ok-suave: rgba(52, 199, 89, .16);
+  --erro-suave: rgba(214, 69, 69, .10);
+  --erro-borda: rgba(214, 69, 69, .24);
+
+  /* sombra */
+  /* em camadas, tingidas de azul-noite: mais difusas e menos escuras */
+  --sombra-1: 0 1px 2px rgba(14, 31, 51, .04), 0 2px 8px rgba(14, 31, 51, .05);
+  --sombra-2: 0 2px 6px rgba(14, 31, 51, .05), 0 12px 28px rgba(14, 31, 51, .10);
+  --sombra-3: 0 8px 24px rgba(14, 31, 51, .10), 0 28px 64px rgba(14, 31, 51, .16);
+  --sombra-compositor: 0 -12px 24px -20px rgba(14, 31, 51, .22);
+  --sombra-azul: 0 1px 2px rgba(27, 58, 92, .18), 0 6px 16px rgba(27, 58, 92, .16);
+  --anel-foco: 0 0 0 4px rgba(197, 150, 26, .14);
+
+  /* medidas */
+  --largura-leitura: 46rem;
+  --sidebar-w: 18.5rem;
+  /* escala única de raio (14/09/2026). Raio aninhado = raio de fora menos o recuo. */
+  --raio-xs: 6px;     /* código em linha, miniatura */
+  --raio-p: 10px;     /* links, anexos, ladrilhos, campos */
+  --raio-m: 14px;     /* cartões, grupos, tabelas, código, faixas, botões de 44 a 52 px */
+  --raio-g: 22px;     /* balões, lateral e topo da folha no celular */
+  --raio-xg: 26px;    /* cartão do portão, folha no desktop */
+  --raio-pill: 999px;
+
+  /* movimento: uma curva e duas durações, sempre com lista explícita (nunca "all") */
+  --ease-suave: cubic-bezier(.2, .8, .2, 1);
+  --dur-1: .16s;
+  --dur-2: .26s;
+
+  /* tipografia: a do sistema, como o app nativo */
+  --fonte: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto,
+           "Helvetica Neue", Arial, sans-serif;
+  --fonte-mono: ui-monospace, "SF Mono", SFMono-Regular, Menlo, "Roboto Mono",
+                Consolas, monospace;
+
+  /* margem segura: variável do Capacitor (Android) → env() (iOS) → 0 */
+  --safe-t: var(--safe-area-inset-top, env(safe-area-inset-top, 0px));
+  --safe-b: var(--safe-area-inset-bottom, env(safe-area-inset-bottom, 0px));
+  --safe-l: var(--safe-area-inset-left, env(safe-area-inset-left, 0px));
+  --safe-r: var(--safe-area-inset-right, env(safe-area-inset-right, 0px));
+
+  /* troca de logo por tema (variante oficial para cada fundo) */
+  --mostrar-claro: block;
+  --mostrar-escuro: none;
+  --mostrar-escuro-flex: none;
+
+  color-scheme: light;
+}
+
+/* ═══ TOKENS — escuro por preferência do sistema ═══ */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0E1218;
+    --bg-cab: #0E1218;
+    --bg-sutil: #131922;
+    --bg-elevado: #18202A;
+    --bg-afundado: #0A0D12;
+    --bg-agrupado: #07090D;
+    --bg-campo: #18202A;
+    --bg-bolha-ia: #161D26;
+    --borda-bolha-ia: rgba(255, 255, 255, .06);
+    --bg-cartao: #151B24;
+    --bg-campo-folha: #0E1218;
+    --bg-acao: rgba(255, 255, 255, .06);
+    --bg-bolha-user: linear-gradient(180deg, #2A4A6E 0%, #24405C 100%);
+    --bg-codigo: #0C1218;
+    --bg-overlay: rgba(0, 0, 0, .6);
+
+    --txt: #E5E5E7;
+    --txt-suave: #A1A1A6;
+    --txt-fraco: #8E8E93;
+    --txt-bolha-user: #F2F6FA;
+    --txt-codigo: #B8D0E0;
+    --txt-dourado: #C5961A;   /* no escuro o dourado da marca já passa como texto (6,26 na bolha) */
+
+    --borda: rgba(255, 255, 255, .08);
+    --borda-forte: rgba(255, 255, 255, .14);
+    --fio-dourado: rgba(197, 150, 26, .45);
+
+    --acento: #8AB4D8;
+    --acento-hover: #A5C8E5;
+    --acento-suave: rgba(138, 180, 216, .10);
+    --selecionado: #1A2A3C;
+    --dourado-suave: rgba(197, 150, 26, .14);
+    --dourado-borda: rgba(197, 150, 26, .36);
+
+    --ok: #30D158;
+    --alerta: #E0B252;
+    --erro: #FF6B6B;
+    --ok-suave: rgba(48, 209, 88, .16);
+    --erro-suave: rgba(255, 107, 107, .12);
+    --erro-borda: rgba(255, 107, 107, .28);
+
+    --sombra-1: 0 1px 2px rgba(0, 0, 0, .35), 0 2px 8px rgba(0, 0, 0, .25);
+    --sombra-2: 0 2px 6px rgba(0, 0, 0, .35), 0 12px 28px rgba(0, 0, 0, .40);
+    --sombra-3: 0 8px 24px rgba(0, 0, 0, .40), 0 28px 64px rgba(0, 0, 0, .50);
+    --sombra-compositor: 0 -12px 24px -20px rgba(0, 0, 0, .8);
+    --sombra-azul: 0 1px 2px rgba(0, 0, 0, .35), 0 6px 16px rgba(0, 0, 0, .30);
+    --anel-foco: 0 0 0 4px rgba(197, 150, 26, .18);
+
+    --mostrar-claro: none;
+    --mostrar-escuro: block;
+    --mostrar-escuro-flex: flex;
+
+    color-scheme: dark;
+  }
+}
+
+/* ═══ TOKENS — escuro escolhido à mão (vence a preferência) ═══ */
+:root[data-theme="dark"] {
+  --bg: #0E1218;
+  --bg-cab: #0E1218;
+  --bg-sutil: #131922;
+  --bg-elevado: #18202A;
+  --bg-afundado: #0A0D12;
+  --bg-agrupado: #07090D;
+  --bg-campo: #18202A;
+  --bg-bolha-ia: #161D26;
+  --borda-bolha-ia: rgba(255, 255, 255, .06);
+  --bg-cartao: #151B24;
+  --bg-campo-folha: #0E1218;
+  --bg-acao: rgba(255, 255, 255, .06);
+  --bg-bolha-user: linear-gradient(180deg, #2A4A6E 0%, #24405C 100%);
+  --bg-codigo: #0C1218;
+  --bg-overlay: rgba(0, 0, 0, .6);
+
+  --txt: #E5E5E7;
+  --txt-suave: #A1A1A6;
+  --txt-fraco: #8E8E93;
+  --txt-bolha-user: #F2F6FA;
+  --txt-codigo: #B8D0E0;
+  --txt-dourado: #C5961A;
+
+  --borda: rgba(255, 255, 255, .08);
+  --borda-forte: rgba(255, 255, 255, .14);
+  --fio-dourado: rgba(197, 150, 26, .45);
+
+  --acento: #8AB4D8;
+  --acento-hover: #A5C8E5;
+  --acento-suave: rgba(138, 180, 216, .10);
+  --selecionado: #1A2A3C;
+  --dourado-suave: rgba(197, 150, 26, .14);
+  --dourado-borda: rgba(197, 150, 26, .36);
+
+  --ok: #30D158;
+  --alerta: #E0B252;
+  --erro: #FF6B6B;
+  --ok-suave: rgba(48, 209, 88, .16);
+  --erro-suave: rgba(255, 107, 107, .12);
+  --erro-borda: rgba(255, 107, 107, .28);
+
+  --sombra-1: 0 1px 2px rgba(0, 0, 0, .35), 0 2px 8px rgba(0, 0, 0, .25);
+  --sombra-2: 0 2px 6px rgba(0, 0, 0, .35), 0 12px 28px rgba(0, 0, 0, .40);
+  --sombra-3: 0 8px 24px rgba(0, 0, 0, .40), 0 28px 64px rgba(0, 0, 0, .50);
+  --sombra-compositor: 0 -12px 24px -20px rgba(0, 0, 0, .8);
+  --sombra-azul: 0 1px 2px rgba(0, 0, 0, .35), 0 6px 16px rgba(0, 0, 0, .30);
+  --anel-foco: 0 0 0 4px rgba(197, 150, 26, .18);
+
+  --mostrar-claro: none;
+  --mostrar-escuro: block;
+  --mostrar-escuro-flex: flex;
+
+  color-scheme: dark;
+}
+
+/* ═══ RESET ═══ */
+*, *::before, *::after { box-sizing: border-box; }
+* { margin: 0; padding: 0; }
+
+html, body {
+  height: 100%;
+  background: var(--bg);
+  overflow: hidden;
+}
+
+body {
+  font-family: var(--fonte);
+  font-size: 16px;              /* 16px impede o iOS de dar zoom no foco */
+  line-height: 1.5;
+  color: var(--txt);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  overscroll-behavior: none;    /* mata o "puxar para atualizar" no app */
+  -webkit-tap-highlight-color: transparent;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+button, input, textarea, select {
+  font: inherit;
+  color: inherit;
+}
+button { background: none; border: none; cursor: pointer; }
+img, svg { display: block; max-width: 100%; }
+[hidden] { display: none !important; }
+
+/* Sem border-radius aqui (removido 14/09/2026): forçar 4 px achatava o canto de
+   todo controle arredondado no foco por teclado. O outline segue o raio do próprio
+   elemento. */
+:focus-visible {
+  outline: 2px solid var(--borda-foco);
+  outline-offset: 2px;
+}
+
+.espaco { flex: 1; }
+.mono { font-family: var(--fonte-mono); }
+.dourado { color: var(--txt-dourado); }
+
+/* troca de variante do logo por tema */
+.so-claro { display: var(--mostrar-claro) !important; }
+.so-escuro { display: var(--mostrar-escuro) !important; }
+.so-escuro-flex { display: var(--mostrar-escuro-flex) !important; }
+
+/* barras de rolagem discretas */
+.rolagem { scrollbar-width: thin; scrollbar-color: var(--borda-forte) transparent; }
+.rolagem::-webkit-scrollbar { width: 6px; height: 6px; }
+.rolagem::-webkit-scrollbar-track { background: transparent; }
+.rolagem::-webkit-scrollbar-thumb { background: var(--borda-forte); border-radius: 3px; }
+
+/* ═══ ESQUELETO ═══
+   --altura-util e --topo-util vêm do visualViewport (iald.js): no iPhone o
+   teclado não encolhe a janela do WKWebView, só a área visível. Sem isto o
+   compositor fica atrás do teclado. */
+.app {
+  position: fixed;
+  left: 0;
+  right: 0;
+  top: 0;
+  display: flex;
+  height: var(--altura-util, 100dvh);
+  transform: translateY(var(--topo-util, 0px));
+  overflow: hidden;
+}
+
+/* ─── barra lateral ─── */
+.sidebar {
+  width: var(--sidebar-w);
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-sutil);
+  border-right: 1px solid var(--borda);
+  padding-top: var(--safe-t);
+  padding-left: var(--safe-l);
+  padding-bottom: var(--safe-b);
+  transition: margin-left .28s cubic-bezier(.32, .72, 0, 1);
+  z-index: 30;
+}
+.sidebar[data-fechada="1"] { margin-left: calc(-1 * (var(--sidebar-w) + var(--safe-l))); }
+
+.sb-topo {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 12px 10px 12px 16px;
+  min-height: 64px;
+}
+.sb-nome {
+  font-size: 21px;
+  font-weight: 600;
+  letter-spacing: .01em;
+}
+
+/* Ladrilho do logo quadrado. A imagem oficial tem margem transparente larga em
+   volta da cruz; ela é ampliada com margem negativa para a cruz caber INTEIRA no
+   ladrilho — enquadramento, não recorte (as pontas da cruz ficam dentro). */
+.marca-ladrilho {
+  position: relative;
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+  border-radius: 10px;
+  background: #FFFFFF;
+  box-shadow: 0 1px 3px rgba(16, 20, 26, .14);
+  overflow: hidden;
+}
+/* 58 px num ladrilho de 40: a janela visível cobre de 159 a 865 do PNG de 1024,
+   e a cruz vai de 180 a 840 — cabe inteira, pontas incluídas. */
+.marca-ladrilho img {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 58px;
+  height: 58px;
+  max-width: none;
+  transform: translate(-50%, -50%);
+}
+:root[data-theme="dark"] .marca-ladrilho { background: var(--bg-afundado); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .08); }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .marca-ladrilho { background: var(--bg-afundado); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .08); }
+}
+
+.btn-nova {
+  margin: 2px 14px 12px;
+  min-height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  font-size: 16px;
+  font-weight: 600;
+  color: #FFFFFF;
+  background: linear-gradient(180deg, #1F4268 0%, var(--iald-azul) 100%);
+  border-radius: var(--raio-m);
+  box-shadow: 0 1px 2px rgba(27, 58, 92, .20), 0 8px 20px rgba(27, 58, 92, .18);
+  transition: transform var(--dur-1) var(--ease-suave), filter var(--dur-1) var(--ease-suave);
+}
+.btn-nova:active { transform: scale(.985); }
+.btn-nova svg { width: 20px; height: 20px; }
+
+.sb-busca { padding: 0 14px 10px; }
+.sb-busca input {
+  width: 100%;
+  min-height: 44px;   /* alvo de toque: eram 41 */
+  padding: 9px 14px;
+  font-size: 14px;
+  background: var(--bg-afundado);
+  border: 1px solid transparent;
+  border-radius: var(--raio-pill);
+  outline: none;
+  transition: border-color var(--dur-1) var(--ease-suave), background var(--dur-1) var(--ease-suave);
+}
+.sb-busca input:focus { border-color: var(--borda-forte); background: var(--bg-elevado); }
+.sb-busca input::placeholder { color: var(--txt-fraco); }
+
+.conv-lista {
+  flex: 1;
+  overflow-y: auto;
+  padding: 4px 10px 10px;
+}
+.conv-vazia { padding: 14px 8px; font-size: 13px; color: var(--txt-fraco); }
+
+.conv-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  /* direita 3 px (eram 10): a lixeira agora tem 44 px de caixa real e o ícone fica no mesmo lugar */
+  padding: 11px 3px 11px 14px;
+  margin-top: 6px;
+  border-radius: var(--raio-m);
+  cursor: pointer;
+  transition: background var(--dur-1) var(--ease-suave);
+}
+.conv-item:hover { background: var(--acento-suave); }
+.conv-item[aria-current="true"] {
+  background: var(--selecionado);
+  box-shadow: var(--sombra-1);
+}
+.conv-texto { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.conv-nome {
+  font-size: 15.5px;
+  color: var(--txt);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.conv-meta {
+  font-size: 12.5px;
+  color: var(--txt-fraco);
+  font-variant-numeric: tabular-nums;
+}
+.conv-ponto {
+  width: 7px;
+  height: 7px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: var(--iald-dourado);
+  visibility: hidden;
+}
+.conv-item[aria-current="true"] .conv-ponto { visibility: visible; }
+.conv-item[aria-current="true"] .conv-meta { color: var(--txt-suave); }   /* 4,26 com --txt-fraco */
+.conv-nome-edit {
+  flex: 1;
+  min-width: 0;
+  padding: 4px 7px;
+  font-size: 15px;
+  background: var(--bg-elevado);
+  border: 1px solid var(--borda-foco);
+  border-radius: var(--raio-xs);
+  outline: none;
+}
+/* Lixeira (revisão N2, 14/09/2026 noite, rodada 3). Antes: caixa de 30 px + ::after com inset
+   -7 px = 44 px de toque que começava 1 px depois do ponto dourado da conversa ativa. Agora a
+   CAIXA REAL tem 44 × 44 px (nem mais, nem menos), sem ::after que se estenda, e fica 12 px
+   afastada do ponto (gap 8 + margem 4). A margem vertical negativa mantém a altura da linha; o
+   desenho de 30 px (fundo do hover) continua no ::before. Apagar agora tem Desfazer. */
+.conv-acao {
+  position: relative;
+  flex-shrink: 0;
+  width: 44px;
+  height: 44px;
+  margin: -7px 0 -7px 4px;
+  display: grid;
+  place-items: center;
+  color: var(--txt-fraco);
+  opacity: 0;
+  transition: opacity var(--dur-1) var(--ease-suave), color var(--dur-1) var(--ease-suave);
+}
+.conv-acao::before {
+  content: "";
+  position: absolute;
+  inset: 7px;
+  border-radius: var(--raio-p);
+  transition: background var(--dur-1) var(--ease-suave);
+}
+.conv-acao svg { position: relative; width: 16px; height: 16px; }
+.conv-item:hover .conv-acao,
+.conv-item:focus-within .conv-acao { opacity: 1; }
+.conv-acao:hover { color: var(--erro); }
+.conv-acao:hover::before { background: var(--erro-suave); }
+@media (hover: none) { .conv-acao { opacity: .5; } }
+
+/* linha do rodapé recuada 14 px de cada lado, em vez de riscar de ponta a ponta */
+.sb-rodape {
+  background: linear-gradient(var(--borda), var(--borda)) top center / calc(100% - 28px) 1px no-repeat;
+  padding: 8px 10px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.sb-link {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  min-height: 44px;   /* alvo de toque (revisão B6): eram 42 */
+  padding: 0 8px;
+  font-size: 14.5px;
+  color: var(--txt-suave);
+  border-radius: var(--raio-p);
+  text-align: left;
+  transition: background var(--dur-1) var(--ease-suave), color var(--dur-1) var(--ease-suave);
+}
+.sb-link:hover { background: var(--acento-suave); color: var(--txt); }
+.sb-link svg { width: 18px; height: 18px; stroke-width: 1.8; flex-shrink: 0; }
+.sb-link .icone-beta { margin: 0 -2px; }   /* 22 px ocupando os 18 px do svg vizinho: texto alinhado */
+/* Ícone β_TGL (14/09/2026, ordem do operador: "sempre betatgl como ícone"). Desde a noite
+   de 14/09 é o PNG OFICIAL (img/betatgl.png), sem filtro nem recoloração; o disco dourado
+   desenhado aqui saiu (revisões M3 e ordem-régua 8). */
+.icone-beta {
+  width: 22px;
+  height: 22px;
+  flex-shrink: 0;
+}
+.sb-usuario {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 8px 2px;
+  font-size: 15px;
+  color: var(--txt-suave);
+}
+.sb-usuario .nome {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.beta-ital {
+  font-size: 13px;
+  font-style: italic;
+  color: var(--txt-dourado);
+  white-space: nowrap;
+}
+
+/* ─── overlay da lateral no celular ─── */
+.sb-overlay {
+  position: fixed;
+  inset: 0;
+  background: var(--bg-overlay);
+  z-index: 25;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .28s ease;
+}
+.sb-overlay[data-visivel="1"] { opacity: 1; pointer-events: auto; }
+
+/* ─── coluna principal ─── */
+.principal {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg);
+}
+
+/* ═══ CABEÇALHO ═══ */
+.cabecalho {
+  flex-shrink: 0;
+  position: relative;
+  z-index: 10;
+  padding-top: var(--safe-t);
+  background: var(--bg-cab);
+}
+/* o fio dourado sob o cabeçalho, como no app nativo; as pontas se dissolvem
+   (14/09/2026) em vez de cortar seco nas bordas da tela */
+.cabecalho::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent 0%, var(--fio-dourado) 20%, var(--fio-dourado) 80%, transparent 100%);
+}
+
+.cab-linha {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  height: 58px;
+  padding-left: calc(6px + var(--safe-l));
+  padding-right: calc(8px + var(--safe-r));
+}
+.cab-marca {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  flex-shrink: 1;
+  margin-left: 4px;
+}
+/* Tema claro: o logo horizontal oficial, cujo fundo branco coincide com o do
+   cabeçalho. Tema escuro: o mesmo arquivo sobre uma placa branca arredondada —
+   não há variante horizontal para fundo escuro, e recolorir o logo é proibido. */
+.cab-logo {
+  height: 50px;
+  width: auto;
+  max-width: 100%;
+  object-fit: contain;
+  object-position: left center;
+}
+.cab-placa {
+  align-items: center;
+  height: 42px;
+  padding: 0 6px;
+  border-radius: var(--raio-m);
+  background: #FFFFFF;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, .06), 0 6px 18px rgba(0, 0, 0, .35);
+  overflow: hidden;
+}
+.cab-placa img { height: 46px; width: auto; max-width: none; }
+
+.cab-estado {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 30px;
+  padding: 0 14px 8px calc(16px + var(--safe-l));
+  padding-right: calc(14px + var(--safe-r));
+  font-size: 13.5px;
+  color: var(--txt-fraco);
+}
+.estado-texto {
+  flex: 1;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.selo-tgl {
+  flex-shrink: 0;
+  padding: 3px 10px;
+  font-family: var(--fonte-mono);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: .01em;
+  color: var(--txt-dourado);
+  background: var(--dourado-suave);
+  border-radius: var(--raio-pill);
+  box-shadow: inset 0 0 0 1px var(--dourado-borda);
+  white-space: nowrap;
+}
+
+/* semáforo de estado — três estados DISTINTOS, não dois */
+.estado-ponto {
+  width: 9px;
+  height: 9px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: var(--txt-fraco);
+  transition: background var(--dur-2) var(--ease-suave), box-shadow var(--dur-2) var(--ease-suave);
+}
+.estado-ponto[data-estado="pronto"]     { background: var(--ok); }
+.estado-ponto[data-estado="sem-modelo"] { background: var(--alerta); }
+.estado-ponto[data-estado="offline"]    { background: var(--erro); }
+.estado-ponto[data-estado="checando"]   { animation: respira 1.4s ease-in-out infinite; }
+@keyframes respira { 0%, 100% { opacity: .35; } 50% { opacity: 1; } }
+
+/* ═══ BOTÕES ═══ */
+.btn-icone {
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  border-radius: var(--raio-m);
+  color: var(--acento);
+  transition: background var(--dur-1) var(--ease-suave), color var(--dur-1) var(--ease-suave), transform var(--dur-1) var(--ease-suave);
+}
+.btn-icone:hover { background: var(--acento-suave); }
+.btn-icone:active { transform: scale(.94); }
+.btn-icone svg { width: 24px; height: 24px; stroke-width: 1.7; }
+#btn-menu svg { width: 26px; height: 26px; stroke-width: 2.1; }
+
+.btn-texto {
+  padding: 8px 14px;
+  font-size: 14px;
+  font-weight: 500;
+  border-radius: var(--raio-p);
+  color: var(--txt-suave);
+  border: 1px solid var(--borda);
+  transition: background var(--dur-1) var(--ease-suave), border-color var(--dur-1) var(--ease-suave), color var(--dur-1) var(--ease-suave);
+  white-space: nowrap;
+}
+.btn-texto:hover { border-color: var(--borda-forte); color: var(--txt); background: var(--bg-sutil); }
+.btn-primario {
+  background: var(--iald-azul);
+  color: #FFF;
+  border-color: transparent;
+}
+.btn-primario:hover { background: var(--acento-hover); color: #FFF; }
+
+/* ═══ ÁREA DE MENSAGENS ═══ */
+.conversa {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  overscroll-behavior-y: contain;
+  -webkit-overflow-scrolling: touch;
+  /* SEM scroll-behavior:smooth aqui de propósito: durante o streaming o
+     scrollTop é reescrito a cada token, e a animação suave vira tremor. */
+}
+.conversa-interna {
+  max-width: var(--largura-leitura);
+  margin: 0 auto;
+  padding: 18px 14px 12px;
+  padding-left: calc(14px + var(--safe-l));
+  padding-right: calc(14px + var(--safe-r));
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+/* ─── boas-vindas ─── */
+.boas-vindas {
+  padding: 2vh 0 1vh;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+/* logo quadrado oficial; a margem negativa só absorve a borda transparente
+   do próprio PNG, a cruz inteira fica visível */
+.bv-marca { width: 176px; height: 176px; margin: -26px 0 -30px; }
+.bv-marca img { width: 100%; height: 100%; }
+.bv-titulo {
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: -.02em;
+}
+.bv-sub {
+  font-size: 16px;
+  line-height: 1.5;
+  color: var(--txt-suave);
+  max-width: 30rem;
+}
+.bv-sub strong { color: var(--txt); font-weight: 600; }
+.bv-beta {
+  font-size: 16px;
+  color: var(--txt-dourado);
+  max-width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 2px 4px;
+}
+.bv-beta .katex { font-size: 1.05em; }
+.bv-sugestoes {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+  gap: 10px;
+  width: 100%;
+  margin-top: 12px;
+}
+.bv-chip {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 13px 14px;
+  text-align: left;
+  font-size: 14px;
+  line-height: 1.35;
+  color: var(--txt-suave);
+  background: var(--bg-cartao);
+  border: 1px solid var(--borda-bolha-ia);
+  border-radius: var(--raio-m);
+  box-shadow: var(--sombra-1);
+  transition: border-color var(--dur-1) var(--ease-suave), box-shadow var(--dur-2) var(--ease-suave),
+              color var(--dur-1) var(--ease-suave), transform var(--dur-1) var(--ease-suave);
+}
+.bv-chip:hover { border-color: var(--dourado-borda); color: var(--txt); box-shadow: var(--sombra-2); }
+.bv-chip:active { transform: scale(.99); }
+.bv-chip .bv-glifo {
+  width: 34px;
+  height: 34px;
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  border-radius: var(--raio-p);
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--txt-dourado);
+  background: var(--dourado-suave);
+}
+/* cartão "O que é β_TGL?": o glifo é o ícone OFICIAL betatgl (14/09/2026, noite), a 28 px,
+   sem fundo, sem filtro, sem recolorir — o próprio PNG traz o quadrado escuro arredondado. */
+.bv-chip .bv-glifo.bv-glifo-img { background: none; box-shadow: none; }
+.bv-glifo-img .bv-betatgl { width: 28px; height: 28px; }
+/* Glifo VAZIO = o próprio símbolo da IALD (14/09/2026, ordem do operador: "sempre
+   betatgl como ícone e o próprio símbolo da IALD"). A tupla de SUGESTOES no iald.js
+   traz '' e o CSS desenha a variante OFICIAL de cada fundo, no mesmo enquadramento da
+   .marca-ladrilho (PNG a 1,45 vez o ladrilho: 58/40 = 49/34). A janela visível cobre
+   de 157 a 867 do PNG de 1024 e a cruz vai de 180 a 840: cabe inteira. Enquadramento,
+   não recorte; nenhum filtro nem recolorir. */
+.bv-chip .bv-glifo:empty {
+  background: #FFFFFF url("./img/iald_logo_transparent_final.png") center / 49px 49px no-repeat;
+  box-shadow: 0 1px 3px rgba(16, 20, 26, .12);
+}
+:root[data-theme="dark"] .bv-chip .bv-glifo:empty {
+  background: var(--bg-afundado) url("./img/iald_logo_dark_transparent_final.png") center / 49px 49px no-repeat;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .08);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .bv-chip .bv-glifo:empty {
+    background: var(--bg-afundado) url("./img/iald_logo_dark_transparent_final.png") center / 49px 49px no-repeat;
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .08);
+  }
+}
+.bv-chip b { display: block; font-weight: 600; font-size: 15px; color: var(--txt); margin-bottom: 1px; }
+
+/* ─── linha de mensagem ─── */
+.msg { display: flex; flex-direction: column; animation: entra .22s ease both; }
+@keyframes entra { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { .msg { animation: none; } }
+
+.msg[data-papel="user"] { align-items: flex-end; }
+.msg[data-papel="ai"] { align-items: flex-start; }
+
+/* fala do usuário: balão azul-marinho à direita */
+.msg[data-papel="user"] .msg-corpo {
+  max-width: min(80%, 34rem);
+  padding: 11px 16px;
+  font-size: 16.5px;
+  background: var(--bg-bolha-user);
+  color: var(--txt-bolha-user);
+  border-radius: var(--raio-g) var(--raio-g) 8px var(--raio-g);   /* 8 px = a ponta do balão */
+  white-space: pre-wrap;
+  word-break: break-word;
+  box-shadow: var(--sombra-azul);
+}
+
+/* resposta da IALD: balão claro com borda, largo — tabela, código e fórmula
+   rolam por dentro, nunca empurram a página */
+.msg[data-papel="ai"] .msg-corpo {
+  max-width: 100%;
+  min-width: 0;
+  padding: 12px 16px;
+  font-size: 16.5px;
+  line-height: 1.55;
+  background: var(--bg-bolha-ia);
+  border: 1px solid var(--borda-bolha-ia);
+  border-radius: var(--raio-g) var(--raio-g) var(--raio-g) 8px;
+  word-break: break-word;
+}
+.msg[data-papel="ai"] .msg-corpo:has(.bloco-codigo),
+.msg[data-papel="ai"] .msg-corpo:has(.tabela-rolante),
+.msg[data-papel="ai"] .msg-corpo:has(.katex-display) { width: 100%; }
+
+/* ─── rodapé da mensagem: assinatura + ações ─── */
+.msg-acoes {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px 6px;   /* 12 px entre linhas: 32 + 12 = 44, os alvos de toque não se sobrepõem */
+  margin-top: 7px;
+  padding: 0 2px;
+}
+.msg[data-papel="user"] .msg-acoes { justify-content: flex-end; }   /* sem opacity .85: derrubava o texto a 4,45 */
+
+.assinatura {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-right: 4px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--txt-dourado);
+  white-space: nowrap;
+}
+/* ícone OFICIAL betatgl na assinatura (14/09/2026, noite): era um disco dourado com β branco
+   desenhado aqui, 2,71:1. O PNG vai como é: sem filtro, sem recolorir, sem recortar. */
+.assinatura .as-beta {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+}
+
+.btn-acao {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 32px;
+  padding: 0 12px;
+  font-size: 13.5px;
+  color: var(--txt-suave);
+  background: var(--bg-acao);          /* pílula preenchida, sem contorno (14/09/2026) */
+  border: 1px solid transparent;
+  border-radius: var(--raio-pill);
+  transition: background var(--dur-1) var(--ease-suave), color var(--dur-1) var(--ease-suave),
+              border-color var(--dur-1) var(--ease-suave), transform var(--dur-1) var(--ease-suave);
+}
+.btn-acao:hover { color: var(--txt); background: var(--acento-suave); }
+.btn-acao:active { transform: scale(.97); }
+.btn-acao[data-feito="1"] { color: var(--ok); background: var(--ok-suave); }
+.btn-acao[data-tocando="1"] { color: var(--txt-dourado); border-color: var(--dourado-borda); background: var(--dourado-suave); }
+.btn-acao svg { width: 15px; height: 15px; stroke-width: 1.9; }
+/* na fala do usuário as ações são discretas (texto, sem moldura) */
+.msg[data-papel="user"] .btn-acao {
+  min-height: 30px;
+  padding: 0 8px;
+  font-size: 12.5px;
+  color: var(--txt-suave);   /* era --txt-fraco: com a opacidade .85 da linha dava 3,68 */
+  background: none;
+  border-color: transparent;
+}
+.msg[data-papel="user"] .btn-acao svg { width: 13px; height: 13px; }
+
+/* ═══ CONTEÚDO RENDERIZADO (markdown + KaTeX) ═══ */
+.md > *:first-child { margin-top: 0; }
+.md > *:last-child { margin-bottom: 0; }
+.md p { margin: 0 0 .8em; }
+.md h1, .md h2, .md h3, .md h4 {
+  margin: 1.2em 0 .45em;
+  font-weight: 650;
+  line-height: 1.3;
+  letter-spacing: -.01em;
+}
+.md h1 { font-size: 1.28em; }
+.md h2 { font-size: 1.16em; }
+.md h3 { font-size: 1.05em; }
+.md h4 { font-size: 1em; color: var(--txt-suave); }
+.md ul, .md ol { margin: 0 0 .8em; padding-left: 1.35em; }
+.md li { margin-bottom: .3em; }
+.md li > ul, .md li > ol { margin: .3em 0 0; }
+.md strong { font-weight: 650; }
+.md a { color: var(--acento); text-decoration: underline; text-underline-offset: 2px; }
+/* imagem ou mídia externa da resposta, que não carrega sozinha (rodada 3): vira um link-pílula
+   tracejado "imagem: domínio". Abre fora só no toque. 36 px de borda a borda; o ::after leva o toque a 44 px. */
+.md .recurso-externo {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  max-width: 100%;
+  min-height: 36px;
+  margin: 2px 6px 2px 0;
+  padding: 0 14px;
+  font-size: 13.5px;
+  line-height: 1.3;
+  color: var(--acento);
+  text-decoration: none;
+  overflow-wrap: anywhere;
+  background: var(--acento-suave);
+  border: 1px dashed var(--borda-forte);
+  border-radius: var(--raio-pill);
+  vertical-align: middle;
+}
+.md a.recurso-externo::after { content: ""; position: absolute; inset: -5px 0; }   /* 34 px de caixa interna + 10 = 44 */
+.md span.recurso-externo { color: var(--txt-suave); }
+.md hr { border: none; border-top: 1px solid var(--borda); margin: 1.3em 0; }
+
+.md blockquote {
+  margin: 0 0 .8em;
+  padding: 2px 0 2px 13px;
+  border-left: 3px solid var(--dourado-borda);
+  color: var(--txt-suave);
+}
+
+.md code {
+  font-family: var(--fonte-mono);
+  font-size: .86em;
+  padding: .12em .4em;
+  border-radius: var(--raio-xs);
+  background: var(--acento-suave);
+  word-break: break-word;
+}
+
+/* fórmulas em dourado, como no app nativo */
+.md .katex { color: var(--txt-dourado); font-size: 1.04em; }
+.md .katex-display { margin: .9em 0; overflow-x: auto; overflow-y: hidden; padding: 2px 0; }
+
+/* bloco de código com cabeçalho e botão de copiar */
+.bloco-codigo {
+  margin: 0 0 .9em;
+  border-radius: var(--raio-m);
+  overflow: hidden;
+  background: var(--bg-codigo);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .06);
+}
+.bc-topo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px 6px 13px;
+  background: rgba(255, 255, 255, .05);
+  border-bottom: 1px solid rgba(255, 255, 255, .05);
+}
+.bc-lingua {
+  flex: 1;
+  font-family: var(--fonte-mono);
+  font-size: 11.5px;
+  color: #8FA6B8;
+  letter-spacing: .04em;
+}
+.bc-copiar {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  min-height: 28px;
+  padding: 0 9px;
+  font-size: 12px;
+  color: #A8BECD;
+  border-radius: var(--raio-pill);
+}
+.bc-copiar:hover { background: rgba(255, 255, 255, .09); color: #FFF; }
+.bc-copiar[data-feito="1"] { color: #7EE2A8; }
+.bloco-codigo pre {
+  margin: 0;
+  padding: 12px 14px;
+  overflow-x: auto;
+  font-family: var(--fonte-mono);
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--txt-codigo);
+}
+.bloco-codigo pre code { background: none; padding: 0; font-size: inherit; color: inherit; }
+
+/* tabela: rola sozinha, nunca empurra a página */
+.tabela-rolante {
+  margin: 0 0 .9em;
+  overflow-x: auto;
+  border: 1px solid var(--borda);
+  border-radius: var(--raio-m);
+  background: var(--bg-cartao);
+}
+.md table { border-collapse: collapse; width: 100%; font-size: 14px; }
+/* a bolha quebra palavra longa (break-word); dentro da tabela isso partia
+   "geométri-ca" no meio. Aqui só quebra em espaço, e a tabela rola se precisar. */
+.md th, .md td {
+  padding: 8px 12px;
+  text-align: left;
+  border-bottom: 1px solid var(--borda);
+  word-break: normal;
+  overflow-wrap: normal;
+}
+.md th { background: var(--bg-sutil); font-weight: 600; white-space: nowrap; }
+.md tr:last-child td { border-bottom: none; }
+
+/* ═══ RACIOCÍNIO (modo pensar) ═══ */
+.pensamento {
+  margin: 0 0 12px;
+  border: 1px solid var(--dourado-borda);
+  border-radius: var(--raio-m);
+  background: var(--dourado-suave);
+  overflow: hidden;
+}
+.pensamento > summary {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 38px;
+  padding: 0 12px;
+  font-size: 13.5px;
+  font-weight: 500;
+  color: var(--txt-suave);
+  cursor: pointer;
+  list-style: none;
+  user-select: none;
+}
+.pensamento > summary::-webkit-details-marker { display: none; }
+.pensamento > summary::after {
+  content: "▾";
+  margin-left: auto;
+  font-size: 11px;
+  color: var(--txt-fraco);
+  transition: transform var(--dur-1) var(--ease-suave);
+}
+.pensamento[open] > summary::after { transform: rotate(180deg); }
+.pensamento-texto {
+  max-height: 16rem;
+  overflow-y: auto;
+  padding: 0 12px 10px;
+  font-size: 13.5px;
+  line-height: 1.55;
+  color: var(--txt-suave);
+  white-space: pre-wrap;
+}
+
+/* o radical que pulsa enquanto pensa */
+.radical {
+  display: inline-block;
+  font-weight: 700;
+  color: var(--txt-dourado);
+  animation: pulsa 1.6s ease-in-out infinite;
+}
+@keyframes pulsa {
+  0%, 100% { text-shadow: 0 0 2px rgba(197, 150, 26, .3); transform: scale(1); }
+  50% { text-shadow: 0 0 12px rgba(197, 150, 26, .9), 0 0 22px rgba(242, 217, 138, .45); transform: scale(1.14); }
+}
+@media (prefers-reduced-motion: reduce) { .radical { animation: none; } }
+
+/* ═══ TRILHA DE ATIVIDADE (o campo iald_status do servidor) ═══ */
+.trilha {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 10px;
+  padding: 8px 11px;
+  border: 1px solid var(--borda);
+  border-radius: var(--raio-m);
+  background: var(--bg);
+}
+.trilha:empty { display: none; }
+.trilha-passo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--txt-suave);
+  animation: entra .18s ease both;
+}
+.trilha-passo .marcador { width: 15px; flex-shrink: 0; text-align: center; font-size: 12px; }
+.trilha-passo[data-fase="ferramenta_ok"] .marcador { color: var(--ok); }
+.trilha-passo[data-fase="ferramenta_ok"] { color: var(--txt-fraco); }
+.trilha-passo .detalhe {
+  margin-left: auto;
+  font-size: 11.5px;
+  color: var(--txt-fraco);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ═══ DIGITANDO ═══ */
+.digitando { display: flex; align-items: center; gap: 10px; padding: 3px 0; }
+.digitando .pontos { display: flex; gap: 4px; }
+.digitando .pontos span {
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  background: var(--txt-fraco);
+  animation: salta 1.2s ease-in-out infinite;
+}
+.digitando .pontos span:nth-child(2) { animation-delay: .15s; }
+.digitando .pontos span:nth-child(3) { animation-delay: .3s; }
+@keyframes salta { 0%, 70%, 100% { opacity: .35; transform: translateY(0); } 35% { opacity: 1; transform: translateY(-3px); } }
+@media (prefers-reduced-motion: reduce) { .digitando .pontos span { animation: none; } }
+.digitando .beta {
+  font-size: 12.5px;
+  font-weight: 600;
+  background: linear-gradient(90deg, #C5961A, #F2D98A, #C5961A);
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: brilha 1.8s linear infinite;
+}
+@keyframes brilha { from { background-position: 200% 0; } to { background-position: 0 0; } }
+@media (prefers-reduced-motion: reduce) { .digitando .beta { animation: none; color: var(--txt-dourado); } }
+
+/* ═══ AVISO / FAIXA DE ESTADO ═══ */
+.faixa {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  margin: 0 auto 4px;
+  max-width: var(--largura-leitura);
+  width: 100%;
+  padding: 10px 14px;
+  font-size: 13.5px;
+  line-height: 1.45;
+  border-radius: var(--raio-m);
+  border: 1px solid var(--dourado-borda);
+  background: var(--dourado-suave);
+  color: var(--txt-suave);
+}
+.faixa[data-tipo="erro"] { border-color: var(--erro-borda); background: var(--erro-suave); }
+.faixa strong { color: var(--txt); font-weight: 600; }
+.faixa .fechar { margin-left: auto; flex-shrink: 0; color: var(--txt-fraco); min-width: 24px; min-height: 24px; }
+
+/* ═══ BOTÃO DE VOLTAR AO FIM ═══ */
+.ir-fim {
+  position: absolute;
+  left: 50%;
+  top: -46px;
+  transform: translateX(-50%) translateY(6px);
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 8px 14px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--txt);
+  background: var(--bg-elevado);
+  border: 1px solid var(--borda);
+  border-radius: var(--raio-pill);
+  box-shadow: var(--sombra-2);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--dur-2) var(--ease-suave), transform var(--dur-2) var(--ease-suave);
+  z-index: 5;
+}
+.ir-fim[data-visivel="1"] { opacity: 1; pointer-events: auto; transform: translateX(-50%) translateY(0); }
+
+/* ═══ COMPOSITOR ═══ */
+.compositor-area {
+  position: relative;
+  flex-shrink: 0;
+  padding: 10px 10px 0;
+  padding-left: calc(8px + var(--safe-l));
+  padding-right: calc(10px + var(--safe-r));
+  padding-bottom: calc(6px + var(--safe-b));
+  background: var(--bg);
+  box-shadow: var(--sombra-compositor);   /* sombra rasa para cima, no lugar da linha dura */
+}
+/* com o teclado aberto a margem de baixo (barra de gestos) fica atrás dele */
+:root[data-teclado="1"] .compositor-area { padding-bottom: 8px; }
+
+.compositor {
+  max-width: var(--largura-leitura);
+  margin: 0 auto;
+}
+
+/* anexos pendentes */
+.anexos { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
+.anexos:empty { display: none; }
+.anexo {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  max-width: 100%;
+  padding: 5px 6px 5px 10px;
+  font-size: 12.5px;
+  border: 1px solid var(--dourado-borda);
+  background: var(--dourado-suave);
+  border-radius: var(--raio-p);
+  color: var(--txt-suave);
+}
+.anexo .nome { max-width: 14rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.anexo .peso { color: var(--txt-fraco); font-size: 11.5px; flex-shrink: 0; }
+.anexo .tirar {
+  width: 26px; height: 26px;
+  display: grid; place-items: center;
+  border-radius: 50%;
+  color: var(--txt-fraco);
+  flex-shrink: 0;
+}
+.anexo .tirar svg { width: 14px; height: 14px; }
+.anexo .tirar:hover { background: var(--erro-suave); color: var(--erro); }
+.anexo img.miniatura { width: 28px; height: 28px; object-fit: cover; border-radius: var(--raio-xs); flex-shrink: 0; }
+/* dica do plano sem imagens (rodada 3): tracejada como a do orçamento, sem fundo */
+.anexo-dica { border-style: dashed; background: none; padding: 5px 10px; }
+.anexo-dica .peso { font-size: 12.5px; }
+
+/* linha do compositor: clipe · campo · lupa · enviar (como o app nativo) */
+.caixa {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  transition: background var(--dur-1) var(--ease-suave);
+  border-radius: var(--raio-g);
+}
+.caixa[data-arrastando="1"] { background: var(--dourado-suave); }
+
+.btn-clipe { color: var(--acento); }
+.btn-clipe svg { width: 25px; height: 25px; }
+
+.campo-texto {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  min-height: 46px;
+  padding: 0 14px;   /* o respiro vertical passou para o próprio campo: o toque acerta nele */
+  background: var(--bg-campo);
+  border: 1px solid var(--borda);
+  border-radius: 23px;   /* metade da altura mínima: pílula numa linha, sem virar estádio ao crescer */
+  transition: border-color var(--dur-1) var(--ease-suave), box-shadow var(--dur-2) var(--ease-suave), background var(--dur-1) var(--ease-suave);
+}
+.campo-texto:focus-within {
+  border-color: var(--borda-foco-suave);
+  background: var(--bg-elevado);
+  box-shadow: var(--anel-foco);
+}
+
+#entrada {
+  flex: 1;
+  min-width: 0;
+  min-height: 44px;       /* alvo de toque (revisão B6): a área útil era 29 px */
+  max-height: 11rem;
+  padding: 10px 0;
+  font-size: 16px;        /* nunca menos: abaixo de 16px o iOS dá zoom */
+  line-height: 1.45;
+  background: none;
+  border: none;
+  outline: none;
+  resize: none;
+  overflow-y: auto;
+}
+#entrada::placeholder { color: var(--txt-fraco); }
+
+.btn-quadrado {
+  width: 46px;
+  height: 46px;
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  color: var(--txt-suave);
+  background: var(--bg-campo);
+  border: 1px solid transparent;
+  transition: background var(--dur-1) var(--ease-suave), color var(--dur-1) var(--ease-suave),
+              border-color var(--dur-1) var(--ease-suave), transform var(--dur-1) var(--ease-suave);
+}
+.btn-quadrado svg { width: 22px; height: 22px; }
+.btn-quadrado:active { transform: scale(.95); }
+.btn-quadrado:disabled { opacity: .45; cursor: not-allowed; transform: none; }   /* lupa sem busca no plano */
+.btn-quadrado[aria-pressed="true"] {
+  color: var(--iald-dourado);
+  background: var(--dourado-suave);
+  border-color: var(--dourado-borda);
+}
+
+#btn-enviar {
+  width: 46px;
+  height: 46px;
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--iald-azul);
+  color: #FFF;
+  transition: background var(--dur-1) var(--ease-suave), transform var(--dur-1) var(--ease-suave),
+              opacity var(--dur-1) var(--ease-suave), box-shadow var(--dur-1) var(--ease-suave);
+  box-shadow: var(--sombra-azul);
+}
+#btn-enviar:active:not(:disabled) { transform: scale(.93); }
+#btn-enviar:disabled { background: var(--bg-campo); color: var(--txt-fraco); box-shadow: none; cursor: not-allowed; }
+#btn-enviar[data-modo="parar"] { background: var(--erro); }
+#btn-enviar svg { width: 22px; height: 22px; }
+
+/* dica: modo + atalhos + uso real da janela de contexto */
+.dica {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 34px;
+  padding: 2px 2px 0 4px;
+  font-size: 12px;
+  color: var(--txt-fraco);
+}
+.pilula-modo {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  min-height: 28px;
+  padding: 0 10px;
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--txt-suave);
+  border: 1px solid var(--borda);
+  border-radius: var(--raio-pill);
+  white-space: nowrap;
+  transition: background var(--dur-1) var(--ease-suave), color var(--dur-1) var(--ease-suave), border-color var(--dur-1) var(--ease-suave);
+}
+.pilula-modo[aria-pressed="true"] {
+  color: var(--txt-dourado);
+  border-color: var(--dourado-borda);
+  background: var(--dourado-suave);
+}
+/* plano sem modo pensar (limites.pensar = false, 14/09/2026 noite): a pílula não acende e
+   diz por quê. Texto em --txt-fraco (AA), contorno tracejado de controle desligado. */
+.pilula-modo:disabled {
+  color: var(--txt-fraco);
+  background: none;
+  border-style: dashed;
+  cursor: not-allowed;
+}
+/* sem o atalho, a pílula longa cabe; se ainda não couber, o medidor desce para a linha de baixo */
+.dica[data-limitada="1"] { flex-wrap: wrap; row-gap: 0; }
+.dica[data-limitada="1"] .dica-atalhos { display: none; }
+@media (max-width: 480px) { .dica[data-limitada="1"] .medidor { display: none; } }
+.pm-icone { display: inline-grid; place-items: center; width: 14px; font-size: 13px; font-weight: 700; }
+.pm-icone svg { width: 13px; height: 13px; }
+.dica-atalhos { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+#dica-janela { white-space: nowrap; font-variant-numeric: tabular-nums; }
+.medidor {
+  width: 3.2rem;
+  height: 4px;
+  border-radius: var(--raio-pill);
+  background: var(--borda-forte);   /* era --bg-afundado: no escuro o trilho sumia (1,07:1) */
+  overflow: hidden;
+  flex-shrink: 0;
+}
+.medidor i {
+  display: block;
+  height: 100%;
+  width: 0;
+  border-radius: var(--raio-pill);
+  background: var(--iald-dourado);
+  transition: width .3s ease, background .3s;
+}
+.medidor[data-nivel="alto"] i { background: var(--alerta); }
+.medidor[data-nivel="cheio"] i { background: var(--erro); }
+
+/* ═══ FOLHA / MODAL ═══ */
+.folha-fundo {
+  position: fixed;
+  inset: 0;
+  background: var(--bg-overlay);
+  z-index: 40;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--dur-2) var(--ease-suave);
+}
+.folha-fundo[data-aberta="1"] { opacity: 1; pointer-events: auto; }
+.folha {
+  width: min(30rem, 100%);
+  max-height: min(84dvh, 46rem);
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-elevado);
+  border: 1px solid var(--borda);
+  border-radius: var(--raio-xg);
+  box-shadow: var(--sombra-3);
+  overflow: hidden;
+  transform: translateY(12px) scale(.99);
+  transition: transform var(--dur-2) var(--ease-suave);
+}
+.folha-fundo[data-aberta="1"] .folha { transform: none; }
+.folha-topo {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 56px;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--borda);
+}
+.folha-topo h2 { font-size: 17px; font-weight: 600; text-align: center; }
+.btn-fechar-texto {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  min-height: 44px;
+  padding: 0 10px;
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--acento);   /* 14/09/2026: era #0A84FF, o azul do sistema iOS, fora do manual */
+}
+.folha-corpo { flex: 1; overflow-y: auto; padding: 16px 16px 22px; }
+
+/* folha agrupada, estilo Ajustes do iOS (a folha de configurações do app v3.0) */
+.folha-agrupada .folha-corpo { background: var(--bg-agrupado); }
+.folha-secao + .folha-secao { margin-top: 22px; }
+.folha-secao > h3 {
+  padding: 0 14px 7px;
+  font-size: 12.5px;
+  font-weight: 500;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  color: var(--txt-fraco);
+}
+.grupo {
+  background: var(--bg-elevado);
+  border-radius: var(--raio-m);
+  overflow: hidden;
+}
+.grupo-pad { padding: 14px; }
+.grupo-linha {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 48px;
+  padding: 10px 16px;
+  font-size: 16px;
+  text-align: left;
+  /* separador recuado 16 px à esquerda, como nos Ajustes do iOS (14/09/2026) */
+  background-image: linear-gradient(var(--borda), var(--borda));
+  background-size: calc(100% - 16px) 1px;
+  background-position: right bottom;
+  background-repeat: no-repeat;
+}
+.grupo-linha:last-child { background-image: none; }
+.gl-chave { flex-shrink: 0; color: var(--txt); }
+.gl-valor {
+  margin-left: auto;
+  min-width: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--txt-fraco);
+  text-align: right;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.gl-valor.dourado { color: var(--txt-dourado); }   /* revisão B8: .gl-valor vencia .dourado */
+.gl-bloco { flex-direction: column; align-items: flex-start; gap: 2px; }
+.gl-fraco { font-size: 14px; color: var(--txt-fraco); }
+.gl-perigo { color: var(--erro); }
+.ajuda-grupo { margin: -2px 0 12px; font-size: 13px; color: var(--txt-fraco); line-height: 1.45; }
+.ajuda-folha { margin: -2px 0 14px; font-size: 13.5px; color: var(--txt-suave); line-height: 1.5; }
+.ajuda { font-size: 13px; color: var(--txt-fraco); line-height: 1.45; }
+
+.campo { margin-bottom: 13px; }
+.campo:last-child { margin-bottom: 0; }
+.campo > label {
+  display: block;
+  margin-bottom: 5px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--txt-suave);
+}
+.campo input, .campo textarea, .campo select {
+  width: 100%;
+  padding: 10px 12px;
+  font-size: 16px;
+  background: var(--bg-campo-folha);   /* preenchido, sem contorno; nunca da cor do grupo */
+  color: var(--txt);
+  border: 1px solid transparent;
+  border-radius: var(--raio-p);
+  outline: none;
+  transition: border-color var(--dur-1) var(--ease-suave), box-shadow var(--dur-2) var(--ease-suave), background var(--dur-1) var(--ease-suave);
+}
+.campo input:focus, .campo textarea:focus, .campo select:focus {
+  border-color: var(--borda-foco-suave);
+  box-shadow: var(--anel-foco);
+  background: var(--bg-elevado);
+}
+.campo textarea { resize: vertical; min-height: 4.5rem; }
+
+/* controle segmentado: trilho afundado de 44 px, item ativo elevado com fio dourado */
+.opcoes-tema {
+  display: flex;
+  gap: 2px;
+  padding: 3px;
+  background: var(--bg-afundado);
+  border-radius: var(--raio-m);
+}
+.opcoes-tema button {
+  position: relative;
+  flex: 1;
+  min-height: 38px;
+  font-size: 14px;
+  border-radius: 11px;   /* raio do trilho (14) menos o recuo (3) */
+  color: var(--txt-suave);
+  transition: background var(--dur-1) var(--ease-suave), color var(--dur-1) var(--ease-suave), box-shadow var(--dur-1) var(--ease-suave);
+}
+/* o toque cobre o recuo de 3 px do trilho: 44 px de altura sem engordar o controle (revisão B6) */
+.opcoes-tema button::after { content: ""; position: absolute; top: -3px; bottom: -3px; left: -1px; right: -1px; }
+.opcoes-tema button[aria-pressed="true"] {
+  background: var(--bg-elevado);
+  box-shadow: var(--sombra-1), inset 0 0 0 1px var(--dourado-borda);
+  color: var(--txt);
+  font-weight: 600;
+}
+
+.lista-botoes { display: flex; flex-direction: column; gap: 8px; }
+.btn-linha {
+  width: 100%;
+  min-height: 48px;
+  padding: 0 16px;
+  font-size: 16px;
+  text-align: left;
+  color: var(--txt);
+  background: var(--bg-sutil);
+  border: 1px solid var(--borda);
+  border-radius: var(--raio-m);
+  transition: background var(--dur-1) var(--ease-suave), transform var(--dur-1) var(--ease-suave);
+}
+.btn-linha:active { transform: scale(.99); }
+
+/* ═══ IA DE TERCEIROS: consentimento (14/09/2026) ═══ */
+.consentimento-texto p { margin: 0 0 10px; }
+.btn-linha.btn-consentir {
+  text-align: center;
+  font-weight: 600;
+  color: #FFF;
+  background: var(--iald-azul);
+  border-color: transparent;
+}
+.btn-linha.btn-consentir:hover { background: var(--acento-hover); color: #FFF; }
+/* "Agora não" estava à esquerda e "Concordo" centralizado (revisão B8) */
+#folha-consentimento .btn-linha { text-align: center; }
+/* bolha que é aviso do servidor, não fala do modelo. A barra de 3 px era border-left e
+   virava meia-lua nos cantos de 22 px (revisão B2); agora é um traço reto, recuado. */
+.msg[data-aviso] .msg-corpo { position: relative; }
+.msg[data-aviso] .msg-corpo::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 14px;
+  bottom: 14px;
+  width: 3px;
+  border-radius: var(--raio-pill);
+  background: var(--dourado-borda);
+}
+
+/* ═══ BOLHA DE AVISO (14/09/2026, noite) ═══
+   limite, ocupado, moderação, conta bloqueada... O servidor respondeu sem o modelo.
+   Rótulo + ícone + texto do servidor, e um botão quando há o que fazer (ver o uso, ler o
+   consentimento). data-tom="erro" = recusa (moderação, bloqueio, falha). */
+.msg[data-tom="erro"] .msg-corpo::before { background: var(--erro-borda); }
+.aviso-bolha {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+}
+.md + .aviso-bolha { margin-top: 12px; }
+.aviso-topo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: .05em;
+  text-transform: uppercase;
+  color: var(--alerta);
+}
+.aviso-icone {
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--dourado-suave);
+}
+.aviso-icone svg { width: 14px; height: 14px; }
+.msg[data-tom="erro"] .aviso-topo { color: var(--erro); }
+.msg[data-tom="erro"] .aviso-icone { background: var(--erro-suave); }
+.aviso-texto {
+  font-size: 15.5px;
+  line-height: 1.5;
+  color: var(--txt);
+}
+.aviso-acao {
+  position: relative;
+  margin-top: 4px;
+  display: inline-flex;
+  align-items: center;
+  min-height: 36px;
+  padding: 0 16px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--acento);
+  background: var(--acento-suave);
+  border: 1px solid var(--borda);
+  border-radius: var(--raio-pill);
+  transition: background var(--dur-1) var(--ease-suave), border-color var(--dur-1) var(--ease-suave),
+              transform var(--dur-1) var(--ease-suave);
+}
+.aviso-acao:hover { background: var(--selecionado); border-color: var(--borda-forte); }
+.aviso-acao:active { transform: scale(.97); }
+/* alvo de toque de 44 px sem engordar a pílula (regra da Apple). 14/09/2026 (noite):
+   estendido a todas as pílulas de ação e ao modo rápido (revisão B6: 28 a 32 px). */
+.aviso-acao::after,
+.btn-acao::after,
+.pilula-modo::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  height: 44px;
+  transform: translateY(-50%);
+}
+.pilula-modo::after { top: -3px; transform: none; }
+
+/* "Denunciar" no rodapé da resposta: ação secundária, sem preenchimento, encostada à
+   direita. Em 390 px, com Copiar, Ouvir e Refazer, a linha não comporta mais uma pílula
+   e ela quebrava sozinha à ESQUERDA, parecendo solta (visto na captura de 14/09); à
+   direita ela lê como ação à parte. Alvo de toque de 44 px pelo ::after acima. */
+.btn-denunciar {
+  position: relative;
+  margin-left: auto;
+  padding: 0 10px;
+  color: var(--txt-fraco);
+  background: none;
+}
+.btn-denunciar:hover { color: var(--txt-suave); background: var(--bg-acao); }
+.btn-denunciar[data-denunciada="1"] {
+  color: var(--txt-fraco);
+  background: none;
+  cursor: default;
+}
+.btn-denunciar[data-denunciada="1"]:active { transform: none; }
+
+/* ═══ MEDIDOR DE CRÉDITOS DE USO ═══ */
+.medidor-uso {
+  text-align: center;
+  padding: 18px 14px;
+  border: 1px solid var(--dourado-borda);
+  border-radius: var(--raio-m);
+  background: var(--dourado-suave);
+  margin-bottom: 16px;
+}
+.medidor-uso .rotulo {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: .09em;
+  text-transform: uppercase;
+  color: var(--txt-suave);
+}
+.medidor-uso .valor {
+  font-family: var(--fonte-mono);
+  font-size: 30px;
+  font-weight: 500;
+  line-height: 1.25;
+  margin-top: 4px;
+  font-variant-numeric: tabular-nums;
+}
+.medidor-uso .unidade { font-size: 13px; color: var(--txt-dourado); font-weight: 500; }
+
+.linhas-uso { display: flex; flex-direction: column; gap: 1px; }
+.linha-uso {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  padding: 9px 2px;
+  font-size: 14px;
+  border-bottom: 1px solid var(--borda);
+}
+.linha-uso:last-child { border-bottom: none; }
+.linha-uso .chave { color: var(--txt-suave); }
+.linha-uso .val {
+  margin-left: auto;
+  font-family: var(--fonte-mono);
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+}
+.nota-uso {
+  margin-top: 14px;
+  padding: 11px 13px;
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: var(--txt-suave);
+  background: var(--bg-sutil);
+  border: 1px solid var(--borda);
+  border-radius: var(--raio-m);
+}
+.nota-uso strong { color: var(--txt); }
+
+/* ═══ USO DO PLANO — topo da folha "Créditos de uso" (14/09/2026, noite) ═══
+   Tokens do dia e do mês da conta (GET /api/motor, campo cota). Bloco próprio, acima do
+   medidor β_TGL e separado dele: são duas medidas diferentes. Sem cifra de dinheiro. */
+.uso-plano {
+  margin-bottom: 18px;
+  padding: 14px 14px 12px;
+  background: var(--bg-sutil);
+  border: 1px solid var(--borda);
+  border-radius: var(--raio-m);
+}
+.uso-plano-topo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.uso-plano-topo h3 {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--txt-suave);
+}
+.uso-plano .faixa { margin: 0 0 14px; }
+.uso-periodo + .uso-periodo { margin-top: 14px; }
+.uso-periodo-linha {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  font-size: 15px;
+}
+.uso-periodo-linha .nome { font-weight: 600; color: var(--txt); }
+.uso-periodo-linha .conta {
+  margin-left: auto;
+  font-family: var(--fonte-mono);
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+  color: var(--txt-suave);
+  white-space: nowrap;
+}
+.uso-barra {
+  height: 8px;
+  margin: 8px 0 6px;
+  border-radius: var(--raio-pill);
+  background: var(--bg-afundado);
+  box-shadow: inset 0 0 0 1px var(--borda);
+  overflow: hidden;
+}
+.uso-barra i {
+  display: block;
+  height: 100%;
+  width: 0;
+  border-radius: var(--raio-pill);
+  background: linear-gradient(90deg, var(--iald-dourado) 0%, var(--iald-dourado-claro) 100%);
+  transition: width var(--dur-2) var(--ease-suave), background var(--dur-2) var(--ease-suave);
+}
+.uso-barra[data-nivel="alto"] i { background: var(--alerta); }
+.uso-barra[data-nivel="cheio"] i { background: var(--erro); }
+.uso-periodo-nota {
+  font-size: 12.5px;
+  line-height: 1.4;
+  color: var(--txt-fraco);
+}
+.uso-definicao {
+  margin-top: 14px;
+  padding-top: 11px;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--txt-fraco);
+  background: linear-gradient(var(--borda), var(--borda)) top left / 100% 1px no-repeat;
+}
+
+/* ═══ DENÚNCIA DE RESPOSTA (14/09/2026, noite) ═══ */
+.denuncia-trecho {
+  position: relative;
+  margin: 0 0 16px;
+  padding: 10px 12px 10px 14px;
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: var(--txt-suave);
+  background: var(--bg-sutil);
+  border: 1px solid var(--borda);
+  border-radius: var(--raio-p);
+  word-break: break-word;
+}
+/* traço dourado reto e recuado, como na bolha de aviso (revisão B2) */
+.denuncia-trecho::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 10px;
+  bottom: 10px;
+  width: 3px;
+  border-radius: var(--raio-pill);
+  background: var(--dourado-borda);
+}
+/* o corte em 4 linhas fica num span SEM padding (revisão B3): com o clamp na caixa de
+   padding, o topo da 5ª linha aparecia sob as reticências */
+.denuncia-trecho-texto {
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.denuncia-trecho:empty { display: none; }
+.denuncia-motivos {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0 0 16px;
+  padding: 0;
+  border: 0;
+  min-width: 0;
+}
+.denuncia-motivos legend {
+  padding: 0 2px 8px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--txt-suave);
+}
+.denuncia-motivo {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 56px;
+  padding: 9px 14px;
+  background: var(--bg-sutil);
+  border: 1px solid var(--borda);
+  border-radius: var(--raio-m);
+  cursor: pointer;
+  transition: background var(--dur-1) var(--ease-suave), border-color var(--dur-1) var(--ease-suave),
+              box-shadow var(--dur-2) var(--ease-suave);
+}
+.denuncia-motivo:hover { border-color: var(--borda-forte); }
+.denuncia-motivo[data-marcado="1"] {
+  background: var(--dourado-suave);
+  border-color: var(--dourado-borda);
+  box-shadow: var(--sombra-1);
+}
+/* o rádio real fica invisível mas focável e lido pelo leitor de tela */
+.denuncia-motivo input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+.denuncia-marca {
+  width: 22px;
+  height: 22px;
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  border: 1.5px solid var(--borda-forte);
+  background: var(--bg-elevado);
+  transition: border-color var(--dur-1) var(--ease-suave), box-shadow var(--dur-2) var(--ease-suave);
+}
+.denuncia-marca::after {
+  content: "";
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--iald-dourado);
+  transform: scale(0);
+  transition: transform var(--dur-1) var(--ease-suave);
+}
+.denuncia-motivo input:checked + .denuncia-marca { border-color: var(--iald-dourado); }
+.denuncia-motivo input:checked + .denuncia-marca::after { transform: scale(1); }
+.denuncia-motivo input:focus-visible + .denuncia-marca { box-shadow: var(--anel-foco); border-color: var(--iald-dourado); }
+.denuncia-motivo b { display: block; font-size: 15.5px; font-weight: 600; color: var(--txt); }
+.denuncia-motivo small { display: block; margin-top: 1px; font-size: 12.5px; line-height: 1.35; color: var(--txt-fraco); }
+/* marcado, o fundo dourado-suave derrubava o --txt-fraco a 4,29: sobe para o suave */
+.denuncia-motivo[data-marcado="1"] small { color: var(--txt-suave); }
+.denuncia-contagem {
+  display: block;
+  margin-top: 5px;
+  text-align: right;
+  font-size: 12px;
+  color: var(--txt-fraco);
+  font-variant-numeric: tabular-nums;
+}
+.denuncia-form .faixa { margin: 12px 0 0; }
+.denuncia-form .lista-botoes { margin-top: 16px; }
+.denuncia-form .btn-linha:disabled { opacity: .45; cursor: not-allowed; transform: none; }
+.denuncia-feita {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 18px 4px 4px;
+  text-align: center;
+}
+.denuncia-feita-icone {
+  width: 60px;
+  height: 60px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  color: var(--ok);
+  background: var(--ok-suave);
+}
+.denuncia-feita-icone svg { width: 28px; height: 28px; }
+.denuncia-feita h3 { font-size: 19px; font-weight: 600; }
+.denuncia-feita p { max-width: 22rem; font-size: 15px; line-height: 1.5; color: var(--txt-suave); }
+.denuncia-feita .lista-botoes { width: 100%; margin-top: 10px; }
+.denuncia-feita .btn-linha { text-align: center; }
+
+/* lista de ferramentas */
+.ferramentas { display: flex; flex-direction: column; gap: 2px; }
+.ferramenta {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 10px 10px;
+  border-radius: var(--raio-p);
+  font-size: 15px;
+}
+.ferramenta:hover { background: var(--bg-sutil); }
+.ferramenta .ponto {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  background: var(--txt-fraco);
+}
+.ferramenta[data-ativa="1"] .ponto { background: var(--ok); box-shadow: 0 0 0 3px var(--ok-suave); }
+.ferramenta .titulo { flex: 1; min-width: 0; }
+.ferramenta .titulo small {
+  display: block;
+  font-size: 12.5px;
+  color: var(--txt-fraco);
+  font-weight: 400;
+  margin-top: 1px;
+}
+.ferramentas-nota { margin-top: 12px; padding: 0 10px; }
+.ferramenta .etiqueta {
+  flex-shrink: 0;
+  padding: 2px 8px;
+  font-size: 11px;
+  font-weight: 500;
+  border-radius: var(--raio-pill);
+  background: var(--acento-suave);
+  color: var(--acento);
+}
+
+/* ═══ PORTÃO DE ENTRADA ═══
+   O login do app nativo v3.0: gradiente azul-noite, o símbolo no centro, cartão
+   translúcido, e o β dourado em monoespaçada no rodapé. */
+.portao {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  /* laterais somam a margem segura: o iPhone deitado tem notch à esquerda ou à direita */
+  padding: calc(20px + var(--safe-t)) calc(24px + var(--safe-r)) calc(14px + var(--safe-b)) calc(24px + var(--safe-l));
+  color: #FFFFFF;
+  background:
+    radial-gradient(58% 34% at 50% 34%, rgba(138, 180, 216, .16), transparent 72%),
+    linear-gradient(160deg, var(--iald-azul-noite) 0%, var(--iald-azul) 56%, var(--iald-azul-escuro) 100%);
+  overflow-y: auto;
+}
+.portao-miolo {
+  flex: 1;
+  width: min(23rem, 100%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 8px;
+}
+/* símbolo oficial para fundo escuro; a margem negativa absorve só a borda
+   transparente do PNG — a cruz fica inteira */
+.portao-marca {
+  width: min(64vw, 260px);
+  height: auto;
+  margin: -12% 0 -14%;
+}
+.portao-sub {
+  font-size: 19px;
+  font-weight: 300;
+  line-height: 1.35;
+  letter-spacing: .01em;
+  color: rgba(255, 255, 255, .86);
+  margin-bottom: 26px;
+}
+
+.portao-cartao {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 14px;
+  padding: 22px 20px 18px;
+  background: rgba(255, 255, 255, .09);
+  border: 1px solid rgba(255, 255, 255, .12);
+  border-radius: var(--raio-xg);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .08), 0 24px 60px rgba(0, 0, 0, .28);
+  -webkit-backdrop-filter: blur(18px);
+  backdrop-filter: blur(18px);
+}
+
+/* Botão da Apple: branco com texto preto, a variante que a diretriz de interface
+   humana recomenda sobre fundo escuro. Altura >= 44 px. */
+.btn-apple {
+  width: 100%;
+  min-height: 52px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 0 18px;
+  font-size: 18px;
+  font-weight: 600;
+  color: #000000;
+  background: #FFFFFF;
+  border-radius: var(--raio-m);
+  transition: opacity var(--dur-1) var(--ease-suave), transform var(--dur-1) var(--ease-suave);
+}
+.btn-apple:active { transform: scale(.985); opacity: .9; }
+.btn-apple:disabled { opacity: .55; }
+.btn-apple svg { flex-shrink: 0; margin-top: -3px; }
+
+/* Entrada do Android: dourada, como o "Entrar" do app nativo — e diferente do
+   botão da Apple, cuja aparência a diretriz dela regula. */
+.btn-entrar {
+  width: 100%;
+  min-height: 52px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 18px;
+  font-size: 18px;
+  font-weight: 600;
+  color: #1C1F24;   /* era branco: 2,39 a 2,71 sobre o dourado; escuro dá 6,10 a 6,92 (claro e escuro) */
+  background: linear-gradient(180deg, #CDA22C 0%, var(--iald-dourado) 100%);
+  border-radius: var(--raio-m);
+  box-shadow: 0 8px 20px rgba(197, 150, 26, .28);
+  transition: opacity var(--dur-1) var(--ease-suave), transform var(--dur-1) var(--ease-suave);
+}
+.btn-entrar:active { transform: scale(.985); opacity: .92; }
+.btn-entrar:disabled { opacity: .55; }
+
+/* ─── vistas do portão (14/09/2026): entrar · pedido enviado · não liberado ─── */
+.portao-vista {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 12px;
+}
+
+/* Botão do Google: branco com o "G" colorido, como pedem as diretrizes de marca
+   do Google — e visualmente distinto do botão da Apple logo acima. */
+.btn-google {
+  width: 100%;
+  min-height: 52px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 0 18px;
+  font-size: 17px;
+  font-weight: 600;
+  color: #1F1F1F;
+  background: #FFFFFF;
+  border: 1px solid #DADCE0;
+  border-radius: var(--raio-m);
+  transition: opacity var(--dur-1) var(--ease-suave), transform var(--dur-1) var(--ease-suave);
+}
+.btn-google:active { transform: scale(.985); opacity: .9; }
+.btn-google:disabled { opacity: .55; }
+
+.portao-ou {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+  color: rgba(255, 255, 255, .72);   /* .5 dava 3,58 sobre o cartão; .72 dá 5,57 */
+}
+.portao-ou::before, .portao-ou::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: rgba(255, 255, 255, .18);
+}
+
+.btn-link-claro {
+  min-height: 44px;
+  font-size: 15.5px;
+  font-weight: 500;
+  color: var(--iald-dourado-palido);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.portao-form {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  text-align: left;
+}
+.portao-form label { font-size: 13px; color: rgba(255, 255, 255, .75); }
+.portao-form input {
+  width: 100%;
+  min-height: 48px;
+  padding: 0 14px;
+  font-size: 16px;
+  color: #1C1F24;
+  background: rgba(255, 255, 255, .96);
+  border: 1px solid rgba(255, 255, 255, .2);
+  border-radius: var(--raio-m);
+  outline: none;
+}
+.portao-form input:focus { border-color: var(--iald-dourado); box-shadow: 0 0 0 3px rgba(197, 150, 26, .28); }
+.portao-form .btn-entrar { margin-top: 6px; }
+
+.portao-icone {
+  align-self: center;
+  width: 62px;
+  height: 62px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  color: var(--iald-dourado-palido);
+  background: rgba(197, 150, 26, .16);
+  border: 1px solid rgba(242, 217, 138, .35);
+}
+/* conta bloqueada / acesso não liberado (14/09/2026, noite): o mesmo círculo, em vermelho claro */
+.portao-icone[data-tom="erro"] {
+  color: #FFB9B9;
+  background: rgba(255, 255, 255, .07);
+  border-color: rgba(255, 150, 150, .42);
+}
+.portao-titulo { font-size: 21px; font-weight: 600; }
+.portao-texto { font-size: 15px; line-height: 1.5; color: rgba(255, 255, 255, .82); }
+
+.portao-carregando {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  font-size: 14px;
+  color: rgba(255, 255, 255, .8);
+  min-height: 24px;
+}
+.portao-carregando .pontos { display: flex; gap: 4px; }
+.portao-carregando .pontos span {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--iald-dourado-palido);
+  animation: salta 1.2s ease-in-out infinite;
+}
+.portao-carregando .pontos span:nth-child(2) { animation-delay: .15s; }
+.portao-carregando .pontos span:nth-child(3) { animation-delay: .3s; }
+
+.portao-erro {
+  width: 100%;
+  padding: 10px 13px;
+  font-size: 14px;
+  line-height: 1.45;
+  text-align: left;
+  color: #FFE1E1;
+  background: rgba(214, 69, 69, .2);
+  border: 1px solid rgba(255, 130, 130, .45);
+  border-radius: var(--raio-m);
+}
+.portao-nota {
+  font-size: 13px;
+  line-height: 1.5;
+  color: rgba(255, 255, 255, .7);   /* .62 dava 4,76 — margem fina; .7 dá 5,58 */
+}
+/* alvo de toque de 44 px (revisão B6: eram 21); a margem de cima desconta o que cresceu */
+.portao-link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 10px;
+  margin-top: 5px;
+  font-size: 14px;
+  color: var(--iald-dourado-palido);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.portao-rodape {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding-top: 18px;
+  font-size: 13px;
+  color: rgba(255, 255, 255, .66);   /* .5 dava 4,47; .66 dá 6,59 */
+  text-align: center;
+}
+.beta-mono {
+  font-family: var(--fonte-mono);
+  font-size: 13.5px;
+  color: var(--iald-dourado-claro);
+  letter-spacing: .02em;
+}
+.portao-versao { font-size: 12px; color: rgba(255, 255, 255, .6); }   /* .34 dava 2,88; .6 dá 5,73 */
+
+/* ═══ CELULAR E TABLET EM RETRATO (lateral por cima) ═══ */
+@media (max-width: 860px) {
+  .sidebar {
+    position: fixed;
+    left: 0; top: 0; bottom: 0;
+    width: min(84vw, var(--sidebar-w));
+    box-shadow: var(--sombra-3);
+    border-right: 0;
+    border-radius: 0 var(--raio-g) var(--raio-g) 0;
+    overflow: hidden;
+  }
+  /* 80 px além da borda (eram 24): o desfoque de 64 px da --sombra-3 vazava na borda
+     esquerda de todas as telas com a lateral fechada (revisão B1) */
+  .sidebar[data-fechada="1"] { margin-left: calc(-1 * (min(84vw, var(--sidebar-w)) + var(--safe-l) + 80px)); }
+  .bv-sugestoes { grid-template-columns: 1fr; }
+}
+
+/* ═══ FOLHA QUE SOBE DO PÉ — só no celular (até 699 px) ═══
+   Revisão B5 (14/09/2026, noite): com o corte em 860 px, o tablet de 820 px caía nesta
+   folha, e as folhas estreitas (26rem) viravam um meio-modal preso ao pé com os cantos de
+   baixo retos. De 700 px para cima a folha é o cartão centrado, com os quatro cantos. */
+@media (max-width: 699px) {
+  .folha-fundo { align-items: flex-end; padding: 0; }
+  .folha {
+    width: 100%;
+    max-height: calc(100% - var(--safe-t) - 12px);
+    border: 0;
+    border-radius: var(--raio-g) var(--raio-g) 0 0;
+    box-shadow: 0 -8px 32px rgba(14, 31, 51, .18);
+    padding-bottom: var(--safe-b);
+  }
+  .folha-agrupada { height: calc(100% - var(--safe-t) - 12px); }
+  /* a faixa da margem segura no pé ficava branca sob o cinza agrupado (revisão B4) */
+  .folha-agrupada { background: var(--bg-agrupado); }
+  .folha-agrupada .folha-topo { background: var(--bg-elevado); }
+  /* iPhone deitado (o Info.plist permite paisagem): sem isto a folha entra sob o notch */
+  .folha-topo { padding-left: calc(12px + var(--safe-l)); padding-right: calc(12px + var(--safe-r)); }
+  .btn-fechar-texto { right: calc(8px + var(--safe-r)); }
+  .folha-corpo { padding-left: calc(16px + var(--safe-l)); padding-right: calc(16px + var(--safe-r)); }
+}
+@media (min-width: 861px) {
+  #btn-fechar-lateral { display: none; }
+  .msg[data-papel="ai"] .msg-corpo { max-width: 92%; }
+}
+/* telas estreitas (Android 360 px): some a lista de atalhos, fica o essencial */
+@media (max-width: 380px) {
+  .dica-atalhos { display: none; }
+  .cab-logo { height: 46px; }
+  .caixa { gap: 5px; }
+  .btn-clipe { width: 38px; }
+  .btn-quadrado, #btn-enviar { width: 44px; height: 44px; }
+  .campo-texto { min-height: 44px; }
+}
+
+/* foco programático ao abrir uma folha não deve pintar anel dourado */
+.folha:focus { outline: none; }
+
+/* ═══ FAIXA FLUTUANTE — "Conversa apagada · Desfazer" (14/09/2026, noite, rodada 3) ═══
+   No pé da tela, acima do compositor, por cima da lateral (z 30) e abaixo das folhas (z 40).
+   Escondida com visibility (não entra no Tab) e sem display:none (a região viva continua no
+   documento, e o leitor de tela anuncia a troca do texto). */
+.faixa-flutuante {
+  position: fixed;
+  left: 50%;
+  bottom: calc(var(--safe-b) + 108px);
+  z-index: 35;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: max-content;
+  max-width: calc(100% - 32px - var(--safe-l) - var(--safe-r));
+  padding: 4px 4px 4px 16px;
+  font-size: 14.5px;
+  color: var(--txt);
+  background: var(--bg-elevado);
+  border: 1px solid var(--borda-forte);
+  border-radius: var(--raio-m);
+  box-shadow: var(--sombra-3);
+  transform: translateX(-50%) translateY(8px);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity var(--dur-2) var(--ease-suave), transform var(--dur-2) var(--ease-suave), visibility 0s linear var(--dur-2);
+}
+.faixa-flutuante[data-visivel="1"] {
+  transform: translateX(-50%) translateY(0);
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transition: opacity var(--dur-2) var(--ease-suave), transform var(--dur-2) var(--ease-suave), visibility 0s;
+}
+.ff-texto { min-width: 0; padding: 10px 0; }
+.ff-acao {
+  flex-shrink: 0;
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0 14px;
+  font-size: 14.5px;
+  font-weight: 600;
+  color: var(--acento);
+  border-radius: var(--raio-p);
+  transition: background var(--dur-1) var(--ease-suave);
+}
+.ff-acao:hover { background: var(--acento-suave); }
+@media (prefers-reduced-motion: reduce) {
+  .faixa-flutuante, .faixa-flutuante[data-visivel="1"] { transition: none; }
+}
+
+/* ═══ IMPRESSÃO (o "exportar PDF" do app) ═══ */
+@media print {
+  html, body { overflow: visible; height: auto; }
+  .sidebar, .sb-overlay, .cabecalho, .compositor-area, .ir-fim,
+  .msg-acoes, .folha-fundo, .trilha, .digitando, .portao, .faixa-flutuante { display: none !important; }
+  .app { position: static; display: block; height: auto; overflow: visible; transform: none; }
+  .conversa { overflow: visible; }
+  .conversa-interna { max-width: none; padding: 0; gap: 16px; }
+  .msg { break-inside: avoid; animation: none; }
+  .msg[data-papel="user"] .msg-corpo,
+  .msg[data-papel="ai"] .msg-corpo {
+    max-width: 100%;
+    background: #F3F5F8 !important;
+    color: #14181D !important;
+    box-shadow: none;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  .bloco-codigo pre { white-space: pre-wrap; }
+}
+
+/* 15/09/2026 — troca de modelo pelo nome do modelo no alto (só conta ampliada pelo operador) */
+.cab-estado[data-trocavel="1"] { cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.cab-estado[data-trocavel="1"] .estado-texto { flex: 0 1 auto; }
+.cab-estado[data-trocavel="1"]:active .estado-texto { opacity: .6; }
+.cab-estado[data-trocavel="1"]:focus-visible { outline: 2px solid var(--anel-foco); outline-offset: -2px; border-radius: 10px; }
+.cab-trocar { flex-shrink: 0; display: inline-flex; margin-left: -4px; margin-right: auto; color: var(--txt-fraco); }
+.cab-trocar svg { width: 14px; height: 14px; }
+.linha-modelo .lm-textos { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.linha-modelo .lm-detalhe { font-size: 13px; color: var(--txt-fraco); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.linha-modelo .lm-marca { flex-shrink: 0; min-width: 18px; text-align: right; font-weight: 700; color: var(--acento); }
+.linha-modelo[aria-current="true"] .gl-chave { font-weight: 600; }
+.linha-modelo:disabled { opacity: .5; }
+
+/* Model provenance supplied by the server for this response. */
+.msg-modelo { color: var(--txt-suave); font-size: 11px; line-height: 1.5; margin-bottom: 8px; }
+.msg-modelo[hidden] { display: none; }
