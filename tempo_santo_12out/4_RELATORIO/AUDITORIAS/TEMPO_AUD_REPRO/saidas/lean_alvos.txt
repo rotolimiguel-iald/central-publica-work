@@ -1,0 +1,70 @@
+T1.a obrig=True | ["theorem no_time_matrix {ι : Type} [Fintype ι] [DecidableEq ι] [Nonempty ι] (T H : Matrix ι ι ℂ) {c : ℂ} (hc : c ≠ 0) : T * H - H * T ≠ c • (1 : Matrix ι ι ℂ)", "theorem no_time_matrix_fin (n : ℕ) (hn : 0 < n) (T H : Matrix (Fin n) (Fin n) ℂ) : T * H - H * T ≠ Complex.I • (1 : Matrix (Fin n) (Fin n) ℂ)"]
+
+T1.b obrig=False | ["theorem commutator_far_from_scalar {ι : Type} [Fintype ι] [DecidableEq ι] (T H : Matrix ι ι ℂ) (c : ℂ) : purityR (T * H - H * T - c • (1 : Matrix ι ι ℂ)) = purityR (T * H - H * T) + (Fintype.card ι : ℝ) * Complex.normSq c"]
+
+T1.c obrig=True | ["theorem no_finite_spectral_translation {ι : Type} [Fintype ι] [DecidableEq ι] [Nonempty ι] (V H : Matrix ι ι ℂ) (hV : IsUnit V) {s : ℂ} (hs : s ≠ 0) : V⁻¹ * H * V ≠ H + s • (1 : Matrix ι ι ℂ)"]
+
+T2.b obrig=False | ["theorem no_bounded_spectral_translation {A : Type*} [NormedRing A] [NormedAlgebra ℂ A] [CompleteSpace A] [Nontrivial A] (V : Aˣ) (H : A) {s : ℂ} (hs : s ≠ 0) : (↑V⁻¹ : A) * H * ↑V ≠ H + algebraMap ℂ A s"]
+
+T3.a obrig=True | ["theorem time_is_the_modular_flow {n : Type} [Fintype n] [DecidableEq n] (ρ : Matrix n n ℂ) (hρ : ρ.PosDef) : (∀ a, sigma ρ 0 a = a) ∧ (∀ s t a, sigma ρ s (sigma ρ t a) = sigma ρ (s + t) a) ∧ (∀ t a b, sigma ρ t (a * b) = sigma ρ t a * sigma ρ t b) ∧ (∀ t, sigma ρ t 1 = 1) ∧ (∀ t a, sigma ρ t aᴴ = (sigma ρ t a)ᴴ) ∧ (∀ t a, gibbs ρ (sigma ρ t a) = gibbs ρ a) ∧ (∀ a b, gibbs ρ (a * b) = gibbs ρ (b * Delta ρ a)) ∧ (∀ t, modPow ρ t ∈ unitary (Matrix n n ℂ))"]
+
+T3.b obrig=True | ["(re-exportações com os tipos originais: sigma_fixed_iff_diag, absoluteOne_flow_trivial, identity_flow_not_kms)"]
+
+T4.a obrig=True | ["theorem unitary_keeps_spectrum_and_purity (U : (Matrix n n ℂ)ˣ) (hU : (U : Matrix n n ℂ) ∈ unitary (Matrix n n ℂ)) (x : Matrix n n ℂ) : ((U : Matrix n n ℂ) * x * ((U⁻¹ : (Matrix n n ℂ)ˣ) : Matrix n n ℂ)).charpoly = x.charpoly ∧ purity ((U : Matrix n n ℂ) * x * (U : Matrix n n ℂ)ᴴ) = purity x"]
+
+T4.b obrig=True | ["theorem isometry_orbit_converges_only_if_fixed {X : Type*} [MetricSpace X] {f : X → X} (hf : Isometry f) {x z : X} (h : Filter.Tendsto (fun k : ℕ => f^[k] x) Filter.atTop (nhds z)) : x = z ∧ f z = z", "theorem isometric_flow_converges_only_if_fixed {X : Type*} [MetricSpace X] (φ : ℝ → X → X) (hgrp : ∀ s t x, φ (s + t) x = φ s (φ t x)) (hiso : ∀ s, Isometry (φ s)) {x z : X} (h : Filter.Tendsto (fun t => φ t x) Filter.atTop (nhds z)) : x = z ∧ ∀ s, φ s z = z", "theorem modular_orbit_converges_iff_diagonal (d : n → ℝ) (hd : ∀ i, 0 < d i) (hinj : Function.Injective d) (x : Matrix n n ℂ) : (∃ z, Filter.Tendsto (fun t => sigma (rhoD d) t x) Filter.atTop (nhds z)) ↔ x = diagExpect x"]
+
+T4.c obrig=True | ["def schurDiag (m : n → n → ℂ) : Matrix (n × n) (n × n) ℂ := Matrix.diagonal (fun p => m p.1 p.2)", "theorem schurDiag_mulVec (m : n → n → ℂ) (x : Matrix n n ℂ) (p : n × n) : (schurDiag m).mulVec (fun q => x q.1 q.2) p = m p.1 p.2 * x p.1 p.2", "theorem dephase_volume (g : n → n → ℝ) (t : ℝ) : (schurDiag (fun i j => ((Real.exp (-(t * g i j)) : ℝ) : ℂ))).det = ((Real.exp (-(t * ∑ i, ∑ j, g i j)) : ℝ) : ℂ)", "theorem dephase_volume_lt_one (g : n → n → ℝ) (hg : ∀ i j, 0 ≤ g i j) (hpos : ∃ i j, 0 < g i j) {t : ℝ} (ht : 0 < t) : Real.exp (-(t * ∑ i, ∑ j, g i j)) < 1", "theorem modular_volume_one (d : n → ℝ) (t : ℝ) : (schurDiag (fun i j => Complex.exp ((t : ℂ) * Complex.I * ((Real.log (d i) : ℂ) - (Real.log (d j) : ℂ))))).det = 1"]
+
+T4.d obrig=True | ["(re-exportações com os tipos originais)"]
+
+T4.e obrig=True | ["theorem volume_kept_yet_lands {s : ℝ} (hs : 0 < s) : (boost s).det = 1 ∧ Filter.Tendsto (fun k : ℕ => ((boost s) ^ k).mulVec ![1, -1]) Filter.atTop (nhds 0)"]
+
+T4.f obrig=False | ["theorem global_attractor_needs_volume_loss {m : ℕ} (L : Matrix (Fin m) (Fin m) ℝ) (h : ∀ v, Filter.Tendsto (fun k : ℕ => (L ^ k).mulVec v) Filter.atTop (nhds 0)) (hm : 0 < m) : |L.det| < 1"]
+
+T5.a obrig=True | ["(re-exportações com os tipos originais)"]
+
+T5.b obrig=True | ["theorem dephase_fixed_states_not_unique {n : Type} [Fintype n] [DecidableEq n] (g : n → n → ℝ) (hg0 : ∀ i, g i i = 0) {i₀ j₀ : n} (hij : i₀ ≠ j₀) : ∃ ρ σ : Matrix n n ℂ, ρ ≠ σ ∧ ρ.PosSemidef ∧ σ.PosSemidef ∧ ρ.trace = 1 ∧ σ.trace = 1 ∧ (∀ t, dephase g t ρ = ρ) ∧ (∀ t, dephase g t σ = σ)"]
+
+T6.a obrig=True | ["theorem purityR_dephase (g : n → n → ℝ) (t : ℝ) (x : Matrix n n ℂ) : purityR (dephase g t x) = ∑ i, ∑ j, Real.exp (-(2 * t * g i j)) * Complex.normSq (x i j)"]
+
+T6.b obrig=True | ["(re-exportação com o tipo original)"]
+
+T6.c obrig=True | ["theorem purityR_dephase_lt (g : n → n → ℝ) (hg : ∀ i j, 0 ≤ g i j) {t : ℝ} (ht : 0 < t) (x : Matrix n n ℂ) {i₀ j₀ : n} (hpos : 0 < g i₀ j₀) (hx : x i₀ j₀ ≠ 0) : purityR (dephase g t x) < purityR x"]
+
+T6.d obrig=True | ["theorem purity_of_hermitian (x : Matrix n n ℂ) (hx : x.IsHermitian) : purity x = (x * x).trace", "theorem purityR_modular (d : n → ℝ) (hd : ∀ i, 0 < d i) (t : ℝ) (x : Matrix n n ℂ) : purityR (sigma (rhoD d) t x) = purityR x"]
+
+T7.a obrig=True | ["theorem dephase_inverse (g : n → n → ℝ) (t : ℝ) (x : Matrix n n ℂ) : dephase g (-t) (dephase g t x) = x ∧ dephase g t (dephase g (-t) x) = x"]
+
+T7.b obrig=True | ["theorem inverse_dephasing_not_positive {γ t : ℝ} (hγ : 0 < γ) (ht : 0 < t) : let g : Fin 2 → Fin 2 → ℝ := fun i j => if i = j then 0 else γ; let ψ : Matrix (Fin 2) (Fin 2) ℂ := (1 / 2 : ℂ) • !![1, 1; 1, 1]; ψ.PosSemidef ∧ ψ.trace = 1 ∧ ¬ (dephase g (-t) ψ).PosSemidef"]
+
+T8.a obrig=True | ["noncomputable def coherenceScaling (g : n → n → ℝ) (i₀ j₀ : n) (hg : g i₀ j₀ = 1) : DualScalingData (Matrix n n ℂ) where tau := fun x => ‖x i₀ j₀‖; theta := fun s x => dephase g s x; scaling := _"]
+
+T8.b obrig=True | ["theorem the_coherence_obeys_agape (g : n → n → ℝ) (i₀ j₀ : n) (hg : g i₀ j₀ = 1) (x : Matrix n n ℂ) (hx : x i₀ j₀ ≠ 0) : <a conjunção de Fundacao.agape para D := coherenceScaling g i₀ j₀ hg e m := x>"]
+
+T8.c obrig=True | ["theorem the_record_does_not_scale (g : n → n → ℝ) (hg0 : ∀ i, g i i = 0) (i₀ : n) (x : Matrix n n ℂ) (hx : x i₀ i₀ ≠ 0) {s : ℝ} (hs : s ≠ 0) : ‖dephase g s x i₀ i₀‖ ≠ Real.exp (-s) * ‖x i₀ i₀‖"]
+
+T8.d obrig=True | ["(re-exportação)"]
+
+T9.a obrig=True | ["theorem flow_isIdempotentElem_iff {A : Type*} [Ring A] [Algebra ℂ A] {P : A} (hP : IsIdempotentElem P) (hP1 : (1 : A) - P ≠ 0) (t : ℝ) : IsIdempotentElem (TheAxiomAndTheFalseWitness.axiomFlow P t) ↔ t = 0"]
+
+T9.b obrig=True | ["theorem flow_isUnit {A : Type*} [Ring A] [Algebra ℂ A] {P : A} (hP : IsIdempotentElem P) (t : ℝ) : IsUnit (TheAxiomAndTheFalseWitness.axiomFlow P t)"]
+
+T9.c obrig=True | ["theorem post_not_isUnit {A : Type*} [Ring A] {P : A} (hP : IsIdempotentElem P) (hP1 : P ≠ 1) : ¬ IsUnit P"]
+
+T9.d obrig=False | ["theorem flow_full_rank (n : ℕ) (P : Matrix (Fin n) (Fin n) ℂ) (hP : IsIdempotentElem P) (t : ℝ) : (TheAxiomAndTheFalseWitness.axiomFlow P t).rank = n", "theorem post_rank_lt (n : ℕ) (P : Matrix (Fin n) (Fin n) ℂ) (hP : IsIdempotentElem P) (hP1 : P ≠ 1) : P.rank < n"]
+
+T9.e obrig=True | ["theorem the_time_has_no_rank : <conjunção: T1.a (forma Fin n) ∧ T9.a ∧ T9.b ∧ T9.c ∧ axiomFlow_tendsto_the_post>"]
+
+T10.a obrig=True | ["(re-exportações: ChatgptAudit.PolarPeriod016.faithful_period_iff, reciprocal_temperature)"]
+
+T10.b obrig=True | ["theorem clock_reads_modulo_period {κ : ℝ} (hκ : κ ≠ 0) (t : ℝ) : Circle.exp (κ * (t + 2 * Real.pi / κ)) = Circle.exp (κ * t)", "theorem frozen_clock (t u : ℝ) : Circle.exp (0 * t) = Circle.exp (0 * u)"]
+
+T10.c obrig=True | ["(re-exportações com os tipos originais)"]
+
+T10.d obrig=True | ["theorem modular_clock_rotates_without_shrinking (d : n → ℝ) (hd : ∀ i, 0 < d i) (t : ℝ) (x : Matrix n n ℂ) (i j : n) : ‖sigma (rhoD d) t x i j‖ = ‖x i j‖"]
+
+T10.e obrig=True | ["(re-exportações com os tipos originais)"]
+
+T11.a obrig=True | ["theorem optical_attractor_is_the_absolute_one : (1 / 2 : ℂ) • (1 : Matrix (Fin 2) (Fin 2) ℂ) = absoluteRho (Fin 2)", "(re-exportação de absoluteOne_flow_trivial)"]
+

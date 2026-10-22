@@ -1,0 +1,936 @@
+{
+ "audit_lean": {
+  "fonte": "sandbox/AuditTiposR2.lean",
+  "sha256": "beb11acf74f3340a69c84a7f38bdce4b9e65674c3420f0d7d446ac0eee8fbf95",
+  "exit_code": 0,
+  "n_error": 0,
+  "n_warning": 0,
+  "saida": "logs/R2_AUDIT_TIPOS_saida.txt",
+  "saida_sha256": "3566e39fdc2636971e177fc916baf0cb8084090be98a32eb1d07d696f3dc6411",
+  "n_examples_type_of": 244,
+  "n_pares_mantida_renomeada": 122,
+  "n_reforcos_habitados": 4,
+  "nota": "AUTORITATIVO: `example : type_of% @R1.X := @R2.Y` nos DOIS sentidos para os 122 pares mantida/renomeada (tipo identico, defeq) e, para os 4 reforcos (E5.09, E5.11, E5.12), o tipo R1 habitado pelo termo R2 (a R2 implica a R1); EXIT 0, 0 erros, 0 avisos. Importou o .olean da R1 (3_KERNEL/sandbox) SO DE LEITURA."
+ },
+ "comparacao_textual_dos_check": {
+  "n_pares": 126,
+  "n_tipo_textual_identico": 122,
+  "pares_com_tipo_textual_diferente": [
+   {
+    "R1": "purityR_modular",
+    "R2": "purityR_modular",
+    "reforco": true,
+    "tipo_R1": "∀ {n : Type} [inst : Fintype n] [inst_1 : DecidableEq n] (d : n → ℝ),\n  (∀ (i : n), 0 < d i) →\n    ∀ (t : ℝ) (x : Matrix n n ℂ), TGLExt.purityR (TGLExt.sigma (TGLExt.rhoD d) t x) = TGLExt.purityR x",
+    "tipo_R2": "∀ {n : Type} [inst : Fintype n] [inst_1 : DecidableEq n] (d : n → ℝ) (t : ℝ)\n  (x : Matrix n n ℂ), TGLExt.purityR (TGLExt.sigma (TGLExt.rhoD d) t x) = TGLExt.purityR x"
+   },
+   {
+    "R1": "clock_reads_modulo_period",
+    "R2": "clock_reads_modulo_period",
+    "reforco": true,
+    "tipo_R1": "∀ {κ : ℝ},\n  κ ≠ 0 → ∀ (t : ℝ), Circle.exp (κ * (t + 2 * Real.pi / κ)) = Circle.exp (κ * t)",
+    "tipo_R2": "∀ (κ t : ℝ),\n  Circle.exp (κ * (t + 2 * Real.pi / κ)) = Circle.exp (κ * t)"
+   },
+   {
+    "R1": "the_two_regimes_of_time",
+    "R2": "the_two_regimes_of_time",
+    "reforco": true,
+    "tipo_R1": "(∀ {X : Type u_1} [inst : MetricSpace X] {f : X → X},\n    Isometry f → ∀ {x z : X}, Filter.Tendsto (fun k => f^[k] x) Filter.atTop (nhds z) → x = z ∧ f z = z) ∧\n  (∀ {X : Type u_1} [inst : MetricSpace X] (φ : ℝ → X → X),\n      (∀ (s t : ℝ) (x : X), φ (s + t) x = φ s (φ t x)) →\n        (∀ (s : ℝ), Isometry (φ s)) →\n          ∀ {x z : X}, Filter.Tendsto (fun t => φ t x) Filter.atTop (nhds z) → x = z ∧ ∀ (s : ℝ), φ s z = z) ∧\n    (∀ {n : Type} [inst : Fintype n] [inst_1 : DecidableEq n] (g : n → n → ℝ) (t : ℝ),\n        (TGLExt.TheTimeHasNoRank.schurDiag fun i j => ↑(Real.exp (-(t * g i j)))).det =\n          ↑(Real.exp (-(t * ∑ i, ∑ j, g i j)))) ∧\n      (∀ {n : Type} [inst : Fintype n] (g : n → n → ℝ),\n          (∀ (i j : n), 0 ≤ g i j) → (∃ i j, 0 < g i j) → ∀ {t : ℝ}, 0 < t → Real.exp (-(t * ∑ i, ∑ j, g i j)) < 1) ∧\n        (∀ {n : Type} [inst : Fintype n] [inst_1 : DecidableEq n] (d : n → ℝ) (t : ℝ),\n            (TGLExt.TheTimeHasNoRank.schurDiag fun i j =>\n                  Complex.exp (↑t * Complex.I * (↑(Real.log (d i)) - ↑(Real.log (d j))))).det =\n              1) ∧\n          (∀ {n : Type} [inst : Fintype n] (g : n → n → ℝ),\n              (∀ (i j : n), 0 ≤ g i j) →\n                ∀ {t : ℝ},\n                  0 < t →\n                    ∀ (x : Matrix n n ℂ) {i₀ j₀ : n},\n                      0 < g i₀ j₀ → x i₀ j₀ ≠ 0 → TGLExt.purityR (TGLExt.dephase g t x) < TGLExt.purityR x) ∧\n            (∀ {γ t : ℝ},\n                0 < γ →\n                  0 < t →\n                    have g := fun i j => if i = j then 0 else γ;\n                    have ψ := (1 / 2) • !![1, 1; 1, 1];\n                    ψ.PosSemidef ∧ ψ.trace = 1 ∧ ¬(TGLExt.dephase g (-t) ψ).PosSemidef) ∧\n              (∀ {κ : ℝ}, κ ≠ 0 → ∀ (t : ℝ), Circle.exp (κ * (t + 2 * Real.pi / κ)) = Circle.exp (κ * t)) ∧\n                ∀ (t u : ℝ), Circle.exp (0 * t) = Circle.exp (0 * u)",
+    "tipo_R2": "(∀ {X : Type u_1} [inst : MetricSpace X] {f : X → X},\n    Isometry f → ∀ {x z : X}, Filter.Tendsto (fun k => f^[k] x) Filter.atTop (nhds z) → x = z ∧ f z = z) ∧\n  (∀ {X : Type u_1} [inst : MetricSpace X] (φ : ℝ → X → X),\n      (∀ (s t : ℝ) (x : X), φ (s + t) x = φ s (φ t x)) →\n        (∀ (s : ℝ), Isometry (φ s)) →\n          ∀ {x z : X}, Filter.Tendsto (fun t => φ t x) Filter.atTop (nhds z) → x = z ∧ ∀ (s : ℝ), φ s z = z) ∧\n    (∀ {n : Type} [inst : Fintype n] [inst_1 : DecidableEq n] (g : n → n → ℝ) (t : ℝ),\n        (TGLExt.TheTimeIsNotAPost.schurDiag fun i j => ↑(Real.exp (-(t * g i j)))).det =\n          ↑(Real.exp (-(t * ∑ i, ∑ j, g i j)))) ∧\n      (∀ {n : Type} [inst : Fintype n] (g : n → n → ℝ),\n          (∀ (i j : n), 0 ≤ g i j) → (∃ i j, 0 < g i j) → ∀ {t : ℝ}, 0 < t → Real.exp (-(t * ∑ i, ∑ j, g i j)) < 1) ∧\n        (∀ {n : Type} [inst : Fintype n] [inst_1 : DecidableEq n] (d : n → ℝ) (t : ℝ),\n            (TGLExt.TheTimeIsNotAPost.schurDiag fun i j =>\n                  Complex.exp (↑t * Complex.I * (↑(Real.log (d i)) - ↑(Real.log (d j))))).det =\n              1) ∧\n          (∀ {n : Type} [inst : Fintype n] (g : n → n → ℝ),\n              (∀ (i j : n), 0 ≤ g i j) →\n                ∀ {t : ℝ},\n                  0 < t →\n                    ∀ (x : Matrix n n ℂ) {i₀ j₀ : n},\n                      0 < g i₀ j₀ → x i₀ j₀ ≠ 0 → TGLExt.purityR (TGLExt.dephase g t x) < TGLExt.purityR x) ∧\n            (∀ {γ t : ℝ},\n                0 < γ →\n                  0 < t →\n                    have g := fun i j => if i = j then 0 else γ;\n                    have ψ := (1 / 2) • !![1, 1; 1, 1];\n                    ψ.PosSemidef ∧ ψ.trace = 1 ∧ ¬(TGLExt.dephase g (-t) ψ).PosSemidef) ∧\n              (∀ (κ t : ℝ), Circle.exp (κ * (t + 2 * Real.pi / κ)) = Circle.exp (κ * t)) ∧\n                ∀ (t u : ℝ), Circle.exp (0 * t) = Circle.exp (0 * u)"
+   },
+   {
+    "R1": "probe_bounded_spectral_translation",
+    "R2": "probe_bounded_spectral_translation",
+    "reforco": true,
+    "tipo_R1": "True",
+    "tipo_R2": "↑1⁻¹ * 0 * ↑1 ≠\n  0 + (algebraMap ℂ (Matrix (Fin 2) (Fin 2) ℂ)) 1"
+   }
+  ],
+  "todos_os_diferentes_sao_reforcos": true,
+  "n_nao_achados": 0,
+  "nota": "informativo (texto do #check, namespace normalizado); a prova de identidade de tipo e a do audit_lean"
+ },
+ "pares": [
+  {
+   "R1": "angle_has_no_limit",
+   "R2": "angle_has_no_limit",
+   "tipo_textual_identico": true,
+   "reforco": false,
+   "achado_na_saida": true
+  },
+  {
+   "R1": "angle_is_periodic",
+   "R2": "angle_is_periodic",
+   "tipo_textual_identico": true,
+   "reforco": false,
+   "achado_na_saida": true
+  },
+  {
+   "R1": "boost_pow_null",
+   "R2": "boost_pow_null",
+   "tipo_textual_identico": true,
+   "reforco": false,
+   "achado_na_saida": true
+  },
+  {
+   "R1": "centralizer_iff_needs_injective_weights",
+   "R2": "centralizer_iff_needs_injective_weights",
+   "tipo_textual_identico": true,
+   "reforco": false,
+   "achado_na_saida": true
+  },
+  {
+   "R1": "clock_faithful_iff_one_turn",
+   "R2": "clock_faithful_iff_one_turn",
+   "tipo_textual_identico": true,
+   "reforco": false,
+   "achado_na_saida": true
+  },
+  {
+   "R1": "clock_reciprocal_temperature",
+   "R2": "clock_reciprocal_temperature",
+   "tipo_textual_identico": true,
+   "reforco": false,
+   "achado_na_saida": true
+  },
+  {
+   "R1": "coherenceScaling",
+   "R2": "coherenceScaling",
+   "tipo_textual_identico": true,
+   "reforco": false,
+   "achado_na_saida": true
+  },
+  {
+   "R1": "coherence_entry_scaling",
+   "R2": "coherence_entry_scaling",
+   "tipo_textual_identico": true,
+   "reforco": false,
+   "achado_na_saida": true
+  },
+  {
+   "R1": "commutator_can_be_nonzero",
+   "R2": "commutator_can_be_nonzero",
+   "tipo_textual_identico": true,
+   "reforco": false,
+   "achado_na_saida": true
+  },
+  {
+   "R1": "commutator_far_from_scalar",
+   "R2": "commutator_far_from_scalar",
+   "tipo_textual_identico": true,
+   "reforco": false,
+   "achado_na_saida": true
+  },
+  {
+   "R1": "control_inverse_at_time_zero",
+   "R2": "control_inverse_at_time_zero",
+   "tipo_textual_identico": true,
+   "reforco": false,
+   "achado_na_saida": true
+  },
+  {
+   "R1": "control_inverse_on_diagonal",
+   "R2": "control_inverse_on_diagonal",
+   "tipo_textual_identico": true,
+   "reforco": false,
+   "achado_na_saida": true
+  },
+  {
+   "R1": "dephase_apply",
+   "R2": "dephase_apply",
+   "tipo_textual_identico": true,
+   "reforco": false,
+   "achado_na_saida": true
+  },
+  {
+   "R1": "dephase_factor_norm_le_one",
+   "R2": "dephase_factor_norm_le_one",
+   "tipo_textual_identico": true,
+   "reforco": false,
+   "achado_na_saida": true
+  },
+  {
+   "R1": "dephase_fixed_states_not_unique",
+   "R2": "dephase_fixed_states_not_unique",
+   "tipo_textual_identico": true,
+   "reforco": false,
+   "achado_na_saida": true
+  },
+  {
+   "R1": "dephase_inverse",
+   "R2": "dephase_inverse",
+   "tipo_textual_identico": true,
+   "reforco": false,
+   "achado_na_saida": true
+  },
+  {
+   "R1": "dephase_volume",
+   "R2": "dephase_volume",
+   "tipo_textual_identico": true,
+   "reforco": false,
+   "achado_na_saida": true
+  },
+  {
+   "R1": "dephase_volume_lt_one",
+   "R2": "dephase_volume_lt_one",
+   "tipo_textual_identico": true,
+   "reforco": false,
+   "achado_na_saida": true
+  },
+  {
+   "R1": "dephasing_iff_needs_positive_rates",
+   "R2": "dephasing_iff_needs_positive_rates",
+   "tipo_textual_identico": true,
+   "reforco": false,
+   "achado_na_saida": true
+  },
+  {
+   "R1": "dephasing_lands_without_being_fixed",
+   "R2": "dephasing_lands_without_being_fixed",
+   "tipo_textual_identico": true,
+   "reforco": false,
+   "achado_na_saida": true
+  },
+  {
+   "R1": "empty_dimension_admits_time",
+   "R2": "empty_dimension_admits_time",
+   "tipo_textual_identico": true,
+   "reforco": false,
+   "achado_na_saida": true
+  },
+  {
+   "R1": "face_clock_has_no_period",
+   "R2": "face_clock_has_no_period",
+   "tipo_textual_identico": true,
+   "reforco": false,
+   "achado_na_saida": true
+  },
+  {
+   "R1": "face_distinguishes_instants",
+   "R2": "face_distinguishes_instants",
+   "tipo_textual_identico": true,
+   "reforco": false,
+   "achado_na_saida": true
+  },
+  {
+   "R1": "face_has_a_limit",
+   "R2": "face_has_a_limit",
+   "tipo_textual_identico": true,
+   "reforco": false,
+   "achado_na_saida": true
+  },
+  {
+   "R1": "fixed_sector_is_the_centralizer",
+   "R2": "fixed_sector_is_the_centralizer",
+   "tipo_textual_identico": true,
+   "reforco": false,
+   "achado_na_saida": true
+  },
+  {
+   "R1": "fixed_set_of_dephasing_is_the_diagonal",
+   "R2": "fixed_set_of_dephasing_is_the_diagonal",
+   "tipo_textual_identico": true,
+   "reforco": false,
+   "achado_na_saida": true
+  },
+  {
+   "R1": "flow_at_one_is_not_idempotent",
+   "R2": "flow_at_one_is_not_idempotent",
+   "tipo_textual_identico": true,
+   "reforco": false,
+   "achado_na_saida": true
+  },
+  {
+   "R1": "flow_at_zero_is_idempotent",
+   "R2": "flow_at_zero_is_idempotent",
+   "tipo_textual_identico": true,
+   "reforco": false,
+   "achado_na_saida": true
+  },
+  {
+   "R1": "flow_full_rank",
+   "R2": "flow_full_rank",
+   "tipo_textual_identico": true,
+   "reforco": false,
+   "achado_na_saida": true
+  },
+  {
+   "R1": "flow_isIdempotentElem_iff",
+   "R2": "flow_isIdempotentElem_iff",
+   "tipo_textual_identico": true,
+   "reforco": false,
+   "achado_na_saida": true
+  },
+  {
+   "R1": "flow_isUnit",
+   "R2": "flow_isUnit",
+   "tipo_textual_identico": true,
+   "reforco": false,
+   "achado_na_saida": true
+  },
+  {
+   "R1": "flow_of_one_is_idempotent",
+   "R2": "flow_of_one_is_idempotent",
+   "tipo_textual_identico": true,
+   "reforco": false,
+   "achado_na_saida": true
+  },
+  {
+   "R1": "flow_sq",
+   "R2": "flow_sq",
+   "tipo_textual_identico": true,
+   "reforco": false,
+   "achado_na_saida": true
+  },
+  {
+   "R1": "frobenius_norm_eq_purityR",
+   "R2": "frobenius_norm_eq_purityR",
+   "tipo_textual_identico": true,
+   "reforco": false,
+   "achado_na_saida": true
+  },
+  {
+   "R1": "frozen_clock",
+   "R2": "frozen_clock",
+   "tipo_textual_identico": true,
+   "reforco": false,
+   "achado_na_saida": true
+  },
+  {
+   "R1": "frozen_clock_not_faithful",
+   "R2": "frozen_clock_not_faithful",
+   "tipo_textual_identico": true,
+   "reforco": false,
+   "achado_na_saida": true
+  },
+  {
+   "R1": "gRate",
+   "R2": "gRate",
+   "tipo_textual_identico": true,
+   "reforco": false,
+   "achado_na_saida": true
+  },
+  {
+   "R1": "gRate_00",
+   "R2": "gRate_00",
+   "tipo_textual_identico": true,
+   "reforco": false,
+   "achado_na_saida": true
+  },
+  {
+   "R1": "gRate_01",
+   "R2": "gRate_01",
+   "tipo_textual_identico": true,
+   "reforco": false,
+   "achado_na_saida": true
+  },
+  {
+   "R1": "gRate_10",
+   "R2": "gRate_10",
+   "tipo_textual_identico": true,
+   "reforco": false,
+   "achado_na_saida": true
+  },
+  {
+   "R1": "gRate_11",
+   "R2": "gRate_11",
+   "tipo_textual_identico": true,
+   "reforco": false,
+   "achado_na_saida": true
+  },
+  {
+   "R1": "gRate_diag",
+   "R2": "gRate_diag",
+   "tipo_textual_identico": true,
+   "reforco": false,
+   "achado_na_saida": true
+  },
+  {
+   "R1": "gRate_nonneg",
+   "R2": "gRate_nonneg",
+   "tipo_textual_identico": true,
+   "reforco": false,
+   "achado_na_saida": true
+  },
+  {
+   "R1": "gRate_off",
+   "R2": "gRate_off",
+   "tipo_textual_identico": true,
+   "reforco": false,
+   "achado_na_saida": true
+  },
+  {
+   "R1": "global_attractor_needs_volume_loss",
+   "R2": "global_attractor_needs_volume_loss",
+   "tipo_textual_identico": true,
+   "reforco": false,
+   "achado_na_saida": true
+  },
+  {
+   "R1": "inverse_dephasing_not_positive",
+   "R2": "inverse_dephasing_not_positive",
+   "tipo_textual_identico": true,
+   "reforco": false,
+   "achado_na_saida": true
+  },
+  {
+   "R1": "inverse_dephasing_quadratic_form",
+   "R2": "inverse_dephasing_quadratic_form",
+   "tipo_textual_identico": true,
+   "reforco": false,
+   "achado_na_saida": true
+  },
+  {
+   "R1": "isometric_flow_converges_only_if_fixed",
+   "R2": "isometric_flow_converges_only_if_fixed",
+   "tipo_textual_identico": true,
+   "reforco": false,
+   "achado_na_saida": true
+  },
+  {
+   "R1": "isometry_iterate'",
+   "R2": "isometry_iterate'",
+   "tipo_textual_identico": true,
+   "reforco": false,
+   "achado_na_saida": true
+  },
+  {
+   "R1": "isometry_orbit_converges_only_if_fixed",
+   "R2": "isometry_orbit_converges_only_if_fixed",
+   "tipo_textual_identico": true,
+   "reforco": false,
+   "achado_na_saida": true
+  },
+  {
+   "R1": "light_flow_group",
+   "R2": "light_flow_group",
+   "tipo_textual_identico": true,
+   "reforco": false,
+   "achado_na_saida": true
+  },
+  {
+   "R1": "light_modular_orbit_converges_iff_post",
+   "R2": "light_modular_orbit_converges_iff_post",
+   "tipo_textual_identico": true,
+   "reforco": false,
+   "achado_na_saida": true
+  },
+  {
+   "R1": "modular_clock_rotates_without_shrinking",
+   "R2": "modular_clock_rotates_without_shrinking",
+   "tipo_textual_identico": true,
+   "reforco": false,
+   "achado_na_saida": true
+  },
+  {
+   "R1": "modular_factor_norm_one",
+   "R2": "modular_factor_norm_one",
+   "tipo_textual_identico": true,
+   "reforco": false,
+   "achado_na_saida": true
+  },
+  {
+   "R1": "modular_flow_is_isometry",
+   "R2": "modular_flow_is_isometry",
+   "tipo_textual_identico": true,
+   "reforco": false,
+   "achado_na_saida": true
+  },
+  {
+   "R1": "modular_iff_needs_injective_weights",
+   "R2": "modular_iff_needs_injective_weights",
+   "tipo_textual_identico": true,
+   "reforco": false,
+   "achado_na_saida": true
+  },
+  {
+   "R1": "modular_orbit_converges_iff_diagonal",
+   "R2": "modular_orbit_converges_iff_diagonal",
+   "tipo_textual_identico": true,
+   "reforco": false,
+   "achado_na_saida": true
+  },
+  {
+   "R1": "modular_orbit_converges_iff_diagonal_entrywise",
+   "R2": "modular_orbit_converges_iff_diagonal_entrywise",
+   "tipo_textual_identico": true,
+   "reforco": false,
+   "achado_na_saida": true
+  },
+  {
+   "R1": "modular_volume_one",
+   "R2": "modular_volume_one",
+   "tipo_textual_identico": true,
+   "reforco": false,
+   "achado_na_saida": true
+  },
+  {
+   "R1": "no_bounded_spectral_translation",
+   "R2": "no_bounded_spectral_translation",
+   "tipo_textual_identico": true,
+   "reforco": false,
+   "achado_na_saida": true
+  },
+  {
+   "R1": "no_coherence_no_loss",
+   "R2": "no_coherence_no_loss",
+   "tipo_textual_identico": true,
+   "reforco": false,
+   "achado_na_saida": true
+  },
+  {
+   "R1": "no_finite_instant_is_the_post",
+   "R2": "no_finite_instant_is_the_post",
+   "tipo_textual_identico": true,
+   "reforco": false,
+   "achado_na_saida": true
+  },
+  {
+   "R1": "no_finite_spectral_translation",
+   "R2": "no_finite_spectral_translation",
+   "tipo_textual_identico": true,
+   "reforco": false,
+   "achado_na_saida": true
+  },
+  {
+   "R1": "no_time_matrix",
+   "R2": "no_time_matrix",
+   "tipo_textual_identico": true,
+   "reforco": false,
+   "achado_na_saida": true
+  },
+  {
+   "R1": "no_time_matrix_fin",
+   "R2": "no_time_matrix_fin",
+   "tipo_textual_identico": true,
+   "reforco": false,
+   "achado_na_saida": true
+  },
+  {
+   "R1": "nontracial_state_rejects_the_identity_flow",
+   "R2": "nontracial_state_rejects_the_identity_flow",
+   "tipo_textual_identico": true,
+   "reforco": false,
+   "achado_na_saida": true
+  },
+  {
+   "R1": "optical_attractor_clock_stops",
+   "R2": "half_identity_clock_stops",
+   "tipo_textual_identico": true,
+   "reforco": false,
+   "achado_na_saida": true
+  },
+  {
+   "R1": "optical_attractor_is_the_absolute_one",
+   "R2": "half_identity_is_absoluteRho_two",
+   "tipo_textual_identico": true,
+   "reforco": false,
+   "achado_na_saida": true
+  },
+  {
+   "R1": "past_null_ray_contracts",
+   "R2": "past_null_ray_contracts",
+   "tipo_textual_identico": true,
+   "reforco": false,
+   "achado_na_saida": true
+  },
+  {
+   "R1": "postDiag",
+   "R2": "postDiag",
+   "tipo_textual_identico": true,
+   "reforco": false,
+   "achado_na_saida": true
+  },
+  {
+   "R1": "postDiag_compl_ne_zero",
+   "R2": "postDiag_compl_ne_zero",
+   "tipo_textual_identico": true,
+   "reforco": false,
+   "achado_na_saida": true
+  },
+  {
+   "R1": "postDiag_idem",
+   "R2": "postDiag_idem",
+   "tipo_textual_identico": true,
+   "reforco": false,
+   "achado_na_saida": true
+  },
+  {
+   "R1": "postDiag_ne_one",
+   "R2": "postDiag_ne_one",
+   "tipo_textual_identico": true,
+   "reforco": false,
+   "achado_na_saida": true
+  },
+  {
+   "R1": "post_not_isUnit",
+   "R2": "post_not_isUnit",
+   "tipo_textual_identico": true,
+   "reforco": false,
+   "achado_na_saida": true
+  },
+  {
+   "R1": "post_rank_lt",
+   "R2": "post_rank_lt",
+   "tipo_textual_identico": true,
+   "reforco": false,
+   "achado_na_saida": true
+  },
+  {
+   "R1": "probe_bounded_spectral_translation_complex",
+   "R2": "probe_bounded_spectral_translation_complex",
+   "tipo_textual_identico": true,
+   "reforco": false,
+   "achado_na_saida": true
+  },
+  {
+   "R1": "probe_commutator_far_from_scalar",
+   "R2": "probe_commutator_far_from_scalar",
+   "tipo_textual_identico": true,
+   "reforco": false,
+   "achado_na_saida": true
+  },
+  {
+   "R1": "probe_gRate_one_sum",
+   "R2": "probe_gRate_one_sum",
+   "tipo_textual_identico": true,
+   "reforco": false,
+   "achado_na_saida": true
+  },
+  {
+   "R1": "probe_modular_orbit_of_psiPlus_has_no_limit",
+   "R2": "probe_modular_orbit_of_psiPlus_has_no_limit",
+   "tipo_textual_identico": true,
+   "reforco": false,
+   "achado_na_saida": true
+  },
+  {
+   "R1": "probe_psiPlus_dephased_purity",
+   "R2": "probe_psiPlus_dephased_purity",
+   "tipo_textual_identico": true,
+   "reforco": false,
+   "achado_na_saida": true
+  },
+  {
+   "R1": "probe_psiPlus_purity",
+   "R2": "probe_psiPlus_purity",
+   "tipo_textual_identico": true,
+   "reforco": false,
+   "achado_na_saida": true
+  },
+  {
+   "R1": "probe_rho_two_thirds_not_tracial",
+   "R2": "probe_rho_two_thirds_not_tracial",
+   "tipo_textual_identico": true,
+   "reforco": false,
+   "achado_na_saida": true
+  },
+  {
+   "R1": "probe_rho_two_thirds_posDef",
+   "R2": "probe_rho_two_thirds_posDef",
+   "tipo_textual_identico": true,
+   "reforco": false,
+   "achado_na_saida": true
+  },
+  {
+   "R1": "probe_rotation_orbit_has_no_limit",
+   "R2": "probe_rotation_orbit_has_no_limit",
+   "tipo_textual_identico": true,
+   "reforco": false,
+   "achado_na_saida": true
+  },
+  {
+   "R1": "probe_the_time_has_no_rank",
+   "R2": "probe_the_time_is_not_a_post",
+   "tipo_textual_identico": true,
+   "reforco": false,
+   "achado_na_saida": true
+  },
+  {
+   "R1": "psiPlus",
+   "R2": "psiPlus",
+   "tipo_textual_identico": true,
+   "reforco": false,
+   "achado_na_saida": true
+  },
+  {
+   "R1": "psiPlus_01_ne_zero",
+   "R2": "psiPlus_01_ne_zero",
+   "tipo_textual_identico": true,
+   "reforco": false,
+   "achado_na_saida": true
+  },
+  {
+   "R1": "psiPlus_apply",
+   "R2": "psiPlus_apply",
+   "tipo_textual_identico": true,
+   "reforco": false,
+   "achado_na_saida": true
+  },
+  {
+   "R1": "psiPlus_not_diagonal",
+   "R2": "psiPlus_not_diagonal",
+   "tipo_textual_identico": true,
+   "reforco": false,
+   "achado_na_saida": true
+  },
+  {
+   "R1": "psiPlus_posSemidef",
+   "R2": "psiPlus_posSemidef",
+   "tipo_textual_identico": true,
+   "reforco": false,
+   "achado_na_saida": true
+  },
+  {
+   "R1": "psiPlus_trace",
+   "R2": "psiPlus_trace",
+   "tipo_textual_identico": true,
+   "reforco": false,
+   "achado_na_saida": true
+  },
+  {
+   "R1": "purityR_dephase",
+   "R2": "purityR_dephase",
+   "tipo_textual_identico": true,
+   "reforco": false,
+   "achado_na_saida": true
+  },
+  {
+   "R1": "purityR_dephase_lt",
+   "R2": "purityR_dephase_lt",
+   "tipo_textual_identico": true,
+   "reforco": false,
+   "achado_na_saida": true
+  },
+  {
+   "R1": "purityR_sigma",
+   "R2": "purityR_sigma",
+   "tipo_textual_identico": true,
+   "reforco": false,
+   "achado_na_saida": true
+  },
+  {
+   "R1": "purity_grows_backwards",
+   "R2": "purity_grows_backwards",
+   "tipo_textual_identico": true,
+   "reforco": false,
+   "achado_na_saida": true
+  },
+  {
+   "R1": "purity_never_grows_under_dephasing",
+   "R2": "purity_never_grows_under_dephasing",
+   "tipo_textual_identico": true,
+   "reforco": false,
+   "achado_na_saida": true
+  },
+  {
+   "R1": "purity_of_hermitian",
+   "R2": "purity_of_hermitian",
+   "tipo_textual_identico": true,
+   "reforco": false,
+   "achado_na_saida": true
+  },
+  {
+   "R1": "quad_form_fin_two",
+   "R2": "quad_form_fin_two",
+   "tipo_textual_identico": true,
+   "reforco": false,
+   "achado_na_saida": true
+  },
+  {
+   "R1": "rhoD_equal_weights",
+   "R2": "rhoD_equal_weights",
+   "tipo_textual_identico": true,
+   "reforco": false,
+   "achado_na_saida": true
+  },
+  {
+   "R1": "rotation_isometry",
+   "R2": "rotation_isometry",
+   "tipo_textual_identico": true,
+   "reforco": false,
+   "achado_na_saida": true
+  },
+  {
+   "R1": "schurDiag",
+   "R2": "schurDiag",
+   "tipo_textual_identico": true,
+   "reforco": false,
+   "achado_na_saida": true
+  },
+  {
+   "R1": "schurDiag_is_the_dephasing",
+   "R2": "schurDiag_is_the_dephasing",
+   "tipo_textual_identico": true,
+   "reforco": false,
+   "achado_na_saida": true
+  },
+  {
+   "R1": "schurDiag_is_the_modular_flow",
+   "R2": "schurDiag_is_the_modular_flow",
+   "tipo_textual_identico": true,
+   "reforco": false,
+   "achado_na_saida": true
+  },
+  {
+   "R1": "schurDiag_mulVec",
+   "R2": "schurDiag_mulVec",
+   "tipo_textual_identico": true,
+   "reforco": false,
+   "achado_na_saida": true
+  },
+  {
+   "R1": "the_coherence_obeys_agape",
+   "R2": "the_coherence_obeys_agape",
+   "tipo_textual_identico": true,
+   "reforco": false,
+   "achado_na_saida": true
+  },
+  {
+   "R1": "the_coherence_obeys_agape_explicit",
+   "R2": "the_coherence_obeys_agape_explicit",
+   "tipo_textual_identico": true,
+   "reforco": false,
+   "achado_na_saida": true
+  },
+  {
+   "R1": "the_face_lands",
+   "R2": "the_face_lands",
+   "tipo_textual_identico": true,
+   "reforco": false,
+   "achado_na_saida": true
+  },
+  {
+   "R1": "the_post_is_not_moved",
+   "R2": "the_post_is_not_moved",
+   "tipo_textual_identico": true,
+   "reforco": false,
+   "achado_na_saida": true
+  },
+  {
+   "R1": "the_record_does_not_scale",
+   "R2": "the_record_does_not_scale",
+   "tipo_textual_identico": true,
+   "reforco": false,
+   "achado_na_saida": true
+  },
+  {
+   "R1": "the_record_is_invariant",
+   "R2": "the_record_is_invariant",
+   "tipo_textual_identico": true,
+   "reforco": false,
+   "achado_na_saida": true
+  },
+  {
+   "R1": "the_state_is_not_moved",
+   "R2": "the_state_is_not_moved",
+   "tipo_textual_identico": true,
+   "reforco": false,
+   "achado_na_saida": true
+  },
+  {
+   "R1": "the_time_has_no_rank",
+   "R2": "the_time_is_not_a_post",
+   "tipo_textual_identico": true,
+   "reforco": false,
+   "achado_na_saida": true
+  },
+  {
+   "R1": "the_vector_is_not_moved",
+   "R2": "the_vector_is_not_moved",
+   "tipo_textual_identico": true,
+   "reforco": false,
+   "achado_na_saida": true
+  },
+  {
+   "R1": "time_is_the_modular_flow",
+   "R2": "modular_flow_is_a_kms_group",
+   "tipo_textual_identico": true,
+   "reforco": false,
+   "achado_na_saida": true
+  },
+  {
+   "R1": "tracial_state_freezes_the_flow",
+   "R2": "tracial_state_freezes_the_flow",
+   "tipo_textual_identico": true,
+   "reforco": false,
+   "achado_na_saida": true
+  },
+  {
+   "R1": "unitary_conj_isometry",
+   "R2": "unitary_conj_isometry",
+   "tipo_textual_identico": true,
+   "reforco": false,
+   "achado_na_saida": true
+  },
+  {
+   "R1": "unitary_inverse_is_a_channel",
+   "R2": "unitary_inverse_is_a_channel",
+   "tipo_textual_identico": true,
+   "reforco": false,
+   "achado_na_saida": true
+  },
+  {
+   "R1": "unitary_keeps_purity",
+   "R2": "unitary_keeps_purity",
+   "tipo_textual_identico": true,
+   "reforco": false,
+   "achado_na_saida": true
+  },
+  {
+   "R1": "unitary_keeps_spectrum_and_purity",
+   "R2": "unitary_keeps_spectrum_and_purity",
+   "tipo_textual_identico": true,
+   "reforco": false,
+   "achado_na_saida": true
+  },
+  {
+   "R1": "volume_kept_yet_lands",
+   "R2": "volume_kept_yet_lands",
+   "tipo_textual_identico": true,
+   "reforco": false,
+   "achado_na_saida": true
+  },
+  {
+   "R1": "weyl_pair_lives_in_L2",
+   "R2": "weyl_pair_lives_in_L2",
+   "tipo_textual_identico": true,
+   "reforco": false,
+   "achado_na_saida": true
+  },
+  {
+   "R1": "wrong_rate_breaks_scaling",
+   "R2": "wrong_rate_breaks_scaling",
+   "tipo_textual_identico": true,
+   "reforco": false,
+   "achado_na_saida": true
+  },
+  {
+   "R1": "purityR_modular",
+   "R2": "purityR_modular",
+   "tipo_textual_identico": false,
+   "reforco": true,
+   "achado_na_saida": true
+  },
+  {
+   "R1": "clock_reads_modulo_period",
+   "R2": "clock_reads_modulo_period",
+   "tipo_textual_identico": false,
+   "reforco": true,
+   "achado_na_saida": true
+  },
+  {
+   "R1": "the_two_regimes_of_time",
+   "R2": "the_two_regimes_of_time",
+   "tipo_textual_identico": false,
+   "reforco": true,
+   "achado_na_saida": true
+  },
+  {
+   "R1": "probe_bounded_spectral_translation",
+   "R2": "probe_bounded_spectral_translation",
+   "tipo_textual_identico": false,
+   "reforco": true,
+   "achado_na_saida": true
+  }
+ ]
+}

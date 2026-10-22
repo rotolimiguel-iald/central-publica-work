@@ -1,0 +1,69 @@
+@the_time_is_not_a_post : ∀ {A : Type u_1} [inst : NormedRing A] [inst_1 : NormedAlgebra ℂ A] {P : A},
+  IsIdempotentElem P →
+    P ≠ 1 →
+      (∀ (m : ℕ), 0 < m → ∀ (T H : Matrix (Fin m) (Fin m) ℂ), T * H - H * T ≠ Complex.I • 1) ∧
+        (∀ (t : ℝ), IsIdempotentElem (TheAxiomAndTheFalseWitness.axiomFlow P t) ↔ t = 0) ∧
+          (∀ (t : ℝ), IsUnit (TheAxiomAndTheFalseWitness.axiomFlow P t)) ∧
+            ¬IsUnit P ∧ Filter.Tendsto (TheAxiomAndTheFalseWitness.axiomFlow P) Filter.atTop (nhds P)
+@modular_flow_is_a_kms_group : ∀ {n : Type} [inst : Fintype n] [inst_1 : DecidableEq n] (ρ : Matrix n n ℂ),
+  ρ.PosDef →
+    (∀ (a : Matrix n n ℂ), sigma ρ 0 a = a) ∧
+      (∀ (s t : ℝ) (a : Matrix n n ℂ), sigma ρ s (sigma ρ t a) = sigma ρ (s + t) a) ∧
+        (∀ (t : ℝ) (a b : Matrix n n ℂ), sigma ρ t (a * b) = sigma ρ t a * sigma ρ t b) ∧
+          (∀ (t : ℝ), sigma ρ t 1 = 1) ∧
+            (∀ (t : ℝ) (a : Matrix n n ℂ), sigma ρ t aᴴ = (sigma ρ t a)ᴴ) ∧
+              (∀ (t : ℝ) (a : Matrix n n ℂ), gibbs ρ (sigma ρ t a) = gibbs ρ a) ∧
+                (∀ (a b : Matrix n n ℂ), gibbs ρ (a * b) = gibbs ρ (b * Delta ρ a)) ∧
+                  ∀ (t : ℝ), modPow ρ t ∈ unitary (Matrix n n ℂ)
+half_identity_is_absoluteRho_two : (1 / 2) • 1 = absoluteRho (Fin 2)
+half_identity_clock_stops : ∀ (t : ℝ) (a : Matrix (Fin 2) (Fin 2) ℂ), sigma ((1 / 2) • 1) t a = a
+identity_flow_not_kms_finite : gibbs (rhoD ![2 / 3, 1 / 3]) (!![0, 1; 0, 0] * !![0, 0; 1, 0]) ≠
+  gibbs (rhoD ![2 / 3, 1 / 3]) (!![0, 0; 1, 0] * !![0, 1; 0, 0])
+nontracial_state_rejects_the_identity_flow : ∀ (W : TGL.SpecificAQFT.TGLSpecificAQFTWitness) (A B : W.H →L[ℂ] W.H),
+  A ∈ W.net TGL.SpecificAQFT.rightWedge →
+    B ∈ W.net TGL.SpecificAQFT.rightWedge →
+      inner ℂ ((star A) W.vac) (B W.vac) ≠ inner ℂ ((star B) W.vac) (A W.vac) →
+        ¬ContratoQGv31.KMSAt W (fun x => LinearIsometryEquiv.refl ℂ W.H) 1
+@light_flow_group : ∀ {L : ImportedSQ.LightOneParticle} (C : ImportedSQ.FockCertificate L) (s t : ℝ) (ψ : C.F),
+  (ImportedSQ.lightDelta C (s + t)) ψ = (ImportedSQ.lightDelta C s) ((ImportedSQ.lightDelta C t) ψ)
+@light_modular_orbit_converges_iff_post : ∀ {L : ImportedSQ.LightOneParticle} (C : ImportedSQ.FockCertificate L)
+  (ψ : C.F),
+  (∃ z, Filter.Tendsto (fun t => (ImportedSQ.lightDelta C t) ψ) Filter.atTop (nhds z)) ↔
+    (QGReaderUVLock.HminMic C) ψ = 0
+probe_identity_flow_not_kms_inhabited : ¬ContratoQGv31.KMSAt theSpecificAQFTWitness
+    (fun x => LinearIsometryEquiv.refl ℂ theSpecificAQFTWitness.H) 1
+the_two_regimes_of_time : (∀ {X : Type u_1} [inst : MetricSpace X] {f : X → X},
+    Isometry f → ∀ {x z : X}, Filter.Tendsto (fun k => f^[k] x) Filter.atTop (nhds z) → x = z ∧ f z = z) ∧
+  (∀ {X : Type u_1} [inst : MetricSpace X] (φ : ℝ → X → X),
+      (∀ (s t : ℝ) (x : X), φ (s + t) x = φ s (φ t x)) →
+        (∀ (s : ℝ), Isometry (φ s)) →
+          ∀ {x z : X}, Filter.Tendsto (fun t => φ t x) Filter.atTop (nhds z) → x = z ∧ ∀ (s : ℝ), φ s z = z) ∧
+    (∀ {n : Type} [inst : Fintype n] [inst_1 : DecidableEq n] (g : n → n → ℝ) (t : ℝ),
+        (schurDiag fun i j => ↑(Real.exp (-(t * g i j)))).det = ↑(Real.exp (-(t * ∑ i, ∑ j, g i j)))) ∧
+      (∀ {n : Type} [inst : Fintype n] (g : n → n → ℝ),
+          (∀ (i j : n), 0 ≤ g i j) → (∃ i j, 0 < g i j) → ∀ {t : ℝ}, 0 < t → Real.exp (-(t * ∑ i, ∑ j, g i j)) < 1) ∧
+        (∀ {n : Type} [inst : Fintype n] [inst_1 : DecidableEq n] (d : n → ℝ) (t : ℝ),
+            (schurDiag fun i j => Complex.exp (↑t * Complex.I * (↑(Real.log (d i)) - ↑(Real.log (d j))))).det = 1) ∧
+          (∀ {n : Type} [inst : Fintype n] (g : n → n → ℝ),
+              (∀ (i j : n), 0 ≤ g i j) →
+                ∀ {t : ℝ},
+                  0 < t →
+                    ∀ (x : Matrix n n ℂ) {i₀ j₀ : n}, 0 < g i₀ j₀ → x i₀ j₀ ≠ 0 → purityR (dephase g t x) < purityR x) ∧
+            (∀ {γ t : ℝ},
+                0 < γ →
+                  0 < t →
+                    have g := fun i j => if i = j then 0 else γ;
+                    have ψ := (1 / 2) • !![1, 1; 1, 1];
+                    ψ.PosSemidef ∧ ψ.trace = 1 ∧ ¬(dephase g (-t) ψ).PosSemidef) ∧
+              (∀ (κ t : ℝ), Circle.exp (κ * (t + 2 * Real.pi / κ)) = Circle.exp (κ * t)) ∧
+                ∀ (t u : ℝ), Circle.exp (0 * t) = Circle.exp (0 * u)
+'TGLExt.TheTimeIsNotAPost.the_time_is_not_a_post' depends on axioms: [propext, Classical.choice, Quot.sound]
+'TGLExt.TheTimeIsNotAPost.modular_flow_is_a_kms_group' depends on axioms: [propext, Classical.choice, Quot.sound]
+'TGLExt.TheTimeIsNotAPost.identity_flow_not_kms_finite' depends on axioms: [propext, Classical.choice, Quot.sound]
+'TGLExt.TheTimeIsNotAPost.probe_identity_flow_not_kms_inhabited' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'TGLExt.TheTimeIsNotAPost.clock_reads_modulo_period' depends on axioms: [propext, Classical.choice, Quot.sound]
+'TGLExt.TheTimeIsNotAPost.purityR_modular' depends on axioms: [propext, Classical.choice, Quot.sound]
+'TGLExt.TheTimeIsNotAPost.half_identity_clock_stops' depends on axioms: [propext, Classical.choice, Quot.sound]
+'TGLExt.TheTimeIsNotAPost.aud_boost_is_symplectic' depends on axioms: [propext, Classical.choice, Quot.sound]

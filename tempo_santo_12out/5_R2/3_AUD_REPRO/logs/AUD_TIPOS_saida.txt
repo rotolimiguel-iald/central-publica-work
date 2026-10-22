@@ -1,0 +1,754 @@
+TGLExt.TheTimeHasNoRank.psiPlus : Matrix (Fin 2) (Fin 2) ℂ
+TGLExt.TheTimeIsNotAPost.psiPlus : Matrix (Fin 2) (Fin 2) ℂ
+TGLExt.TheTimeHasNoRank.psiPlus_apply : ∀ (i j : Fin 2), TGLExt.TheTimeHasNoRank.psiPlus i j = ↑(1 / 2)
+TGLExt.TheTimeIsNotAPost.psiPlus_apply : ∀ (i j : Fin 2), TGLExt.TheTimeIsNotAPost.psiPlus i j = ↑(1 / 2)
+TGLExt.TheTimeHasNoRank.psiPlus_01_ne_zero : TGLExt.TheTimeHasNoRank.psiPlus 0 1 ≠ 0
+TGLExt.TheTimeIsNotAPost.psiPlus_01_ne_zero : TGLExt.TheTimeIsNotAPost.psiPlus 0 1 ≠ 0
+TGLExt.TheTimeHasNoRank.psiPlus_trace : TGLExt.TheTimeHasNoRank.psiPlus.trace = 1
+TGLExt.TheTimeIsNotAPost.psiPlus_trace : TGLExt.TheTimeIsNotAPost.psiPlus.trace = 1
+TGLExt.TheTimeHasNoRank.psiPlus_posSemidef : TGLExt.TheTimeHasNoRank.psiPlus.PosSemidef
+TGLExt.TheTimeIsNotAPost.psiPlus_posSemidef : TGLExt.TheTimeIsNotAPost.psiPlus.PosSemidef
+TGLExt.TheTimeHasNoRank.psiPlus_not_diagonal : TGLExt.TheTimeHasNoRank.psiPlus ≠
+  TGLExt.diagExpect TGLExt.TheTimeHasNoRank.psiPlus
+TGLExt.TheTimeIsNotAPost.psiPlus_not_diagonal : TGLExt.TheTimeIsNotAPost.psiPlus ≠
+  TGLExt.diagExpect TGLExt.TheTimeIsNotAPost.psiPlus
+TGLExt.TheTimeHasNoRank.gRate : ℝ → Fin 2 → Fin 2 → ℝ
+TGLExt.TheTimeIsNotAPost.gRate : ℝ → Fin 2 → Fin 2 → ℝ
+TGLExt.TheTimeHasNoRank.gRate_00 : ∀ (γ : ℝ), TGLExt.TheTimeHasNoRank.gRate γ 0 0 = 0
+TGLExt.TheTimeIsNotAPost.gRate_00 : ∀ (γ : ℝ), TGLExt.TheTimeIsNotAPost.gRate γ 0 0 = 0
+TGLExt.TheTimeHasNoRank.gRate_01 : ∀ (γ : ℝ), TGLExt.TheTimeHasNoRank.gRate γ 0 1 = γ
+TGLExt.TheTimeIsNotAPost.gRate_01 : ∀ (γ : ℝ), TGLExt.TheTimeIsNotAPost.gRate γ 0 1 = γ
+TGLExt.TheTimeHasNoRank.gRate_10 : ∀ (γ : ℝ), TGLExt.TheTimeHasNoRank.gRate γ 1 0 = γ
+TGLExt.TheTimeIsNotAPost.gRate_10 : ∀ (γ : ℝ), TGLExt.TheTimeIsNotAPost.gRate γ 1 0 = γ
+TGLExt.TheTimeHasNoRank.gRate_11 : ∀ (γ : ℝ), TGLExt.TheTimeHasNoRank.gRate γ 1 1 = 0
+TGLExt.TheTimeIsNotAPost.gRate_11 : ∀ (γ : ℝ), TGLExt.TheTimeIsNotAPost.gRate γ 1 1 = 0
+TGLExt.TheTimeHasNoRank.gRate_diag : ∀ (γ : ℝ) (i : Fin 2), TGLExt.TheTimeHasNoRank.gRate γ i i = 0
+TGLExt.TheTimeIsNotAPost.gRate_diag : ∀ (γ : ℝ) (i : Fin 2), TGLExt.TheTimeIsNotAPost.gRate γ i i = 0
+@TGLExt.TheTimeHasNoRank.gRate_off : ∀ {γ : ℝ}, 0 < γ → ∀ (i j : Fin 2), i ≠ j → 0 < TGLExt.TheTimeHasNoRank.gRate γ i j
+@TGLExt.TheTimeIsNotAPost.gRate_off : ∀ {γ : ℝ},
+  0 < γ → ∀ (i j : Fin 2), i ≠ j → 0 < TGLExt.TheTimeIsNotAPost.gRate γ i j
+@TGLExt.TheTimeHasNoRank.gRate_nonneg : ∀ {γ : ℝ}, 0 ≤ γ → ∀ (i j : Fin 2), 0 ≤ TGLExt.TheTimeHasNoRank.gRate γ i j
+@TGLExt.TheTimeIsNotAPost.gRate_nonneg : ∀ {γ : ℝ}, 0 ≤ γ → ∀ (i j : Fin 2), 0 ≤ TGLExt.TheTimeIsNotAPost.gRate γ i j
+@TGLExt.TheTimeHasNoRank.dephase_apply : ∀ {n : Type} (g : n → n → ℝ) (t : ℝ) (x : Matrix n n ℂ) (i j : n),
+  TGLExt.dephase g t x i j = ↑(Real.exp (-(t * g i j))) * x i j
+@TGLExt.TheTimeIsNotAPost.dephase_apply : ∀ {n : Type} (g : n → n → ℝ) (t : ℝ) (x : Matrix n n ℂ) (i j : n),
+  TGLExt.dephase g t x i j = ↑(Real.exp (-(t * g i j))) * x i j
+@TGLExt.TheTimeHasNoRank.no_time_matrix : ∀ {ι : Type} [inst : Fintype ι] [inst_1 : DecidableEq ι] [Nonempty ι]
+  (T H : Matrix ι ι ℂ) {c : ℂ}, c ≠ 0 → T * H - H * T ≠ c • 1
+@TGLExt.TheTimeIsNotAPost.no_time_matrix : ∀ {ι : Type} [inst : Fintype ι] [inst_1 : DecidableEq ι] [Nonempty ι]
+  (T H : Matrix ι ι ℂ) {c : ℂ}, c ≠ 0 → T * H - H * T ≠ c • 1
+TGLExt.TheTimeHasNoRank.no_time_matrix_fin : ∀ (n : ℕ),
+  0 < n → ∀ (T H : Matrix (Fin n) (Fin n) ℂ), T * H - H * T ≠ Complex.I • 1
+TGLExt.TheTimeIsNotAPost.no_time_matrix_fin : ∀ (n : ℕ),
+  0 < n → ∀ (T H : Matrix (Fin n) (Fin n) ℂ), T * H - H * T ≠ Complex.I • 1
+@TGLExt.TheTimeHasNoRank.commutator_far_from_scalar : ∀ {ι : Type} [inst : Fintype ι] [inst_1 : DecidableEq ι]
+  (T H : Matrix ι ι ℂ) (c : ℂ),
+  TGLExt.purityR (T * H - H * T - c • 1) = TGLExt.purityR (T * H - H * T) + ↑(Fintype.card ι) * Complex.normSq c
+@TGLExt.TheTimeIsNotAPost.commutator_far_from_scalar : ∀ {ι : Type} [inst : Fintype ι] [inst_1 : DecidableEq ι]
+  (T H : Matrix ι ι ℂ) (c : ℂ),
+  TGLExt.purityR (T * H - H * T - c • 1) = TGLExt.purityR (T * H - H * T) + ↑(Fintype.card ι) * Complex.normSq c
+@TGLExt.TheTimeHasNoRank.no_finite_spectral_translation : ∀ {ι : Type} [inst : Fintype ι] [inst_1 : DecidableEq ι]
+  [Nonempty ι] (V H : Matrix ι ι ℂ), IsUnit V → ∀ {s : ℂ}, s ≠ 0 → V⁻¹ * H * V ≠ H + s • 1
+@TGLExt.TheTimeIsNotAPost.no_finite_spectral_translation : ∀ {ι : Type} [inst : Fintype ι] [inst_1 : DecidableEq ι]
+  [Nonempty ι] (V H : Matrix ι ι ℂ), IsUnit V → ∀ {s : ℂ}, s ≠ 0 → V⁻¹ * H * V ≠ H + s • 1
+TGLExt.TheTimeHasNoRank.probe_commutator_far_from_scalar : TGLExt.purityR (0 * 0 - 0 * 0 - Complex.I • 1) = 2
+TGLExt.TheTimeIsNotAPost.probe_commutator_far_from_scalar : TGLExt.purityR (0 * 0 - 0 * 0 - Complex.I • 1) = 2
+TGLExt.TheTimeHasNoRank.commutator_can_be_nonzero : ∃ T H, T * H - H * T ≠ 0
+TGLExt.TheTimeIsNotAPost.commutator_can_be_nonzero : ∃ T H, T * H - H * T ≠ 0
+TGLExt.TheTimeHasNoRank.empty_dimension_admits_time : ∀ (T H : Matrix (Fin 0) (Fin 0) ℂ), T * H - H * T = Complex.I • 1
+TGLExt.TheTimeIsNotAPost.empty_dimension_admits_time : ∀ (T H : Matrix (Fin 0) (Fin 0) ℂ), T * H - H * T = Complex.I • 1
+@TGLExt.TheTimeHasNoRank.weyl_pair_lives_in_L2 : ∀ {H : Type} [inst : NormedAddCommGroup H]
+  [inst_1 : InnerProductSpace ℂ H] [inst_2 : CompleteSpace H] (s t : ℝ),
+  TGLV350.Regular.characterMultiplier s * TGLV350.Regular.shift t * star (TGLV350.Regular.characterMultiplier s) =
+    Complex.exp (-Complex.I * ↑s * ↑t) • TGLV350.Regular.shift t
+@TGLExt.TheTimeIsNotAPost.weyl_pair_lives_in_L2 : ∀ {H : Type} [inst : NormedAddCommGroup H]
+  [inst_1 : InnerProductSpace ℂ H] [inst_2 : CompleteSpace H] (s t : ℝ),
+  TGLV350.Regular.characterMultiplier s * TGLV350.Regular.shift t * star (TGLV350.Regular.characterMultiplier s) =
+    Complex.exp (-Complex.I * ↑s * ↑t) • TGLV350.Regular.shift t
+@TGLExt.TheTimeHasNoRank.no_bounded_spectral_translation : ∀ {A : Type u_1} [inst : NormedRing A]
+  [inst_1 : NormedAlgebra ℂ A] [CompleteSpace A] [Nontrivial A] (V : Aˣ) (H : A) {s : ℂ},
+  s ≠ 0 → ↑V⁻¹ * H * ↑V ≠ H + (algebraMap ℂ A) s
+@TGLExt.TheTimeIsNotAPost.no_bounded_spectral_translation : ∀ {A : Type u_1} [inst : NormedRing A]
+  [inst_1 : NormedAlgebra ℂ A] [CompleteSpace A] [Nontrivial A] (V : Aˣ) (H : A) {s : ℂ},
+  s ≠ 0 → ↑V⁻¹ * H * ↑V ≠ H + (algebraMap ℂ A) s
+TGLExt.TheTimeHasNoRank.probe_bounded_spectral_translation_complex : ↑1⁻¹ * 0 * ↑1 ≠ 0 + (algebraMap ℂ ℂ) 1
+TGLExt.TheTimeIsNotAPost.probe_bounded_spectral_translation_complex : ↑1⁻¹ * 0 * ↑1 ≠ 0 + (algebraMap ℂ ℂ) 1
+@TGLExt.TheTimeHasNoRank.time_is_the_modular_flow : ∀ {n : Type} [inst : Fintype n] [inst_1 : DecidableEq n]
+  (ρ : Matrix n n ℂ),
+  ρ.PosDef →
+    (∀ (a : Matrix n n ℂ), TGLExt.sigma ρ 0 a = a) ∧
+      (∀ (s t : ℝ) (a : Matrix n n ℂ), TGLExt.sigma ρ s (TGLExt.sigma ρ t a) = TGLExt.sigma ρ (s + t) a) ∧
+        (∀ (t : ℝ) (a b : Matrix n n ℂ), TGLExt.sigma ρ t (a * b) = TGLExt.sigma ρ t a * TGLExt.sigma ρ t b) ∧
+          (∀ (t : ℝ), TGLExt.sigma ρ t 1 = 1) ∧
+            (∀ (t : ℝ) (a : Matrix n n ℂ), TGLExt.sigma ρ t a.conjTranspose = (TGLExt.sigma ρ t a).conjTranspose) ∧
+              (∀ (t : ℝ) (a : Matrix n n ℂ), TGLExt.gibbs ρ (TGLExt.sigma ρ t a) = TGLExt.gibbs ρ a) ∧
+                (∀ (a b : Matrix n n ℂ), TGLExt.gibbs ρ (a * b) = TGLExt.gibbs ρ (b * TGLExt.Delta ρ a)) ∧
+                  ∀ (t : ℝ), TGLExt.modPow ρ t ∈ unitary (Matrix n n ℂ)
+@TGLExt.TheTimeIsNotAPost.modular_flow_is_a_kms_group : ∀ {n : Type} [inst : Fintype n] [inst_1 : DecidableEq n]
+  (ρ : Matrix n n ℂ),
+  ρ.PosDef →
+    (∀ (a : Matrix n n ℂ), TGLExt.sigma ρ 0 a = a) ∧
+      (∀ (s t : ℝ) (a : Matrix n n ℂ), TGLExt.sigma ρ s (TGLExt.sigma ρ t a) = TGLExt.sigma ρ (s + t) a) ∧
+        (∀ (t : ℝ) (a b : Matrix n n ℂ), TGLExt.sigma ρ t (a * b) = TGLExt.sigma ρ t a * TGLExt.sigma ρ t b) ∧
+          (∀ (t : ℝ), TGLExt.sigma ρ t 1 = 1) ∧
+            (∀ (t : ℝ) (a : Matrix n n ℂ), TGLExt.sigma ρ t a.conjTranspose = (TGLExt.sigma ρ t a).conjTranspose) ∧
+              (∀ (t : ℝ) (a : Matrix n n ℂ), TGLExt.gibbs ρ (TGLExt.sigma ρ t a) = TGLExt.gibbs ρ a) ∧
+                (∀ (a b : Matrix n n ℂ), TGLExt.gibbs ρ (a * b) = TGLExt.gibbs ρ (b * TGLExt.Delta ρ a)) ∧
+                  ∀ (t : ℝ), TGLExt.modPow ρ t ∈ unitary (Matrix n n ℂ)
+@TGLExt.TheTimeHasNoRank.fixed_sector_is_the_centralizer : ∀ {n : Type} [inst : Fintype n] [inst_1 : DecidableEq n]
+  (d : n → ℝ),
+  (∀ (i : n), 0 < d i) →
+    Function.Injective d →
+      ∀ (x : Matrix n n ℂ), (∀ (t : ℝ), TGLExt.sigma (TGLExt.rhoD d) t x = x) ↔ x = TGLExt.diagExpect x
+@TGLExt.TheTimeIsNotAPost.fixed_sector_is_the_centralizer : ∀ {n : Type} [inst : Fintype n] [inst_1 : DecidableEq n]
+  (d : n → ℝ),
+  (∀ (i : n), 0 < d i) →
+    Function.Injective d →
+      ∀ (x : Matrix n n ℂ), (∀ (t : ℝ), TGLExt.sigma (TGLExt.rhoD d) t x = x) ↔ x = TGLExt.diagExpect x
+@TGLExt.TheTimeHasNoRank.tracial_state_freezes_the_flow : ∀ {Region n : Type} [inst : Fintype n]
+  [inst_1 : DecidableEq n] [inst_2 : Nonempty n] (O : Region) (t : ℝ) (a : Matrix n n ℂ),
+  (TGLExt.absoluteOneField Region n).flow O t a = a
+@TGLExt.TheTimeIsNotAPost.tracial_state_freezes_the_flow : ∀ {Region n : Type} [inst : Fintype n]
+  [inst_1 : DecidableEq n] [inst_2 : Nonempty n] (O : Region) (t : ℝ) (a : Matrix n n ℂ),
+  (TGLExt.absoluteOneField Region n).flow O t a = a
+TGLExt.TheTimeHasNoRank.nontracial_state_rejects_the_identity_flow : ∀ (W : TGL.SpecificAQFT.TGLSpecificAQFTWitness)
+  (A B : W.H →L[ℂ] W.H),
+  A ∈ W.net TGL.SpecificAQFT.rightWedge →
+    B ∈ W.net TGL.SpecificAQFT.rightWedge →
+      inner ℂ ((star A) W.vac) (B W.vac) ≠ inner ℂ ((star B) W.vac) (A W.vac) →
+        ¬TGLExt.ContratoQGv31.KMSAt W (fun x => LinearIsometryEquiv.refl ℂ W.H) 1
+TGLExt.TheTimeIsNotAPost.nontracial_state_rejects_the_identity_flow : ∀ (W : TGL.SpecificAQFT.TGLSpecificAQFTWitness)
+  (A B : W.H →L[ℂ] W.H),
+  A ∈ W.net TGL.SpecificAQFT.rightWedge →
+    B ∈ W.net TGL.SpecificAQFT.rightWedge →
+      inner ℂ ((star A) W.vac) (B W.vac) ≠ inner ℂ ((star B) W.vac) (A W.vac) →
+        ¬TGLExt.ContratoQGv31.KMSAt W (fun x => LinearIsometryEquiv.refl ℂ W.H) 1
+TGLExt.TheTimeHasNoRank.probe_rho_two_thirds_posDef : (TGLExt.rhoD ![2 / 3, 1 / 3]).PosDef
+TGLExt.TheTimeIsNotAPost.probe_rho_two_thirds_posDef : (TGLExt.rhoD ![2 / 3, 1 / 3]).PosDef
+TGLExt.TheTimeHasNoRank.probe_rho_two_thirds_not_tracial : TGLExt.rhoD ![2 / 3, 1 / 3] ≠ TGLExt.absoluteRho (Fin 2)
+TGLExt.TheTimeIsNotAPost.probe_rho_two_thirds_not_tracial : TGLExt.rhoD ![2 / 3, 1 / 3] ≠ TGLExt.absoluteRho (Fin 2)
+@TGLExt.TheTimeHasNoRank.unitary_keeps_spectrum_and_purity : ∀ {n : Type} [inst : Fintype n] [inst_1 : DecidableEq n]
+  (U : (Matrix n n ℂ)ˣ),
+  ↑U ∈ unitary (Matrix n n ℂ) →
+    ∀ (x : Matrix n n ℂ),
+      (↑U * x * ↑U⁻¹).charpoly = x.charpoly ∧ TGLExt.purity (↑U * x * (↑U).conjTranspose) = TGLExt.purity x
+@TGLExt.TheTimeIsNotAPost.unitary_keeps_spectrum_and_purity : ∀ {n : Type} [inst : Fintype n] [inst_1 : DecidableEq n]
+  (U : (Matrix n n ℂ)ˣ),
+  ↑U ∈ unitary (Matrix n n ℂ) →
+    ∀ (x : Matrix n n ℂ),
+      (↑U * x * ↑U⁻¹).charpoly = x.charpoly ∧ TGLExt.purity (↑U * x * (↑U).conjTranspose) = TGLExt.purity x
+@TGLExt.TheTimeHasNoRank.isometry_iterate' : ∀ {X : Type u_1} [inst : PseudoMetricSpace X] {f : X → X},
+  Isometry f → ∀ (k : ℕ), Isometry f^[k]
+@TGLExt.TheTimeIsNotAPost.isometry_iterate' : ∀ {X : Type u_1} [inst : PseudoMetricSpace X] {f : X → X},
+  Isometry f → ∀ (k : ℕ), Isometry f^[k]
+@TGLExt.TheTimeHasNoRank.isometry_orbit_converges_only_if_fixed : ∀ {X : Type u_1} [inst : MetricSpace X] {f : X → X},
+  Isometry f → ∀ {x z : X}, Filter.Tendsto (fun k => f^[k] x) Filter.atTop (nhds z) → x = z ∧ f z = z
+@TGLExt.TheTimeIsNotAPost.isometry_orbit_converges_only_if_fixed : ∀ {X : Type u_1} [inst : MetricSpace X] {f : X → X},
+  Isometry f → ∀ {x z : X}, Filter.Tendsto (fun k => f^[k] x) Filter.atTop (nhds z) → x = z ∧ f z = z
+@TGLExt.TheTimeHasNoRank.isometric_flow_converges_only_if_fixed : ∀ {X : Type u_1} [inst : MetricSpace X]
+  (φ : ℝ → X → X),
+  (∀ (s t : ℝ) (x : X), φ (s + t) x = φ s (φ t x)) →
+    (∀ (s : ℝ), Isometry (φ s)) →
+      ∀ {x z : X}, Filter.Tendsto (fun t => φ t x) Filter.atTop (nhds z) → x = z ∧ ∀ (s : ℝ), φ s z = z
+@TGLExt.TheTimeIsNotAPost.isometric_flow_converges_only_if_fixed : ∀ {X : Type u_1} [inst : MetricSpace X]
+  (φ : ℝ → X → X),
+  (∀ (s t : ℝ) (x : X), φ (s + t) x = φ s (φ t x)) →
+    (∀ (s : ℝ), Isometry (φ s)) →
+      ∀ {x z : X}, Filter.Tendsto (fun t => φ t x) Filter.atTop (nhds z) → x = z ∧ ∀ (s : ℝ), φ s z = z
+TGLExt.TheTimeHasNoRank.rotation_isometry : ∀ (φ : ℝ), Isometry fun w => Complex.exp (↑φ * Complex.I) * w
+TGLExt.TheTimeIsNotAPost.rotation_isometry : ∀ (φ : ℝ), Isometry fun w => Complex.exp (↑φ * Complex.I) * w
+TGLExt.TheTimeHasNoRank.probe_rotation_orbit_has_no_limit : ¬∃ z,
+    Filter.Tendsto (fun k => (fun w => Complex.exp (↑1 * Complex.I) * w)^[k] 1) Filter.atTop (nhds z)
+TGLExt.TheTimeIsNotAPost.probe_rotation_orbit_has_no_limit : ¬∃ z,
+    Filter.Tendsto (fun k => (fun w => Complex.exp (↑1 * Complex.I) * w)^[k] 1) Filter.atTop (nhds z)
+@TGLExt.TheTimeHasNoRank.frobenius_norm_eq_purityR : ∀ {n : Type} [inst : Fintype n] (A : Matrix n n ℂ),
+  ‖A‖ = TGLExt.purityR A ^ (1 / 2)
+@TGLExt.TheTimeIsNotAPost.frobenius_norm_eq_purityR : ∀ {n : Type} [inst : Fintype n] (A : Matrix n n ℂ),
+  ‖A‖ = TGLExt.purityR A ^ (1 / 2)
+@TGLExt.TheTimeHasNoRank.unitary_conj_isometry : ∀ {n : Type} [inst : Fintype n] [inst_1 : DecidableEq n],
+  ∀ U ∈ unitary (Matrix n n ℂ), Isometry fun x => U * x * U.conjTranspose
+@TGLExt.TheTimeIsNotAPost.unitary_conj_isometry : ∀ {n : Type} [inst : Fintype n] [inst_1 : DecidableEq n],
+  ∀ U ∈ unitary (Matrix n n ℂ), Isometry fun x => U * x * U.conjTranspose
+@TGLExt.TheTimeHasNoRank.modular_flow_is_isometry : ∀ {n : Type} [inst : Fintype n] [inst_1 : DecidableEq n]
+  (ρ : Matrix n n ℂ) (t : ℝ), Isometry (TGLExt.sigma ρ t)
+@TGLExt.TheTimeIsNotAPost.modular_flow_is_isometry : ∀ {n : Type} [inst : Fintype n] [inst_1 : DecidableEq n]
+  (ρ : Matrix n n ℂ) (t : ℝ), Isometry (TGLExt.sigma ρ t)
+@TGLExt.TheTimeHasNoRank.modular_orbit_converges_iff_diagonal : ∀ {n : Type} [inst : Fintype n] [inst_1 : DecidableEq n]
+  (d : n → ℝ),
+  (∀ (i : n), 0 < d i) →
+    Function.Injective d →
+      ∀ (x : Matrix n n ℂ),
+        (∃ z, Filter.Tendsto (fun t => TGLExt.sigma (TGLExt.rhoD d) t x) Filter.atTop (nhds z)) ↔
+          x = TGLExt.diagExpect x
+@TGLExt.TheTimeIsNotAPost.modular_orbit_converges_iff_diagonal : ∀ {n : Type} [inst : Fintype n]
+  [inst_1 : DecidableEq n] (d : n → ℝ),
+  (∀ (i : n), 0 < d i) →
+    Function.Injective d →
+      ∀ (x : Matrix n n ℂ),
+        (∃ z, Filter.Tendsto (fun t => TGLExt.sigma (TGLExt.rhoD d) t x) Filter.atTop (nhds z)) ↔
+          x = TGLExt.diagExpect x
+@TGLExt.TheTimeHasNoRank.modular_orbit_converges_iff_diagonal_entrywise : ∀ {n : Type} [inst : Fintype n]
+  [inst_1 : DecidableEq n] (d : n → ℝ),
+  (∀ (i : n), 0 < d i) →
+    Function.Injective d →
+      ∀ (x : Matrix n n ℂ),
+        (∃ z, Filter.Tendsto (fun t => TGLExt.sigma (TGLExt.rhoD d) t x) Filter.atTop (nhds z)) ↔
+          x = TGLExt.diagExpect x
+@TGLExt.TheTimeIsNotAPost.modular_orbit_converges_iff_diagonal_entrywise : ∀ {n : Type} [inst : Fintype n]
+  [inst_1 : DecidableEq n] (d : n → ℝ),
+  (∀ (i : n), 0 < d i) →
+    Function.Injective d →
+      ∀ (x : Matrix n n ℂ),
+        (∃ z, Filter.Tendsto (fun t => TGLExt.sigma (TGLExt.rhoD d) t x) Filter.atTop (nhds z)) ↔
+          x = TGLExt.diagExpect x
+@TGLExt.TheTimeHasNoRank.light_flow_group : ∀ {L : TGLExt.ImportedSQ.LightOneParticle}
+  (C : TGLExt.ImportedSQ.FockCertificate L) (s t : ℝ) (ψ : C.F),
+  (TGLExt.ImportedSQ.lightDelta C (s + t)) ψ = (TGLExt.ImportedSQ.lightDelta C s) ((TGLExt.ImportedSQ.lightDelta C t) ψ)
+@TGLExt.TheTimeIsNotAPost.light_flow_group : ∀ {L : TGLExt.ImportedSQ.LightOneParticle}
+  (C : TGLExt.ImportedSQ.FockCertificate L) (s t : ℝ) (ψ : C.F),
+  (TGLExt.ImportedSQ.lightDelta C (s + t)) ψ = (TGLExt.ImportedSQ.lightDelta C s) ((TGLExt.ImportedSQ.lightDelta C t) ψ)
+@TGLExt.TheTimeHasNoRank.light_modular_orbit_converges_iff_post : ∀ {L : TGLExt.ImportedSQ.LightOneParticle}
+  (C : TGLExt.ImportedSQ.FockCertificate L) (ψ : C.F),
+  (∃ z, Filter.Tendsto (fun t => (TGLExt.ImportedSQ.lightDelta C t) ψ) Filter.atTop (nhds z)) ↔
+    (TGLExt.QGReaderUVLock.HminMic C) ψ = 0
+@TGLExt.TheTimeIsNotAPost.light_modular_orbit_converges_iff_post : ∀ {L : TGLExt.ImportedSQ.LightOneParticle}
+  (C : TGLExt.ImportedSQ.FockCertificate L) (ψ : C.F),
+  (∃ z, Filter.Tendsto (fun t => (TGLExt.ImportedSQ.lightDelta C t) ψ) Filter.atTop (nhds z)) ↔
+    (TGLExt.QGReaderUVLock.HminMic C) ψ = 0
+TGLExt.TheTimeHasNoRank.probe_modular_orbit_of_psiPlus_has_no_limit : ¬∃ z,
+    Filter.Tendsto (fun t => TGLExt.sigma (TGLExt.rhoD ![2 / 3, 1 / 3]) t TGLExt.TheTimeHasNoRank.psiPlus) Filter.atTop
+      (nhds z)
+TGLExt.TheTimeIsNotAPost.probe_modular_orbit_of_psiPlus_has_no_limit : ¬∃ z,
+    Filter.Tendsto (fun t => TGLExt.sigma (TGLExt.rhoD ![2 / 3, 1 / 3]) t TGLExt.TheTimeIsNotAPost.psiPlus) Filter.atTop
+      (nhds z)
+@TGLExt.TheTimeHasNoRank.schurDiag : {n : Type} → [Fintype n] → [DecidableEq n] → (n → n → ℂ) → Matrix (n × n) (n × n) ℂ
+@TGLExt.TheTimeIsNotAPost.schurDiag : {n : Type} →
+  [Fintype n] → [DecidableEq n] → (n → n → ℂ) → Matrix (n × n) (n × n) ℂ
+@TGLExt.TheTimeHasNoRank.schurDiag_mulVec : ∀ {n : Type} [inst : Fintype n] [inst_1 : DecidableEq n] (m : n → n → ℂ)
+  (x : Matrix n n ℂ) (p : n × n),
+  (TGLExt.TheTimeHasNoRank.schurDiag m).mulVec (fun q => x q.1 q.2) p = m p.1 p.2 * x p.1 p.2
+@TGLExt.TheTimeIsNotAPost.schurDiag_mulVec : ∀ {n : Type} [inst : Fintype n] [inst_1 : DecidableEq n] (m : n → n → ℂ)
+  (x : Matrix n n ℂ) (p : n × n),
+  (TGLExt.TheTimeIsNotAPost.schurDiag m).mulVec (fun q => x q.1 q.2) p = m p.1 p.2 * x p.1 p.2
+@TGLExt.TheTimeHasNoRank.schurDiag_is_the_dephasing : ∀ {n : Type} [inst : Fintype n] [inst_1 : DecidableEq n]
+  (g : n → n → ℝ) (t : ℝ) (x : Matrix n n ℂ),
+  ((TGLExt.TheTimeHasNoRank.schurDiag fun i j => ↑(Real.exp (-(t * g i j)))).mulVec fun q => x q.1 q.2) = fun q =>
+    TGLExt.dephase g t x q.1 q.2
+@TGLExt.TheTimeIsNotAPost.schurDiag_is_the_dephasing : ∀ {n : Type} [inst : Fintype n] [inst_1 : DecidableEq n]
+  (g : n → n → ℝ) (t : ℝ) (x : Matrix n n ℂ),
+  ((TGLExt.TheTimeIsNotAPost.schurDiag fun i j => ↑(Real.exp (-(t * g i j)))).mulVec fun q => x q.1 q.2) = fun q =>
+    TGLExt.dephase g t x q.1 q.2
+@TGLExt.TheTimeHasNoRank.schurDiag_is_the_modular_flow : ∀ {n : Type} [inst : Fintype n] [inst_1 : DecidableEq n]
+  (d : n → ℝ),
+  (∀ (i : n), 0 < d i) →
+    ∀ (t : ℝ) (x : Matrix n n ℂ),
+      ((TGLExt.TheTimeHasNoRank.schurDiag fun i j =>
+              Complex.exp (↑t * Complex.I * (↑(Real.log (d i)) - ↑(Real.log (d j))))).mulVec
+          fun q => x q.1 q.2) =
+        fun q => TGLExt.sigma (TGLExt.rhoD d) t x q.1 q.2
+@TGLExt.TheTimeIsNotAPost.schurDiag_is_the_modular_flow : ∀ {n : Type} [inst : Fintype n] [inst_1 : DecidableEq n]
+  (d : n → ℝ),
+  (∀ (i : n), 0 < d i) →
+    ∀ (t : ℝ) (x : Matrix n n ℂ),
+      ((TGLExt.TheTimeIsNotAPost.schurDiag fun i j =>
+              Complex.exp (↑t * Complex.I * (↑(Real.log (d i)) - ↑(Real.log (d j))))).mulVec
+          fun q => x q.1 q.2) =
+        fun q => TGLExt.sigma (TGLExt.rhoD d) t x q.1 q.2
+@TGLExt.TheTimeHasNoRank.dephase_volume : ∀ {n : Type} [inst : Fintype n] [inst_1 : DecidableEq n] (g : n → n → ℝ)
+  (t : ℝ),
+  (TGLExt.TheTimeHasNoRank.schurDiag fun i j => ↑(Real.exp (-(t * g i j)))).det = ↑(Real.exp (-(t * ∑ i, ∑ j, g i j)))
+@TGLExt.TheTimeIsNotAPost.dephase_volume : ∀ {n : Type} [inst : Fintype n] [inst_1 : DecidableEq n] (g : n → n → ℝ)
+  (t : ℝ),
+  (TGLExt.TheTimeIsNotAPost.schurDiag fun i j => ↑(Real.exp (-(t * g i j)))).det = ↑(Real.exp (-(t * ∑ i, ∑ j, g i j)))
+@TGLExt.TheTimeHasNoRank.dephase_volume_lt_one : ∀ {n : Type} [inst : Fintype n] (g : n → n → ℝ),
+  (∀ (i j : n), 0 ≤ g i j) → (∃ i j, 0 < g i j) → ∀ {t : ℝ}, 0 < t → Real.exp (-(t * ∑ i, ∑ j, g i j)) < 1
+@TGLExt.TheTimeIsNotAPost.dephase_volume_lt_one : ∀ {n : Type} [inst : Fintype n] (g : n → n → ℝ),
+  (∀ (i j : n), 0 ≤ g i j) → (∃ i j, 0 < g i j) → ∀ {t : ℝ}, 0 < t → Real.exp (-(t * ∑ i, ∑ j, g i j)) < 1
+@TGLExt.TheTimeHasNoRank.modular_volume_one : ∀ {n : Type} [inst : Fintype n] [inst_1 : DecidableEq n] (d : n → ℝ)
+  (t : ℝ),
+  (TGLExt.TheTimeHasNoRank.schurDiag fun i j =>
+        Complex.exp (↑t * Complex.I * (↑(Real.log (d i)) - ↑(Real.log (d j))))).det =
+    1
+@TGLExt.TheTimeIsNotAPost.modular_volume_one : ∀ {n : Type} [inst : Fintype n] [inst_1 : DecidableEq n] (d : n → ℝ)
+  (t : ℝ),
+  (TGLExt.TheTimeIsNotAPost.schurDiag fun i j =>
+        Complex.exp (↑t * Complex.I * (↑(Real.log (d i)) - ↑(Real.log (d j))))).det =
+    1
+@TGLExt.TheTimeHasNoRank.modular_factor_norm_one : ∀ {n : Type} (d : n → ℝ) (t : ℝ) (i j : n),
+  ‖Complex.exp (↑t * Complex.I * (↑(Real.log (d i)) - ↑(Real.log (d j))))‖ = 1
+@TGLExt.TheTimeIsNotAPost.modular_factor_norm_one : ∀ {n : Type} (d : n → ℝ) (t : ℝ) (i j : n),
+  ‖Complex.exp (↑t * Complex.I * (↑(Real.log (d i)) - ↑(Real.log (d j))))‖ = 1
+@TGLExt.TheTimeHasNoRank.dephase_factor_norm_le_one : ∀ {n : Type} (g : n → n → ℝ) {t : ℝ},
+  0 ≤ t → ∀ (i j : n), 0 ≤ g i j → ‖↑(Real.exp (-(t * g i j)))‖ ≤ 1
+@TGLExt.TheTimeIsNotAPost.dephase_factor_norm_le_one : ∀ {n : Type} (g : n → n → ℝ) {t : ℝ},
+  0 ≤ t → ∀ (i j : n), 0 ≤ g i j → ‖↑(Real.exp (-(t * g i j)))‖ ≤ 1
+TGLExt.TheTimeHasNoRank.probe_gRate_one_sum : ∑ i, ∑ j, TGLExt.TheTimeHasNoRank.gRate 1 i j = 2
+TGLExt.TheTimeIsNotAPost.probe_gRate_one_sum : ∑ i, ∑ j, TGLExt.TheTimeIsNotAPost.gRate 1 i j = 2
+@TGLExt.TheTimeHasNoRank.the_face_lands : ∀ {n : Type} [inst : DecidableEq n] (g : n → n → ℝ),
+  (∀ (i : n), g i i = 0) →
+    (∀ (i j : n), i ≠ j → 0 < g i j) →
+      ∀ (x : Matrix n n ℂ), Filter.Tendsto (fun t => TGLExt.dephase g t x) Filter.atTop (nhds (TGLExt.diagExpect x))
+@TGLExt.TheTimeIsNotAPost.the_face_lands : ∀ {n : Type} [inst : DecidableEq n] (g : n → n → ℝ),
+  (∀ (i : n), g i i = 0) →
+    (∀ (i j : n), i ≠ j → 0 < g i j) →
+      ∀ (x : Matrix n n ℂ), Filter.Tendsto (fun t => TGLExt.dephase g t x) Filter.atTop (nhds (TGLExt.diagExpect x))
+@TGLExt.TheTimeHasNoRank.fixed_set_of_dephasing_is_the_diagonal : ∀ {n : Type} [Fintype n] [inst : DecidableEq n]
+  (g : n → n → ℝ),
+  (∀ (i : n), g i i = 0) →
+    (∀ (i j : n), i ≠ j → 0 < g i j) →
+      ∀ (x : Matrix n n ℂ), (∀ (t : ℝ), TGLExt.dephase g t x = x) ↔ x = TGLExt.diagExpect x
+@TGLExt.TheTimeIsNotAPost.fixed_set_of_dephasing_is_the_diagonal : ∀ {n : Type} [Fintype n] [inst : DecidableEq n]
+  (g : n → n → ℝ),
+  (∀ (i : n), g i i = 0) →
+    (∀ (i j : n), i ≠ j → 0 < g i j) →
+      ∀ (x : Matrix n n ℂ), (∀ (t : ℝ), TGLExt.dephase g t x = x) ↔ x = TGLExt.diagExpect x
+TGLExt.TheTimeHasNoRank.boost_pow_null : ∀ (s : ℝ) (k : ℕ),
+  (TGLExt.boost s ^ k).mulVec ![1, -1] = Real.exp (-s) ^ k • ![1, -1]
+TGLExt.TheTimeIsNotAPost.boost_pow_null : ∀ (s : ℝ) (k : ℕ),
+  (TGLExt.boost s ^ k).mulVec ![1, -1] = Real.exp (-s) ^ k • ![1, -1]
+@TGLExt.TheTimeHasNoRank.volume_kept_yet_lands : ∀ {s : ℝ},
+  0 < s →
+    (TGLExt.boost s).det = 1 ∧ Filter.Tendsto (fun k => (TGLExt.boost s ^ k).mulVec ![1, -1]) Filter.atTop (nhds 0)
+@TGLExt.TheTimeIsNotAPost.volume_kept_yet_lands : ∀ {s : ℝ},
+  0 < s →
+    (TGLExt.boost s).det = 1 ∧ Filter.Tendsto (fun k => (TGLExt.boost s ^ k).mulVec ![1, -1]) Filter.atTop (nhds 0)
+@TGLExt.TheTimeHasNoRank.global_attractor_needs_volume_loss : ∀ {m : ℕ} (L : Matrix (Fin m) (Fin m) ℝ),
+  (∀ (v : Fin m → ℝ), Filter.Tendsto (fun k => (L ^ k).mulVec v) Filter.atTop (nhds 0)) → 0 < m → |L.det| < 1
+@TGLExt.TheTimeIsNotAPost.global_attractor_needs_volume_loss : ∀ {m : ℕ} (L : Matrix (Fin m) (Fin m) ℝ),
+  (∀ (v : Fin m → ℝ), Filter.Tendsto (fun k => (L ^ k).mulVec v) Filter.atTop (nhds 0)) → 0 < m → |L.det| < 1
+TGLExt.TheTimeHasNoRank.dephasing_lands_without_being_fixed : ∃ g x,
+  (∀ (i : Fin 2), g i i = 0) ∧
+    (∀ (i j : Fin 2), i ≠ j → 0 < g i j) ∧
+      x ≠ TGLExt.diagExpect x ∧ Filter.Tendsto (fun t => TGLExt.dephase g t x) Filter.atTop (nhds (TGLExt.diagExpect x))
+TGLExt.TheTimeIsNotAPost.dephasing_lands_without_being_fixed : ∃ g x,
+  (∀ (i : Fin 2), g i i = 0) ∧
+    (∀ (i j : Fin 2), i ≠ j → 0 < g i j) ∧
+      x ≠ TGLExt.diagExpect x ∧ Filter.Tendsto (fun t => TGLExt.dephase g t x) Filter.atTop (nhds (TGLExt.diagExpect x))
+@TGLExt.TheTimeHasNoRank.the_record_is_invariant : ∀ {n : Type} [inst : DecidableEq n] (g : n → n → ℝ),
+  (∀ (i : n), g i i = 0) → ∀ (t : ℝ) (x : Matrix n n ℂ), TGLExt.diagExpect (TGLExt.dephase g t x) = TGLExt.diagExpect x
+@TGLExt.TheTimeIsNotAPost.the_record_is_invariant : ∀ {n : Type} [inst : DecidableEq n] (g : n → n → ℝ),
+  (∀ (i : n), g i i = 0) → ∀ (t : ℝ) (x : Matrix n n ℂ), TGLExt.diagExpect (TGLExt.dephase g t x) = TGLExt.diagExpect x
+@TGLExt.TheTimeHasNoRank.dephase_fixed_states_not_unique : ∀ {n : Type} [inst : Fintype n] [DecidableEq n]
+  (g : n → n → ℝ),
+  (∀ (i : n), g i i = 0) →
+    ∀ {i₀ j₀ : n},
+      i₀ ≠ j₀ →
+        ∃ ρ σ,
+          ρ ≠ σ ∧
+            ρ.PosSemidef ∧
+              σ.PosSemidef ∧
+                ρ.trace = 1 ∧ σ.trace = 1 ∧ (∀ (t : ℝ), TGLExt.dephase g t ρ = ρ) ∧ ∀ (t : ℝ), TGLExt.dephase g t σ = σ
+@TGLExt.TheTimeIsNotAPost.dephase_fixed_states_not_unique : ∀ {n : Type} [inst : Fintype n] [DecidableEq n]
+  (g : n → n → ℝ),
+  (∀ (i : n), g i i = 0) →
+    ∀ {i₀ j₀ : n},
+      i₀ ≠ j₀ →
+        ∃ ρ σ,
+          ρ ≠ σ ∧
+            ρ.PosSemidef ∧
+              σ.PosSemidef ∧
+                ρ.trace = 1 ∧ σ.trace = 1 ∧ (∀ (t : ℝ), TGLExt.dephase g t ρ = ρ) ∧ ∀ (t : ℝ), TGLExt.dephase g t σ = σ
+@TGLExt.TheTimeHasNoRank.purityR_dephase : ∀ {n : Type} [inst : Fintype n] (g : n → n → ℝ) (t : ℝ) (x : Matrix n n ℂ),
+  TGLExt.purityR (TGLExt.dephase g t x) = ∑ i, ∑ j, Real.exp (-(2 * t * g i j)) * Complex.normSq (x i j)
+@TGLExt.TheTimeIsNotAPost.purityR_dephase : ∀ {n : Type} [inst : Fintype n] (g : n → n → ℝ) (t : ℝ) (x : Matrix n n ℂ),
+  TGLExt.purityR (TGLExt.dephase g t x) = ∑ i, ∑ j, Real.exp (-(2 * t * g i j)) * Complex.normSq (x i j)
+@TGLExt.TheTimeHasNoRank.purity_never_grows_under_dephasing : ∀ {n : Type} [inst : Fintype n] [DecidableEq n]
+  (g : n → n → ℝ) (t : ℝ),
+  0 ≤ t → (∀ (i j : n), 0 ≤ g i j) → ∀ (x : Matrix n n ℂ), TGLExt.purityR (TGLExt.dephase g t x) ≤ TGLExt.purityR x
+@TGLExt.TheTimeIsNotAPost.purity_never_grows_under_dephasing : ∀ {n : Type} [inst : Fintype n] [DecidableEq n]
+  (g : n → n → ℝ) (t : ℝ),
+  0 ≤ t → (∀ (i j : n), 0 ≤ g i j) → ∀ (x : Matrix n n ℂ), TGLExt.purityR (TGLExt.dephase g t x) ≤ TGLExt.purityR x
+@TGLExt.TheTimeHasNoRank.purityR_dephase_lt : ∀ {n : Type} [inst : Fintype n] (g : n → n → ℝ),
+  (∀ (i j : n), 0 ≤ g i j) →
+    ∀ {t : ℝ},
+      0 < t →
+        ∀ (x : Matrix n n ℂ) {i₀ j₀ : n},
+          0 < g i₀ j₀ → x i₀ j₀ ≠ 0 → TGLExt.purityR (TGLExt.dephase g t x) < TGLExt.purityR x
+@TGLExt.TheTimeIsNotAPost.purityR_dephase_lt : ∀ {n : Type} [inst : Fintype n] (g : n → n → ℝ),
+  (∀ (i j : n), 0 ≤ g i j) →
+    ∀ {t : ℝ},
+      0 < t →
+        ∀ (x : Matrix n n ℂ) {i₀ j₀ : n},
+          0 < g i₀ j₀ → x i₀ j₀ ≠ 0 → TGLExt.purityR (TGLExt.dephase g t x) < TGLExt.purityR x
+@TGLExt.TheTimeHasNoRank.purity_of_hermitian : ∀ {n : Type} [inst : Fintype n] (x : Matrix n n ℂ),
+  x.IsHermitian → TGLExt.purity x = (x * x).trace
+@TGLExt.TheTimeIsNotAPost.purity_of_hermitian : ∀ {n : Type} [inst : Fintype n] (x : Matrix n n ℂ),
+  x.IsHermitian → TGLExt.purity x = (x * x).trace
+@TGLExt.TheTimeHasNoRank.purityR_sigma : ∀ {n : Type} [inst : Fintype n] [inst_1 : DecidableEq n] (ρ : Matrix n n ℂ)
+  (t : ℝ) (x : Matrix n n ℂ), TGLExt.purityR (TGLExt.sigma ρ t x) = TGLExt.purityR x
+@TGLExt.TheTimeIsNotAPost.purityR_sigma : ∀ {n : Type} [inst : Fintype n] [inst_1 : DecidableEq n] (ρ : Matrix n n ℂ)
+  (t : ℝ) (x : Matrix n n ℂ), TGLExt.purityR (TGLExt.sigma ρ t x) = TGLExt.purityR x
+@TGLExt.TheTimeHasNoRank.no_coherence_no_loss : ∀ {n : Type} [inst : Fintype n] [inst_1 : DecidableEq n]
+  (g : n → n → ℝ),
+  (∀ (i : n), g i i = 0) →
+    ∀ (t : ℝ) (x : Matrix n n ℂ),
+      TGLExt.purityR (TGLExt.dephase g t (TGLExt.diagExpect x)) = TGLExt.purityR (TGLExt.diagExpect x)
+@TGLExt.TheTimeIsNotAPost.no_coherence_no_loss : ∀ {n : Type} [inst : Fintype n] [inst_1 : DecidableEq n]
+  (g : n → n → ℝ),
+  (∀ (i : n), g i i = 0) →
+    ∀ (t : ℝ) (x : Matrix n n ℂ),
+      TGLExt.purityR (TGLExt.dephase g t (TGLExt.diagExpect x)) = TGLExt.purityR (TGLExt.diagExpect x)
+@TGLExt.TheTimeHasNoRank.unitary_keeps_purity : ∀ {n : Type} [inst : Fintype n] [inst_1 : DecidableEq n]
+  (U x : Matrix n n ℂ), U ∈ unitary (Matrix n n ℂ) → TGLExt.purity (U * x * U.conjTranspose) = TGLExt.purity x
+@TGLExt.TheTimeIsNotAPost.unitary_keeps_purity : ∀ {n : Type} [inst : Fintype n] [inst_1 : DecidableEq n]
+  (U x : Matrix n n ℂ), U ∈ unitary (Matrix n n ℂ) → TGLExt.purity (U * x * U.conjTranspose) = TGLExt.purity x
+TGLExt.TheTimeHasNoRank.probe_psiPlus_purity : TGLExt.purityR TGLExt.TheTimeHasNoRank.psiPlus = 1
+TGLExt.TheTimeIsNotAPost.probe_psiPlus_purity : TGLExt.purityR TGLExt.TheTimeIsNotAPost.psiPlus = 1
+TGLExt.TheTimeHasNoRank.purity_grows_backwards : TGLExt.purityR
+    (TGLExt.dephase (fun i j => if i = j then 0 else 1) (-1) ((1 / 2) • !![1, 1; 1, 1])) >
+  TGLExt.purityR ((1 / 2) • !![1, 1; 1, 1])
+TGLExt.TheTimeIsNotAPost.purity_grows_backwards : TGLExt.purityR
+    (TGLExt.dephase (fun i j => if i = j then 0 else 1) (-1) ((1 / 2) • !![1, 1; 1, 1])) >
+  TGLExt.purityR ((1 / 2) • !![1, 1; 1, 1])
+TGLExt.TheTimeHasNoRank.probe_psiPlus_dephased_purity : TGLExt.purityR
+    (TGLExt.dephase (TGLExt.TheTimeHasNoRank.gRate 1) 1 TGLExt.TheTimeHasNoRank.psiPlus) =
+  (1 + Real.exp (-2)) / 2
+TGLExt.TheTimeIsNotAPost.probe_psiPlus_dephased_purity : TGLExt.purityR
+    (TGLExt.dephase (TGLExt.TheTimeIsNotAPost.gRate 1) 1 TGLExt.TheTimeIsNotAPost.psiPlus) =
+  (1 + Real.exp (-2)) / 2
+@TGLExt.TheTimeHasNoRank.dephase_inverse : ∀ {n : Type} (g : n → n → ℝ) (t : ℝ) (x : Matrix n n ℂ),
+  TGLExt.dephase g (-t) (TGLExt.dephase g t x) = x ∧ TGLExt.dephase g t (TGLExt.dephase g (-t) x) = x
+@TGLExt.TheTimeIsNotAPost.dephase_inverse : ∀ {n : Type} (g : n → n → ℝ) (t : ℝ) (x : Matrix n n ℂ),
+  TGLExt.dephase g (-t) (TGLExt.dephase g t x) = x ∧ TGLExt.dephase g t (TGLExt.dephase g (-t) x) = x
+TGLExt.TheTimeHasNoRank.quad_form_fin_two : ∀ (M : Matrix (Fin 2) (Fin 2) ℂ),
+  star ![1, -1] ⬝ᵥ M.mulVec ![1, -1] = M 0 0 - M 0 1 - M 1 0 + M 1 1
+TGLExt.TheTimeIsNotAPost.quad_form_fin_two : ∀ (M : Matrix (Fin 2) (Fin 2) ℂ),
+  star ![1, -1] ⬝ᵥ M.mulVec ![1, -1] = M 0 0 - M 0 1 - M 1 0 + M 1 1
+TGLExt.TheTimeHasNoRank.inverse_dephasing_quadratic_form : ∀ (γ t : ℝ),
+  star ![1, -1] ⬝ᵥ
+      (TGLExt.dephase (TGLExt.TheTimeHasNoRank.gRate γ) (-t) TGLExt.TheTimeHasNoRank.psiPlus).mulVec ![1, -1] =
+    ↑(1 - Real.exp (t * γ))
+TGLExt.TheTimeIsNotAPost.inverse_dephasing_quadratic_form : ∀ (γ t : ℝ),
+  star ![1, -1] ⬝ᵥ
+      (TGLExt.dephase (TGLExt.TheTimeIsNotAPost.gRate γ) (-t) TGLExt.TheTimeIsNotAPost.psiPlus).mulVec ![1, -1] =
+    ↑(1 - Real.exp (t * γ))
+@TGLExt.TheTimeHasNoRank.inverse_dephasing_not_positive : ∀ {γ t : ℝ},
+  0 < γ →
+    0 < t →
+      have g := fun i j => if i = j then 0 else γ;
+      have ψ := (1 / 2) • !![1, 1; 1, 1];
+      ψ.PosSemidef ∧ ψ.trace = 1 ∧ ¬(TGLExt.dephase g (-t) ψ).PosSemidef
+@TGLExt.TheTimeIsNotAPost.inverse_dephasing_not_positive : ∀ {γ t : ℝ},
+  0 < γ →
+    0 < t →
+      have g := fun i j => if i = j then 0 else γ;
+      have ψ := (1 / 2) • !![1, 1; 1, 1];
+      ψ.PosSemidef ∧ ψ.trace = 1 ∧ ¬(TGLExt.dephase g (-t) ψ).PosSemidef
+@TGLExt.TheTimeHasNoRank.control_inverse_at_time_zero : ∀ {n : Type} (g : n → n → ℝ) (ρ : Matrix n n ℂ),
+  TGLExt.dephase g (-0) ρ = ρ
+@TGLExt.TheTimeIsNotAPost.control_inverse_at_time_zero : ∀ {n : Type} (g : n → n → ℝ) (ρ : Matrix n n ℂ),
+  TGLExt.dephase g (-0) ρ = ρ
+@TGLExt.TheTimeHasNoRank.control_inverse_on_diagonal : ∀ {n : Type} [inst : DecidableEq n] (g : n → n → ℝ),
+  (∀ (i : n), g i i = 0) → ∀ (t : ℝ) (dd : n → ℂ), TGLExt.dephase g (-t) (Matrix.diagonal dd) = Matrix.diagonal dd
+@TGLExt.TheTimeIsNotAPost.control_inverse_on_diagonal : ∀ {n : Type} [inst : DecidableEq n] (g : n → n → ℝ),
+  (∀ (i : n), g i i = 0) → ∀ (t : ℝ) (dd : n → ℂ), TGLExt.dephase g (-t) (Matrix.diagonal dd) = Matrix.diagonal dd
+@TGLExt.TheTimeHasNoRank.unitary_inverse_is_a_channel : ∀ {n : Type} [inst : Fintype n] [inst_1 : DecidableEq n],
+  ∀ U ∈ unitary (Matrix n n ℂ),
+    ∀ (ρ : Matrix n n ℂ),
+      ρ.PosSemidef → U.conjTranspose * (U * ρ * U.conjTranspose) * U = ρ ∧ (U * ρ * U.conjTranspose).PosSemidef
+@TGLExt.TheTimeIsNotAPost.unitary_inverse_is_a_channel : ∀ {n : Type} [inst : Fintype n] [inst_1 : DecidableEq n],
+  ∀ U ∈ unitary (Matrix n n ℂ),
+    ∀ (ρ : Matrix n n ℂ),
+      ρ.PosSemidef → U.conjTranspose * (U * ρ * U.conjTranspose) * U = ρ ∧ (U * ρ * U.conjTranspose).PosSemidef
+@TGLExt.TheTimeHasNoRank.coherence_entry_scaling : ∀ {n : Type} (g : n → n → ℝ) (i₀ j₀ : n),
+  g i₀ j₀ = 1 → ∀ (s : ℝ) (x : Matrix n n ℂ), ‖TGLExt.dephase g s x i₀ j₀‖ = Real.exp (-s) * ‖x i₀ j₀‖
+@TGLExt.TheTimeIsNotAPost.coherence_entry_scaling : ∀ {n : Type} (g : n → n → ℝ) (i₀ j₀ : n),
+  g i₀ j₀ = 1 → ∀ (s : ℝ) (x : Matrix n n ℂ), ‖TGLExt.dephase g s x i₀ j₀‖ = Real.exp (-s) * ‖x i₀ j₀‖
+@TGLExt.TheTimeHasNoRank.coherenceScaling : {n : Type} →
+  (g : n → n → ℝ) → (i₀ j₀ : n) → g i₀ j₀ = 1 → TGLExt.DualScalingData (Matrix n n ℂ)
+@TGLExt.TheTimeIsNotAPost.coherenceScaling : {n : Type} →
+  (g : n → n → ℝ) → (i₀ j₀ : n) → g i₀ j₀ = 1 → TGLExt.DualScalingData (Matrix n n ℂ)
+@TGLExt.TheTimeHasNoRank.the_coherence_obeys_agape : ∀ {n : Type} (g : n → n → ℝ) (i₀ j₀ : n) (hg : g i₀ j₀ = 1)
+  (x : Matrix n n ℂ),
+  x i₀ j₀ ≠ 0 →
+    have D := TGLExt.TheTimeHasNoRank.coherenceScaling g i₀ j₀ hg;
+    (∀ (s : ℝ), s ≠ 0 → ∀ (m' : Matrix n n ℂ), D.theta s m' = m' → D.tau m' = 0) ∧
+      (∀ (s : ℝ), D.tau (D.theta s x) < D.tau (D.theta (s - 1) x)) ∧
+        (∀ (B : ℝ), ∃ s, B < D.tau (D.theta s x)) ∧
+          (∀ (s : ℝ), 0 < D.tau (D.theta s x)) ∧
+            (∀ (ε : ℝ), 0 < ε → ∃ s, D.tau (D.theta s x) < ε) ∧ ∀ (a : ℝ), Real.exp (-a) = 1 ↔ a = 0
+@TGLExt.TheTimeIsNotAPost.the_coherence_obeys_agape : ∀ {n : Type} (g : n → n → ℝ) (i₀ j₀ : n) (hg : g i₀ j₀ = 1)
+  (x : Matrix n n ℂ),
+  x i₀ j₀ ≠ 0 →
+    have D := TGLExt.TheTimeIsNotAPost.coherenceScaling g i₀ j₀ hg;
+    (∀ (s : ℝ), s ≠ 0 → ∀ (m' : Matrix n n ℂ), D.theta s m' = m' → D.tau m' = 0) ∧
+      (∀ (s : ℝ), D.tau (D.theta s x) < D.tau (D.theta (s - 1) x)) ∧
+        (∀ (B : ℝ), ∃ s, B < D.tau (D.theta s x)) ∧
+          (∀ (s : ℝ), 0 < D.tau (D.theta s x)) ∧
+            (∀ (ε : ℝ), 0 < ε → ∃ s, D.tau (D.theta s x) < ε) ∧ ∀ (a : ℝ), Real.exp (-a) = 1 ↔ a = 0
+@TGLExt.TheTimeHasNoRank.the_coherence_obeys_agape_explicit : ∀ {n : Type} (g : n → n → ℝ) (i₀ j₀ : n),
+  g i₀ j₀ = 1 →
+    ∀ (x : Matrix n n ℂ),
+      x i₀ j₀ ≠ 0 →
+        (∀ (s : ℝ), s ≠ 0 → ∀ (m' : Matrix n n ℂ), TGLExt.dephase g s m' = m' → ‖m' i₀ j₀‖ = 0) ∧
+          (∀ (s : ℝ), ‖TGLExt.dephase g s x i₀ j₀‖ < ‖TGLExt.dephase g (s - 1) x i₀ j₀‖) ∧
+            (∀ (B : ℝ), ∃ s, B < ‖TGLExt.dephase g s x i₀ j₀‖) ∧
+              (∀ (s : ℝ), 0 < ‖TGLExt.dephase g s x i₀ j₀‖) ∧
+                (∀ (ε : ℝ), 0 < ε → ∃ s, ‖TGLExt.dephase g s x i₀ j₀‖ < ε) ∧ ∀ (a : ℝ), Real.exp (-a) = 1 ↔ a = 0
+@TGLExt.TheTimeIsNotAPost.the_coherence_obeys_agape_explicit : ∀ {n : Type} (g : n → n → ℝ) (i₀ j₀ : n),
+  g i₀ j₀ = 1 →
+    ∀ (x : Matrix n n ℂ),
+      x i₀ j₀ ≠ 0 →
+        (∀ (s : ℝ), s ≠ 0 → ∀ (m' : Matrix n n ℂ), TGLExt.dephase g s m' = m' → ‖m' i₀ j₀‖ = 0) ∧
+          (∀ (s : ℝ), ‖TGLExt.dephase g s x i₀ j₀‖ < ‖TGLExt.dephase g (s - 1) x i₀ j₀‖) ∧
+            (∀ (B : ℝ), ∃ s, B < ‖TGLExt.dephase g s x i₀ j₀‖) ∧
+              (∀ (s : ℝ), 0 < ‖TGLExt.dephase g s x i₀ j₀‖) ∧
+                (∀ (ε : ℝ), 0 < ε → ∃ s, ‖TGLExt.dephase g s x i₀ j₀‖ < ε) ∧ ∀ (a : ℝ), Real.exp (-a) = 1 ↔ a = 0
+@TGLExt.TheTimeHasNoRank.the_record_does_not_scale : ∀ {n : Type} (g : n → n → ℝ),
+  (∀ (i : n), g i i = 0) →
+    ∀ (i₀ : n) (x : Matrix n n ℂ),
+      x i₀ i₀ ≠ 0 → ∀ {s : ℝ}, s ≠ 0 → ‖TGLExt.dephase g s x i₀ i₀‖ ≠ Real.exp (-s) * ‖x i₀ i₀‖
+@TGLExt.TheTimeIsNotAPost.the_record_does_not_scale : ∀ {n : Type} (g : n → n → ℝ),
+  (∀ (i : n), g i i = 0) →
+    ∀ (i₀ : n) (x : Matrix n n ℂ),
+      x i₀ i₀ ≠ 0 → ∀ {s : ℝ}, s ≠ 0 → ‖TGLExt.dephase g s x i₀ i₀‖ ≠ Real.exp (-s) * ‖x i₀ i₀‖
+TGLExt.TheTimeHasNoRank.past_null_ray_contracts : ∀ (s : ℝ), (TGLExt.boost s).mulVec ![1, -1] = Real.exp (-s) • ![1, -1]
+TGLExt.TheTimeIsNotAPost.past_null_ray_contracts : ∀ (s : ℝ),
+  (TGLExt.boost s).mulVec ![1, -1] = Real.exp (-s) • ![1, -1]
+TGLExt.TheTimeHasNoRank.wrong_rate_breaks_scaling : ∃ s x,
+  ‖TGLExt.dephase (fun i j => if i = j then 0 else 1) (2 * s) x 0 1‖ ≠ Real.exp (-s) * ‖x 0 1‖
+TGLExt.TheTimeIsNotAPost.wrong_rate_breaks_scaling : ∃ s x,
+  ‖TGLExt.dephase (fun i j => if i = j then 0 else 1) (2 * s) x 0 1‖ ≠ Real.exp (-s) * ‖x 0 1‖
+@TGLExt.TheTimeHasNoRank.flow_sq : ∀ {A : Type u_1} [inst : Ring A] [inst_1 : Algebra ℂ A] {P : A},
+  IsIdempotentElem P →
+    ∀ (t : ℝ),
+      TGLExt.TheAxiomAndTheFalseWitness.axiomFlow P t * TGLExt.TheAxiomAndTheFalseWitness.axiomFlow P t =
+        TGLExt.TheAxiomAndTheFalseWitness.axiomFlow P (t + t)
+@TGLExt.TheTimeIsNotAPost.flow_sq : ∀ {A : Type u_1} [inst : Ring A] [inst_1 : Algebra ℂ A] {P : A},
+  IsIdempotentElem P →
+    ∀ (t : ℝ),
+      TGLExt.TheAxiomAndTheFalseWitness.axiomFlow P t * TGLExt.TheAxiomAndTheFalseWitness.axiomFlow P t =
+        TGLExt.TheAxiomAndTheFalseWitness.axiomFlow P (t + t)
+@TGLExt.TheTimeHasNoRank.flow_isIdempotentElem_iff : ∀ {A : Type u_1} [inst : Ring A] [inst_1 : Algebra ℂ A] {P : A},
+  IsIdempotentElem P → 1 - P ≠ 0 → ∀ (t : ℝ), IsIdempotentElem (TGLExt.TheAxiomAndTheFalseWitness.axiomFlow P t) ↔ t = 0
+@TGLExt.TheTimeIsNotAPost.flow_isIdempotentElem_iff : ∀ {A : Type u_1} [inst : Ring A] [inst_1 : Algebra ℂ A] {P : A},
+  IsIdempotentElem P → 1 - P ≠ 0 → ∀ (t : ℝ), IsIdempotentElem (TGLExt.TheAxiomAndTheFalseWitness.axiomFlow P t) ↔ t = 0
+@TGLExt.TheTimeHasNoRank.flow_isUnit : ∀ {A : Type u_1} [inst : Ring A] [inst_1 : Algebra ℂ A] {P : A},
+  IsIdempotentElem P → ∀ (t : ℝ), IsUnit (TGLExt.TheAxiomAndTheFalseWitness.axiomFlow P t)
+@TGLExt.TheTimeIsNotAPost.flow_isUnit : ∀ {A : Type u_1} [inst : Ring A] [inst_1 : Algebra ℂ A] {P : A},
+  IsIdempotentElem P → ∀ (t : ℝ), IsUnit (TGLExt.TheAxiomAndTheFalseWitness.axiomFlow P t)
+@TGLExt.TheTimeHasNoRank.flow_of_one_is_idempotent : ∀ {A : Type u_1} [inst : Ring A] [inst_1 : Algebra ℂ A] (t : ℝ),
+  IsIdempotentElem (TGLExt.TheAxiomAndTheFalseWitness.axiomFlow 1 t)
+@TGLExt.TheTimeIsNotAPost.flow_of_one_is_idempotent : ∀ {A : Type u_1} [inst : Ring A] [inst_1 : Algebra ℂ A] (t : ℝ),
+  IsIdempotentElem (TGLExt.TheAxiomAndTheFalseWitness.axiomFlow 1 t)
+@TGLExt.TheTimeHasNoRank.flow_at_zero_is_idempotent : ∀ {A : Type u_1} [inst : Ring A] [inst_1 : Algebra ℂ A] (P : A),
+  IsIdempotentElem (TGLExt.TheAxiomAndTheFalseWitness.axiomFlow P 0)
+@TGLExt.TheTimeIsNotAPost.flow_at_zero_is_idempotent : ∀ {A : Type u_1} [inst : Ring A] [inst_1 : Algebra ℂ A] (P : A),
+  IsIdempotentElem (TGLExt.TheAxiomAndTheFalseWitness.axiomFlow P 0)
+@TGLExt.TheTimeHasNoRank.no_finite_instant_is_the_post : ∀ {A : Type u_1} [inst : Ring A] [inst_1 : Algebra ℂ A]
+  {P : A}, IsIdempotentElem P → P ≠ 1 → ∀ (t : ℝ), TGLExt.TheAxiomAndTheFalseWitness.axiomFlow P t ≠ P
+@TGLExt.TheTimeIsNotAPost.no_finite_instant_is_the_post : ∀ {A : Type u_1} [inst : Ring A] [inst_1 : Algebra ℂ A]
+  {P : A}, IsIdempotentElem P → P ≠ 1 → ∀ (t : ℝ), TGLExt.TheAxiomAndTheFalseWitness.axiomFlow P t ≠ P
+@TGLExt.TheTimeHasNoRank.post_not_isUnit : ∀ {A : Type u_1} [inst : Ring A] {P : A},
+  IsIdempotentElem P → P ≠ 1 → ¬IsUnit P
+@TGLExt.TheTimeIsNotAPost.post_not_isUnit : ∀ {A : Type u_1} [inst : Ring A] {P : A},
+  IsIdempotentElem P → P ≠ 1 → ¬IsUnit P
+TGLExt.TheTimeHasNoRank.flow_full_rank : ∀ (n : ℕ) (P : Matrix (Fin n) (Fin n) ℂ),
+  IsIdempotentElem P → ∀ (t : ℝ), (TGLExt.TheAxiomAndTheFalseWitness.axiomFlow P t).rank = n
+TGLExt.TheTimeIsNotAPost.flow_full_rank : ∀ (n : ℕ) (P : Matrix (Fin n) (Fin n) ℂ),
+  IsIdempotentElem P → ∀ (t : ℝ), (TGLExt.TheAxiomAndTheFalseWitness.axiomFlow P t).rank = n
+TGLExt.TheTimeHasNoRank.post_rank_lt : ∀ (n : ℕ) (P : Matrix (Fin n) (Fin n) ℂ), IsIdempotentElem P → P ≠ 1 → P.rank < n
+TGLExt.TheTimeIsNotAPost.post_rank_lt : ∀ (n : ℕ) (P : Matrix (Fin n) (Fin n) ℂ),
+  IsIdempotentElem P → P ≠ 1 → P.rank < n
+@TGLExt.TheTimeHasNoRank.the_time_has_no_rank : ∀ {A : Type u_1} [inst : NormedRing A] [inst_1 : NormedAlgebra ℂ A]
+  {P : A},
+  IsIdempotentElem P →
+    P ≠ 1 →
+      (∀ (m : ℕ), 0 < m → ∀ (T H : Matrix (Fin m) (Fin m) ℂ), T * H - H * T ≠ Complex.I • 1) ∧
+        (∀ (t : ℝ), IsIdempotentElem (TGLExt.TheAxiomAndTheFalseWitness.axiomFlow P t) ↔ t = 0) ∧
+          (∀ (t : ℝ), IsUnit (TGLExt.TheAxiomAndTheFalseWitness.axiomFlow P t)) ∧
+            ¬IsUnit P ∧ Filter.Tendsto (TGLExt.TheAxiomAndTheFalseWitness.axiomFlow P) Filter.atTop (nhds P)
+@TGLExt.TheTimeIsNotAPost.the_time_is_not_a_post : ∀ {A : Type u_1} [inst : NormedRing A] [inst_1 : NormedAlgebra ℂ A]
+  {P : A},
+  IsIdempotentElem P →
+    P ≠ 1 →
+      (∀ (m : ℕ), 0 < m → ∀ (T H : Matrix (Fin m) (Fin m) ℂ), T * H - H * T ≠ Complex.I • 1) ∧
+        (∀ (t : ℝ), IsIdempotentElem (TGLExt.TheAxiomAndTheFalseWitness.axiomFlow P t) ↔ t = 0) ∧
+          (∀ (t : ℝ), IsUnit (TGLExt.TheAxiomAndTheFalseWitness.axiomFlow P t)) ∧
+            ¬IsUnit P ∧ Filter.Tendsto (TGLExt.TheAxiomAndTheFalseWitness.axiomFlow P) Filter.atTop (nhds P)
+TGLExt.TheTimeHasNoRank.postDiag : Matrix (Fin 2) (Fin 2) ℂ
+TGLExt.TheTimeIsNotAPost.postDiag : Matrix (Fin 2) (Fin 2) ℂ
+TGLExt.TheTimeHasNoRank.postDiag_idem : IsIdempotentElem TGLExt.TheTimeHasNoRank.postDiag
+TGLExt.TheTimeIsNotAPost.postDiag_idem : IsIdempotentElem TGLExt.TheTimeIsNotAPost.postDiag
+TGLExt.TheTimeHasNoRank.postDiag_compl_ne_zero : 1 - TGLExt.TheTimeHasNoRank.postDiag ≠ 0
+TGLExt.TheTimeIsNotAPost.postDiag_compl_ne_zero : 1 - TGLExt.TheTimeIsNotAPost.postDiag ≠ 0
+TGLExt.TheTimeHasNoRank.postDiag_ne_one : TGLExt.TheTimeHasNoRank.postDiag ≠ 1
+TGLExt.TheTimeIsNotAPost.postDiag_ne_one : TGLExt.TheTimeIsNotAPost.postDiag ≠ 1
+TGLExt.TheTimeHasNoRank.probe_the_time_has_no_rank : ¬IsUnit TGLExt.TheTimeHasNoRank.postDiag
+TGLExt.TheTimeIsNotAPost.probe_the_time_is_not_a_post : ¬IsUnit TGLExt.TheTimeIsNotAPost.postDiag
+@TGLExt.TheTimeHasNoRank.clock_faithful_iff_one_turn : ∀ {kappa period : ℝ},
+  kappa ≠ 0 →
+    (ChatgptAudit.PolarPeriod016.AngularQuotientFaithful kappa period ↔
+      kappa * period = 2 * Real.pi ∨ kappa * period = -(2 * Real.pi))
+@TGLExt.TheTimeIsNotAPost.clock_faithful_iff_one_turn : ∀ {kappa period : ℝ},
+  kappa ≠ 0 →
+    (ChatgptAudit.PolarPeriod016.AngularQuotientFaithful kappa period ↔
+      kappa * period = 2 * Real.pi ∨ kappa * period = -(2 * Real.pi))
+@TGLExt.TheTimeHasNoRank.clock_reciprocal_temperature : ∀ {kappa period : ℝ},
+  0 < kappa →
+    0 < period → ChatgptAudit.PolarPeriod016.AngularQuotientFaithful kappa period → 1 / period = kappa / (2 * Real.pi)
+@TGLExt.TheTimeIsNotAPost.clock_reciprocal_temperature : ∀ {kappa period : ℝ},
+  0 < kappa →
+    0 < period → ChatgptAudit.PolarPeriod016.AngularQuotientFaithful kappa period → 1 / period = kappa / (2 * Real.pi)
+TGLExt.TheTimeHasNoRank.frozen_clock : ∀ (t u : ℝ), Circle.exp (0 * t) = Circle.exp (0 * u)
+TGLExt.TheTimeIsNotAPost.frozen_clock : ∀ (t u : ℝ), Circle.exp (0 * t) = Circle.exp (0 * u)
+@TGLExt.TheTimeHasNoRank.frozen_clock_not_faithful : ∀ {P : ℝ},
+  P ≠ 0 → ¬ChatgptAudit.PolarPeriod016.AngularQuotientFaithful 0 P
+@TGLExt.TheTimeIsNotAPost.frozen_clock_not_faithful : ∀ {P : ℝ},
+  P ≠ 0 → ¬ChatgptAudit.PolarPeriod016.AngularQuotientFaithful 0 P
+@TGLExt.TheTimeHasNoRank.face_clock_has_no_period : ∀ {r : ℝ},
+  0 < r → ∀ {P : ℝ}, 0 < P → ¬∀ (t : ℝ), Real.exp (-(r * (t + P))) = Real.exp (-(r * t))
+@TGLExt.TheTimeIsNotAPost.face_clock_has_no_period : ∀ {r : ℝ},
+  0 < r → ∀ {P : ℝ}, 0 < P → ¬∀ (t : ℝ), Real.exp (-(r * (t + P))) = Real.exp (-(r * t))
+@TGLExt.TheTimeHasNoRank.angle_has_no_limit : ∀ {V : Type} [inst : NormedAddCommGroup V] [inst_1 : NormedSpace ℂ V]
+  (P : V →ₗ[ℂ] V) (ω : ℝ) (v : V),
+  v ≠ P v → ¬Filter.Tendsto (fun s => TGLExt.IALDJones.orbit P 0 ω s v) Filter.atTop (nhds (P v))
+@TGLExt.TheTimeIsNotAPost.angle_has_no_limit : ∀ {V : Type} [inst : NormedAddCommGroup V] [inst_1 : NormedSpace ℂ V]
+  (P : V →ₗ[ℂ] V) (ω : ℝ) (v : V),
+  v ≠ P v → ¬Filter.Tendsto (fun s => TGLExt.IALDJones.orbit P 0 ω s v) Filter.atTop (nhds (P v))
+@TGLExt.TheTimeHasNoRank.angle_is_periodic : ∀ {V : Type} [inst : NormedAddCommGroup V] [inst_1 : NormedSpace ℂ V]
+  (P : V →ₗ[ℂ] V) {ω : ℝ},
+  ω ≠ 0 → ∀ (s : ℝ) (v : V), TGLExt.IALDJones.orbit P 0 ω (s + 2 * Real.pi / ω) v = TGLExt.IALDJones.orbit P 0 ω s v
+@TGLExt.TheTimeIsNotAPost.angle_is_periodic : ∀ {V : Type} [inst : NormedAddCommGroup V] [inst_1 : NormedSpace ℂ V]
+  (P : V →ₗ[ℂ] V) {ω : ℝ},
+  ω ≠ 0 → ∀ (s : ℝ) (v : V), TGLExt.IALDJones.orbit P 0 ω (s + 2 * Real.pi / ω) v = TGLExt.IALDJones.orbit P 0 ω s v
+@TGLExt.TheTimeHasNoRank.face_has_a_limit : ∀ {V : Type} [inst : NormedAddCommGroup V] [inst_1 : NormedSpace ℂ V]
+  (P : V →ₗ[ℂ] V) {r : ℝ},
+  0 < r → ∀ (ω : ℝ) (v : V), Filter.Tendsto (fun s => TGLExt.IALDJones.orbit P r ω s v) Filter.atTop (nhds (P v))
+@TGLExt.TheTimeIsNotAPost.face_has_a_limit : ∀ {V : Type} [inst : NormedAddCommGroup V] [inst_1 : NormedSpace ℂ V]
+  (P : V →ₗ[ℂ] V) {r : ℝ},
+  0 < r → ∀ (ω : ℝ) (v : V), Filter.Tendsto (fun s => TGLExt.IALDJones.orbit P r ω s v) Filter.atTop (nhds (P v))
+@TGLExt.TheTimeHasNoRank.face_distinguishes_instants : ∀ {m : ℕ} {r : ℝ},
+  0 < r →
+    ∀ (d : Fin m → ℝ) {i : Fin m},
+      0 < d i →
+        ∀ (x : Fin m → ℝ), x i ≠ 0 → ∀ {t₁ t₂ : ℝ}, t₁ ≠ t₂ → TGLExt.diagFlow r d t₁ x ≠ TGLExt.diagFlow r d t₂ x
+@TGLExt.TheTimeIsNotAPost.face_distinguishes_instants : ∀ {m : ℕ} {r : ℝ},
+  0 < r →
+    ∀ (d : Fin m → ℝ) {i : Fin m},
+      0 < d i →
+        ∀ (x : Fin m → ℝ), x i ≠ 0 → ∀ {t₁ t₂ : ℝ}, t₁ ≠ t₂ → TGLExt.diagFlow r d t₁ x ≠ TGLExt.diagFlow r d t₂ x
+@TGLExt.TheTimeHasNoRank.modular_clock_rotates_without_shrinking : ∀ {n : Type} [inst : Fintype n]
+  [inst_1 : DecidableEq n] (d : n → ℝ),
+  (∀ (i : n), 0 < d i) → ∀ (t : ℝ) (x : Matrix n n ℂ) (i j : n), ‖TGLExt.sigma (TGLExt.rhoD d) t x i j‖ = ‖x i j‖
+@TGLExt.TheTimeIsNotAPost.modular_clock_rotates_without_shrinking : ∀ {n : Type} [inst : Fintype n]
+  [inst_1 : DecidableEq n] (d : n → ℝ),
+  (∀ (i : n), 0 < d i) → ∀ (t : ℝ) (x : Matrix n n ℂ) (i j : n), ‖TGLExt.sigma (TGLExt.rhoD d) t x i j‖ = ‖x i j‖
+@TGLExt.TheTimeHasNoRank.the_post_is_not_moved : ∀ {A : Type u_1} [inst : Ring A] [inst_1 : Algebra ℂ A] {P : A},
+  IsIdempotentElem P →
+    ∀ (t : ℝ),
+      TGLExt.TheAxiomAndTheFalseWitness.axiomFlow P t * P = P ∧ P * TGLExt.TheAxiomAndTheFalseWitness.axiomFlow P t = P
+@TGLExt.TheTimeIsNotAPost.the_post_is_not_moved : ∀ {A : Type u_1} [inst : Ring A] [inst_1 : Algebra ℂ A] {P : A},
+  IsIdempotentElem P →
+    ∀ (t : ℝ),
+      TGLExt.TheAxiomAndTheFalseWitness.axiomFlow P t * P = P ∧ P * TGLExt.TheAxiomAndTheFalseWitness.axiomFlow P t = P
+@TGLExt.TheTimeHasNoRank.the_state_is_not_moved : ∀ {n : Type} [inst : Fintype n] [inst_1 : DecidableEq n]
+  (ρ : Matrix n n ℂ) (t : ℝ) (a : Matrix n n ℂ), TGLExt.gibbs ρ (TGLExt.sigma ρ t a) = TGLExt.gibbs ρ a
+@TGLExt.TheTimeIsNotAPost.the_state_is_not_moved : ∀ {n : Type} [inst : Fintype n] [inst_1 : DecidableEq n]
+  (ρ : Matrix n n ℂ) (t : ℝ) (a : Matrix n n ℂ), TGLExt.gibbs ρ (TGLExt.sigma ρ t a) = TGLExt.gibbs ρ a
+@TGLExt.TheTimeHasNoRank.the_vector_is_not_moved : ∀ {n : Type} [inst : Fintype n] [inst_1 : DecidableEq n]
+  (ρ : Matrix n n ℂ) (t : ℝ), TGLExt.modPow ρ t * TGLExt.Omega ρ * TGLExt.modPow ρ (-t) = TGLExt.Omega ρ
+@TGLExt.TheTimeIsNotAPost.the_vector_is_not_moved : ∀ {n : Type} [inst : Fintype n] [inst_1 : DecidableEq n]
+  (ρ : Matrix n n ℂ) (t : ℝ), TGLExt.modPow ρ t * TGLExt.Omega ρ * TGLExt.modPow ρ (-t) = TGLExt.Omega ρ
+TGLExt.TheTimeHasNoRank.optical_attractor_is_the_absolute_one : (1 / 2) • 1 = TGLExt.absoluteRho (Fin 2)
+TGLExt.TheTimeIsNotAPost.half_identity_is_absoluteRho_two : (1 / 2) • 1 = TGLExt.absoluteRho (Fin 2)
+TGLExt.TheTimeHasNoRank.optical_attractor_clock_stops : ∀ (t : ℝ) (a : Matrix (Fin 2) (Fin 2) ℂ),
+  TGLExt.sigma ((1 / 2) • 1) t a = a
+TGLExt.TheTimeIsNotAPost.half_identity_clock_stops : ∀ (t : ℝ) (a : Matrix (Fin 2) (Fin 2) ℂ),
+  TGLExt.sigma ((1 / 2) • 1) t a = a
+TGLExt.TheTimeHasNoRank.flow_at_one_is_not_idempotent : ¬IsIdempotentElem
+    (TGLExt.TheAxiomAndTheFalseWitness.axiomFlow TGLExt.TheTimeHasNoRank.postDiag 1)
+TGLExt.TheTimeIsNotAPost.flow_at_one_is_not_idempotent : ¬IsIdempotentElem
+    (TGLExt.TheAxiomAndTheFalseWitness.axiomFlow TGLExt.TheTimeIsNotAPost.postDiag 1)
+TGLExt.TheTimeHasNoRank.rhoD_equal_weights : TGLExt.rhoD ![1, 1] = 1
+TGLExt.TheTimeIsNotAPost.rhoD_equal_weights : TGLExt.rhoD ![1, 1] = 1
+TGLExt.TheTimeHasNoRank.modular_iff_needs_injective_weights : (∃ z,
+    Filter.Tendsto (fun t => TGLExt.sigma (TGLExt.rhoD ![1, 1]) t TGLExt.TheTimeHasNoRank.psiPlus) Filter.atTop
+      (nhds z)) ∧
+  TGLExt.TheTimeHasNoRank.psiPlus ≠ TGLExt.diagExpect TGLExt.TheTimeHasNoRank.psiPlus
+TGLExt.TheTimeIsNotAPost.modular_iff_needs_injective_weights : (∃ z,
+    Filter.Tendsto (fun t => TGLExt.sigma (TGLExt.rhoD ![1, 1]) t TGLExt.TheTimeIsNotAPost.psiPlus) Filter.atTop
+      (nhds z)) ∧
+  TGLExt.TheTimeIsNotAPost.psiPlus ≠ TGLExt.diagExpect TGLExt.TheTimeIsNotAPost.psiPlus
+TGLExt.TheTimeHasNoRank.centralizer_iff_needs_injective_weights : (∀ (t : ℝ),
+    TGLExt.sigma (TGLExt.rhoD ![1, 1]) t TGLExt.TheTimeHasNoRank.psiPlus = TGLExt.TheTimeHasNoRank.psiPlus) ∧
+  TGLExt.TheTimeHasNoRank.psiPlus ≠ TGLExt.diagExpect TGLExt.TheTimeHasNoRank.psiPlus
+TGLExt.TheTimeIsNotAPost.centralizer_iff_needs_injective_weights : (∀ (t : ℝ),
+    TGLExt.sigma (TGLExt.rhoD ![1, 1]) t TGLExt.TheTimeIsNotAPost.psiPlus = TGLExt.TheTimeIsNotAPost.psiPlus) ∧
+  TGLExt.TheTimeIsNotAPost.psiPlus ≠ TGLExt.diagExpect TGLExt.TheTimeIsNotAPost.psiPlus
+TGLExt.TheTimeHasNoRank.dephasing_iff_needs_positive_rates : (∀ (t : ℝ),
+    TGLExt.dephase (fun x x_1 => 0) t TGLExt.TheTimeHasNoRank.psiPlus = TGLExt.TheTimeHasNoRank.psiPlus) ∧
+  TGLExt.TheTimeHasNoRank.psiPlus ≠ TGLExt.diagExpect TGLExt.TheTimeHasNoRank.psiPlus
+TGLExt.TheTimeIsNotAPost.dephasing_iff_needs_positive_rates : (∀ (t : ℝ),
+    TGLExt.dephase (fun x x_1 => 0) t TGLExt.TheTimeIsNotAPost.psiPlus = TGLExt.TheTimeIsNotAPost.psiPlus) ∧
+  TGLExt.TheTimeIsNotAPost.psiPlus ≠ TGLExt.diagExpect TGLExt.TheTimeIsNotAPost.psiPlus
+@TGLExt.TheTimeHasNoRank.purityR_modular : ∀ {n : Type} [inst : Fintype n] [inst_1 : DecidableEq n] (d : n → ℝ),
+  (∀ (i : n), 0 < d i) →
+    ∀ (t : ℝ) (x : Matrix n n ℂ), TGLExt.purityR (TGLExt.sigma (TGLExt.rhoD d) t x) = TGLExt.purityR x
+@TGLExt.TheTimeIsNotAPost.purityR_modular : ∀ {n : Type} [inst : Fintype n] [inst_1 : DecidableEq n] (d : n → ℝ) (t : ℝ)
+  (x : Matrix n n ℂ), TGLExt.purityR (TGLExt.sigma (TGLExt.rhoD d) t x) = TGLExt.purityR x
+@TGLExt.TheTimeHasNoRank.clock_reads_modulo_period : ∀ {κ : ℝ},
+  κ ≠ 0 → ∀ (t : ℝ), Circle.exp (κ * (t + 2 * Real.pi / κ)) = Circle.exp (κ * t)
+TGLExt.TheTimeIsNotAPost.clock_reads_modulo_period : ∀ (κ t : ℝ),
+  Circle.exp (κ * (t + 2 * Real.pi / κ)) = Circle.exp (κ * t)
+TGLExt.TheTimeHasNoRank.the_two_regimes_of_time : (∀ {X : Type u_1} [inst : MetricSpace X] {f : X → X},
+    Isometry f → ∀ {x z : X}, Filter.Tendsto (fun k => f^[k] x) Filter.atTop (nhds z) → x = z ∧ f z = z) ∧
+  (∀ {X : Type u_1} [inst : MetricSpace X] (φ : ℝ → X → X),
+      (∀ (s t : ℝ) (x : X), φ (s + t) x = φ s (φ t x)) →
+        (∀ (s : ℝ), Isometry (φ s)) →
+          ∀ {x z : X}, Filter.Tendsto (fun t => φ t x) Filter.atTop (nhds z) → x = z ∧ ∀ (s : ℝ), φ s z = z) ∧
+    (∀ {n : Type} [inst : Fintype n] [inst_1 : DecidableEq n] (g : n → n → ℝ) (t : ℝ),
+        (TGLExt.TheTimeHasNoRank.schurDiag fun i j => ↑(Real.exp (-(t * g i j)))).det =
+          ↑(Real.exp (-(t * ∑ i, ∑ j, g i j)))) ∧
+      (∀ {n : Type} [inst : Fintype n] (g : n → n → ℝ),
+          (∀ (i j : n), 0 ≤ g i j) → (∃ i j, 0 < g i j) → ∀ {t : ℝ}, 0 < t → Real.exp (-(t * ∑ i, ∑ j, g i j)) < 1) ∧
+        (∀ {n : Type} [inst : Fintype n] [inst_1 : DecidableEq n] (d : n → ℝ) (t : ℝ),
+            (TGLExt.TheTimeHasNoRank.schurDiag fun i j =>
+                  Complex.exp (↑t * Complex.I * (↑(Real.log (d i)) - ↑(Real.log (d j))))).det =
+              1) ∧
+          (∀ {n : Type} [inst : Fintype n] (g : n → n → ℝ),
+              (∀ (i j : n), 0 ≤ g i j) →
+                ∀ {t : ℝ},
+                  0 < t →
+                    ∀ (x : Matrix n n ℂ) {i₀ j₀ : n},
+                      0 < g i₀ j₀ → x i₀ j₀ ≠ 0 → TGLExt.purityR (TGLExt.dephase g t x) < TGLExt.purityR x) ∧
+            (∀ {γ t : ℝ},
+                0 < γ →
+                  0 < t →
+                    have g := fun i j => if i = j then 0 else γ;
+                    have ψ := (1 / 2) • !![1, 1; 1, 1];
+                    ψ.PosSemidef ∧ ψ.trace = 1 ∧ ¬(TGLExt.dephase g (-t) ψ).PosSemidef) ∧
+              (∀ {κ : ℝ}, κ ≠ 0 → ∀ (t : ℝ), Circle.exp (κ * (t + 2 * Real.pi / κ)) = Circle.exp (κ * t)) ∧
+                ∀ (t u : ℝ), Circle.exp (0 * t) = Circle.exp (0 * u)
+TGLExt.TheTimeIsNotAPost.the_two_regimes_of_time : (∀ {X : Type u_1} [inst : MetricSpace X] {f : X → X},
+    Isometry f → ∀ {x z : X}, Filter.Tendsto (fun k => f^[k] x) Filter.atTop (nhds z) → x = z ∧ f z = z) ∧
+  (∀ {X : Type u_1} [inst : MetricSpace X] (φ : ℝ → X → X),
+      (∀ (s t : ℝ) (x : X), φ (s + t) x = φ s (φ t x)) →
+        (∀ (s : ℝ), Isometry (φ s)) →
+          ∀ {x z : X}, Filter.Tendsto (fun t => φ t x) Filter.atTop (nhds z) → x = z ∧ ∀ (s : ℝ), φ s z = z) ∧
+    (∀ {n : Type} [inst : Fintype n] [inst_1 : DecidableEq n] (g : n → n → ℝ) (t : ℝ),
+        (TGLExt.TheTimeIsNotAPost.schurDiag fun i j => ↑(Real.exp (-(t * g i j)))).det =
+          ↑(Real.exp (-(t * ∑ i, ∑ j, g i j)))) ∧
+      (∀ {n : Type} [inst : Fintype n] (g : n → n → ℝ),
+          (∀ (i j : n), 0 ≤ g i j) → (∃ i j, 0 < g i j) → ∀ {t : ℝ}, 0 < t → Real.exp (-(t * ∑ i, ∑ j, g i j)) < 1) ∧
+        (∀ {n : Type} [inst : Fintype n] [inst_1 : DecidableEq n] (d : n → ℝ) (t : ℝ),
+            (TGLExt.TheTimeIsNotAPost.schurDiag fun i j =>
+                  Complex.exp (↑t * Complex.I * (↑(Real.log (d i)) - ↑(Real.log (d j))))).det =
+              1) ∧
+          (∀ {n : Type} [inst : Fintype n] (g : n → n → ℝ),
+              (∀ (i j : n), 0 ≤ g i j) →
+                ∀ {t : ℝ},
+                  0 < t →
+                    ∀ (x : Matrix n n ℂ) {i₀ j₀ : n},
+                      0 < g i₀ j₀ → x i₀ j₀ ≠ 0 → TGLExt.purityR (TGLExt.dephase g t x) < TGLExt.purityR x) ∧
+            (∀ {γ t : ℝ},
+                0 < γ →
+                  0 < t →
+                    have g := fun i j => if i = j then 0 else γ;
+                    have ψ := (1 / 2) • !![1, 1; 1, 1];
+                    ψ.PosSemidef ∧ ψ.trace = 1 ∧ ¬(TGLExt.dephase g (-t) ψ).PosSemidef) ∧
+              (∀ (κ t : ℝ), Circle.exp (κ * (t + 2 * Real.pi / κ)) = Circle.exp (κ * t)) ∧
+                ∀ (t u : ℝ), Circle.exp (0 * t) = Circle.exp (0 * u)
+TGLExt.TheTimeHasNoRank.probe_bounded_spectral_translation : True
+TGLExt.TheTimeIsNotAPost.probe_bounded_spectral_translation : ↑1⁻¹ * 0 * ↑1 ≠
+  0 + (algebraMap ℂ (Matrix (Fin 2) (Fin 2) ℂ)) 1

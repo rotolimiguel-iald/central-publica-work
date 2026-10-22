@@ -1,0 +1,85 @@
+TGLExt.no_finite_weyl_pair : ∀ (n : ℕ), 0 < n → ∀ (P Q : Matrix (Fin n) (Fin n) ℂ), P * Q - Q * P ≠ -Complex.I • 1
+@TGLExt.sigma : {n : Type} → [Fintype n] → [DecidableEq n] → Matrix n n ℂ → ℝ → Matrix n n ℂ → Matrix n n ℂ
+@TGLExt.modPow_zero : ∀ {n : Type} [inst : Fintype n] [inst_1 : DecidableEq n] (ρ : Matrix n n ℂ), TGLExt.modPow ρ 0 = 1
+@TGLExt.gibbs_kms : ∀ {n : Type} [inst : Fintype n] [inst_1 : DecidableEq n] (ρ : Matrix n n ℂ),
+  ρ.PosDef → ∀ (a b : Matrix n n ℂ), TGLExt.gibbs ρ (a * b) = TGLExt.gibbs ρ (b * TGLExt.Delta ρ a)
+@TGLExt.dephase : {n : Type} → (n → n → ℝ) → ℝ → Matrix n n ℂ → Matrix n n ℂ
+@TGLExt.diagExpect : {n : Type} → [DecidableEq n] → Matrix n n ℂ → Matrix n n ℂ
+@TGLExt.purity : {n : Type} → [Fintype n] → Matrix n n ℂ → ℂ
+@TGLExt.purityR : {n : Type} → [Fintype n] → Matrix n n ℂ → ℝ
+@TGLExt.dephase_fixed_iff_diagonal : ∀ {n : Type} [Fintype n] [inst : DecidableEq n] (g : n → n → ℝ),
+  (∀ (i : n), g i i = 0) →
+    (∀ (i j : n), i ≠ j → 0 < g i j) →
+      ∀ (x : Matrix n n ℂ), (∀ (t : ℝ), TGLExt.dephase g t x = x) ↔ x = TGLExt.diagExpect x
+@TGLExt.TheAxiomAndTheFalseWitness.axiomFlow : {A : Type u_1} → [inst : Ring A] → [Algebra ℂ A] → A → ℝ → A
+@TGLExt.TheAxiomAndTheFalseWitness.axiomFlow_tendsto_the_post : ∀ {A : Type u_1} [inst : NormedRing A]
+  [inst_1 : NormedAlgebra ℂ A] (P : A),
+  Filter.Tendsto (TGLExt.TheAxiomAndTheFalseWitness.axiomFlow P) Filter.atTop (nhds P)
+@TGLExt.TheVerbSelectsTheAction.the_name_is_the_limit_of_the_flow : ∀ {A : Type u_1} [inst : NormedRing A]
+  [inst_1 : NormedAlgebra ℂ A] (P : A),
+  Filter.Tendsto (TGLExt.TheAxiomAndTheFalseWitness.axiomFlow P) Filter.atTop (nhds P)
+@TGLExt.IALDJones.angular_orbit_no_limit : ∀ {V : Type} [inst : NormedAddCommGroup V] [inst_1 : NormedSpace ℂ V]
+  (P : V →ₗ[ℂ] V) (ω : ℝ) (v : V),
+  v ≠ P v → ¬Filter.Tendsto (fun s => TGLExt.IALDJones.orbit P 0 ω s v) Filter.atTop (nhds (P v))
+@TGLExt.time_witnesses_noncoincidence : ∀ {n : ℕ} {β : ℝ},
+  0 < β →
+    ∀ (d : Fin n → ℝ) {i : Fin n},
+      0 < d i →
+        ∀ (x : Fin n → ℝ), x i ≠ 0 → ∀ {t₁ t₂ : ℝ}, t₁ ≠ t₂ → TGLExt.diagFlow β d t₁ x ≠ TGLExt.diagFlow β d t₂ x
+TGLExt.boost_null_contract : ∀ (s : ℝ), (TGLExt.boost s).mulVec ![1, -1] = Real.exp (-s) • ![1, -1]
+TGLExt.DualScalingData : Type → Type
+@TGLExt.Fundacao.agape : ∀ {M : Type} (D : TGLExt.DualScalingData M) {m : M},
+  0 < D.tau m →
+    (∀ (s : ℝ), s ≠ 0 → ∀ (m' : M), D.theta s m' = m' → D.tau m' = 0) ∧
+      (∀ (s : ℝ), D.tau (D.theta s m) < D.tau (D.theta (s - 1) m)) ∧
+        (∀ (B : ℝ), ∃ s, B < D.tau (D.theta s m)) ∧
+          (∀ (s : ℝ), 0 < D.tau (D.theta s m)) ∧
+            (∀ (ε : ℝ), 0 < ε → ∃ s, D.tau (D.theta s m) < ε) ∧ ∀ (a : ℝ), Real.exp (-a) = 1 ↔ a = 0
+@TGLExt.absoluteOne_flow_trivial : ∀ {Region n : Type} [inst : Fintype n] [inst_1 : DecidableEq n] [inst_2 : Nonempty n]
+  (O : Region) (t : ℝ) (a : Matrix n n ℂ), (TGLExt.absoluteOneField Region n).flow O t a = a
+@ChatgptAudit.PolarPeriod016.faithful_period_iff : ∀ {kappa period : ℝ},
+  kappa ≠ 0 →
+    (ChatgptAudit.PolarPeriod016.AngularQuotientFaithful kappa period ↔
+      kappa * period = 2 * Real.pi ∨ kappa * period = -(2 * Real.pi))
+ChatgptAudit.NonKMSProbe.identity_flow_not_kms : ∀ (W : TGL.SpecificAQFT.TGLSpecificAQFTWitness) (A B : W.H →L[ℂ] W.H),
+  A ∈ W.net TGL.SpecificAQFT.rightWedge →
+    B ∈ W.net TGL.SpecificAQFT.rightWedge →
+      inner ℂ ((star A) W.vac) (B W.vac) ≠ inner ℂ ((star B) W.vac) (A W.vac) →
+        ¬TGLExt.ContratoQGv31.KMSAt W (fun x => LinearIsometryEquiv.refl ℂ W.H) 1
+@TGLExt.ImportedSQ.lightDelta : {L : TGLExt.ImportedSQ.LightOneParticle} →
+  (C : TGLExt.ImportedSQ.FockCertificate L) → ℝ → C.F ≃ₗᵢ[ℂ] C.F
+@TGLExt.QGReaderUVLock.hmin_zero_iff_modular_fixed : ∀ {L : TGLExt.ImportedSQ.LightOneParticle}
+  (C : TGLExt.ImportedSQ.FockCertificate L) (ψ : C.F),
+  (TGLExt.QGReaderUVLock.HminMic C) ψ = 0 ↔ ∀ (t : ℝ), (TGLExt.ImportedSQ.lightDelta C t) ψ = ψ
+@TGLV350.Regular.characterMultiplier_weyl : ∀ {H : Type} [inst : NormedAddCommGroup H] [inst_1 : InnerProductSpace ℂ H]
+  [inst_2 : CompleteSpace H] (s t : ℝ),
+  TGLV350.Regular.characterMultiplier s * TGLV350.Regular.shift t * star (TGLV350.Regular.characterMultiplier s) =
+    Complex.exp (-Complex.I * ↑s * ↑t) • TGLV350.Regular.shift t
+@Matrix.frobenius_norm_def : ∀ {m : Type u_1} {n : Type u_2} {α : Type u_3} [inst : Fintype m] [inst_1 : Fintype n]
+  [inst_2 : SeminormedAddCommGroup α] (A : Matrix m n α), ‖A‖ = (∑ i, ∑ j, ‖A i j‖ ^ 2) ^ (1 / 2)
+@Matrix.charpoly_units_conj : ∀ {R : Type u_1} [inst : CommRing R] {n : Type u_2} [inst_1 : DecidableEq n]
+  [inst_2 : Fintype n] (M : (Matrix n n R)ˣ) (N : Matrix n n R), (↑M * N * (↑M)⁻¹).charpoly = N.charpoly
+@Matrix.rank_add_rank_le_card_of_mul_eq_zero : ∀ {l : Type u_1} {m : Type u_2} {n : Type u_3} {R : Type u_4}
+  [inst : Fintype n] [inst_1 : Field R] [Finite l] [inst_3 : Fintype m] {A : Matrix l m R} {B : Matrix m n R},
+  A * B = 0 → A.rank + B.rank ≤ Fintype.card m
+@spectrum.units_conjugate' : ∀ {R : Type u_1} {A : Type u_2} [inst : CommSemiring R] [inst_1 : Ring A]
+  [inst_2 : Algebra R A] {a : A} {u : Aˣ}, spectrum R (↑u⁻¹ * a * ↑u) = spectrum R a
+@Matrix.PosSemidef.dotProduct_mulVec_nonneg : ∀ {n : Type u_1} {R : Type u_2} [inst : Ring R] [inst_1 : PartialOrder R]
+  [inst_2 : StarRing R] [inst_3 : Fintype n] {M : Matrix n n R}, M.PosSemidef → ∀ (x : n → R), 0 ≤ star x ⬝ᵥ M.mulVec x
+@Isometry.of_dist_eq : ∀ {α : Type u_1} {β : Type u_2} [inst : PseudoMetricSpace α] [inst_1 : PseudoMetricSpace β]
+  {f : α → β}, (∀ (x y : α), dist (f x) (f y) = dist x y) → Isometry f
+@Filter.tendsto_atTop_add_const_left : ∀ {α : Type u_1} {G : Type u_2} [inst : AddCommGroup G] [inst_1 : PartialOrder G]
+  [IsOrderedAddMonoid G] (l : Filter α) {f : α → G} (C : G),
+  Filter.Tendsto f l Filter.atTop → Filter.Tendsto (fun x => C + f x) l Filter.atTop
+@Continuous.matrix_det : ∀ {X : Type u_1} {n : Type u_2} {R : Type u_3} [inst : TopologicalSpace X]
+  [inst_1 : TopologicalSpace R] [inst_2 : Fintype n] [inst_3 : DecidableEq n] [inst_4 : CommRing R]
+  [IsTopologicalRing R] {A : X → Matrix n n R}, Continuous A → Continuous fun x => (A x).det
+@Matrix.mulVec_single_one : ∀ {m : Type u_1} {n : Type u_2} {R : Type u_3} [inst : Fintype n] [inst_1 : DecidableEq n]
+  [inst_2 : NonAssocSemiring R] (M : Matrix m n R) (j : n), M.mulVec (Pi.single j 1) = M.col j
+@Submodule.finrank_eq_zero : ∀ {R : Type u_1} {M : Type u_2} [inst : Ring R] [inst_1 : AddCommGroup M]
+  [inst_2 : Module R M] [IsDomain R] [Module.IsTorsionFree R M] [StrongRankCondition R] {S : Submodule R M}
+  [Module.Finite R ↥S], Module.finrank R ↥S = 0 ↔ S = ⊥
+Complex.norm_exp_ofReal_mul_I : ∀ (x : ℝ), ‖Complex.exp (↑x * Complex.I)‖ = 1
+@Matrix.coe_units_inv : ∀ {n : Type u_1} {α : Type u_2} [inst : Fintype n] [inst_1 : DecidableEq n]
+  [inst_2 : CommRing α] (A : (Matrix n n α)ˣ), ↑A⁻¹ = (↑A)⁻¹
+C:\IALD\Central de Patentes\work\tempo_santo_12out\3_KERNEL\sandbox\Probe0.lean:61:66: error(lean.unknownIdentifier): Unknown constant `Matrix.topologicalSpace`

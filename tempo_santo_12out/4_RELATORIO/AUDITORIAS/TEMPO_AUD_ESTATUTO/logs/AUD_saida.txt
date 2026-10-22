@@ -1,0 +1,70 @@
+@time_is_the_modular_flow : ∀ {n : Type} [inst : Fintype n] [inst_1 : DecidableEq n] (ρ : Matrix n n ℂ),
+  ρ.PosDef →
+    (∀ (a : Matrix n n ℂ), sigma ρ 0 a = a) ∧
+      (∀ (s t : ℝ) (a : Matrix n n ℂ), sigma ρ s (sigma ρ t a) = sigma ρ (s + t) a) ∧
+        (∀ (t : ℝ) (a b : Matrix n n ℂ), sigma ρ t (a * b) = sigma ρ t a * sigma ρ t b) ∧
+          (∀ (t : ℝ), sigma ρ t 1 = 1) ∧
+            (∀ (t : ℝ) (a : Matrix n n ℂ), sigma ρ t aᴴ = (sigma ρ t a)ᴴ) ∧
+              (∀ (t : ℝ) (a : Matrix n n ℂ), gibbs ρ (sigma ρ t a) = gibbs ρ a) ∧
+                (∀ (a b : Matrix n n ℂ), gibbs ρ (a * b) = gibbs ρ (b * Delta ρ a)) ∧
+                  ∀ (t : ℝ), modPow ρ t ∈ unitary (Matrix n n ℂ)
+@the_time_has_no_rank : ∀ {A : Type u_1} [inst : NormedRing A] [inst_1 : NormedAlgebra ℂ A] {P : A},
+  IsIdempotentElem P →
+    P ≠ 1 →
+      (∀ (m : ℕ), 0 < m → ∀ (T H : Matrix (Fin m) (Fin m) ℂ), T * H - H * T ≠ Complex.I • 1) ∧
+        (∀ (t : ℝ), IsIdempotentElem (TheAxiomAndTheFalseWitness.axiomFlow P t) ↔ t = 0) ∧
+          (∀ (t : ℝ), IsUnit (TheAxiomAndTheFalseWitness.axiomFlow P t)) ∧
+            ¬IsUnit P ∧ Filter.Tendsto (TheAxiomAndTheFalseWitness.axiomFlow P) Filter.atTop (nhds P)
+flow_full_rank : ∀ (n : ℕ) (P : Matrix (Fin n) (Fin n) ℂ),
+  IsIdempotentElem P → ∀ (t : ℝ), (TheAxiomAndTheFalseWitness.axiomFlow P t).rank = n
+optical_attractor_is_the_absolute_one : (1 / 2) • 1 = absoluteRho (Fin 2)
+optical_attractor_clock_stops : ∀ (t : ℝ) (a : Matrix (Fin 2) (Fin 2) ℂ), sigma ((1 / 2) • 1) t a = a
+probe_bounded_spectral_translation : True
+@purityR_modular : ∀ {n : Type} [inst : Fintype n] [inst_1 : DecidableEq n] (d : n → ℝ),
+  (∀ (i : n), 0 < d i) → ∀ (t : ℝ) (x : Matrix n n ℂ), purityR (sigma (rhoD d) t x) = purityR x
+@coherenceScaling : {n : Type} → (g : n → n → ℝ) → (i₀ j₀ : n) → g i₀ j₀ = 1 → DualScalingData (Matrix n n ℂ)
+the_two_regimes_of_time : (∀ {X : Type u_1} [inst : MetricSpace X] {f : X → X},
+    Isometry f → ∀ {x z : X}, Filter.Tendsto (fun k => f^[k] x) Filter.atTop (nhds z) → x = z ∧ f z = z) ∧
+  (∀ {X : Type u_1} [inst : MetricSpace X] (φ : ℝ → X → X),
+      (∀ (s t : ℝ) (x : X), φ (s + t) x = φ s (φ t x)) →
+        (∀ (s : ℝ), Isometry (φ s)) →
+          ∀ {x z : X}, Filter.Tendsto (fun t => φ t x) Filter.atTop (nhds z) → x = z ∧ ∀ (s : ℝ), φ s z = z) ∧
+    (∀ {n : Type} [inst : Fintype n] [inst_1 : DecidableEq n] (g : n → n → ℝ) (t : ℝ),
+        (schurDiag fun i j => ↑(Real.exp (-(t * g i j)))).det = ↑(Real.exp (-(t * ∑ i, ∑ j, g i j)))) ∧
+      (∀ {n : Type} [inst : Fintype n] (g : n → n → ℝ),
+          (∀ (i j : n), 0 ≤ g i j) → (∃ i j, 0 < g i j) → ∀ {t : ℝ}, 0 < t → Real.exp (-(t * ∑ i, ∑ j, g i j)) < 1) ∧
+        (∀ {n : Type} [inst : Fintype n] [inst_1 : DecidableEq n] (d : n → ℝ) (t : ℝ),
+            (schurDiag fun i j => Complex.exp (↑t * Complex.I * (↑(Real.log (d i)) - ↑(Real.log (d j))))).det = 1) ∧
+          (∀ {n : Type} [inst : Fintype n] (g : n → n → ℝ),
+              (∀ (i j : n), 0 ≤ g i j) →
+                ∀ {t : ℝ},
+                  0 < t →
+                    ∀ (x : Matrix n n ℂ) {i₀ j₀ : n}, 0 < g i₀ j₀ → x i₀ j₀ ≠ 0 → purityR (dephase g t x) < purityR x) ∧
+            (∀ {γ t : ℝ},
+                0 < γ →
+                  0 < t →
+                    have g := fun i j => if i = j then 0 else γ;
+                    have ψ := (1 / 2) • !![1, 1; 1, 1];
+                    ψ.PosSemidef ∧ ψ.trace = 1 ∧ ¬(dephase g (-t) ψ).PosSemidef) ∧
+              (∀ {κ : ℝ}, κ ≠ 0 → ∀ (t : ℝ), Circle.exp (κ * (t + 2 * Real.pi / κ)) = Circle.exp (κ * t)) ∧
+                ∀ (t u : ℝ), Circle.exp (0 * t) = Circle.exp (0 * u)
+@DualScalingData.mk : {M : Type} →
+  (tau : M → ℝ) → (theta : ℝ → M → M) → (∀ (s : ℝ) (m : M), tau (theta s m) = Real.exp (-s) * tau m) → DualScalingData M
+C:\Users\rotol\AppData\Local\Temp\claude\c--IALD-Central-de-Patentes\6da8f00d-d44f-4888-a88d-fc9f73eead3d\scratchpad\pt12\TEMPO_AUD_ESTATUTO\sandbox\AudEstatutoTempo.lean:107:9: warning: Variable name `a` is not explicitly referenced.
+
+The binding can be removed (if unused) or named `_` (if used implicitly).
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+'AudEstatutoTempo.scalarScaling' depends on axioms: [propext, Classical.choice, Quot.sound]
+'AudEstatutoTempo.aud_scalar_obeys_agape' depends on axioms: [propext, Classical.choice, Quot.sound]
+'AudEstatutoTempo.aud_scalar_erases_the_record' depends on axioms: [propext, Classical.choice, Quot.sound]
+'AudEstatutoTempo.aud_boost_has_no_global_attractor' depends on axioms: [propext, Classical.choice, Quot.sound]
+'AudEstatutoTempo.aud_group_element_idempotent_is_one' depends on axioms: [propext, Classical.choice, Quot.sound]
+'AudEstatutoTempo.aud_time_theorem_holds_for_frozen_flow' depends on axioms: [propext, Classical.choice, Quot.sound]
+'AudEstatutoTempo.aud_discrete_step_can_be_a_post' depends on axioms: [propext, Classical.choice, Quot.sound]
+'AudEstatutoTempo.aud_attractor_state_has_full_rank' depends on axioms: [propext, Classical.choice, Quot.sound]
+'AudEstatutoTempo.aud_attractor_state_purity_half' depends on axioms: [propext, Classical.choice, Quot.sound]
+'TGLExt.TheTimeHasNoRank.the_time_has_no_rank' depends on axioms: [propext, Classical.choice, Quot.sound]
+'TGLExt.TheTimeHasNoRank.the_two_regimes_of_time' depends on axioms: [propext, Classical.choice, Quot.sound]
+'TGLExt.TheTimeHasNoRank.the_coherence_obeys_agape' depends on axioms: [propext, Classical.choice, Quot.sound]
+'TGLExt.TheTimeHasNoRank.time_is_the_modular_flow' depends on axioms: [propext, Classical.choice, Quot.sound]
