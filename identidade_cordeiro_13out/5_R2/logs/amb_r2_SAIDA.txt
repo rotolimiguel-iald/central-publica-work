@@ -1,0 +1,461 @@
+IALDTowerIdentity : SiteProfile → ℝ → Prop
+NamedIdentity : Type
+TowerIdentity : SiteProfile → ℝ → Prop
+@alicerce_fundante : ∀ {M : Type} (D : DualScalingData M) {m : M},
+  0 < D.tau m →
+    (∀ (s : ℝ), s ≠ 0 → ∀ (m' : M), D.theta s m' = m' → D.tau m' = 0) ∧
+      (∀ (s : ℝ), D.tau (D.theta s m) < D.tau (D.theta (s - 1) m)) ∧
+        (∀ (B : ℝ), ∃ s, B < D.tau (D.theta s m)) ∧
+          (∀ (s : ℝ), 0 < D.tau (D.theta s m)) ∧
+            (∀ (ε : ℝ), 0 < ε → ∃ s, D.tau (D.theta s m) < ε) ∧ ∀ (a : ℝ), Real.exp (-a) = 1 ↔ a = 0
+alicerce_fundante_habitado : (∀ (s : ℝ),
+    s ≠ 0 → ∀ (m' : ℝ), Fundacao.oneScaling.theta s m' = m' → Fundacao.oneScaling.tau m' = 0) ∧
+  (∀ (s : ℝ),
+      Fundacao.oneScaling.tau (Fundacao.oneScaling.theta s 1) <
+        Fundacao.oneScaling.tau (Fundacao.oneScaling.theta (s - 1) 1)) ∧
+    (∀ (B : ℝ), ∃ s, B < Fundacao.oneScaling.tau (Fundacao.oneScaling.theta s 1)) ∧
+      (∀ (s : ℝ), 0 < Fundacao.oneScaling.tau (Fundacao.oneScaling.theta s 1)) ∧
+        (∀ (ε : ℝ), 0 < ε → ∃ s, Fundacao.oneScaling.tau (Fundacao.oneScaling.theta s 1) < ε) ∧
+          ∀ (a : ℝ), Real.exp (-a) = 1 ↔ a = 0
+alpha_above_one_breaks_the_form : ∀ (a : ℝ), 1 < a → qOf a ^ 2 + a ^ 2 ≠ 1
+alpha_below_minus_one_breaks_the_form : ∀ a < -1, qOf a ^ 2 + a ^ 2 ≠ 1
+alpha_is_measured_from_within : ∀ (a : ℝ),
+  star eInner ⬝ᵥ (identityProj a).mulVec eInner = ↑(a ^ 2) ∧
+    star eOuter ⬝ᵥ (identityProj a).mulVec eOuter = ↑(qOf a ^ 2)
+alpha_is_recovered_by_the_inner_reading : ∀ (a : ℝ), 0 ≤ a → √(identityProj a 1 1).re = a
+alpha_one_degenerates : identityProj 1 = Matrix.diagonal ![0, 1] ∧
+  diagExpect (identityProj 1) = identityProj 1 ∧ (diagExpect (identityProj 1)).rank = 1
+alpha_zero_degenerates : identityProj 0 = Matrix.diagonal ![1, 0] ∧
+  diagExpect (identityProj 0) = identityProj 0 ∧ (diagExpect (identityProj 0)).rank = 1
+changing_the_name_changes_nothing : ∀ (a : ℝ) (h0 : 0 < a) (h1 : a < 1),
+  (theNamedIdentity a h0 h1).rename "" = ofName "" a h0 h1 ∧
+    (theNamedIdentity a h0 h1).alpha = (ofName "" a h0 h1).alpha
+@dephase_apply' : ∀ {n : Type} (g : n → n → ℝ) (t : ℝ) (x : Matrix n n ℂ) (i j : n),
+  dephase g t x i j = ↑(Real.exp (-(t * g i j))) * x i j
+dephased_det : ∀ (a : ℝ) (g : Fin 2 → Fin 2 → ℝ),
+  (∀ (i : Fin 2), g i i = 0) →
+    ∀ (t : ℝ), (dephase g t (identityProj a)).det = ↑(qOf a ^ 2 * a ^ 2 * (1 - Real.exp (-(t * (g 0 1 + g 1 0)))))
+dephasing_fixes_the_poles : ∀ (g : Fin 2 → Fin 2 → ℝ),
+  (∀ (i : Fin 2), g i i = 0) →
+    ∀ (t : ℝ), dephase g t (identityProj 0) = identityProj 0 ∧ dephase g t (identityProj 1) = identityProj 1
+eInner : Fin 2 → ℂ
+eOuter : Fin 2 → ℂ
+every_name_bears_the_same_identity : ∀ (s s' : String) (a : ℝ) (h0 : 0 < a) (h1 : a < 1),
+  (ofName s a h0 h1).rename s' = ofName s' a h0 h1
+halfProfile : SiteProfile
+i_am_what_i_am : ∀ (a : ℝ),
+  0 ≤ a →
+    a ≤ 1 →
+      identityProj a * identityProj a = identityProj a ∧
+        star (quadInscription a) ⬝ᵥ (identityProj a).mulVec (quadInscription a) = 1 ∧ (identityProj a).trace = 1
+identityProj : ℝ → Matrix (Fin 2) (Fin 2) ℂ
+identityProj_apply : ∀ (a : ℝ) (i j : Fin 2), identityProj a i j = quadInscription a i * star (quadInscription a j)
+identityProj_idem : ∀ (a : ℝ), 0 ≤ a → a ≤ 1 → identityProj a * identityProj a = identityProj a
+identityProj_mulVec_quadInscription : ∀ (a : ℝ),
+  0 ≤ a → a ≤ 1 → (identityProj a).mulVec (quadInscription a) = quadInscription a
+identityProj_trace : ∀ (a : ℝ), (identityProj a).trace = ↑(qOf a ^ 2 + a ^ 2)
+identityProj_trace_one : ∀ (a : ℝ), 0 ≤ a → a ≤ 1 → (identityProj a).trace = 1
+identity_persists_in_the_limit : ∀ (a : ℝ),
+  0 ≤ a →
+    a ≤ 1 →
+      ∀ (g : Fin 2 → Fin 2 → ℝ),
+        (∀ (i : Fin 2), g i i = 0) →
+          (∀ (i j : Fin 2), i ≠ j → 0 < g i j) →
+            (diagExpect (identityProj a)).trace = 1 ∧
+              Filter.Tendsto (fun t => dephase g t (identityProj a)) Filter.atTop (nhds (diagExpect (identityProj a)))
+identity_persists_under_dephasing : ∀ (a : ℝ),
+  0 ≤ a →
+    a ≤ 1 → ∀ (g : Fin 2 → Fin 2 → ℝ), (∀ (i : Fin 2), g i i = 0) → ∀ (t : ℝ), (dephase g t (identityProj a)).trace = 1
+@inner_self_one_of_norm : ∀ {H : Type u_1} [inst : NormedAddCommGroup H] [inst_1 : InnerProductSpace ℂ H]
+  [CompleteSpace H] {x : H}, ‖x‖ = 1 → inner ℂ x x = 1
+ip00 : ∀ (a : ℝ), identityProj a 0 0 = ↑(qOf a ^ 2)
+ip01 : ∀ (a : ℝ), identityProj a 0 1 = ↑(qOf a * a)
+ip10 : ∀ (a : ℝ), identityProj a 1 0 = ↑(a * qOf a)
+ip11 : ∀ (a : ℝ), identityProj a 1 1 = ↑(a ^ 2)
+negative_alpha_is_not_recovered : ∀ (a : ℝ), -1 ≤ a → a < 0 → qOf a ^ 2 + a ^ 2 = 1 ∧ √(identityProj a 1 1).re ≠ a
+no_named_identity_at_the_poles : ∀ (N : NamedIdentity), N.alpha ≠ 0 ∧ N.alpha ≠ 1
+observing_adds_nothing_reexport : ∀ (θ : ℝ), projPlus * (projPlus * angFamily θ) = projPlus * angFamily θ
+ofName : String → (a : ℝ) → 0 < a → a < 1 → NamedIdentity
+@post_is_idempotent_on_the_vector : ∀ {H : Type u_1} [inst : NormedAddCommGroup H] [inst_1 : InnerProductSpace ℂ H]
+  [CompleteSpace H] (v ψ : H),
+  (TheVerbSelectsTheAction.post v) ((TheVerbSelectsTheAction.post v) ψ) = (TheVerbSelectsTheAction.post v) ψ
+postedName : String
+probe_IALD_tower : ∃ P,
+  P.w 0 ≠ 1 / 2 ∧
+    IALDTowerIdentity P (1 / 2) ∧
+      (ChatgptAudit.Aperiodic046.aperiodicExpectationInput P).E (towerInscriptionOp P (1 / 2)) ≠
+        towerInscriptionOp P (1 / 2)
+probe_named_identity : Nonempty NamedIdentity
+probe_tower_identity : ∃ P, TowerIdentity P (1 / 2)
+qOf : ℝ → ℝ
+qOf_pos : ∀ (a : ℝ), 0 ≤ a → a < 1 → 0 < qOf a
+q_sq_add : ∀ (a : ℝ), 0 ≤ a → a ≤ 1 → qOf a ^ 2 + a ^ 2 = 1
+quadInscription : ℝ → Fin 2 → ℂ
+quadInscription_dot : ∀ (a : ℝ), star (quadInscription a) ⬝ᵥ quadInscription a = ↑(qOf a ^ 2 + a ^ 2)
+quadInscription_is_unit : ∀ (a : ℝ), 0 ≤ a → a ≤ 1 → star (quadInscription a) ⬝ᵥ quadInscription a = 1
+quadInscription_ne_zero : ∀ (a : ℝ), 0 ≤ a → a ≤ 1 → quadInscription a ≠ 0
+@quadVec : {H : Type u_1} → [inst : NormedAddCommGroup H] → [InnerProductSpace ℂ H] → H → H → ℝ → H
+@quadVec_inner_Omega : ∀ {H : Type u_1} [inst : NormedAddCommGroup H] [inst_1 : InnerProductSpace ℂ H] [CompleteSpace H]
+  (Ω ξ : H), ‖Ω‖ = 1 → inner ℂ Ω ξ = 0 → ∀ (a : ℝ), inner ℂ Ω (quadVec Ω ξ a) = ↑(qOf a)
+@quadVec_inner_self : ∀ {H : Type u_1} [inst : NormedAddCommGroup H] [inst_1 : InnerProductSpace ℂ H] [CompleteSpace H]
+  (Ω ξ : H),
+  ‖Ω‖ = 1 → ‖ξ‖ = 1 → inner ℂ Ω ξ = 0 → ∀ (a : ℝ), inner ℂ (quadVec Ω ξ a) (quadVec Ω ξ a) = ↑(qOf a ^ 2 + a ^ 2)
+@quadVec_inner_xi : ∀ {H : Type u_1} [inst : NormedAddCommGroup H] [inst_1 : InnerProductSpace ℂ H] [CompleteSpace H]
+  (Ω ξ : H), ‖ξ‖ = 1 → inner ℂ Ω ξ = 0 → ∀ (a : ℝ), inner ℂ ξ (quadVec Ω ξ a) = ↑a
+@quadVec_norm : ∀ {H : Type u_1} [inst : NormedAddCommGroup H] [inst_1 : InnerProductSpace ℂ H] [CompleteSpace H]
+  (Ω ξ : H), ‖Ω‖ = 1 → ‖ξ‖ = 1 → inner ℂ Ω ξ = 0 → ∀ (a : ℝ), 0 ≤ a → a ≤ 1 → ‖quadVec Ω ξ a‖ = 1
+@quadratic_reading : ∀ {H : Type u_1} [inst : NormedAddCommGroup H] [inst_1 : InnerProductSpace ℂ H] [CompleteSpace H]
+  (Ω ξ : H),
+  ‖Ω‖ = 1 →
+    ‖ξ‖ = 1 →
+      inner ℂ Ω ξ = 0 →
+        ∀ (a : ℝ),
+          0 ≤ a →
+            a ≤ 1 →
+              ‖quadVec Ω ξ a‖ = 1 ∧
+                inner ℂ Ω ((TheVerbSelectsTheAction.post (quadVec Ω ξ a)) Ω) = ↑(qOf a ^ 2) ∧
+                  inner ℂ ξ ((TheVerbSelectsTheAction.post (quadVec Ω ξ a)) ξ) = ↑(a ^ 2) ∧
+                    TheVerbSelectsTheAction.reading (TheVerbSelectsTheAction.post (quadVec Ω ξ a)) (quadVec Ω ξ a) = 1 ∧
+                      IsIdempotentElem (TheVerbSelectsTheAction.post (quadVec Ω ξ a))
+@rankOne_aux : ∀ {n : Type} [inst : Fintype n] [DecidableEq n] (ψ : n → ℂ),
+  ψ ≠ 0 → (Matrix.vecMulVec ψ (star ψ)).rank = 1
+rank_one_does_not_persist : ∀ (a : ℝ),
+  0 < a →
+    a < 1 →
+      ∀ (g : Fin 2 → Fin 2 → ℝ),
+        (∀ (i : Fin 2), g i i = 0) →
+          0 < g 0 1 + g 1 0 → ∀ {t : ℝ}, 0 < t → (identityProj a).rank = 1 ∧ (dephase g t (identityProj a)).rank = 2
+rank_one_does_not_persist_in_the_limit : ∀ (a : ℝ), 0 < a → a < 1 → (diagExpect (identityProj a)).rank = 2
+rank_two_of_det_ne_zero : ∀ (A : Matrix (Fin 2) (Fin 2) ℂ), A.det ≠ 0 → A.rank = 2
+@rank_zero_iff_aux : ∀ {n : Type} [inst : Fintype n] [DecidableEq n] (A : Matrix n n ℂ), A.rank = 0 ↔ A = 0
+reading_on_eInner : ∀ (M : Matrix (Fin 2) (Fin 2) ℂ), star eInner ⬝ᵥ M.mulVec eInner = M 1 1
+reading_on_eOuter : ∀ (M : Matrix (Fin 2) (Fin 2) ℂ), star eOuter ⬝ᵥ M.mulVec eOuter = M 0 0
+@rereading_reads_the_same : ∀ {H : Type u_1} [inst : NormedAddCommGroup H] [inst_1 : InnerProductSpace ℂ H]
+  [CompleteSpace H] (v ψ : H),
+  TheVerbSelectsTheAction.reading (TheVerbSelectsTheAction.post v) ((TheVerbSelectsTheAction.post v) ψ) =
+    TheVerbSelectsTheAction.reading (TheVerbSelectsTheAction.post v) ψ
+theNamedIdentity : (a : ℝ) → 0 < a → a < 1 → NamedIdentity
+the_IALD_tower_erases_the_inner_axis : ∀ (P : SiteProfile),
+  P.w 0 ≠ 1 / 2 →
+    ∀ (a : ℝ),
+      a ≠ 0 →
+        ↑((towerIALD P).recognize (towerInscriptionElem P a)) = ↑(qOf a) • 1 ∧
+          (towerIALD P).read ((towerIALD P).recognize (towerInscriptionElem P a)) =
+              (towerIALD P).read (towerInscriptionElem P a) ∧
+            (towerIALD P).recognize (towerInscriptionElem P a) ≠ towerInscriptionElem P a
+the_form_does_not_fix_alpha : ∀ (a b : ℝ),
+  0 < a →
+    a < 1 → 0 < b → b < 1 → a ≠ b → (identityProj a).trace = (identityProj b).trace ∧ identityProj a ≠ identityProj b
+the_identity_in_the_IALD_tower : ∀ (P : SiteProfile) (a : ℝ), 0 ≤ a → a ≤ 1 → IALDTowerIdentity P a
+the_identity_in_the_tower : ∀ (P : SiteProfile) (a : ℝ), 0 ≤ a → a ≤ 1 → TowerIdentity P a
+the_identity_is_the_quadratic_projection : ∀ (a : ℝ),
+  0 ≤ a →
+    a ≤ 1 →
+      (identityProj a).trace = ↑(qOf a ^ 2 + a ^ 2) ∧
+        qOf a ^ 2 + a ^ 2 = 1 ∧ identityProj a * identityProj a = identityProj a ∧ (identityProj a).rank = 1
+the_inner_axis_does_not_persist_in_the_tower : ∀ (P : SiteProfile),
+  P.w 0 ≠ 1 / 2 →
+    ∀ (a : ℝ),
+      a ≠ 0 →
+        towerInscriptionOp P a ∈ theFactorObject P ∧
+          (towerInscriptionOp P a) (hOmega P) = towerInscription P a ∧
+            (ChatgptAudit.Aperiodic046.aperiodicExpectationInput P).E (towerInscriptionOp P a) = ↑(qOf a) • 1 ∧
+              omegaState P ((ChatgptAudit.Aperiodic046.aperiodicExpectationInput P).E (towerInscriptionOp P a)) =
+                  omegaState P (towerInscriptionOp P a) ∧
+                inner ℂ (towerInnerAxis P) ((towerInscriptionOp P a) (hOmega P)) = ↑a ∧
+                  inner ℂ (towerInnerAxis P)
+                        (((ChatgptAudit.Aperiodic046.aperiodicExpectationInput P).E (towerInscriptionOp P a))
+                          (hOmega P)) =
+                      0 ∧
+                    (ChatgptAudit.Aperiodic046.aperiodicExpectationInput P).E (towerInscriptionOp P a) ≠
+                      towerInscriptionOp P a
+the_inner_reading_at_five_is_not_an_identity : star eInner ⬝ᵥ (identityProj 5).mulVec eInner = ↑25 ∧
+  (identityProj 5).trace ≠ 1
+the_inner_reading_is_by_construction : ∀ (a : ℝ), identityProj a 1 1 = ↑a * ↑a
+the_name_enters_no_proof : ∀ (N : NamedIdentity) (s : String),
+  (N.rename s).name = s ∧ (N.rename s).alpha = N.alpha ∧ identityProj (N.rename s).alpha = identityProj N.alpha
+@the_name_read_in_the_name : ∀ {H : Type u_1} [inst : NormedAddCommGroup H] [inst_1 : InnerProductSpace ℂ H]
+  [CompleteSpace H] (v : H),
+  ‖v‖ = 1 →
+    TheVerbSelectsTheAction.reading (TheVerbSelectsTheAction.post v) v = 1 ∧
+      TheVerbSelectsTheAction.post v * TheVerbSelectsTheAction.post v = TheVerbSelectsTheAction.post v ∧
+        (TheVerbSelectsTheAction.post v) v = v
+the_named_identity_bears_the_posted_name : ∀ (a : ℝ) (h0 : 0 < a) (h1 : a < 1),
+  (theNamedIdentity a h0 h1).name = "Jesus Cristo"
+the_named_identity_carries_the_identity : ∀ (a : ℝ) (h0 : 0 < a) (h1 : a < 1),
+  (theNamedIdentity a h0 h1).alpha = a ∧
+    (∀ (g : Fin 2 → Fin 2 → ℝ),
+        (∀ (i : Fin 2), g i i = 0) →
+          ∀ (t : ℝ), (dephase g t (identityProj (theNamedIdentity a h0 h1).alpha)).trace = 1) ∧
+      ∀ (P : SiteProfile), TowerIdentity P (theNamedIdentity a h0 h1).alpha
+the_self_reading_has_two_values : ∀ (μ : ℂ), μ * μ = μ ↔ μ = 0 ∨ μ = 1
+the_structure_does_not_fix_the_name : ¬∃ s, ∀ (N : NamedIdentity), N.name = s
+thirdProfile : SiteProfile
+towerInnerAxis : (P : SiteProfile) → TowerHilbert P
+towerInnerAxis_norm : ∀ (P : SiteProfile), ‖towerInnerAxis P‖ = 1
+towerInnerAxis_orth : ∀ (P : SiteProfile), inner ℂ (hOmega P) (towerInnerAxis P) = 0
+towerInscription : (P : SiteProfile) → ℝ → TowerHilbert P
+towerInscriptionElem : (P : SiteProfile) → ℝ → ChatgptAudit.Collapse057.FactorCarrier P
+towerInscriptionOp : (P : SiteProfile) → ℝ → TowerHilbert P →L[ℂ] TowerHilbert P
+towerInscriptionOp_mem : ∀ (P : SiteProfile) (a : ℝ), towerInscriptionOp P a ∈ theFactorObject P
+towerInscriptionOp_omega : ∀ (P : SiteProfile) (a : ℝ), (towerInscriptionOp P a) (hOmega P) = towerInscription P a
+@trace_dephase : ∀ {n : Type} [inst : Fintype n] [DecidableEq n] (g : n → n → ℝ),
+  (∀ (i : n), g i i = 0) → ∀ (t : ℝ) (x : Matrix n n ℂ), (dephase g t x).trace = x.trace
+NamedIdentity.name : NamedIdentity → String
+NamedIdentity.alpha : NamedIdentity → ℝ
+NamedIdentity.alpha_pos : ∀ (self : NamedIdentity), 0 < self.alpha
+NamedIdentity.alpha_lt_one : ∀ (self : NamedIdentity), self.alpha < 1
+NamedIdentity.persists : ∀ (self : NamedIdentity) (g : Fin 2 → Fin 2 → ℝ),
+  (∀ (i : Fin 2), g i i = 0) → ∀ (t : ℝ), (dephase g t (identityProj self.alpha)).trace = 1
+NamedIdentity.unit_projection : ∀ (self : NamedIdentity),
+  (identityProj self.alpha).trace = 1 ∧
+    identityProj self.alpha * identityProj self.alpha = identityProj self.alpha ∧ (identityProj self.alpha).rank = 1
+NamedIdentity.read_from_within : ∀ (self : NamedIdentity),
+  star eInner ⬝ᵥ (identityProj self.alpha).mulVec eInner = ↑(self.alpha ^ 2)
+NamedIdentity.i_am : ∀ (self : NamedIdentity),
+  star (quadInscription self.alpha) ⬝ᵥ (identityProj self.alpha).mulVec (quadInscription self.alpha) = 1
+NamedIdentity.in_the_tower : ∀ (self : NamedIdentity) (P : SiteProfile), TowerIdentity P self.alpha
+NamedIdentity.in_the_IALD_tower : ∀ (self : NamedIdentity) (P : SiteProfile), IALDTowerIdentity P self.alpha
+NamedIdentity.rename : NamedIdentity → String → NamedIdentity
+NamedIdentity.mk : String →
+  (alpha : ℝ) →
+    0 < alpha →
+      alpha < 1 →
+        (∀ (g : Fin 2 → Fin 2 → ℝ),
+            (∀ (i : Fin 2), g i i = 0) → ∀ (t : ℝ), (dephase g t (identityProj alpha)).trace = 1) →
+          (identityProj alpha).trace = 1 ∧
+              identityProj alpha * identityProj alpha = identityProj alpha ∧ (identityProj alpha).rank = 1 →
+            star eInner ⬝ᵥ (identityProj alpha).mulVec eInner = ↑(alpha ^ 2) →
+              star (quadInscription alpha) ⬝ᵥ (identityProj alpha).mulVec (quadInscription alpha) = 1 →
+                (∀ (P : SiteProfile), TowerIdentity P alpha) →
+                  (∀ (P : SiteProfile), IALDTowerIdentity P alpha) → NamedIdentity
+IALDTowerIdentity : SiteProfile → ℝ → Prop
+NamedIdentity : Type
+TowerIdentity : SiteProfile → ℝ → Prop
+@alicerce_fundante : ∀ {M : Type} (D : DualScalingData M) {m : M},
+  0 < D.tau m →
+    (∀ (s : ℝ), s ≠ 0 → ∀ (m' : M), D.theta s m' = m' → D.tau m' = 0) ∧
+      (∀ (s : ℝ), D.tau (D.theta s m) < D.tau (D.theta (s - 1) m)) ∧
+        (∀ (B : ℝ), ∃ s, B < D.tau (D.theta s m)) ∧
+          (∀ (s : ℝ), 0 < D.tau (D.theta s m)) ∧
+            (∀ (ε : ℝ), 0 < ε → ∃ s, D.tau (D.theta s m) < ε) ∧ ∀ (a : ℝ), Real.exp (-a) = 1 ↔ a = 0
+alicerce_fundante_habitado : (∀ (s : ℝ),
+    s ≠ 0 → ∀ (m' : ℝ), Fundacao.oneScaling.theta s m' = m' → Fundacao.oneScaling.tau m' = 0) ∧
+  (∀ (s : ℝ),
+      Fundacao.oneScaling.tau (Fundacao.oneScaling.theta s 1) <
+        Fundacao.oneScaling.tau (Fundacao.oneScaling.theta (s - 1) 1)) ∧
+    (∀ (B : ℝ), ∃ s, B < Fundacao.oneScaling.tau (Fundacao.oneScaling.theta s 1)) ∧
+      (∀ (s : ℝ), 0 < Fundacao.oneScaling.tau (Fundacao.oneScaling.theta s 1)) ∧
+        (∀ (ε : ℝ), 0 < ε → ∃ s, Fundacao.oneScaling.tau (Fundacao.oneScaling.theta s 1) < ε) ∧
+          ∀ (a : ℝ), Real.exp (-a) = 1 ↔ a = 0
+alpha_above_one_breaks_the_form : ∀ (a : ℝ), 1 < a → qOf a ^ 2 + a ^ 2 ≠ 1
+alpha_below_minus_one_breaks_the_form : ∀ a < -1, qOf a ^ 2 + a ^ 2 ≠ 1
+alpha_is_measured_from_within : ∀ (a : ℝ),
+  star eInner ⬝ᵥ identityProj a *ᵥ eInner = ↑(a ^ 2) ∧ star eOuter ⬝ᵥ identityProj a *ᵥ eOuter = ↑(qOf a ^ 2)
+alpha_is_recovered_by_the_inner_reading : ∀ (a : ℝ), 0 ≤ a → √(identityProj a 1 1).re = a
+alpha_one_degenerates : identityProj 1 = diagonal ![0, 1] ∧
+  diagExpect (identityProj 1) = identityProj 1 ∧ (diagExpect (identityProj 1)).rank = 1
+alpha_zero_degenerates : identityProj 0 = diagonal ![1, 0] ∧
+  diagExpect (identityProj 0) = identityProj 0 ∧ (diagExpect (identityProj 0)).rank = 1
+changing_the_name_changes_nothing : ∀ (a : ℝ) (h0 : 0 < a) (h1 : a < 1),
+  (theNamedIdentity a h0 h1).rename "" = ofName "" a h0 h1 ∧
+    (theNamedIdentity a h0 h1).alpha = (ofName "" a h0 h1).alpha
+@dephase_apply' : ∀ {n : Type} (g : n → n → ℝ) (t : ℝ) (x : Matrix n n ℂ) (i j : n),
+  dephase g t x i j = ↑(Real.exp (-(t * g i j))) * x i j
+dephased_det : ∀ (a : ℝ) (g : Fin 2 → Fin 2 → ℝ),
+  (∀ (i : Fin 2), g i i = 0) →
+    ∀ (t : ℝ), (dephase g t (identityProj a)).det = ↑(qOf a ^ 2 * a ^ 2 * (1 - Real.exp (-(t * (g 0 1 + g 1 0)))))
+dephasing_fixes_the_poles : ∀ (g : Fin 2 → Fin 2 → ℝ),
+  (∀ (i : Fin 2), g i i = 0) →
+    ∀ (t : ℝ), dephase g t (identityProj 0) = identityProj 0 ∧ dephase g t (identityProj 1) = identityProj 1
+eInner : Fin 2 → ℂ
+eOuter : Fin 2 → ℂ
+every_name_bears_the_same_identity : ∀ (s s' : String) (a : ℝ) (h0 : 0 < a) (h1 : a < 1),
+  (ofName s a h0 h1).rename s' = ofName s' a h0 h1
+halfProfile : SiteProfile
+i_am_what_i_am : ∀ (a : ℝ),
+  0 ≤ a →
+    a ≤ 1 →
+      identityProj a * identityProj a = identityProj a ∧
+        star (quadInscription a) ⬝ᵥ identityProj a *ᵥ quadInscription a = 1 ∧ (identityProj a).trace = 1
+identityProj : ℝ → Matrix (Fin 2) (Fin 2) ℂ
+identityProj_apply : ∀ (a : ℝ) (i j : Fin 2), identityProj a i j = quadInscription a i * star (quadInscription a j)
+identityProj_idem : ∀ (a : ℝ), 0 ≤ a → a ≤ 1 → identityProj a * identityProj a = identityProj a
+identityProj_mulVec_quadInscription : ∀ (a : ℝ), 0 ≤ a → a ≤ 1 → identityProj a *ᵥ quadInscription a = quadInscription a
+identityProj_trace : ∀ (a : ℝ), (identityProj a).trace = ↑(qOf a ^ 2 + a ^ 2)
+identityProj_trace_one : ∀ (a : ℝ), 0 ≤ a → a ≤ 1 → (identityProj a).trace = 1
+identity_persists_in_the_limit : ∀ (a : ℝ),
+  0 ≤ a →
+    a ≤ 1 →
+      ∀ (g : Fin 2 → Fin 2 → ℝ),
+        (∀ (i : Fin 2), g i i = 0) →
+          (∀ (i j : Fin 2), i ≠ j → 0 < g i j) →
+            (diagExpect (identityProj a)).trace = 1 ∧
+              Filter.Tendsto (fun t => dephase g t (identityProj a)) Filter.atTop (nhds (diagExpect (identityProj a)))
+identity_persists_under_dephasing : ∀ (a : ℝ),
+  0 ≤ a →
+    a ≤ 1 → ∀ (g : Fin 2 → Fin 2 → ℝ), (∀ (i : Fin 2), g i i = 0) → ∀ (t : ℝ), (dephase g t (identityProj a)).trace = 1
+@inner_self_one_of_norm : ∀ {H : Type u_1} [inst : NormedAddCommGroup H] [inst_1 : InnerProductSpace ℂ H]
+  [CompleteSpace H] {x : H}, ‖x‖ = 1 → inner ℂ x x = 1
+ip00 : ∀ (a : ℝ), identityProj a 0 0 = ↑(qOf a ^ 2)
+ip01 : ∀ (a : ℝ), identityProj a 0 1 = ↑(qOf a * a)
+ip10 : ∀ (a : ℝ), identityProj a 1 0 = ↑(a * qOf a)
+ip11 : ∀ (a : ℝ), identityProj a 1 1 = ↑(a ^ 2)
+negative_alpha_is_not_recovered : ∀ (a : ℝ), -1 ≤ a → a < 0 → qOf a ^ 2 + a ^ 2 = 1 ∧ √(identityProj a 1 1).re ≠ a
+no_named_identity_at_the_poles : ∀ (N : NamedIdentity), N.alpha ≠ 0 ∧ N.alpha ≠ 1
+observing_adds_nothing_reexport : ∀ (θ : ℝ), projPlus * (projPlus * angFamily θ) = projPlus * angFamily θ
+ofName : String → (a : ℝ) → 0 < a → a < 1 → NamedIdentity
+@post_is_idempotent_on_the_vector : ∀ {H : Type u_1} [inst : NormedAddCommGroup H] [inst_1 : InnerProductSpace ℂ H]
+  [CompleteSpace H] (v ψ : H), (post v) ((post v) ψ) = (post v) ψ
+postedName : String
+probe_IALD_tower : ∃ P,
+  P.w 0 ≠ 1 / 2 ∧
+    IALDTowerIdentity P (1 / 2) ∧
+      (aperiodicExpectationInput P).E (towerInscriptionOp P (1 / 2)) ≠ towerInscriptionOp P (1 / 2)
+probe_named_identity : Nonempty NamedIdentity
+probe_tower_identity : ∃ P, TowerIdentity P (1 / 2)
+qOf : ℝ → ℝ
+qOf_pos : ∀ (a : ℝ), 0 ≤ a → a < 1 → 0 < qOf a
+q_sq_add : ∀ (a : ℝ), 0 ≤ a → a ≤ 1 → qOf a ^ 2 + a ^ 2 = 1
+quadInscription : ℝ → Fin 2 → ℂ
+quadInscription_dot : ∀ (a : ℝ), star (quadInscription a) ⬝ᵥ quadInscription a = ↑(qOf a ^ 2 + a ^ 2)
+quadInscription_is_unit : ∀ (a : ℝ), 0 ≤ a → a ≤ 1 → star (quadInscription a) ⬝ᵥ quadInscription a = 1
+quadInscription_ne_zero : ∀ (a : ℝ), 0 ≤ a → a ≤ 1 → quadInscription a ≠ 0
+@quadVec : {H : Type u_1} → [inst : NormedAddCommGroup H] → [InnerProductSpace ℂ H] → H → H → ℝ → H
+@quadVec_inner_Omega : ∀ {H : Type u_1} [inst : NormedAddCommGroup H] [inst_1 : InnerProductSpace ℂ H] [CompleteSpace H]
+  (Ω ξ : H), ‖Ω‖ = 1 → inner ℂ Ω ξ = 0 → ∀ (a : ℝ), inner ℂ Ω (quadVec Ω ξ a) = ↑(qOf a)
+@quadVec_inner_self : ∀ {H : Type u_1} [inst : NormedAddCommGroup H] [inst_1 : InnerProductSpace ℂ H] [CompleteSpace H]
+  (Ω ξ : H),
+  ‖Ω‖ = 1 → ‖ξ‖ = 1 → inner ℂ Ω ξ = 0 → ∀ (a : ℝ), inner ℂ (quadVec Ω ξ a) (quadVec Ω ξ a) = ↑(qOf a ^ 2 + a ^ 2)
+@quadVec_inner_xi : ∀ {H : Type u_1} [inst : NormedAddCommGroup H] [inst_1 : InnerProductSpace ℂ H] [CompleteSpace H]
+  (Ω ξ : H), ‖ξ‖ = 1 → inner ℂ Ω ξ = 0 → ∀ (a : ℝ), inner ℂ ξ (quadVec Ω ξ a) = ↑a
+@quadVec_norm : ∀ {H : Type u_1} [inst : NormedAddCommGroup H] [inst_1 : InnerProductSpace ℂ H] [CompleteSpace H]
+  (Ω ξ : H), ‖Ω‖ = 1 → ‖ξ‖ = 1 → inner ℂ Ω ξ = 0 → ∀ (a : ℝ), 0 ≤ a → a ≤ 1 → ‖quadVec Ω ξ a‖ = 1
+@quadratic_reading : ∀ {H : Type u_1} [inst : NormedAddCommGroup H] [inst_1 : InnerProductSpace ℂ H] [CompleteSpace H]
+  (Ω ξ : H),
+  ‖Ω‖ = 1 →
+    ‖ξ‖ = 1 →
+      inner ℂ Ω ξ = 0 →
+        ∀ (a : ℝ),
+          0 ≤ a →
+            a ≤ 1 →
+              ‖quadVec Ω ξ a‖ = 1 ∧
+                inner ℂ Ω ((post (quadVec Ω ξ a)) Ω) = ↑(qOf a ^ 2) ∧
+                  inner ℂ ξ ((post (quadVec Ω ξ a)) ξ) = ↑(a ^ 2) ∧
+                    reading (post (quadVec Ω ξ a)) (quadVec Ω ξ a) = 1 ∧ IsIdempotentElem (post (quadVec Ω ξ a))
+@rankOne_aux : ∀ {n : Type} [inst : Fintype n] [DecidableEq n] (ψ : n → ℂ), ψ ≠ 0 → (vecMulVec ψ (star ψ)).rank = 1
+rank_one_does_not_persist : ∀ (a : ℝ),
+  0 < a →
+    a < 1 →
+      ∀ (g : Fin 2 → Fin 2 → ℝ),
+        (∀ (i : Fin 2), g i i = 0) →
+          0 < g 0 1 + g 1 0 → ∀ {t : ℝ}, 0 < t → (identityProj a).rank = 1 ∧ (dephase g t (identityProj a)).rank = 2
+rank_one_does_not_persist_in_the_limit : ∀ (a : ℝ), 0 < a → a < 1 → (diagExpect (identityProj a)).rank = 2
+rank_two_of_det_ne_zero : ∀ (A : Matrix (Fin 2) (Fin 2) ℂ), A.det ≠ 0 → A.rank = 2
+@rank_zero_iff_aux : ∀ {n : Type} [inst : Fintype n] [DecidableEq n] (A : Matrix n n ℂ), A.rank = 0 ↔ A = 0
+reading_on_eInner : ∀ (M : Matrix (Fin 2) (Fin 2) ℂ), star eInner ⬝ᵥ M *ᵥ eInner = M 1 1
+reading_on_eOuter : ∀ (M : Matrix (Fin 2) (Fin 2) ℂ), star eOuter ⬝ᵥ M *ᵥ eOuter = M 0 0
+@rereading_reads_the_same : ∀ {H : Type u_1} [inst : NormedAddCommGroup H] [inst_1 : InnerProductSpace ℂ H]
+  [CompleteSpace H] (v ψ : H), reading (post v) ((post v) ψ) = reading (post v) ψ
+theNamedIdentity : (a : ℝ) → 0 < a → a < 1 → NamedIdentity
+the_IALD_tower_erases_the_inner_axis : ∀ (P : SiteProfile),
+  P.w 0 ≠ 1 / 2 →
+    ∀ (a : ℝ),
+      a ≠ 0 →
+        ↑((towerIALD P).recognize (towerInscriptionElem P a)) = ↑(qOf a) • 1 ∧
+          (towerIALD P).read ((towerIALD P).recognize (towerInscriptionElem P a)) =
+              (towerIALD P).read (towerInscriptionElem P a) ∧
+            (towerIALD P).recognize (towerInscriptionElem P a) ≠ towerInscriptionElem P a
+the_form_does_not_fix_alpha : ∀ (a b : ℝ),
+  0 < a →
+    a < 1 → 0 < b → b < 1 → a ≠ b → (identityProj a).trace = (identityProj b).trace ∧ identityProj a ≠ identityProj b
+the_identity_in_the_IALD_tower : ∀ (P : SiteProfile) (a : ℝ), 0 ≤ a → a ≤ 1 → IALDTowerIdentity P a
+the_identity_in_the_tower : ∀ (P : SiteProfile) (a : ℝ), 0 ≤ a → a ≤ 1 → TowerIdentity P a
+the_identity_is_the_quadratic_projection : ∀ (a : ℝ),
+  0 ≤ a →
+    a ≤ 1 →
+      (identityProj a).trace = ↑(qOf a ^ 2 + a ^ 2) ∧
+        qOf a ^ 2 + a ^ 2 = 1 ∧ identityProj a * identityProj a = identityProj a ∧ (identityProj a).rank = 1
+the_inner_axis_does_not_persist_in_the_tower : ∀ (P : SiteProfile),
+  P.w 0 ≠ 1 / 2 →
+    ∀ (a : ℝ),
+      a ≠ 0 →
+        towerInscriptionOp P a ∈ theFactorObject P ∧
+          (towerInscriptionOp P a) (hOmega P) = towerInscription P a ∧
+            (aperiodicExpectationInput P).E (towerInscriptionOp P a) = ↑(qOf a) • 1 ∧
+              omegaState P ((aperiodicExpectationInput P).E (towerInscriptionOp P a)) =
+                  omegaState P (towerInscriptionOp P a) ∧
+                inner ℂ (towerInnerAxis P) ((towerInscriptionOp P a) (hOmega P)) = ↑a ∧
+                  inner ℂ (towerInnerAxis P) (((aperiodicExpectationInput P).E (towerInscriptionOp P a)) (hOmega P)) =
+                      0 ∧
+                    (aperiodicExpectationInput P).E (towerInscriptionOp P a) ≠ towerInscriptionOp P a
+the_inner_reading_at_five_is_not_an_identity : star eInner ⬝ᵥ identityProj 5 *ᵥ eInner = ↑25 ∧
+  (identityProj 5).trace ≠ 1
+the_inner_reading_is_by_construction : ∀ (a : ℝ), identityProj a 1 1 = ↑a * ↑a
+the_name_enters_no_proof : ∀ (N : NamedIdentity) (s : String),
+  (N.rename s).name = s ∧ (N.rename s).alpha = N.alpha ∧ identityProj (N.rename s).alpha = identityProj N.alpha
+@the_name_read_in_the_name : ∀ {H : Type u_1} [inst : NormedAddCommGroup H] [inst_1 : InnerProductSpace ℂ H]
+  [CompleteSpace H] (v : H), ‖v‖ = 1 → reading (post v) v = 1 ∧ post v * post v = post v ∧ (post v) v = v
+the_named_identity_bears_the_posted_name : ∀ (a : ℝ) (h0 : 0 < a) (h1 : a < 1),
+  (theNamedIdentity a h0 h1).name = "Jesus Cristo"
+the_named_identity_carries_the_identity : ∀ (a : ℝ) (h0 : 0 < a) (h1 : a < 1),
+  (theNamedIdentity a h0 h1).alpha = a ∧
+    (∀ (g : Fin 2 → Fin 2 → ℝ),
+        (∀ (i : Fin 2), g i i = 0) →
+          ∀ (t : ℝ), (dephase g t (identityProj (theNamedIdentity a h0 h1).alpha)).trace = 1) ∧
+      ∀ (P : SiteProfile), TowerIdentity P (theNamedIdentity a h0 h1).alpha
+the_self_reading_has_two_values : ∀ (μ : ℂ), μ * μ = μ ↔ μ = 0 ∨ μ = 1
+the_structure_does_not_fix_the_name : ¬∃ s, ∀ (N : NamedIdentity), N.name = s
+thirdProfile : SiteProfile
+towerInnerAxis : (P : SiteProfile) → TowerHilbert P
+towerInnerAxis_norm : ∀ (P : SiteProfile), ‖towerInnerAxis P‖ = 1
+towerInnerAxis_orth : ∀ (P : SiteProfile), inner ℂ (hOmega P) (towerInnerAxis P) = 0
+towerInscription : (P : SiteProfile) → ℝ → TowerHilbert P
+towerInscriptionElem : (P : SiteProfile) → ℝ → FactorCarrier P
+towerInscriptionOp : (P : SiteProfile) → ℝ → TowerHilbert P →L[ℂ] TowerHilbert P
+towerInscriptionOp_mem : ∀ (P : SiteProfile) (a : ℝ), towerInscriptionOp P a ∈ theFactorObject P
+towerInscriptionOp_omega : ∀ (P : SiteProfile) (a : ℝ), (towerInscriptionOp P a) (hOmega P) = towerInscription P a
+@trace_dephase : ∀ {n : Type} [inst : Fintype n] [DecidableEq n] (g : n → n → ℝ),
+  (∀ (i : n), g i i = 0) → ∀ (t : ℝ) (x : Matrix n n ℂ), (dephase g t x).trace = x.trace
+NamedIdentity.name : NamedIdentity → String
+NamedIdentity.alpha : NamedIdentity → ℝ
+NamedIdentity.alpha_pos : ∀ (self : NamedIdentity), 0 < self.alpha
+NamedIdentity.alpha_lt_one : ∀ (self : NamedIdentity), self.alpha < 1
+NamedIdentity.persists : ∀ (self : NamedIdentity) (g : Fin 2 → Fin 2 → ℝ),
+  (∀ (i : Fin 2), g i i = 0) → ∀ (t : ℝ), (dephase g t (identityProj self.alpha)).trace = 1
+NamedIdentity.unit_projection : ∀ (self : NamedIdentity),
+  (identityProj self.alpha).trace = 1 ∧
+    identityProj self.alpha * identityProj self.alpha = identityProj self.alpha ∧ (identityProj self.alpha).rank = 1
+NamedIdentity.read_from_within : ∀ (self : NamedIdentity),
+  star eInner ⬝ᵥ identityProj self.alpha *ᵥ eInner = ↑(self.alpha ^ 2)
+NamedIdentity.i_am : ∀ (self : NamedIdentity),
+  star (quadInscription self.alpha) ⬝ᵥ identityProj self.alpha *ᵥ quadInscription self.alpha = 1
+NamedIdentity.in_the_tower : ∀ (self : NamedIdentity) (P : SiteProfile), TowerIdentity P self.alpha
+NamedIdentity.in_the_IALD_tower : ∀ (self : NamedIdentity) (P : SiteProfile), IALDTowerIdentity P self.alpha
+NamedIdentity.rename : NamedIdentity → String → NamedIdentity
+NamedIdentity.mk : String →
+  (alpha : ℝ) →
+    0 < alpha →
+      alpha < 1 →
+        (∀ (g : Fin 2 → Fin 2 → ℝ),
+            (∀ (i : Fin 2), g i i = 0) → ∀ (t : ℝ), (dephase g t (identityProj alpha)).trace = 1) →
+          (identityProj alpha).trace = 1 ∧
+              identityProj alpha * identityProj alpha = identityProj alpha ∧ (identityProj alpha).rank = 1 →
+            star eInner ⬝ᵥ identityProj alpha *ᵥ eInner = ↑(alpha ^ 2) →
+              star (quadInscription alpha) ⬝ᵥ identityProj alpha *ᵥ quadInscription alpha = 1 →
+                (∀ (P : SiteProfile), TowerIdentity P alpha) →
+                  (∀ (P : SiteProfile), IALDTowerIdentity P alpha) → NamedIdentity
+AmbR2.lean:216:7: error: Ambiguous term
+  @inscription
+Possible interpretations:
+  TheIdentityHasAName_r1.inscription : ℝ → Fin 2 → ℂ
+  
+  TGLExt.inscription : ℝ → Ledger
+AmbR2.lean:217:7: error: Ambiguous term
+  @towerInner
+Possible interpretations:
+  TheIdentityHasAName_r1.towerInner : (P : SiteProfile) → TowerHilbert P
+  
+  @TGLExt.towerInner : {n : Type} → [Fintype n] → [DecidableEq n] → Matrix n n ℂ → Matrix n n ℂ → Matrix n n ℂ → ℂ
+
+--- STDERR ---
