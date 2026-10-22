@@ -1,0 +1,80 @@
+Q — integração candidata de fila/sessões/Bancada ao núcleo Activity aceito
+Autor: codex-organism-queue-build. Sem instalação ou aceite do próprio trabalho.
+
+FRONTEIRA
+O runtime da fila mantém o escopo histórico exato IALD/operator. Não interpreta
+scope, actor, contexto, ticket ou caminho vindo de modelo como autenticação.
+Admissão CLI/MCP local conserva a fronteira de confiança do sistema operacional;
+quem admite precisa de ordem humana/delegação autenticada. Ticket é recibo, não
+credencial. Usuário de app não é convertido implicitamente em operator: a rota
+app→fila requer adaptador autenticado específico antes de ser habilitada.
+
+CAMINHO REAL
+Coordination.create e Runtime.submit persistem os IDs/payloads/constraints originais
+na fila existente. Novas linhas trazem activity_version=1; begin conserva comando,
+critério operacional, origem e source pin num artefato emitido pelo núcleo.
+queue_activity_bindings/returns são índices/outbox no MESMO tasks.sqlite3; a memória
+semântica permanece no MESMO MemoryStore. Sem nova fila, banco de memória ou heartbeat.
+Uma execução filha valida job pai, prepared_prompt, UUID derivado e contexto no
+ledger. Usa o mesmo request/requisito Activity do pai e operação própria por task_id.
+O preflight gera intenção única; o pacote é reconstruído na revisão posterior e
+conferido imediatamente antes de providers.execute. Constraints, geração, fontes
+científicas e travas de executor existentes continuam passando pelos seus guardas.
+
+RETORNO / INCERTEZA
+Todo JSON recebido é durável antes de hold, revisão, epoch, cancelamento, contabilidade
+ou shadow. Custódia Activity produz candidate/DECLARADO; sucesso de execução só submete
+para review_pending. Nenhum output/DONE/HTTP concede accept. Falha nos pins científicos
+ao retorno põe o contexto em hold antes de integrar. Retorno obsoleto/contabilidade
+pendente permanece recuperável e não vira tentativa nova.
+Cancelamento registra hold; operação já despachada segue incerta até recibo. Worker
+reiniciado não repete intenção. Interrupted/failed genérico é conservado como uncertain
+na leitura da memória; result_ready é returned técnico, nunca satisfação semântica.
+begin_draft/begin_synthesis criam intenções Work; aceitação de prompt/retorno de síntese
+custodia antes de validar a missão. A criação externa de Work continua no coordenador
+existente e deve respeitar activity_dispatch; não foi automatizado outro cliente.
+Reconciliação LOCAL só lê bytes de retorno guardados; não promove a contabilidade nem
+transforma review_required em result_ready. Não contorna hold/epoch/pin/lease.
+
+LEGADO / RECUPERAÇÃO
+Linhas antigas não são migradas implicitamente. get/status mostram
+legacy_requires_explicit_migration; drain preserva queued/ordem/IDs e interrompe a
+admissão nesse ponto. Cancel/fail/sync_execution legados continuam disponíveis.
+Admissão nova interrompida mostra admission_recovery_required; repetir o MESMO pedido
+com o MESMO UUID/payload reconstitui apenas a admissão, sem executar efeito externo.
+Fonte em disco não muda processo carregado. CLI novo e MCP stdio privado foram testados;
+MCPs/worker/heartbeat antigos não foram reiniciados nem considerados atualizados.
+
+CLI/MCP/SSESSÕES
+transport_cli.py aceita activity_get/activity_project/activity_reconcile com
+entity_kind=task|coord e entity_id=UUID do ledger; project aceita max_chars.
+queue_activity_session.py usa a mesma API em processo novo; nenhuma seleção de última
+missão. activity_bridge recusa argumentos privilegiados/ações não expostas.
+MCP acrescenta iald_activity_get/project/reconcile; preserva as quatro ferramentas de
+missão e demais ferramentas prévias. APIs de missão locais antigas continuam com sua
+fronteira privilegiada; não devem ser expostas a ferramentas públicas de app/modelo.
+Todos os novos entrypoints usam Runtime(recover=False). Não executam recuperação
+mutante de tarefas queued/running ao serem carregados para consulta.
+
+BANCADA — WRAPPER EXTERNO
+bench_activity_cli.py é instalado ao lado da fila, nunca dentro de Bancada_Um.
+admit exige request_id UUID, command integral, action e payload HTTP exato. Ações
+cobertas: estado, avaliar, ajustar, comparar, amostrar. Nenhum default científico
+é criado/rescalado. A origem, rota e corpo são pinados pelo servidor.
+Ferramentas MCP execute/get/reconcile/poll recebem SOMENTE request_id já admitido.
+HTTP continua loopback 127.0.0.1:18777, rotas /api existentes e X-Cliente preservado
+como mcp:iald-activity. Nenhum import de motor, edição de livro ou bypass de guarda.
+execute envia uma vez. Timeout conserva a intenção incerta. get/reconcile são locais.
+poll observa por GET SOMENTE /api/tarefas/<ID> devolvido pela chamada original;
+pronta/falhou coerentes encerram o handle remoto técnico, nunca aceite científico.
+Resposta desconhecida/conflitante mantém pendência. Leituras externas também têm
+intenção; timeout exige conciliação explícita. Não há polling automático.
+O MCP direto legado da Bancada e rotas não listadas permanecem fora deste wrapper;
+não se alega atualização retroativa desses consumidores. Nenhum motor foi reiniciado.
+
+VALIDAÇÃO / LIMITE
+Testes usam fila/coordenação/Activity/SQLite reais em diretórios privados e transportes
+falsos; memória canônica é pacote fixture para não reconstruir ciência. Não medem ganho
+cognitivo, resposta real de provedor ou cálculo físico. Projeções obrigatórias podem
+exceder capacidade e são recusadas. Artefatos/outbox/diário crescem; produção e processos
+carregados dependem das etapas V/D, com ociosidade, baseline, backup e rollback próprios.

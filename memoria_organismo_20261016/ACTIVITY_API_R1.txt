@@ -1,0 +1,64 @@
+ActivityRuntime v1 — candidato em staging; não instalado
+
+Import: from iald_memory.activity import ActivityRuntime, ActivityError
+Construtor: ActivityRuntime(store, context_id, scope, actor)
+Reutiliza o MemoryStore e o MissionController do contexto existente. O servidor
+autentica titular/geração/conversa/ator antes de chamar. Não aceita referência pública
+como credencial; ticket é recibo comparado ao estado durável, sem assinatura/autenticação.
+
+begin(request_id, command, criterion=None, *, origin, origin_ref=None, lease_seconds=43200)
+  origin obrigatório: authenticated_operator, delegated ou system. Nos dois últimos,
+  origin_ref é referência de delegação admitida pelo servidor. Não cria fonte operator.
+  Comando/critério/origem inteiros são pinados em artefato de caminho escolhido pelo núcleo.
+  Mesmo ID com payload diferente recusa. Replay recupera estado; não executa operação.
+  Requisito por request é controle operacional, não decomposição científica completa.
+  Retorna ticket/replayed; configura missão apenas se o mesmo contexto ainda não a tem.
+
+preflight(ticket, operation_id, *, refresh=False)
+  Retorna ticket atualizado, intent_record_id, dispatch_allowed_once=True apenas ao
+  gravar intenção inédita e validar novamente o estado corrente. IDs de operação vêm
+  do servidor, são estáveis em reinícios e distintos para JEV/provedor/ferramenta/worker.
+  Duas chamadas concorrentes ao mesmo ID concedem uma única execução. Intent já existente
+  nunca concede reenvio, mesmo se não se sabe se a chamada externa chegou ao provedor.
+  Releitura final não torna a chamada externa parte da transação SQLite; retorno sempre
+  precisa da reconciliação abaixo. Falha após intent conserva handle pendente explícito.
+
+complete(ticket, operation_id, result, *, terminal=True, refresh=False)
+  Persiste resultado completo como candidate/DECLARADO antes de conferir freshness.
+  terminal=False: somente resultado intermediário; requisito continua working.
+  terminal=True: sem outras operações pendentes do request, submit para review_pending.
+  Nunca aceita semanticamente. Retorno obsoleto recusa com candidate_record_id e causa.
+  Resultado divergente no mesmo ID também é preservado, porém recusa integração.
+  Retry local de complete não reenvia operação e reconcilia crash após submit.
+  CAS de custódia tem até oito tentativas locais. Sob contenção persistente, o artefato
+  recebido permanece pinado, erro candidate_custody_conflict exige conciliação local.
+
+refresh(ticket)
+  Conciliação explícita de revisão mecânica. Não contorna nova orientação autenticada,
+  epoch, lease, hold ou dependência invalidada. Decisões/erratas INPUT e pendências
+  INPUT/OPEN de fonte operator, além de âncora/restrições, entram no fingerprint humano.
+
+mark_uncertain(ticket, operation_id, reason)
+  Conserva intenção e incerteza sem afirmar falha externa ou permitir nova chamada.
+
+recover(request_id)
+  Só leitura: ticket corrente, registros, handles e receipt do mesmo contexto/escopo.
+  Não despacha, integra nem apaga. Não fornece acesso direto a revisão antiga.
+
+project(max_chars=24000, current_input='')
+  Após begin/configure: conteúdo ACOM e missão vêm de um único get verificado.
+  Compatível: text, required_chars, actual_chars, receipt, included_record_ids,
+  omitted_record_ids, required_record_ids, current_input_sha256, overflow.
+  activity contém estado materializado; mission_record_ids permite recuperar história.
+  projection_sha256 é do texto combinado; mission_projection_sha256 é o hash completo
+  para o MissionController. Não trocar um pelo outro. Nenhum evento nasce da projeção.
+  Só deltas de missão validados são substituídos pelo índice e detalhes de handles
+  terminais usam o índice do controlador. Obrigações/conteúdo obrigatório não são cortados;
+  excesso levanta ProjectionOverflow. Fonte/candidato do modelo não vira autoridade.
+
+As APIs project_snapshot/load_snapshot/check_snapshot são auxiliares locais de
+serialização/validação de snapshot confiável já obtido pelo servidor; não autenticação.
+APIs originais project/load/check continuam obtendo estado fresco. Revisão/aceite usa
+MissionController existente e identidade real do revisor autenticada pelo consumidor.
+Wrappers não devem expor actor, paths de evidência ou ações de aceite a ferramentas LLM.
+Integrações de app/fila/nativa e instalação são requisitos separados deste núcleo.

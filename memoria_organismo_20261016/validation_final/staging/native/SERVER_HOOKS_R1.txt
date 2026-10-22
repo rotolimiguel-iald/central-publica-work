@@ -1,0 +1,57 @@
+N → A: hooks para integrar em sua cópia de iald_web_server.py
+Nenhum servidor foi editado pelo autor N. Autorização, ferramentas, canal público/
+privado e o contador final continuam nas rotas existentes. Copiar módulo novo
+iald_native_activity.py e iald_native_memory.py atualizado; holographic_memory.py
+é fornecedor sem alterações. Core aceito não muda.
+
+1. _prepare_native_payload(payload, superficie, *, native_path='legacy'):
+   Na montagem inicial, substituir
+     result['messages'] = app_memory.project_messages(native_memory.attach_context(payload.get('messages'), prefix))
+   por
+     result['messages'] = native_memory.attach_context(payload.get('messages'), prefix)
+   Após window = native_memory.configured_window(MODELS[model_id]), inserir:
+     result, native_history_receipt = native_memory.prepare_activity_payload(
+         result, binding=app_memory.current(), project_messages=app_memory.project_messages,
+         window=window, path=native_path)
+   Preservar o check(result) final e o check(current) do loop, incluindo ferramentas
+   efetivas na contagem antes de cada geração. Checkpoint não concede despacho;
+   o preflight ActivityRuntime da frente A continua antes da operação real.
+
+2. _chat_nativa_automatica: chamar
+     _prepare_native_payload(payload, 'app', native_path='automatic')
+   O legado continua chamando a mesma função com native_path padrão 'legacy'.
+   Não transportar memória privada do caminho legado para o automático.
+
+3. Remover somente o bloco antigo que chama HOLO_MEMORY.compress_context antes
+   de SACRED LANGUAGE (comentário HOLOGRAPHIC MEMORY: compress context before routing).
+   A compressão passa a ocorrer depois da preparação do prefixo e antes da projeção
+   obrigatória, pelo hook 1. Não manter fallback silencioso de erro de checkpoint.
+   Preservar HOLO_MEMORY somente nos usos preexistentes de janela/diagnóstico
+   (origem l7212, 8405, 10623–24). Não usá-la para histórico ou persistência de uma
+   conversa. O wrapper novo cria instância própria e não lê seus contadores.
+   O algoritmo original permanece; hash completo só na subclasse de checkpoints.
+
+4. _operational_native_payload(payload), que já mantém app_memory e contador:
+   substituir sua cópia/projeção inicial por:
+     model_id, base_url = ACTIVE_MODEL_ID, LLAMA_URL
+     window = native_memory.configured_window(MODELS[model_id])
+     result, native_history_receipt = native_memory.prepare_activity_payload(
+         payload, binding=app_memory.current(), project_messages=app_memory.project_messages,
+         window=window, path='worker_operational', compress=False)
+   Manter check_text_window(result, window, base_url=base_url) e guardas de troca.
+   Threads usam o Binding já propagado pelo servidor. Sem Binding/ActivityRuntime,
+   este helper preserva o payload e não cria cache compartilhado; o chamador ainda
+   decide autorização e admissão. Não inventar contexto para worker sem vínculo.
+
+5. Interface Binding confirmada por A:
+   .activity, .ticket, .store, .context_id, .scope, .request_id;
+   .checkpoint(label,value) registra candidate/DECLARADO source_kind=tool,
+   text=canonical(value), source.ref termina ':checkpoint.'+label, sem steering.
+   O helper N faz releitura explícita por activity.refresh, sem modificar ticket.
+   Não aceita revisão, não chama modelo e não altera pipeline científico.
+
+6. Evidência do checkpoint: arquivo integral sob o store; input/output, algoritmo,
+   hashes, revisão de origem e índices transformados/omitidos preservados. Registro
+   ACOM é candidato compacto com pin. Retomada confere namespace/bytes e restaura
+   só os contadores; a narrativa derivada nunca se torna fato/requisito.
+   Mensagens com ferramentas/mídia/metadata extra passam integralmente, sem compressão.

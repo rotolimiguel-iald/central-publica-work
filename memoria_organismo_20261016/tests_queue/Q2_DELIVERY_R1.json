@@ -1,0 +1,102 @@
+{
+  "schema": "organism-Q2-delivery/v1",
+  "created_utc": "2026-10-16T23:52:37.118683+00:00",
+  "unit": "F9.MEMORIA_ORGANISMO_20261016",
+  "requirement": "Q2",
+  "author": {
+    "id": "codex-organism-legacy-migration-build",
+    "kind": "agent"
+  },
+  "reference": {
+    "path": "C:\\IALD\\Central de Patentes\\work\\memoria_organismo_20261016\\SESSION_REFERENCE.json",
+    "sha256": "3ac23543de816be2428167c58b6f21d084d150d59efdad49aee07bbf3be4dcfb"
+  },
+  "status": "DECLARADO_CANDIDATE_FOR_INDEPENDENT_REVIEW",
+  "requirement_satisfied": false,
+  "criterion": "CLI local privilegiado de migração explícita de pedidos legados nunca despachados: UUID, versão/digest de linha e revisão/hash ACOM esperados, lock/CAS, intenção durável, retomada idempotente só local. Preservar IDs, contexto, prompts, restrições, geração, suplemento e estágio. Recusar tentativas, threads, filhos/handles externos, incerteza, encerrados e premissas alteradas. Testar concorrência/crash/recusas; não expor como ferramenta de modelo, não migrar pedidos reais, não iniciar worker/provedor.",
+  "revision": 39,
+  "lease": {
+    "expires_at": 1792237586.4056153,
+    "id": "2ee4adab-f12a-439a-9a3b-798204964dcc",
+    "owner": "codex-organism-legacy-migration-build",
+    "task_epoch": 1
+  },
+  "project": {
+    "path": "C:\\IALD\\Central de Patentes\\work\\memoria_organismo_20261016\\receipts\\20261016T235233_817527Z_q2_delivery_project.receipt.json",
+    "sha256": "0c3ab48c281031e04049f31d5d588566ccc9e441ebd567960ee5ec61a6772edf"
+  },
+  "preflight": {
+    "path": "C:\\IALD\\Central de Patentes\\work\\memoria_organismo_20261016\\receipts\\20261016T235235_058922Z_q2_delivery_check.receipt.json",
+    "sha256": "a9c92ca46c508de76e937f3b6aea692388aee15c6171ce2f581c3608a9571f03"
+  },
+  "installation_plan": {
+    "path": "C:\\IALD\\Central de Patentes\\work\\memoria_organismo_20261016\\tests_queue\\Q2_INSTALL_PLAN_R1.json",
+    "sha256": "4d7993f2d12b260a6388bb947f24b6fc9526fc42e6c3c7690415a84c5fa00081"
+  },
+  "implementation": [
+    {
+      "path": "C:\\IALD\\Central de Patentes\\work\\memoria_organismo_20261016\\staging\\queue\\r3\\iald_orchestrator\\legacy_activity_migration.py",
+      "sha256": "205be7433c0364ae7f027a0eafc74b3f479f093aed58f866425c8e7fdd6951d8"
+    },
+    {
+      "path": "C:\\IALD\\Central de Patentes\\work\\memoria_organismo_20261016\\staging\\queue\\r3\\queue_activity_migrate.py",
+      "sha256": "38f7215466109c01fd841ec84bb4f9739682df8db16dc5921f618514b2767b47"
+    }
+  ],
+  "api": {
+    "path": "C:\\IALD\\Central de Patentes\\work\\memoria_organismo_20261016\\tests_queue\\LEGACY_MIGRATION_API_R1.txt",
+    "sha256": "b34b10505c214089b5e3b1b67c758eb5a20a430ddf9dd028bf9403b274437a00"
+  },
+  "tests": {
+    "path": "C:\\IALD\\Central de Patentes\\work\\memoria_organismo_20261016\\tests_queue\\Q2_TEST_RESULT_R2.json",
+    "sha256": "53314311099adcd8b766064abe0cac9b26a012b0689b66bc1e46bc9e4ecdf626"
+  },
+  "summary": {
+    "tests_run": 44,
+    "new_tests": 15,
+    "regression_tests": 29,
+    "seconds": 28.966540000023087,
+    "failures": 0,
+    "errors": 0
+  },
+  "prior_failed_test": {
+    "path": "C:\\IALD\\Central de Patentes\\work\\memoria_organismo_20261016\\tests_queue\\Q2_TEST_RESULT_R1.json",
+    "sha256": "f45568e1ad3e482e73089ec8e84fdbfc8965a8cfe81d716d6d42a3b1185f2029"
+  },
+  "test_erratum": "First run: 41/42 passed; refusal fixture exceeded existing five-pending-job limit before reaching its assertions. New fixture closes each rejected private row between cases; no production/controller relaxation.",
+  "compatibility": {
+    "Q_R2_unchanged": true,
+    "MCP_unchanged": true,
+    "core_used": [
+      {
+        "path": "C:\\IALD\\Central de Patentes\\work\\memoria_organismo_20261016\\staging\\core\\lib\\iald_memory\\activity.py",
+        "sha256": "8017d2904acc2471ab2e15245a65e0802dbcdb856dd42ab992a2fad0ddb21263",
+        "bytes": 26876
+      },
+      {
+        "path": "C:\\IALD\\Central de Patentes\\work\\memoria_organismo_20261016\\staging\\core\\lib\\iald_memory\\mission.py",
+        "sha256": "858dddcc9963cc68b8ed3f93bf70d54e11b0f409adaa3bb26fc9e53fec2bbfac",
+        "bytes": 27215
+      },
+      {
+        "path": "C:\\IALD\\Central de Patentes\\work\\memoria_organismo_20261016\\staging\\core\\lib\\iald_memory\\store.py",
+        "sha256": "3f1a8f425ccddc88a51b15d3077d3bb6f08bedcb97be78d4db76406a058ae3bb",
+        "bytes": 49612
+      }
+    ],
+    "C2_final_required_in_V": true
+  },
+  "limits": [
+    "Existing explicit IALD/operator scope; OS-authenticated privileged local CLI, no model tool or arbitrary identity/evidence path.",
+    "Only never-dispatched legacy coordination stages with exact original ACOM context. Unsafe/history-bearing jobs remain visibly refused.",
+    "No global transaction across queue and ACOM: per-write durable intents + exact idempotent replay bridge crashes; concurrent external revisions refuse without rebasing.",
+    "Semantic job fields/supplement remain byte-identical; version increments once, activity_version enabled only after ACOM receipt/check. Later dispatch keeps existing authorizations/guards.",
+    "Provider, HTTP and canonical package are inert fixtures. Real private SQLite/Activity/ACOM and fresh CLI tested; no real legacy request migrated.",
+    "Source-on-disk changes do not reload existing processes. Installation/activation/independent V remain separate."
+  ],
+  "production_migrations": 0,
+  "provider_calls": 0,
+  "worker_starts_by_migration": 0,
+  "installed": false,
+  "accepted": false
+}

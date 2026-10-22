@@ -1,0 +1,444 @@
+{
+  "schema": "organism-native-holographic-inventory/v1",
+  "created_utc": "2026-10-16T22:34:37.917560+00:00",
+  "unit": "F9.MEMORIA_ORGANISMO_20261016",
+  "requirement": "I",
+  "related_requirement": "N",
+  "actor": "codex-organism-native-inventory",
+  "status": "DECLARADO — inventário e proposta candidatos; leituras e hashes medidos, implementação/testes/produção não executados",
+  "requirement_satisfied": false,
+  "inventory_scope_complete": true,
+  "mission": {
+    "reference": "C:\\IALD\\Central de Patentes\\work\\memoria_organismo_20261016\\SESSION_REFERENCE.json",
+    "start_revision": 3,
+    "return_revision": 3,
+    "projection_sha256": "22ab9ad288914f03ee744fa47658b313b711e20d3bf1b68065884322c2e03f44",
+    "return_receipt": "C:\\IALD\\Central de Patentes\\work\\memoria_organismo_20261016\\receipts\\20261016T223437_658923Z_native_inventory_return.receipt.json",
+    "root_claim": 930,
+    "owner_impersonation": false,
+    "transitions_performed": false
+  },
+  "boundaries": {
+    "read_only_source_audit": true,
+    "new_tests_run": 0,
+    "provider_calls": 0,
+    "runtime_probes": 0,
+    "services_restarted": 0,
+    "production_files_changed": 0,
+    "other_users_state_read": false,
+    "confidential_files_read_or_hashed": false,
+    "confidential_policy": "Não lidos/exportados/hashados iald_stack_v7.py, iald_psion_state*, .env ou credenciais. Nenhum dado de conversa real foi aberto.",
+    "search_scope": "Módulos centrais nomeados e chamadores por rg focal; cópias Atualização*, backups e módulos de treino encontrados na busca foram classificados históricos/fora do caminho e não examinados como produção.",
+    "local_instructions": "CLAUDE.md da raiz e da nativa; AGENTS.md não localizado nos diretórios pertinentes consultados. Casas distintas preservadas; descoberta pontual, sem varredura de backups.",
+    "nos_vivo": "Consulta fornecida recusou unidade ausente do grafo; isso não implica código ausente."
+  },
+  "summary": "A memória ACOM já está no caminho real da IALD Nativa. Falta integrar o controlador de atividade/requisitos e tornar a camada holográfica consciente da identidade e da retomada, preservando seu algoritmo de compressão. A nativa canônica é montagem/verificação de contexto; a persistência operacional pertence ao MemoryStore comum. Nenhum segundo banco é necessário.",
+  "components": [
+    {
+      "id": "native_canonical_context",
+      "source": "native",
+      "anchors": [
+        "22-47",
+        "50-67",
+        "78-86",
+        "129-191"
+      ],
+      "behavior": "load_native_context verifica release, catálogo, evidência publicada e documentos públicos, monta contexto canônico e identidade da release. attach_context preserva preferências/histórico/ferramentas/mídia e funde system. check_text_window mede template/tokenizer local real e recusa janela/contador indisponível antes de geração.",
+      "persistence": "Nenhum banco/estado de atividade neste módulo; não é a memória operacional por si só.",
+      "scope": "Contexto científico público vem da implantação; não deve receber memória privada do operador por conveniência nem ser confundido com atividade de usuário.",
+      "reuse": "Preservar release.check_manifest, fonte/pinos públicos, contagem final e guardas de troca de modelo/release."
+    },
+    {
+      "id": "app_operational_binding",
+      "source": "app_memory",
+      "anchors": [
+        "24-33",
+        "63-77",
+        "81-167",
+        "170-228",
+        "232-251",
+        "328-379",
+        "381-425",
+        "476-519"
+      ],
+      "behavior": "Binding sobre MemoryStore comum; current() via ContextVar; thread_target propaga binding explícito; begin inscreve comando antes do roteamento; q recebe entradas/saídas/ferramentas com origem/estatuto. Stream persiste candidato antes de DONE e registra parcial/incerteza em interrupção.",
+      "persistence": "C:/IALD/MEMORIA_IALD/state/memory.sqlite3, journal encadeado e snapshots pela política existente. Outbox app_outbox/context_id guarda intenção idempotente, recibo committed e recover retoma commit local sem chamada de modelo.",
+      "scope": "house=IALD_APP; principal vem de account_key autenticado; context_id=app_+digest(principal:conversation). conversation validada, nunca identidade de usuário fornecida pelo modelo. Sem iald_conv nasce identidade request_<request_id>, portanto continuidade entre pedidos exige identificador estável. Histórico de cliente importado é DECLARADO e não concede estatuto.",
+      "recovery": "snapshot/get atual, projeção com revision/hash; ferramenta iald_memory_read lista/lê registros no scope com paginação e hashes. Não recupera automaticamente uma revisão antiga. _text preserva entrada multimodal em JSON; nesta auditoria não foram lidos blobs/conversas.",
+      "gap": "Binding.projection usa MemoryStore.project, não MissionController.project; não configura nem aplica requisitos/dependências/leases/revisão independente/PODA por missão."
+    },
+    {
+      "id": "holographic_compression",
+      "source": "holographic",
+      "anchors": [
+        "106-118",
+        "148-168",
+        "174-348",
+        "354-440",
+        "475-541",
+        "598-610",
+        "616-669"
+      ],
+      "behavior": "Compressão angular interturno, seleção/redução intra-turno, deduplicação e resumo holográfico; system preservado; últimos seis turnos preservados; compressão só acima do orçamento estimado. Original recebido não é escrito em banco pelo módulo.",
+      "persistence": "Apenas RAM da instância: _persistence, contadores e janela em cache. _content_hash=hash(content[:200]); não é SHA estável entre processos e textos com mesmo prefixo compartilham chave. Sem serialização/recovery/activity_id/revision/usuário/lock próprio.",
+      "actual_instance": "Servidor cria HOLO_MEMORY=HolographicMemory() global nas linhas60-61 e o chama no caminho nativo legado 8830-8837. Portanto a descrição por sessão no construtor não equivale a isolamento por usuário na chamada real.",
+      "scope_risk": "Contagens podem influenciar seleção entre conversas/usuários do mesmo processo. Isto é risco de interferência de retenção; não foi demonstrado vazamento de conteúdo e não se executou teste.",
+      "gap": "Resumo não contém referência íntegra à origem, conjunto de ids omitidos ou revisão ACOM; compressão não sabe distinguir decisão/requisito/evidência corrente de narrativa opcional. Não pode operar como fonte de verdade de progresso."
+    },
+    {
+      "id": "condensation_existing_distinct",
+      "source": "condensation",
+      "anchors": [
+        "11-37",
+        "164-197"
+      ],
+      "behavior": "Condensação semântica por callback de modelo, declaradamente com perda; preservação integral cabe ao registro do cliente segundo docstring. É mecanismo separado da holográfica algorítmica e da ACOM persistente.",
+      "scope": "Não executado nem habilitado por esta tarefa. Nenhuma substituição de holographic_memory por condensar proposta; eventual derivado deve permanecer candidato com proveniência."
+    }
+  ],
+  "real_call_paths": [
+    {
+      "name": "authenticated_entry",
+      "source": "server",
+      "anchors": [
+        "8700-8704",
+        "13090-13095"
+      ],
+      "chain": "POST /v1/... → app_memory.dispatch → begin(account_generation, iald_conv, messages, wallet_job_id) → view sob bound. generation é SHA256 de username+created obtidos do registro autenticado; ciclo de conta separa identidades."
+    },
+    {
+      "name": "legacy_native",
+      "source": "server",
+      "anchors": [
+        "8735-8782",
+        "8797-8828",
+        "8830-8837",
+        "8938-8947"
+      ],
+      "chain": "Após autorização do caminho nativo legado: memória do operador existente → HOLO_MEMORY.compress_context → injeções/template → _prepare_native_payload → prefixo canônico + app_memory.project_messages → contador final. A projeção ACOM é reinjetada após compressão, ponto útil já existente."
+    },
+    {
+      "name": "automatic_native",
+      "source": "server",
+      "anchors": [
+        "7297-7351",
+        "8748-8751"
+      ],
+      "chain": "Roteamento automático retorna antes do ramo holográfico legado. _chat_nativa_automatica → wire_messages público → _prepare_native_payload → agent_loop; não chama HOLO_MEMORY. Preservar essa separação público/privado; não copiar memória do operador para esse caminho."
+    },
+    {
+      "name": "native_canonical_preparation",
+      "source": "server",
+      "anchors": [
+        "6039-6072"
+      ],
+      "chain": "Verifica manifesto canônico, attach_context, ACOM, ferramentas públicas e janela do modelo/release corrente. O fechamento de check deve consumir revisão de atividade atual antes de cada ciclo, além das guardas científicas que já tem."
+    },
+    {
+      "name": "native_loop_and_admin",
+      "source": "server",
+      "anchors": [
+        "2235",
+        "2506",
+        "6029-6036",
+        "10135-10152",
+        "11053",
+        "11117",
+        "11175-11218",
+        "11368"
+      ],
+      "chain": "agent_loop projeta novamente e registra ferramentas; _operational_native_payload também injeta ACOM antes de contador em rotas administrativas. Usar o mesmo adaptador de atividade nesses pontos, sem expor controles admin à nativa automática."
+    },
+    {
+      "name": "retrieval_and_workers",
+      "source": "server",
+      "anchors": [
+        "1379",
+        "1591-1593",
+        "2111",
+        "2164",
+        "7325-7331"
+      ],
+      "chain": "Ferramenta iald_memory_read já está oferecida/executada; whitelist app_providers.TOOL_NAMES contém o nome. thread_target propaga scope aos workers existentes. Retomada deve vincular referência de atividade confiável ao mesmo binding."
+    }
+  ],
+  "common_controller_reuse": {
+    "sources": [
+      "store:373-415,637-716,771-828,828-904",
+      "mission:185-217,245-272,317-342"
+    ],
+    "available": "MemoryStore guarda inscrição/q/p com CAS e diário. MissionController reconstrói missão a partir dos mesmos registros e fornece active/settled/next_ready, evidências, hold, revisão/hash, handles terminais recuperáveis e tetelestai condicionado ao estado integral. check/handoff verificam lease/dependências/pinos.",
+    "gap": "O app ainda usa o projetor genérico; os mecanismos E2/E3 específicos de missão não chegam automaticamente à nativa só porque a mesma biblioteca está instalada. Presença de import não comprova chamada nem processo carregado.",
+    "authority": "Scope é isolamento; autenticação/autorização continuam no servidor. O nome de actor não autentica. Configure/claim/submit/accept não podem ser aceitos como instrução de texto do modelo."
+  },
+  "integration_findings": [
+    {
+      "id": "N1",
+      "severity": "MEDIUM",
+      "anchors": [
+        "server:60-61,8830-8837",
+        "holographic:106-118,598-610"
+      ],
+      "finding": "Singleton holográfico compartilha contadores não particionados e não recuperáveis entre conversas; cabe namespace por atividade/principal e checkpoint explícito sem modificar heurística matemática."
+    },
+    {
+      "id": "N2",
+      "severity": "MEDIUM",
+      "anchors": [
+        "app_memory:151-167",
+        "mission:185-272"
+      ],
+      "finding": "ACOM textual já integrado, mas a projeção/controle de missão não é consumida. Critérios/pendências/aceite não podem ser inferidos de resumo ou resposta final."
+    },
+    {
+      "id": "N3",
+      "severity": "MEDIUM",
+      "anchors": [
+        "app_memory:218-227,346-375,516-519",
+        "store:263-271"
+      ],
+      "finding": "Handle fixo app_request é mesclado por id. begin admite anterior uncertain; novo comando pode substituir estado corrente do handle, embora histórico q sobreviva. Adaptar a handles por request_id e reconciliar explicitamente os incertos legados para que tetelestai não esconda operação pendente. Constatação estática, sem experimento."
+    },
+    {
+      "id": "N4",
+      "severity": "MEDIUM",
+      "anchors": [
+        "holographic:267-277,334-339,616-669",
+        "server:8938-8947"
+      ],
+      "finding": "Derivado holográfico não registra ids/revisão/fontes das omissões e reconstitui mensagens antigas só com role/content. Proteger estrutura de chamadas de ferramentas, mídia e instruções correntes; não comprimir projeção de atividade nem promover resumo a decisão/fato."
+    },
+    {
+      "id": "N5",
+      "severity": "SCOPE",
+      "anchors": [
+        "server:7297-7351,8830-8837"
+      ],
+      "finding": "Nativa automática e legado têm caminhos diferentes; testes precisam demonstrar integração nos dois, sem trazer memória privada ou habilitar compressão destrutiva no caminho público por atalho."
+    }
+  ],
+  "implementation_proposal": [
+    {
+      "step": 1,
+      "owner": "ponte comum C",
+      "change": "Disponibilizar no pacote comum um adaptador de atividade sobre MemoryStore/MissionController, com binding autenticado: house, principal/account_generation, context_id, activity/task id, request_id, revision, projection_sha256 e referência. Não criar banco paralelo nem copiar estado integral por turno. Migração de contexto legado aditiva/idempotente, origem registrada; critérios propostos por modelo permanecem candidatos, sem aceite automático."
+    },
+    {
+      "step": 2,
+      "owner": "app/N",
+      "change": "Acrescentar adaptador ao Binding existente e manter outbox/recover. Antes de roteamento/prepare/ciclo/ferramenta material, consumir estado atual; alteração de meta/revisão/hold invalida plano pendente e pede reconciliação, sem repetir geração. Observação idempotente pode reconciliar CAS local; ação científica ou administrativa obsoleta não pode ser reaplicada automaticamente."
+    },
+    {
+      "step": 3,
+      "owner": "N holográfica",
+      "change": "Wrapper de compressão recebe binding/recibo, preserva blocos obrigatórios da atividade e só envia narrativa opcional à heurística atual. Reanexa projeção atual completa depois, seguida da contagem final nativa existente. Guarda no mesmo ACOM um checkpoint derivado apenas quando houve compactação material: algoritmo/versão, ids/fontes de origem, revisão, digest dos bytes, orçamento, ids omitidos, resumo candidato e referência de recuperação. Sem copiar o resumo de volta como requisito/fato."
+    },
+    {
+      "step": 4,
+      "owner": "N holográfica",
+      "change": "Particionar contadores por house/principal/context_id e usar digest estável completo, versionado, para novos checkpoints; manter fórmulas/limiares existentes. Fazer serialização/restore por registros de candidato/checkpoint no mesmo Store, lock por atividade e cache limitado. O singleton legado não contém origem por usuário: preservar seu mecanismo e declarar início dos novos contadores, sem atribuir retrospectivamente acessos globais a pessoas."
+    },
+    {
+      "step": 5,
+      "owner": "app/N",
+      "change": "Identificar cada execução com handle estável derivado de request_id, preservar handles antigos/uncertos, tool_call_id e vínculo de devolução. _CURRENT/threads e stream mantêm o mesmo scope; nova conversa ou geração de conta não herda memória por nome. A recuperação recupera o retorno existente e nunca dispara provedor."
+    },
+    {
+      "step": 6,
+      "owner": "N nativa",
+      "change": "Aplicar visão de atividade nos dois caminhos nativos reais; preservar public/private, release científica e acesso a ferramentas. A nativa automática deve receber progresso e recuperabilidade sem importar memória privada do legado; não se presume autorização para reproduzir todo histórico em resumo. Contador/guardas permanecem posteriores à montagem final."
+    },
+    {
+      "step": 7,
+      "owner": "validação/implantação futuras",
+      "change": "Testar em cópia/tempstore com dependências e rede simuladas, revisão independente, depois plano de implantação por hashes/backups e processo efetivo. Esta etapa não instala nem altera nada. Não se atribui mudança de pesos/KV-cache à memória operacional."
+    }
+  ],
+  "test_plan_only": [
+    {
+      "id": "N-T01",
+      "test": "Dois usuários, mesmo iald_conv e mesmos 200 primeiros caracteres; nenhum contador/projeção/candidato/handle atravessa scope."
+    },
+    {
+      "id": "N-T02",
+      "test": "Mesma conta com geração recriada; memória anterior inacessível sem migração autorizada."
+    },
+    {
+      "id": "N-T03",
+      "test": "Mesma atividade em nativa legado, nativa automática e worker; retornar o mesmo context_id/revisão e conteúdo obrigatório, conservando as diferenças de permissão."
+    },
+    {
+      "id": "N-T04",
+      "test": "Processo novo em tempstore após compactação: recuperar inscrição, critérios, decisões, pendências, ids omitidos, checkpoint e próximo passo; não executar modelo."
+    },
+    {
+      "id": "N-T05",
+      "test": "Falha entre spool/commit/DONE e retry local; uma inscrição e um evento de retorno, nenhum reenvio externo. Stream parcial mantém handle uncertain inclusive após novo comando."
+    },
+    {
+      "id": "N-T06",
+      "test": "Meta/revisão muda durante compactação/contagem; recusar plano antigo, recompor visão de recibo atual sem misturar revisões."
+    },
+    {
+      "id": "N-T07",
+      "test": "Histórico extenso com critério, errata e decisão antigos; holograma não elimina esses registros obrigatórios. Original e correção recuperáveis juntos."
+    },
+    {
+      "id": "N-T08",
+      "test": "Tool calls, tool replies e mídia sobrevivem estruturalmente; compactação não cria resposta órfã nem remove identificador. Recusa de conteúdo confidencial usa dados sintéticos sem ler arquivos proibidos."
+    },
+    {
+      "id": "N-T09",
+      "test": "Contagem final inclui prefixo científico+atividade+ferramentas; obrigatório acima da janela recusa visivelmente, sem truncamento nem chamada de geração."
+    },
+    {
+      "id": "N-T10",
+      "test": "Dois writers da mesma atividade: CAS, lock/cache e handles reconciliados; candidate não pode autoaceitar requisito e unknown/uncertain bloqueiam tetelestai."
+    },
+    {
+      "id": "N-T11",
+      "test": "Leitura paginada/recuperação verifica revision/hash atuais e isolamento; não promete acesso a revisão histórica por get atual."
+    },
+    {
+      "id": "N-T12",
+      "test": "Medir apenas no sandbox bytes/tempo e número de eventos: nenhuma transição em projeção idêntica, checkpoints só em compactação material; comparar saída legado quando não houve necessidade de compressão."
+    }
+  ],
+  "verification": {
+    "type": "STATIC_SOURCE_INSPECTION_AND_BYTE_HASHES",
+    "ast_imports": {
+      "native": [
+        "import json",
+        "import re",
+        "from copy import deepcopy",
+        "from urllib.error import HTTPError",
+        "from urllib.request import HTTPRedirectHandler, ProxyHandler, Request, build_opener",
+        "from iald_core_indexado import DocumentCorpus",
+        "from iald_estado_publicado import published_evidence",
+        "from iald_release_binding import load_release",
+        "from iald_response_contract import deployment_contract, IDENTITY_PROTOCOL, SOLUTION_PROTOCOL"
+      ],
+      "holographic": [
+        "import math",
+        "import os",
+        "import re",
+        "import numpy as np",
+        "import logging",
+        "from typing import List, Dict, Tuple, Optional"
+      ],
+      "app_memory": [
+        "from contextlib import contextmanager",
+        "from contextvars import ContextVar",
+        "from dataclasses import dataclass",
+        "from datetime import datetime, timezone",
+        "from pathlib import Path",
+        "import copy",
+        "import hashlib",
+        "import json",
+        "import re",
+        "import threading",
+        "import uuid",
+        "import sys",
+        "import importlib.util",
+        "from iald_memory import MemoryStore, ContextNotFound, RevisionConflict, ProjectionOverflow",
+        "from iald_memory import guard, ConfidentialContent"
+      ]
+    },
+    "tests_executed": [],
+    "runtime_state_claimed": false,
+    "loaded_process_verified": false,
+    "notes": "Código estático prova pontos de chamada no fonte; nenhum PID/serviço foi consultado para declarar execução efetiva. Matriz de disponibilidade depende da futura instalação/verificação."
+  },
+  "sources": {
+    "operator": {
+      "path": "C:\\IALD\\Central de Patentes\\work\\memoria_organismo_20261016\\OPERADOR_VERBATIM.txt",
+      "bytes": 389,
+      "sha256": "5ee0adc08463b9da0e542bb370e2362915542f357a14607c235731996268ef6a"
+    },
+    "requirements": {
+      "path": "C:\\IALD\\Central de Patentes\\work\\memoria_organismo_20261016\\REQUIREMENTS_R1.json",
+      "bytes": 2575,
+      "sha256": "4ad4c4f1ae0dca8720af10d8bcd1aa383148d6c806780f8d5ee697c456718e85"
+    },
+    "nos_vivo": {
+      "path": "C:\\IALD\\Central de Patentes\\work\\memoria_organismo_20261016\\NOS_VIVO_QUERY.json",
+      "bytes": 205,
+      "sha256": "20c69f39ae16c45216050aa7f06aace59de5bbd52eff03b2173670c0216dd92e"
+    },
+    "reference": {
+      "path": "C:\\IALD\\Central de Patentes\\work\\memoria_organismo_20261016\\SESSION_REFERENCE.json",
+      "bytes": 670,
+      "sha256": "3ac23543de816be2428167c58b6f21d084d150d59efdad49aee07bbf3be4dcfb"
+    },
+    "project_start": {
+      "path": "C:\\IALD\\Central de Patentes\\work\\memoria_organismo_20261016\\receipts\\20261016T223019_755120Z_native_inventory_start.receipt.json",
+      "bytes": 10787,
+      "sha256": "6d14a13d9b305fc441321c64e50f312cae397acee270dcc22b9ca41a1a8c8226"
+    },
+    "project_return": {
+      "path": "C:\\IALD\\Central de Patentes\\work\\memoria_organismo_20261016\\receipts\\20261016T223437_658923Z_native_inventory_return.receipt.json",
+      "bytes": 10787,
+      "sha256": "6d14a13d9b305fc441321c64e50f312cae397acee270dcc22b9ca41a1a8c8226"
+    },
+    "native": {
+      "path": "C:\\IALD\\projetos_pyhton\\IALD\\iald_native_memory.py",
+      "bytes": 10119,
+      "sha256": "390bcce5f7f7a4aa658a54fe1d6ebf823dfea7d652729c6b545b461bc5fc083b"
+    },
+    "holographic": {
+      "path": "C:\\IALD\\projetos_pyhton\\IALD\\holographic_memory.py",
+      "bytes": 34851,
+      "sha256": "522e4f83e0b58ba63dce75c1d194062409b4de6efe88d010b9e70f539c3d36c3"
+    },
+    "server": {
+      "path": "C:\\IALD\\projetos_pyhton\\IALD\\iald_web_server.py",
+      "bytes": 756184,
+      "sha256": "4c16fcf0cefa4976017afac9f04c025854c05cf70f90ed2930e37f40056be3ad"
+    },
+    "app_memory": {
+      "path": "C:\\IALD\\projetos_pyhton\\IALD\\iald_app_memory.py",
+      "bytes": 38464,
+      "sha256": "4f8f646e4dc778f89b3790f0f4555fbee7f51e769111a9da4268b2999290cf8c"
+    },
+    "providers_allowlist": {
+      "path": "C:\\IALD\\projetos_pyhton\\IALD\\iald_app_providers.py",
+      "bytes": 29722,
+      "sha256": "cdde43a46816de0a4b350f9f1f77541d1712e8897c37f82012d32c545b191b26"
+    },
+    "condensation": {
+      "path": "C:\\IALD\\projetos_pyhton\\IALD\\iald_condensacao.py",
+      "bytes": 11051,
+      "sha256": "cfeceb292f3e6317774da007721160f565d6df73780abc130cbf4bd302c19daa"
+    },
+    "store": {
+      "path": "C:\\IALD\\MEMORIA_IALD\\lib\\iald_memory\\store.py",
+      "bytes": 49064,
+      "sha256": "b213498dabb3f7e663fce9f7da681f9c28c84b75f975957e858b0594b9bcfde2"
+    },
+    "mission": {
+      "path": "C:\\IALD\\MEMORIA_IALD\\lib\\iald_memory\\mission.py",
+      "bytes": 26410,
+      "sha256": "66d4a38e597d13d5f265c8cf3bc58fcb6c316ded8ce617ed15c70e2ccd9af4f5"
+    },
+    "root_instructions": {
+      "path": "C:\\IALD\\CLAUDE.md",
+      "bytes": 41034,
+      "sha256": "c0773690ad512f5ff5716591c85785eb075e600a1c3d04a2ab4384a91b1e3253"
+    },
+    "native_instructions": {
+      "path": "C:\\IALD\\projetos_pyhton\\IALD\\CLAUDE.md",
+      "bytes": 544320,
+      "sha256": "b7928f1a8f38a06f5ee7454b3f386451dde38853a108698bfd0d4fa92ad4b573"
+    },
+    "protocol": {
+      "path": "C:\\IALD\\MEMORIA_IALD\\MISSION_PROTOCOL.md",
+      "bytes": 11439,
+      "sha256": "e344559073157099ac9b0dd668d0543cc7fa4ec9e7ab05af39a79dcfa08d978e"
+    }
+  },
+  "companion_text": {
+    "path": "C:\\IALD\\Central de Patentes\\work\\memoria_organismo_20261016\\inventory_native\\NATIVE_HOLOGRAPHIC_INVENTORY_R1.txt",
+    "bytes": 2514,
+    "sha256": "4808dc5e4d78ca91fc888afe1fdb7978995e380f79139654678b986e3e4d03e3"
+  }
+}

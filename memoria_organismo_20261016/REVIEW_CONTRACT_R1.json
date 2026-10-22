@@ -1,0 +1,186 @@
+{
+  "schema": "organism-integration-contract-independent-review/v1",
+  "created_utc": "2026-10-16T22:37:07.337427+00:00",
+  "unit": "F9.MEMORIA_ORGANISMO_20261016",
+  "actor": "codex-organism-contract-review",
+  "author_of_reviewed_contract": "codex-gerente-tgl",
+  "verdict": "PASS_WITH_SCOPE",
+  "review_complete": true,
+  "requirement_satisfied": false,
+  "blocking_findings": [],
+  "scope": "Revisão independente do CONTRATO_INTEGRACAO_R1.txt da coordenação contra MemoryStore/MissionController instalados. Não é auditoria do inventário nativo do próprio revisor, teste de implementação, aceite integral de I ou autorização de implantação.",
+  "mission": {
+    "reference": "C:\\IALD\\Central de Patentes\\work\\memoria_organismo_20261016\\SESSION_REFERENCE.json",
+    "start_revision": 3,
+    "return_revision": 3,
+    "projection_sha256": "22ab9ad288914f03ee744fa47658b313b711e20d3bf1b68065884322c2e03f44",
+    "return_receipt": "C:\\IALD\\Central de Patentes\\work\\memoria_organismo_20261016\\receipts\\20261016T223707_112436Z_contract_review_return.receipt.json",
+    "transitions_performed": false,
+    "root_actor_used": false
+  },
+  "conclusion": "O contrato é implementável sobre as APIs atuais e preserva inscrição, casas/usuários, ciência e legado. Não encontrei contradição material que bloqueie o contrato. A mesma revisão entre visão de conteúdo e missão, autenticação e durabilidade nos consumidores são obrigações do ActivityRuntime futuro, não capacidades já demonstradas por este parecer. O requisito I ainda depende da consolidação dos inventários de todas as frentes.",
+  "checks": [
+    {
+      "id": "C1",
+      "contract_lines": "4-6",
+      "result": "PASS",
+      "source_lines": [
+        "store.py:373-415,637-716",
+        "mission.py:185-210,433-452"
+      ],
+      "evidence": "MissionController recebe o mesmo store/context_id/scope e materializa deltas nos q.records; não exige banco paralelo. Store guarda inscrição, scope, revisão, diário e snapshots. A autenticação cabe ao chamador, conforme contrato."
+    },
+    {
+      "id": "C2",
+      "contract_lines": "8-13",
+      "result": "PASS_WITH_IMPLEMENTATION_OBLIGATION",
+      "source_lines": [
+        "mission.py:338-364,371-409"
+      ],
+      "evidence": "configure/extend, claim/lease, submit e accept correspondem ao ciclo proposto. accept exige review_pending, pinos e actor distinto de submitted_by. Retorno de modelo não chama accept por si; o contrato mantém essa distinção."
+    },
+    {
+      "id": "C3",
+      "contract_lines": "15-20",
+      "result": "PASS_WITH_IMPLEMENTATION_OBLIGATION",
+      "source_lines": [
+        "store.py:828-904",
+        "mission.py:212-291"
+      ],
+      "evidence": "Store.project mantém todos os não candidatos e candidatos obrigatórios com linhagem; MissionController expõe índice e hash completo de missão. _current confere revisão e projection_sha256 completos. Compacidade do overlay não pode mudar esse hash de preflight. As duas APIs leem snapshots próprias; o adaptador deverá comparar revision/state_sha256 e recusar/reconciliar corrida explicitamente."
+    },
+    {
+      "id": "C4",
+      "contract_lines": "22-26",
+      "result": "PASS",
+      "source_lines": [
+        "mission.py:287-329,350-355,387-402,418-432",
+        "store.py:263-271,771-828"
+      ],
+      "evidence": "Há CAS, evento idempotente, epoch/lease, check de dependências e invalidação transitiva. Handles são mesclados por id no Store, portanto o requisito de id próprio por execução é necessário e compatível. Relação entre mudança material e progresso sem mudança de premissa precisa ser tipada no adaptador; não inferida de prosa do modelo."
+    },
+    {
+      "id": "C5",
+      "contract_lines": "28-33",
+      "result": "PASS_WITH_IMPLEMENTATION_OBLIGATION",
+      "source_lines": [
+        "mission.py:53-64,338-346,403-409",
+        "store.py:373-380"
+      ],
+      "evidence": "Controlador local lê evidência por path+hash e aceita actor fornecido pelo chamador; não autentica um humano. O contrato coloca identidade/path no servidor e não nas ferramentas do modelo, compatível e indispensável. Workers persistidos precisam validar vínculo antes de usar o controlador."
+    },
+    {
+      "id": "C6",
+      "contract_lines": "35-38",
+      "result": "PASS",
+      "source_lines": [
+        "store.py:828-904",
+        "mission.py:243-268"
+      ],
+      "evidence": "Preservar compressão holográfica como derivado/cache e projetar inscrição/requisitos depois evita fazê-la substituir estado obrigatório. Recuperação pelo mesmo banco é compatível; cache não precisa virar uma segunda memória autoritativa."
+    },
+    {
+      "id": "C7",
+      "contract_lines": "40-43",
+      "result": "PASS",
+      "source_lines": [
+        "mission.py:215-263,403-432"
+      ],
+      "evidence": "PODA separa active/settled; tetelestai usa todos os requisitos satisfied e nenhum handle não terminal. Campos desconhecidos/contraditórios de phase/status permanecem pendentes. Invalidate/amend propagam revalidação. Ciência/gate não são inferidos."
+    },
+    {
+      "id": "C8",
+      "contract_lines": "45-53",
+      "result": "PASS_AS_DELIVERY_REQUIREMENT",
+      "source_lines": [
+        "MISSION_PROTOCOL.md",
+        "REQUIREMENTS_R1.json"
+      ],
+      "evidence": "Teste em cópia, revisão real, pinos/backups/rollback e conferência do processo são etapas futuras explícitas. A decisão do dispositivo físico não bloqueia a integração operacional autorizada."
+    }
+  ],
+  "nonblocking_implementation_notes": [
+    {
+      "severity": "LOW",
+      "topic": "Identidade de revisão",
+      "note": "MissionController.action só admite actor.kind=agent. Uma revisão humana deverá ser representada por adaptador confiável com identidade autenticada e recibo da ação humana; passar kind=operator diretamente falha, e trocar apenas o texto do id não autentica ninguém. Não é defeito do contrato, que atribui autenticação ao chamador."
+    },
+    {
+      "severity": "LOW",
+      "topic": "Snapshots e hash de preflight",
+      "note": "Não há composição atômica pública de Store.project e MissionController.project; usar comparação de revision e state_sha256 com recusa ou mecanismo de snapshot explicitamente testado. Guardar o projection_sha256 integral da missão separado do hash do overlay enviado ao modelo."
+    },
+    {
+      "severity": "LOW",
+      "topic": "Limites de API e replay",
+      "note": "IDs precisam satisfazer identifier; criteria≤6000 caracteres; evidence contém 1..100 pinos e cada arquivo≤64MiB. Mapear request_id de forma determinística sem truncar fonte original. O mesmo event_id só pode repetir payload idêntico; revisão nova implica reconciliação explícita, não retry do envio externo."
+    },
+    {
+      "severity": "LOW",
+      "topic": "Estados legados",
+      "note": "Terminais do MissionController não incluem refused. Ao migrar consumidores existentes, mapear desfecho conhecido mediante regra/recibo explícito ou manter pendente; não converter uncertain/unknown em terminal para permitir parada. Handles de id fixo devem ser preservados/reconciliados."
+    }
+  ],
+  "validation_boundary": {
+    "method": "Leitura estática focal e hashes dos bytes",
+    "new_tests": 0,
+    "production_changes": 0,
+    "providers_called": 0,
+    "services_restarted": 0,
+    "own_inventory_reviewed": false,
+    "confidential_files_read": false,
+    "claims_not_made": [
+      "ActivityRuntime implementado",
+      "consumidores instalados",
+      "reinício/retomada já testados",
+      "requisito I integral satisfeito"
+    ]
+  },
+  "sources": {
+    "contract": {
+      "path": "C:\\IALD\\Central de Patentes\\work\\memoria_organismo_20261016\\CONTRATO_INTEGRACAO_R1.txt",
+      "bytes": 3895,
+      "sha256": "a779543f121e978e91dde31fb7f91cf2dc7facdfc2a967981b9c5c7084da6235"
+    },
+    "requirements": {
+      "path": "C:\\IALD\\Central de Patentes\\work\\memoria_organismo_20261016\\REQUIREMENTS_R1.json",
+      "bytes": 2575,
+      "sha256": "4ad4c4f1ae0dca8720af10d8bcd1aa383148d6c806780f8d5ee697c456718e85"
+    },
+    "operator": {
+      "path": "C:\\IALD\\Central de Patentes\\work\\memoria_organismo_20261016\\OPERADOR_VERBATIM.txt",
+      "bytes": 389,
+      "sha256": "5ee0adc08463b9da0e542bb370e2362915542f357a14607c235731996268ef6a"
+    },
+    "reference": {
+      "path": "C:\\IALD\\Central de Patentes\\work\\memoria_organismo_20261016\\SESSION_REFERENCE.json",
+      "bytes": 670,
+      "sha256": "3ac23543de816be2428167c58b6f21d084d150d59efdad49aee07bbf3be4dcfb"
+    },
+    "store": {
+      "path": "C:\\IALD\\MEMORIA_IALD\\lib\\iald_memory\\store.py",
+      "bytes": 49064,
+      "sha256": "b213498dabb3f7e663fce9f7da681f9c28c84b75f975957e858b0594b9bcfde2"
+    },
+    "mission": {
+      "path": "C:\\IALD\\MEMORIA_IALD\\lib\\iald_memory\\mission.py",
+      "bytes": 26410,
+      "sha256": "66d4a38e597d13d5f265c8cf3bc58fcb6c316ded8ce617ed15c70e2ccd9af4f5"
+    },
+    "protocol": {
+      "path": "C:\\IALD\\MEMORIA_IALD\\MISSION_PROTOCOL.md",
+      "bytes": 11439,
+      "sha256": "e344559073157099ac9b0dd668d0543cc7fa4ec9e7ab05af39a79dcfa08d978e"
+    },
+    "start_receipt": {
+      "path": "C:\\IALD\\Central de Patentes\\work\\memoria_organismo_20261016\\receipts\\20261016T223601_653894Z_contract_review_start.receipt.json",
+      "bytes": 10787,
+      "sha256": "6d14a13d9b305fc441321c64e50f312cae397acee270dcc22b9ca41a1a8c8226"
+    },
+    "return_receipt": {
+      "path": "C:\\IALD\\Central de Patentes\\work\\memoria_organismo_20261016\\receipts\\20261016T223707_112436Z_contract_review_return.receipt.json",
+      "bytes": 10787,
+      "sha256": "6d14a13d9b305fc441321c64e50f312cae397acee270dcc22b9ca41a1a8c8226"
+    }
+  }
+}

@@ -1,0 +1,46 @@
+C2 — adendo compatível à ACTIVITY_API_R1.txt
+Estatuto: candidato em staging/core_r2; não instalado, não aceito pelo autor.
+
+As assinaturas begin/preflight/complete/project/recover/refresh/mark_uncertain permanecem iguais.
+Só ActivityRuntime.project mudou; há um helper privado de validação/indexação.
+MemoryStore e MissionController, inscrição q/p, artefatos, CAS, tickets e recuperação não mudaram.
+
+project usa um único get verificado e a mesma revisão/hash para conteúdo e missão.
+Os campos text, required_chars, actual_chars, receipt, included_record_ids,
+omitted_record_ids, required_record_ids, activity e mission_projection_sha256 permanecem.
+activity conserva a projeção estruturada completa da API R1.
+projection_sha256 continua sendo o hash dos bytes UTF-8 de text, não o hash de missão para CAS.
+
+Dois novos campos informativos:
+  indexed_record_ids: IDs dos recibos mecânicos request/intent representados no índice.
+  terminal_execution_index: colunas request_id, operation_ids, mechanical_records_sha256,
+    handles_sha256; linhas verificadas, tipos indexados e instrução de recuperação atual.
+
+Elegibilidade: somente o schema exato produzido por ActivityRuntime, com artefatos,
+admissão e comando literais conferidos; task review_pending ou satisfied da mesma epoch,
+submitter e evidência final; todos os seus intent/result unidos a handles completed exatos.
+Custódia concluída não é aceite semântico. review_pending continua ativo e mantém critério.
+Resultados permanecem candidate/DECLARADO e seguem a seleção opcional já existente.
+Somente request/intent verificados saem da lista materializada de registros para o índice.
+Ordens, critérios, fatos, ciência, decisões, notas de revisão, evidências/review_evidence,
+erratas e linhagens corretivas não são removidos para caber.
+Schemas mecânicos desconhecidos, operações incompletas/incertas, campos contraditórios
+e correções ao recibo não são indexados. Pino reconhecido rompido causa falha visível.
+Handles de outros adaptadores conservam a representação original do controlador.
+
+No texto wire, objetivo/restrições/flow têm referência explícita à parte de conteúdo,
+evitando segunda cópia. Handles indexados pelo recibo não reaparecem no índice de handles.
+Settled de tarefas elegíveis conserva id/criterion/depends_on/status/epoch/reviewed_by,
+note/evidence/review_evidence e inclui digest do task completo recuperável.
+O objeto activity retornado continua completo, inclusive settled/flow/unresolved_handles.
+
+Recuperação: recover(request_id) devolve os registros e handles completos atuais.
+Conferir context_id, scope, revision e state_sha256; filtrar request/intent, ordenar por id
+e calcular digest canônico como no core. A mesma regra vale para os handles do runtime.
+get/recover não alegam acesso direto à revisão antiga. História antiga requer journal.
+Nenhuma recuperação autoriza despacho, autoaceite ou repetição de efeito incerto.
+
+Overflow: required_chars agora mede o mínimo combinado exato, inclusive quando o overlay
+sozinho excede o orçamento. Não há corte silencioso de estado obrigatório.
+100 comandos/critérios genuínos podem exceder a janela; as medidas ficam na entrega.
+O teto JEV de 30 mil bytes e sua política de admissão não são alterados por C2.

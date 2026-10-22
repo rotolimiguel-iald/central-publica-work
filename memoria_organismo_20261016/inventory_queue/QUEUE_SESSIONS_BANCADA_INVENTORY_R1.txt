@@ -1,0 +1,138 @@
+INVENTÁRIO FILA / SESSÕES / BANCADA — R1
+[REAL] Autor: codex-mission-memory-review. Unidade F9.MEMORIA_ORGANISMO_20261016; requisito I, sem aceite.
+[REAL] Referência exata: C:\IALD\Central de Patentes\work\memoria_organismo_20261016\SESSION_REFERENCE.json
+[REAL] project próprio: revisão 3 → 3; identidade, original e todos critérios/dependências preservados.
+[REAL] 30 arquivos pinados, 34 âncoras. Zero testes executados/provedores/Bancada/reinícios/escritas de produção.
+
+BASE REAPROVEITÁVEL
+ACOM/outbox/IDs de fila e candidatos DECLARADO já existem. MissionController usa o mesmo store, com CAS/posse/epoch/revisão independente; as quatro ferramentas MCP são uma entrada separada.
+Bancada já tem livro de tentativas, ociosidade local e revalidação do manifesto canônico antes/depois. Esses controles são preservados.
+
+LACUNAS E PROPOSTAS
+Q1 [DERIVED] Identidade de atividade ainda não percorre o caminho real
+Contexto ACOM por pedido existe; mission tools são separadas. Falta vínculo autenticado Activity→contexto/requisito/epoch→coordination job→task/provider/worker. Scope operator legado não pode ser silenciosamente reinterpretado como qualquer principal de app/sessão.
+Q2 [DERIVED] Snapshot íntegro não significa mandato ainda vigente
+Hashes do pacote previnem mutação do snapshot, mas não comparam missão viva no despacho/retorno. Mudança durante chamada exige guardar resultado e marcar conflito/reconciliação, sem reenvio ou aceite automático.
+Q3 [DERIVED] Conclusão técnica e aceite têm semânticas diferentes
+result_ready/completed/síntese retornada descrevem execução. Não autorizam satisfied. Estado failed_or_interrupted não prova terminal seguro; vocabulários da fila e Bancada precisam de tradução explícita, conservando unknown e conflitos visíveis.
+Q4 [DERIVED] Fronteira privilegiada de evidência/ator precisa permanecer no servidor
+evidence_pin lê arquivo local e mission action confia em ator local agent. O consumidor deve obter principal/ator de autenticação e resolver source_id com autorização no ledger; modelo não escolhe caminho local, scope, ator revisor ou lease.
+Q5 [DERIVED] Sessões e Bancada ainda não acompanham o controlador em todas as entradas
+Hook de sessão é ACOM e opcional; Bancada tem livro e manifesto canônico, mas proxy não propaga Activity. Integração adicional deve preservar dados e guardas existentes. Fonte em disco não prova código carregado nos processos.
+
+CONTRATO PROPOSTO [DECLARADO]
+ActivityRuntime único sobre MemoryStore/MissionController existentes; sem segundo banco de memória e sem nova fila/heartbeat.
+Admissão recebe request_id e source_id emitidos pelo servidor. Principal, casa, ator e escopo vêm de autenticação/registro local confiável. Vínculo persistido inclui context_id, objective_sha256, task_id, task_epoch, dispatch_revision/state_sha256/projection_sha256, request_id/job_id e no_repeat. Guardar identidades específicas de coordenação e executor, não substituí-las.
+Para inscrição/evidência, resolver IDs do ledger dentro da atividade autenticada. Se MissionController exigir pin de arquivo, materializar recibo imutável em diretório controlado pelo servidor e piná-lo após escrita atômica. Não aceitar caminhos fornecidos por modelo; rejeitar traversal, UNC, symlink/alias escapando raiz e source_id de outro titular antes de ler bytes. O texto/referência original permanece íntegro e rastreável.
+begin define requisito execution com contrato íntegro e a ligação ao pedido humano. Terminar execution pode produzir submit DECLARADO; nenhuma saída de modelo gera accept. Critérios substantivos da missão e políticas de revisão não podem ser substituídos pelo critério mínimo de transporte.
+Resolver binding servidor; flush local e project fresco; preflight com dono real ou delegação explicitamente autorizada pelo wrapper, sem simular ator de sessão. Guardar o recibo antes da chamada. Uma revisão concorrente antes da admissão exige nova conciliação local. Não repetir o efeito externo para resolver CAS.
+Intent/remote_id conservados. Ao retorno, persistir conteúdo/estatuto/uso/recibo uma vez antes de qualquer síntese, revalidar atividade/epoch/pins e conciliar contra revisão atual. Resultado pode ser válido como observação da execução anterior e inaplicável ao critério atual. Cancelamento/hold/invalidation durante chamada não autorizam descartar silenciosamente conteúdo recebido nem repetir chamada incerta.
+Wrapper de Activity no chamador/orquestração em torno da chamada real, com autorização e intenção antes do HTTP e custódia após resposta. Reutilizar corpo/rota científica, guarda canônica e livro; resultado incerto no transporte exige reconciliação, não reenvio. Não reiniciar motor/GPU nem abrir dados para validar infraestrutura.
+Progresso e handles por delta no mesmo ACOM; preservar todos os demais handles. returned/failed comprovado podem encerrar o handle técnico; require review_pending/satisfied separado. Estados desconhecidos ou contraditórios continuam pendentes. Não aplicar compactação E3 de builds a fatos gerais, decisões, ordens ou resultados de modelo.
+
+ESCRITAS / ATIVAÇÃO NECESSÁRIAS SE APROVADAS [DECLARADO]
+Core: adicionar ActivityRuntime e testes sobre a biblioteca existente; API de inscrição/pin de fonte controlada pelo servidor. Não duplicar store.
+Fila: operational_memory.py, runtime.py e coordination.py nos pontos anotados; extensão aditiva dos registros/outbox existentes para binding da Activity. transport.py/transport_cli.py e mcp_server.py expõem IDs autorizados, não evidência/caminho arbitrário de modelo.
+Sessões: adapter CLI/MCP/hook opcional conforme contrato consolidado; conservar exatos bindings e recibos legados. Mudança de instruções/memórias só pela coordenação responsável.
+Bancada: preferir adapter externo de Activity em torno do cliente HTTP. Assim mcp_um.py/um_bancada.py/cálculos residentes podem permanecer byte a byte. Se chamada direta ao MCP precisar cobertura, atualizar apenas o proxy autorizado e testar isoladamente.
+Testes/manifesto/backup de bytes e pins dos destinos afetados, revisão independente e plano de rollback antes da instalação.
+CLI lançado em processo novo lê os módulos atuais; um MCP/worker longo já iniciado não se atualiza por trocar o arquivo.
+Verificar se o worker é persistente e sua identidade; suspender novas admissões, conciliar handles e ociosidade antes de substituí-lo. Não matar chamada incerta nem reiniciar para repetir.
+Recarga do MCP que importa Runtime só depois do plano seguro; não duplicar heartbeat/fila. Não declare instalado/ativo pela simples importação em teste.
+Bancada residente/GPU: nenhum reinício indispensável para wrapper externo. Reiniciar só o proxy se sua implementação for alterada, com todas as chamadas conciliadas.
+App/nativa/holografia têm inventários de outras frentes: este parecer não conclui seus destinos, reinícios ou cobertura.
+
+TESTES PROPOSTOS, NÃO EXECUTADOS
+T1 Vinculação real: Admitir pela CLI/MCP em cópia, acompanhar Coordination→Runtime→provider falso; mesmos context_id/original/task_epoch e IDs em todos os recibos; contador remoto=1.
+T2 Isolamento e autoridade: Forjar principal/scope/actor/lease/source_id de outra atividade, caminho absoluto de modelo/traversal/UNC/symlink; recusar antes de leitura/rede e não promover candidate.
+T3 Concorrência antes de rede: Invalidar requisito/hold/mutar pin após snapshot e antes do despacho; preflight recusa sem executar. CAS stale não pode provocar novo request_id.
+T4 Concorrência durante chamada: Executor falso bloqueado; alterar requisito/epoch/hold; liberar resposta. Persistir resultado uma vez, marcar obsolescência/reconciliação e manter revisão nova; zero autoaccept/reenvio.
+T5 Crash/recovery: Interromper antes/após outbox, após intent e após retorno antes de submit; recuperar mesmo evento/ID sem repetir efeito incerto; colisão de payload explicitamente recusada.
+T6 Cancelamento e erro posterior: Retorno simultâneo a cancelamento e falha de shadow/síntese: conferir conteúdo/uso/evidência recebidos duráveis e estatuto separado; erro de memória não apaga execução nem a torna retryable.
+T7 Estados e parada: Mapear result_ready, completed, failed comprovado, interrupted, paused_by_rite, pronta/falhou e desconhecidos; conflito status/phase continua pendente; completed técnico não satisfaz requisito.
+T8 Aceite independente: Modelo só candidate/DECLARADO; submit→review_pending; mesmo autor não aceita; revisor autenticado distinto usa evidência autorizada/CAS fresco; nenhuma promoção científica.
+T9 Compatibilidade científica: generation, required_provider, max_calls, original request_id/job_id e fontes pinadas permanecem; pending/uncertain legado não reabre nem ganha fallback.
+T10 Capacidade e projeção: Muito progresso terminal em índices, handles ativos/unknown íntegros; decisões/ordens/erratas intactas; overflow obrigatório recusa; get atual confere revisão/hash e histórico usa journal.
+T11 Sessões e processos: Recuperar em processo novo via CLI/MCP/hook mock com mesma referência; sessão errada/cwd divergente recusa; conferir versão carregada em vez de presumir a partir do arquivo.
+T12 Bancada sem ciência: Transport HTTP falso em cópia; preflight/intent/response pós-check, mudança de manifesto/Activity e timeout; nenhum import de motor, acesso ao lago, cálculo ou reinício.
+T13 Custo e não duplicação: Contar transições por etapa material, tamanho de evento/projeção e latência em store privado; polls não geram registros redundantes; worker/heartbeat únicos.
+
+ÂNCORAS CONFERIDAS
+C:\IALD\Central de Patentes\Chatgpt\IALD_ORQUESTRACAO_20260923\iald_orchestrator\operational_memory.py:14-42 — Fila já usa biblioteca e estado ACOM comuns; scope da fila é IALD/operator e contexto deriva de request_id. Isso não equivale automaticamente à identidade de cada sessão/app.
+C:\IALD\Central de Patentes\Chatgpt\IALD_ORQUESTRACAO_20260923\iald_orchestrator\operational_memory.py:45-93 — Outbox na mesma transação da fila; evento idempotente; flush serial e retry de CAS apenas da escrita local. Resultados são candidatos DECLARADO.
+C:\IALD\Central de Patentes\Chatgpt\IALD_ORQUESTRACAO_20260923\iald_orchestrator\operational_memory.py:116-178 — Projeção verifica original e restrições; pacote verifica hashes e presença de revisão. verify_packet não consulta revisão atual de MissionController.
+C:\IALD\Central de Patentes\Chatgpt\IALD_ORQUESTRACAO_20260923\iald_orchestrator\runtime.py:25-69 — Runtime prepara tabelas e recuperação; instanciar para inventário não seria uma consulta estritamente sem efeitos. memory_context_id e memory_version já existem.
+C:\IALD\Central de Patentes\Chatgpt\IALD_ORQUESTRACAO_20260923\iald_orchestrator\runtime.py:170-237 — Admissão conserva request_id, original, constraints e contexto, recusando reuso divergente. São pontos de vínculo autenticado da Activity.
+C:\IALD\Central de Patentes\Chatgpt\IALD_ORQUESTRACAO_20260923\iald_orchestrator\runtime.py:260-291 — Transição da tarefa e evento de memória são gravados juntos. Falha no flush fica visível; não converte resultado concluído em autorização para repetir.
+C:\IALD\Central de Patentes\Chatgpt\IALD_ORQUESTRACAO_20260923\iald_orchestrator\runtime.py:306-358 — Um dono do drain e até três lanes de provedores; execução persistida sem dono impede novo despacho e exige reconciliação. Preservar essa proteção de resultado incerto.
+C:\IALD\Central de Patentes\Chatgpt\IALD_ORQUESTRACAO_20260923\iald_orchestrator\runtime.py:360-433 — prepared/dispatch_intent antecedem a chamada; binding científico e pacote ACOM são preparados. Falta vínculo automático a requisito/epoch/preflight de MissionController nesta fronteira.
+C:\IALD\Central de Patentes\Chatgpt\IALD_ORQUESTRACAO_20260923\iald_orchestrator\runtime.py:435-447 — Uso e attempt returned são persistidos antes do follow-up. result_ready e conteúdo são gravados no ramo não cancelado; projetar novamente alimenta shadow, sem comparar epoch de missão. Não foi provada aqui preservação integral do retorno no ramo cancelado.
+C:\IALD\Central de Patentes\Chatgpt\IALD_ORQUESTRACAO_20260923\iald_orchestrator\coordination.py:36-111 — Coordenação preserva ID/pedido/restrições e inclui memória operacional no prompt de despacho; job e execução compartilham contexto ACOM.
+C:\IALD\Central de Patentes\Chatgpt\IALD_ORQUESTRACAO_20260923\iald_orchestrator\coordination.py:117-141 — Mudança de etapa usa estado esperado da coordenação, transação e outbox. Não é o CAS de critério/epoch de missão.
+C:\IALD\Central de Patentes\Chatgpt\IALD_ORQUESTRACAO_20260923\iald_orchestrator\coordination.py:180-245 — Assistência Work opcional e síntese exigem executor result_ready; completed é encerramento da coordenação, sem aceite independente de requisito.
+C:\IALD\Central de Patentes\Chatgpt\IALD_ORQUESTRACAO_20260923\iald_orchestrator\providers.py:181-223 — Executor exige pacote operacional e executor obrigatório antes do transporte; resultado tem estatuto de execução, não verificação factual.
+C:\IALD\Central de Patentes\Chatgpt\IALD_ORQUESTRACAO_20260923\iald_orchestrator\scientific_binding.py:45-99 — Vínculo científico já confere identidade original, pins e fontes antes do despacho; autoridade é uma fronteira privilegiada explícita. Activity deve preservar generation/constraints, sem substituir essa camada.
+C:\IALD\Central de Patentes\Chatgpt\IALD_ORQUESTRACAO_20260923\iald_orchestrator\transport.py:19-72 — Fila única retoma trabalhos existentes, markers de handoff e request_id; receipt salva estado local. Não criar fila/heartbeat adicional.
+C:\IALD\Central de Patentes\Chatgpt\IALD_ORQUESTRACAO_20260923\transport_cli.py:1-28 — CLI existente oferece submit/next/get/action e execução direta; não recebe vínculo Activity autenticado. Não executado neste inventário.
+C:\IALD\Central de Patentes\Chatgpt\IALD_ORQUESTRACAO_20260923\mcp_server.py:1-101 — MCP instancia Runtime/Coordination e registra ferramentas de missão separadas. Exposição de ferramentas não integra automaticamente o fluxo submit/get/action.
+C:\IALD\Central de Patentes\Chatgpt\IALD_ORQUESTRACAO_20260923\iald_orchestrator\mission_bridge.py:10-55 — Quatro ferramentas atuais chamam CLI instalado; repassam referência/ator do chamador local e max_chars. O wrapper público não pode expor esse repasse como autoridade concedida ao modelo.
+C:\IALD\Central de Patentes\Chatgpt\IALD_ORQUESTRACAO_20260923\iald_orchestrator\jev.py:67-85 — JEV recebe estado ACOM tipado junto da memória científica; esta entrada é consultiva e não prova satisfação de Activity.
+C:\IALD\Central de Patentes\Chatgpt\IALD_ORQUESTRACAO_20260923\iald_orchestrator\jev_decisions.py:67-98 — Contrato de perguntas estruturadas é CONSULTATIVE_ONLY e usa a projeção operacional; preservar esta separação de autoridade.
+C:\IALD\MEMORIA_IALD\lib\iald_memory\mission.py:53-64 — Evidência de missão é pin de arquivo local com hash conferido. A API lê o caminho; autenticação e resolução de source_id devem ocorrer antes desta função em consumidores de modelo.
+C:\IALD\MEMORIA_IALD\lib\iald_memory\mission.py:224-270 — Projeção conserva handles desconhecidos e exige ausência de pendências para parar; só índice de terminais e esquema estrito do tracker legado são compactados. Fatos obrigatórios ainda podem exceder orçamento.
+C:\IALD\MEMORIA_IALD\lib\iald_memory\mission.py:287-336 — MissionController já valida revisão/hash, posse/epoch/prazo, hold e dependências. Preflight não forma transação atômica com chamada externa futura.
+C:\IALD\MEMORIA_IALD\lib\iald_memory\mission.py:397-409 — submit vai para review_pending; accept exige revisor distinto e revalida evidências/dependências. Retorno do executor não satisfaz requisito por si.
+C:\IALD\MEMORIA_IALD\mission_cli.py:14-38 — CLI de missão resolve referência exata e âncora, usa o mesmo MemoryStore, confere saída; get é estado atual e não recuperação de revisão histórica.
+C:\IALD\MEMORIA_IALD\session_memory.py:216-246 — Protocolo de sessão projeta MemoryStore e grava transition CAS; não chama MissionController para essa projeção.
+C:\IALD\MEMORIA_IALD\session_hook.py:9-39 — Hook opcional resolve adapter/session_id/cwd exatos e recusa herança de contexto irmão; chama projeto de sessão ACOM. Ativação no host não foi conferida neste inventário.
+C:\IALD\Bancada_Um\mcp_um.py:18-32 — Proxy da Bancada encaminha X-Cliente derivado do ambiente; timeout/erro retorna mensagem, sem Activity/request_id ou intenção durável no proxy. Rótulo não autentica titular.
+C:\IALD\Bancada_Um\mcp_um.py:168-188 — Proxy expõe rodada, consulta tarefa e livro. A existência da ferramenta não torna admissível a execução: rota HTTP atual recusa rodada histórica.
+C:\IALD\Bancada_Um\um_bancada.py:127-141 — Bancada já lista requisições e tarefas ativas para ociosidade local. Não é critério de satisfação da missão.
+C:\IALD\Bancada_Um\um_bancada.py:194-204 — Resposta revalida manifesto canônico e recusa se mudou durante operação. É precedente aproveitável para revalidar a Activity adicionalmente.
+C:\IALD\Bancada_Um\um_bancada.py:330-360 — HTTP limita corpo e valida JSON/contrato canônico; X-Cliente é texto recebido, não identidade autenticada de missão.
+C:\IALD\Bancada_Um\um_bancada.py:375-414 — Despacho chama operações científicas existentes; /api/gw/rodar recusa EXPLICIT_RITE_DISPATCH_REQUIRED. Wrapper não deve remover a recusa ou mudar cálculos.
+C:\IALD\Bancada_Um\bancada\regua.py:73-111 — Livro existente registra cliente/operação/família/hash/estatuto. É proveniência científica, sem request_id/contexto/epoch nem chave idempotente de chamada.
+
+PINS (bytes lidos por script)
+91b1a584f113f07e09131430a21439d56c206db3bfe54d5d26b69ef466baa33b 6714 bytes C:\IALD\Bancada_Um\bancada\regua.py
+6c3d094b387f7428b34b68565b7f32600b23c7e017d46c74c39f7bfec9d6570a 17123 bytes C:\IALD\Bancada_Um\mcp_um.py
+1a592d9d0fe652a08a9d54b7ab4ea981b2bcd8efad75209825158f906699f8f6 7910 bytes C:\IALD\Bancada_Um\README.md
+1e5eef094f8a60190fb2ad8421a3633ba1459274070ce639d3a96a7f82c5b814 27203 bytes C:\IALD\Bancada_Um\um_bancada.py
+8a59ac2e4ae38eddbf0d2d3361f083821a065feb584b748bb88e5674a2d29372 18179 bytes C:\IALD\Central de Patentes\Chatgpt\IALD_ORQUESTRACAO_20260923\iald_orchestrator\coordination.py
+212b482fdf7e95f36a40a70a2f1f16f960d6104728e17a41685bbd775d3543ad 5422 bytes C:\IALD\Central de Patentes\Chatgpt\IALD_ORQUESTRACAO_20260923\iald_orchestrator\jev.py
+c8d860551667384ef6d2ac2e394d30be365c3bacf68c1d8cb5dc065edf446f05 13167 bytes C:\IALD\Central de Patentes\Chatgpt\IALD_ORQUESTRACAO_20260923\iald_orchestrator\jev_decisions.py
+b52a90e86145cdde20e983cb2cfd689899858d1649508525d2089bdd3698723a 3243 bytes C:\IALD\Central de Patentes\Chatgpt\IALD_ORQUESTRACAO_20260923\iald_orchestrator\mission_bridge.py
+ef6ea57468860e4d176318256d32d5f40b570342683eeb696dd6d2e04ccf1a7e 9417 bytes C:\IALD\Central de Patentes\Chatgpt\IALD_ORQUESTRACAO_20260923\iald_orchestrator\operational_memory.py
+09cc31defd56082631f43495d96e11a7debb427577b81d6c78a8f20332fa6c2e 18458 bytes C:\IALD\Central de Patentes\Chatgpt\IALD_ORQUESTRACAO_20260923\iald_orchestrator\providers.py
+a5bac34f81fa52075124e55f3e2f37681d5e6c1ab979cb83394ca07d7b00c224 30869 bytes C:\IALD\Central de Patentes\Chatgpt\IALD_ORQUESTRACAO_20260923\iald_orchestrator\runtime.py
+19cb11ddcd4ad463b726ba8fbe175b094474267c1a8ed009fa97f63fcf8574a0 12034 bytes C:\IALD\Central de Patentes\Chatgpt\IALD_ORQUESTRACAO_20260923\iald_orchestrator\scientific_binding.py
+51689027caf1b5246d54b6c7c73b2e3148ee98e9719aefd0a9112e9e3bda2b67 3835 bytes C:\IALD\Central de Patentes\Chatgpt\IALD_ORQUESTRACAO_20260923\iald_orchestrator\transport.py
+d86597a753554c7a8d99702cc19403b8d2362ab71ca43d43a26044d271b79eee 4187 bytes C:\IALD\Central de Patentes\Chatgpt\IALD_ORQUESTRACAO_20260923\mcp_server.py
+30256252c229639e70e4006242ff6adbc44b3455d8114fbbc9cd7568ccf861d4 5545 bytes C:\IALD\Central de Patentes\Chatgpt\IALD_ORQUESTRACAO_20260923\test_coordination.py
+064a6ba64b979ecbc0fd959efa3f2cfe57f1961fbfa5c0c6ec239cf074f7ff23 5272 bytes C:\IALD\Central de Patentes\Chatgpt\IALD_ORQUESTRACAO_20260923\test_optional_work.py
+5041d04ea43ba07f39913175599e69854b1e9a478fb229175803457ada57d882 2918 bytes C:\IALD\Central de Patentes\Chatgpt\IALD_ORQUESTRACAO_20260923\test_transport.py
+5da0a8ea083bddbb955304d4899ae69c4235851c736aceb5bfa2cddcdffc8384 1283 bytes C:\IALD\Central de Patentes\Chatgpt\IALD_ORQUESTRACAO_20260923\transport_cli.py
+2fcf1120cd56fb655cd75b80f4f324f68aa6d929251e7bd0e43082796a3460e2 26876 bytes C:\IALD\Central de Patentes\work\memoria_organismo_20261016\inventory_queue\build_inventory_r1.py
+8decae368b7d28f4e56be07baf74f3fe65d6bd768bdd9b36994bdc76239faded 2239 bytes C:\IALD\Central de Patentes\work\memoria_organismo_20261016\mission_io.py
+20c69f39ae16c45216050aa7f06aace59de5bbd52eff03b2173670c0216dd92e 205 bytes C:\IALD\Central de Patentes\work\memoria_organismo_20261016\NOS_VIVO_QUERY.json
+5ee0adc08463b9da0e542bb370e2362915542f357a14607c235731996268ef6a 389 bytes C:\IALD\Central de Patentes\work\memoria_organismo_20261016\OPERADOR_VERBATIM.txt
+4ad4c4f1ae0dca8720af10d8bcd1aa383148d6c806780f8d5ee697c456718e85 2575 bytes C:\IALD\Central de Patentes\work\memoria_organismo_20261016\REQUIREMENTS_R1.json
+3ac23543de816be2428167c58b6f21d084d150d59efdad49aee07bbf3be4dcfb 670 bytes C:\IALD\Central de Patentes\work\memoria_organismo_20261016\SESSION_REFERENCE.json
+66d4a38e597d13d5f265c8cf3bc58fcb6c316ded8ce617ed15c70e2ccd9af4f5 26410 bytes C:\IALD\MEMORIA_IALD\lib\iald_memory\mission.py
+4464b8bd2197435ac913fbd6eed9663604503628bc6be550b31864da4f01f9c7 2451 bytes C:\IALD\MEMORIA_IALD\mission_cli.py
+e344559073157099ac9b0dd668d0543cc7fa4ec9e7ab05af39a79dcfa08d978e 11439 bytes C:\IALD\MEMORIA_IALD\MISSION_PROTOCOL.md
+a9147e24262831c5e3b77bd2073de3dda85b5ebe41fd11d1c106817cdd87181b 4327 bytes C:\IALD\MEMORIA_IALD\README.md
+f39fba680caa94725d68b5b0febf44d9282e8f3249bd88b7434fe43f8b5f459b 3686 bytes C:\IALD\MEMORIA_IALD\session_hook.py
+7e62693b8064d646480fd751a28f1dbec0ecf23e1d14b5552779765acd820b8d 14939 bytes C:\IALD\MEMORIA_IALD\session_memory.py
+
+RECIBO FINAL
+C:\IALD\Central de Patentes\work\memoria_organismo_20261016\receipts\20261016T223732_575954Z_inventory_queue_final.receipt.json
+JSON C:\IALD\Central de Patentes\work\memoria_organismo_20261016\inventory_queue\QUEUE_SESSIONS_BANCADA_INVENTORY_R1.json
+SHA256 JSON 472c3ff8b02e5a49a513cc4d47bb0769c38b5a3a3b737241b49b81bb3e7a54d2
+
+LIMITES
+Leitura estática não confirma versão carregada em MCP/worker/Bancada ou ativação de hooks.
+Nenhuma fila/banco de produção foi instanciado para listar jobs; estados remotos e resultados reais não foram consultados.
+Originais científicos, kernel, gate, cálculos, arquivos confidenciais e credenciais permaneceram intocados.
+ACOM é continuidade auditável; não demonstra memória nos pesos, ganho cognitivo ou eliminação de alucinação.
+Decisões de implantação e aceite de I exigem consolidar app/nativa/holografia e revisão cruzada futura.

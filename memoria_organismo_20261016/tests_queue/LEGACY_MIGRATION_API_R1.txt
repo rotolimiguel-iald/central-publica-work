@@ -1,0 +1,43 @@
+Q2 — MIGRAÇÃO LOCAL EXPLÍCITA DE COORDENAÇÕES LEGADAS [DECLARADO até revisão]
+
+CLI: C:\Python314\python.exe -B -X utf8 BASE\queue_activity_migrate.py
+JSON stdin, processo novo, autenticação local pelo sistema operacional. Não é
+credencial bearer nem ferramenta de modelo. Nenhuma rota MCP adicionada.
+
+1. {"operation":"inspect","job_id":"UUID"}
+Devolve elegibilidade, versão, row_sha256 (linha integral + suplemento), contexto,
+memory_revision e memory_state_sha256. Não migra nem despacha. Uma recusa é visível.
+2. {"operation":"migrate","job_id":"UUID","expected_version":N,
+"expected_row_sha256":"SHA","expected_memory_revision":N,
+"expected_memory_state_sha256":"SHA","event_id":"UUID estável"}
+O comando aceita somente esses campos. Não recebe ator, escopo, ticket, caminho,
+texto substituto, provedor ou sinal de início de worker.
+
+Elegíveis: activity_version=0, awaiting_dispatch ou prompt_ready com preparação local
+rastreável. Exige contexto original já existente e inscrição/constraints idênticos.
+Recusa threads, resultados/erros, estados terminais/incertos, histórico de despacho,
+tarefa filha inclusive por request_id determinístico, tentativa/reserva, retorno,
+binding Activity prévio, outbox não conciliado, missão prévia ou handle desconhecido.
+Jobs fora desse recorte permanecem legados e auditáveis; não há migração implícita.
+
+Lock existente da fila + BEGIN IMMEDIATE + digest/versão da linha protegem admissão.
+Uma intenção durável no MESMO ledger precede ACOM. Cada transição ACOM recebe sua
+própria intenção/payload no ledger antes de ocorrer e seu recibo depois. Se houver
+crash entre o commit ACOM e o recibo, o mesmo evento idempotente é recuperado.
+Revisão/hash externos ou linha/suplemento alterados recusam retomada; não há rebase.
+A retomada exige exatamente os mesmos UUID/evento/CAS originais.
+
+Somente após Activity.begin e intenção interna de coordenação válidos, o adaptador
+insere o vínculo/custódia, muda activity_version para 1 e incrementa version em CAS.
+Estágio, updated_at, IDs, contexto, prompts, constraints/generation e suplemento
+permanecem byte a byte. A migração não chama provider, worker, Work ou HTTP, não
+aceita missão e não concede autorização científica. O avanço posterior continua
+pela fila existente, com seus preflights, autorização e controles científicos.
+
+Falhas ficam em queue_activity_migrations.last_error; etapas/recibos permanecem em
+queue_activity_migration_steps. São índices de coordenação no ledger existente,
+não um segundo banco de memória semântica. Nenhum pedido real foi migrado nos testes.
+
+Escopo: dois arquivos novos, dependentes da Q R2 aceita. MCP inalterado; testes de
+CLI usam processo novo e bancos privados. Processos antigos não recarregam por
+escrita de fonte no disco. C2 final será validado transversalmente na etapa V.

@@ -1,0 +1,130 @@
+--- C:\IALD\Central de Patentes\work\memoria_organismo_20261016\staging\app\iald_auto_router.py
++++ C:\IALD\Central de Patentes\work\memoria_organismo_20261016\staging\app_r2\iald_auto_router.py
+@@ -265,7 +265,12 @@
+             common = projected
+             state['common_memory'] = projected
+             continue
+-        raise RoutingContextOverflow('Required routing context exceeds admission bounds')
++        # Optional retrieval is already minimal. Choose long context BEFORE the
++        # single dispatch; never refill optional text or retry after rejection.
++        try:
++            return jev_control.check_payload(body, long_context=True)
++        except jev_control.ControlError as exc:
++            raise RoutingContextOverflow('Required routing context exceeds long admission bounds') from exc
+ 
+ 
+ def choose(prompt,candidates,root=ROOT,post=None,validation_probe=False,worker=False,operator_context=None,model_ids=None):
+@@ -327,6 +332,7 @@
+     encode=lambda value:json.dumps(value,ensure_ascii=False,sort_keys=True,allow_nan=False).encode()
+     wire_size=lambda value:len(json.dumps(value,ensure_ascii=True,allow_nan=False).encode('ascii'))
+     admission=_fit_routing_payload(body)
++    transport_headers={'Content-Type':'application/json', **admission['transport_headers']}
+     source=body['state']['source']
+     common_memory=body['state'].get('common_memory')
+     raw=encode(body)
+@@ -343,6 +349,8 @@
+             'execution_guide_version':execution_guide.VERSION,'execution_guide_sha256':hashlib.sha256(encode(guide)).hexdigest(),
+             'task':task,'role':'worker' if worker else 'manager','calls':1,'regime':regime,
+             'payload_hash_encoding':'canonical_json_utf8','admission':dict(admission,method='json_bytes_conservative'),
++            'wire_payload_sha256':hashlib.sha256(json.dumps(body,ensure_ascii=True,allow_nan=False).encode('ascii')).hexdigest(),
++            'transport_headers':transport_headers,
+             'transitions':['INPUT_PRESERVED','MEMORY_BOUND','AUTHORIZED_CANDIDATES_FROZEN','JEV_REQUEST_INSCRIBED']}
+     def save():
+         blob=json.dumps(record,ensure_ascii=False,indent=2,allow_nan=False).encode()
+@@ -360,7 +368,7 @@
+         if post is None:
+             import requests
+             post=requests.post
+-        response=app_memory.http_call('jev.route',post,mod.ENDPOINT,headers={'Authorization':'Bearer '+mod._key(),'Content-Type':'application/json'},
++        response=app_memory.http_call('jev.route',post,mod.ENDPOINT,headers={'Authorization':'Bearer '+mod._key(),**transport_headers},
+                       json=body,timeout=(10,25),allow_redirects=False)
+         if response.status_code!=200:raise ValueError('Routing request rejected')
+         data=response.json()
+--- C:\IALD\projetos_pyhton\IALD\iald_jev_control.py
++++ C:\IALD\Central de Patentes\work\memoria_organismo_20261016\staging\app_r2\iald_jev_control.py
+@@ -13,6 +13,9 @@
+ MAX_CONTRACT_BYTES = 10000
+ MAX_STATE_BYTES = 30000
+ MAX_REQUEST_BYTES = 60000
++MAX_LONG_CONTEXT_BYTES = 250000
++MAX_HTTP_BODY_BYTES = 32 * 1024 * 1024
++LONG_CONTEXT_HEADER = "TypeSafe-Danger-Zone-Long-Context"
+ MIN_CONFIDENCE = 0.7  # Existing engineering policy, never beta or physical weight.
+ MODES = {
+     "mathematical_solution": "Articular a solução matemática nas hipóteses e fontes fornecidas, sem alegar confirmação experimental.",
+@@ -311,19 +314,68 @@
+     return "\n".join(text)
+ 
+ 
+-def check_payload(body):
+-    """Bound the whole HTTP JSON, including state plus the longest question."""
+-    try:
+-        if type(body) is not dict or body["model"] != MODEL or type(body["state"]) is not dict or type(body["questions"]) is not dict:
++def _json_safe(value, depth=0, ancestors=None):
++    """Conservative finite JSON guard, including the enclosing envelope depth."""
++    if type(value) is str:
++        value.encode('utf-8')  # Reject lone surrogates, even if dumps would escape them.
++        return
++    if value is None or type(value) is bool:
++        return
++    if type(value) in (int, float):
++        if not math.isfinite(value):
++            raise ControlError("Non-finite JSON number")
++        return
++    # Existing capability catalogs use tuples, serialized as JSON arrays.
++    if type(value) not in (dict, list, tuple) or depth >= 64:
++        raise ControlError("Invalid or too deeply nested JSON value")
++    ancestors = set() if ancestors is None else ancestors
++    if id(value) in ancestors:
++        raise ControlError("Cyclic JSON value")
++    ancestors.add(id(value))
++    try:
++        if type(value) is dict:
++            for key, child in value.items():
++                if type(key) is not str:
++                    raise ControlError("JSON object keys must be strings")
++                _json_safe(key, depth + 1, ancestors)
++                _json_safe(child, depth + 1, ancestors)
++        else:
++            for child in value:
++                _json_safe(child, depth + 1, ancestors)
++    finally:
++        ancestors.remove(id(value))
++
++
++def check_payload(body, *, long_context=False):
++    """Local escaped-byte guards, NOT the provider's tokenizer or token counts.
++
++    Official Jev 1.13 defaults are 32k tokens/question and 64k/request. The
++    opt-in header enables 262k tokens for both. Retain the old short byte caps;
++    long mode conservatively caps both at 250000 escaped bytes. HTTP's separate
++    32 MiB body limit is not a model context allowance. See pinned J docs.
++    """
++    try:
++        if type(long_context) is not bool or type(body) is not dict or body["model"] != MODEL or type(body["state"]) is not dict or type(body["questions"]) is not dict or not body["questions"]:
+             raise ControlError("Invalid decision envelope")
++        _json_safe(body)
+         # Conservative default requests/json encoding, including escaping and spaces.
+         size = lambda x: len(json.dumps(x, ensure_ascii=True, allow_nan=False).encode("ascii"))
+         state_size = size(body["state"])
+         longest = max((size(q) for q in body["questions"].values()), default=0)
+-        if state_size > MAX_STATE_BYTES or state_size + longest > 32000 or size(body) > MAX_REQUEST_BYTES:
++        request_size = size(body)
++        if request_size > MAX_HTTP_BODY_BYTES:
++            raise ControlError("Decision body exceeds HTTP byte limit")
++        exceeded = ((state_size + longest > MAX_LONG_CONTEXT_BYTES or request_size > MAX_LONG_CONTEXT_BYTES)
++            if long_context else (state_size > MAX_STATE_BYTES or state_size + longest > 32000 or request_size > MAX_REQUEST_BYTES))
++        if exceeded:
+             raise ControlError("Decision context exceeds admission bounds")
+-        return {"state_bytes": state_size, "request_bytes": size(body), "state_longest_question_bytes": state_size + longest}
+-    except (KeyError, TypeError, ValueError, UnicodeError) as exc:
++        return {"state_bytes": state_size, "request_bytes": request_size,
++            "state_longest_question_bytes": state_size + longest,
++            "context_mode": "long" if long_context else "short",
++            "guard_basis": "escaped_json_bytes_conservative_not_tokenizer",
++            "tokenizer_exact": False,
++            "transport_headers": ({LONG_CONTEXT_HEADER: "true"} if long_context else {})}
++    except (KeyError, TypeError, ValueError, UnicodeError, OverflowError, RecursionError) as exc:
+         if isinstance(exc, ControlError): raise
+         raise ControlError("Invalid decision envelope") from exc
+ 

@@ -1,0 +1,90 @@
+{
+  "schema": "iald-app-implementation-preparation/v1",
+  "created_utc": "2026-10-16T23:12:32.436161+00:00",
+  "actor": "codex-fock-r6-review",
+  "unit": "F9.MEMORIA_ORGANISMO_20261016",
+  "reference": "C:\\IALD\\Central de Patentes\\work\\memoria_organismo_20261016\\SESSION_REFERENCE.json",
+  "revision": 8,
+  "projection_sha256": "4e6212c3b77afa8930e9c2f47855eeebadeca9ce33000aabc58dd66f35e203f8",
+  "status": "PLAN_ONLY_WAITING_FOR_C_ACCEPT_AND_A_CLAIM",
+  "core_state": "working",
+  "observed_candidate": {
+    "path": "C:\\IALD\\Central de Patentes\\work\\memoria_organismo_20261016\\staging\\core\\lib\\iald_memory\\activity.py",
+    "sha256": "f4c1d2eeb83f7d8d073729cdb233c8efec4b145d59c782d04f4014d036ddd4fd",
+    "bytes": 26648,
+    "frozen": false,
+    "notice": "Builder is editing; re-read accepted pin before implementation."
+  },
+  "inventory_erratum": {
+    "source": "store.py:263-271 independently checked",
+    "correction": "Store already merges handles by ID. Do not duplicate merge. Change fixed app_request/app_routing identifiers to persisted request/operation identifiers; prevent stale phase/next_action/status for the same ID from being replayed."
+  },
+  "api_observed": {
+    "constructor": "ActivityRuntime(store, context_id, scope, actor:{id,kind:agent})",
+    "begin": "begin(request_id, command, criterion=None, origin=authenticated_operator|delegated|system, origin_ref for nonhuman) -> {ticket,replayed,recovery?}",
+    "preflight": "preflight(ticket, operation_id, refresh=False) -> one-shot intent + updated ticket",
+    "complete": "complete(ticket, operation_id, result, terminal=False for intermediates; terminal=True final, refresh=False) -> persisted candidate; stale result raises with candidate id",
+    "read": "project(max_chars,current_input), recover(request_id), refresh(ticket)",
+    "failure": "mark_uncertain(ticket,operation_id,reason); no external retry"
+  },
+  "material_dependency": [
+    {
+      "item": "Authenticated operator pending steering",
+      "observation": "Observed _steering included decision/erratum INPUT operator. Root additionally requires pending from the authenticated operator. Builder notified to reconcile exact allowed kind/statute and tests.",
+      "must_not_do": "Do not turn model/tool output or mechanical progress into authoritative steering."
+    },
+    {
+      "item": "Projection growth",
+      "observation": "Every final answer remains review_pending; active overlay rows and required INPUT records grow. No unbounded capacity claim or automatic semantic acceptance.",
+      "implementation_measurement": "Measure 1/10/100 completed normal turns plus 5 active operations at representative command lengths; record required_chars, actual_chars, escaped JEV bytes and local p50/p95. Find actual admission boundary; show explicit overflow with retained state."
+    }
+  ],
+  "minimal_app_changes": [
+    {
+      "files": [
+        "iald_app_memory.py"
+      ],
+      "work": "Binding owns runtime/ticket and stable operation references; authenticated command begins once; delegated/system origin explicit. Keep guard/outbox/legacy APIs. Replace fixed handles, avoid stale phase replay, augment projection, and finalize with durable candidate only."
+    },
+    {
+      "files": [
+        "iald_auto_router.py",
+        "iald_app_providers.py",
+        "iald_web_server.py"
+      ],
+      "work": "Fresh one-shot preflight at actual JEV/provider/model-round/tool call boundary; exact intermediate return with terminal=False, uncertain on unknown outcome. Preserve HajaLuz byte admission, account/wallet/consent/auth and scientific package."
+    },
+    {
+      "files": [
+        "iald_task_bridge.py",
+        "iald_task_session.py"
+      ],
+      "work": "Persist activity envelope and server operation IDs with the existing step journal before dispatch; delegate origin_ref points to real parent operation. Recover same IDs; no fresh random replacement on restart."
+    },
+    {
+      "files": [
+        "iald_chat_jobs.py"
+      ],
+      "work": "Link durable job/request ID to activity and reconcile queue, cancellation, return and interrupted restart; existing full_dispatch_request path and encrypted SSE remain."
+    }
+  ],
+  "ui_and_review": {
+    "surface": "Authenticated activity progress endpoint plus small activity panel in existing shared web app; expose criteria, technical status, pending review, conflicts and safe evidence references. Pagination for old turns; full state remains in common store.",
+    "review": "Explicit human batch selection of exact delivered tasks/evidence under same authenticated account generation. Server derives reviewer actor, scope, receipt and evidence paths; POST uses existing CSRF/origin protections. No client-selected filesystem path or arbitrary actor.",
+    "normal_use": "No required click for each answer. Technical completion is shown separately from reviewed outcome. Old review_pending tasks do not silently become accepted. A later independent human review may consolidate a selected set.",
+    "model_tools": "Read progress and propose candidates only; never expose accept or authoritative amend.",
+    "authorization_pending": "Exact endpoint/UI implementation will follow C acceptance and A claim; no route created here."
+  },
+  "tests_to_add": [
+    "Actual endpoint/stream/nonstream/JEV/tool/delegate worker flows with fake transports and isolated store",
+    "Correction during in-flight execution changes steering, blocks continuation/integration, preserves returned candidate; mechanical records do not invalidate",
+    "One operation_id dispatches once, including restart/CAS/failure; operations complete independently before final submit",
+    "Human reviewer authentication/CSRF/account generation; model accepts denied; selected evidence pin must still match",
+    "Activity progress UI/API reads actual state; pagination preserves criteria and unresolved work; no local paths leaked",
+    "Multi-turn projection cost and HajaLuz escaped-byte admission; preserve existing 31 ACOM tests and HajaLuz tests in staging"
+  ],
+  "writes": [
+    "This preparation report only; no staging/app implementation or production changes"
+  ],
+  "awaiting": "C accepted, frozen core pins and root A lease/preflight authorization"
+}
