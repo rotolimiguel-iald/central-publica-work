@@ -1,0 +1,108 @@
+REVISÃO COMPLEMENTAR — fix_review.py / NOVO DIFF
+
+Escopo limitado às correções do parecer anterior e suas interfaces imediatas.
+Leitura de stage; sem alteração de código, import do servidor, rede, credenciais,
+execução de provedores ou suíte completa. Sondagens AST em memória com transportes,
+contagem, cadastro, Response e razão simulados. Parecer anterior preservado.
+
+CONCLUSÃO
+Não encontrei incompatibilidade de assinatura nos callbacks novos. Os P1 anteriores
+ficaram corrigidos nos caminhos exercitados: a revalidação impede novo dispatch e
+nativa aplica a moderação existente. Há dois P2 novos no tratamento da recusa e um
+P2 residual de bootstrap descritos abaixo. Recomendo corrigir esses pontos e fechar
+as regressões focadas antes de concluir esta entrega; não proponho novas features.
+
+1. [P2] Revogação antes do POST consome reserva mesmo quando o envio não começou.
+   Stage/iald_app_providers.py:384-390 e 315-317;
+   stage/iald_app_spend.py:138-145 (PublicAccount.close).
+   A primeira checagem passa, spending.before reserva, e a segunda authorize pode
+   recusar. Nesse caso não ocorre POST, mas finally chama close(), que settle(key)
+   sem amount baixa a reserva inteira. O registro já diz dispatched antes da segunda
+   checagem, embora seja uma recusa local conhecida, não um transporte incerto.
+   Sondagem com AST REAL de Evaluation.stream/_api e PublicAccount, guard simulado:
+   authorize=2, POSTs=0, reserva=0.4748592 e baixa=0.4748592; locks liberados.
+   O valor é do cenário sintético (bound=10000, preços/saída do código), NÃO fatura.
+   A mesma ordenação existe no caminho externo direto: iniciar_chamada em 6648
+   antecede dispatch_check em 6656, sem descarte específico para essa recusa.
+   Correção mínima: distinguir comprovadamente não enviado de envio iniciado/incerto;
+   anular a reserva somente no primeiro caso. Preservar a segunda checagem e nunca
+   zerar custo quando o transporte pode ter sido iniciado. Há settle(amount=0) no
+   SpendingGuard e descartar_ultima_chamada no ReservedAccount já existentes.
+   Regressão: invalidar autorização entre reserva e chamada, verificar zero POSTs e
+   zero baixa/reserva pendente; falha depois de iniciar transporte mantém a proteção.
+
+2. [P2] Guard inicial elimina o aviso de consentimento no fluxo manual externo.
+   Stage/iald_web_server.py:6232-6234, antes dos avisos existentes em 6291+.
+   Para Luiz em OpenAI/Claude sem aceite, _dispatch_guard(...,False) levanta antes
+   do ramo que devolvia consentimento_ia com provedor/versão/detalhe. Agora retorna
+   motor_indisponivel genérico. O cliente da conversa só abre a folha/reenvio pelo
+   aviso estruturado; o aceite continua acessível nas configurações, mas o fluxo
+   de consentir a partir da conversa regride. _chat_avaliacao preservou a ordem certa.
+   Sondagem AST REAL de _chat_externo, guard sem aceite simulado:
+   resposta.kind=motor_indisponivel (antes de qualquer outra dependência/dispatch).
+   Correção mínima: preservar o aviso inicial estruturado de falta de consentimento,
+   mantendo o callback de revalidação na fronteira de envio. Conta bloqueada segue
+   recusada e nenhum aceite pode ser inferido.
+   Regressão: Luiz manual OpenAI e Claude sem aceite -> consentimento_ia com campos
+   corretos e zero envios; revogação depois da preparação -> zero novos envios.
+
+3. [P2 residual] Bootstrap ainda oferece MiMo quando falta só liberar a moderação
+   para tornar a nativa utilizável.
+   Stage/iald_web_server.py:6082-6088.
+   Com JEV aceito, nativa pronta, moderação ligada, nenhum executor aceito e MiMo
+   disponível, a condição da nativa falha por falta do aceite OpenAI. O código remove
+   nativa e escolhe o primeiro aviso da lista: MiMo. Sondagem retornou
+   {provedor:mimo,dado:false}. Com moderação desligada, o mesmo caso já retorna JEV
+   aceito corretamente. Com OpenAI aceito, também libera a nativa corretamente.
+   Não há egress escondido: o filtro e _dispatch_guard recusam a nativa sem OpenAI.
+   Resta a apresentação do aviso errado para habilitar esse caminho. O cliente novo
+   consegue contornar pelas autorizações individuais; o antigo depende do bootstrap.
+   Correção mínima: quando nativa é a opção local pronta e nenhum executor já está
+   autorizado, apresentar o aviso OpenAI necessário à moderação em vez de exigir o
+   primeiro aceite MiMo. Manter o uso de outro executor já consentido sem obrigar novo
+   aceite OpenAI só por existir a nativa.
+   Regressão: JEV apenas + moderação ligada + nativa pronta -> aviso OpenAI; após
+   aceitar, nativa elegível sem MiMo. JEV revogado bloqueia; sem moderação basta JEV.
+
+CORREÇÕES CONFIRMADAS NESTA REVISÃO
+- Evaluation.stream(authorize=None) e _api(...,authorize=None) aceitam callback sem
+  argumentos; o bridge passa lambda:auth(chosen). Não há acesso a Flask session no
+  callback; _dispatch_guard consulta cadastro pela identidade capturada no servidor.
+- Callback roda antes da reserva e antes de cada POST; Kimi o chama antes de execute.
+  Sondagem do loop real: revogação durante search_tgl deixou somente 1 POST simulado
+  (a primeira rodada); Kimi iniciado com revogação fez 0 chamadas. Locks liberados.
+- _chat_openai/_chat_claude encaminham dispatch_check a _chat_externo. Agente adapta
+  callback sem argumentos com lambda _; caminho direto encapsula fazer() sem mudar
+  sua assinatura. Não encontrei recursão ou argumento incompatível nesse wrapper.
+- Nativa compõe dispatch_check -> context_check -> dispatch_check; o callback
+  valida JEV e, com moderação ligada, OpenAI. Contexto/ferramentas públicos preservados.
+- Sete casos nativos focados com funções AST reais e dependências simuladas:
+  (a) sem moderação/JEV apenas: 1 geração, 0 moderações;
+  (b) moderação ligada/sem OpenAI: 0 gerações, 0 moderações;
+  (c) entrada bloqueada: 0 gerações e aviso moderacao;
+  (d) moderação indisponível/fail-closed: 0 gerações e aviso moderacao_indisponivel;
+  (e) revogar durante contagem: 0 gerações;
+  (f) bloquear antes de consumir generator: 0 gerações;
+  (g) saída gratuita bloqueada: 2 moderações (entrada/saída), aviso retirar_resposta.
+  Contagem e geração simuladas: não é validação real do llama nem benchmark.
+- P3 anterior fechado por leitura do diff: provedores_automaticos[].dado é atualizado
+  somente após confirmação de provedor/aceite e antes de pintarMotor(). Não executei
+  browser nem acrescentei teste DOM nesta revisão complementar.
+
+LIMITES
+Os 214 testes anteriores são informação do implementador; não os reexecutei nem os
+trato como validação destas correções. Falhas remotas e instalação permanecem fora do
+escopo. A conferência acima não promete atomicidade entre revogação e I/O já iniciado
+nem gasto zero após JEV. A primeira tentativa de montar uma sondagem falhou apenas
+na fixture AST/literal_eval; foi corrigida em memória antes dos resultados relatados.
+
+Emitido UTC: 2026-10-01T16:21:05.385342+00:00
+SHA256 dos arquivos deste complemento:
+{
+  "fix_review.py": "2a9394a038b5b4ad7de8e70e5d1cf661e0eaf32f99b9b8a25f9a5d753d2f0415",
+  "stage/iald_app_providers.py": "cd5a69fe4886b4e47cd5931db7b487930c50a8a0d3f7735253e9c57628e51786",
+  "stage/iald_app_spend.py": "4f70b6efdf05487f1b8c544a1a8f81a394bbb3af16350e4f007ed09501d65972",
+  "stage/iald_task_bridge.py": "d8d338e6b2586c191d4067e8d1e8f33b5989189a30a6c858df0a012c832107a6",
+  "stage/iald_web_server.py": "b8f4250f167220157794179f7e284559126f8c7d9d48a2f3a976d2cafa09f6e3",
+  "stage/app/iald.js": "4863eb688bb3134bacdde89e9252baa94a32a115a2bff6b26004269da98f2bbb"
+}

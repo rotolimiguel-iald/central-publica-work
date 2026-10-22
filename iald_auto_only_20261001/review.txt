@@ -1,0 +1,115 @@
+REVISÃO INDEPENDENTE — AUTOMÁTICO CONTÍNUO / SOMENTE LUIZ MANUAL
+
+Escopo: diff produção versus stage desta entrega e fronteiras locais relacionadas.
+Implementação em preparo; não instalada por esta revisão. Nenhum código alterado,
+servidor importado, cadastro/credencial lido, provedor executado ou chamada de rede.
+Não repeti a suíte do implementador. Fiz três sondagens AST com dados e transportes
+inteiramente simulados, executadas em memória, sem criar testes ou estado de runtime.
+
+PARECER: corrigir os achados 1 e 2 antes de disponibilizar a nova rota pública.
+O achado 3 impede o uso da nativa em uma combinação válida de consentimentos.
+
+1. [P1] Revogação/bloqueio não é revalidado na fronteira de cada novo envio.
+   Stage/iald_web_server.py:6113-6120, 6199-6204, 6809-6845;
+   stage/iald_app_providers.py:254, 369-387; produção iald_web_server.py equivalente
+   já tinha a lacuna no transporte Evaluation. A rota nativa nova também a introduz.
+   O reload após JEV só protege aquela etapa. Evaluation.stream/_api não recebem
+   callback de autorização; antes do POST verificam cancel e reserva, não conta ou
+   consentimento. TaskControl.check verifica somente Event, e revogar consentimento
+   apenas remove o campo do cadastro. Ferramentas públicas comuns não passam pelo
+   authorize do TaskSession. Portanto uma rodada de ferramenta pode terminar após
+   revogação e provocar outra chamada paga, com novo resultado/contexto enviado.
+   Na nativa, execute() verifica autorização somente quando há ferramenta; o check
+   passado a agent_loop valida release/modelo/contexto, sem recarregar a conta.
+   Sondagem REAL, AST de Evaluation._api: dois POSTs simulados; authorized_at_dispatch
+   foi [true, false], após revogação simulada ao completar search_tgl.
+   Sondagem REAL, AST da rota nativa: bloqueio antes de consumir o generator produziu
+   model_calls=1, reads=0. Geração/contexto/Response simulados; não é teste de llama.
+   Correção mínima: callback server-owned de conta existente, bloqueio, aceite JEV e
+   aceite do executor imediatamente antes de cada novo dispatch; encaminhá-lo ao
+   Evaluation (incluindo Kimi/delegado) e compô-lo com verificar_payload na nativa.
+   Não se exige recuperar bytes já enviados nem repetir chamada incerta.
+   Regressão: revogar JEV/executor ou bloquear entre resposta HTTP e consumo do
+   generator, e entre duas rodadas; contar ZERO novos dispatches após a alteração.
+
+2. [P1] A nativa pública ignora o controle de moderação existente.
+   Stage/iald_web_server.py:6809-6851 versus _chat_avaliacao:6169-6175 e
+   _chat_externo:6493-6510, 6705-6706.
+   O caminho novo vai de wire_messages ao contexto e agent_loop sem moderar perfil/
+   mensagens, sem acolhimento e sem o filtro de resposta gratuito. api_post desvia
+   para automático antes do caminho nativo legado; não há gate comum que supra isso.
+   Com MODERACAO_LIGADA=True e MODERACAO_FALHA='bloquear', esse executor continua
+   gerando onde os caminhos públicos existentes recusam entrada marcada/indisponível.
+   Sondagem AST da rota com moderador simulado que sempre bloqueia: moderation_calls=0
+   e model_calls=1. O isolamento de memoria_op não substitui este controle.
+   Correção mínima: aplicar à rota pública nativa o gate existente de perfil/histórico
+   e tratamento fail-closed/acolhimento; preservar moderação da resposta quando
+   aplicável ao plano gratuito, sem inserir memória ou ferramentas de operador.
+   Regressão: entrada bloqueada e moderador indisponível/bloquear não chegam ao modelo;
+   saída gratuita bloqueada emite o aviso de retirada já entendido pelo cliente.
+
+3. [P2] Nativa pronta ainda exige consentir a outro executor.
+   Stage/iald_web_server.py:6079-6085 versus 6106.
+   _consentimento_automatico exclui nativa do conjunto antes de procurar um aceite.
+   Conta com aceite JEV válido, nativa pronta e MiMo pronto sem aceite recebe aviso
+   obrigatório MiMo antes da seleção. Recusar/revogar todos os executores externos
+   impede a nativa, embora o filtro de candidatos explicitamente dispense seu aceite.
+   Sondagem AST REAL desse cenário retornou {provedor: mimo, dado: false}.
+   Correção mínima: considerar a nativa pronta como executor elegível para bootstrap
+   após consentimento JEV; não conceder consentimentos remotos automaticamente.
+   Regressão: JEV aceito + todos os executores remotos revogados + nativa pronta
+   permite apenas nativa; JEV revogado continua impedindo todo o fluxo automático.
+
+4. [P3] Estado visual das autorizações fica desatualizado após aceitar/revogar.
+   Stage/app/iald.js:5309-5321 e 5467-5473.
+   Novos botões leem provedores_automaticos[].dado, mas responderConsentimento só
+   atualiza consentimento e consentimentos. Aceitar deixa o botão Autorizar junto ao
+   Revogar; revogar um provedor inicialmente aceito não faz aparecer Autorizar até
+   carregar /api/motor novamente. Não concede acesso indevido no servidor.
+   Correção mínima: atualizar esse array pela identidade do provedor confirmado,
+   ou recarregar /api/motor antes de pintar. Teste DOM falso basta.
+
+CONTROLES PRESERVADOS / NÃO ENCONTREI BYPASS NO DIFF EXAMINADO
+- default_for força automático para contas aprovadas não-luiz, inclusive outro admin;
+  POST de escolha do usuário e admin rejeita seleção manual para essas contas.
+- Sonnet continua protegido por claude_account_policy.available_models/authorize_model
+  com username luiz; flag admin sozinha não o libera. Não há troca para Sonnet pública.
+- GET /api/motor mantém o aviso JEV e expõe avisos separados. Aceite extra requer
+  provedor nomeado, versão vigente, JEV aceito e provedor oferecido. Revogação continua
+  independente do modelo corrente. Sem aceite automático por migração.
+- Nativa automática desvia antes de memoria_op, ignora system/tools/flags arbitrários
+  do corpo na montagem, carrega DocumentCorpus(public=True), filtra TOOL_NAMES e
+  chama executor fechado com operator_authorized=False. Não vi vazamento de memória_op.
+- DeepSeek público e delegado usam PublicAccount com SHA256 do usuário real, grupo
+  compartilhado mimo_public e limites públicos existentes. O account_key distinto do
+  delegado fica no lock, não cria nova cota. before valida max_tokens/modelo/bytes,
+  usa preços MODELS[deepseek], reserva por rodada; settle/close preservam uso incerto.
+  SandboxAccount permanece na cota real task_quota_key e grupo haiku_public.
+- Prefiltro lê saldo antes de JEV; reserva efetiva continua antes do envio. Não é
+  promessa de custo zero: corrida, reserva integral que não cabe, falha de contexto,
+  moderação ou conector podem impedir o executor depois do custo de escolha.
+- Kimi permanece CLI textual isolado em diretório temporário, sem ferramentas,
+  com cancel recebido; nenhuma inferência de preço marginal ou cota financeira nova.
+  Há retenção local de sessão no adaptador existente; não foi inspecionado seu conteúdo.
+- Clientes existentes entendem SSE de consentimento e podem continuar pelo bootstrap;
+  ignorar provedores_automaticos não é bypass. Para todos os botões novos, sincronizar
+  JS compartilhado e builds aplicáveis. Não executei navegador nem binários mobile.
+
+LIMITES DO PARECER
+Não certifica teste real, disponibilidade/saldo de provedor, usuário real, preços de
+fatura ou distribuição. Os casos acima são observações de código e sondagens locais
+sintéticas. A suíte do implementador e eventual diff posterior são responsabilidade
+separada; os hashes abaixo delimitam os arquivos lidos ao emitir este parecer.
+
+Emitido UTC: 2026-10-01T16:06:20.022398+00:00
+SHA256 stage:
+{
+  "iald_auto_router.py": "62ba2a6e69e60c26fe56f29cad141fc23a4080c4d4f45ccc0e48757c61146a6b",
+  "iald_app_providers.py": "e8b2ef226e78c9800807b5d47508bfdac766e7c08d23780eb6ccd59a2b963271",
+  "iald_app_spend.py": "4f70b6efdf05487f1b8c544a1a8f81a394bbb3af16350e4f007ed09501d65972",
+  "iald_task_bridge.py": "7a260b914cfedfe31921d39605a6738222d88b3d11ee42d7dfd41c142c6c7f72",
+  "iald_task_policy.py": "ac646e8971f1976d86a9059aae872bb722d1e44d852920c850af3f2a1bf5bb55",
+  "iald_task_session.py": "01109daaa9b3f75b3a9eff4347f4fadf0899d6cc85f5ab33056d19f426d2d344",
+  "iald_web_server.py": "3ddee883fbba8c6b08a21831ce55aed6ff0d3c603a4d9e499d0dbf647df99946",
+  "app/iald.js": "e7723405ad8828ac07cbbea4b67fc60152a6291cad5ced9feac17a535ca8d152"
+}

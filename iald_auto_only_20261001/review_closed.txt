@@ -1,0 +1,55 @@
+REVISÃO DE FECHAMENTO — TRÊS P2 DO review_final.txt
+
+[REAL] Conclusão: os três pontos estão FECHADOS no recorte revisado abaixo.
+Não encontrei bloqueador remanescente nesses três ajustes nem incompatibilidade
+nas assinaturas envolvidas. Este parecer não amplia a revisão anterior e não
+certifica implantação, disponibilidade remota ou distribuição mobile.
+
+1. Reserva de chamada não enviada — FECHADO.
+PublicAccount.discard_undispatched liquida amount=0 e limpa pending. Evaluation._api
+só o chama no catch da segunda authorize, antes da invocação de POST, registrando
+not_dispatched. Falha depois de tentar o transporte não entra nesse descarte.
+No servidor, _check_reserved_dispatch mantém a exceção e descarta pelo contrato
+existente da conta; os pontos revisados ficam antes do envio em agent/direct/Haiku.
+Validação: teste focado com SpendingGuard/SQLite temporário confirmou SUM(actual)=0,
+pending=None e zero POSTs na recusa após reserva. Sondagem AST adicional provocou
+TimeoutError no POST simulado: 1 tentativa e reserva integral preservada no close.
+O cenário sintético usou cap=0.4748592; não representa chamada real nem fatura.
+
+2. Aviso inicial de consentimento — FECHADO.
+_chat_externo cria o callback sem executá-lo antecipadamente. Os returns originais
+consentimento_ia de Claude e OpenAI, com metadados do provedor, precedem a checagem
+inicial; esta continua antes de preparar/despachar. Conferência AST das posições:
+returns nas linhas 6294/6301; try de dispatch_check na linha 6307.
+A revalidação no envio permanece independente do aviso inicial.
+
+3. Bootstrap da nativa — FECHADO.
+native_ready é capturado de offered antes de remover nativa. Sem executor já aceito,
+nativa pronta e moderação ligada devolvem o aviso OpenAI. Não é preciso aceitar MiMo.
+Cinco cenários AST confirmados:
+- JEV apenas + moderação ligada -> aviso OpenAI, dado=false.
+- JEV apenas + moderação desligada -> JEV aceito.
+- JEV e OpenAI aceitos + moderação ligada -> JEV aceito.
+- JEV e MiMo aceitos + moderação ligada -> JEV aceito; preserva executor consentido.
+- JEV revogado + OpenAI aceito -> JEV dado=false, fluxo bloqueado.
+
+VALIDAÇÃO / ESCOPO
+Executado somente test_dispatch_review: 6 testes, 0 falhas, 0 erros, 0 skips.
+O primeiro carregamento no sandbox falhou por Flask ausente e não executou casos.
+A execução restrita no runtime local, com usersite disponível, passou os seis.
+Transportes simulados e dados/SQLite temporários; nenhum servidor real importado,
+provedor chamado, segredo lido, código alterado ou suíte inteira repetida.
+Sondagens adicionais em memória: cinco casos de bootstrap, preservação da reserva
+após tentativa de transporte e ordem AST dos avisos. Não são testes reais de IA.
+Somente este relatório foi gravado como artefato desta revisão; relatórios anteriores
+permanecem históricos e intactos. Os hashes seguintes delimitam o estado conferido.
+
+Emitido UTC: 2026-10-01T16:30:28.797602+00:00
+SHA256:
+{
+  "fix_final_review.py": "a673febac93dec12aa9aa565e57decaa865b964d177c954691a23417c49a7108",
+  "test_dispatch_review.py": "3c776574fa09f89e4f9c3ffc47154062eb6adbc8a92afb1bac5829f438cbf3a3",
+  "stage/iald_app_spend.py": "5df8553b53b8efdceb24ab609f2f4435f635a03bf336ad64ebf08a8debbf9fe7",
+  "stage/iald_app_providers.py": "a52c03e4941d2ef334af08e918f8006bcfd265032ed238595aef3e06f1c13201",
+  "stage/iald_web_server.py": "09092097edfc464dc0a37bca8abd86d89cdd7ca1bbccaf6a56ec8ae58ac2faea"
+}
