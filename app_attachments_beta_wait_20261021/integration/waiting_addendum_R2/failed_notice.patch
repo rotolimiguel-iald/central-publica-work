@@ -1,0 +1,39 @@
+--- waiting_R1/iald.js
++++ waiting_addendum_R2/iald.js
+@@ -4251,6 +4251,14 @@
+ }
+ 
+ // Presentation distinguishes an accepted job from a locally attempted send.
++function failedJobNotice(failure, notice) {
++  if (!failure?.terminal || failure.status !== 'failed' || !notice ||
++      typeof notice !== 'object' || Array.isArray(notice) ||
++      typeof notice.tipo !== 'string' || !notice.tipo || notice.tipo === 'em_andamento' ||
++      typeof notice.texto !== 'string' || !notice.texto.trim()) return null;
++  return { ...notice, retirar_resposta: true };
++}
++
+ function backgroundFailureText(job, error, cancelled = false) {
+   if (error?.terminal) return error.message;
+   if (cancelled) return 'Pedido de parada registrado. A confirmação precisa ser consultada no servidor.';
+@@ -4453,7 +4461,7 @@
+   } catch (error) {
+     failure = error;
+     if (currentTurn() && !error.detached) {
+-      avisarBackground(backgroundFailureText(job, error, controller.signal.reason?.type === 'user_cancel'));
++      avisarBackground(failedJobNotice(error, aviso)?.texto || backgroundFailureText(job, error, controller.signal.reason?.type === 'user_cancel'));
+     }
+   } finally {
+     betaWaiting.stop();
+@@ -4495,10 +4503,10 @@
+       // Interrupted network delivery is never a normal answer, sealed or otherwise.
+       bruto = ''; selo = null; pensamento = ''; texto = '';
+       corpo.parentElement._bruto = '';
+-      deliveryNotice = failure?.terminal ? {
++      deliveryNotice = failedJobNotice(failure, aviso) || (failure?.terminal ? {
+         tipo: failure.status === 'cancelled' ? 'resposta_interrompida' : 'falha_motor',
+         texto: failure.message, retirar_resposta: true,
+-      } : null;
++      } : null);
+       pintarAviso(corpo.parentElement, conteudo, deliveryNotice || failure?.aviso || {
+         tipo: 'estado_nao_confirmado', retirar_resposta: true,
+         texto: backgroundFailureText(job, failure, controller.signal.reason?.type === 'user_cancel'),

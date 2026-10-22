@@ -1,0 +1,566 @@
+<!doctype html><meta charset="utf-8"><body>RUNNING</body><script type="module">
+// Optional local module: a failed import stays unavailable for this page lifetime.
+let byteTransportModule;
+function loadByteTransport() {
+  if (!byteTransportModule) byteTransportModule = import('./iald_transport.mjs').catch(() => null);
+  return byteTransportModule;
+}
+
+// Durable transport only. All HTTP uses the app's authenticated request function.
+const TERMINAL_JOB_STATUSES = new Set(['completed', 'failed', 'cancelled', 'interrupted', 'expired']);
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/;
+const ACCOUNT = /^[0-9a-f]{64}$/;
+const STATUSES = new Set(['queued', 'running', ...TERMINAL_JOB_STATUSES]);
+const copy = (value) => JSON.parse(JSON.stringify(value));
+
+class PendingChatJobError extends Error {
+  constructor(message, extra = {}) {
+    super(message); this.name = 'PendingChatJobError'; this.pending = true;
+    Object.assign(this, extra);
+  }
+}
+class TerminalChatJobError extends Error {
+  constructor(status, message) {
+    super(message); this.name = 'TerminalChatJobError'; this.terminal = true; this.status = status;
+  }
+}
+const detached = () => new PendingChatJobError('Acompanhamento pausado; a resposta permanece no servidor.', { detached: true });
+const defaultSleep = (ms, signal) => new Promise((resolve, reject) => {
+  if (signal?.aborted) { reject(detached()); return; }
+  const finish = () => { signal?.removeEventListener('abort', stop); resolve(); };
+  const timer = setTimeout(finish, ms);
+  const stop = () => { clearTimeout(timer); signal.removeEventListener('abort', stop); reject(detached()); };
+  signal?.addEventListener('abort', stop, { once: true });
+});
+
+// Account-scoped durable JSON. No media permission changes or provider calls.
+// IndexedDB owns atomic full snapshots; WebStorage stores only small pointers.
+function createChatLocalStore({ indexedDB = globalThis.indexedDB, crypto = globalThis.crypto, keyRange = globalThis.IDBKeyRange } = {}) {
+  let opening;
+  const failure = () => new PendingChatJobError('Não foi possível verificar o armazenamento local. O conteúdo deve ser preservado; novo envio ou confirmação de entrega estão bloqueados.');
+  async function database() {
+    if (!indexedDB || !crypto?.subtle) throw failure();
+    if (!opening) opening = new Promise((resolve, reject) => {
+      const r = indexedDB.open('iald-chat-durable-json-v1', 1);
+      r.onupgradeneeded = () => r.result.createObjectStore('json');
+      r.onerror = r.onblocked = () => reject(failure());
+      r.onsuccess = () => {
+        const db = r.result;
+        db.onversionchange = () => { db.close(); opening = null; };
+        resolve(db);
+      };
+    }).catch(e => { opening = null; throw e; });
+    return opening;
+  }
+  async function transaction(mode, action) {
+    const db = await database();
+    return new Promise((resolve, reject) => {
+      let result;
+      const tx = db.transaction('json', mode);
+      tx.oncomplete = () => resolve(result);
+      tx.onabort = tx.onerror = () => reject(failure());
+      try { const r = action(tx.objectStore('json')); r.onsuccess = () => { result = r.result; }; }
+      catch (_) { tx.abort(); reject(failure()); }
+    });
+  }
+  const digest = async raw => {
+    const bytes = new TextEncoder().encode(raw);
+    const hash = await crypto.subtle.digest('SHA-256', bytes);
+    return { bytes: bytes.length, sha256: Array.from(new Uint8Array(hash), b => b.toString(16).padStart(2, '0')).join('') };
+  };
+  function validate(owner, kind) {
+    if (!ACCOUNT.test(owner) || !['history', 'payload'].includes(kind)) throw failure();
+  }
+  async function get(owner, kind, ref) {
+    validate(owner, kind);
+    if (!ref || ref.owner !== owner || ref.kind !== kind || ref.v !== 1 ||
+        typeof ref.key !== 'string' || !ref.key.startsWith(owner + ':' + kind + ':')) throw failure();
+    const record = await transaction('readonly', store => store.get(ref.key));
+    if (!record || record.owner !== owner || record.kind !== kind || typeof record.raw !== 'string') throw failure();
+    const pin = await digest(record.raw);
+    if (pin.sha256 !== record.sha256 || pin.bytes !== record.bytes ||
+        (kind === 'payload' && ref.key !== owner + ':payload:' + pin.sha256)) throw failure();
+    return record.raw;
+  }
+  async function put(owner, kind, raw) {
+    validate(owner, kind);
+    if (typeof raw !== 'string') throw failure();
+    const pin = await digest(raw);
+    // One atomic current history per owner; immutable payloads by content hash.
+    const key = owner + ':' + kind + ':' + (kind === 'history' ? 'current' : pin.sha256);
+    const ref = { v: 1, owner, kind, key };
+    await transaction('readwrite', store => store.put({ owner, kind, raw, ...pin }, key));
+    if (await get(owner, kind, ref) !== raw) throw failure();
+    return ref;
+  }
+  async function remove(owner, kind, ref) {
+    await get(owner, kind, ref); // Never delete a different scope or broken ref.
+    await transaction('readwrite', store => store.delete(ref.key));
+  }
+  async function purge(owner) {
+    validate(owner, 'history');
+    if (!keyRange) throw failure();
+    const range = keyRange.bound(owner + ':', owner + ':\uffff');
+    await transaction('readwrite', store => store.delete(range));
+    const left = await transaction('readonly', store => store.getAllKeys(range));
+    if (left.length) throw failure();
+  }
+  return { put, get, remove, purge };
+}
+
+function createDurableChatJobs({ request, storage, payloadStore = null, randomUUID = () => crypto.randomUUID(),
+  sleep = defaultSleep, onPending = () => {}, onSubmitted = () => {}, onState = () => {}, onScopeLost = () => {}, requestTimeout = 20000 }) {
+  let owner = '', generation = 0, byteTransport = null;
+  const notifyState = (record) => { try { onState(copy(record)); } catch (_) { /* UI observer only. */ } };
+  const active = new Set();
+  const key = (account) => 'iald_chat_jobs_v1:' + encodeURIComponent(account);
+  const context = () => {
+    if (!owner) throw detached();
+    return { owner, generation };
+  };
+  const current = (scope) => scope.owner === owner && scope.generation === generation;
+  const check = (scope) => { if (!current(scope)) throw detached(); };
+  function loseScope() {
+    pause(); owner = ''; onScopeLost();
+    throw detached();
+  }
+
+  function read(account = owner) {
+    try {
+      const raw = storage.getItem(key(account));
+      const records = raw == null ? [] : JSON.parse(raw);
+      if (!Array.isArray(records) || records.some((r) => !r || r.owner !== account || !UUID.test(r.request_id)
+        || (r.payload && (r.payload.account !== account || r.payload.request_id !== r.request_id)))) throw new Error();
+      return records;
+    } catch (_) { throw new PendingChatJobError('Não foi possível ler os pedidos pendentes deste usuário.'); }
+  }
+  function write(records, scope) {
+    check(scope);
+    try {
+      const raw = JSON.stringify(records.map(r => r.payload_ref ? { ...r, payload: null } : r));
+      storage.setItem(key(scope.owner), raw);
+      if (storage.getItem(key(scope.owner)) !== raw) throw new Error();
+    } catch (_) { throw new PendingChatJobError('Sem espaço para guardar o pedido. Nenhum novo envio será iniciado.'); }
+  }
+  function update(record, scope, changes = {}) {
+    check(scope);
+    const records = read(scope.owner);
+    const index = records.findIndex((r) => r.request_id === record.request_id);
+    if (index < 0) throw new PendingChatJobError('O registro local mudou. Retome pela lista de respostas do servidor.');
+    const next = { ...records[index], ...changes };
+    write(records.map((r, i) => i === index ? next : r), scope);
+    Object.assign(record, next);
+    return record;
+  }
+  function assertRecord(record, scope) {
+    check(scope);
+    if (!record || record.owner !== scope.owner || !UUID.test(record.request_id)) throw detached();
+  }
+  async function http(path, options, scope, signal, pageBinding = null) {
+    check(scope);
+    const controller = new AbortController();
+    const abort = () => controller.abort();
+    if (signal?.aborted) throw detached();
+    signal?.addEventListener('abort', abort, { once: true });
+    active.add(controller);
+    const timer = setTimeout(abort, requestTimeout);
+    try {
+      const transport = pageBinding ? byteTransport : null;
+      const wirePath = transport ? path + '&transport=' + encodeURIComponent(transport.query) : path;
+      const response = await request(wirePath, { ...options, cache: 'no-store', signal: controller.signal });
+      check(scope);
+      if (response.status === 401) loseScope();
+      if (response.status === 410 && (!options.method || options.method === 'GET') &&
+          /^\/api\/chat-jobs\/[0-9a-f-]{36}(?:\?after=\d+)?$/.test(path)) {
+        throw new TerminalChatJobError('expired', 'Esta resposta temporária expirou. Nenhum novo pedido foi enviado.');
+      }
+      let body;
+      try { body = response.ok && transport
+        ? await transport.readPage(response, pageBinding) : await response.json();
+      } catch (_) { throw new PendingChatJobError('Resposta do servidor ilegível. O recebimento ou a conclusão não puderam ser confirmados.', { noRetry: true }); }
+      check(scope);
+      if (!response.ok) {
+        throw new PendingChatJobError(response.status === 401 ? 'Entre novamente para recuperar sua resposta.'
+          : 'Não foi possível confirmar o estado do pedido agora. Nenhum novo envio foi feito.', {
+          httpStatus: response.status,
+          aviso: body?.bloqueado ? { tipo: 'bloqueado', texto: String(body.error || 'Conta bloqueada.') } : null,
+        });
+      }
+      return body;
+    } catch (error) {
+      if (!current(scope) || signal?.aborted) throw detached();
+      if (error instanceof PendingChatJobError || error instanceof TerminalChatJobError) throw error;
+      throw new PendingChatJobError('Conexão interrompida. Reconecte para consultar o estado do pedido, sem reenviá-lo.');
+    } finally {
+      clearTimeout(timer); active.delete(controller);
+      signal?.removeEventListener('abort', abort);
+    }
+  }
+  const post = (path, body, scope, signal) => http(path, {
+    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body),
+  }, scope, signal);
+  async function verifyAccount(scope, signal) {
+    const session = await http('/api/chat-jobs/session', {}, scope, signal);
+    if (!ACCOUNT.test(session?.account || '') || session.account !== scope.owner) loseScope();
+    byteTransport = null;
+    if (session.transport) {
+      const module = await loadByteTransport();
+      check(scope);
+      const negotiated = module ? await module.createSessionTransport(session) : null;
+      check(scope);
+      byteTransport = negotiated;
+    }
+  }
+
+  function checkJob(value, record) {
+    if (!value || !UUID.test(value.id) || !STATUSES.has(value.status)
+      || typeof value.conversation_id !== 'string' || value.conversation_id !== record.conversation_id
+      || (record.id && value.id !== record.id)) {
+      throw new PendingChatJobError('Identidade ou estado da resposta inconsistente; entrega suspensa.');
+    }
+  }
+  async function begin(body) {
+    const scope = context();
+    await verifyAccount(scope);
+    if (!body || typeof body !== 'object' || !/^[A-Za-z0-9_-]{1,64}$/.test(body.iald_conv || '')) {
+      throw new PendingChatJobError('A conversa precisa de um identificador válido antes do envio.');
+    }
+    const request_id = randomUUID();
+    if (!UUID.test(request_id)) throw new PendingChatJobError('Não foi possível criar um identificador seguro.');
+    const records = read();
+    if (records.some((r) => r.conversation_id === body.iald_conv && r.phase !== 'saved')) {
+      throw new PendingChatJobError('Esta conversa já tem uma resposta pendente. Aguarde sua recuperação.');
+    }
+    const record = { owner, request_id, id: null, conversation_id: body.iald_conv,
+      payload: copy({ ...body, request_id, account: scope.owner }), phase: 'pending', attempted: false,
+      cancel_requested: false, created: Date.now() };
+    if (payloadStore) {
+      record.payload_ref = await payloadStore.put(scope.owner, 'payload', JSON.stringify(record.payload));
+      check(scope);
+    }
+    write([...records, record], scope); // Mandatory verified write BEFORE any submit.
+    return record;
+  }
+  async function submit(record, scope, signal) {
+    assertRecord(record, scope);
+    if (record.id) return;
+    await verifyAccount(scope, signal);
+    // An uncertain POST is recovered by identity, never by resubmitting its body.
+    if (record.attempted || read(scope.owner).some((r) => r.request_id === record.request_id && r.attempted)) {
+      const recovered = await http('/api/chat-jobs/' + record.request_id, {}, scope, signal);
+      checkJob(recovered, record);
+      update(record, scope, { id: recovered.id, phase: 'streaming', status: recovered.status });
+      notifyState(record);
+      return;
+    }
+    if (record.payload_ref) {
+      if (!payloadStore) throw new PendingChatJobError('Armazenamento do pedido indisponível.');
+      record.payload = JSON.parse(await payloadStore.get(scope.owner, 'payload', record.payload_ref));
+      check(scope);
+    }
+    if (!record.payload) throw new PendingChatJobError('Pedido sem corpo local; recupere-o pela lista do servidor.');
+    if (record.payload.account !== scope.owner || record.payload.request_id !== record.request_id) throw detached();
+    const fullJSON = JSON.stringify(record.payload);
+    const prepared = byteTransport
+      ? await byteTransport.prepare(new TextEncoder().encode(fullJSON)) : { body: fullJSON };
+    check(scope);
+    if (signal?.aborted) throw detached();
+    if (read(scope.owner).some((r) => r.request_id === record.request_id && r.attempted)) {
+      throw new PendingChatJobError('O envio deste pedido já foi iniciado; recupere-o pelo identificador.', { noRetry: true });
+    }
+    update(record, scope, { attempted: true });
+    const response = await http('/api/chat-jobs', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' }, body: prepared.body,
+    }, scope, signal);
+    checkJob(response, record);
+    update(record, scope, { id: response.id, phase: 'streaming', status: response.status });
+    notifyState(record);
+    onSubmitted(copy(record));
+  }
+  async function cancel(record) {
+    const scope = context();
+    assertRecord(record, scope);
+    update(record, scope, { cancel_requested: true }); // Only explicit user actions call this.
+    if (!record.attempted && !record.id) {
+      update(record, scope, { status: 'cancelled', local_cancel: true });
+      return;
+    }
+    // The implemented server uses request_id as its job ID. Never resubmit a
+    // possibly unsent inference just to cancel it; retry only the cancel action.
+    const response = await post('/api/chat-jobs/' + (record.id || record.request_id) + '/cancel', {}, scope);
+    checkJob(response, record);
+    update(record, scope, { id: response.id, status: response.status });
+  }
+
+  async function* stream(record, { signal } = {}) {
+    const scope = context();
+    assertRecord(record, scope);
+    if (record.status === 'expired') throw new TerminalChatJobError('expired', 'Esta resposta temporária expirou. Nenhum novo pedido foi enviado.');
+    if (record.local_cancel) throw new TerminalChatJobError('cancelled', 'Pedido cancelado antes do envio.');
+    if (record.cancel_requested) await cancel(record);
+    else {
+      if (record.id) await verifyAccount(scope, signal);
+      try { await submit(record, scope, signal); }
+      catch (error) {
+        // Only a verified local intent with no attempt can mean not submitted.
+        try {
+          if (!error.detached && current(scope) && !record.id && !record.attempted &&
+              read(scope.owner).some(r => r.request_id === record.request_id && r.attempted === false)) error.notSubmitted = true;
+        } catch (_) { /* Unreadable intent is uncertainty, never permission to retry. */ }
+        throw error;
+      }
+    }
+    if (record.local_cancel) throw new TerminalChatJobError('cancelled', 'Pedido cancelado antes do envio.');
+    let cursor = 0, sawDone = false, sawError = false;
+    // Every resumed observer replays from zero into a fresh UI buffer. No partial
+    // answer is persisted as final and no replay appends to an earlier draft.
+    while (true) {
+      check(scope);
+      let page;
+      try { page = await http('/api/chat-jobs/' + record.id + '?after=' + cursor, {}, scope, signal,
+        { kind: 'page', job_id: record.id, after: cursor }); }
+      catch (error) {
+        if (error instanceof TerminalChatJobError && error.status === 'expired') update(record, scope, { status: 'expired' });
+        throw error;
+      }
+      checkJob(page, record);
+      if (!Array.isArray(page.events) || !Number.isSafeInteger(page.cursor) || typeof page.has_more !== 'boolean') {
+        throw new PendingChatJobError('Página de eventos inválida; a resposta continua pendente.');
+      }
+      const previous = cursor;
+      for (const event of page.events) {
+        if (!event || !Number.isSafeInteger(event.seq) || event.seq <= 0 || typeof event.data !== 'string') {
+          throw new PendingChatJobError('Evento inválido; a resposta continua pendente.');
+        }
+        if (event.seq <= cursor) continue;
+        const data = event.data.trim();
+        let parsed = null;
+        if (data !== '[DONE]') {
+          try { parsed = JSON.parse(data); } catch (_) { throw new PendingChatJobError('Evento de resposta ilegível; entrega suspensa.'); }
+        }
+        const withdrawn = parsed?.iald_aviso?.retirar_resposta === true;
+        if (event.seq !== cursor + 1 && !withdrawn) throw new PendingChatJobError('Faltam eventos da resposta; retomaremos a leitura integral.');
+        cursor = event.seq;
+        // Moderation deliberately removes prior durable events. Only the explicit
+        // withdrawal event may bridge that gap; the UI discards all earlier text.
+        if (withdrawn) { sawDone = false; sawError = false; }
+        if (data === '[DONE]') { sawDone = true; continue; }
+        if (sawDone) throw new PendingChatJobError('Há eventos após a conclusão; entrega suspensa.');
+        if (parsed?.error) sawError = true;
+        yield 'data: ' + event.data;
+        check(scope);
+      }
+      if (page.cursor !== cursor || (page.has_more && cursor === previous)) {
+        throw new PendingChatJobError('Cursor de recuperação inconsistente; entrega suspensa.');
+      }
+      update(record, scope, { status: page.status });
+      notifyState(record);
+      if (page.has_more) continue; // Drain all pages immediately before checking completion.
+      if (TERMINAL_JOB_STATUSES.has(page.status)) {
+        if (page.status !== 'completed' || sawError) {
+          throw new TerminalChatJobError(page.status === 'completed' ? 'failed' : page.status,
+            page.status === 'cancelled' ? 'Resposta interrompida a seu pedido.'
+              : 'A geração não concluiu. O pedido não foi reenviado automaticamente.');
+        }
+        if (!sawDone) throw new PendingChatJobError('Conclusão sem marcador final; a resposta permanece pendente.');
+        yield 'data: [DONE]';
+        return;
+      }
+      await sleep(1000, signal);
+    }
+  }
+
+  async function discover(hasConversation) {
+    const scope = context();
+    await verifyAccount(scope);
+    const response = await http('/api/chat-jobs', {}, scope);
+    if (response?.account !== scope.owner) loseScope();
+    if (!response || !Array.isArray(response.jobs)) throw new PendingChatJobError('Lista de respostas inválida.');
+    const records = read();
+    for (const job of response.jobs) {
+      if (!job || !UUID.test(job.id) || !STATUSES.has(job.status) || typeof job.conversation_id !== 'string') {
+        throw new PendingChatJobError('Identidade inválida na lista de respostas.');
+      }
+      if (!hasConversation(job.conversation_id, scope.owner)) continue;
+      let record = records.find((r) => r.id === job.id || r.request_id === job.id);
+      if (record) {
+        if (record.conversation_id !== job.conversation_id) throw new PendingChatJobError('Conversa de recuperação inconsistente.');
+        record.id = job.id; record.status = job.status;
+      } else {
+        record = { owner: scope.owner, request_id: job.id, id: job.id, conversation_id: job.conversation_id,
+          payload: null, phase: 'streaming', attempted: true, cancel_requested: false, status: job.status,
+          created: typeof job.created === 'number' ? job.created * 1000 : Date.now() };
+        records.push(record);
+      }
+    }
+    write(records, scope);
+    return records.filter((r) => hasConversation(r.conversation_id, scope.owner));
+  }
+  async function acknowledge(record) {
+    const scope = context();
+    assertRecord(record, scope);
+    if (record.phase !== 'saved') throw new PendingChatJobError('A resposta precisa ser salva antes da confirmação de entrega.');
+    if (!record.local_cancel && record.status !== 'expired') await post('/api/chat-jobs/' + record.id + '/ack', {}, scope);
+    write(read().filter((r) => r.request_id !== record.request_id), scope);
+    if (payloadStore && record.payload_ref) {
+      try { await payloadStore.remove(scope.owner, 'payload', record.payload_ref); }
+      catch (_) { onPending('Entrega confirmada; limpeza local do corpo ainda pendente.'); }
+    }
+  }
+  async function delivered(record, save) {
+    const scope = context();
+    assertRecord(record, scope);
+    await save(); // Must throw if conversation persistence failed.
+    check(scope);
+    update(record, scope, { phase: 'saved', payload: null });
+    await acknowledge(record);
+  }
+  function pause() {
+    byteTransport = null;
+    generation += 1;
+    for (const controller of active) controller.abort();
+  }
+  async function purgeConversation(conversation) {
+    const scope = context();
+    if (!/^[A-Za-z0-9_-]{1,64}$/.test(conversation)) throw new Error('Conversa inválida.');
+    await post('/api/chat-jobs/conversations/' + encodeURIComponent(conversation) + '/delete', {}, scope);
+    write(read().filter((r) => r.conversation_id !== conversation), scope);
+  }
+  return {
+    begin, stream, cancel, discover, acknowledge, delivered, purgeConversation,
+    pending: () => owner ? read() : [],
+    owner: () => owner,
+    pause,
+    setOwner(account) {
+      if (typeof account !== 'string' || !ACCOUNT.test(account)) account = '';
+      if (account !== owner) { pause(); owner = account; }
+    },
+    forgetOwner() {
+      const scope = context();
+      storage.removeItem(key(scope.owner));
+      pause(); owner = '';
+    },
+    report(error) { if (!error.detached) onPending(error.message); },
+  };
+}
+
+
+function persistirConversasBackground() {
+  if (!backgroundOwner) throw new PendingChatJobError('A conta precisa ser identificada antes de salvar.');
+  mediaAssertHistory(S.conversas);
+  const owner = backgroundOwner, epoch = backgroundEpoch;
+  const key = backgroundHistoryKey(owner);
+  const raw = JSON.stringify({ conversas: S.conversas, ativa: S.ativaId });
+  const save = async () => {
+    if (owner !== backgroundOwner || epoch !== backgroundEpoch) throw detached();
+    const ref = await chatLocalStore.put(owner, 'history', raw);
+    if (owner !== backgroundOwner || epoch !== backgroundEpoch) throw detached();
+    const pointer = JSON.stringify({ chat_local_history_v1: ref });
+    try {
+      localStorage.setItem(key, pointer);
+      if (localStorage.getItem(key) !== pointer) throw new Error();
+    } catch (_) { throw new PendingChatJobError('Não foi possível registrar o histórico neste aparelho. A confirmação de entrega permanece bloqueada.'); }
+  };
+  // Snapshot at call time; serialize commits so an older async save cannot win.
+  const result = backgroundHistoryWrites.catch(() => {}).then(save);
+  backgroundHistoryWrites = result;
+  return result;
+}
+
+const results = [], observations = [];
+const account='a'.repeat(64), second='b'.repeat(64);
+let counter=0;
+const nextId=()=> 'a27ed052-2026-4221-9321-'+String(++counter).padStart(12,'0');
+const equal=(a,b)=>{if(JSON.stringify(a)!==JSON.stringify(b))throw Error('not equal');};
+const ok=v=>{if(!v)throw Error('assertion failed');};
+const rejects=async fn=>{let caught=false;try{await fn();}catch(_){caught=true;}ok(caught);};
+const test=async(name,fn)=>{try{await fn();results.push({name,status:'PASS'});}catch(e){results.push({name,status:'FAIL',error:String(e.stack||e)});}};
+function quotaStore(cap=5*1024*1024){const map=new Map();return {getItem:k=>map.get(k)??null,setItem(k,v){const next=new Map(map);next.set(k,v);const bytes=[...next].reduce((n,[a,b])=>n+2*(a.length+b.length),0);if(bytes>cap)throw Error('synthetic quota');map.set(k,v);},removeItem:k=>map.delete(k),bytes:()=>[...map].reduce((n,[a,b])=>n+2*(a.length+b.length),0),map};}
+let localStorage=quotaStore(),backgroundOwner=account,backgroundEpoch=0,backgroundHistoryWrites=Promise.resolve(),S={conversas:[],ativaId:'c1'};
+const chatLocalStore=createChatLocalStore();
+const backgroundHistoryKey=a=>'iald_conversas_owner_v1:'+a;
+const mediaAssertHistory=()=>{};
+function make(store=chatLocalStore,mode={}){
+ const calls=[];let id;
+ const request=async(path,options={})=>{
+  calls.push({path,method:options.method||'GET',body:options.body});
+  if(path.endsWith('/session'))return new Response(JSON.stringify({account:mode.account||account}));
+  if(options.method==='POST' && path==='/api/chat-jobs'){
+    const raw=typeof options.body==='string'?options.body:new TextDecoder('utf-8',{fatal:true}).decode(options.body);
+    const body=JSON.parse(raw);id=body.request_id;mode.sent=body;
+    if(mode.uncertain)throw TypeError('simulated loss after POST');
+    return new Response(JSON.stringify({id,status:'running',conversation_id:'c1'}));
+  }
+  if(path.endsWith('/ack'))return new Response('{}');
+  const recovered=path.split('/').pop().split('?')[0];
+  if(path.includes('?after='))return new Response(JSON.stringify({id:recovered,status:'completed',conversation_id:'c1',cursor:2,has_more:false,events:[{seq:1,data:JSON.stringify({choices:[{delta:{content:'PUBLIC_OK'}}]})},{seq:2,data:'[DONE]'}]}));
+  return new Response(JSON.stringify({id:recovered,status:'completed',conversation_id:'c1'}));
+ };
+ const jobs=createDurableChatJobs({request,storage:localStorage,payloadStore:store,randomUUID:nextId});jobs.setOwner(account);
+ return {jobs,calls,mode};
+}
+const drain=async(jobs,record)=>{const lines=[];for await(const l of jobs.stream(record))lines.push(l);return lines;};
+await test('IDB full multiMB exact UTF8/hash, reopen and account isolation',async()=>{
+ const raw=JSON.stringify({text:'🙂文'.repeat(500000)});const ref=await chatLocalStore.put(account,'payload',raw);
+ equal(await createChatLocalStore().get(account,'payload',ref),raw);
+ await rejects(()=>chatLocalStore.get(second,'payload',ref));
+ await rejects(()=>chatLocalStore.get(account,'payload',{...ref,key:ref.key.slice(0,-1)+'x'}));
+});
+await test('real IDB: corrupt record hash and missing ref refuse',async()=>{
+ const ref=await chatLocalStore.put(account,'payload','PUBLIC_CORRUPT');
+ const db=await new Promise((resolve,reject)=>{const r=indexedDB.open('iald-chat-durable-json-v1',1);r.onsuccess=()=>resolve(r.result);r.onerror=reject;});
+ await new Promise((resolve,reject)=>{const tx=db.transaction('json','readwrite');tx.objectStore('json').put({owner:account,kind:'payload',raw:'ALTERED',sha256:'0'.repeat(64),bytes:7},ref.key);tx.oncomplete=resolve;tx.onabort=reject;});db.close();
+ await rejects(()=>chatLocalStore.get(account,'payload',ref));
+ await rejects(()=>chatLocalStore.get(account,'payload',{v:1,owner:account,kind:'payload',key:account+':payload:'+'0'.repeat(64)}));
+});
+for(const [kind,content] of [['image_1_2MB','data:image/png;base64,'+btoa(String.fromCharCode(7).repeat(1200000))],['document_1_4Mchars','PUBLIC_SYNTHETIC_DOCUMENT\n'+'x'.repeat(1400000)]]){
+ await test(kind+' history+outbox below synthetic quota, exact body restart and ack',async()=>{
+  localStorage=quotaStore();S={ativaId:'c1',conversas:[{id:'c1',mensagens:[{role:'user',content}]}]};
+  await persistirConversasBackground();const pointer=JSON.parse(localStorage.getItem(backgroundHistoryKey(account)));
+  equal(JSON.parse(await chatLocalStore.get(account,'history',pointer.chat_local_history_v1)),{conversas:S.conversas,ativa:'c1'});
+  let client=make();const record=await client.jobs.begin({iald_conv:'c1',stream:true,messages:[{role:'user',content}]});
+  ok(!client.calls.some(c=>c.method==='POST'));
+  const persisted=client.jobs.pending()[0];equal(persisted.payload,null);ok(persisted.payload_ref);
+  client=make();const restored=client.jobs.pending()[0];await drain(client.jobs,restored);
+  equal(client.mode.sent.messages[0].content,content);equal(client.mode.sent.request_id,record.request_id);
+  let saved=false;await client.jobs.delivered(restored,async()=>{await persistirConversasBackground();saved=true;});ok(saved);
+  equal(client.calls.filter(c=>c.path==='/api/chat-jobs'&&c.method==='POST').length,1);
+  equal(client.calls.filter(c=>c.path.endsWith('/ack')).length,1);equal(client.jobs.pending(),[]);
+  observations.push({kind,webstorage_bytes:localStorage.bytes(),content_chars:content.length,posts:1});
+ });
+}
+await test('uncertain POST restart only GET even if payload storage is unavailable',async()=>{
+ localStorage=quotaStore();let c=make(chatLocalStore,{uncertain:true});const r=await c.jobs.begin({iald_conv:'c1',messages:[{role:'user',content:'public'}]});
+ await rejects(()=>drain(c.jobs,r));equal(c.calls.filter(x=>x.method==='POST').length,1);ok(c.jobs.pending()[0].attempted);
+ c=make({get:async()=>{throw Error('unavailable');}});await drain(c.jobs,c.jobs.pending()[0]);equal(c.calls.filter(x=>x.method==='POST').length,0);
+});
+await test('payload transaction failure prevents outbox and POST',async()=>{
+ localStorage=quotaStore();const c=make({put:async()=>{throw Error('commit abort');}});
+ await rejects(()=>c.jobs.begin({iald_conv:'c1',messages:[]}));equal(c.jobs.pending(),[]);equal(c.calls.filter(x=>x.method==='POST').length,0);
+});
+await test('WebStorage metadata quota failure after payload commit prevents POST',async()=>{
+ localStorage=quotaStore(5);const c=make();await rejects(()=>c.jobs.begin({iald_conv:'c1',messages:[]}));equal(c.calls.filter(x=>x.method==='POST').length,0);
+});
+await test('account switch while payload commit prevents intent/POST',async()=>{
+ localStorage=quotaStore();let c;const store={put:async(...args)=>{const ref=await chatLocalStore.put(...args);c.jobs.setOwner(second);return ref;}};c=make(store);
+ await rejects(()=>c.jobs.begin({iald_conv:'c1',messages:[]}));equal(c.calls.filter(x=>x.method==='POST').length,0);equal(c.jobs.pending(),[]);
+});
+await test('no acknowledgement after history save rejection',async()=>{
+ localStorage=quotaStore();const c=make();const r=await c.jobs.begin({iald_conv:'c1',messages:[{role:'user',content:'ok'}]});await drain(c.jobs,r);
+ await rejects(()=>c.jobs.delivered(r,async()=>{throw Error('history commit failed');}));equal(c.calls.filter(x=>x.path.endsWith('/ack')).length,0);ok(c.jobs.pending().length===1);
+});
+await test('legacy inline pending body retained and exact on POST',async()=>{
+ localStorage=quotaStore();const c=make(null),r=await c.jobs.begin({iald_conv:'c1',messages:[{role:'user',content:'legacy🙂'}]});ok(c.jobs.pending()[0].payload);await drain(c.jobs,c.jobs.pending()[0]);equal(c.mode.sent.messages[0].content,'legacy🙂');
+});
+await test('serial history saves retain latest full snapshot',async()=>{
+ localStorage=quotaStore();S={ativaId:'c1',conversas:[{id:'c1',text:'first'}]};const first=persistirConversasBackground();S.conversas[0].text='last🙂';const last=persistirConversasBackground();await Promise.all([first,last]);
+ const ref=JSON.parse(localStorage.getItem(backgroundHistoryKey(account))).chat_local_history_v1;equal(JSON.parse(await chatLocalStore.get(account,'history',ref)).conversas[0].text,'last🙂');
+});
+await test('Uint8Array Request body preserves multiMB exact bytes on browser fetch API',async()=>{
+ const raw=new TextEncoder().encode(JSON.stringify({text:'🙂Z'.repeat(500000)}));const req=new Request('https://example.invalid/local-only',{method:'POST',body:raw});const received=new Uint8Array(await req.arrayBuffer());equal(received.length,raw.length);ok(received.every((x,i)=>x===raw[i]));
+});
+await test('no IndexedDB fails closed without transient fallback',async()=>{const unavailable=createChatLocalStore({indexedDB:null});await rejects(()=>unavailable.put(account,'payload','raw'));});
+const result={status:results.every(x=>x.status==='PASS')?'PASS':'FAIL',tests:results.length,results,observations,scope:'Real Chromium IndexedDB transactions with account-scoped test database in isolated profile; app durable and persistence functions extracted unchanged; stub HTTP, zero provider/network. Synthetic quota; not iOS/WebKit validation.'};
+document.body.textContent=JSON.stringify(result);document.title=result.status;
+
+</script>

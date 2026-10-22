@@ -1,0 +1,82 @@
+PREPARACAO MECANICA — NAO INSTALADO / NAO COMPILADO / NAO PUBLICADO
+
+Referencia: ../SESSION_REFERENCE.json
+Unidade: F9.APP_ANEXOS_BETA_20261021; parent: codex-app-01a094df.
+Project da propria referencia confirmado. Check de delivery recusou
+task_not_working_or_already_satisfied: requisito aberto, dependente de repair/waiting.
+Esta preparacao nao reivindica delivery, nao altera a missao e nao conclui requisito.
+
+1. Integracao posterior pelo parent
+As devolucoes repair/waiting precisam ser revisadas e integradas pelo parent.
+Se ambas mudarem o mesmo arquivo, primeiro produzir um arquivo integrado unico;
+prepare.py recusa destinos/nomes duplicados, nao escolhe um agente por cima do outro.
+Criar manifest JSON explicito com assets e runtime (exemplo de formato abaixo).
+Cada baseline e SHA256 vem dos bytes atuais; null significa ausencia esperada.
+Nunca usar hash do candidato como baseline da producao.
+
+{
+  "assets": [{"name":"iald.js", "source":"CAMINHO_ABSOLUTO_DO_STAGE_INTEGRADO",
+    "sha256":"SHA256_REAL_DO_STAGE", "baselines":{
+      "C:\\IALD\\projetos_pyhton\\IALD\\app\\iald.js":"SHA256_REAL",
+      "C:\\IALD\\projetos_pyhton\\IALD\\iald-app\\www\\iald.js":"SHA256_REAL",
+      "C:\\IALD\\projetos_pyhton\\IALD\\iald-app\\ios\\App\\App\\public\\iald.js":"SHA256_REAL",
+      "C:\\IALD\\projetos_pyhton\\IALD\\iald-app\\android\\app\\src\\main\\assets\\public\\iald.js":"SHA256_REAL"
+    }}],
+  "runtime": [{"source":"STAGE_ABSOLUTO", "destination":"DESTINO_PY_ABSOLUTO",
+    "sha256":"SHA256_REAL_DO_STAGE", "baseline":"SHA256_REAL_DESTINO"}]
+}
+
+Comando de preparacao posterior: C:\Python314\python.exe -B -X utf8 prepare.py manifest.json
+Escreve somente neste release: stage congelado, install_plan.json, NATIVE_PLAN.json,
+INPUT_MANIFEST.json e PRIVATE_GIT_PLAN.json. Nao executado nesta preparacao.
+Nativos exigem baseline Android32/iOS37 e preparam Android4.1(33)/iOS4.1(38).
+Plano parcial/falha: preservar evidencias; nao repetir sobre arquivos existentes.
+
+2. Gates antes de qualquer instalacao futura
+Parent deve satisfazer repair/waiting com revisao distinta, reivindicar delivery
+e obter project/check atuais. guards.py usa a referencia e o dono parent existentes.
+Criar validation/final_checks.json: passed=true e plan_sha256 real; deve representar
+validacao efetiva da integracao, nao apenas sintaxe.
+Revisor independente real deve criar validation/review_final.json com status PASS,
+reviewer, plan_sha256, transaction_sha256, maintenance_sha256 e tool_pins.
+tool_pins exige EXATAMENTE todos os nomes do conjunto required em guards.py,
+com SHA256 lido dos arquivos finais. O nome do revisor sozinho nao autentica revisao.
+Nenhum recibo PASS/plano final foi fabricado nesta preparacao.
+
+3. Instalacao futura, pelo parent, somente apos revisao
+deploy_controlled.py reutiliza maintenance.py/transaction.py da entrega anterior.
+Antes de suspender processo: review + validacao + pinos + science + preflight.
+Durante janela exclusiva: quiet, backup de bytes, CAS de cada destino, troca atomica,
+rollback condicional sem sobrescrever escritor concorrente; ciencia reconferida.
+Supervisor existente retomado em finally; somente filho web. Backups mobile ficam
+em release/mobile_backups, fora dos assets empacotados; demais backups ao lado.
+Nenhum destes comandos foi executado aqui. O parent decide a janela autorizada.
+
+4. Mobile futuro
+mobile_release.py build reutiliza o build offline e auditoria APK/AAB anteriores,
+lista dinamica de assets, pinos de ferramentas e certificado do APK32 existente.
+Exige instalacao conferida, plano/review final e preflight delivery valido.
+Gradle --offline; saidas em release/mobile_stage/build33; tentativa unica,
+sem limpar/repetir diretorio existente. Pode falhar se cache offline insuficiente.
+Nao lemos credenciais; Gradle futuro utiliza a assinatura ja configurada.
+iOS38: somente candidato de versao/recursos; compilacao iOS depende do ambiente
+Apple/Xcode Cloud e NAO e um build offline executavel neste Windows.
+PRIVATE_GIT_PLAN e apenas lista explicita de arquivos/pinos para o parent conferir.
+Runners explicitos mobile_release.py commit / push foram preparados por reutilizacao.
+Commit verifica branch, URLs fetch/push, index vazio, lista exata de diffs e SHA256;
+push verifica HEAD, bytes commitados e baseline remoto antes do envio unico.
+Cada fase grava INTENT exclusivo; resultado incerto nunca e repetido automaticamente.
+Push privado pode iniciar Cloud; exige execucao futura do parent e recibo proprio.
+publish_apk33.py SOURCE_APK AUDIT_JSON publica aditivamente apenas APK33:
+exige revisao final, instalacao/auditoria/recursos/assinatura conferidos e preflight.
+validation/mobile_review.json deve ter status PASS, publisher_sha256 e audit_sha256
+reais, apos revisao independente do APK/AAB gerados. Nao foi criado neste preparo.
+APK_PUBLICATION_INTENT impede repeticao; preserva APKs anteriores e recusa destino
+existente. Download autenticado/hash e anonimo sem bytes devem ser testados depois.
+Distribuicao Equipe/Piloto, APK autenticado e instalacao fisica seguem pendentes.
+
+5. Evidencias desta preparacao
+REUSE_PINS.json: origens/hash da reutilizacao (retrato inicial dos adaptados).
+PREPARATION_CHECKS.json: verificacoes locais isoladas e pinos finais das ferramentas.
+Cinco fontes cientificas e oito pinos de ferramentas foram conferidos somente leitura.
+Nao executar automaticamente ferramentas de deploy/build ao importar ou testar.

@@ -1,0 +1,137 @@
+"""Candidate one-shot Android build and private Git runners; explicit phases only."""
+from pathlib import Path
+import sys,os,json,hashlib,subprocess,zipfile,re
+from prepare import W
+from guards import reviewed, science
+from mobile_prepare.build_log import collect
+D=W/'mobile_stage';R=Path(r'C:\IALD\projetos_pyhton\IALD\iald-app')
+def sha(p):return hashlib.sha256(p.read_bytes()).hexdigest()
+def save(p,d):p.open('xb').write(json.dumps(d,ensure_ascii=False,indent=2).encode())
+def git(*args):
+    p=subprocess.run(['git','-C',str(R),*args],capture_output=True)
+    if p.returncode:raise RuntimeError('Git refused operation '+args[0])
+    return p.stdout
+def gs(*args):return git(*args).decode().strip()
+# Assets come exclusively from the reviewed final plan.
+SURFACES=(R.parent/'app',R/'www',R/'ios/App/App/public',R/'android/app/src/main/assets/public')
+NATIVES=('ios/App/App.xcodeproj/project.pbxproj','android/app/build.gradle')
+URLS={'https://github.com/rotolimiguel-iald/iald-app.git','git@github.com:rotolimiguel-iald/iald-app.git'}
+
+def resource_pins(plan):
+    rows=plan['files'];destinations=[Path(f['destination']).resolve() for f in rows]
+    assert len(destinations)==len(set(destinations))
+    pins={}
+    for name in plan['assets']:
+        matches=[]
+        for surface in SURFACES:
+            target=(surface/name).resolve()
+            row=next(f for f in rows if Path(f['destination']).resolve()==target)
+            source=Path(row['source']).resolve(strict=True)
+            assert source.is_relative_to(W.resolve()) and sha(source)==row['sha256']
+            assert sha(target)==row['sha256']
+            matches.append(row['sha256'])
+        assert len(set(matches))==1
+        pins[name]=matches[0]
+    return pins
+
+def checked():
+    plan=reviewed(installed=True)
+    deployment=json.loads((W/'deployment.json').read_bytes())
+    assert deployment['status']=='INSTALLED_RESTART_REQUIRED'
+    assert deployment['plan_sha256']==sha(W/'install_plan.json')
+    for f in plan['files']:
+        assert deployment['files'][str(Path(f['destination']).resolve())]==f['sha256']
+    resource_pins(plan)
+    native=json.loads((W/'NATIVE_PLAN.json').read_bytes())
+    assert {Path(f['destination']).resolve() for f in native['files']}=={(R/n).resolve() for n in NATIVES}
+    for f in native['files']:
+        assert sha(Path(f['destination']))==f['sha256']
+    gradle=(R/NATIVES[1]).read_text(encoding='utf-8')
+    ios=(R/NATIVES[0]).read_text(encoding='utf-8')
+    assert re.findall(r'versionCode\s+(\d+)',gradle)==['33']
+    assert re.findall(r'CURRENT_PROJECT_VERSION = (\d+);',ios)==['38','38']
+    assert re.findall(r'MARKETING_VERSION = ([^;]+);',ios)==['4.1','4.1']
+    science()
+    tools=json.loads((W/'mobile_prepare/TOOL_PLAN.json').read_bytes())
+    assert Path(tools['android_project']).resolve()==(R/'android').resolve()
+    for f in tools['tool_pins']+[tools['baseline_apk']]:assert sha(Path(f['path']))==f['sha256']
+    return plan
+
+def build():
+    checked();D.mkdir(exist_ok=True);a=D/'build33';a.mkdir(exist_ok=False)
+    p=json.loads((W/'mobile_prepare/TOOL_PLAN.json').read_bytes());env=os.environ.copy()
+    for n in ['DEBUG','JAVA_OPTS','GRADLE_OPTS','JAVA_TOOL_OPTIONS','JDK_JAVA_OPTIONS','_JAVA_OPTIONS']:env.pop(n,None)
+    env.update(JAVA_HOME=str(Path(p['tools']['java']).parent.parent),ANDROID_HOME=p['android_sdk'],ANDROID_SDK_ROOT=p['android_sdk'])
+    cmd=[p['wrapper'],'--offline','--no-daemon','--console=plain','--no-configuration-cache','-Dfile.encoding=UTF-8','-Dsun.stdout.encoding=UTF-8','-Dsun.stderr.encoding=UTF-8','-Diald.mobile.output='+str(a),':app:bundleRelease',':app:assembleRelease']
+    cmd[5:5]=['--gradle-user-home',p['gradle_user_home'],'--project-cache-dir',str(a/'project-cache'),'--init-script',str(W/'android33.init.gradle')]
+    save(a/'INTENT.json',dict(no_repeat=True,versionCode=33))
+    b=collect(cmd,cwd=p['android_project'],env=env,label='gradle',attempt=a)
+    assert b['exit_code']==0 and b['filtered_lines']==0
+    build_log=Path(b['log']['path']).read_text(encoding='utf-8');assert 'IALD_MOBILE_VERSION 4.1(33)' in build_log and 'IALD_MOBILE_OUTPUTS_ISOLATED' in build_log
+    apk=a/'projects/app/outputs/apk/release/app-release.apk';aab=a/'projects/app/outputs/bundle/release/app-release.aab'
+    assert apk.is_file() and aab.is_file()
+    checked()
+    resources=resource_pins(checked())
+    for archive,prefix in [(apk,'assets/public/'),(aab,'base/assets/public/')]:
+        with zipfile.ZipFile(archive) as z:
+            names=z.namelist();assert len(names)==len(set(names)) and z.testzip() is None
+            for n,h in resources.items():assert hashlib.sha256(z.read(prefix+n)).hexdigest()==h
+            assert not any(re.search(r'(?i)(keystore\.properties|(?:^|/)\.env(?:\.|$)|\.(jks|keystore|p12|p8|pem|key)$)',n) for n in names)
+    tools=p['tools'];commands={'badging':[tools['aapt'],'dump','badging',str(apk)],'apk_signature':[tools['java'],'-jar',tools['apksigner_jar'],'verify','--verbose','--print-certs',str(apk)],'baseline_signature':[tools['java'],'-jar',tools['apksigner_jar'],'verify','--print-certs',p['baseline_apk']['path']],'aab_signature':[tools['jarsigner'],'-J-Duser.language=en','-J-Duser.country=US','-verify',str(aab)]}
+    commands['aab_certificate']=[tools['keytool'],'-J-Duser.language=en','-J-Duser.country=US','-printcert','-jarfile',str(aab)]
+    commands['aab_signature'].insert(-1,'-verbose')
+    logs={}
+    for n,c in commands.items():
+        out=collect(c,cwd=a,env=env,label=n,attempt=a);assert out['exit_code']==0 and not out['filtered_lines'];logs[n]=Path(out['log']['path']).read_text(encoding='utf-8')
+    assert "versionCode='33'" in logs['badging'] and "versionName='4.1'" in logs['badging']
+    jarlog=logs['aab_signature'];assert 'jar verified.' in jarlog.lower()
+    assert 'unsigned entries' not in jarlog.lower() and 'jar is unsigned' not in jarlog.lower()
+    assert len(re.findall(r'^\s*s[mki? ]*\s+\d+\s+',jarlog,re.M))>0
+    cert=lambda t:re.findall(r'certificate SHA-256 digest:\s*([0-9a-fA-F]+)',t)
+    assert cert(logs['apk_signature']) and cert(logs['apk_signature'])==cert(logs['baseline_signature'])
+    aab_cert=re.findall(r'SHA256:\s*([0-9A-Fa-f:]+)',logs['aab_certificate']);assert len(aab_cert)==1
+    assert aab_cert[0].replace(':','').lower()==cert(logs['apk_signature'])[0].lower()
+    save(D/'AUDIT.json',dict(status='PASS',versionCode=33,apk=str(apk),aab=str(aab),apk_sha256=sha(apk),aab_sha256=sha(aab),resources=resources,signer_matches_previous=True,build=b))
+def commit():
+    plan=checked();D.mkdir(exist_ok=True)
+    assert not (D/'COMMIT_INTENT.json').exists() and gs('branch','--show-current')=='codex/mobile-release'
+    allowed=[str((surface/name).relative_to(R)).replace('\\','/') for surface in SURFACES[1:3] for name in resource_pins(plan)]+list(NATIVES)
+    assert len(allowed)==2*len(plan['assets'])+2 and len(set(allowed))==len(allowed)
+    assert gs('remote','get-url','origin') in URLS and gs('remote','get-url','--push','origin') in URLS
+    assert not git('diff','--cached','--name-only').strip()
+    changed=set(gs('diff','HEAD','--name-only').splitlines())
+    untracked=set(gs('ls-files','--others','--exclude-standard').splitlines())
+    android_untracked={str((SURFACES[3]/n).relative_to(R)).replace('\\','/') for n in plan['assets']}
+    assert changed<=set(allowed) and untracked<=set(allowed)|android_untracked
+    assert changed|(untracked&set(allowed))==set(allowed)
+    base=gs('rev-parse','HEAD');save(D/'COMMIT_INTENT.json',dict(baseline=base,allowed=allowed,no_repeat=True))
+    for n in allowed:
+        tracked=gs('ls-files','--stage','--',n)
+        mode=tracked.split()[0] if tracked else '100644'
+        assert mode=='100644'
+        oid=gs('hash-object','-w','--no-filters','--',n)
+        git('update-index','--add','--cacheinfo',mode,oid,n)
+        assert hashlib.sha256(git('show',':'+n)).hexdigest()==sha(R/n)
+    assert set(gs('diff','--cached','--name-only').splitlines())==set(allowed)
+    git('commit','-m','Repair attachments and add animated beta waiting indicator')
+    head=gs('rev-parse','HEAD');assert gs('rev-parse','HEAD^')==base
+    for n in allowed:assert hashlib.sha256(git('show',head+':'+n)).hexdigest()==sha(R/n)
+    save(D/'COMMIT.json',dict(status='COMMITTED_NOT_PUSHED',baseline=base,commit=head,files={n:sha(R/n) for n in allowed}))
+
+def push():
+    plan=checked();d=json.loads((D/'COMMIT.json').read_bytes());assert not (D/'PUSH_INTENT.json').exists()
+    urls={'https://github.com/rotolimiguel-iald/iald-app.git','git@github.com:rotolimiguel-iald/iald-app.git'}
+    assert gs('remote','get-url','origin') in urls and gs('remote','get-url','--push','origin') in urls
+    assert gs('rev-parse','HEAD')==d['commit'] and not git('diff','HEAD','--name-only').strip() and not git('diff','--cached','--name-only').strip()
+    allowed_untracked={str((SURFACES[3]/n).relative_to(R)).replace('\\','/') for n in plan['assets']}
+    assert set(gs('ls-files','--others','--exclude-standard').splitlines())<=allowed_untracked
+    for n,h in d['files'].items():assert sha(R/n)==h and hashlib.sha256(git('show',d['commit']+':'+n)).hexdigest()==h
+    remote=gs('ls-remote','--heads','origin','refs/heads/codex/mobile-release').split();assert remote[0]==d['baseline']
+    save(D/'PUSH_INTENT.json',dict(commit=d['commit'],no_repeat=True))
+    git('push','--porcelain','origin','HEAD:refs/heads/codex/mobile-release')
+    assert gs('ls-remote','--heads','origin','refs/heads/codex/mobile-release').split()[0]==d['commit']
+    save(D/'PUSH.json',dict(status='PUSHED_VERIFIED',commit=d['commit'],ios_build='4.1(38)',cloud_pending=True))
+if __name__=='__main__':
+    if len(sys.argv)!=2 or sys.argv[1] not in ['build','commit','push']:
+        raise SystemExit('Explicit reviewed phase required')
+    dict(build=build,commit=commit,push=push)[sys.argv[1]]()

@@ -1,0 +1,39 @@
+--- baseline/iald_app_spend.py
++++ stage/iald_app_spend.py
+@@ -16,7 +16,7 @@
+ import re
+ import threading
+ 
+-from iald_app_providers import MODELS
++from iald_app_providers import MODELS, admission_input_bound
+ from iald_orcamento import BudgetError, SpendingGuard
+ 
+ 
+@@ -51,10 +51,12 @@
+         self.guard = wrap_guard(SpendingGuard(folder / 'public_spend.sqlite3'), 'app_provider')
+ 
+     def before(self, provider, body, input_bound, *, media_plan=None):
+-        """Reserve uncached UTF-8 input bound plus the model's maximum output.
++        """Reserve the verified typed input estimate plus the model's maximum output.
+ 
+-        The caller's bound must cover the complete final JSON, including tools
+-        and previous reasoning/results. No tokenizer/API or CPT conversion.
++        The caller's bound must cover the complete final body, including tools
++        and previous reasoning/results. Revalidate with the same admission
++        estimator; never compare image-token estimates to base64 byte lengths.
++        No tokenizer/API or CPT conversion; no discount on rates/output caps.
+         Return the reservation ID only after SQLite has committed the hold.
+         """
+         with self._lock:
+@@ -83,7 +85,10 @@
+                     if input_bound!=checked:raise ValueError('Changed multimodal bound')
+                     size=iald_media_budget.text_bound(body)
+                 else:
+-                    size = len(json.dumps(body, ensure_ascii=False, allow_nan=False).encode('utf-8'))
++                    # Recompute the same typed admission on the complete final body.
++                    # Full text/science/tools stay counted; validated image geometry
++                    # replaces base64-as-text only, with the existing safety margin.
++                    size = admission_input_bound(body)
+                 rates = tuple(_positive(v) for v in spec['rates'])
+                 if len(rates) != 3 or input_bound < size:
+                     raise ValueError()

@@ -1,0 +1,26 @@
+{
+  "schema": "iald.chat-local-store/v1",
+  "statute": "DERIVED_ENGINEERING_CONTRACT",
+  "database": "iald-chat-durable-json-v1",
+  "store": "json",
+  "owner": "Authenticated opaque account generation; never a username/client-selected owner",
+  "history": "One current full JSON snapshot per owner; IndexedDB readwrite transaction atomic. UTF8 sha256/byte length stored beside raw. localStorage pointer names owner/kind/key; fixed history key points to current atomic snapshot, NOT immutable content hash. Saves serialized in call order; old inline history stays until successful pointer write. No bulk migration.",
+  "pending": "New full payload JSON immutable by owner:payload:sha256; localStorage contains owner/request/conversation/phase/attempted and reference. Legacy inline entries continue working. Full readback+hash+bytes and account/request_id checked before POST.",
+  "ordering": [
+    "Snapshot history; wait transaction.oncomplete and verify readback; publish small pointer.",
+    "Persist full body; wait commit and readback; publish outbox metadata.",
+    "Negotiate authenticated session; hydrate exact original payload; prepare bytes.",
+    "Persist attempted=true and verify BEFORE POST.",
+    "Once attempted, recovery uses GET with same request_id; NEVER POST again automatically, even with missing payload storage.",
+    "Complete response must be durably saved before phase=saved and ACK. Delete pending payload only after server ACK and local metadata removal."
+  ],
+  "failure": "Visible refusal on missing/corrupt ref, unavailable IDB, blocked/error/abort/readback, quota or account switch. No dropping content, no partial ACK, no fallback after uncertain POST.",
+  "cleanup": "One current history per owner; payload cleanup after ACK only; failed pre-metadata commits may leave orphan blobs; no opportunistic GC in this minimal patch. Account exclusion purges own prefix and verifies no keys remain; failures visible. No cross-account deletion.",
+  "unchanged": [
+    "JSON transport/envelope, wire cap20MiB, image byte limit8,000,000, attachment count and document policies",
+    "Wallet/exemptions/consent/AV refusal/backend memory/scientific sources",
+    "Typed Request body and timeout20s; no native platform transport change without repro"
+  ],
+  "client_merge": "Apply repair storage logic then waiting R2 server-refusal+indicator patch by reviewed merge. This repair intentionally does not change the server refusal rendering conditional; local notSubmitted notice belongs to repair. No overwrite of waiting stage.",
+  "validation_limits": "Node VM simulated IndexedDB, not real WebKit. Browser harness prepared; local headless executables emitted no result. iPhone physical test required after parent approval; not performed here."
+}

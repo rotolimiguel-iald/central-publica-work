@@ -1,0 +1,111 @@
+--- baseline/iald_app_providers.py
++++ stage/iald_app_providers.py
+@@ -294,16 +294,93 @@
+     return router_media_view.project_system_messages(app_memory.project_messages(result))
+ 
+ 
++def admission_input_bound(payload):
++    """ESTIMATED local admission, NOT measured MiMo tokens or a vendor guarantee.
++
++    Text/science/tools stay byte-counted in full. Only validated typed inline
++    images are counted separately: 16px patches WITHOUT merge discount + 20% + 1024/frame.
++    Grounding: XiaomiMiMo/MiMo-V2.6-Pro-MOPD config processor patch_size=16,
++    merge_size=2, image_min_pixels=8192, image_max_pixels=8388608. MOPD is
++    open weights, NOT an API tokenizer contract. No input pixel cap/downscale
++    is assumed: count original geometry even above the MOPD max.
++    This deliberately loose engineering estimate must be reviewed against usage;
++    it is not a tokenizer. Wire JSON and image bytes are NEVER transformed.
++    """
++    import io
++    import warnings
++    image_tokens = 0
++
++    def image(url):
++        nonlocal image_tokens
++        from PIL import Image
++        if not isinstance(url, str) or ';base64,' not in url:
++            raise ValueError('Invalid inline image for admission')
++        header, encoded = url.split(';base64,', 1)
++        if header not in ('data:image/png', 'data:image/jpeg', 'data:image/gif', 'data:image/webp') or len(encoded) > 10666668:
++            raise ValueError('Unsupported or oversized image for admission')
++        try:
++            raw = base64.b64decode(encoded, validate=True)
++            if not 0 < len(raw) <= 8000000:
++                raise ValueError('Image byte budget exceeded')
++            with warnings.catch_warnings():
++                warnings.simplefilter('error', Image.DecompressionBombWarning)
++                with Image.open(io.BytesIO(raw)) as im:
++                    expected = {'PNG':'data:image/png', 'JPEG':'data:image/jpeg', 'GIF':'data:image/gif', 'WEBP':'data:image/webp'}
++                    if expected.get(im.format) != header:
++                        raise ValueError('Image signature/MIME mismatch')
++                    im.verify()
++                pixels, estimate, frames = 0, 0, 0
++                with Image.open(io.BytesIO(raw)) as im:
++                    while True:
++                        width, height = im.size
++                        pixels += width * height
++                        frames += 1
++                        if width <= 0 or height <= 0 or pixels > 25000000 or frames > 256:
++                            raise ValueError('Image geometry/frame safety budget exceeded')
++                        im.load()  # Refuse truncated/corrupt files, not just a plausible header.
++                        estimate += max(32, ((width + 15)//16)*((height + 15)//16)) + 1024
++                        try: im.seek(frames)
++                        except EOFError: break
++            image_tokens += (estimate * 120 + 99)//100
++        except (ValueError, OSError, SyntaxError, binascii.Error, Image.DecompressionBombError, Image.DecompressionBombWarning) as exc:
++            raise ValueError('Image geometry or bytes could not be validated') from exc
++        return ''
++
++    # Traverse only the supported message content slot. Unknown fields remain
++    # fully counted; never subtract arbitrary strings resembling media elsewhere.
++    counted = dict(payload)
++    if isinstance(payload.get('messages'), list):
++        counted['messages'] = []
++        for message in payload['messages']:
++            if not isinstance(message, dict) or not isinstance(message.get('content'), list):
++                counted['messages'].append(message)
++                continue
++            parts, count = [], 0
++            for part in message['content']:
++                if isinstance(part, dict) and part.get('type') == 'image_url':
++                    if set(part) != {'type', 'image_url'} or not isinstance(part['image_url'], dict) or set(part['image_url']) != {'url'}:
++                        raise ValueError('Invalid typed image shape')
++                    count += 1
++                    if count > 3 or message.get('role') != 'user':
++                        raise ValueError('Invalid image count or role')
++                    parts.append({'type':'image_url', 'image_url':{'url':image(part['image_url']['url'])}})
++                else:
++                    parts.append(part)
++            counted['messages'].append({**message, 'content':parts})
++    return len(json.dumps(counted, ensure_ascii=False, allow_nan=False).encode('utf-8')) + image_tokens
++
++
+ def output_budget(payload, maximum):
+     """Reserve the largest safe output without reducing any input or memory.
+ 
+-    UTF-8 size is a conservative admission bound, not measured provider tokens.
++    Text is bounded by UTF-8 bytes; validated images use an explicit engineering
++    estimate from original geometry. Neither is measured API token usage.
+     The 128-byte allowance covers the output field added after this calculation.
+     Reject before loading credentials if a useful response cannot be reserved.
+     """
+     if type(maximum) is not int or maximum < 1:
+         raise ValueError('Invalid output maximum')
+-    used = len(json.dumps(payload, ensure_ascii=False).encode('utf-8'))
++    used = admission_input_bound(payload)
+     available = WINDOW - used - 4096 - 128
+     reserve = min(maximum, available)
+     if reserve < min(16384, maximum):
+@@ -313,9 +390,9 @@
+ 
+ 
+ def check_window(payload, reserve):
+-    # Tokenizers differ. UTF-8 bytes plus structural margin is a conservative
+-    # admission bound, never a claim of measured provider tokens.
+-    used = len(json.dumps(payload, ensure_ascii=False).encode('utf-8'))
++    # Tokenizers differ. Full text bytes + estimated typed images + margin;
++    # never a claim of measured provider tokens or exact API processor behavior.
++    used = admission_input_bound(payload)
+     if used + reserve + 4096 > WINDOW:
+         raise ValueError('A memória e esta conversa excedem a margem técnica do modelo. '
+                          'Abra uma nova conversa; o núcleo não foi reduzido e nada foi reenviado.')

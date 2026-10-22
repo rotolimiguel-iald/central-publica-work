@@ -1,0 +1,496 @@
+--- baseline/iald.js
++++ integration/stage/app/iald.js
+@@ -114,9 +114,85 @@
+   signal?.addEventListener('abort', stop, { once: true });
+ });
+ 
+-function createDurableChatJobs({ request, storage, randomUUID = () => crypto.randomUUID(),
+-  sleep = defaultSleep, onPending = () => {}, onSubmitted = () => {}, onScopeLost = () => {}, requestTimeout = 20000 }) {
++// Account-scoped durable JSON. No media permission changes or provider calls.
++// IndexedDB owns atomic full snapshots; WebStorage stores only small pointers.
++function createChatLocalStore({ indexedDB = globalThis.indexedDB, crypto = globalThis.crypto, keyRange = globalThis.IDBKeyRange } = {}) {
++  let opening;
++  const failure = () => new PendingChatJobError('Não foi possível verificar o armazenamento local. O conteúdo deve ser preservado; novo envio ou confirmação de entrega estão bloqueados.');
++  async function database() {
++    if (!indexedDB || !crypto?.subtle) throw failure();
++    if (!opening) opening = new Promise((resolve, reject) => {
++      const r = indexedDB.open('iald-chat-durable-json-v1', 1);
++      r.onupgradeneeded = () => r.result.createObjectStore('json');
++      r.onerror = r.onblocked = () => reject(failure());
++      r.onsuccess = () => {
++        const db = r.result;
++        db.onversionchange = () => { db.close(); opening = null; };
++        resolve(db);
++      };
++    }).catch(e => { opening = null; throw e; });
++    return opening;
++  }
++  async function transaction(mode, action) {
++    const db = await database();
++    return new Promise((resolve, reject) => {
++      let result;
++      const tx = db.transaction('json', mode);
++      tx.oncomplete = () => resolve(result);
++      tx.onabort = tx.onerror = () => reject(failure());
++      try { const r = action(tx.objectStore('json')); r.onsuccess = () => { result = r.result; }; }
++      catch (_) { tx.abort(); reject(failure()); }
++    });
++  }
++  const digest = async raw => {
++    const bytes = new TextEncoder().encode(raw);
++    const hash = await crypto.subtle.digest('SHA-256', bytes);
++    return { bytes: bytes.length, sha256: Array.from(new Uint8Array(hash), b => b.toString(16).padStart(2, '0')).join('') };
++  };
++  function validate(owner, kind) {
++    if (!ACCOUNT.test(owner) || !['history', 'payload'].includes(kind)) throw failure();
++  }
++  async function get(owner, kind, ref) {
++    validate(owner, kind);
++    if (!ref || ref.owner !== owner || ref.kind !== kind || ref.v !== 1 ||
++        typeof ref.key !== 'string' || !ref.key.startsWith(owner + ':' + kind + ':')) throw failure();
++    const record = await transaction('readonly', store => store.get(ref.key));
++    if (!record || record.owner !== owner || record.kind !== kind || typeof record.raw !== 'string') throw failure();
++    const pin = await digest(record.raw);
++    if (pin.sha256 !== record.sha256 || pin.bytes !== record.bytes ||
++        (kind === 'payload' && ref.key !== owner + ':payload:' + pin.sha256)) throw failure();
++    return record.raw;
++  }
++  async function put(owner, kind, raw) {
++    validate(owner, kind);
++    if (typeof raw !== 'string') throw failure();
++    const pin = await digest(raw);
++    // One atomic current history per owner; immutable payloads by content hash.
++    const key = owner + ':' + kind + ':' + (kind === 'history' ? 'current' : pin.sha256);
++    const ref = { v: 1, owner, kind, key };
++    await transaction('readwrite', store => store.put({ owner, kind, raw, ...pin }, key));
++    if (await get(owner, kind, ref) !== raw) throw failure();
++    return ref;
++  }
++  async function remove(owner, kind, ref) {
++    await get(owner, kind, ref); // Never delete a different scope or broken ref.
++    await transaction('readwrite', store => store.delete(ref.key));
++  }
++  async function purge(owner) {
++    validate(owner, 'history');
++    if (!keyRange) throw failure();
++    const range = keyRange.bound(owner + ':', owner + ':\uffff');
++    await transaction('readwrite', store => store.delete(range));
++    const left = await transaction('readonly', store => store.getAllKeys(range));
++    if (left.length) throw failure();
++  }
++  return { put, get, remove, purge };
++}
++
++function createDurableChatJobs({ request, storage, payloadStore = null, randomUUID = () => crypto.randomUUID(),
++  sleep = defaultSleep, onPending = () => {}, onSubmitted = () => {}, onState = () => {}, onScopeLost = () => {}, requestTimeout = 20000 }) {
+   let owner = '', generation = 0, byteTransport = null;
++  const notifyState = (record) => { try { onState(copy(record)); } catch (_) { /* UI observer only. */ } };
+   const active = new Set();
+   const key = (account) => 'iald_chat_jobs_v1:' + encodeURIComponent(account);
+   const context = () => {
+@@ -142,7 +218,7 @@
+   function write(records, scope) {
+     check(scope);
+     try {
+-      const raw = JSON.stringify(records);
++      const raw = JSON.stringify(records.map(r => r.payload_ref ? { ...r, payload: null } : r));
+       storage.setItem(key(scope.owner), raw);
+       if (storage.getItem(key(scope.owner)) !== raw) throw new Error();
+     } catch (_) { throw new PendingChatJobError('Sem espaço para guardar o pedido. Nenhum novo envio será iniciado.'); }
+@@ -182,11 +258,11 @@
+       let body;
+       try { body = response.ok && transport
+         ? await transport.readPage(response, pageBinding) : await response.json();
+-      } catch (_) { throw new PendingChatJobError('Resposta do servidor ilegível; o pedido continua pendente.', { noRetry: true }); }
++      } catch (_) { throw new PendingChatJobError('Resposta do servidor ilegível. O recebimento ou a conclusão não puderam ser confirmados.', { noRetry: true }); }
+       check(scope);
+       if (!response.ok) {
+         throw new PendingChatJobError(response.status === 401 ? 'Entre novamente para recuperar sua resposta.'
+-          : 'Não foi possível acompanhar a resposta agora. O pedido foi preservado.', {
++          : 'Não foi possível confirmar o estado do pedido agora. Nenhum novo envio foi feito.', {
+           httpStatus: response.status,
+           aviso: body?.bloqueado ? { tipo: 'bloqueado', texto: String(body.error || 'Conta bloqueada.') } : null,
+         });
+@@ -195,7 +271,7 @@
+     } catch (error) {
+       if (!current(scope) || signal?.aborted) throw detached();
+       if (error instanceof PendingChatJobError || error instanceof TerminalChatJobError) throw error;
+-      throw new PendingChatJobError('Sem conexão. A resposta continua pendente; retomaremos com o mesmo pedido.');
++      throw new PendingChatJobError('Conexão interrompida. Reconecte para consultar o estado do pedido, sem reenviá-lo.');
+     } finally {
+       clearTimeout(timer); active.delete(controller);
+       signal?.removeEventListener('abort', abort);
+@@ -239,22 +315,32 @@
+     const record = { owner, request_id, id: null, conversation_id: body.iald_conv,
+       payload: copy({ ...body, request_id, account: scope.owner }), phase: 'pending', attempted: false,
+       cancel_requested: false, created: Date.now() };
++    if (payloadStore) {
++      record.payload_ref = await payloadStore.put(scope.owner, 'payload', JSON.stringify(record.payload));
++      check(scope);
++    }
+     write([...records, record], scope); // Mandatory verified write BEFORE any submit.
+     return record;
+   }
+   async function submit(record, scope, signal) {
+     assertRecord(record, scope);
+     if (record.id) return;
+-    if (!record.payload) throw new PendingChatJobError('Pedido sem corpo local; recupere-o pela lista do servidor.');
+-    if (record.payload.account !== scope.owner || record.payload.request_id !== record.request_id) throw detached();
+     await verifyAccount(scope, signal);
+     // An uncertain POST is recovered by identity, never by resubmitting its body.
+     if (record.attempted || read(scope.owner).some((r) => r.request_id === record.request_id && r.attempted)) {
+       const recovered = await http('/api/chat-jobs/' + record.request_id, {}, scope, signal);
+       checkJob(recovered, record);
+       update(record, scope, { id: recovered.id, phase: 'streaming', status: recovered.status });
++      notifyState(record);
+       return;
+     }
++    if (record.payload_ref) {
++      if (!payloadStore) throw new PendingChatJobError('Armazenamento do pedido indisponível.');
++      record.payload = JSON.parse(await payloadStore.get(scope.owner, 'payload', record.payload_ref));
++      check(scope);
++    }
++    if (!record.payload) throw new PendingChatJobError('Pedido sem corpo local; recupere-o pela lista do servidor.');
++    if (record.payload.account !== scope.owner || record.payload.request_id !== record.request_id) throw detached();
+     const fullJSON = JSON.stringify(record.payload);
+     const prepared = byteTransport
+       ? await byteTransport.prepare(new TextEncoder().encode(fullJSON)) : { body: fullJSON };
+@@ -269,6 +355,7 @@
+     }, scope, signal);
+     checkJob(response, record);
+     update(record, scope, { id: response.id, phase: 'streaming', status: response.status });
++    notifyState(record);
+     onSubmitted(copy(record));
+   }
+   async function cancel(record) {
+@@ -294,7 +381,15 @@
+     if (record.cancel_requested) await cancel(record);
+     else {
+       if (record.id) await verifyAccount(scope, signal);
+-      await submit(record, scope, signal);
++      try { await submit(record, scope, signal); }
++      catch (error) {
++        // Only a verified local intent with no attempt can mean not submitted.
++        try {
++          if (!error.detached && current(scope) && !record.id && !record.attempted &&
++              read(scope.owner).some(r => r.request_id === record.request_id && r.attempted === false)) error.notSubmitted = true;
++        } catch (_) { /* Unreadable intent is uncertainty, never permission to retry. */ }
++        throw error;
++      }
+     }
+     if (record.local_cancel) throw new TerminalChatJobError('cancelled', 'Pedido cancelado antes do envio.');
+     let cursor = 0, sawDone = false, sawError = false;
+@@ -340,6 +435,7 @@
+         throw new PendingChatJobError('Cursor de recuperação inconsistente; entrega suspensa.');
+       }
+       update(record, scope, { status: page.status });
++      notifyState(record);
+       if (page.has_more) continue; // Drain all pages immediately before checking completion.
+       if (TERMINAL_JOB_STATUSES.has(page.status)) {
+         if (page.status !== 'completed' || sawError) {
+@@ -387,6 +483,10 @@
+     if (record.phase !== 'saved') throw new PendingChatJobError('A resposta precisa ser salva antes da confirmação de entrega.');
+     if (!record.local_cancel && record.status !== 'expired') await post('/api/chat-jobs/' + record.id + '/ack', {}, scope);
+     write(read().filter((r) => r.request_id !== record.request_id), scope);
++    if (payloadStore && record.payload_ref) {
++      try { await payloadStore.remove(scope.owner, 'payload', record.payload_ref); }
++      catch (_) { onPending('Entrega confirmada; limpeza local do corpo ainda pendente.'); }
++    }
+   }
+   async function delivered(record, save) {
+     const scope = context();
+@@ -1306,28 +1406,59 @@
+ let backgroundTimer = null, backgroundNotice = '', activeBackgroundJob = null;
+ let backgroundNativeListening = false, backgroundNativeActive = null;
+ const backgroundHistoryKey = (owner) => 'iald_conversas_owner_v1:' + encodeURIComponent(owner);
++const chatLocalStore = createChatLocalStore();
++let backgroundHistoryWrites = Promise.resolve();
+ const backgroundJobs = createDurableChatJobs({
+-  request: fetchIALD, storage: localStorage,
++  request: fetchIALD, storage: localStorage, payloadStore: chatLocalStore,
+   onPending: avisarBackground,
+-  onSubmitted: () => avisarBackground('A resposta continua no servidor. Você pode sair e voltar.'),
++  onState: (record) => {
++    if (activeBackgroundJob?.request_id === record.request_id) {
++      S.backgroundTurn?.betaWaiting?.setState(record.status);
++    }
++  },
+   onScopeLost: () => {
+     desanexarRespostasBackground(true);
+     avisarBackground('A sessão mudou. Entre na conta correta para recuperar suas respostas.');
+   },
+ });
+ 
+-function avisarBackground(text) {
+-  if (text && text !== backgroundNotice) { backgroundNotice = text; avisar(text); }
++function avisarBackground(text, waiting = false) {
++  if (text && text !== backgroundNotice) {
++    backgroundNotice = text;
++    const notice = avisar(text);
++    if (waiting) notice.dataset.backgroundWait = '1';
++  }
++}
++function limparEsperaBackground() {
++  // Remove only wait notices; errors and unrelated alerts stay visible.
++  const legacy = 'A resposta continua no servidor. Você pode sair e voltar.';
++  document.querySelectorAll('.faixa').forEach((notice) => {
++    if (notice.dataset.backgroundWait === '1' || notice.firstElementChild?.textContent === legacy) {
++      if (notice.firstElementChild?.textContent === backgroundNotice) backgroundNotice = '';
++      notice.remove();
++    }
++  });
+ }
+ function persistirConversasBackground() {
+   if (!backgroundOwner) throw new PendingChatJobError('A conta precisa ser identificada antes de salvar.');
+   mediaAssertHistory(S.conversas);
+-  const key = backgroundHistoryKey(backgroundOwner);
++  const owner = backgroundOwner, epoch = backgroundEpoch;
++  const key = backgroundHistoryKey(owner);
+   const raw = JSON.stringify({ conversas: S.conversas, ativa: S.ativaId });
+-  try {
+-    localStorage.setItem(key, raw);
+-    if (localStorage.getItem(key) !== raw) throw new Error();
+-  } catch (_) { throw new PendingChatJobError('Não foi possível salvar a resposta neste aparelho. A entrega continua pendente.'); }
++  const save = async () => {
++    if (owner !== backgroundOwner || epoch !== backgroundEpoch) throw detached();
++    const ref = await chatLocalStore.put(owner, 'history', raw);
++    if (owner !== backgroundOwner || epoch !== backgroundEpoch) throw detached();
++    const pointer = JSON.stringify({ chat_local_history_v1: ref });
++    try {
++      localStorage.setItem(key, pointer);
++      if (localStorage.getItem(key) !== pointer) throw new Error();
++    } catch (_) { throw new PendingChatJobError('Não foi possível registrar o histórico neste aparelho. A confirmação de entrega permanece bloqueada.'); }
++  };
++  // Snapshot at call time; serialize commits so an older async save cannot win.
++  const result = backgroundHistoryWrites.catch(() => {}).then(save);
++  backgroundHistoryWrites = result;
++  return result;
+ }
+ function desanexarRespostasBackground(sair = false) {
+   if (sair) { mediaDetach(); mediaCapsAccount = ''; }
+@@ -1361,10 +1492,15 @@
+   const account = data.account;
+   if (account !== backgroundOwner) {
+     if (backgroundOwner) desanexarRespostasBackground(true);
++    const loadEpoch = backgroundEpoch;
+     const raw = localStorage.getItem(backgroundHistoryKey(account));
+     let history;
+     if (raw != null) {
+       history = JSON.parse(raw);
++      if (history?.chat_local_history_v1) {
++        history = JSON.parse(await chatLocalStore.get(account, 'history', history.chat_local_history_v1));
++        if (loadEpoch !== backgroundEpoch || token !== tokenApp()) throw detached();
++      }
+       if (!history || !Array.isArray(history.conversas)) throw new PendingChatJobError('Histórico desta conta ilegível.');
+     } else {
+       const legacyOwner = localStorage.getItem('iald_conversas_legacy_owner_v1');
+@@ -1406,7 +1542,7 @@
+   if (!c) throw new PendingChatJobError('A conversa de origem não está disponível nesta conta.');
+   await backgroundJobs.delivered(job, () => {
+     applyChatJobDelivery(c, job, { answer, notice, status });
+-    persistirConversasBackground(); // Mandatory verified history write before ack.
++    return persistirConversasBackground(); // Mandatory verified history write before ack.
+   });
+ }
+ 
+@@ -1451,7 +1587,7 @@
+   if (!backgroundOwner) { recuperarRespostasBackground(); return true; }
+   const pending = backgroundJobs.pending().some((job) => job.conversation_id === S.ativaId && job.phase !== 'saved');
+   if (pending) {
+-    avisarBackground('Esta conversa tem uma resposta pendente. Retomando o mesmo pedido.');
++    avisarBackground('Consultando o estado do pedido desta conversa, sem reenviá-lo.', true);
+     recuperarRespostasBackground();
+   }
+   return pending;
+@@ -2260,7 +2396,11 @@
+ 
+ function salvarConversas() {
+   try {
+-  if (!DEMO && backgroundOwner) { persistirConversasBackground(); return; }
++  if (!DEMO && backgroundOwner) {
++    const saved = persistirConversasBackground();
++    saved.catch(error => avisarBackground('Alteração preservada nesta aba, mas ainda não salva: ' + error.message));
++    return saved;
++  }
+   mediaAssertHistory(S.conversas);
+   guardar(K.conversas, S.conversas);
+   guardar(K.ativa, S.ativaId || '');
+@@ -4167,7 +4307,7 @@
+   c.atualizada = new Date().toISOString();
+   if (c.titulo === 'Nova conversa') c.titulo = texto.slice(0, 55);
+   mediaAssertHistory(S.conversas);
+-  salvarConversas();
++  await salvarConversas();
+   if (hasMedia) mediaMarkSubmitted(anexos, owner, c.id).catch(error => avisar("Mídia preservada no histórico; falha ao atualizar o rascunho local: " + error.message));
+   listarConversas();
+   atualizarTitulo();
+@@ -4226,6 +4366,59 @@
+       && /^[0-9a-f]{64}$/.test(m.selo.link)) return m.selo.link;
+   }
+   return '';
++}
++
++// Presentation distinguishes an accepted job from a locally attempted send.
++function failedJobNotice(failure, notice) {
++  if (!failure?.terminal || failure.status !== 'failed' || !notice ||
++      typeof notice !== 'object' || Array.isArray(notice) ||
++      typeof notice.tipo !== 'string' || !notice.tipo || notice.tipo === 'em_andamento' ||
++      typeof notice.texto !== 'string' || !notice.texto.trim()) return null;
++  return { ...notice, retirar_resposta: true };
++}
++
++function backgroundFailureText(job, error, cancelled = false) {
++  if (error?.terminal) return error.message;
++  if (cancelled) return 'Pedido de parada registrado. A confirmação precisa ser consultada no servidor.';
++  if (!job?.id) return job?.attempted
++    ? 'Não foi possível confirmar se o servidor recebeu a mensagem. Reconecte para consultar o mesmo pedido; ele não será reenviado automaticamente.'
++    : 'O envio não foi concluído. Nenhuma resposta foi confirmada.';
++  return 'A leitura foi interrompida. Reconecte para consultar o mesmo pedido; a conclusão ainda não foi confirmada.';
++}
++
++// Beta waiting indicator: presentation only; no request, polling or retry logic.
++function createBetaWaitIndicator({ document, iconSrc, signal, initialState = 'connecting' }) {
++  const node = document.createElement('div');
++  node.className = 'beta-wait';
++  node.setAttribute('role', 'status');
++  node.setAttribute('aria-live', 'polite');
++  node.setAttribute('aria-atomic', 'true');
++  const orbit = document.createElement('span');
++  orbit.className = 'beta-wait__orbit'; orbit.setAttribute('aria-hidden', 'true');
++  const icon = document.createElement('img');
++  icon.className = 'beta-wait__icon'; icon.src = iconSrc; icon.alt = '';
++  icon.width = 36; icon.height = 36;
++  orbit.appendChild(icon); node.appendChild(orbit);
++  const label = document.createElement('span');
++  label.className = 'beta-wait__status'; node.appendChild(label);
++  const labels = { connecting: 'Enviando pedido.', queued: 'Pedido na fila.',
++    running: 'Resposta em andamento.', recovery: 'Recuperando o mesmo pedido.' };
++  let stopped = false;
++  function stop() {
++    if (stopped) return;
++    stopped = true; node.dataset.state = 'stopped'; node.remove();
++    signal?.removeEventListener('abort', stop);
++  }
++  function setState(state) {
++    if (stopped) return;
++    if (['completed', 'failed', 'cancelled', 'interrupted', 'expired'].includes(state)) { stop(); return; }
++    if (!Object.hasOwn(labels, state) || node.dataset.state === state) return;
++    node.dataset.state = state; label.textContent = labels[state];
++  }
++  setState(initialState);
++  signal?.addEventListener('abort', stop, { once: true });
++  if (signal?.aborted) stop();
++  return { node, setState, stop };
+ }
+ 
+ async function transmitir(mensagens, retomada = null) {
+@@ -4253,13 +4446,14 @@
+   const trilha = corpo.querySelector('.trilha');
+   const conteudo = corpo.querySelector('.conteudo');
+ 
+-  const digitando = el('div', 'digitando');
+-  digitando.innerHTML = '<span class="pontos"><span></span><span></span><span></span></span><span class="beta">β = α·√e</span>';
+-  conteudo.appendChild(digitando);
++  const betaWaiting = createBetaWaitIndicator({ document, iconSrc: ICONE_BETATGL,
++    signal: controller.signal, initialState: retomada ? 'recovery' : 'connecting' });
++  turn.betaWaiting = betaWaiting;
++  limparEsperaBackground();
++  conteudo.appendChild(betaWaiting.node);
+   rolarSePerto();
+ 
+   let texto = '', pensamento = '', dentroThink = false, buferThink = '';
+-  let primeiroToken = true;
+   let detalhesPensamento = null;
+   // iald_aviso (14/09/2026): o servidor não respondeu com o modelo, só avisou
+   // (consentimento pendente, limite do dia, motor externo fora). O texto aparece na
+@@ -4310,14 +4504,12 @@
+     }, 80);
+   };
+ 
+-  const tirarDigitando = () => {
+-    if (primeiroToken) { primeiroToken = false; digitando.remove(); }
+-  };
++  const tirarDigitando = () => betaWaiting.setState('running');
+ 
+   try {
+     if (!DEMO) {
+       if (!backgroundOwner || origem.background_owner !== backgroundOwner) throw detached();
+-      persistirConversasBackground();
++      await persistirConversasBackground();
+       job ||= await backgroundJobs.begin(corpoPedidoBackground(mensagens, selagem));
+       if (!currentTurn()) throw detached();
+       activeBackgroundJob = job;
+@@ -4353,7 +4545,7 @@
+       if (ck.iald_selo) { if (!retirada && typeof ck.iald_selo === 'object') selo = ck.iald_selo; continue; }
+       if (ck.iald_status) { tirarDigitando(); passoTrilha(trilha, ck.iald_status); continue; }
+       if (ck.iald_aviso) {
+-        tirarDigitando();
++        betaWaiting.stop();
+         aviso = ck.iald_aviso;
+         if (aviso && aviso.retirar_resposta === true && !retirada) {
+           retirada = true;
+@@ -4386,10 +4578,13 @@
+     }
+   } catch (error) {
+     failure = error;
++    if (!job && !error.detached) error.notSubmitted = true;
+     if (currentTurn() && !error.detached) {
+-      avisarBackground(error.message || 'Resposta pendente. Retomaremos o mesmo pedido quando a conexão voltar.');
++      avisarBackground(failedJobNotice(error, aviso)?.texto || backgroundFailureText(job, error, controller.signal.reason?.type === 'user_cancel'));
+     }
+   } finally {
++    betaWaiting.stop();
++    if (currentTurn()) limparEsperaBackground();
+     if (paintTimer !== null) clearTimeout(paintTimer);
+     if (!currentTurn()) { corpo.parentElement.remove(); return; }
+     streamFinished = doneReceived;
+@@ -4427,15 +4622,16 @@
+       // Interrupted network delivery is never a normal answer, sealed or otherwise.
+       bruto = ''; selo = null; pensamento = ''; texto = '';
+       corpo.parentElement._bruto = '';
+-      deliveryNotice = failure?.terminal ? {
++      deliveryNotice = failedJobNotice(failure, aviso) || (failure?.terminal ? {
+         tipo: failure.status === 'cancelled' ? 'resposta_interrompida' : 'falha_motor',
+         texto: failure.message, retirar_resposta: true,
+-      } : null;
++      } : failure?.notSubmitted ? {
++        tipo: 'envio_local_bloqueado', retirar_resposta: true,
++        texto: 'Mensagem não enviada. ' + failure.message + ' Nenhuma entrega pelo servidor foi iniciada.',
++      } : null);
+       pintarAviso(corpo.parentElement, conteudo, deliveryNotice || failure?.aviso || {
+-        tipo: 'em_andamento', retirar_resposta: true,
+-        texto: controller.signal.reason?.type === 'user_cancel'
+-          ? 'Pedido de parada registrado. A confirmação será recuperada do servidor.'
+-          : 'Resposta pendente. Você pode sair e voltar; o pedido não será enviado com outro identificador.',
++        tipo: 'estado_nao_confirmado', retirar_resposta: true,
++        texto: backgroundFailureText(job, failure, controller.signal.reason?.type === 'user_cancel'),
+       }, '');
+     }
+     try {
+@@ -4470,6 +4666,7 @@
+   ocupado: ['IALD ocupada', ICONE.ampulheta, ''],
+   // 14/09/2026 (noite): a conta gratuita já tem uma resposta sendo gerada (outra aba ou
+   // outro aparelho). Não é erro: basta esperar e tentar de novo — o Refazer fica.
++  envio_local_bloqueado: ['Mensagem não enviada', ICONE.ampulheta, ''],
+   em_andamento: ['Resposta em andamento', ICONE.ampulheta, ''],
+   consentimento_ia: ['IA de terceiros', ICONE.escudo, ''],
+   // 21/09/2026 (revisão): o Claude recusou no meio (stop_reason refusal) — a parte já chegada é
+@@ -4485,6 +4682,7 @@
+   recurso_indisponivel: ['Recurso indisponível', ICONE.alerta, ''],
+   falha_motor: ['Falha na resposta', ICONE.alerta, 'erro'],
+   resposta_interrompida: ['Resposta interrompida', ICONE.alerta, ''],
++  estado_nao_confirmado: ['Estado não confirmado', ICONE.alerta, ''],
+ };
+ 
+ function pintarAviso(linha, conteudo, aviso, texto) {
+@@ -5681,6 +5879,10 @@
+     for (const c of S.conversas) if (backgroundOwner && c.background_owner === backgroundOwner) await mediaClearConversationLocal(backgroundOwner, c.id);
+   } catch (error) { alert('Conta excluída no servidor; falha visível na limpeza da mídia local: ' + error.message); }
+   if (backgroundOwner) {
++    backgroundEpoch += 1; backgroundJobs.pause();
++    await backgroundHistoryWrites.catch(() => {});
++    try { await chatLocalStore.purge(backgroundOwner); }
++    catch (error) { alert('Conta excluída no servidor; limpeza do histórico local ainda pendente: ' + error.message); }
+     localStorage.removeItem(backgroundHistoryKey(backgroundOwner));
+     backgroundJobs.forgetOwner();
+   }

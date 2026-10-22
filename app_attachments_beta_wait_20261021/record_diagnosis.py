@@ -1,0 +1,5 @@
+from task import *
+p=project();source=W/'LARGE_IMAGE_FAILURE.json'
+r=call(dict(operation='transition',reference=str(REF),actor=dict(id=OWNER,kind='agent'),expected_revision=p['receipt']['revision'],event_id='attachments-live-diagnosis',changes=dict(records=[dict(id='attachments-live-reproduced',kind='fact',statute='REAL',text='PNG sintético pequeno respondeu corretamente pela web; PDF sintético extraído. PNG sintético de1592884bytes falhou após admissão do job: pedido_invalido, memória ou histórico não cabem/validáveis; antes do executor conforme evento. Evidência negativa preservada, sem reenvio. Quota local adicional reproduzida em simulação separada; não é medição no iPhone.',sources=[dict(kind='artifact',ref=str(source),sha256=hashlib.sha256(source.read_bytes()).hexdigest())])],flow=dict(phase='repair',next_action='Integrar correção da admissão de imagens e armazenamento local; revisar e instalar indicador beta.',handles=[]))),False)
+new('DIAGNOSIS_MEMORY_RECEIPT.json',r)
+print('Diagnosis receipt',r.get('receipt',{}).get('revision'))
