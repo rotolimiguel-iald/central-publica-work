@@ -1,0 +1,92 @@
+importando os módulos de C:\IALD\Central de Patentes\work\iald_global_only_20260915\stage ...
+
+1. RESERVA PELO PAYLOAD REAL, NÃO PELA JANELA
+  [OK]    a reserva de uma chamada é menor que a da janela inteira (antes: US$ 0,009632 = a janela)  reservado US$ 0.004195 x janela US$ 0.009632
+  [OK]    a reserva = ceil(entrada estimada × 1,15) × preço de entrada + saída máxima × preço de saída  0.00419500 ~ 0.00419500
+  [OK]    a entrada estimada é o maior entre o contador e a conta por caracteres (CPT 2,91)  9582
+  [OK]    gratuito no luna, janela 32768, ~10 mil tokens por chamada fria: 6 ou mais no dia (antes: 4)  6 chamadas aceitas
+  [OK]    as ferramentas entram na estimativa  
+
+2. RESERVA ÓRFÃ DE DIA ANTERIOR
+  [OK]    no MESMO dia a reserva órfã continua contando (pode ser de outro processo vivo)  
+  [OK]    6 dias depois, as órfãs de 14/09 não bloqueiam a conta (antes: bloqueavam)  
+  [OK]    as órfãs de 14/09 foram liquidadas pelo teto ao iniciar  [('2026-09-14', 'estimated_upper_bound'), ('2026-09-20', 'reserved')]
+
+3. PEDIDO INTERROMPIDO: A ESTIMATIVA, NÃO A RESERVA CHEIA
+  [OK]    interrompido sem usage: status 'estimated_partial' (antes: estimated_upper_bound = reserva cheia)  estimated_partial
+  [OK]    valor = entrada estimada × 0,05 + saída vista × 0,40 (por 1M)  0.000107500
+  [OK]    a estimativa nunca passa da reserva  0.000134050 ≤ 0.000134050
+  [OK]    estimativa limitada à reserva não vira 'cobrança acima da reserva' (a conta segue)  
+  [OK]    com usage: liquida pelo valor exato, como antes  
+
+4. COBRANÇA ACIMA DA RESERVA: FAIL-CLOSED SEM TRAVAR TODOS PARA SEMPRE
+  [OK]    a conta que passou da reserva fica pausada hoje, com bloqueado_por 'conferencia'  conferencia
+  [OK]    OUTRA conta segue no mesmo dia (antes: motor bloqueado para todos, para sempre)  
+  [OK]    …com a reserva multiplicada pela razão cobrado/reservado do dia (3×)  0.003
+  [OK]    no dia seguinte (UTC) a conta pausada volta (antes: nunca)  
+  [OK]    3 cobranças acima da reserva no mesmo dia: o motor para para todos (fail-closed)  O serviço externo está pausado para conferência de cobrança até a renovação diár
+  [OK]    check() também recusa na pausa global  
+  [OK]    …e volta na renovação do dia  
+  [OK]    o painel lê as cobranças acima da reserva (4 registros)  4
+  [OK]    banco com a marca permanente antiga: pausado no dia em que o código novo a encontra  
+  [OK]    …e liberado no dia seguinte (antes: para sempre)  
+  [OK]    a marca antiga fica no banco (um processo com o código antigo continua parado)  
+
+5. RECUSAS COM bloqueado_por E TEXTO PARA O PÚBLICO
+  [OK]    BudgetError de 'teto da conta' traz bloqueado_por=usd_dia (antes: sem bloqueado_por)  usd_dia
+  [OK]    BudgetError de 'teto global' traz bloqueado_por=global (antes: sem bloqueado_por)  global
+  [OK]    BudgetError de 'teto do grupo gratuito' traz bloqueado_por=global_gratuito (antes: sem bloqueado_por)  global_gratuito
+  [OK]    BudgetError de 'número inválido' traz bloqueado_por=razao (antes: sem bloqueado_por)  razao
+  [OK]    nenhum texto de recusa manda pedir ao operador (antes: 'peça ao operador para ajustar a cota')  ['O saldo diário desta conta não cobre com segurança outra resposta agora. O limite renova à meia-noite UTC (21h em Brasília).', 'A IALD atingiu o limite diário
+  [OK]    pedido maior que a janela: bloqueado_por 'janela' (vira 'pedido inválido', não cota)  janela
+
+6. SALDO DE TOKENS CONFERIDO ANTES DE CADA CHAMADA
+  [OK]    saldo lido do razão: 8000 − 6000 = 2000 (limitado pelo dia)  (2000, 'tokens_dia')
+  [OK]    1ª chamada: saída limitada ao saldo menos a entrada estimada (2000 − (700 − 500) = 1800)  1800
+  [OK]    2ª chamada: desconta o já consumido (300 + 200 = 500) e supõe em cache só o prefixo (1300 − 500) (antes: 1300 − 700, o prompt anterior inteiro)  700
+  [OK]    3ª chamada: saldo 2000 − 1500 − entrada (700 − 500) = 300 (ainda ≥ 256)  300
+  [OK]    4ª chamada sem saldo: CotaEsgotada tokens_dia, texto sem 'operador'  O uso gratuito que resta hoje não cobre esta mensagem. Tente uma mensagem mais c
+  [OK]    mês quase no fim (60000 − 59900 = 100): CotaEsgotada tokens_mes  
+  [OK]    ContaComSaldo ajusta a saída ANTES de reservar e delega o resto (saldo 8000 − 100 → 5000 cabe)  [5000, 'fechou']
+[motores] controle de uso ilegível (Expecting property name enclosed in double quotes: line 1 column 2 (char 1)); gasto bloqueado
+  [OK]    razão ilegível: CotaEsgotada 'razao' (fail-closed)  
+
+7. MODERAÇÃO DE TODO O TEXTO, EM BLOCOS
+  [OK]    texto de 6.009 caracteres vira 2 blocos ≤ 6.000, sem perder o fim  
+  [OK]    palavra cortada na divisa aparece inteira num bloco (sobreposição)  
+  [OK]    PROIBIDO depois do caractere 6.000: bloqueia (antes: passava)  {'ok': True, 'bloquear': True, 'acolher': False, 'categorias': ['illicit/violent'], 'erro': '', 'blo
+  [OK]    PROIBIDO numa mensagem ANTERIOR: bloqueia (antes: só a última era moderada)  
+  [OK]    cache: o histórico já moderado não gera chamada de novo (3 chamadas, não 5)  ['histórico um', 'histórico dois', 'pergunta nova']
+  [OK]    moderação que falhou não entra no cache (ok False, e a próxima chama de novo)  ['falha um', 'falha um']
+  [OK]    autolesão com 'instructions' no MESMO bloco: acolhe, não bloqueia (regra de sempre)  {'ok': True, 'bloquear': False, 'acolher': True, 'categorias': ['self-harm', 'se
+  [OK]    outro bloco que só manda bloquear: recusa a conversa  
+  [OK]    o cache guarda o hash, não o texto  
+
+8. TROCA DE MODELO VISÍVEL, JANELA DO PLANO, CONFIGURAÇÃO
+  [OK]    gpt-4.1-nano desliga em 23/10/2026, sucessor gpt-5.6-luna [KNOWN — página lida por WebFetch]  
+  [OK]    a 23 dias: o painel mostra 'troca prevista para 2026-10-23: gpt-4.1-nano → gpt-5.6-luna'  [{'modelo': 'gpt-4.1-nano', 'sucessor': 'gpt-5.6-luna', 'data': '2026-10-23', 'dias_restantes': 23, 'automatica': True, 'texto': 'troca prevista para 2026-10-23: gpt-4.1-nano → gpt-5.6-luna'}]
+  [OK]    a 39 dias: ainda não mostra  
+  [OK]    a 26 dias do nano: as duas (a do 4.1 já feita, a do nano prevista)  [{'modelo': 'gpt-5-nano', 'sucessor': 'gpt-5.6-luna', 'data': '2026-12-11', 'dias_restantes': 26, 'automatica': True, 'texto': 'troca prevista para 2026-12-11: gpt-5-nano → gpt-5.6-luna'}, {'modelo': 'gpt-4.1-nano', 'sucessor': 'gpt-5.6-luna', 'data': '2026-10-23', 'dias_restantes': -23, 'automatica': True, 'texto': 'troca feita em 2026-10-23: gpt-4.1-nano → gpt-5.6-luna'}]
+  [OK]    troca automática desligada: mostra o desligamento, não a troca  [{'modelo': 'gpt-5-nano', 'sucessor': 'gpt-5.6-luna', 'data': '2026-12-11', 'dias_restantes': 10, 'automatica': False, 'texto': 'desligamento previsto para 2026-12-11: gpt-5-nano (troca automática desligada; sucessor indicado gpt-5.6-luna)'}]
+  [OK]    a troca que vale sai no log UMA vez por processo (antes: silenciosa)  ['[motores] AVISO: gpt-4.1-nano desligou em 2026-10-23 (UTC); respondendo com o sucessor gpt-5.6-luna (IALD_OPENAI_SUCESSOR_AUTOMATICO=1)']
+  [OK]    janela do plano: gratuito ≤ 32768; demais, a configurada  
+  [OK]    IALD_GRATUITO_ATLAS: padrão 0; '1' liga; inválido volta ao padrão com aviso  
+
+9. SEÇÕES NÃO PÚBLICAS DO ATLAS
+  [OK]    seções não públicas: §V, §VI, §X  
+  [OK]    lendo o Atlas inteiro com a supressão: nenhum trecho de §V, §VI ou §X (antes: tudo)  3
+  [OK]    começar a leitura DENTRO de §V pula a seção inteira e segue do que é público  [linhas 63 a 93: seção não pública, omitida nesta consulta]
+[linhas 94 a 124: seção não pública, omitida nesta consulta]
+  [OK]    busca de termo que só existe nas seções privadas: nenhum resultado, contagem 0  0
+  [OK]    busca de termo público segue funcionando  
+  [OK]    sem supressão (operador/assinante), exatamente como antes  
+  [OK]    read sem supressão reconstrói o arquivo byte a byte (contrato do Codex)  
+  [OK]    Atlas sem as seções esperadas: a consulta pública é RECUSADA (fail-closed)  
+
+10. NADA REAL FOI TOCADO
+  [OK]    nenhuma conexão de rede saiu do processo  []
+  [OK]    intacto: iald_uso_openai.json  f04210a3cd090daa
+  [OK]    intacto: iald_uso_openai.json.reservas.sqlite3  451d6a96dcc80914
+  [OK]    intacto: tglc_ledger.json  d772060d1574c4d8
+
+RESULTADO: 67 OK, 0 falhas

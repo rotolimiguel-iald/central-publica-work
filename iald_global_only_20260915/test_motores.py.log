@@ -1,0 +1,274 @@
+
+1. CONFIGURAÇÃO
+  [OK]    sem .env: nada muda — motor padrão e do operador = nativa  
+  [OK]    modelo padrão = o mais barato  
+  [OK]    sem chave  
+  [OK]    preço do gpt-5-nano conhecido  
+  [OK]    ferramentas padrão: só data/hora, busca e leitura de página  
+  [OK]    o repr nunca mostra a chave  
+  [OK]    motor padrão openai lido  
+  [OK]    motor desconhecido volta a nativa, com aviso  
+  [OK]    número inválido volta ao padrão, com aviso  
+  [OK]    esforço inválido volta ao padrão  
+  [OK]    tabela de preços do .env lida e item quebrado avisado  
+  [OK]    'nenhuma' desliga as ferramentas  
+  [OK]    URL sem https desliga a chave  
+
+2. QUEM USA QUAL
+  [OK]    conta comum → regra geral (openai)  
+  [OK]    operador → motor do operador (nativa)  
+  [OK]    motor fixado no painel vence a regra (conta ampliada)  
+  [OK]    valor estranho no registro não vira motor  
+  [OK]    conta inexistente → regra geral  
+  [OK]    modelo: operador tem o dele, os demais o mais barato  
+  [OK]    identificador: 64 hex, estável, sem o nome  
+  [OK]    identificador muda com a conta e com o segredo  
+
+3. CONSENTIMENTO
+  [OK]    sem registro: não consentiu  
+  [OK]    registro de consentimento v1 com data e superfície  
+  [OK]    com registro: consentiu  
+  [OK]    versão antiga ou lixo: não consentiu  
+  [OK]    o texto diz a quem, o quê, o que NÃO vai e como revogar  
+
+4. PROMPT CANÔNICO (o da loja, lido do arquivo)
+  [OK]    o texto lido confere com o sha256 do cabeçalho do próprio arquivo  826d7d04b642
+  [OK]    sem a diretiva /no_think do template Qwen  
+  [OK]    sha devolvido é o do prompt entregue  
+[motores] prompt canônico ilegível ([Errno 2] No such file or directory: 'C:\\Users\\rotol\\AppData\\Local\\Temp\\motores_3sc90852\\nao.js'); motor externo parado
+  [OK]    arquivo ausente → vazio (quem chama recusa)  
+
+5. MENSAGENS PARA O MOTOR EXTERNO
+  [OK]    primeira mensagem é developer com o prompt do SERVIDOR  
+  [OK]    o system do cliente é descartado (nada de 'assistente genérico' nem memória)  
+  [OK]    o perfil que a pessoa preencheu vai, rotulado como dado  
+  [OK]    nota de serviço diz qual modelo responde  
+  [OK]    lupa canônica entra quando a busca está disponível  
+  [OK]    instrução de linguagem entra  
+  [OK]    papel 'tool' vindo do cliente é descartado  
+  [OK]    imagem data: fica; javascript: e áudio saem  
+  [OK]    sem busca disponível, a lupa não entra  
+  [OK]    histórico longo: corta os antigos e guarda a última  descartadas=41 tokens≈28396
+  [OK]    histórico longo: mantidas são as mais recentes, em ordem  
+  [OK]    mensagem gigante é cortada no meio, com aviso, e cabe  
+  [OK]    última mensagem da IALD: recusa  
+  [OK]    sem mensagens: recusa  
+  [OK]    sem prompt canônico: recusa  
+
+6. PAYLOAD
+  [OK]    sem campos do llama/Qwen  
+  [OK]    max_completion_tokens com teto do servidor  
+  [OK]    store false, stream com usage  
+  [OK]    esforço mínimo no modo rápido  
+  [OK]    safety_identifier ≤ 64  
+  [OK]    chave de cache estável  
+  [OK]    sem ferramentas: sem tools  
+  [OK]    modo pensar: esforço low e teto 8192  
+  [OK]    com ferramentas: tools + auto  
+  [OK]    modelo que recusou o esforço: parâmetro some  
+
+7. CUSTO, RAZÃO DE USO E LIMITES
+  [OK]    custo: 2.000×0,05 + 8.000×0,005 + 1.000×0,40 por 1M = US$ 0,00054  0.00054000
+  [OK]    cache maior que a entrada não gera custo negativo  
+  [OK]    razão vazio: gasto zero  
+  [OK]    gasto por conta e global  
+  [OK]    estimada fica marcada  
+  [OK]    virou o dia UTC: gasto zera  
+  [OK]    dias antigos são podados  
+  [OK]    dentro das cotas: permite  
+  [OK]    passou da cota da conta: recusa com motivo  
+  [OK]    operador tem cota própria  
+  [OK]    passou da cota global: recusa todos  
+  [OK]    pedidos por minuto: o quarto é recusado  
+  [OK]    depois de um minuto volta  
+[motores] razão de uso ilegível (Expecting property name enclosed in double quotes: line 1 column 2 (char 1)); gasto bloqueado
+  [OK]    razão corrompido BLOQUEIA o gasto (fail-closed)  
+  [OK]    cota zero = ninguém gasta  
+
+8. CONTA DO PEDIDO
+  [OK]    uso exato registrado uma vez (fechar é idempotente)  
+  [OK]    sem usage (cliente saiu): estimado pela conta de caracteres  {'usd': 0.00054055, 'entrada': 10011, 'cache': 0, 'saida': 100, 'chamadas': 1, 'estimadas': 1, 'modelos': {'gpt-5-nano': 1}}
+  [OK]    chamada recusada antes de gerar não é cobrada  
+
+9. STREAMING E ERROS DO PROVEDOR
+  [OK]    texto chega inteiro  'Olá, mundo.'
+  [OK]    o nome do modelo e o id não vazam para o app  
+  [OK]    usage capturado e não repassado  
+  [OK]    termina com [DONE] e finish_reason stop  
+  [OK]    ao_texto recebe os pedaços  
+  [OK]    recusa do modelo aparece como texto  
+  [OK]    401 levanta ErroProvedor com a chave mascarada  HTTP 401 invalid_api_key: Incorrect API key provided: sk-***. You can find...
+  [OK]    mensagem ao usuário não fala da chave  
+  [OK]    429 sem crédito → avisa o operador  
+  [OK]    429 comum → tente de novo  
+  [OK]    5xx e rede → tente de novo  
+  [OK]    400 de reasoning_effort é reconhecido  
+  [OK]    400 de outro parâmetro não  
+  [OK]    erro no meio do stream levanta, depois do texto parcial  
+  [OK]    silêncio longo vira keepalive  
+  [OK]    a pessoa saiu no meio: a conexão com a OpenAI é fechada  
+
+10. ADAPTADOR DO AGENTE
+  [OK]    campos do llama somem; os do motor externo ficam  
+  [OK]    system vira developer; tool_calls com conteúdo vazio vira null  
+  [OK]    ferramentas do agente preservadas  
+  [OK]    o payload original do agente não é alterado  
+  [OK]    cada volta conta uma chamada  
+
+11. PLANOS NA CONFIGURAÇÃO
+  [OK]    PLANOS = gratuito, assinante, operador  
+  [OK]    Config sem planos: o padrão do contrato  
+  [OK]    teto global do gratuito US$ 2,00 e sucessor automático ligado  
+  [OK]    padrão montado depois dos campos (campos aplicados, planos presentes)  
+  [OK]    cada Config tem o seu dict de planos (mexer num não mexe no outro)  
+  [OK]    planos parcial: o padrão completa; plano e campo desconhecidos ficam fora  
+  [OK]    carregar_config sem .env: planos padrão, sem avisos  
+  [OK]    gratuito lido do .env (0 aceito nas cotas = ninguém gasta)  {'tokens_dia': 100, 'tokens_mes': 0, 'usd_dia': 0.05, 'max_saida': 800, 'agente': True, 'pensar': False}
+  [OK]    flag inválida volta ao padrão, com aviso  
+  [OK]    assinante: inválido e abaixo do mínimo voltam ao padrão, com aviso  
+  [OK]    US$ NaN é recusado (um teto NaN nunca bloquearia) e volta a None, com aviso  
+  [OK]    operador: US$ lido, saída abaixo de 256 volta ao padrão, agente desligável  
+  [OK]    teto global do gratuito e sucessor lidos  
+  [OK]    sucessor e teto inválidos voltam ao padrão, com aviso  ["IALD_OPENAI_COTA_GLOBAL_GRATUITO_USD_DIA inválido ('x'); usando 2.0", "IALD_OPENAI_SUCESSOR_AUTOMATICO inválido ('sim'); use 0 ou 1; usando 1"]
+  [OK]    NaN também é recusado nas cotas de antes  
+
+12. O PLANO DE CADA CONTA E O MOTOR DO GRATUITO
+  [OK]    campo plano válido vence (até sobre admin)  
+  [OK]    sem campo: admin → operador  
+  [OK]    sem campo e sem admin → assinante (não regressivo)  
+  [OK]    valor estranho no campo não vira plano  
+  [OK]    gratuito → openai mesmo com a regra geral na nativa  
+  [OK]    gratuito → openai mesmo com a nativa fixada no painel  
+  [OK]    assinante sem ampliação → openai mesmo com a regra geral na nativa  
+  [OK]    assinante ampliado e operador: a regra de antes  
+  [OK]    modelo do gratuito: o mais barato, mesmo se a conta for admin  
+
+13. MODELOS QUE DESLIGAM
+  [OK]    tabela de desligamentos do contrato  
+  [OK]    véspera (23:59 UTC): ainda o nano  
+[motores] AVISO: gpt-5-nano desligou em 2026-12-11 (UTC); respondendo com o sucessor gpt-5.6-luna (IALD_OPENAI_SUCESSOR_AUTOMATICO=1)
+  [OK]    no dia (UTC): o sucessor  
+  [OK]    a data é a UTC: 22h de 10/12 em Brasília já é 11/12 UTC  
+[motores] AVISO: gpt-5-nano-2025-08-07 desligou em 2026-12-11 (UTC); respondendo com o sucessor gpt-5.6-luna (IALD_OPENAI_SUCESSOR_AUTOMATICO=1)
+[motores] AVISO: gpt-5-mini desligou em 2026-12-11 (UTC); respondendo com o sucessor gpt-5.6-terra (IALD_OPENAI_SUCESSOR_AUTOMATICO=1)
+  [OK]    snapshot e mini também  
+  [OK]    sucessor automático desligado: fica o próprio  
+  [OK]    modelo fora da tabela: o próprio  
+  [OK]    modelo_para aplica o sucessor  
+
+14. PREÇOS COM ESCRITA NO CACHE
+  [OK]    gpt-5.6-luna com escrita no cache 0,25  
+  [OK]    custo com 4 valores: 2.000×0,25 + 8.000×0,02 + 1.000×1,20 por 1M = US$ 0,00186  0.00186000
+  [OK]    escrita mais barata que a entrada: vale a entrada (max)  
+  [OK]    3 valores: a conta de antes  
+  [OK]    preço com 2 valores: recusa  
+  [OK]    IALD_OPENAI_PRECOS aceita 3 ou 4 números  
+  [OK]    5 números, negativo e NaN: ignorados, com aviso  ["IALD_OPENAI_PRECOS: item inválido 'm5=1/2/3/4/5' (ignorado)", "IALD_OPENAI_PRECOS: item inválido 'neg=-1/0/1' (ignorado)", "IALD_OPENAI_PRECOS: item inválido 'nanx=nan/0/1' (ignorado)"]
+
+15. ESFORÇO POR MODELO
+  [OK]    luna no rápido com 'minimal' (não aceito) → o mais baixo dele, 'none'  
+  [OK]    luna no pensar com 'low' (aceito) → 'low'  
+  [OK]    luna: 'xhigh' aceito fica; 'minimal' no pensar → 'low'  
+  [OK]    nano: 'xhigh' no rápido → 'minimal'; 'minimal' no pensar fica  
+  [OK]    nano: 'none' → 'minimal'; 'max' no pensar → 'low'  
+  [OK]    modelo desconhecido: como antes  
+  [OK]    esforço omitido fica omitido  
+  [OK]    conjuntos do contrato  
+
+16. TOKEN CONTADO
+  [OK]    cache quente: saída + entrada nova = 1.000 + 2.000  
+  [OK]    prefixo maior que o cache: 1.000 + (10.000 − 9.000)  
+  [OK]    prefixo maior que a entrada: só a saída  
+  [OK]    cache frio: o prompt da casa não é cobrado da pessoa (300 + 9.000 − 8.700)  
+  [OK]    sem detalhes de cache  
+  [OK]    lixo não levanta e conta zero  
+
+17. RAZÃO: COTAS E PLANOS
+  [OK]    dias_guardados padrão = 40 (cobre 31 dias)  
+  [OK]    uso do dia e do mês UTC (agosto fora do mês de setembro)  {'tokens_dia': 250, 'tokens_mes': 1750, 'usd_dia': 0.005}
+  [OK]    gasto do plano hoje  
+  [OK]    31 de agosto ainda guardado em 30 de setembro  
+  [OK]    o formato de sempre continua (usuarios e global)  
+  [OK]    cotas e planos gravados no dia  {'k-ana': {'tokens': 250, 'usd': 0.005, 'chamadas': 2}, 'k-bia': {'tokens': 7, 'usd': 0.01, 'chamadas': 1}}
+  [OK]    registro sem chave e sem plano: nenhum campo novo no dia (além do gasto por hora)  
+  [OK]    virou o mês UTC: dia e mês zeram  {'tokens_dia': 0, 'tokens_mes': 0, 'usd_dia': 0.0}
+  [OK]    e o plano do dia zera  
+
+18. PERMISSÃO POR PLANO
+  [OK]    plano None + detalhado: (True, '', '')  
+  [OK]    plano None + detalhado: rótulos do caminho de antes (usd_dia, minuto)  
+  [OK]    as frases de antes, literais (e a do razão ilegível sem mandar falar com o operador)  
+  [OK]    sem detalhado continua devolvendo par  
+  [OK]    gratuito limpo: permite  
+  [OK]    tokens do dia esgotados: recusa com 'limite diário' e '21h'  Você atingiu o limite diário do uso gratuito. O limite renova à meia-noite UTC (21h em Brasília).
+  [OK]    dia seguinte, mês com folga: permite  
+  [OK]    mês esgotado (1.600 ≥ 1.500): a frase nova do mês  Você usou todo o uso gratuito deste mês. Renova no dia 1º (UTC).
+  [OK]    assinante no fim do mês: frase do mês sem a palavra 'gratuito'  Você usou todo o limite de uso desta conta neste mês. Renova no dia 1º (UTC).
+  [OK]    conta inexistente no razão: permite  
+  [OK]    US$ do dia do plano (0,004 ≥ 0,004): recusa usd_dia  
+  [OK]    duas contas na mesma chave de cota: a segunda herda o uso  
+  [OK]    US$ da chave maior que o da conta: vale o maior  
+  [OK]    ordem: US$ do dia antes dos tokens  
+  [OK]    teto global do gratuito (0,012 ≥ 0,01): recusa todos os gratuitos  A IALD atingiu o limite diário do uso gratuito de todas as contas. O limite renova à meia-noite UTC (21h em Brasília).
+  [OK]    o teto do gratuito não bloqueia assinante, operador nem o caminho de antes  
+  [OK]    teto global total: recusa todos, com 'IALD atingiu'  
+  [OK]    ordem: global total antes do global do gratuito  
+  [OK]    assinante: usd_dia None lê cota_usuario_usd NA HORA  (False, 'Você atingiu o limite diário de uso desta conta. O limite renova à meia-noite UTC (21h em Brasília).', 'usd_dia')
+  [OK]    operador: usd_dia None lê cota_operador_usd NA HORA  (False, 'Você atingiu o limite diário de uso desta conta. O limite renova à meia-noite UTC (21h em Brasília).', 'usd_dia')
+  [OK]    tokens_dia 0 = ninguém do plano gasta  
+  [OK]    teto global do gratuito 0 = nenhum gratuito gasta  
+[motores] controle de uso ilegível (Expecting property name enclosed in double quotes: line 1 column 2 (char 1)); gasto bloqueado
+  [OK]    razão corrompido com plano: recusa 'indisponível' (fail-closed)  
+[motores] controle de uso ilegível ('str' object has no attribute 'get'); gasto bloqueado
+  [OK]    dia malformado no razão: recusa 'razao'  
+[motores] controle de uso ilegível (plano desconhecido: 'vip'); gasto bloqueado
+  [OK]    plano desconhecido: recusa 'razao' (nunca libera no escuro)  
+  [OK]    pedidos por minuto com plano: recusa 'minuto'  
+  [OK]    bloqueado_por sempre no conjunto do contrato  {'', 'minuto', 'tokens_dia', 'global_gratuito', 'global', 'tokens_mes', 'razao', 'usd_dia'}
+
+19. ESTADO DA COTA
+  [OK]    usado e limite do dia, do mês e em US$  {'plano': 'gratuito', 'tokens_dia': {'usado': 300, 'limite': 1000}, 'tokens_mes': {'usado': 300, 'limite': 1500}, 'usd_dia': {'usado': 0.001, 'limite': 0.004}, 'renova_dia_utc': '2026-09-15T00:00:00+00:00', 'renova_mes_utc': '2026-10-01T00:00:00+00:00', 'definicao': 'Token contado = os tokens da resposta (incluindo o raciocínio) mais os tokens que você enviou e que não vieram do cache. As instruções fixas da IALD não entram na sua conta. Um token é um pedaço de palavra: cerca de 3 caracteres em português.'}
+  [OK]    renovação do dia e do mês em ISO UTC  
+  [OK]    definição do token contado em português  
+  [OK]    dezembro: o mês renova em janeiro do ano seguinte  
+  [OK]    agora em Brasília é convertido para UTC  
+  [OK]    assinante: limite em US$ = cota_usuario_usd  
+[motores] estado da cota de ana ilegível (Expecting property name enclosed in double quotes: line 1 column 2 (char 1))
+  [OK]    razão ilegível: {plano, erro}, sem levantar  
+[motores] estado da cota de ana ilegível (plano desconhecido: 'vip')
+  [OK]    plano desconhecido: {plano, erro}  
+
+20. CONTA DO PEDIDO COM COTA
+  [OK]    token contado com o prefixo vai à chave da cota (1.000 + 10.000 − 9.000)  {'k1': {'tokens': 2000, 'usd': 0.00054, 'chamadas': 1}}
+  [OK]    o plano recebe o US$; o formato de sempre continua  
+  [OK]    sem usage: estimada (cache 0) e, sem chave, contada na própria conta  10111 vs 10111
+  [OK]    sem plano e sem chave: grava como sempre, sem campos novos (além do gasto por hora, 15/09)  
+  [OK]    agente com duas voltas no luna: US$ com escrita no cache e tokens somados  {'ana': {'tokens': 6000, 'usd': 0.00372, 'chamadas': 2}}
+
+21. MODERAÇÃO
+  [OK]    texto limpo: ok, nada marcado  {'ok': True, 'bloquear': False, 'acolher': False, 'categorias': [], 'erro': ''}
+  [OK]    POST /moderations com omni-moderation-latest, chave só no cabeçalho, timeout 8 s  
+  [OK]    texto cortado em 6.000 caracteres  
+  [OK]    sexual/minors: bloquear  
+  [OK]    self-harm/instructions: bloquear  
+  [OK]    illicit/violent: bloquear  
+  [OK]    self-harm e self-harm/intent: acolher, sem bloquear  
+  [OK]    categoria marcada fora das duas listas: só informada  
+  [OK]    autolesão com instruções: as duas marcas, independentes  
+  [OK]    resposta com .json() (como a do requests)  
+  [OK]    HTTP 401: ok False, erro com a chave mascarada  HTTP 401 invalid_api_key: Incorrect API key provided: sk-***.
+  [OK]    exceção de rede: ok False, erro mascarado  moderação falhou: falhou com sk-***
+  [OK]    200 ilegível ou sem results: ok False  
+  [OK]    sem chave e sem https: ok False e NENHUMA chamada; texto vazio: ok sem chamada  
+  [OK]    conteúdo em partes: modera o texto  
+  [OK]    listas do contrato  
+  [OK]    instrução de acolhimento: CVV 188, gratuito, 24 horas, SAMU 192, sem instruções de autolesão  
+  [OK]    mensagem de bloqueio curta  
+
+22. PREFIXO DO SERVIDOR
+  [OK]    prefixo = estimativa da mensagem developer montada  8819
+  [OK]    sem developer na frente, lista vazia ou lixo: 0  
+  [OK]    dois developers seguidos na frente: somados  
+  [OK]    arquivos reais intocados (usuários, pedidos, uso OpenAI, razão TGL)  {}
+
+RESULTADO: 218 OK, 0 falhas
