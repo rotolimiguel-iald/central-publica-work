@@ -1,0 +1,72 @@
+REVISÃO INDEPENDENTE — ENTRADA WEB UNIFICADA COM O APP
+
+CONCLUSÃO: diff restrito e sem falha de autorização identificada. Um P2 de
+compatibilidade PWA merece correção mínima no manifesto antes de fechar a entrega.
+Não houve instalação, alteração de código, execução/importação do monólito,
+chamada ao demo ou a provedores. Orçamento público não foi inspecionado nem alterado.
+
+[P2] Preservar explicitamente o escopo anterior da PWA.
+Arquivo: stage/manifest.json:5 (start_url).
+Produção e stage omitem scope. O novo start_url muda o escopo implícito de '/' para
+'/app/'. Assim '/login', '/entrar', '/auth/...' e '/iald_chat.html', antes dentro do
+escopo, ficam fora dele. Ao renovar/instalar o manifesto, o navegador pode exibir a
+navegação de autenticação/atalhos como página fora da PWA. O id antigo preserva a
+identidade, mas não preserva o escopo. Não é bypass de autenticação.
+Correção mínima: acrescentar "scope": "/", mantendo start_url e id propostos.
+Teste recomendado: identidade antiga igual, scope '/', destino inicial novo e
+rotas locais de login/retorno incluídas; QA de instalação continua específico do
+navegador. Não alego reprodução em aparelho físico.
+Base normativa consultada: W3C Web Application Manifest, scope e aplicação do
+manifesto. Escopo omitido deriva de start_url sem arquivo, query e fragmento.
+https://www.w3.org/TR/appmanifest/#scope-member
+https://www.w3.org/TR/appmanifest/#understanding-scope
+
+CONTROLES CONFERIDOS
+- Comparação AST: somente _destino_web e static_files mudaram no servidor.
+  require_auth permaneceu idêntico; root, iald_chat.html e app/index.html continuam
+  fora das exceções públicas. O redirect legado não contorna o before_request.
+- _destino_web agora entrega o app para operador e demais contas, sem depender do
+  modelo. Esse destino não concede acesso a APIs nem altera o motor/orçamento.
+- pending_artifact_id é consumido uma vez, exige username e UUID minúsculo no formato
+  existente. Prefixo e caminho são fixos; string externa, query injetada e tipos
+  não-string não viram destino. A nova checagem de tipo evita TypeError nesse ponto.
+  require_auth e _abrir_sessao_web, que preservam o UUID durante login, não mudaram.
+- Redirect de iald_chat.html: 302 para o app com Cache-Control: no-store. Lista de
+  arquivos estáticos e sua recusa de nomes não listados permanecem iguais.
+- Service worker existente foi consultado apenas para avaliar esse atalho: usa
+  rede primeiro; o diff não introduz cache de redirecionamento nem HTML autenticado.
+- id='/iald_chat.html' corresponde ao start_url anterior usado como identidade
+  implícita. Descrição nova remove o texto antigo; ícones e display preservados.
+
+EVIDÊNCIA / LIMITES
+- 9 sondagens AST independentes do destino passaram: UUID válido, URL externa,
+  sufixo de query, '..', None, lista, inteiro, vazio e UUID maiúsculo. Nenhuma delas
+  importou o servidor ou chamou rede.
+- Medição local de escopo padrão: antes https://demo.iald.ia.br/;
+  stage https://demo.iald.ia.br/app/.
+- baseline.json confere com as duas fontes de produção atuais; os dois hashes de
+  stage conferem exatamente com checks.json. O recibo do implementador informa
+  22 checks aprovados, incluindo paridade dos recursos compartilhados. Não repeti
+  essa suíte nem certifiquei builds/aparelhos; a paridade é evidência daquele recibo.
+- Consulta externa limitada à documentação pública W3C para conferir o escopo PWA;
+  zero chamadas de inferência/pagas. Não li credenciais nem acervos privados.
+- Este parecer cobre as duas fontes propostas. Nenhum achado pede mudança de cliente
+  ou orçamento; a sugestão é um campo no manifesto já incluído nesta entrega.
+
+Emitido UTC: 2026-10-01T17:22:14.049812+00:00
+SHA256 lidos dos arquivos:
+{
+  "production": {
+    "iald_web_server.py": "09092097edfc464dc0a37bca8abd86d89cdd7ca1bbccaf6a56ec8ae58ac2faea",
+    "manifest.json": "c7f7be82bc048799e0e6d7b466c1c945aa077afaf2c4e1a450b54c3d9d81058d"
+  },
+  "stage": {
+    "iald_web_server.py": "394fcc0fc4e8f4b87e613d7ca5c03afeb133cc2437866cb8f0bfdba0bec8521c",
+    "manifest.json": "7cf557e28667c2d3a2e98c1a0d8063747931c201fc0f278da0b51335e84db371"
+  },
+  "evidence": {
+    "prepare.py": "f20fd9929b42c652a0b2ec0dc207206294d3f9921b1c38e1628f706212f8ad82",
+    "baseline.json": "afd03025240f3b32969a1f588d33af7909a097a3f7d6cf9c8d4c88407359b801",
+    "checks.json": "de15cf6dcfebc58e7a2f2bdc9d69b0de9409a4c57088946db85b33524c89492d"
+  }
+}
