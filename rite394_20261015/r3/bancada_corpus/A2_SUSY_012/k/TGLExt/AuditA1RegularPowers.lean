@@ -1,0 +1,10 @@
+import TGLExt.V351RegularImaginaryPowers
+set_option pp.universes true
+#check TGLV350.Regular.resolventPhaseFunction_sigmoid
+#print axioms TGLV350.Regular.resolventPhaseFunction_sigmoid
+#check TGLV350.Regular.sigmoidMultiplier_imaginaryPower
+#print axioms TGLV350.Regular.sigmoidMultiplier_imaginaryPower
+#check TGLV350.Regular.regularSpectralCoordinates_character
+#print axioms TGLV350.Regular.regularSpectralCoordinates_character
+#check TGLV350.Regular.regularPositiveGenerator_imaginaryPower
+#print axioms TGLV350.Regular.regularPositiveGenerator_imaginaryPower

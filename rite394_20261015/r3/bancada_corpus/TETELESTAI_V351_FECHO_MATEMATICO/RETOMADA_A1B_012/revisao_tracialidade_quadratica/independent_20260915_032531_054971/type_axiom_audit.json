@@ -1,0 +1,122 @@
+{
+  "types": {
+    "TGLV350.Regular.scalarInverseLimitTraceData": "TGLV350.Regular.scalarInverseLimitTraceData.{u} (P : TGLExt.SiteProfile) : TGLV351.RegularCoreTraceData.{u} P",
+    "TGLV350.Regular.scalarInverseLimitWeight_tracial": "TGLV350.Regular.scalarInverseLimitWeight_tracial (P : TGLExt.SiteProfile)\n  (A : ↥(VonNeumannAlgebra.toStarSubalgebra.{0} (TGLV350.Regular.regularCoreAlgebra P))) :\n  Eq.{1} (TGLV350.Regular.scalarInverseLimitWeight P (TGLV351.positiveSquare P A))\n    (TGLV350.Regular.scalarInverseLimitWeight P (TGLV351.positiveSquare P (star.{0} A)))"
+  },
+  "source_types": {
+    "root_quadratic_commutation": "private theorem root_quadratic_commutation {H : Type}\n    [NormedAddCommGroup H] [InnerProductSpace ℂ H] [CompleteSpace H]\n    (R A : H →L[ℂ] H) (hR : 0 ≤ R) (hc : Commute R A) (u : H) :\n    inner ℂ (CFC.sqrt R u) (A (CFC.sqrt R u)) = inner ℂ u ((R*A) u)",
+    "bounded_root_form_balance": "private theorem bounded_root_form_balance {H : Type}\n    [NormedAddCommGroup H] [InnerProductSpace ℂ H] [CompleteSpace H]\n    (T U V : H →L[ℂ] H) (hT : 0 ≤ T) (h1 : T ≤ 1)\n    (hi : Function.Injective T)\n    (hU : Commute T U) (hV : Commute T V)\n    (hb : (1-T)*U = T*V) (x : (resolventSquareRoot T hT hi).domain) :\n    inner ℂ (resolventSquareRoot T hT hi x) (U (resolventSquareRoot T hT hi x)) =\n      inner ℂ (x : H) (V x)",
+    "double_cut_form_supremum": "private theorem double_cut_form_supremum {H : Type}\n    [NormedAddCommGroup H] [InnerProductSpace ℂ H] [CompleteSpace H]\n    (C D p q : ℕ → H →L[ℂ] H) (x y : H)\n    (hC : ∀ n, 0 ≤ C n) (hD : ∀ n, 0 ≤ D n)\n    (hp : ∀ n, 0 ≤ p n ∧ p n ≤ 1) (hq : ∀ n, 0 ≤ q n ∧ q n ≤ 1)\n    (hCq : ∀ n m, Commute (C n) (q m))\n    (hpD : ∀ n m, Commute (p n) (D m))\n    (htp : ∀ v, Tendsto (fun n => p n v) atTop (𝓝 v))\n    (htq : ∀ v, Tendsto (fun n => q n v) atTop (𝓝 v))\n    (hbalance : ∀ n m, (inner ℂ y ((C n * q m) y)).re =\n      (inner ℂ x ((p n * D m) x)).re) :\n    (⨆ n, ENNReal.ofReal (inner ℂ y (C n y)).re) =\n      ⨆ m, ENNReal.ofReal (inner ℂ x (D m x)).re",
+    "scalar_root_cut_supremum": "private theorem scalar_root_cut_supremum (P : SiteProfile)\n    (x : (scalarTomitaPositiveRoot P).domain) :\n    (⨆ n : ℕ, ENNReal.ofReal (inner ℂ (scalarTomitaPositiveRoot P x)\n      (scalarGNSRepresentation P\n        ⟨regularInverseGeneratorCutoff P (1/((n : ℝ)+1)),\n          regularInverseGeneratorCutoff_mem P (1/((n : ℝ)+1))⟩\n        (scalarTomitaPositiveRoot P x))).re) =\n    ⨆ n : ℕ, ENNReal.ofReal (inner ℂ (x : ScalarGNSHilbert P)\n      (antiunitaryConjugate (scalarTomitaPolarFactor P)\n        (scalarGNSRepresentation P\n          ⟨regularInverseGeneratorCutoff P (1/((n : ℝ)+1)),\n            regularInverseGeneratorCutoff_mem P (1/((n : ℝ)+1))⟩) x)).re",
+    "represented_positive_root_norm": "private theorem represented_positive_root_norm {H K : Type}\n    [NormedAddCommGroup H] [InnerProductSpace ℂ H] [CompleteSpace H]\n    [NormedAddCommGroup K] [InnerProductSpace ℂ K] [CompleteSpace K]\n    (N : StarSubalgebra ℂ (H →L[ℂ] H))\n    (π : N →⋆ₐ[ℂ] (K →L[ℂ] K)) (a : N) (ha : 0 ≤ a.val)\n    (hm : hilbertPositiveSqrt a.val ∈ N) (v : K) :\n    ‖π (star (⟨hilbertPositiveSqrt a.val,hm⟩ : N)) v‖^2 =\n      (inner ℂ v (π a v)).re",
+    "scalar_inverse_cutoff_weight_form": "private theorem scalar_inverse_cutoff_weight_form (P : SiteProfile)\n    (ε : ℝ) (hε : 0 < ε) (A : scalarWeightLeftIdeal P) :\n    scalarInverseCutoffWeight P ε (positiveSquare P A.val) =\n      ENNReal.ofReal (inner ℂ\n        ((scalarTomitaPolarFactor P).symm (scalarWeightGNSEmbedding P A))\n        (scalarGNSRepresentation P\n          ⟨regularInverseGeneratorCutoff P ε,regularInverseGeneratorCutoff_mem P ε⟩\n          ((scalarTomitaPolarFactor P).symm (scalarWeightGNSEmbedding P A)))).re",
+    "scalarInverseLimitWeight_tracial": "theorem scalarInverseLimitWeight_tracial (P : SiteProfile)\n    (A : (regularCoreAlgebra P).toStarSubalgebra) :\n    scalarInverseLimitWeight P (positiveSquare P A) =\n      scalarInverseLimitWeight P (positiveSquare P (star A))",
+    "scalarInverseLimitTraceData": "def scalarInverseLimitTraceData (P : SiteProfile) : RegularCoreTraceData.{u} P"
+  },
+  "axioms": {
+    "TGLV350.Regular.scalarInverseLimitWeight_tracial": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "TGLV350.Regular.scalarInverseLimitTraceData": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ]
+  },
+  "private_axioms": {
+    "_private.TGLExt.V351QuadraticTrace.0.TGLV350.Regular.represented_positive_root_norm": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "_private.TGLExt.V351QuadraticTrace.0.TGLV350.Regular.scalar_inverse_cutoff_weight_form": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "_private.TGLExt.V351QuadraticTrace.0.TGLV350.Regular.scalar_root_cut_supremum": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "_private.TGLExt.V351QuadraticTrace.0.TGLV350.Regular.root_quadratic_commutation": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "_private.TGLExt.V351QuadraticTrace.0.TGLV350.Regular.bounded_root_form_balance": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "_private.TGLExt.V351QuadraticTrace.0.TGLV350.Regular.double_cut_form_supremum": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ]
+  },
+  "all_axioms": {
+    "_private.TGLExt.V351QuadraticTrace.0.TGLV350.Regular.represented_positive_root_norm": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "_private.TGLExt.V351QuadraticTrace.0.TGLV350.Regular.scalar_inverse_cutoff_weight_form": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "TGLV350.Regular.scalarInverseLimitWeight_tracial": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "_private.TGLExt.V351QuadraticTrace.0.TGLV350.Regular.scalar_root_cut_supremum": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "_private.TGLExt.V351QuadraticTrace.0.TGLV350.Regular.root_quadratic_commutation": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "_private.TGLExt.V351QuadraticTrace.0.TGLV350.Regular.bounded_root_form_balance": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "_private.TGLExt.V351QuadraticTrace.0.TGLV350.Regular.double_cut_form_supremum": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "TGLV350.Regular.scalarInverseLimitTraceData": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ]
+  },
+  "trace": {
+    "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\v\\.lake\\build\\lib\\lean\\TGLExt\\ReviewA1Tracialidade_quadratica.trace",
+    "bytes": 4947,
+    "sha256": "4c9b3979fc9f63438f339032e6d247b3918694bf58cf4a5913654822d0c5b190"
+  },
+  "target_traces": [
+    {
+      "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\v\\.lake\\build\\lib\\lean\\TGLExt\\V351QuadraticTrace.trace",
+      "bytes": 5543,
+      "sha256": "25aca6fee0a62444df13d9ec94514a48d4c15cd29757990930d683df2594e4b6"
+    },
+    {
+      "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\v\\.lake\\build\\lib\\lean\\TGLExt\\V351RegularCoreTraceConstruction.trace",
+      "bytes": 4476,
+      "sha256": "b6c1d5038a2c5cd795df4ae9c79456fdbe7032c1fd260793def1fb1ef62f5ffe"
+    }
+  ],
+  "exact_target_count": 2,
+  "private_helpers_audited_transitively": true,
+  "universe_annotations_normalized_only_for_parser": true
+}

@@ -1,0 +1,21 @@
+[OPEN — complemento após DEV e antes do aceite]
+
+{
+  "timestamp": "2026-09-15T00:45:40.811050-03:00",
+  "status": "ADDENDUM_AFTER_DEV_BEFORE_ACCEPTANCE",
+  "new_theorems": 2,
+  "new_definitions": 0,
+  "private_theorems": 0,
+  "correction": "Primeiro DEV falhou antes da elaboração por objeto antigo V350ScalarRightAdjointPair ausente. O fornecedor e seus imports foram reproduzidos de fonte em K com Lake, rc0, três objetos novos/alterados, nenhum fonte modificado. Tentativas seguintes expuseram timeouts de elaboração em existência inferida e reescritas amplas sobre B/inscrições GNS; foram substituídas por existência com tipo completo e composição explícita de igualdades dos mesmos fornecedores. Sem aumento de heartbeats, novos helpers, domínios ou hipóteses. Campo de pertinência à estrela usa star_mem' existente. Final DEV004340rc0 limpo.",
+  "provider_replay": {
+    "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\replay_fixed_pair_provider\\20260915_003318_050435\\run.json",
+    "bytes": 1893,
+    "sha256": "e1a2da260804dad6c89c27f949b9ce9682938ac1581d2a35af0b5fef2597dc21"
+  },
+  "final_dev": {
+    "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\dev_average_fixed_pair\\20260915_004340_982817\\run.json",
+    "bytes": 3114,
+    "sha256": "5dadf63d6e01f8265a4770dcdb297970a64fe8842e42e43261f38d114469ff39"
+  },
+  "scope": "First theorem explicitly requires star A=A AND actual polar-right membership. Second constructs A with exact value star(e_delta)*e_delta and proves both antecedents. Simultaneous fixed S/F statements include actual domains, no unrestricted domains. Does not assert e_delta selfadjoint, vector nonzero, totality, U identity, Q or trace. Negative removes only polar-right premise from the first theorem."
+}

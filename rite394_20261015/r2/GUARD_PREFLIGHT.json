@@ -1,0 +1,25 @@
+{
+  "start_utc": "2026-10-15T17:21:56.815436+00:00",
+  "end_utc": "2026-10-15T17:21:56.944153+00:00",
+  "seconds": 0.1287123000001884,
+  "command": [
+    "C:\\Python314\\python.exe",
+    "-B",
+    "-X",
+    "utf8",
+    "-c",
+    "import json,os,socket,subprocess\nfrom pathlib import Path\nroot=Path(os.environ['TGL_RITE_SANDBOX'])\nchecks=[]\ntry:\n    with open(root.parent/'rite_guard_outside_probe.tmp','x') as f:f.write('guard failed')\n    checks.append(False)\nexcept PermissionError:checks.append(True)\ntry:\n    socket.create_connection(('127.0.0.1',9),timeout=.1)\n    checks.append(False)\nexcept PermissionError:checks.append(True)\ntry:\n    subprocess.run(['cmd.exe','/c','echo','guard failed'],capture_output=True)\n    checks.append(False)\nexcept PermissionError:checks.append(True)\nwith open(root/'environment'/'inside_guard_probe.txt','x') as f:f.write('inside sandbox')\nprint(json.dumps({'checks':checks,'passed':len(checks)==3 and all(checks)}))\n"
+  ],
+  "exit_code": 0,
+  "stdout": "{\"checks\": [true, true, true], \"passed\": true}\n",
+  "stderr": "",
+  "result": {
+    "checks": [
+      true,
+      true,
+      true
+    ],
+    "passed": true
+  },
+  "guard_source_sha256": "ac56c72a5d48a49b216c70444331d2ab3d226700ddb62321dca859fb9a6f480f"
+}

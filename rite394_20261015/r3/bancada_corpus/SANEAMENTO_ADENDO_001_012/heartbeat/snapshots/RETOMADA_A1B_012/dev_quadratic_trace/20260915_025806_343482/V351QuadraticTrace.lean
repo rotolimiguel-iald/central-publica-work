@@ -1,0 +1,184 @@
+import TGLExt.V351ModularCutBalance
+import TGLExt.V351InverseLimitTracialExtension
+import TGLExt.V350PositiveRootIntertwining
+
+set_option autoImplicit false
+set_option maxHeartbeats 2400000
+
+namespace TGLV350.Regular
+open TGLExt Filter
+open scoped Topology ComplexOrder
+noncomputable section
+
+private theorem root_quadratic_commutation {H : Type}
+    [NormedAddCommGroup H] [InnerProductSpace ℂ H] [CompleteSpace H]
+    (R A : H →L[ℂ] H) (hR : 0 ≤ R) (hc : Commute R A) (u : H) :
+    inner ℂ (CFC.sqrt R u) (A (CFC.sqrt R u)) = inner ℂ u ((R*A) u) := by
+  have hs := (ContinuousLinearMap.nonneg_iff_isPositive _).mp (CFC.sqrt_nonneg R)
+  rw [hs.inner_left_eq_inner_right]
+  have he : CFC.sqrt R * A * CFC.sqrt R = R*A := by
+    rw [positive_sqrt_intertwines R R A hR hR hc.eq, mul_assoc,
+      CFC.sqrt_mul_sqrt_self R hR, hc.eq]
+  exact congrArg (fun B : H →L[ℂ] H => inner ℂ u (B u)) he
+
+private theorem bounded_root_form_balance {H : Type}
+    [NormedAddCommGroup H] [InnerProductSpace ℂ H] [CompleteSpace H]
+    (T U V : H →L[ℂ] H) (hT : 0 ≤ T) (h1 : T ≤ 1)
+    (hU : Commute T U) (hV : Commute T V)
+    (hb : (1-T)*U = T*V) (u : H) :
+    inner ℂ (CFC.sqrt (1-T) u) (U (CFC.sqrt (1-T) u)) =
+      inner ℂ (CFC.sqrt T u) (V (CFC.sqrt T u)) := by
+  rw [root_quadratic_commutation (1-T) U (sub_nonneg.mpr h1)
+    ((Commute.one_left U).sub_left hU),
+    root_quadratic_commutation T V hT hV,hb]
+
+/-- Remove one bounded contraction at a time. The suprema remain in ENNReal;
+neither side is assumed finite and no unbounded product is formed. -/
+private theorem double_cut_form_supremum {H : Type}
+    [NormedAddCommGroup H] [InnerProductSpace ℂ H] [CompleteSpace H]
+    (C D p q : ℕ → H →L[ℂ] H) (x y : H)
+    (hC : ∀ n, 0 ≤ C n) (hD : ∀ n, 0 ≤ D n)
+    (hp : ∀ n, 0 ≤ p n ∧ p n ≤ 1) (hq : ∀ n, 0 ≤ q n ∧ q n ≤ 1)
+    (hCq : ∀ n m, Commute (C n) (q m))
+    (hpD : ∀ n m, Commute (p n) (D m))
+    (htp : ∀ v, Tendsto (fun n => p n v) atTop (𝓝 v))
+    (htq : ∀ v, Tendsto (fun n => q n v) atTop (𝓝 v))
+    (hbalance : ∀ n m, (inner ℂ y ((C n * q m) y)).re =
+      (inner ℂ x ((p n * D m) x)).re) :
+    (⨆ n, ENNReal.ofReal (inner ℂ y (C n y)).re) =
+      ⨆ m, ENNReal.ofReal (inner ℂ x (D m x)).re := by
+  have hCQ (n m : ℕ) : C n * q m ≤ C n := by
+    apply sub_nonneg.mp
+    simpa only [mul_sub,mul_one] using
+      Commute.mul_nonneg (hC n) (sub_nonneg.mpr (hq m).2)
+        ((Commute.one_right (C n)).sub_right (hCq n m))
+  have hpDle (n m : ℕ) : p n * D m ≤ D m := by
+    apply sub_nonneg.mp
+    simpa only [sub_mul,one_mul] using
+      Commute.mul_nonneg (sub_nonneg.mpr (hp n).2) (hD m)
+        ((Commute.one_left (D m)).sub_left (hpD n m))
+  apply le_antisymm
+  · apply iSup_le
+    intro n
+    have ht : Tendsto (fun m => ENNReal.ofReal (inner ℂ y ((C n*q m) y)).re)
+        atTop (𝓝 (ENNReal.ofReal (inner ℂ y (C n y)).re)) :=
+      ENNReal.continuous_ofReal.continuousAt.tendsto.comp
+        (Complex.continuous_re.continuousAt.tendsto.comp
+          (tendsto_const_nhds.inner ((C n).continuous.continuousAt.tendsto.comp (htq y))))
+    apply le_of_tendsto ht
+    apply Eventually.of_forall
+    intro m
+    rw [hbalance n m]
+    exact (ENNReal.ofReal_le_ofReal (quadratic_le_of_operator_le _ _ (hpDle n m) x)).trans
+      (le_iSup (fun j => ENNReal.ofReal (inner ℂ x (D j x)).re) m)
+  · apply iSup_le
+    intro m
+    have ht : Tendsto (fun n => ENNReal.ofReal (inner ℂ x ((p n*D m) x)).re)
+        atTop (𝓝 (ENNReal.ofReal (inner ℂ x (D m x)).re)) :=
+      ENNReal.continuous_ofReal.continuousAt.tendsto.comp
+        (Complex.continuous_re.continuousAt.tendsto.comp
+          (tendsto_const_nhds.inner (htp (D m x))))
+    apply le_of_tendsto ht
+    apply Eventually.of_forall
+    intro n
+    rw [← hbalance n m]
+    exact (ENNReal.ofReal_le_ofReal (quadratic_le_of_operator_le _ _ (hCQ n m) y)).trans
+      (le_iSup (fun j => ENNReal.ofReal (inner ℂ y (C j y)).re) n)
+
+set_option maxHeartbeats 6000000 in
+private theorem scalar_root_cut_supremum (P : SiteProfile)
+    (x : (scalarTomitaPositiveRoot P).domain) :
+    (⨆ n : ℕ, ENNReal.ofReal (inner ℂ (scalarTomitaPositiveRoot P x)
+      (scalarGNSRepresentation P
+        ⟨regularInverseGeneratorCutoff P (1/((n : ℝ)+1)),
+          regularInverseGeneratorCutoff_mem P (1/((n : ℝ)+1))⟩
+        (scalarTomitaPositiveRoot P x))).re) =
+    ⨆ n : ℕ, ENNReal.ofReal (inner ℂ (x : ScalarGNSHilbert P)
+      (antiunitaryConjugate (scalarTomitaPolarFactor P)
+        (scalarGNSRepresentation P
+          ⟨regularInverseGeneratorCutoff P (1/((n : ℝ)+1)),
+            regularInverseGeneratorCutoff_mem P (1/((n : ℝ)+1))⟩) x)).re := by
+  let N := (regularCoreAlgebra P).toStarSubalgebra
+  let π : N →⋆ₐ[ℂ] (ScalarGNSHilbert P →L[ℂ] ScalarGNSHilbert P) := scalarGNSRepresentation P
+  let J := scalarTomitaPolarFactor P
+  let T := scalarTomitaResolvent P
+  let δ (n : ℕ) : ℝ := 1/((n : ℝ)+1)
+  have hδ (n : ℕ) : 0 < δ n := by dsimp [δ]; positivity
+  let c (n : ℕ) : N := ⟨regularInverseGeneratorCutoff P (δ n),regularInverseGeneratorCutoff_mem P (δ n)⟩
+  let C (n : ℕ) := π (c n)
+  let D (n : ℕ) := antiunitaryConjugate J (C n)
+  let p (n : ℕ) := π (regularDomainCut P (δ n))
+  let q (n : ℕ) := antiunitaryConjugate J (p n)
+  let y := scalarTomitaPositiveRoot P x
+  change (⨆ n, ENNReal.ofReal (inner ℂ y (C n y)).re) =
+    ⨆ m, ENNReal.ofReal (inner ℂ (x : ScalarGNSHilbert P) (D m x)).re
+  have hC (n : ℕ) : 0 ≤ C n :=
+    scalarGNSRepresentation_nonneg P (c n) (regularInverseGeneratorCutoff_nonneg P (δ n) (hδ n))
+  have hD (n : ℕ) : 0 ≤ D n := antiunitaryConjugate_nonneg J (C n) (hC n)
+  have hp (n : ℕ) : 0 ≤ p n ∧ p n ≤ 1 := by
+    have hb := regularDomainCut_bounds P (δ n) (hδ n)
+    refine ⟨scalarGNSRepresentation_nonneg P _ hb.1,?_⟩
+    have hu := scalarGNSRepresentation_monotone P
+      (show regularDomainCut P (δ n) ≤ 1 from hb.2)
+    simpa only [map_one] using hu
+  have hq (n : ℕ) : 0 ≤ q n ∧ q n ≤ 1 := by
+    refine ⟨antiunitaryConjugate_nonneg J (p n) (hp n).1,?_⟩
+    apply operator_le_of_sub_nonneg
+    have hh := antiunitaryConjugate_nonneg J (1-p n)
+      (hilbertComplement_nonneg (p n) (hp n).2)
+    change 0 ≤ (antiunitaryConjugateRealHom J) (1-p n) at hh
+    simpa only [map_sub,map_one] using hh
+  have htp (v : ScalarGNSHilbert P) : Tendsto (fun n => p n v) atTop (𝓝 v) := by
+    have hn (n : ℕ) : ‖(regularDomainCut P (δ n)).val‖ ≤ 1 :=
+      (CStarAlgebra.norm_le_norm_of_nonneg_of_le
+        (regularDomainCut_bounds P (δ n) (hδ n)).1
+        (regularDomainCut_bounds P (δ n) (hδ n)).2).trans ContinuousLinearMap.norm_id_le
+    have hh := scalarGNSRepresentation_tendsto_of_uniformly_bounded P
+      (fun n => regularDomainCut P (δ n)) 1 1 hn
+      (fun v => regularDomainCut_tendsto_identity P v) v
+    simpa only [map_one,ContinuousLinearMap.one_apply] using hh
+  have htq (v : ScalarGNSHilbert P) : Tendsto (fun n => q n v) atTop (𝓝 v) := by
+    have hh := J.continuous.continuousAt.tendsto.comp (htp (J.symm v))
+    simpa only [LinearIsometryEquiv.apply_symm_apply] using hh
+  have hCq (n m : ℕ) : Commute (C n) (q m) :=
+    (scalarTomitaPolar_core_commutes P (regularDomainCut P (δ m)) (c n)).symm
+  have hpD (n m : ℕ) : Commute (p n) (D m) :=
+    (scalarTomitaPolar_core_commutes P (c m) (regularDomainCut P (δ n))).symm
+  have hb (n m : ℕ) := scalarTomitaResolvent_double_cut_balance P (δ n) (δ m) (hδ n) (hδ m)
+  have hTC (n : ℕ) : Commute T (C n) := (hb n n).1
+  have hTD (n : ℕ) : Commute T (D n) := (hb n n).2.1
+  have hTp (n : ℕ) : Commute T (p n) := by
+    change T * π (1-(δ n : ℂ) • c n) = π (1-(δ n : ℂ) • c n) * T
+    simp only [map_sub,map_one,map_smul,mul_sub,sub_mul,mul_one,one_mul,
+      mul_smul_comm,smul_mul_assoc]
+    rw [(hTC n).eq]
+  have hTq (n : ℕ) : Commute T (q n) := by
+    have hh := (hTp n).map (antiunitaryConjugateRealHom J)
+    change Commute (antiunitaryConjugate J T) (q n) at hh
+    have he : antiunitaryConjugate J T = 1-T := by
+      ext1 v
+      change J (T (J.symm v)) = v-T v
+      rw [scalarTomitaPolarFactor_resolvent,LinearIsometryEquiv.apply_symm_apply]
+    rw [he] at hh
+    simpa only [sub_sub_cancel] using (Commute.one_left (q n)).sub_left hh
+  let u := ChatgptAudit.Continuous049.boundedGraphParameter (CFC.sqrt T)
+    (positive_sqrt_injective T (scalarTomitaResolvent_nonneg P) (scalarTomitaResolvent_injective P)) x
+  have hx : CFC.sqrt T u = (x : ScalarGNSHilbert P) :=
+    ChatgptAudit.Continuous049.bounded_graph_parameter_apply _ _ x
+  have hy : CFC.sqrt (1-T) u = y :=
+    (ChatgptAudit.Continuous049.bounded_graph_apply _ _ _ x).symm
+  apply double_cut_form_supremum C D p q x y hC hD hp hq hCq hpD htp htq
+  intro n m
+  have he := bounded_root_form_balance T (C n*q m) (p n*D m)
+    (scalarTomitaResolvent_nonneg P) (scalarTomitaResolvent_le_one P)
+    ((hTC n).mul_right (hTq m)) ((hTp n).mul_right (hTD m))
+    (by simpa only [mul_assoc] using (hb n m).2.2) u
+  rw [hx,hy] at he
+  exact congrArg Complex.re he
+
+#print axioms scalar_root_cut_supremum
+#print axioms root_quadratic_commutation
+#print axioms bounded_root_form_balance
+#print axioms double_cut_form_supremum
+end
+end TGLV350.Regular

@@ -1,0 +1,114 @@
+--- CANONICAL_READERS_SNAPSHOT.py
++++ PROPOSTA_LEITORES_EXISTENTES_V2.py
+@@ -1,31 +1,11 @@
+-_QG_FRONTIER_FLAGS = {
+-    "unconditional_continuous_corner_proved": "TGLExt.qgFrontier_unconditionalContinuousCorner",
+-    "modular_realization_constructed": "TGLExt.qgFrontier_modularRealization",
+-    "continuous_modular_realization_constructed": "TGLExt.qgFrontier_continuousModularRealization",
+-    "full_TGL_witness_constructed": "TGLExt.qgFrontier_fullTGLWitness",
+-}
++_QG_FRONTIER_FLAGS = {'unconditional_continuous_corner_proved': 'TGLV354.TraceCompletion.regularLegacyThreeLocks', 'modular_realization_constructed': 'TGLExt.qgFrontier_modularRealization', 'continuous_modular_realization_constructed': 'TGLV354.TraceCompletion.regularModularRealization', 'full_TGL_witness_constructed': 'TGLV354.TraceCompletion.regularFullWitness'}
+ 
+-_GRAVITY_PRICE_FLAGS = {
+-    "H1_internal_susy_relative_gap_discharged": "TGLExt.qgPrice_H1_internalSusyRelativeGap_discharged",
+-    "H2_smooth_modular_four_frame_discharged": "TGLExt.qgPrice_H2_smoothModularFourFrame_discharged",
+-    "H3_local_horizon_equilibrium_discharged": "TGLExt.qgPrice_H3_localHorizonEquilibrium_discharged",
+-    "tower_act_III_inhabitant_constructed": "TGLExt.qgPrice_towerActIII_inhabitantConstructed",
+-}
++_GRAVITY_PRICE_FLAGS = {'H1_internal_susy_relative_gap_discharged': 'TGLV354.regularSusyData', 'H2_smooth_modular_four_frame_discharged': 'TGLExt.qgPrice_H2_smoothModularFourFrame_discharged', 'H3_local_horizon_equilibrium_discharged': 'TGLExt.qgPrice_H3_localHorizonEquilibrium_discharged', 'tower_act_III_inhabitant_constructed': 'TGLExt.qgPrice_towerActIII_inhabitantConstructed'}
+ 
+-_V350_MODULAR_CONTRACTS = {
+-    "red_clause_JMJ_contains": (
+-        "TGLExt.qgConverse_JMJ_contains_commutant",
+-        "TGLExt.V350Gate.checkedConverse"),
+-    "qgf_modular_realization_constructed": (
+-        "TGLExt.qgFrontier_modularRealization",
+-        "TGLExt.V350Gate.checkedModular"),
+-    "gpf_tower_act_III_inhabitant_constructed": (
+-        "TGLExt.qgPrice_towerActIII_inhabitantConstructed",
+-        "TGLExt.V350Gate.checkedActIII"),
+-}
++_V350_MODULAR_CONTRACTS = {'red_clause_JMJ_contains': ('TGLExt.qgConverse_JMJ_contains_commutant', 'TGLExt.V350Gate.checkedConverse'), 'qgf_modular_realization_constructed': ('TGLExt.qgFrontier_modularRealization', 'TGLExt.V350Gate.checkedModular'), 'gpf_tower_act_III_inhabitant_constructed': ('TGLExt.qgPrice_towerActIII_inhabitantConstructed', 'TGLExt.V350Gate.checkedActIII'), 'qgf_unconditional_continuous_corner_proved': ('TGLV354.TraceCompletion.regularLegacyCore', 'TGLV354.TraceCompletion.regularLegacyThreeLocks', 'TGLV354.TraceCompletion.cyclicTraceCandidate_positive', 'TGLV354.TraceCompletion.regularLegacyThreeLocks_concrete'), 'qgf_continuous_modular_realization_constructed': ('TGLV354.TraceCompletion.regularModularRealization', 'TGLV354.TraceCompletion.regularLegacyCore', 'TGLV354.TraceCompletion.regularLegacyThreeLocks', 'TGLV354.TraceCompletion.cyclicTraceCandidate_positive'), 'qgf_full_TGL_witness_constructed': ('TGLV354.TraceCompletion.regularFullWitness', 'TGLV354.TraceCompletion.regularModularRealization', 'TGLV354.TraceCompletion.regularLegacyThreeLocks_concrete'), 'gpf_H1_internal_susy_relative_gap_discharged': ('TGLV354.regularSusyData', 'TGLV354.regularSusy_gives_breuer', 'TGLV354.regularSusy_operator_identifications', 'TGLV354.coreProjectionTraceSubadditive')}
+ 
+ def verify_v350_modular_provenance(kernel):
+-    """Require a successful build/audit and BOTH the term and its exact-type bridge."""
++    """Require successful build/audit and every named supplier. Audit also checks the exact A2 types."""
+     kf = kernel or {}
+     axioms = kf.get("axiom_report") or {}
+     allowed = {"propext", "Classical.choice", "Quot.sound"}
+@@ -34,6 +14,7 @@
+         and kf.get("dependency_hashes_verified") is True
+         and kf.get("changed_source_hashes_verified") is True))
+     verified = (built
++                and type(kf.get("audit_returncode")) is int
+                 and kf.get("audit_returncode") == 0
+                 and kf.get("all_verified") is True)
+     return {
+@@ -45,11 +26,11 @@
+     }
+ 
+ def finalize_v350_modular_frontier(kernel):
+-    """A name alone cannot light any of the three newly constructed targets."""
++    """Read the typed modular and minimal continuous contracts; missing proof stays false."""
+     proofs = verify_v350_modular_provenance(kernel)
+     kernel.update(proofs)
+     kernel["v350_typed_modular_proofs"] = proofs
+-    kernel["v350_modular_scope"] = "PRODUCT_TOWER__J_M_J_EQUALS_COMMUTANT"
++    kernel["v350_modular_scope"] = "PRODUCT_TOWER__JMJ__REGULAR_CORE_MINIMAL_LOCK"
+     return kernel
+ 
+ def v350_frontier_flag_has_proof(kernel, flag):
+@@ -63,24 +44,41 @@
+                for key in kernel if key.startswith("gpf_") and kernel.get(key))
+ 
+ def evaluate_v350_kernel_frontier(kernel):
+-    """Only the currently checked scope can advance; no name opens later stages."""
++    """Keep modular, minimal continuous and SUSY scopes separately measured."""
+     proofs = verify_v350_modular_provenance(kernel)
+-    modular = all(proofs.values())
++    modular = all(proofs.get(k) is True for k in (
++        "red_clause_JMJ_contains", "qgf_modular_realization_constructed",
++        "gpf_tower_act_III_inhabitant_constructed"))
++    continuous = all(proofs.get(k) is True for k in (
++        "qgf_unconditional_continuous_corner_proved",
++        "qgf_continuous_modular_realization_constructed",
++        "qgf_full_TGL_witness_constructed"))
++    susy = proofs.get("gpf_H1_internal_susy_relative_gap_discharged") is True
++    remaining = [
++        "H2_smooth_modular_four_frame_and_geometric_identification",
++        "H3_area_heat_equilibrium_on_the_same_physical_horizon",
++        "interacting_quantum_state_BRST_QME_anomalies_and_UV_scope"]
++    if not continuous:
++        remaining.insert(0, "continuous_core_and_finite_Three_Locks_corner_on_same_realization")
++    if not susy:
++        remaining.insert(0, "H1_relative_gap_beyond_finite_face")
+     return {
+-        "verification": "LEAN_EXACT_TYPE_BRIDGES_AND_AXIOM_WHITELIST",
++        "verification": "LEAN_EXACT_TYPE_CHECKS_AND_AXIOM_WHITELIST",
+         "modular_duality_constructed": modular,
++        "continuous_minimal_realization_constructed": continuous,
++        "susy_minimal_representative_constructed": susy,
+         "proofs": proofs,
+-        "scope": "PRODUCT_TOWER__J_M_J_EQUALS_COMMUTANT",
+-        "remaining": [
+-            "continuous_core_and_finite_Three_Locks_corner_on_same_realization",
+-            "H1_relative_gap_beyond_finite_face",
+-            "H2_smooth_modular_four_frame_and_geometric_identification",
+-            "H3_area_heat_equilibrium_on_the_same_physical_horizon",
+-            "interacting_quantum_state_BRST_QME_anomalies_and_UV_scope",
+-        ],
++        "scope": "PRODUCT_TOWER__JMJ__REGULAR_CORE_MINIMAL_LOCK",
++        "remaining": remaining,
++        "physical_identifications_open": [
++            "microscopic_origin_of_Hmin_and_standard_bounded_transform",
++            "geometric_BW_identification_for_legacy_wedge_data_U_equals_one"],
+         "verdict": (
+-            "MODULAR_DUALITY_CONSTRUCTED__CONTINUOUS_GEOMETRY_AND_QUANTUM_INTERACTIONS_OPEN"
++            "CONTINUOUS_MINIMAL_REALIZATION_AND_SUSY_CONSTRUCTED__PHYSICAL_IDENTIFICATIONS_OPEN"
++            if modular and continuous and susy else
++            "MODULAR_DUALITY_CONSTRUCTED__REMAINING_SCOPES_REPORTED"
+             if modular else "MODULAR_DUALITY_OPEN"),
+         "legacy_gate_changed": False,
+         "full_plan_complete": False,
+     }
++

@@ -1,0 +1,85 @@
+{
+  "timestamp": "2026-09-14T23:06:52.933728-03:00",
+  "records": [
+    {
+      "source": {
+        "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\v\\TGLExt\\V351RegularCoreTraceContract.lean",
+        "bytes": 5624,
+        "sha256": "3694175f8ef5bcf5848d88bd8061abf8546480873964ebfdc19dd41ad05928f0"
+      },
+      "start": 15,
+      "end": 19,
+      "text": "def positiveDual (P : SiteProfile) (s : ℝ) (A : PositiveCoreInput P) :\n    PositiveCoreInput P :=\n  ⟨(regularDualAction P s ⟨A.val, A.property.1⟩).val,\n    (regularDualAction P s ⟨A.val, A.property.1⟩).property,\n    dualAmbient_nonneg s A.val A.property.2⟩"
+    },
+    {
+      "source": {
+        "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\v\\TGLExt\\V351RegularCoreTraceContract.lean",
+        "bytes": 5624,
+        "sha256": "3694175f8ef5bcf5848d88bd8061abf8546480873964ebfdc19dd41ad05928f0"
+      },
+      "start": 40,
+      "end": 60,
+      "text": "by finite positive minorants, not by a name or an arbitrary dense subspace.\nThis does not assert an inhabitant, a canonical normalization, or a legacy bridge.\nThe remaining construction must select the perturbation of scalarDualWeight. -/\nstructure RegularCoreTraceData (P : SiteProfile) where\n  value : PositiveCoreInput P → ℝ≥0∞\n  zero : value (PositiveCoreInput.zero P) = 0\n  additive : ∀ A B, value (A.add B) = value A + value B\n  homogeneous : ∀ (r : ℝ≥0) A, value (A.scale r) = (r : ℝ≥0∞) * value A\n  monotone : ∀ A B, A ≤ B → value A ≤ value B\n  faithful : ∀ A, value A = 0 ↔ A = PositiveCoreInput.zero P\n  normal : ∀ {ι : Type u} [Preorder ι] [IsDirectedOrder ι] [Nonempty ι]\n    (A : ι → (regularCoreAlgebra P).toStarSubalgebra)\n    (S : (regularCoreAlgebra P).toStarSubalgebra)\n    (hpos : ∀ i, 0 ≤ A i) (_hmono : Monotone A) (hS : IsLUB (Set.range A) S),\n    value ⟨S.val, S.property, positive_internal_isLUB_nonneg P A S hpos hS⟩ =\n      ⨆ i, value ⟨(A i).val, (A i).property, hpos i⟩\n  semifinite : ∀ A, value A =\n    ⨆ (B : PositiveCoreInput P) (_ : B ≤ A) (_ : value B < ⊤), value B\n  tracial : ∀ a, value (positiveSquare P a) = value (positiveSquare P (star a))\n  dual_scaling : ∀ s A, value (positiveDual P s A) =\n    ENNReal.ofReal (Real.exp (-s)) * value A"
+    },
+    {
+      "source": {
+        "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\v\\TGLExt\\V350DualWeightForm.lean",
+        "bytes": 6890,
+        "sha256": "3a233c43934c915774c68c23f0fca752d1c9dfc95679178c714394fe666a24b4"
+      },
+      "start": 87,
+      "end": 97,
+      "text": "theorem dualQuadraticIntegral_dual_invariant (r : ℝ)\n    (A : RegularHilbert H →L[ℂ] RegularHilbert H) (v : RegularHilbert H) :\n    dualQuadraticIntegral (dualAmbient r A) v = dualQuadraticIntegral A v := by\n  have heq : dualQuadraticIntegrand (dualAmbient r A) v =\n      fun s => dualQuadraticIntegrand A v (r+s) := by\n    funext s\n    simp only [dualQuadraticIntegrand, dualAmbient_add, StarAlgEquiv.trans_apply]\n  unfold dualQuadraticIntegral\n  rw [heq, lintegral_add_left_eq_self]\n\n/-- Finite strong cuts and scalar Lebesgue integrals are the same evaluation. -/"
+    },
+    {
+      "source": {
+        "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\v\\TGLExt\\V350RegularDualAction.lean",
+        "bytes": 7130,
+        "sha256": "e7c3628d969c0dae2a971c156200acb88f6bf4286a9c648a2ad3da08c468040c"
+      },
+      "start": 18,
+      "end": 46,
+      "text": "def dualAmbient (s : ℝ) :\n    (RegularHilbert H →L[ℂ] RegularHilbert H) ≃⋆ₐ[ℂ]\n      (RegularHilbert H →L[ℂ] RegularHilbert H) :=\n  Unitary.conjStarAlgAut ℂ _ (dualImplementer s)\n\ntheorem dualAmbient_apply (s : ℝ) (A : RegularHilbert H →L[ℂ] RegularHilbert H) :\n    dualAmbient s A = characterMultiplier s * A * star (characterMultiplier (H := H) s) := rfl\n\ntheorem dualAmbient_zero : dualAmbient (H := H) 0 = StarAlgEquiv.refl := by\n  ext A\n  simp [dualAmbient_apply, characterMultiplier_zero]\n\ntheorem dualAmbient_add (s t : ℝ) :\n    dualAmbient (H := H) (s+t) = (dualAmbient (H := H) s).trans (dualAmbient (H := H) t) := by\n  have hD : characterMultiplier (H := H) (s+t) = characterMultiplier t * characterMultiplier s := by\n    rw [characterMultiplier_mul, add_comm]\n  apply StarAlgEquiv.ext\n  intro A\n  change characterMultiplier (H := H) (s+t) * A * star (characterMultiplier (H := H) (s+t)) =\n    characterMultiplier (H := H) t * (characterMultiplier (H := H) s * A * star (characterMultiplier (H := H) s)) *\n      star (characterMultiplier (H := H) t)\n  rw [hD, star_mul]\n  simp only [mul_assoc]\n\ntheorem dualAmbient_symm (s : ℝ) :\n    (dualAmbient (H := H) s).symm = dualAmbient (-s) := by\n  apply StarAlgEquiv.ext\n  intro A\n  change star (characterMultiplier (H := H) s) * A * characterMultiplier s ="
+    },
+    {
+      "source": {
+        "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\v\\TGLExt\\V351InverseGeneratorCutoff.lean",
+        "bytes": 7014,
+        "sha256": "f615a4a8b80a4bf970c719aa9d44fd2d917eb52f01fa1c925cfcab8151adc227"
+      },
+      "start": 81,
+      "end": 95,
+      "text": "theorem regularInverseGeneratorCutoff_dual (P : SiteProfile) (ε : ℝ) (hε : 0 < ε)\n    (s : ℝ) :\n    dualAmbient s (regularInverseGeneratorCutoff P ε) =\n      (Real.exp s : ℂ) • regularInverseGeneratorCutoff P (ε*Real.exp s) := by\n  unfold regularInverseGeneratorCutoff\n  rw [map_smul]\n  have ht : dualAmbient s (dualAmbient (Real.log ε) (regularSpectralResolvent P)) =\n      dualAmbient (Real.log ε+s) (regularSpectralResolvent P) := by\n    rw [dualAmbient_add]\n    rfl\n  rw [ht,Real.log_mul hε.ne' (Real.exp_ne_zero s),Real.log_exp,smul_smul]\n  have he : (Real.exp s : ℂ) * ((ε*Real.exp s)⁻¹ : ℂ) = (ε⁻¹ : ℂ) := by\n    push_cast\n    field_simp\n  rw [Complex.ofReal_mul,he]"
+    },
+    {
+      "source": {
+        "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\v\\.lake\\packages\\mathlib\\Mathlib\\Analysis\\SpecialFunctions\\ContinuousFunctionalCalculus\\Rpow\\Basic.lean",
+        "bytes": 37448,
+        "sha256": "ef03c823cc3798b288a7f00a2902b1fae092f1181bd44cb8b41ef133db389d5f"
+      },
+      "start": 283,
+      "end": 297,
+      "text": "lemma sqrt_unique {a b : A} (h : b * b = a) (hb : 0 ≤ b := by cfc_tac) :\n    sqrt a = b :=\n  h ▸ sqrt_mul_self b\n\nlemma sqrt_eq_iff (a b : A) (ha : 0 ≤ a := by cfc_tac) (hb : 0 ≤ b := by cfc_tac) :\n    sqrt a = b ↔ b * b = a :=\n  ⟨(mul_self_eq ·), (sqrt_unique ·)⟩\n\nlemma sqrt_eq_zero_iff (a : A) (ha : 0 ≤ a := by cfc_tac) : sqrt a = 0 ↔ a = 0 := by\n  rw [sqrt_eq_iff a _, mul_zero, eq_comm]\n\nlemma mul_self_eq_mul_self_iff (a b : A) (ha : 0 ≤ a := by cfc_tac) (hb : 0 ≤ b := by cfc_tac) :\n    a * a = b * b ↔ a = b :=\n  ⟨fun h => sqrt_mul_self a ▸ sqrt_unique h.symm, fun h => h ▸ rfl⟩\n"
+    },
+    {
+      "source": {
+        "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\v\\.lake\\packages\\mathlib\\Mathlib\\Algebra\\Order\\Archimedean\\Basic.lean",
+        "bytes": 23037,
+        "sha256": "e2b942510a5b1f8853dc1cb14e5d40d286a0b0dd3cc8434ad0dfbd5f81c25518"
+      },
+      "start": 211,
+      "end": 220,
+      "text": "variable [Semifield K] [LinearOrder K] [IsStrictOrderedRing K] [Archimedean K] {x y ε : K}\n\nlemma exists_nat_one_div_lt (hε : 0 < ε) : ∃ n : ℕ, 1 / (n + 1 : K) < ε := by\n  obtain ⟨n, hn⟩ := exists_nat_gt (1 / ε)\n  use n\n  rw [div_lt_iff₀, ← div_lt_iff₀' hε]\n  · apply hn.trans\n    simp [zero_lt_one]\n  · exact n.cast_add_one_pos\n"
+    },
+    {
+      "source": {
+        "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\v\\.lake\\packages\\mathlib\\Mathlib\\Data\\ENNReal\\Inv.lean",
+        "bytes": 44868,
+        "sha256": "261c1dfb4e4f5f56462686c82a762fb3c1f4f9d2e5af144c94f64bb7aefadb89"
+      },
+      "start": 807,
+      "end": 810,
+      "text": "lemma mul_iSup (a : ℝ≥0∞) (f : ι → ℝ≥0∞) : a * ⨆ i, f i = ⨆ i, a * f i := by\n  by_cases hf : ∀ i, f i = 0\n  · simp [hf]\n  obtain rfl | ha₀ := eq_or_ne a 0"
+    }
+  ]
+}

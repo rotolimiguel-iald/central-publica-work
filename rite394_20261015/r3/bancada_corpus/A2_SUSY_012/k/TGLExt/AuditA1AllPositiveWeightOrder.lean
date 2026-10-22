@@ -1,0 +1,6 @@
+import TGLExt.V351AllPositiveWeightOrder
+set_option pp.universes true
+#check TGLV350.Regular.scalarWeight_right_perturbed_mono_all_squares
+#print axioms TGLV350.Regular.scalarWeight_right_perturbed_mono_all_squares
+#check TGLV350.Regular.scalarWeight_right_perturbed_mono_all_positive
+#print axioms TGLV350.Regular.scalarWeight_right_perturbed_mono_all_positive

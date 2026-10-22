@@ -1,0 +1,75 @@
+FlowTimePropagation.lean:21:2: error: Tactic `apply` failed: could not unify the conclusion of `hball`
+  ?a ∈ {x | (fun z => P z.1.1 z.1.2 z.2) x}
+with the goal
+  P a b c
+
+Note: The full type of `hball` is
+  Metric.ball ((q, T), T) radius ⊆ {x | (fun z => P z.1.1 z.1.2 z.2) x}
+
+E : Type u_1
+inst✝¹ : NormedAddCommGroup E
+inst✝ : NormedSpace ℝ E
+q : E
+T : ℝ
+P : E → ℝ → ℝ → Prop
+hP : ∀ᶠ (z : (E × ℝ) × ℝ) in 𝓝 ((q, T), T), P z.1.1 z.1.2 z.2
+radius : ℝ
+hr : radius > 0
+hball : Metric.ball ((q, T), T) radius ⊆ {x | (fun z => P z.1.1 z.1.2 z.2) x}
+a : E
+ha : a ∈ Metric.ball q radius
+b : ℝ
+hb : b ∈ Ioo (T - radius) (T + radius)
+c : ℝ
+hc : c ∈ Ioo (T - radius) (T + radius)
+⊢ P a b c
+FlowTimePropagation.lean:66:37: error(lean.invalidField): Invalid field notation: Field projection operates on types of the form `C ...` where C is a constant. The expression
+  hFD
+has type
+  (𝓝 (q, T)).1 (Metric.ball p F.radius ×ˢ Ioo (-F.radius) F.radius)
+which does not have the necessary form.
+FlowTimePropagation.lean:35:68: error: unsolved goals
+E : Type u_1
+inst✝² : NormedAddCommGroup E
+inst✝¹ : NormedSpace ℝ E
+inst✝ : CompleteSpace E
+f : E → E
+Q : Set E
+p : E
+F : LipschitzLocalFlow f Q p
+hQ : IsOpen[PseudoMetricSpace.toUniformSpace.toTopologicalSpace] Q
+hf : ContDiffOn ℝ ∞ f Q
+q : E
+hq : q ∈ Metric.ball p F.radius
+T : ℝ
+hT : T ∈ Ioo (-F.radius) F.radius
+n : ℕ
+y : E := F.flow (q, T)
+hy : y ∈ Q
+hfy : ContDiffAt ℝ 1 f y
+K : NNReal
+S : Set E
+hS : S ∈ 𝓝 y
+hL : LipschitzOnWith K f S
+G : LipschitzLocalFlow f Q y
+hG : ContDiffAt ℝ (↑n) G.flow (y, 0)
+hGball : y ∈ Metric.ball y G.radius
+hGzero : 0 ∈ Ioo (-G.radius) G.radius
+hFc : ContinuousAt F.flow (q, T)
+hGc : ContinuousAt G.flow (y, 0)
+hFD : Metric.ball p F.radius ×ˢ Ioo (-F.radius) F.radius ∈ 𝓝 (q, T)
+hGD : Metric.ball y G.radius ×ˢ Ioo (-G.radius) G.radius ∈ 𝓝 (y, 0)
+hFS : ∀ᶠ (z : E × ℝ) in 𝓝 (q, T), F.flow z ∈ S
+hGS : ∀ᶠ (z : E × ℝ) in 𝓝 (y, 0), G.flow z ∈ S
+hGgood :
+  ∀ᶠ (z : E × ℝ) in 𝓝 (y, 0),
+    z ∈ Metric.ball y G.radius ×ˢ Ioo (-G.radius) G.radius ∧ G.flow z ∈ S ∧ ContDiffAt ℝ (↑n) G.flow z
+htarget : ContinuousAt (fun z => (z.1.1, z.2)) ((q, T), T)
+hinit : ContinuousAt (fun z => F.flow z.1) ((q, T), T)
+hargs : ContinuousAt (fun z => (F.flow z.1, z.2 - z.1.2)) ((q, T), T)
+⊢ ∃ radius > 0, ∀ t₀ ∈ Ioo (T - radius) (T + radius), ContDiffAt ℝ (↑n) F.flow (q, t₀) → ContDiffAt ℝ (↑n) F.flow (q, T)
+'ChatgptAudit.Flow017.eventually_flow_time_box' depends on axioms: [propext, sorryAx, Classical.choice, Quot.sound]
+'ChatgptAudit.Flow017.flow_finite_regular_nearby_transfer' depends on axioms: [propext,
+ sorryAx,
+ Classical.choice,
+ Quot.sound]

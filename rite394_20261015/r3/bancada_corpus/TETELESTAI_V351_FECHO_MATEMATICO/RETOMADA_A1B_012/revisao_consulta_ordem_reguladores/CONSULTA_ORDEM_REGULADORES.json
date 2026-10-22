@@ -1,0 +1,180 @@
+{
+  "timestamp": "2026-09-14T22:23:53.011177-03:00",
+  "status": "CONSULTA_DERIVED__NO_NEW_LEAN_PROOF",
+  "scope": "antitonicidade dos mesmos regularInverseGeneratorCutoff",
+  "recommended_route": "real_cfc_mono_with_existing_max_denominator",
+  "assumptions": [
+    "P : SiteProfile",
+    "0 < epsilon",
+    "epsilon <= eta"
+  ],
+  "conclusion_proposed": "regularInverseGeneratorCutoff P eta <= regularInverseGeneratorCutoff P epsilon",
+  "new_theorems": 0,
+  "compilation_executed": false,
+  "author_sources_modified": false,
+  "memory_modified": false,
+  "supplier_records": [
+    {
+      "file": {
+        "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\v\\TGLExt\\V351InverseGeneratorCutoff.lean",
+        "bytes": 7014,
+        "sha256": "f615a4a8b80a4bf970c719aa9d44fd2d917eb52f01fa1c925cfcab8151adc227"
+      },
+      "read_ranges": [
+        {
+          "start": 13,
+          "end": 20,
+          "text": "def regularInverseGeneratorCutoff (P : SiteProfile) (ε : ℝ) :\n    RegularHilbert (TowerHilbert P) →L[ℂ] RegularHilbert (TowerHilbert P) :=\n  (ε⁻¹ : ℂ) • dualAmbient (Real.log ε) (regularSpectralResolvent P)\n\ntheorem regularInverseGeneratorCutoff_mem (P : SiteProfile) (ε : ℝ) :\n    regularInverseGeneratorCutoff P ε ∈ regularCoreAlgebra P := by\n  have hm : dualAmbient (Real.log ε) (regularSpectralResolvent P) ∈ regularCoreAlgebra P :=\n    (regularDualAction P (Real.log ε)"
+        },
+        {
+          "start": 24,
+          "end": 30,
+          "text": "theorem regularInverseGeneratorCutoff_nonneg (P : SiteProfile) (ε : ℝ) (hε : 0 < ε) :\n    0 ≤ regularInverseGeneratorCutoff P ε := by\n  apply (ContinuousLinearMap.nonneg_iff_isPositive _).mpr\n  apply ((ContinuousLinearMap.nonneg_iff_isPositive _).mp\n    (dualAmbient_nonneg (Real.log ε) _ (regularSpectralResolvent_nonneg P))).smul_of_nonneg\n  exact_mod_cast inv_nonneg.mpr hε.le\n"
+        },
+        {
+          "start": 50,
+          "end": 54,
+          "text": "theorem regularInverseGeneratorCutoff_graph (P : SiteProfile) (ε : ℝ) (hε : 0 < ε)\n    (x : RegularHilbert (TowerHilbert P)) :\n    (regularInverseGeneratorCutoff P ε x,\n      x-(ε : ℂ) • regularInverseGeneratorCutoff P ε x) ∈\n        (regularPositiveGenerator P).graph := by"
+        },
+        {
+          "start": 99,
+          "end": 104,
+          "text": "theorem regularInverseGeneratorCutoff_graph_iff (P : SiteProfile) (ε : ℝ) (hε : 0 < ε)\n    (x y : RegularHilbert (TowerHilbert P)) :\n    (x,y) ∈ (regularPositiveGenerator P).graph ↔\n      regularInverseGeneratorCutoff P ε (y+(ε : ℂ) • x) = x := by\n  constructor\n  · intro hxy"
+        }
+      ]
+    },
+    {
+      "file": {
+        "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\v\\TGLExt\\V351InverseCutoffCFC.lean",
+        "bytes": 7577,
+        "sha256": "cbdf10aea749a552b0f47afb3ef59560ed47d6f46cf7dd8064dc963a092c3490"
+      },
+      "read_ranges": [
+        {
+          "start": 12,
+          "end": 23,
+          "text": "def inverseCutoffFunction (ε : ℝ) (z : ℂ) : ℂ :=\n  (z.re / max (min 1 ε) (1+(ε-1)*z.re) : ℝ)\n\ntheorem inverseCutoffFunction_continuous (ε : ℝ) (hε : 0 < ε) :\n    Continuous (inverseCutoffFunction ε) := by\n  have hm : 0 < min (1 : ℝ) ε := lt_min zero_lt_one hε\n  unfold inverseCutoffFunction\n  apply Complex.continuous_ofReal.comp\n  exact Complex.continuous_re.div (continuous_const.max\n    (continuous_const.add (continuous_const.mul Complex.continuous_re)))\n    (fun z => ne_of_gt (hm.trans_le (le_max_left _ _)))\n"
+        },
+        {
+          "start": 62,
+          "end": 69,
+          "text": "theorem regularInverseGeneratorCutoff_cfc (P : SiteProfile) (ε : ℝ) (hε : 0 < ε) :\n    regularInverseGeneratorCutoff P ε =\n      cfc (inverseCutoffFunction ε) (regularSpectralResolvent P) := by\n  ext1 x\n  let Y := cfc (inverseCutoffFunction ε) (regularSpectralResolvent P)\n  let V := regularSpectralCoordinates P\n  have hh : (Y x,x-(ε : ℂ) • Y x) ∈ (regularPositiveGenerator P).graph := by\n    rw [regularPositiveGenerator_graph_iff,map_sub,map_smul]"
+        }
+      ]
+    },
+    {
+      "file": {
+        "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\v\\TGLExt\\V351RegularPositiveGraph.lean",
+        "bytes": 8384,
+        "sha256": "d56ea107302802ee76d65a3c32c69be9fe41cddb4901a65486ab7f1bfb345390"
+      },
+      "read_ranges": [
+        {
+          "start": 78,
+          "end": 87,
+          "text": "def regularSpectralResolvent (P : SiteProfile) :\n    RegularHilbert (TowerHilbert P) →L[ℂ] RegularHilbert (TowerHilbert P) :=\n  (regularSpectralCoordinates P).conjStarAlgEquiv\n    (realScalarMultiplier (fun x => Real.sigmoid (2*Real.pi*x)) (by fun_prop)\n      (fun x => Real.sigmoid_nonneg _) (fun x => Real.sigmoid_le_one _))\n\ntheorem regularSpectralResolvent_nonneg (P : SiteProfile) :\n    0 ≤ regularSpectralResolvent P := by\n  exact map_nonneg (regularSpectralCoordinates P).conjStarAlgEquiv\n    (realScalarMultiplier_nonneg _ _ _ _)"
+        }
+      ]
+    },
+    {
+      "file": {
+        "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\v\\TGLExt\\V351ScaledResolventCalculus.lean",
+        "bytes": 7436,
+        "sha256": "89cac33fa016460aaeb44b0de83d296137f2d3d7f826491be6361bb1e2ad8a32"
+      },
+      "read_ranges": [
+        {
+          "start": 14,
+          "end": 19,
+          "text": "theorem positive_contraction_spectrum_bounds (T : H →L[ℂ] H)\n    (hT : 0 ≤ T) (h1 : T ≤ 1) {x : ℝ} (hx : x ∈ spectrum ℝ T) :\n    x ∈ Set.Icc (0 : ℝ) 1 := by\n  refine ⟨spectrum_nonneg_of_nonneg hT hx,?_⟩\n  exact (le_algebraMap_iff_spectrum_le (IsSelfAdjoint.of_nonneg hT)).mp\n    (by simpa only [map_one] using h1) x hx"
+        },
+        {
+          "start": 27,
+          "end": 30,
+          "text": "theorem scaledResolventCoordinate_cfc (T : H →L[ℂ] H) (hT : 0 ≤ T) (h1 : T ≤ 1)\n    (r : ℝ) (hr : 0<r) :\n    cfc (fun z : ℂ => (scaledResolventCoordinate r z.re : ℂ)) T = scaledPositiveResolvent T r := by\n  rw [← cfc_real_eq_complex (scaledResolventCoordinate r) (IsSelfAdjoint.of_nonneg hT)]"
+        }
+      ]
+    },
+    {
+      "file": {
+        "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\v\\.lake\\packages\\mathlib\\Mathlib\\Analysis\\CStarAlgebra\\ContinuousFunctionalCalculus\\Unital.lean",
+        "bytes": 54160,
+        "sha256": "f67b42738af5e91dbef05da3f0b841de4bf421bb6b54114688d7c08649761e86"
+      },
+      "read_ranges": [
+        {
+          "start": 904,
+          "end": 907,
+          "text": "variable {R A : Type*} {p : A → Prop} [CommSemiring R] [PartialOrder R] [StarRing R] [MetricSpace R]\nvariable [IsTopologicalSemiring R] [ContinuousStar R] [ContinuousSqrt R] [StarOrderedRing R]\nvariable [TopologicalSpace A] [Ring A] [StarRing A] [PartialOrder A] [StarOrderedRing A]\nvariable [Algebra R A] [instCFC : ContinuousFunctionalCalculus R A p]"
+        },
+        {
+          "start": 926,
+          "end": 933,
+          "text": "lemma cfc_mono {f g : R → R} {a : A} (h : ∀ x ∈ spectrum R a, f x ≤ g x)\n    (hf : ContinuousOn f (spectrum R a) := by cfc_cont_tac)\n    (hg : ContinuousOn g (spectrum R a) := by cfc_cont_tac) :\n    cfc f a ≤ cfc g a := by\n  by_cases ha : p a\n  · rw [cfc_apply f a, cfc_apply g a]\n    exact cfcHom_mono ha fun x ↦ h x.1 x.2\n  · simp only [cfc_apply_of_not_predicate _ ha, le_rfl]"
+        },
+        {
+          "start": 1037,
+          "end": 1040,
+          "text": "lemma cfc_le_iff (f g : R → R) (a : A) (hf : ContinuousOn f (spectrum R a) := by cfc_cont_tac)\n    (hg : ContinuousOn g (spectrum R a) := by cfc_cont_tac) (ha : p a := by cfc_tac) :\n    cfc f a ≤ cfc g a ↔ ∀ x ∈ spectrum R a, f x ≤ g x := by\n  rw [cfc_apply f a, cfc_apply g a, cfcHom_le_iff (show p a from ha), ContinuousMap.le_def]"
+        }
+      ]
+    },
+    {
+      "file": {
+        "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\v\\.lake\\packages\\mathlib\\Mathlib\\Analysis\\CStarAlgebra\\ContinuousFunctionalCalculus\\Instances.lean",
+        "bytes": 21281,
+        "sha256": "f05652edd12f24ddd2aa058ceb8762cceabda14a4580d7d237dcde26aaf8d6f4"
+      },
+      "read_ranges": [
+        {
+          "start": 292,
+          "end": 301,
+          "text": "lemma Commute.mul_nonneg {a b : A} (ha : 0 ≤ a) (hb : 0 ≤ b) (h : Commute a b) :\n    0 ≤ a * b := by\n  rw [nonneg_iff_isSelfAdjoint_and_quasispectrumRestricts]\n  refine ⟨ha.isSelfAdjoint.commute_iff hb.isSelfAdjoint |>.mp h, ?_⟩\n  rw [nonneg_iff_isSelfAdjoint_and_quasispectrumRestricts] at hb\n  obtain ⟨x, hx₁, hx₂, rfl⟩ := CFC.exists_sqrt_of_isSelfAdjoint_of_quasispectrumRestricts hb.1 hb.2\n  have hx := nonneg_iff_isSelfAdjoint_and_quasispectrumRestricts.mpr ⟨hx₁, hx₂⟩\n  rw [← mul_assoc, quasispectrumRestricts_iff, quasispectrum.mul_comm,\n    ← quasispectrumRestricts_iff, ← mul_assoc]\n  exact QuasispectrumRestricts.nnreal_of_nonneg <| conjugate_nonneg_of_nonneg ha hx"
+        },
+        {
+          "start": 343,
+          "end": 355,
+          "text": "variable {A : Type*} [TopologicalSpace A] [Ring A] [StarRing A] [Algebra ℂ A]\n  [ContinuousFunctionalCalculus ℂ A IsStarNormal] [T2Space A]\n\nlemma cfcHom_real_eq_restrict {a : A} (ha : IsSelfAdjoint a) :\n    cfcHom ha =\n      ha.spectrumRestricts.starAlgHom (R := ℝ) (S := ℂ)\n        (cfcHom ha.isStarNormal) (f := Complex.reCLM) :=\n  ha.spectrumRestricts.cfcHom_eq_restrict _ ha ha.isStarNormal\n\nlemma cfc_real_eq_complex {a : A} (f : ℝ → ℝ) (ha : IsSelfAdjoint a := by cfc_tac) :\n    cfc f a = cfc (fun x ↦ f x.re : ℂ → ℂ) a := by\n  exact ha.spectrumRestricts.cfc_eq_restrict (f := Complex.reCLM)\n    Complex.isometry_ofReal.isClosedEmbedding ha ha.isStarNormal f"
+        }
+      ]
+    },
+    {
+      "file": {
+        "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\v\\.lake\\packages\\mathlib\\Mathlib\\Algebra\\Algebra\\Spectrum\\Quasispectrum.lean",
+        "bytes": 30153,
+        "sha256": "e61296ff65f86719e0683b0df27180f74526bcff9b4a354262f03f87d5baf155"
+      },
+      "read_ranges": [
+        {
+          "start": 414,
+          "end": 418,
+          "text": "lemma spectrum_nonneg_of_nonneg {𝕜 A : Type*} [CommSemiring 𝕜] [PartialOrder 𝕜]\n    [Ring A] [PartialOrder A]\n    [Algebra 𝕜 A] [NonnegSpectrumClass 𝕜 A] ⦃a : A⦄ (ha : 0 ≤ a) ⦃x : 𝕜⦄ (hx : x ∈ spectrum 𝕜 a) :\n    0 ≤ x :=\n  NonnegSpectrumClass.quasispectrum_nonneg_of_nonneg a ha x (spectrum_subset_quasispectrum 𝕜 a hx)"
+        }
+      ]
+    },
+    {
+      "file": {
+        "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\v\\.lake\\packages\\mathlib\\Mathlib\\Algebra\\Order\\GroupWithZero\\Basic.lean",
+        "bytes": 65463,
+        "sha256": "2987816996f19f90e54cd460e1b3556263087c51b415ff9b1898f83d40bf7ffd"
+      },
+      "read_ranges": [
+        {
+          "start": 1275,
+          "end": 1277,
+          "text": "lemma div_le_div_of_nonneg_left (ha : 0 ≤ a) (hc : 0 < c) (h : c ≤ b) : a / b ≤ a / c := by\n  rw [div_eq_mul_inv, div_eq_mul_inv]\n  gcongr"
+        }
+      ]
+    }
+  ],
+  "search_exhaustive": false,
+  "remaining": [
+    "formalizar comparação escalar e aplicar CFC real; conclusão ainda não compilada nesta consulta"
+  ],
+  "trace_open": true,
+  "report": {
+    "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\revisao_consulta_ordem_reguladores\\CONSULTA_ORDEM_REGULADORES.md",
+    "bytes": 5528,
+    "sha256": "ecd3a0c713c6dc3bfd37d2387fc21e962e09075675bf171f259bd2ef104c9842"
+  }
+}

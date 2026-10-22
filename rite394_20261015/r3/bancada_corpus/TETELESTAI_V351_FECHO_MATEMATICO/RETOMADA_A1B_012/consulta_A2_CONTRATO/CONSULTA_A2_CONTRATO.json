@@ -1,0 +1,557 @@
+{
+  "timestamp": "2026-09-15T03:45:19.293388-03:00",
+  "status": "A2_CONTRACT_REUSE_CONSULTATION__NO_A2_ACCEPTANCE",
+  "order": {
+    "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TUNEL\\PARA_CHATGPT\\ORDEM_011_fecho_matematico_da_realizacao_concreta.md",
+    "bytes": 19503,
+    "sha256": "2457c9b136025aeb24a3f9131e001d53fdcdbc8cdfa4f377da01c31f7c5304d0"
+  },
+  "order_A2_line": 113,
+  "consolidation": [
+    {
+      "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\CONSOLIDACAO_A1B_20260915.md",
+      "bytes": 8477,
+      "sha256": "fad4a5051ab90ea9dd869359d13ef35d842feb3915e14949db4f9bfc0664f210"
+    },
+    {
+      "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\CONSOLIDACAO_A1B_20260915.json",
+      "bytes": 47388,
+      "sha256": "94e66b4b2e6ea79ed33cc4f46ed814d687fffb4ce8c3375760c0dca60649f5f5"
+    }
+  ],
+  "previous_A1_review_compilation": {
+    "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\revisao_tracialidade_quadratica\\compilation.json",
+    "bytes": 2117454,
+    "sha256": "4aecd453e72ee9649a3953901847a951e827bacd2b6ab499b27850125c4b3f27"
+  },
+  "scope": {
+    "no_lean_written": true,
+    "no_build": true,
+    "no_writer": true,
+    "no_memory_changes": true,
+    "A2_accepted": false,
+    "exhaustive_search": false,
+    "gate_changed": false
+  },
+  "findings": [
+    {
+      "id": "A2-TYPE",
+      "status": "REAL_READ__BRIDGE_OPEN",
+      "claim": "A1 value has domain PositiveCoreInput P; ContinuousCoreData.canonicalTrace has domain the whole Ring Core and requires cyclicity on arbitrary xy/yx. No literal coercion or generic adapter was found in the scoped sources."
+    },
+    {
+      "id": "A2-SQUARE-EXTENSION",
+      "status": "DERIVED_COUNTEREXAMPLE_NOT_LEAN",
+      "claim": "x->tau(x*x) and x->tau(abs x) fail arbitrary-product cyclicity: in M2, p=e11 and n=e12 give pn=n,np=0; the first value at n is tau(e22)>0 and the second likewise. This refutes those adapters, not existence of every possible extension."
+    },
+    {
+      "id": "A2-LEGACY-CONSISTENCY",
+      "status": "REAL_READ__NO_GLOBAL_IMPOSSIBILITY_CLAIM",
+      "claim": "The legacy contract does not require additivity/complex linearity on the whole core. Its zero model exists, but cannot supply positive ThreeLocks. One cannot infer an inconsistency of the bare contract merely from codomain ENNReal."
+    },
+    {
+      "id": "A2-SUPPORT",
+      "status": "REAL_SUPPLIER__PROJECTION_INSTANCE_OPEN",
+      "claim": "finite_contractions returns a sequence of contractions with finite tau(E*E) and strong limit1, not idempotents. Finite minorants return positive inputs. No nonzero finite-trace projection in the actual regular core was identified in the consulted suppliers."
+    },
+    {
+      "id": "A2-SPLIT",
+      "status": "INPUT_IN_CONSTRUCTOR__CONCRETE_INSTANCE_OPEN",
+      "claim": "threeLocksFromSupport requires q,qp,qm, trace(q)=1, orthogonality and equal face trace. Matrix examples and lattice idTraceSub are not instances for the A1 core/trace."
+    },
+    {
+      "id": "A2-GAP",
+      "status": "GENERIC_CONDITIONAL__CONCRETE_OPERATOR_OPEN",
+      "claim": "SusyRelativeData assumes finite free-gap and difference, inclusion and nonzero kernel. SpectralReduction additionally receives a polynomial witness and uses semifiniteDimTrace on submodules, not scalarInverseLimitWeight."
+    },
+    {
+      "id": "A2-CALIBRATION",
+      "status": "DERIVED_REUSE_TARGET",
+      "claim": "dual_calibration_exists already receives ThreeLocksCoreData; using it to produce the support needed for that same constructor would be circular. Reuse the exp/log calculation directly with A1 dual_scaling once a finite nonzero projection is supplied."
+    },
+    {
+      "id": "A2-MINIMAL-REPRESENTATIVE",
+      "status": "REAL_GENERIC__IDENTIFICATION_OPEN",
+      "claim": "Hmin=1-q has algebraic kernel maximality by CoreSupport. Identifying it as a spectral zero projection and relating any specified effective continuous operators/domains still requires actual concrete data. Defining1-q alone does not establish an independently prescribed SUSY-relative gap."
+    }
+  ],
+  "sources": [
+    {
+      "source": {
+        "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\k\\TGL\\ModularRealization.lean",
+        "bytes": 11569,
+        "sha256": "17e344c8b7b40ae8f2ed4910c3b5e4712cc8ba84dd53e05d10a94f0009295348"
+      },
+      "line": 68,
+      "locator": "structure ContinuousCoreData",
+      "excerpt": "structure ContinuousCoreData (W : TGLSpecificAQFTWitness) (D : WedgeModularData W) where\n  Core : Type\n  [instCoreRing : Ring Core]\n  [instCoreStarRing : StarRing Core]\n  [instCoreAlgebra : Algebra ℂ Core]\n  embedding : D.wedgeAlgebra.toStarSubalgebra →⋆ₐ[ℂ] Core\n  embedding_injective : Function.Injective embedding\n  dualAction : ℝ → (Core ≃⋆ₐ[ℂ] Core)\n  dualAction_zero : dualAction 0 = StarAlgEquiv.refl\n  dualAction_add : ∀ s t : ℝ, dualAction (s + t) = (dualAction s).trans (dualAction t)\n  canonicalTrace : Core → ENNReal\n  trace_zero : canonicalTrace 0 = 0\n  trace_tracial : ∀ x y : Core, canonicalTrace (x * y) = canonicalTrace (y * x)\n  trace_star : ∀ x : Core, canonicalTrace (star x) = canonicalTrace x\n  trace_dual_scaling : ∀ (s : ℝ) (x : Core),\n    canonicalTrace ((dualAction s) x) = ENNReal.ofReal (Real.exp (-s)) * canonicalTrace x\n",
+      "previous_own_compilation": {
+        "object": {
+          "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\v\\.lake\\build\\lib\\lean\\TGL\\ModularRealization.olean",
+          "bytes": 1119744,
+          "sha256": "54b429d45aa38411ac2def3957ff2d8e2fb620a051a2fa20e17ab21c07060bfe"
+        },
+        "trace": {
+          "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\v\\.lake\\build\\lib\\lean\\TGL\\ModularRealization.trace",
+          "bytes": 3862,
+          "sha256": "46edce54b1c9639a12063e6805506639564218c1fc01432c3eb5515aac3f9ccc"
+        },
+        "used_as_A2_acceptance": false
+      }
+    },
+    {
+      "source": {
+        "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\k\\TGL\\ModularRealization.lean",
+        "bytes": 11569,
+        "sha256": "17e344c8b7b40ae8f2ed4910c3b5e4712cc8ba84dd53e05d10a94f0009295348"
+      },
+      "line": 100,
+      "locator": "structure ThreeLocksCoreData",
+      "excerpt": "structure ThreeLocksCoreData (W : TGLSpecificAQFTWitness) (D : WedgeModularData W)\n    (C : ContinuousCoreData W D) where\n  H3Lt : C.Core\n  H3Lt_selfAdjoint : star H3Lt = H3Lt\n  PF : C.Core\n  PF_selfAdjoint : star PF = PF\n  PF_idempotent : PF * PF = PF\n  PF_locks : PF * H3Lt = 0\n  PF_maximal : ∀ q : C.Core, star q = q → q * q = q → q * H3Lt = 0 → q * PF = q\n  PF_nonzero : PF ≠ 0\n  PF_trace_pos : 0 < C.canonicalTrace PF\n  PF_trace_finite : C.canonicalTrace PF < ⊤\n  Pplus : C.Core\n  Pminus : C.Core\n  Pplus_selfAdjoint : star Pplus = Pplus\n  Pplus_idempotent : Pplus * Pplus = Pplus\n  Pminus_selfAdjoint : star Pminus = Pminus\n  Pminus_idempotent : Pminus * Pminus = Pminus\n  split : Pplus + Pminus = PF\n  orthogonal : Pplus * Pminus = 0\n  trace_split_additive : C.canonicalTrace PF = C.canonicalTrace Pplus + C.canonicalTrace Pminus\n  equal_face_trace : C.canonicalTrace Pplus = C.canonicalTrace Pminus\n",
+      "previous_own_compilation": {
+        "object": {
+          "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\v\\.lake\\build\\lib\\lean\\TGL\\ModularRealization.olean",
+          "bytes": 1119744,
+          "sha256": "54b429d45aa38411ac2def3957ff2d8e2fb620a051a2fa20e17ab21c07060bfe"
+        },
+        "trace": {
+          "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\v\\.lake\\build\\lib\\lean\\TGL\\ModularRealization.trace",
+          "bytes": 3862,
+          "sha256": "46edce54b1c9639a12063e6805506639564218c1fc01432c3eb5515aac3f9ccc"
+        },
+        "used_as_A2_acceptance": false
+      }
+    },
+    {
+      "source": {
+        "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\k\\TGL\\CoreSupport.lean",
+        "bytes": 6731,
+        "sha256": "041fb863b07c3e0a167d5d0c8a522890d2da61586f41c27be2b06c46fac588e0"
+      },
+      "line": 71,
+      "locator": "noncomputable def threeLocksFromSupport",
+      "excerpt": "noncomputable def threeLocksFromSupport {W : TGLSpecificAQFTWitness}\n    {D : WedgeModularData W} (C : ContinuousCoreData W D)\n    (q qp qm : C.Core)\n    (hq2 : q * q = q) (hqs : star q = q) (hqne : q ≠ 0)\n    (htr1 : C.canonicalTrace q = 1)\n    (hp2 : qp * qp = qp) (hps : star qp = qp)\n    (hm2 : qm * qm = qm) (hms : star qm = qm)\n    (hsum : qp + qm = q) (horto : qp * qm = 0)\n    (htradd : C.canonicalTrace q = C.canonicalTrace qp + C.canonicalTrace qm)\n    (htreq : C.canonicalTrace qp = C.canonicalTrace qm) :\n    ThreeLocksCoreData W D C where\n  H3Lt := 1 - q\n  H3Lt_selfAdjoint := hmin_selfadjoint q hqs\n  PF := q\n  PF_selfAdjoint := hqs\n  PF_idempotent := hq2\n  PF_locks := support_annihilates q hq2\n  PF_maximal := fun r _ _ hr => support_maximal q r hr\n  PF_nonzero := hqne\n  PF_trace_pos := by rw [htr1]; exact zero_lt_one\n  PF_trace_finite := by rw [htr1]; exact ENNReal.one_lt_top\n  Pplus := qp\n  Pminus := qm\n  Pplus_selfAdjoint := hps\n  Pplus_idempotent := hp2\n  Pminus_selfAdjoint := hms\n  Pminus_idempotent := hm2\n  split := hsum\n  orthogonal := horto\n  trace_split_additive := htradd\n  equal_face_trace := htreq",
+      "previous_own_compilation": {
+        "located_in_previous_compilation": false,
+        "used_as_A2_acceptance": false
+      }
+    },
+    {
+      "source": {
+        "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\k\\TGL\\CoreSupport.lean",
+        "bytes": 6731,
+        "sha256": "041fb863b07c3e0a167d5d0c8a522890d2da61586f41c27be2b06c46fac588e0"
+      },
+      "line": 60,
+      "locator": "theorem support_maximal",
+      "excerpt": "theorem support_maximal (q r : A) (hr : r * (1 - q) = 0) : r * q = r := by\n  rw [mul_sub, mul_one, sub_eq_zero] at hr\n  exact hr.symm",
+      "previous_own_compilation": {
+        "located_in_previous_compilation": false,
+        "used_as_A2_acceptance": false
+      }
+    },
+    {
+      "source": {
+        "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\k\\TGL\\VerbInhabitant.lean",
+        "bytes": 6545,
+        "sha256": "812a47f0e71a86f37368c918b0f704cccad9cda0e32c4aee64c5566e7808a5d7"
+      },
+      "line": 112,
+      "locator": "theorem dual_calibration_exists",
+      "excerpt": "theorem dual_calibration_exists {W : TGLSpecificAQFTWitness}\n    {D : WedgeModularData W} (C : ContinuousCoreData W D)\n    (T : ThreeLocksCoreData W D C) :\n    ∃ s : ℝ, C.canonicalTrace ((C.dualAction s) T.PF) = 1 := by\n  refine ⟨Real.log (C.canonicalTrace T.PF).toReal, ?_⟩\n  rw [C.trace_dual_scaling]\n  have hx0 : C.canonicalTrace T.PF ≠ 0 := T.PF_trace_pos.ne'\n  have hxt : C.canonicalTrace T.PF ≠ ⊤ := T.PF_trace_finite.ne\n  have hxr : 0 < (C.canonicalTrace T.PF).toReal := ENNReal.toReal_pos hx0 hxt\n  rw [Real.exp_neg, Real.exp_log hxr]\n  rw [ENNReal.ofReal_inv_of_pos hxr, ENNReal.ofReal_toReal hxt]\n  exact ENNReal.inv_mul_cancel hx0 hxt\n\nend TGL.VerbInhabitant",
+      "previous_own_compilation": {
+        "located_in_previous_compilation": false,
+        "used_as_A2_acceptance": false
+      }
+    },
+    {
+      "source": {
+        "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\k\\TGLExt\\SusyRelativeGap.lean",
+        "bytes": 8700,
+        "sha256": "3aa058b5c4f098e3218ffed0bc8271a28947b56af81750019e1360754873e7f2"
+      },
+      "line": 59,
+      "locator": "structure SubadditiveTraceData",
+      "excerpt": "structure SubadditiveTraceData (L : Type) [Lattice L] [BoundedOrder L]\n    extends SemifiniteTraceData L where\n  subadd : ∀ p q : L, tau (p ⊔ q) ≤ tau p + tau q\n\n/-- [DATA — Q8.3, nível 4] o certificado SUSY-relativo: gap do livre\n    τ-finito (fisicamente ⊥); gap do perturbado sob livre ⊔ diferença\n    (Weyl relativo, face reticular); diferença τ-finita; kernel no gap. -/\nstructure SusyRelativeData (L : Type) [Lattice L] [BoundedOrder L]\n    (T : SubadditiveTraceData L) where\n  ker : L\n  gapD : L\n  gapD0 : L\n  diff : L\n  free_gap_finite : T.tau gapD0 < ⊤\n  gap_relative : gapD ≤ gapD0 ⊔ diff\n  diff_finite : T.tau diff < ⊤\n  ker_le_gap : ker ≤ gapD\n  ker_ne_bot : ker ≠ ⊥",
+      "previous_own_compilation": {
+        "object": {
+          "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\v\\.lake\\build\\lib\\lean\\TGLExt\\SusyRelativeGap.olean",
+          "bytes": 315256,
+          "sha256": "aa45255de08f1fdabcad6e5f0c91d56c8631bf65d5542f37fe57e695048ddc7e"
+        },
+        "trace": {
+          "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\v\\.lake\\build\\lib\\lean\\TGLExt\\SusyRelativeGap.trace",
+          "bytes": 4140,
+          "sha256": "65267c17d3f251e37bced1e5879e220d75d15566b772f4152216563eaaf7c665"
+        },
+        "used_as_A2_acceptance": false
+      }
+    },
+    {
+      "source": {
+        "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\k\\TGLExt\\SusyRelativeGap.lean",
+        "bytes": 8700,
+        "sha256": "3aa058b5c4f098e3218ffed0bc8271a28947b56af81750019e1360754873e7f2"
+      },
+      "line": 103,
+      "locator": "theorem susy_relative_gives_breuer",
+      "excerpt": "theorem susy_relative_gives_breuer (S : SusyRelativeData L T) :\n    0 < T.tau S.ker ∧ T.tau S.ker < ⊤ :=\n  breuer_kernel_weight S.toBreuerGapData\n",
+      "previous_own_compilation": {
+        "object": {
+          "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\v\\.lake\\build\\lib\\lean\\TGLExt\\SusyRelativeGap.olean",
+          "bytes": 315256,
+          "sha256": "aa45255de08f1fdabcad6e5f0c91d56c8631bf65d5542f37fe57e695048ddc7e"
+        },
+        "trace": {
+          "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\v\\.lake\\build\\lib\\lean\\TGLExt\\SusyRelativeGap.trace",
+          "bytes": 4140,
+          "sha256": "65267c17d3f251e37bced1e5879e220d75d15566b772f4152216563eaaf7c665"
+        },
+        "used_as_A2_acceptance": false
+      }
+    },
+    {
+      "source": {
+        "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\k\\TGLExt\\SusyRelativeGap.lean",
+        "bytes": 8700,
+        "sha256": "3aa058b5c4f098e3218ffed0bc8271a28947b56af81750019e1360754873e7f2"
+      },
+      "line": 115,
+      "locator": "def modelSusy",
+      "excerpt": "def modelSusy : SusyRelativeData ℝ≥0∞ idTraceSub where\n  ker := 1\n  gapD := 1\n  gapD0 := ⊥\n  diff := 1\n  free_gap_finite := bot_lt_top\n  gap_relative := le_sup_right\n  diff_finite := ENNReal.one_lt_top\n  ker_le_gap := le_rfl\n  ker_ne_bot := one_ne_zero\n\n/-- [KERNEL] ★ CONSISTÊNCIA do nível 4: o certificado não é vazio. -/\ntheorem susy_relative_package_consistent :\n    Nonempty (SusyRelativeData ℝ≥0∞ idTraceSub) := ⟨modelSusy⟩",
+      "previous_own_compilation": {
+        "object": {
+          "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\v\\.lake\\build\\lib\\lean\\TGLExt\\SusyRelativeGap.olean",
+          "bytes": 315256,
+          "sha256": "aa45255de08f1fdabcad6e5f0c91d56c8631bf65d5542f37fe57e695048ddc7e"
+        },
+        "trace": {
+          "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\v\\.lake\\build\\lib\\lean\\TGLExt\\SusyRelativeGap.trace",
+          "bytes": 4140,
+          "sha256": "65267c17d3f251e37bced1e5879e220d75d15566b772f4152216563eaaf7c665"
+        },
+        "used_as_A2_acceptance": false
+      }
+    },
+    {
+      "source": {
+        "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\k\\TGLExt\\SpectralReduction.lean",
+        "bytes": 8677,
+        "sha256": "5e52f59e86bb353f6315d6f68accd6687ad958597a87b554012ed1ca92e6dab9"
+      },
+      "line": 149,
+      "locator": "def SpectralApproximationWitness",
+      "excerpt": "def SpectralApproximationWitness (T : H →L[ℂ] H) : Prop :=\n  ∃ p : ℕ → Polynomial ℂ, ∀ x,\n    Filter.Tendsto (fun n => (Polynomial.aeval T (p n)) x)\n      Filter.atTop (nhds ((T.ker).starProjection x))",
+      "previous_own_compilation": {
+        "object": {
+          "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\v\\.lake\\build\\lib\\lean\\TGLExt\\SpectralReduction.olean",
+          "bytes": 211672,
+          "sha256": "9e2a625170ee83d6c94f5665652d451d6e32b25896b4a13706c4e23d0ebf2d5b"
+        },
+        "trace": {
+          "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\v\\.lake\\build\\lib\\lean\\TGLExt\\SpectralReduction.trace",
+          "bytes": 3588,
+          "sha256": "79484c8dbdc5526d905b22bf04077f063b94f1a7287f3fdc4dcb60b12fa4f604"
+        },
+        "used_as_A2_acceptance": false
+      }
+    },
+    {
+      "source": {
+        "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\k\\TGLExt\\SpectralReduction.lean",
+        "bytes": 8677,
+        "sha256": "5e52f59e86bb353f6315d6f68accd6687ad958597a87b554012ed1ca92e6dab9"
+      },
+      "line": 168,
+      "locator": "theorem concrete_breuer_corner_conditional",
+      "excerpt": "theorem concrete_breuer_corner_conditional (hH : ¬FiniteDimensional ℂ H)\n    (T : H →L[ℂ] H) (hsa : ContinuousLinearMap.adjoint T = T)\n    (hW : SpectralApproximationWitness T)\n    (gp : Submodule ℂ H) (hker : T.ker ≠ ⊥)\n    (hle : T.ker ≤ gp) (hgp : FiniteDimensional ℂ gp) :\n    ((T.ker).starProjection ∈ ({T} : Set (H →L[ℂ] H)).centralizer.centralizer ∧\n      (T.ker).starProjection ∈ ({T} : Set (H →L[ℂ] H)).centralizer) ∧\n      ((0 < (semifiniteDimTrace ℂ H).tau T.ker ∧\n          (semifiniteDimTrace ℂ H).tau T.ker < ⊤) ∧\n        (semifiniteDimTrace ℂ H).tau (T.ker)ᗮ = ⊤) := by\n  have hframe := breuer_corner_full_algebraic_frame hH T hsa gp hker hle hgp\n  exact ⟨⟨corner_in_algebra_of_approximation T hW, hframe.1.1⟩, hframe.2⟩",
+      "previous_own_compilation": {
+        "object": {
+          "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\v\\.lake\\build\\lib\\lean\\TGLExt\\SpectralReduction.olean",
+          "bytes": 211672,
+          "sha256": "9e2a625170ee83d6c94f5665652d451d6e32b25896b4a13706c4e23d0ebf2d5b"
+        },
+        "trace": {
+          "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\v\\.lake\\build\\lib\\lean\\TGLExt\\SpectralReduction.trace",
+          "bytes": 3588,
+          "sha256": "79484c8dbdc5526d905b22bf04077f063b94f1a7287f3fdc4dcb60b12fa4f604"
+        },
+        "used_as_A2_acceptance": false
+      }
+    },
+    {
+      "source": {
+        "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\k\\TGLExt\\SemifiniteSeed.lean",
+        "bytes": 5422,
+        "sha256": "9e91547595c6fdfa37c5d9b786bf3b1e5b774fa90fa4ff0a01a463a775e77dc5"
+      },
+      "line": 115,
+      "locator": "theorem matrix_trace_is_faithful_weight",
+      "excerpt": "theorem matrix_trace_is_faithful_weight :\n    (∀ A : Matrix n n ℝ, A.PosSemidef → 0 ≤ A.trace) ∧\n      (∀ A : Matrix n n ℝ, A.PosSemidef → (A.trace = 0 ↔ A = 0)) ∧\n      (∀ A B : Matrix n n ℝ, (B - A).PosSemidef → A.trace ≤ B.trace) :=\n  ⟨fun _ hA => hA.trace_nonneg, psd_trace_eq_zero_iff, trace_monotone_of_psd_sub⟩\n",
+      "previous_own_compilation": {
+        "object": {
+          "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\v\\.lake\\build\\lib\\lean\\TGLExt\\SemifiniteSeed.olean",
+          "bytes": 180904,
+          "sha256": "b2add7bab84efd91e56c5cdb196327265ee0336cdd5ffcae297d39850be1aee3"
+        },
+        "trace": {
+          "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\v\\.lake\\build\\lib\\lean\\TGLExt\\SemifiniteSeed.trace",
+          "bytes": 3556,
+          "sha256": "61d8abebfab0d1fe666c37c0ff28177485cbe4021078f6ae5cac2e8ccf9e3c46"
+        },
+        "used_as_A2_acceptance": false
+      }
+    },
+    {
+      "source": {
+        "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\k\\TGLExt\\TheNonMinimalCoupling.lean",
+        "bytes": 6920,
+        "sha256": "03576ea2958ffc4c3802b332227dfc7ef2b52e538881e602bfc15e2a81a21cec"
+      },
+      "line": 97,
+      "locator": "theorem split_forbids_minimality",
+      "excerpt": "theorem split_forbids_minimality (e f g : Matrix n n ℂ)\n    (hsplit : f + g = e) (horth : f * g = 0) (hf : f * f = f) (hgne : g ≠ 0) :\n    f * e = f ∧ f ≠ e := by\n  constructor\n  · rw [← hsplit, mul_add, hf, horth, add_zero]\n  · intro h\n    apply hgne\n    have hg2 : g = e - f := by rw [← hsplit]; abel\n    rw [hg2, h, sub_self]",
+      "previous_own_compilation": {
+        "object": {
+          "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\v\\.lake\\build\\lib\\lean\\TGLExt\\TheNonMinimalCoupling.olean",
+          "bytes": 511800,
+          "sha256": "09b3fed07a8debda6f95d20d2ef8b77acaa199d63f08f5063ea53cc00c7ee49c"
+        },
+        "trace": {
+          "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\v\\.lake\\build\\lib\\lean\\TGLExt\\TheNonMinimalCoupling.trace",
+          "bytes": 4635,
+          "sha256": "957b0aa46d8462b12ce6cbe189a773a336aad9fd93b7c4c204eb4a90670a85a0"
+        },
+        "used_as_A2_acceptance": false
+      }
+    },
+    {
+      "source": {
+        "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\k\\TGLExt\\TheNonMinimalCoupling.lean",
+        "bytes": 6920,
+        "sha256": "03576ea2958ffc4c3802b332227dfc7ef2b52e538881e602bfc15e2a81a21cec"
+      },
+      "line": 110,
+      "locator": "theorem the_split_is_inhabited",
+      "excerpt": "theorem the_split_is_inhabited :\n    ∃ e f g : Matrix (Fin 2) (Fin 2) ℂ,\n      f + g = e ∧ f * g = 0 ∧ f * f = f ∧ g * g = g\n      ∧ f ≠ 0 ∧ g ≠ 0 ∧ f ≠ e := by\n  refine ⟨1, !![1, 0; 0, 0], !![0, 0; 0, 1], ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩\n  · ext i j; fin_cases i <;> fin_cases j <;> simp [Matrix.one_apply]\n  · ext i j; fin_cases i <;> fin_cases j <;>",
+      "previous_own_compilation": {
+        "object": {
+          "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\v\\.lake\\build\\lib\\lean\\TGLExt\\TheNonMinimalCoupling.olean",
+          "bytes": 511800,
+          "sha256": "09b3fed07a8debda6f95d20d2ef8b77acaa199d63f08f5063ea53cc00c7ee49c"
+        },
+        "trace": {
+          "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\v\\.lake\\build\\lib\\lean\\TGLExt\\TheNonMinimalCoupling.trace",
+          "bytes": 4635,
+          "sha256": "957b0aa46d8462b12ce6cbe189a773a336aad9fd93b7c4c204eb4a90670a85a0"
+        },
+        "used_as_A2_acceptance": false
+      }
+    },
+    {
+      "source": {
+        "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\k\\TGLExt\\V351RegularCoreTraceContract.lean",
+        "bytes": 5624,
+        "sha256": "3694175f8ef5bcf5848d88bd8061abf8546480873964ebfdc19dd41ad05928f0"
+      },
+      "line": 43,
+      "locator": "structure RegularCoreTraceData",
+      "excerpt": "structure RegularCoreTraceData (P : SiteProfile) where\n  value : PositiveCoreInput P → ℝ≥0∞\n  zero : value (PositiveCoreInput.zero P) = 0\n  additive : ∀ A B, value (A.add B) = value A + value B\n  homogeneous : ∀ (r : ℝ≥0) A, value (A.scale r) = (r : ℝ≥0∞) * value A\n  monotone : ∀ A B, A ≤ B → value A ≤ value B\n  faithful : ∀ A, value A = 0 ↔ A = PositiveCoreInput.zero P\n  normal : ∀ {ι : Type u} [Preorder ι] [IsDirectedOrder ι] [Nonempty ι]\n    (A : ι → (regularCoreAlgebra P).toStarSubalgebra)\n    (S : (regularCoreAlgebra P).toStarSubalgebra)\n    (hpos : ∀ i, 0 ≤ A i) (_hmono : Monotone A) (hS : IsLUB (Set.range A) S),\n    value ⟨S.val, S.property, positive_internal_isLUB_nonneg P A S hpos hS⟩ =\n      ⨆ i, value ⟨(A i).val, (A i).property, hpos i⟩\n  semifinite : ∀ A, value A =\n    ⨆ (B : PositiveCoreInput P) (_ : B ≤ A) (_ : value B < ⊤), value B\n  tracial : ∀ a, value (positiveSquare P a) = value (positiveSquare P (star a))\n  dual_scaling : ∀ s A, value (positiveDual P s A) =\n    ENNReal.ofReal (Real.exp (-s)) * value A\n\ntheorem RegularCoreTraceData.not_zero (P : SiteProfile)\n    (T : RegularCoreTraceData.{u} P) : T.value ≠ fun _ => 0 := by\n  intro h\n  have hz : T.value (positiveUnit P) = 0 := congrFun h _\n  exact positiveUnit_ne_zero P ((T.faithful _).mp hz)",
+      "previous_own_compilation": {
+        "object": {
+          "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\v\\.lake\\build\\lib\\lean\\TGLExt\\V351RegularCoreTraceContract.olean",
+          "bytes": 719960,
+          "sha256": "cf5b55eb12f0be1862d8248dad32829b63d5f173d3597c70a6dc85b7907480ba"
+        },
+        "trace": {
+          "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\v\\.lake\\build\\lib\\lean\\TGLExt\\V351RegularCoreTraceContract.trace",
+          "bytes": 5884,
+          "sha256": "83a9b3065740def2b572ae0077bb831e460f0cd21331c748718fca643e62ccef"
+        },
+        "used_as_A2_acceptance": false
+      }
+    },
+    {
+      "source": {
+        "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\k\\TGLExt\\V351RegularCoreTraceConstruction.lean",
+        "bytes": 1095,
+        "sha256": "f741525cfa335d89221834fdb01e3f3c6b8efa435b107f0a355cc5679fe06b40"
+      },
+      "line": 15,
+      "locator": "def scalarInverseLimitTraceData",
+      "excerpt": "def scalarInverseLimitTraceData (P : SiteProfile) : RegularCoreTraceData.{u} P where\n  value := scalarInverseLimitWeight P\n  zero := scalarInverseLimitWeight_zero P\n  additive := scalarInverseLimitWeight_add P\n  homogeneous := scalarInverseLimitWeight_scale P\n  monotone := scalarInverseLimitWeight_mono P\n  faithful := scalarInverseLimitWeight_faithful P\n  normal := scalarInverseLimitWeight_normal P\n  semifinite := scalarInverseLimitWeight_finite_minorants P (scalarInverseLimitWeight_tracial P)\n  tracial := scalarInverseLimitWeight_tracial P\n  dual_scaling := scalarInverseLimitWeight_dual P\n",
+      "previous_own_compilation": {
+        "object": {
+          "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\v\\.lake\\build\\lib\\lean\\TGLExt\\V351RegularCoreTraceConstruction.olean",
+          "bytes": 36720,
+          "sha256": "87d27c05354c90407e8e1076333d9ac5db158d22c8c42623b17688999cb3550c"
+        },
+        "trace": {
+          "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\v\\.lake\\build\\lib\\lean\\TGLExt\\V351RegularCoreTraceConstruction.trace",
+          "bytes": 4476,
+          "sha256": "b6c1d5038a2c5cd795df4ae9c79456fdbe7032c1fd260793def1fb1ef62f5ffe"
+        },
+        "used_as_A2_acceptance": false
+      }
+    },
+    {
+      "source": {
+        "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\k\\TGLExt\\V351InverseLimitFiniteMinorants.lean",
+        "bytes": 6831,
+        "sha256": "fca7ff37994a84ee7cc5707f66d670c6cf46dadf9500da10f4f06fa932cc296c"
+      },
+      "line": 14,
+      "locator": "theorem scalarInverseLimitWeight_finite_contractions",
+      "excerpt": "theorem scalarInverseLimitWeight_finite_contractions (P : SiteProfile) :\n    ∃ E : ℕ → (regularCoreAlgebra P).toStarSubalgebra,\n      (∀ n, ‖(E n).val‖ ≤ 1) ∧\n      (∀ n, scalarInverseLimitWeight P (positiveSquare P (E n)) < ⊤) ∧\n      (∀ v, Tendsto (fun n => (E n).val v) atTop (𝓝 v)) := by",
+      "previous_own_compilation": {
+        "object": {
+          "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\v\\.lake\\build\\lib\\lean\\TGLExt\\V351InverseLimitFiniteMinorants.olean",
+          "bytes": 614312,
+          "sha256": "50d723b08387ae93ebb573ca4cd83c29046da6bf6e504f91e4b8982e7b5c2c76"
+        },
+        "trace": {
+          "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\v\\.lake\\build\\lib\\lean\\TGLExt\\V351InverseLimitFiniteMinorants.trace",
+          "bytes": 3937,
+          "sha256": "7c98ed50e7d2df3587432be9dfeb44e4b9a28c1af9b1d0212efeaa66220dbda1"
+        },
+        "used_as_A2_acceptance": false
+      }
+    },
+    {
+      "source": {
+        "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\k\\TGLExt\\V351InverseLimitFiniteMinorants.lean",
+        "bytes": 6831,
+        "sha256": "fca7ff37994a84ee7cc5707f66d670c6cf46dadf9500da10f4f06fa932cc296c"
+      },
+      "line": 84,
+      "locator": "theorem scalarInverseLimitWeight_finite_minorants",
+      "excerpt": "theorem scalarInverseLimitWeight_finite_minorants (P : SiteProfile)\n    (htr : ∀ a : (regularCoreAlgebra P).toStarSubalgebra,\n      scalarInverseLimitWeight P (positiveSquare P a) =\n        scalarInverseLimitWeight P (positiveSquare P (star a)))\n    (X : PositiveCoreInput P) :\n    scalarInverseLimitWeight P X =\n      ⨆ (Y : PositiveCoreInput P) (_ : Y ≤ X)\n        (_ : scalarInverseLimitWeight P Y < ⊤), scalarInverseLimitWeight P Y := by",
+      "previous_own_compilation": {
+        "object": {
+          "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\v\\.lake\\build\\lib\\lean\\TGLExt\\V351InverseLimitFiniteMinorants.olean",
+          "bytes": 614312,
+          "sha256": "50d723b08387ae93ebb573ca4cd83c29046da6bf6e504f91e4b8982e7b5c2c76"
+        },
+        "trace": {
+          "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\v\\.lake\\build\\lib\\lean\\TGLExt\\V351InverseLimitFiniteMinorants.trace",
+          "bytes": 3937,
+          "sha256": "7c98ed50e7d2df3587432be9dfeb44e4b9a28c1af9b1d0212efeaa66220dbda1"
+        },
+        "used_as_A2_acceptance": false
+      }
+    },
+    {
+      "source": {
+        "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\k\\TGLExt\\V351InverseLimitScaling.lean",
+        "bytes": 5377,
+        "sha256": "2aa1344d9f0ebbf8b3b87b1354b9ec20e10f0fd8b842789e925819c0c2b097ab"
+      },
+      "line": 91,
+      "locator": "theorem scalarInverseLimitWeight_dual",
+      "excerpt": "theorem scalarInverseLimitWeight_dual (P : SiteProfile) (s : ℝ) (X : PositiveCoreInput P) :\n    scalarInverseLimitWeight P (TGLV351.positiveDual P s X) =\n      ENNReal.ofReal (Real.exp (-s)) * scalarInverseLimitWeight P X := by\n  change (⨆ n : ℕ, scalarInverseCutoffWeight P (1/((n : ℝ)+1))",
+      "previous_own_compilation": {
+        "object": {
+          "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\v\\.lake\\build\\lib\\lean\\TGLExt\\V351InverseLimitScaling.olean",
+          "bytes": 389832,
+          "sha256": "58d172b3a569a355d7f3bbdfe0d07ce29072ada548af7601df567ea457ee7ec2"
+        },
+        "trace": {
+          "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\v\\.lake\\build\\lib\\lean\\TGLExt\\V351InverseLimitScaling.trace",
+          "bytes": 4050,
+          "sha256": "c5225e378797b6171238c0541630f92df988e6268e731454dca637fdcae7dc89"
+        },
+        "used_as_A2_acceptance": false
+      }
+    },
+    {
+      "source": {
+        "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\k\\TGLExt\\V351InverseLimitFaithful.lean",
+        "bytes": 2713,
+        "sha256": "c8ea383ff05cfee0c3ae5b92e9fffee44c56b0f0c2224eef4cba81ecc398ff99"
+      },
+      "line": 50,
+      "locator": "theorem scalarInverseLimitWeight_faithful",
+      "excerpt": "theorem scalarInverseLimitWeight_faithful (P : SiteProfile) (X : PositiveCoreInput P) :\n    scalarInverseLimitWeight P X = 0 ↔ X = PositiveCoreInput.zero P := by\n  constructor",
+      "previous_own_compilation": {
+        "object": {
+          "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\v\\.lake\\build\\lib\\lean\\TGLExt\\V351InverseLimitFaithful.olean",
+          "bytes": 218968,
+          "sha256": "60897208886b53c73af3bcd9e69a3c70b075abda465117cef563a35f1c08e462"
+        },
+        "trace": {
+          "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\v\\.lake\\build\\lib\\lean\\TGLExt\\V351InverseLimitFaithful.trace",
+          "bytes": 3650,
+          "sha256": "161ef9ec81ae730df73e296bb67e0256260543b17e8c9a75c2bf9fface369b9f"
+        },
+        "used_as_A2_acceptance": false
+      }
+    },
+    {
+      "source": {
+        "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\k\\TGLExt\\V350UnitIntervalProjection.lean",
+        "bytes": 3880,
+        "sha256": "60b0cf134b9db7b6fbd286dd2b039452a2f7420a2bf2ababbc5240568b6343b2"
+      },
+      "line": 71,
+      "locator": "theorem unitIntervalProjection_idempotent",
+      "excerpt": "theorem unitIntervalProjection_idempotent :\n    unitIntervalProjection (H := H) * unitIntervalProjection = unitIntervalProjection := by",
+      "previous_own_compilation": {
+        "object": {
+          "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\v\\.lake\\build\\lib\\lean\\TGLExt\\V350UnitIntervalProjection.olean",
+          "bytes": 305056,
+          "sha256": "5f0c779a0ad3589f0154ded37db0c3ef998e502659168b44f7227956389d8d03"
+        },
+        "trace": {
+          "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\v\\.lake\\build\\lib\\lean\\TGLExt\\V350UnitIntervalProjection.trace",
+          "bytes": 5206,
+          "sha256": "e1d77a87c9f2943663166134cdbe7d042299ce25132f319ca1c9665c60063420"
+        },
+        "used_as_A2_acceptance": false
+      }
+    },
+    {
+      "source": {
+        "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\k\\TGLExt\\V350CoreContractCounterexample.lean",
+        "bytes": 1960,
+        "sha256": "1aaa11d4c572c2ad3c0c80a54322247233b64e6e16e28710cd4ccc0d3524de0e"
+      },
+      "line": 12,
+      "locator": "legacy zero model; incompatibility with positive ThreeLocks",
+      "excerpt": "def zeroTraceLegacyCore (W : TGL.SpecificAQFT.TGLSpecificAQFTWitness)\n    (D : WedgeModularData W) : ContinuousCoreData W D where\n  Core := D.wedgeAlgebra.toStarSubalgebra\n  instCoreRing := inferInstance\n  instCoreStarRing := inferInstance\n  instCoreAlgebra := inferInstance\n  embedding := StarAlgHom.id ℂ D.wedgeAlgebra.toStarSubalgebra\n  embedding_injective := Function.injective_id\n  dualAction := fun _ => StarAlgEquiv.refl\n  dualAction_zero := rfl\n  dualAction_add := fun _ _ => rfl\n  canonicalTrace := fun _ => 0\n  trace_zero := rfl\n  trace_tracial := fun _ _ => rfl\n  trace_star := fun _ => rfl\n  trace_dual_scaling := by intro s x; simp\n\n/-- The purported canonical trace may vanish on every element under the\nlegacy signature, even though the algebra embedding is injective. -/\ntheorem legacy_contract_accepts_zero_trace\n    (W : TGL.SpecificAQFT.TGLSpecificAQFTWitness) (D : WedgeModularData W) :\n    ∃ C : ContinuousCoreData W D, ∀ x : C.Core, C.canonicalTrace x = 0 :=\n  ⟨zeroTraceLegacyCore W D, fun _ => rfl⟩\n\n/-- This countermodel cannot supply a positive-trace Three-Locks corner.\nIt diagnoses the core contract without claiming to bypass the full witness. -/\ntheorem zeroTraceLegacyCore_has_no_threeLocks\n    (W : TGL.SpecificAQFT.TGLSpecificAQFTWitness) (D : WedgeModularData W) :\n    ¬ Nonempty (ThreeLocksCoreData W D (zeroTraceLegacyCore W D)) := by\n  rintro ⟨T⟩\n  exact (lt_irrefl (0 : ENNReal)) T.PF_trace_pos\n",
+      "previous_own_compilation": {
+        "object": {
+          "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\v\\.lake\\build\\lib\\lean\\TGLExt\\V350CoreContractCounterexample.olean",
+          "bytes": 101680,
+          "sha256": "83bebc21451df109a9c249a9445f40b069009561919e026b9ec5660c0530cf37"
+        },
+        "trace": {
+          "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\v\\.lake\\build\\lib\\lean\\TGLExt\\V350CoreContractCounterexample.trace",
+          "bytes": 4296,
+          "sha256": "ae7f2d72b5c8e04cec8343758c57ee728f8d92e0d5f44ceac65fcdc4675a1698"
+        },
+        "used_as_A2_acceptance": false
+      }
+    }
+  ],
+  "search_scope": [
+    "Explicit files requested under R/k",
+    "Scoped rg in R/k/TGL and R/k/TGLExt for ThreeLocks constructors, PF trace and projection providers",
+    "Previously accepted A1 compilation pins, read-only"
+  ],
+  "not_searched_exhaustively": [
+    "TOE",
+    "entire archive",
+    "all deliveries",
+    "Mathlib"
+  ],
+  "risks_not_claimed": [
+    "No global impossibility theorem for ContinuousCoreData",
+    "No instantiated finite projection/split/gap in A1 core",
+    "No actual Lean counterexample newly proved"
+  ],
+  "report": {
+    "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\consulta_A2_CONTRATO\\CONSULTA_A2_CONTRATO.md",
+    "bytes": 29022,
+    "sha256": "c00e31ab760be20286b5862727647f20db9422460b74544ad812d262000b0cbc"
+  }
+}

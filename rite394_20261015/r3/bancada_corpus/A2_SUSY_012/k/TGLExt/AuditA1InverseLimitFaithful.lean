@@ -1,0 +1,6 @@
+import TGLExt.V351InverseLimitFaithful
+set_option pp.universes true
+#check TGLV350.Regular.scalarInverseCutoffWeight_one_faithful
+#print axioms TGLV350.Regular.scalarInverseCutoffWeight_one_faithful
+#check TGLV350.Regular.scalarInverseLimitWeight_faithful
+#print axioms TGLV350.Regular.scalarInverseLimitWeight_faithful

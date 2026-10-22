@@ -1,0 +1,1 @@
+[REAL] A primeira conferência parou visivelmente porque exigiu uma entrada individual foundedScreen no axiom_report. A fonte contém a definição; o relatório contém seus dez teoremas, mas não essa entrada de definição. A conferência foi corrigida para preservar NAO_MEDIDO_INDIVIDUALMENTE_NO_RELATORIO. Nenhum original foi alterado; nenhum resultado de prova foi inventado.

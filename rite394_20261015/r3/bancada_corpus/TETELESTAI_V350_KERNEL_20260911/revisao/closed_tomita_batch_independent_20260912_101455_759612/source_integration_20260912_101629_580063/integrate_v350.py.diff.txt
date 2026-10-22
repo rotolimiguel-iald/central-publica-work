@@ -1,0 +1,48 @@
+--- custodied/integrate_v350.py
++++ current/integrate_v350.py
+@@ -4,6 +4,7 @@
+ import hashlib
+ import json
+ from pathlib import Path
++import re
+ 
+ ROOT = Path(__file__).resolve().parent
+ 
+@@ -48,6 +49,13 @@
+                 'DualSquareRootFormBound', 'DualFormVariationalBound', 'DualFormRepresentation',
+                 'FormMinimizerUniqueness', 'DualResolventFixed', 'DualFixedCore',
+                 'ResolventGraphTransport', 'DualSupportTransport', 'DualFixedFormAffiliation', 'PositiveFormCone', 'DualFixedWeightLaws', 'RegularApproximation', 'FourierL1L2', 'RegularFiniteWeight', 'DualSemifiniteIdeal', 'BoundedDualValues', 'BoundedFiniteSquares', 'FixedCoreShiftCommutation', 'FourierUniqueness', 'CharacterLocality', 'L2MeasurableCut', 'FixedCoreLocality', 'UnitIntervalProjection', 'TranslationCorrelation', 'UnitIntervalShiftProjection', 'ConstantFibreCandidate', 'L2CutIntegral', 'ZeroFromTranslatedCuts', 'ConstantFibreIdentification', 'StrongOperatorField', 'OperatorFieldFaithfulness', 'TwistedCommutantField', 'RegularCoreCommutant', 'FixedCoreBaseIdentification', 'FixedBaseEquivalence', 'BoundedBaseDualValues', 'ScalarDualWeightFaithfulness', 'ScalarDualWeight', 'ScalarModularInvariance', 'RegularScalarWeightCertificate', 'ContractionAdjointLimit', 'StrongBoundedApplication', 'FiniteDualStarCore', 'ScalarGNSOrbit', 'ScalarGNSLinear', 'ScalarGNSAction', 'OperatorFieldAlgebra', 'ScalarGNSCompletion', 'DualOrbitRepresentation', 'ReducingStarRepresentation', 'ScalarGNSRepresentation', 'DualOrbitStrongLimits', 'ScalarGNSStarApproximation', 'ScalarGNSStarDensity', 'ScalarTomitaGraph', 'ScalarGNSStrongContinuity', 'ScalarGNSNormality', 'DualCutLinearMap', 'ScalarBoundedCuts', 'ScalarCutNormality', 'ScalarGNSCutMaps', 'ScalarGNSCutNorm']
++tomita_batch = ['ScalarCutVacuum', 'ScalarCutCyclicSpace', 'ScalarCutVectorFunctional',
++                'ScalarCutGNSProperties', 'L2PositiveMultiplier', 'L2GaussianProfile',
++                'FibreVonNeumann', 'ScalarGaussianVacuum', 'SeparatingCyclicCommutant',
++                'DualOrbitVonNeumann', 'ScalarGaussianGNSMap', 'VectorTomitaClosability',
++                'ScalarGaussianClosureTransport', 'ScalarClosedTomita',
++                'ScalarTomitaStandardSubspace']
++module_names.extend(tomita_batch)
+ for name in module_names:
+     source = (ROOT / 'kernel' / 'TGLV350' / (name + '.lean')).read_text(encoding='utf-8')
+     for dependency in module_names:
+@@ -145,6 +153,7 @@
+                'import TGLExt.V350ScalarCutNormality\n'
+                'import TGLExt.V350ScalarGNSCutMaps\n'
+                'import TGLExt.V350ScalarGNSCutNorm\n')
++root_import += ''.join('import TGLExt.V350' + name + '\n' for name in tomita_batch)
+ new['TGLExt.lean'] = embedded['TGLExt.lean'].rstrip() + root_import
+ audit = embedded['TGL/Audit.lean']
+ new['TGL/Audit.lean'] = root_import + audit.rstrip() + '''
+@@ -737,6 +746,15 @@
+ #print axioms TGLV350.Regular.scalarGNSCutMap_embedding_norm_sq
+ '''
+ 
++batch_targets = []
++for name in tomita_batch:
++    source = (ROOT / 'kernel/TGLV350' / (name + '.lean')).read_text(encoding='utf-8')
++    batch_targets.extend('TGLV350.Regular.' + short for short in
++                         re.findall(r'^#print axioms ([\w.]+)$', source, re.M))
++assert len(batch_targets) == len(set(batch_targets)) == 99
++new['TGL/Audit.lean'] += '\n-- Closed original GNS graph; KMS and canonical trace still open.\n'
++new['TGL/Audit.lean'] += ''.join('#print axioms ' + name + '\n' for name in batch_targets)
++
+ lines = text.splitlines(keepends=True)
+ starts = [0]
+ for line in lines:

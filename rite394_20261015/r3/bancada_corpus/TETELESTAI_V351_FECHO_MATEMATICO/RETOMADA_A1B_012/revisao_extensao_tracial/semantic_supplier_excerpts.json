@@ -1,0 +1,105 @@
+{
+  "timestamp": "2026-09-15T00:06:50.722671-03:00",
+  "records": [
+    {
+      "source": {
+        "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\v\\TGLExt\\V350DualCutNormality.lean",
+        "bytes": 5028,
+        "sha256": "026f5042bd6adee2fcf90ce1db5b9831ee312b3bccaf4a194b8631936d543d65"
+      },
+      "start": 49,
+      "end": 59,
+      "text": "theorem dualAmbient_tendsto_strong {ι : Type*} {l : Filter ι}\n    (A : ι → RegularHilbert H →L[ℂ] RegularHilbert H)\n    (S : RegularHilbert H →L[ℂ] RegularHilbert H)\n    (hlim : ∀ v, Tendsto (fun i => A i v) l (𝓝 (S v))) (s : ℝ) (v : RegularHilbert H) :\n    Tendsto (fun i => dualAmbient s (A i) v) l (𝓝 (dualAmbient s S v)) := by\n  change Tendsto (fun i => characterMultiplier s (A i (star (characterMultiplier s) v))) l\n    (𝓝 (characterMultiplier s (S (star (characterMultiplier s) v))))\n  exact ((characterMultiplier (H := H) s).continuous.tendsto\n      (S (star (characterMultiplier (H := H) s) v))).comp\n      (hlim (star (characterMultiplier (H := H) s) v))\n"
+    },
+    {
+      "source": {
+        "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\v\\TGLExt\\V350DualWeightForm.lean",
+        "bytes": 6890,
+        "sha256": "3a233c43934c915774c68c23f0fca752d1c9dfc95679178c714394fe666a24b4"
+      },
+      "start": 14,
+      "end": 22,
+      "text": "\n/-- Dual Haar normalization for Lebesgue dt and characters exp(-i*s*t).\nThis fixes the Fourier convention; it is not a normalization by cutoff length. -/\ndef dualHaarFactor : ℝ := (2 * Real.pi)⁻¹\n\ntheorem dualHaarFactor_pos : 0 < dualHaarFactor := by\n  unfold dualHaarFactor\n  positivity\n"
+    },
+    {
+      "source": {
+        "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\v\\TGLExt\\V350DualWeightForm.lean",
+        "bytes": 6890,
+        "sha256": "3a233c43934c915774c68c23f0fca752d1c9dfc95679178c714394fe666a24b4"
+      },
+      "start": 40,
+      "end": 67,
+      "text": "  change ((dualHaarFactor : ℂ) • dualWeightCut R A) ∈ regularCoreAlgebra P\n  exact (regularCoreAlgebra P).toStarSubalgebra.smul_mem (dualWeightCut_mem P R A hA) _\n\ndef dualQuadraticIntegrand (A : RegularHilbert H →L[ℂ] RegularHilbert H)\n    (v : RegularHilbert H) (s : ℝ) : ℝ≥0∞ :=\n  ENNReal.ofReal (inner ℂ v (dualAmbient s A v)).re\n\ntheorem dualQuadraticIntegrand_measurable\n    (A : RegularHilbert H →L[ℂ] RegularHilbert H) (v : RegularHilbert H) :\n    Measurable (dualQuadraticIntegrand A v) :=\n  (ENNReal.continuous_ofReal.comp (Complex.continuous_re.comp\n    (continuous_const.inner (dualAmbient_strongly_continuous A v)))).measurable\n\ntheorem dualQuadratic_nonneg (A : RegularHilbert H →L[ℂ] RegularHilbert H)\n    (hA : 0 ≤ A) (v : RegularHilbert H) (s : ℝ) :\n    0 ≤ (inner ℂ v (dualAmbient s A v)).re :=\n  ((ContinuousLinearMap.nonneg_iff_isPositive _).mp\n    (dualAmbient_nonneg s A hA)).re_inner_nonneg_right v\n\n/-- Extended integral of quadratic evaluations on the actual regular Hilbert space.\nThe positive-input laws are proved below. This is not yet an operator-valued weight\nwith values in the base algebra, nor a faithful normal semifinite scalar trace. -/\ndef dualQuadraticIntegral (A : RegularHilbert H →L[ℂ] RegularHilbert H)\n    (v : RegularHilbert H) : ℝ≥0∞ :=\n  ENNReal.ofReal dualHaarFactor * ∫⁻ s : ℝ, dualQuadraticIntegrand A v s\n\ntheorem dualQuadraticIntegral_zero (v : RegularHilbert H) :\n    dualQuadraticIntegral (0 : RegularHilbert H →L[ℂ] RegularHilbert H) v = 0 := by"
+    },
+    {
+      "source": {
+        "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\v\\TGLExt\\V350ScalarRightAverage.lean",
+        "bytes": 4847,
+        "sha256": "64d49e1de18504e9e66e7559f48df9f6811c80821524b85324ee0a1305793aed"
+      },
+      "start": 70,
+      "end": 79,
+      "text": "theorem scalarWeight_right_average_le (P : SiteProfile)\n    (A : (regularCoreAlgebra P).toStarSubalgebra) (h : ℝ) :\n    dualQuadraticIntegral (star (A.val * regularAverage P h) * (A.val * regularAverage P h))\n      (regularVacuum P) ≤ dualQuadraticIntegral (star A.val * A.val) (regularVacuum P) := by\n  simp only [dualQuadraticIntegral,dualQuadraticIntegrand_star_mul]\n  apply mul_le_mul_right\n  apply lintegral_mono\n  intro s\n  exact ENNReal.ofReal_le_ofReal (pow_le_pow_left₀ (norm_nonneg _)\n    (scalarOrbit_right_average_norm_le P A s h) 2)"
+    },
+    {
+      "source": {
+        "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\v\\TGLExt\\V351InverseLimitWeight.lean",
+        "bytes": 6740,
+        "sha256": "cfdced33d3cafdd2782f4d7e8ca77974e0ddee22f19803dfbd36275787c28f1e"
+      },
+      "start": 87,
+      "end": 115,
+      "text": "def scalarInverseLimitWeight (P : SiteProfile) (X : PositiveCoreInput P) : ℝ≥0∞ :=\n  ⨆ n : ℕ, scalarInverseCutoffWeight P (1/((n : ℝ)+1)) X\n\ntheorem scalarInverseLimitWeight_zero (P : SiteProfile) :\n    scalarInverseLimitWeight P (PositiveCoreInput.zero P) = 0 := by\n  simp only [scalarInverseLimitWeight,scalarInverseCutoffWeight_zero,ciSup_const]\n\ntheorem scalarInverseCutoffWeight_le_limit (P : SiteProfile) (n : ℕ) (X : PositiveCoreInput P) :\n    scalarInverseCutoffWeight P (1/((n : ℝ)+1)) X ≤ scalarInverseLimitWeight P X :=\n  le_iSup (fun m : ℕ => scalarInverseCutoffWeight P (1/((m : ℝ)+1)) X) n\n\ntheorem scalarInverseLimitWeight_add (P : SiteProfile) (X Y : PositiveCoreInput P) :\n    scalarInverseLimitWeight P (X.add Y) = scalarInverseLimitWeight P X + scalarInverseLimitWeight P Y := by\n  simp only [scalarInverseLimitWeight,scalarInverseCutoffWeight_add]\n  exact (ENNReal.iSup_add_iSup_of_monotone (scalarInverseCutoffWeight_sequence_mono P X)\n    (scalarInverseCutoffWeight_sequence_mono P Y)).symm\n\ntheorem scalarInverseLimitWeight_scale (P : SiteProfile) (r : ℝ≥0) (X : PositiveCoreInput P) :\n    scalarInverseLimitWeight P (X.scale r) = (r : ℝ≥0∞) * scalarInverseLimitWeight P X := by\n  simp only [scalarInverseLimitWeight,scalarInverseCutoffWeight_scale]\n  exact (ENNReal.mul_iSup _ _).symm\n\ntheorem scalarInverseLimitWeight_mono (P : SiteProfile) (X Y : PositiveCoreInput P) (hXY : X ≤ Y) :\n    scalarInverseLimitWeight P X ≤ scalarInverseLimitWeight P Y := by\n  apply iSup_le\n  intro n\n  exact le_iSup_of_le n (scalarInverseCutoffWeight_mono P _ X Y hXY)\n\ntheorem scalarInverseLimitWeight_normal (P : SiteProfile)"
+    },
+    {
+      "source": {
+        "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\v\\TGLExt\\V350FiniteDualStarCore.lean",
+        "bytes": 6548,
+        "sha256": "017fd7d4c1efd3c0ddfba91b3a6464fdbc194dce8e4ee0a6ad4580a0a6ac98ce"
+      },
+      "start": 16,
+      "end": 25,
+      "text": "def finiteDualStarCore (P : SiteProfile) :\n    NonUnitalStarSubalgebra ℂ (regularCoreAlgebra P).toStarSubalgebra where\n  carrier := {A | HasFiniteDualSquare A.val ∧ HasFiniteDualSquare (star A.val)}\n  zero_mem' := by\n    constructor <;> simpa using (HasFiniteDualSquare.zero\n      (H := TowerHilbert P))\n  add_mem' := by\n    intro A B hA hB\n    change HasFiniteDualSquare (A.val+B.val) ∧ HasFiniteDualSquare (star (A.val+B.val))\n    exact ⟨HasFiniteDualSquare.add _ _ hA.1 hB.1,"
+    },
+    {
+      "source": {
+        "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\v\\TGLExt\\V350FiniteDualStarCore.lean",
+        "bytes": 6548,
+        "sha256": "017fd7d4c1efd3c0ddfba91b3a6464fdbc194dce8e4ee0a6ad4580a0a6ac98ce"
+      },
+      "start": 47,
+      "end": 75,
+      "text": "def regularSandwich (P : SiteProfile) (A : (regularCoreAlgebra P).toStarSubalgebra)\n    (h : ℝ) : (regularCoreAlgebra P).toStarSubalgebra :=\n  ⟨star (regularAverage P h) * A.val * regularAverage P h,\n    (regularCoreAlgebra P).mul_mem\n      ((regularCoreAlgebra P).mul_mem\n        ((regularCoreAlgebra P).toStarSubalgebra.star_mem' (regularAverage_mem P h)) A.property)\n      (regularAverage_mem P h)⟩\n\ntheorem regularSandwich_star (P : SiteProfile)\n    (A : (regularCoreAlgebra P).toStarSubalgebra) (h : ℝ) :\n    star (regularSandwich P A h) = regularSandwich P (star A) h := by\n  apply Subtype.ext\n  change star (star (regularAverage P h) * A.val * regularAverage P h) =\n    star (regularAverage P h) * star A.val * regularAverage P h\n  simp only [star_mul, star_star, mul_assoc]\n\ntheorem regularSandwich_mem_finiteDualStarCore (P : SiteProfile)\n    (A : (regularCoreAlgebra P).toStarSubalgebra) (h : ℝ) (hh : 0 < h) :\n    regularSandwich P A h ∈ finiteDualStarCore P := by\n  have hf (B : (regularCoreAlgebra P).toStarSubalgebra) :\n      HasFiniteDualSquare (regularSandwich P B h).val :=\n    HasFiniteDualSquare.left_mul _ _ (regularAverage_hasFiniteDualSquare P h hh)\n  refine ⟨hf A,?_⟩\n  change HasFiniteDualSquare (star (regularSandwich P A h)).val\n  rw [regularSandwich_star]\n  exact hf (star A)\n\ntheorem regularSandwich_norm_le (P : SiteProfile)\n    (A : (regularCoreAlgebra P).toStarSubalgebra) (h : ℝ) :"
+    },
+    {
+      "source": {
+        "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\v\\TGLExt\\V350FiniteDualStarCore.lean",
+        "bytes": 6548,
+        "sha256": "017fd7d4c1efd3c0ddfba91b3a6464fdbc194dce8e4ee0a6ad4580a0a6ac98ce"
+      },
+      "start": 94,
+      "end": 122,
+      "text": "theorem regularSandwich_tendsto (P : SiteProfile)\n    (A : (regularCoreAlgebra P).toStarSubalgebra)\n    (v : RegularHilbert (TowerHilbert P)) :\n    Tendsto (fun h : ℝ => (regularSandwich P A h).val v) (𝓝[>] 0) (𝓝 (A.val v)) := by\n  have ht := bounded_application_tendsto (𝓝[≠] (0 : ℝ))\n    (fun h => star (regularAverage P h)) 1\n    (fun h => by simpa only [_root_.norm_star] using regularAverage_norm_le_one P h)\n    (fun h => A.val (regularAverage P h v)) (A.val v) (A.val v)\n    (regularAverage_mul_tendsto P A.val v)\n    (regularAverage_star_tendsto_identity P (A.val v))\n  exact ht.mono_left (nhdsWithin_mono _ (by intro h hh; exact ne_of_gt hh))\n\n/-- Every core element has uniformly bounded approximants in the algebraic\nstar core, converging strongly together with their adjoints. -/\ntheorem finiteDualStarCore_strongStar_approximation (P : SiteProfile)\n    (A : (regularCoreAlgebra P).toStarSubalgebra) :\n    (∀ h : ℝ, 0 < h → regularSandwich P A h ∈ finiteDualStarCore P) ∧\n    (∀ h : ℝ, ‖(regularSandwich P A h).val‖ ≤ ‖A.val‖) ∧\n    (∀ v, Tendsto (fun h : ℝ => (regularSandwich P A h).val v) (𝓝[>] 0) (𝓝 (A.val v))) ∧\n    (∀ v, Tendsto (fun h : ℝ => star (regularSandwich P A h).val v) (𝓝[>] 0)\n      (𝓝 (star A.val v))) := by\n  refine ⟨regularSandwich_mem_finiteDualStarCore P A,regularSandwich_norm_le P A,\n    regularSandwich_tendsto P A,?_⟩\n  intro v\n  change Tendsto (fun h : ℝ => (star (regularSandwich P A h)).val v)\n    (𝓝[>] 0) (𝓝 ((star A).val v))\n  simp_rw [regularSandwich_star]\n  exact regularSandwich_tendsto P (star A) v\n"
+    },
+    {
+      "source": {
+        "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\v\\TGLExt\\V351RegularCoreTraceContract.lean",
+        "bytes": 5624,
+        "sha256": "3694175f8ef5bcf5848d88bd8061abf8546480873964ebfdc19dd41ad05928f0"
+      },
+      "start": 43,
+      "end": 60,
+      "text": "structure RegularCoreTraceData (P : SiteProfile) where\n  value : PositiveCoreInput P → ℝ≥0∞\n  zero : value (PositiveCoreInput.zero P) = 0\n  additive : ∀ A B, value (A.add B) = value A + value B\n  homogeneous : ∀ (r : ℝ≥0) A, value (A.scale r) = (r : ℝ≥0∞) * value A\n  monotone : ∀ A B, A ≤ B → value A ≤ value B\n  faithful : ∀ A, value A = 0 ↔ A = PositiveCoreInput.zero P\n  normal : ∀ {ι : Type u} [Preorder ι] [IsDirectedOrder ι] [Nonempty ι]\n    (A : ι → (regularCoreAlgebra P).toStarSubalgebra)\n    (S : (regularCoreAlgebra P).toStarSubalgebra)\n    (hpos : ∀ i, 0 ≤ A i) (_hmono : Monotone A) (hS : IsLUB (Set.range A) S),\n    value ⟨S.val, S.property, positive_internal_isLUB_nonneg P A S hpos hS⟩ =\n      ⨆ i, value ⟨(A i).val, (A i).property, hpos i⟩\n  semifinite : ∀ A, value A =\n    ⨆ (B : PositiveCoreInput P) (_ : B ≤ A) (_ : value B < ⊤), value B\n  tracial : ∀ a, value (positiveSquare P a) = value (positiveSquare P (star a))\n  dual_scaling : ∀ s A, value (positiveDual P s A) =\n    ENNReal.ofReal (Real.exp (-s)) * value A"
+    },
+    {
+      "source": {
+        "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\v\\.lake\\packages\\mathlib\\Mathlib\\Analysis\\CStarAlgebra\\ContinuousFunctionalCalculus\\Order.lean",
+        "bytes": 28173,
+        "sha256": "0802a500623d378e8c953961cac3c6391932515a7236d44dbceea11e2eb4611b"
+      },
+      "start": 245,
+      "end": 248,
+      "text": "lemma norm_le_one_iff_of_nonneg (a : A) (ha : 0 ≤ a := by cfc_tac) :\n    ‖a‖ ≤ 1 ↔ a ≤ 1 := by\n  simpa using norm_le_iff_le_algebraMap a zero_le_one\n"
+    }
+  ]
+}

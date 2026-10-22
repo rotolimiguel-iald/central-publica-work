@@ -1,0 +1,32 @@
+import TGLExt.V351InverseLimitWeight
+set_option pp.universes true
+#check TGLV350.Regular.scalarInverseCutoffWeight
+#print axioms TGLV350.Regular.scalarInverseCutoffWeight
+#check TGLV350.Regular.scalarInverseCutoffWeight_zero
+#print axioms TGLV350.Regular.scalarInverseCutoffWeight_zero
+#check TGLV350.Regular.scalarInverseCutoffWeight_add
+#print axioms TGLV350.Regular.scalarInverseCutoffWeight_add
+#check TGLV350.Regular.scalarInverseCutoffWeight_scale
+#print axioms TGLV350.Regular.scalarInverseCutoffWeight_scale
+#check TGLV350.Regular.scalarInverseCutoffWeight_mono
+#print axioms TGLV350.Regular.scalarInverseCutoffWeight_mono
+#check TGLV350.Regular.scalarInverseCutoffWeight_normal
+#print axioms TGLV350.Regular.scalarInverseCutoffWeight_normal
+#check TGLV350.Regular.scalarInverseCutoffWeight_antitone
+#print axioms TGLV350.Regular.scalarInverseCutoffWeight_antitone
+#check TGLV350.Regular.scalarInverseCutoffWeight_sequence_mono
+#print axioms TGLV350.Regular.scalarInverseCutoffWeight_sequence_mono
+#check TGLV350.Regular.scalarInverseLimitWeight
+#print axioms TGLV350.Regular.scalarInverseLimitWeight
+#check TGLV350.Regular.scalarInverseLimitWeight_zero
+#print axioms TGLV350.Regular.scalarInverseLimitWeight_zero
+#check TGLV350.Regular.scalarInverseCutoffWeight_le_limit
+#print axioms TGLV350.Regular.scalarInverseCutoffWeight_le_limit
+#check TGLV350.Regular.scalarInverseLimitWeight_add
+#print axioms TGLV350.Regular.scalarInverseLimitWeight_add
+#check TGLV350.Regular.scalarInverseLimitWeight_scale
+#print axioms TGLV350.Regular.scalarInverseLimitWeight_scale
+#check TGLV350.Regular.scalarInverseLimitWeight_mono
+#print axioms TGLV350.Regular.scalarInverseLimitWeight_mono
+#check TGLV350.Regular.scalarInverseLimitWeight_normal
+#print axioms TGLV350.Regular.scalarInverseLimitWeight_normal

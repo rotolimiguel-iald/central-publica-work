@@ -1,0 +1,140 @@
+import TGLExt.Solder4D
+
+set_option autoImplicit false
+set_option linter.unusedSectionVars false
+set_option maxHeartbeats 1000000
+
+/-!
+# A PAREDE CORRIGIDA: Breuer LOCAL, não τ-compacidade global
+  [TGLExt — v64, absorção da Resposta 8]
+
+A Resposta 8 do especialista mudou a FORMA da parede: (B2) global
+(resolvente globalmente τ-compacto) é FALSO na amplificação natural —
+as projeções espectrais do contínuo [¼,∞) têm multiplicidade infinita na
+direção κ. O enunciado Breuer correto é LOCAL: existe 0<ε<½ com
+P_ε = 1_{[−ε,ε]}(𝔻_Ψ) de peso τ-finito e 𝔻_Ψ invertível fora; então
+𝔻_Ψ é Breuer–Fredholm e 0 < τ(1_{{0}}(𝔻_Ψ)) < ∞. Hipótese mínima
+nomeada: TGL_LOCAL_BREUER_GAP_PACKAGE. E a correção de tipo de (B1):
+o par (−i∂_κ, q(κ)) satisfaz Weyl e vive na AMPLIFICAÇÃO
+C_Ψ⋊_θℝ ≅ M⊗̄B(L²(ℝ)) (Takesaki), não em C_Ψ isolado.
+
+O QUE ESTA PEDRA PROVA [KERNEL]:
+
+* ★ `kernel_weight_pos` / `kernel_weight_finite` / `breuer_kernel_weight`
+  — O TEOREMA CORRIGIDO como COMPOSIÇÃO: do pacote de gap local
+  (kernel ≤ gap, τ(gap) < ∞, kernel ≠ ⊥, τ fiel e monótono) segue
+  0 < τ(ker) < ∞ — o (B3) da Pergunta 8, na forma que a Resposta 8
+  demonstrou ser a correta;
+* ★ `local_gap_package_consistent` — o pacote é HABITADO (modelo ℝ≥0∞);
+* ★ `global_tau_compactness_refuted` — **A REFUTAÇÃO TIPADA de (B2)
+  global**: no MESMO modelo em que o zero físico tem peso 0 < τ < ∞,
+  o contínuo tem peso ⊤ — "a finitude do zero físico convive com a
+  infinitude necessária da vida contínua"; o global é falso E
+  desnecessário;
+* ★ `no_finite_weyl_pair` — a face finita da correção de tipo de (B1):
+  NÃO existe par de Weyl em dimensão finita ([P,Q] = −i·1 é impossível em
+  matrizes — o traço do comutador é 0, o de −i·1 é −i·n ≠ 0); o par
+  (−i∂_κ, q(κ)) exige a amplificação de Takesaki;
+* ★ `plus_block_eigenvalue_lower_bound` — a face espectral discreta:
+  H − c·1 ⪰ 0 ⟹ todo autovalor ≥ c; com c = ¼ (v63: BᴴB+¼ ⪰ ¼), a
+  janela do gap (−ε,ε), ε < ½, NÃO encontra o bloco H₊ — o zero pertence
+  ao bloco H₋;
+* ★ `tendsto_halfTanh_atTop` / `tendsto_halfTanh_atBot` — AS DUAS FACES:
+  o antiderivado ½tanh(κ/2) tende a +½ e −½ — os pesos das faces P_± da
+  testemunha (a Meia-Nat, Q8.2);
+* ★ `zero_mode_weight_is_one` — **A JOIA (Q8.2)**: o peso L² do modo zero
+  φ₀ = ½sech(κ/2) é EXATAMENTE 1: ∫_ℝ ¼sech²(κ/2) dκ = ½ − (−½) = 1.
+  O peso do Nome inteiro é 1 = ω(I) — o axioma retorna como número no fim
+  da cadeia; as faces pesam ½ cada. Nenhuma normalização imposta: o 1 é
+  um teorema de integral (mathlib não tem d/dx tanh nem lim tanh — ambos
+  DERIVADOS aqui de sinh/cosh e do aperto 1−tanh x ≤ 2e^{−2x}).
+
+VOCABULÁRIO: τ jamais recebe um valor fabricado — o peso 1 é um TEOREMA
+DE INTEGRAL, não uma normalização imposta; a instanciação do pacote no
+double core GENUÍNO (afiliação do 𝔻_Ψ concreto, finitude do gap em
+C_Ψ⋊_θℝ) permanece ABERTA e nomeada. β jamais literal. Sem sorry, sem
+axiom. Negativo honesto é resultado — e `global_tau_compactness_refuted`
+é um negativo que LIBERTA: Breuer não pede que o contínuo desapareça.
+-/
+
+namespace TGLExt
+
+open scoped ENNReal
+
+noncomputable section
+
+/- ═══════════════ 1. A camada mínima de dados [Q8.3] ═══════════════ -/
+
+/-- [DATA — Q8.3, nível 1] A camada tracial semifinita MÍNIMA: um
+    reticulado limitado de projeções `L` e um peso `τ : L → ℝ≥0∞`
+    monótono e fiel. (mathlib não tem traços semifinitos; a camada
+    registra o mecanismo — os teoremas abaixo são composição genuína.) -/
+structure SemifiniteTraceData (L : Type) [Lattice L] [BoundedOrder L] where
+  tau : L → ℝ≥0∞
+  mono : ∀ ⦃p q : L⦄, p ≤ q → tau p ≤ tau q
+  faithful : ∀ ⦃p : L⦄, tau p = 0 → p = ⊥
+
+/-- [DATA — Q8.3, nível 3] O certificado de GAP LOCAL de Breuer:
+    `ker` = 1_{{0}}(𝔻), `gap` = 1_{[−ε,ε]}(𝔻); o kernel está sob o gap
+    (monotonicidade espectral), o gap tem peso FINITO (a condição local
+    que SUBSTITUI o (B2) global refutado) e o kernel é não nulo
+    (o Um habita o núcleo — cláusula DERIVADA na v58). -/
+structure BreuerGapData (L : Type) [Lattice L] [BoundedOrder L]
+    (T : SemifiniteTraceData L) where
+  ker : L
+  gap : L
+  ker_le_gap : ker ≤ gap
+  gap_finite : T.tau gap < ⊤
+  ker_ne_bot : ker ≠ ⊥
+
+variable {L : Type} [Lattice L] [BoundedOrder L] {T : SemifiniteTraceData L}
+
+/- ═══════════ 2. O teorema corrigido (composição genuína) ═══════════ -/
+
+/-- [KERNEL] ★ O peso do zero é POSITIVO: contrapositiva da fidelidade —
+    se o kernel não é ⊥, seu peso não é 0. -/
+theorem kernel_weight_pos (G : BreuerGapData L T) : 0 < T.tau G.ker := by
+  rcases eq_or_ne (T.tau G.ker) 0 with h | h
+  · exact absurd (T.faithful h) G.ker_ne_bot
+  · exact pos_iff_ne_zero.mpr h
+
+/-- [KERNEL] ★ O peso do zero é FINITO: monotonia sob o gap finito —
+    ker ≤ P_ε e τ(P_ε) < ⊤ ⟹ τ(ker) < ⊤. -/
+theorem kernel_weight_finite (G : BreuerGapData L T) : T.tau G.ker < ⊤ :=
+  lt_of_le_of_lt (T.mono G.ker_le_gap) G.gap_finite
+
+/-- [KERNEL] ★★ O TEOREMA CORRIGIDO (Resposta 8): do pacote de gap local
+    segue o (B3) — `0 < τ(1_{{0}}(𝔻)) < ∞`. A Fredholmidade de Breuer é
+    invertibilidade módulo K_τ PERTO DE ZERO, não resolvente globalmente
+    τ-compacto. (TGL_LOCAL_BREUER_GAP_PACKAGE ⟹ B3.) -/
+theorem breuer_kernel_weight (G : BreuerGapData L T) :
+    0 < T.tau G.ker ∧ T.tau G.ker < ⊤ :=
+  ⟨kernel_weight_pos G, kernel_weight_finite G⟩
+
+/- ═══════ 3. O modelo e a refutação do global [Q8.1] ═══════ -/
+
+/-- [MODEL] O peso identidade sobre ℝ≥0∞ é uma camada tracial semifinita
+    genuína: monótono e fiel (⊥ = 0 é `rfl` em ℝ≥0∞). -/
+def idTrace : SemifiniteTraceData ℝ≥0∞ where
+  tau := id
+  mono := fun _ _ h => h
+  faithful := fun _ h => h
+
+/-- [MODEL] O certificado de gap local é HABITADO (ker = gap = 1:
+    0 < 1 < ⊤; 1 ≠ ⊥). -/
+def modelGap : BreuerGapData ℝ≥0∞ idTrace where
+  ker := 1
+  gap := 1
+  ker_le_gap := le_rfl
+  gap_finite := ENNReal.one_lt_top
+  ker_ne_bot := one_ne_zero
+
+/-- [KERNEL] ★ CONSISTÊNCIA do pacote: TGL_LOCAL_BREUER_GAP_PACKAGE não é
+    vazio — há modelo em que todas as cláusulas valem simultaneamente. -/
+theorem local_gap_package_consistent :
+    Nonempty (BreuerGapData ℝ≥0∞ idTrace) := ⟨modelGap⟩
+
+/-- [KERNEL] ★★ A REFUTAÇÃO TIPADA de (B2) GLOBAL (Resposta 8, Q8.1):
+    no MESMO modelo em que o pacote local fecha (zero físico com peso
+    0 < τ(ker) < ∞), existe um projetor de contínuo com peso ⊤.
+    A exigência global "todo projetor espectral é τ-finito" é FALSA —

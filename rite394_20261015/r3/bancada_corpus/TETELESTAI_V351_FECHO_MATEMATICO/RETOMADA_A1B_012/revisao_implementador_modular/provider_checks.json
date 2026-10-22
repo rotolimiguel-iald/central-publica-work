@@ -1,0 +1,223 @@
+{
+  "checks": [
+    {
+      "name": "regularAverage_square_modular_fixed",
+      "line": 94,
+      "statement": "theorem regularAverage_square_modular_fixed (P : SiteProfile) (δ : ℝ) (hδ : 0 < δ) :\n    ∃ A : scalarWeightStarCore P,\n      A.val.val = star (regularAverage P δ)*regularAverage P δ ∧\n      ∀ t : ℝ, scalarTomitaImaginaryPower P t (scalarWeightStarEmbedding P A) =\n        scalarWeightStarEmbedding P A",
+      "source_excerpt": "theorem regularAverage_square_modular_fixed (P : SiteProfile) (δ : ℝ) (hδ : 0 < δ) :\n    ∃ A : scalarWeightStarCore P,\n      A.val.val = star (regularAverage P δ)*regularAverage P δ ∧\n      ∀ t : ℝ, scalarTomitaImaginaryPower P t (scalarWeightStarEmbedding P A) =\n        scalarWeightStarEmbedding P A := by\n  obtain ⟨A,hA,hS,hF,hxF⟩ := regularAverage_square_fixed_pair P δ hδ\n  refine ⟨A,hA,fun t => ?_⟩\n  exact scalarTomitaImaginaryPower_fixed_of_fixed_pair P (scalarWeightStarEmbedding P A)\n    (scalarWeightStar_mem_closedTomitaDomain P A) hF hS hxF t\n\nend\nend TGLV350.Regular",
+      "author": {
+        "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\k\\TGLExt\\V351ModularFixedVectors.lean",
+        "bytes": 4785,
+        "sha256": "53ccbe3b65e326c618e0c4a4864571b5ab318b31b6f0843b1e91273082a05ff0"
+      },
+      "own": {
+        "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\v\\TGLExt\\V351ModularFixedVectors.lean",
+        "bytes": 4785,
+        "sha256": "53ccbe3b65e326c618e0c4a4864571b5ab318b31b6f0843b1e91273082a05ff0"
+      }
+    },
+    {
+      "name": "scalarTomitaImaginaryPower_core_conjugation",
+      "line": 47,
+      "statement": "theorem scalarTomitaImaginaryPower_core_conjugation (P : SiteProfile) (t : ℝ)\n    (A : (regularCoreAlgebra P).toStarSubalgebra) (x : ScalarGNSHilbert P) :\n    scalarTomitaImaginaryPower P t (scalarGNSRepresentation P A x) =\n      scalarGNSRepresentation P\n        (regularRightCoreElement P t * A * star (regularRightCoreElement P t))\n          (scalarTomitaImaginaryPower P t x)",
+      "source_excerpt": "theorem scalarTomitaImaginaryPower_core_conjugation (P : SiteProfile) (t : ℝ)\n    (A : (regularCoreAlgebra P).toStarSubalgebra) (x : ScalarGNSHilbert P) :\n    scalarTomitaImaginaryPower P t (scalarGNSRepresentation P A x) =\n      scalarGNSRepresentation P\n        (regularRightCoreElement P t * A * star (regularRightCoreElement P t))\n          (scalarTomitaImaginaryPower P t x) := by\n  let U : ScalarGNSHilbert P →L[ℂ] ScalarGNSHilbert P :=\n    (scalarTomitaImaginaryPower P t).toLinearIsometry.toContinuousLinearMap\n  let V : ScalarGNSHilbert P →L[ℂ] ScalarGNSHilbert P :=\n    scalarGNSRepresentation P (regularRightCoreElement P t)\n  let D : ScalarGNSHilbert P →L[ℂ] ScalarGNSHilbert P := star V * U\n  have hunit : star (regularRightCoreElement P t) * regularRightCoreElement P t = 1 :=\n    Subtype.ext (regular_unitary P t).1\n  have hunit' : regularRightCoreElement P t * star (regularRightCoreElement P t) = 1 :=\n    Subtype.ext (regular_unitary P t).2\n  have hVV : star V * V = 1 := by",
+      "author": {
+        "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\k\\TGLExt\\V351ScalarImaginaryCoreAction.lean",
+        "bytes": 8464,
+        "sha256": "db4109dceeab1e948d7d5e664e8d76b347c719b00e62031761aaf5e924862a83"
+      },
+      "own": {
+        "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\v\\TGLExt\\V351ScalarImaginaryCoreAction.lean",
+        "bytes": 8464,
+        "sha256": "db4109dceeab1e948d7d5e664e8d76b347c719b00e62031761aaf5e924862a83"
+      }
+    },
+    {
+      "name": "regularRightGNS_commutes_left",
+      "line": 13,
+      "statement": "theorem regularRightGNS_commutes_left (P : SiteProfile) (t : ℝ)\n    (B : (regularCoreAlgebra P).toStarSubalgebra) :\n    Commute (regularRightGNS P t) (scalarGNSRepresentation P B)",
+      "source_excerpt": "theorem regularRightGNS_commutes_left (P : SiteProfile) (t : ℝ)\n    (B : (regularCoreAlgebra P).toStarSubalgebra) :\n    Commute (regularRightGNS P t) (scalarGNSRepresentation P B) := by\n  apply ContinuousLinearMap.ext\n  intro z\n  change regularRightGNS P t (scalarGNSRepresentation P B z) =\n    scalarGNSRepresentation P B (regularRightGNS P t z)\n  refine (scalarWeightGNSEmbedding_denseRange P).induction ?_\n    (isClosed_eq ((regularRightGNS P t).continuous.comp (scalarGNSRepresentation P B).continuous)\n      ((scalarGNSRepresentation P B).continuous.comp (regularRightGNS P t).continuous)) z\n  rintro _ ⟨a,rfl⟩\n  have hp : scalarRegularRightProduct P t (scalarWeightLeftProduct P B a) =\n      scalarWeightLeftProduct P B (scalarRegularRightProduct P t a) := by\n    apply Subtype.ext\n    exact mul_assoc B a.val (regularRightCoreElement P t)\n  calc",
+      "author": {
+        "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\k\\TGLExt\\V350ScalarRegularPolarCommutation.lean",
+        "bytes": 3596,
+        "sha256": "1c238b53abf26177ed621f2daf98383b9e14a6e0d97cc85ac98cc995ee4dfb70"
+      },
+      "own": {
+        "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\v\\TGLExt\\V350ScalarRegularPolarCommutation.lean",
+        "bytes": 3596,
+        "sha256": "1c238b53abf26177ed621f2daf98383b9e14a6e0d97cc85ac98cc995ee4dfb70"
+      }
+    },
+    {
+      "name": "scalarTomitaPolar_regular_generator",
+      "line": 50,
+      "statement": "theorem scalarTomitaPolar_regular_generator (P : SiteProfile) (t : ℝ) :\n    antiunitaryConjugate (scalarTomitaPolarFactor P)\n      (scalarGNSRepresentation P (regularRightCoreElement P t)) =\n        regularRightGNS P (-t)",
+      "source_excerpt": "theorem scalarTomitaPolar_regular_generator (P : SiteProfile) (t : ℝ) :\n    antiunitaryConjugate (scalarTomitaPolarFactor P)\n      (scalarGNSRepresentation P (regularRightCoreElement P t)) =\n        regularRightGNS P (-t) := by\n  have h := scalarTomitaPolar_conjugate_regular_left P (-t)\n  simpa only [regularRightCoreElement_star,neg_neg] using h\n\ntheorem scalarTomitaPolar_regular_generator_commutes (P : SiteProfile) (t : ℝ)\n    (B : (regularCoreAlgebra P).toStarSubalgebra) :\n    Commute (antiunitaryConjugate (scalarTomitaPolarFactor P)\n      (scalarGNSRepresentation P (regularRightCoreElement P t)))\n        (scalarGNSRepresentation P B) := by\n  rw [scalarTomitaPolar_regular_generator]\n  exact regularRightGNS_commutes_left P (-t) B\n\n#print axioms regularRightGNS_commutes_left",
+      "author": {
+        "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\k\\TGLExt\\V350ScalarRegularPolarCommutation.lean",
+        "bytes": 3596,
+        "sha256": "1c238b53abf26177ed621f2daf98383b9e14a6e0d97cc85ac98cc995ee4dfb70"
+      },
+      "own": {
+        "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\v\\TGLExt\\V350ScalarRegularPolarCommutation.lean",
+        "bytes": 3596,
+        "sha256": "1c238b53abf26177ed621f2daf98383b9e14a6e0d97cc85ac98cc995ee4dfb70"
+      }
+    },
+    {
+      "name": "regularRightGNS_intertwines",
+      "line": 98,
+      "statement": "theorem regularRightGNS_intertwines (P : SiteProfile) (t : ℝ) (A : scalarWeightLeftIdeal P) :\n    regularRightGNS P t (scalarWeightGNSEmbedding P A) =\n      scalarWeightGNSEmbedding P (scalarRegularRightProduct P t A)",
+      "source_excerpt": "theorem regularRightGNS_intertwines (P : SiteProfile) (t : ℝ) (A : scalarWeightLeftIdeal P) :\n    regularRightGNS P t (scalarWeightGNSEmbedding P A) =\n      scalarWeightGNSEmbedding P (scalarRegularRightProduct P t A) :=\n  Subtype.ext (scalarRegularRightOrbit_intertwines P t A)\n\ntheorem regularRightGNS_zero (P : SiteProfile) : regularRightGNS P 0 = 1 := by\n  ext1 x\n  apply Subtype.ext\n  exact congrArg (fun T => T x.val) (regularRightAmbient_zero P)\n\ntheorem regularRightGNS_mul (P : SiteProfile) (s t : ℝ) :\n    regularRightGNS P s * regularRightGNS P t = regularRightGNS P (s+t) := by\n  ext1 x\n  apply Subtype.ext\n  exact congrArg (fun T => T x.val) (regularRightAmbient_mul P s t)\n",
+      "author": {
+        "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\k\\TGLExt\\V350ScalarRegularRightGNS.lean",
+        "bytes": 6772,
+        "sha256": "92ac2b64b81b6389a2900ddd63dceabcc2f150a05bab59ce8e903352a7fa12fa"
+      },
+      "own": {
+        "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\v\\TGLExt\\V350ScalarRegularRightGNS.lean",
+        "bytes": 6772,
+        "sha256": "92ac2b64b81b6389a2900ddd63dceabcc2f150a05bab59ce8e903352a7fa12fa"
+      }
+    },
+    {
+      "name": "operatorIntegral_commutes",
+      "line": 59,
+      "statement": "theorem operatorIntegral_commutes (F : Family (H",
+      "source_excerpt": "theorem operatorIntegral_commutes (F : Family (H := H)) (a b : ℝ)\n    (B : H →L[ℂ] H) (hcomm : ∀ t, B * F.op t = F.op t * B) :\n    B * operatorIntegral F a b = operatorIntegral F a b * B := by\n  ext v\n  change B (∫ t in a..b, F.op t v) = ∫ t in a..b, F.op t (B v)\n  rw [← B.intervalIntegral_comp_comm ((F.continuous_apply v).intervalIntegrable a b)]\n  apply intervalIntegral.integral_congr\n  intro t _\n  exact congrArg (fun T : H →L[ℂ] H => T v) (hcomm t)\n\n/-- The integral belongs to the same concrete von Neumann algebra as its integrands. -/\ntheorem operatorIntegral_mem (F : Family (H := H)) (a b : ℝ)\n    (N : VonNeumannAlgebra H) (hmem : ∀ t, F.op t ∈ N) : operatorIntegral F a b ∈ N := by\n  rw [← SetLike.mem_coe, ← VonNeumannAlgebra.centralizer_centralizer]\n  rw [Set.mem_centralizer_iff]\n  intro B hB",
+      "author": {
+        "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\k\\TGLExt\\V350StrongOperatorIntegral.lean",
+        "bytes": 6942,
+        "sha256": "7ee0e23dc3319a72734ce420f540251f59a27561fa61221d6ab5f98b2989dfa7"
+      },
+      "own": {
+        "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\v\\TGLExt\\V350StrongOperatorIntegral.lean",
+        "bytes": 6942,
+        "sha256": "7ee0e23dc3319a72734ce420f540251f59a27561fa61221d6ab5f98b2989dfa7"
+      }
+    },
+    {
+      "name": "regularAverage_star_tendsto_identity",
+      "line": 51,
+      "statement": "theorem regularAverage_star_tendsto_identity (P : TGLExt.SiteProfile)\n    (v : RegularHilbert (TGLExt.TowerHilbert P)) :\n    Tendsto (fun h : ℝ => star (regularAverage P h) v) (𝓝[≠] 0) (𝓝 v)",
+      "source_excerpt": "theorem regularAverage_star_tendsto_identity (P : TGLExt.SiteProfile)\n    (v : RegularHilbert (TGLExt.TowerHilbert P)) :\n    Tendsto (fun h : ℝ => star (regularAverage P h) v) (𝓝[≠] 0) (𝓝 v) :=\n  contraction_adjoint_tendsto_identity _ _ (regularAverage_norm_le_one P)\n    (regularAverage_tendsto_identity P) v\n\n#print axioms contraction_adjoint_tendsto_identity\n#print axioms regularAverage_star_tendsto_identity\nend\nend TGLV350.Regular",
+      "author": {
+        "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\k\\TGLExt\\V350ContractionAdjointLimit.lean",
+        "bytes": 3036,
+        "sha256": "75c191ec2110441b6554ca7beddfc7806f3e3aac6e879e8461f7632cfa78eaa5"
+      },
+      "own": {
+        "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\v\\TGLExt\\V350ContractionAdjointLimit.lean",
+        "bytes": 3036,
+        "sha256": "75c191ec2110441b6554ca7beddfc7806f3e3aac6e879e8461f7632cfa78eaa5"
+      }
+    },
+    {
+      "name": "scalarWeightGNSEmbedding_denseRange",
+      "line": 54,
+      "statement": "theorem scalarWeightGNSEmbedding_denseRange (P : SiteProfile) :\n    DenseRange (scalarWeightGNSEmbedding P)",
+      "source_excerpt": "theorem scalarWeightGNSEmbedding_denseRange (P : SiteProfile) :\n    DenseRange (scalarWeightGNSEmbedding P) := by\n  apply (scalarGNSEmbedding_denseRange P).mono\n  rintro _ ⟨A,rfl⟩\n  exact ⟨Submodule.inclusion (finiteDualLeftIdeal_le_scalarWeight P) A,\n    scalarWeightGNSEmbedding_uniform P A⟩\n\n#print axioms scalarWeightLeftProduct\n#print axioms scalarWeightOrbit_left_intertwines\n#print axioms scalarWeightGNSAction_intertwines\n#print axioms scalarWeightGNSEmbedding_norm_sq\n#print axioms scalarWeightGNSEmbedding_injective\n#print axioms scalarWeightGNSEmbedding_denseRange\nend\nend TGLV350.Regular",
+      "author": {
+        "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\k\\TGLExt\\V350ScalarWeightAction.lean",
+        "bytes": 2907,
+        "sha256": "7875ce91559689c1e951f28d3a1d005dc17aae2af1db677242a27d38e40dfb5c"
+      },
+      "own": {
+        "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\v\\TGLExt\\V350ScalarWeightAction.lean",
+        "bytes": 2907,
+        "sha256": "7875ce91559689c1e951f28d3a1d005dc17aae2af1db677242a27d38e40dfb5c"
+      }
+    },
+    {
+      "name": "scalarWeightGNSAction_intertwines",
+      "line": 38,
+      "statement": "theorem scalarWeightGNSAction_intertwines (P : SiteProfile)\n    (B : (regularCoreAlgebra P).toStarSubalgebra) (A : scalarWeightLeftIdeal P) :\n    scalarGNSRepresentation P B (scalarWeightGNSEmbedding P A) =\n      scalarWeightGNSEmbedding P (scalarWeightLeftProduct P B A)",
+      "source_excerpt": "theorem scalarWeightGNSAction_intertwines (P : SiteProfile)\n    (B : (regularCoreAlgebra P).toStarSubalgebra) (A : scalarWeightLeftIdeal P) :\n    scalarGNSRepresentation P B (scalarWeightGNSEmbedding P A) =\n      scalarWeightGNSEmbedding P (scalarWeightLeftProduct P B A) :=\n  Subtype.ext (scalarWeightOrbit_left_intertwines P B A)\n\ntheorem scalarWeightGNSEmbedding_norm_sq (P : SiteProfile) (A : scalarWeightLeftIdeal P) :\n    ENNReal.ofReal (‖scalarWeightGNSEmbedding P A‖^2) =\n      dualQuadraticIntegral (star A.val.val*A.val.val) (regularVacuum P) :=\n  scalarWeightOrbit_norm_sq P A\n\ntheorem scalarWeightGNSEmbedding_injective (P : SiteProfile) :\n    Function.Injective (scalarWeightGNSEmbedding P) := by\n  intro A B h\n  exact scalarWeightLinear_injective P (congrArg Subtype.val h)\n",
+      "author": {
+        "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\k\\TGLExt\\V350ScalarWeightAction.lean",
+        "bytes": 2907,
+        "sha256": "7875ce91559689c1e951f28d3a1d005dc17aae2af1db677242a27d38e40dfb5c"
+      },
+      "own": {
+        "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\v\\TGLExt\\V350ScalarWeightAction.lean",
+        "bytes": 2907,
+        "sha256": "7875ce91559689c1e951f28d3a1d005dc17aae2af1db677242a27d38e40dfb5c"
+      }
+    },
+    {
+      "name": "scalarGNSRepresentation_tendsto_of_uniformly_bounded",
+      "line": 16,
+      "statement": "theorem scalarGNSRepresentation_tendsto_of_uniformly_bounded (P : SiteProfile)\n    {ι : Type*} {l : Filter ι}\n    (T : ι → (regularCoreAlgebra P).toStarSubalgebra)\n    (B : (regularCoreAlgebra P).toStarSubalgebra) (C : ℝ)\n    (hbound : ∀ i, ‖(T i).val‖ ≤ C)\n    (hT : ∀ v, Tendsto (fun i => (T i).val v) l (𝓝 (B.val v)))\n    (v : ScalarGNSHilbert P) :\n    Tendsto (fun i => scalarGNSRepresentation P (T i) v) l\n      (𝓝 (scalarGNSRepresentation P B v))",
+      "source_excerpt": "theorem scalarGNSRepresentation_tendsto_of_uniformly_bounded (P : SiteProfile)\n    {ι : Type*} {l : Filter ι}\n    (T : ι → (regularCoreAlgebra P).toStarSubalgebra)\n    (B : (regularCoreAlgebra P).toStarSubalgebra) (C : ℝ)\n    (hbound : ∀ i, ‖(T i).val‖ ≤ C)\n    (hT : ∀ v, Tendsto (fun i => (T i).val v) l (𝓝 (B.val v)))\n    (v : ScalarGNSHilbert P) :\n    Tendsto (fun i => scalarGNSRepresentation P (T i) v) l\n      (𝓝 (scalarGNSRepresentation P B v)) := by\n  apply tendsto_subtype_rng.mpr\n  exact dualOrbit_tendsto_of_uniformly_bounded\n    (fun i => (T i).val) B.val C hbound hT v.val\n\n#print axioms scalarGNSRepresentation_tendsto_of_uniformly_bounded\nend\nend TGLV350.Regular",
+      "author": {
+        "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\k\\TGLExt\\V350ScalarGNSStrongContinuity.lean",
+        "bytes": 1161,
+        "sha256": "a01a6e42e191d7bc7ce2a37e529fead8d04463b62d19f081fd640f249e2b3938"
+      },
+      "own": {
+        "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\v\\TGLExt\\V350ScalarGNSStrongContinuity.lean",
+        "bytes": 1161,
+        "sha256": "a01a6e42e191d7bc7ce2a37e529fead8d04463b62d19f081fd640f249e2b3938"
+      }
+    },
+    {
+      "name": "ScalarPolarRight",
+      "line": 14,
+      "statement": "def ScalarPolarRight (P : SiteProfile) (b : (regularCoreAlgebra P).toStarSubalgebra) : Prop",
+      "source_excerpt": "def ScalarPolarRight (P : SiteProfile) (b : (regularCoreAlgebra P).toStarSubalgebra) : Prop :=\n  ∀ A : scalarWeightLeftIdeal P, ∃ h : A.val*b ∈ scalarWeightLeftIdeal P,\n    scalarWeightGNSEmbedding P ⟨A.val*b,h⟩ =\n      antiunitaryConjugate (scalarTomitaPolarFactor P)\n        (scalarGNSRepresentation P (star b)) (scalarWeightGNSEmbedding P A)\n\ntheorem scalarPolarRight_iff_cuts (P : SiteProfile)\n    (b : (regularCoreAlgebra P).toStarSubalgebra) :\n    ScalarPolarRight P b ↔ ∀ A : scalarWeightLeftIdeal P, ∀ n : ℕ,\n      scalarGNSCutMap P (n : ℝ)\n        (antiunitaryConjugate (scalarTomitaPolarFactor P)\n          (scalarGNSRepresentation P (star b)) (scalarWeightGNSEmbedding P A)) =\n        dualOrbitRepresentation (A.val.val*b.val) (scalarCutVacuum P (n : ℝ)) := by\n  constructor\n  · intro hb A n\n    obtain ⟨h,he⟩ := hb A",
+      "author": {
+        "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\k\\TGLExt\\V351ScalarRightActionAlgebra.lean",
+        "bytes": 10251,
+        "sha256": "68b1b9b84ba21c9c17de246fb69c8c48908e9ca313558b513322d119f66d98af"
+      },
+      "own": {
+        "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\v\\TGLExt\\V351ScalarRightActionAlgebra.lean",
+        "bytes": 10251,
+        "sha256": "68b1b9b84ba21c9c17de246fb69c8c48908e9ca313558b513322d119f66d98af"
+      }
+    },
+    {
+      "name": "bounded_application_tendsto",
+      "line": 15,
+      "statement": "theorem bounded_application_tendsto {ι : Type*} (l : Filter ι)\n    (A : ι → H →L[ℂ] H) (C : ℝ) (hbound : ∀ i, ‖A i‖ ≤ C)\n    (v : ι → H) (v₀ w : H) (hv : Tendsto v l (𝓝 v₀))\n    (hfixed : Tendsto (fun i => A i v₀) l (𝓝 w)) :\n    Tendsto (fun i => A i (v i)) l (𝓝 w)",
+      "source_excerpt": "theorem bounded_application_tendsto {ι : Type*} (l : Filter ι)\n    (A : ι → H →L[ℂ] H) (C : ℝ) (hbound : ∀ i, ‖A i‖ ≤ C)\n    (v : ι → H) (v₀ w : H) (hv : Tendsto v l (𝓝 v₀))\n    (hfixed : Tendsto (fun i => A i v₀) l (𝓝 w)) :\n    Tendsto (fun i => A i (v i)) l (𝓝 w) := by\n  have hd : Tendsto (fun i => ‖v i - v₀‖) l (𝓝 0) := by\n    have hs : Tendsto (fun i => v i - v₀) l (𝓝 (v₀-v₀)) := hv.sub tendsto_const_nhds\n    simpa only [sub_self, norm_zero] using hs.norm\n  have hc : Tendsto (fun i => C * ‖v i - v₀‖) l (𝓝 0) := by\n    simpa only [mul_zero] using (tendsto_const_nhds.mul hd :\n      Tendsto (fun i => C * ‖v i - v₀‖) l (𝓝 (C*0)))\n  have he (i : ι) : ‖A i (v i - v₀)‖ ≤ C * ‖v i - v₀‖ :=\n    (ContinuousLinearMap.le_opNorm _ _).trans\n      (mul_le_mul_of_nonneg_right (hbound i) (norm_nonneg _))\n  have hz : Tendsto (fun i => A i (v i-v₀)) l (𝓝 0) := by\n    apply tendsto_iff_dist_tendsto_zero.mpr",
+      "author": {
+        "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\k\\TGLExt\\V350StrongBoundedApplication.lean",
+        "bytes": 1655,
+        "sha256": "dd68e70d90c4c475bfbe1770df5428666fd9345ed28b81c2addfef16f56017a0"
+      },
+      "own": {
+        "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\v\\TGLExt\\V350StrongBoundedApplication.lean",
+        "bytes": 1655,
+        "sha256": "dd68e70d90c4c475bfbe1770df5428666fd9345ed28b81c2addfef16f56017a0"
+      }
+    },
+    {
+      "name": "theorem operatorIntegral_commutes (F",
+      "line": 59,
+      "statement": "theorem operatorIntegral_commutes (F : Family (H := H)) (a b : ℝ)\n    (B : H →L[ℂ] H) (hcomm : ∀ t, B * F.op t = F.op t * B) :\n    B * operatorIntegral F a b = operatorIntegral F a b * B",
+      "source_excerpt": "theorem operatorIntegral_commutes (F : Family (H := H)) (a b : ℝ)\n    (B : H →L[ℂ] H) (hcomm : ∀ t, B * F.op t = F.op t * B) :\n    B * operatorIntegral F a b = operatorIntegral F a b * B := by\n  ext v\n  change B (∫ t in a..b, F.op t v) = ∫ t in a..b, F.op t (B v)\n  rw [← B.intervalIntegral_comp_comm ((F.continuous_apply v).intervalIntegrable a b)]\n  apply intervalIntegral.integral_congr\n  intro t _\n  exact congrArg (fun T : H →L[ℂ] H => T v) (hcomm t)\n\n/-- The integral belongs to the same concrete von Neumann algebra as its integrands. -/\ntheorem operatorIntegral_mem (F : Family (H := H)) (a b : ℝ)\n    (N : VonNeumannAlgebra H) (hmem : ∀ t, F.op t ∈ N) : operatorIntegral F a b ∈ N := by\n  rw [← SetLike.mem_coe, ← VonNeumannAlgebra.centralizer_centralizer]\n  rw [Set.mem_centralizer_iff]\n  intro B hB",
+      "author": {
+        "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\k\\TGLExt\\V350StrongOperatorIntegral.lean",
+        "bytes": 6942,
+        "sha256": "7ee0e23dc3319a72734ce420f540251f59a27561fa61221d6ab5f98b2989dfa7"
+      },
+      "own": {
+        "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\v\\TGLExt\\V350StrongOperatorIntegral.lean",
+        "bytes": 6942,
+        "sha256": "7ee0e23dc3319a72734ce420f540251f59a27561fa61221d6ab5f98b2989dfa7"
+      }
+    }
+  ],
+  "consumer": {
+    "source": {
+      "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\k\\TGLExt\\V351RegularCoreTraceContract.lean",
+      "bytes": 5624,
+      "sha256": "3694175f8ef5bcf5848d88bd8061abf8546480873964ebfdc19dd41ad05928f0"
+    },
+    "line": 58,
+    "statement": "  tracial : ∀ a, value (positiveSquare P a) = value (positiveSquare P (star a))\n  dual_scaling : ∀ s A, value (positiveDual P s A) =",
+    "source_excerpt": "  tracial : ∀ a, value (positiveSquare P a) = value (positiveSquare P (star a))\n  dual_scaling : ∀ s A, value (positiveDual P s A) =\n    ENNReal.ofReal (Real.exp (-s)) * value A\n\ntheorem RegularCoreTraceData.not_zero (P : SiteProfile)\n    (T : RegularCoreTraceData.{u} P) : T.value ≠ fun _ => 0 := by\n  intro h\n  have hz : T.value (positiveUnit P) = 0 := congrFun h _\n  exact positiveUnit_ne_zero P ((T.faithful _).mp hz)\n\n/-- Any proposed transport of the legacy zero trace still fails. No identification\nof the legacy algebra with the concrete core is presumed. -/\ntheorem legacy_zero_trace_cannot_supply (P : SiteProfile)"
+  },
+  "consumer_status": "IMPLEMENTATOR_EQUALITY_PROVED__QUADRATIC_TRACE_OPEN"
+}

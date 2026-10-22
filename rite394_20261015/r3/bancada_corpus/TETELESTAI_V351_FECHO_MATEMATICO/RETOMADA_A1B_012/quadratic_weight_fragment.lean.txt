@@ -1,0 +1,41 @@
+private theorem represented_positive_root_norm {H K : Type}
+    [NormedAddCommGroup H] [InnerProductSpace ℂ H] [CompleteSpace H]
+    [NormedAddCommGroup K] [InnerProductSpace ℂ K] [CompleteSpace K]
+    (N : StarSubalgebra ℂ (H →L[ℂ] H))
+    (π : N →⋆ₐ[ℂ] (K →L[ℂ] K)) (a : N) (ha : 0 ≤ a.val)
+    (hm : hilbertPositiveSqrt a.val ∈ N) (v : K) :
+    ‖π (star (⟨hilbertPositiveSqrt a.val,hm⟩ : N)) v‖^2 =
+      (inner ℂ v (π a v)).re := by
+  let b : N := ⟨hilbertPositiveSqrt a.val,hm⟩
+  have hs : star b = b := Subtype.ext (CFC.sqrt_nonneg a.val).isSelfAdjoint.star_eq
+  have hbb : b * star b = a := by
+    rw [hs]
+    exact Subtype.ext (CFC.sqrt_mul_sqrt_self a.val ha)
+  have he := ContinuousLinearMap.apply_norm_sq_eq_inner_adjoint_left
+    (𝕜 := ℂ) (star (π b)) v
+  have hn : ‖star (π b) v‖^2 = (inner ℂ ((π b*star (π b)) v) v).re := by
+    simpa only [RCLike.re_eq_complex_re,ContinuousLinearMap.star_eq_adjoint,
+      ContinuousLinearMap.adjoint_adjoint,ContinuousLinearMap.mul_def] using he
+  change ‖π (star b) v‖^2 = _
+  rw [map_star,hn,← map_star,← map_mul,hbb]
+  exact inner_re_symm (𝕜 := ℂ) _ _
+
+private theorem scalar_inverse_cutoff_weight_form (P : SiteProfile)
+    (ε : ℝ) (hε : 0 < ε) (A : scalarWeightLeftIdeal P) :
+    scalarInverseCutoffWeight P ε (positiveSquare P A.val) =
+      ENNReal.ofReal (inner ℂ
+        ((scalarTomitaPolarFactor P).symm (scalarWeightGNSEmbedding P A))
+        (scalarGNSRepresentation P
+          ⟨regularInverseGeneratorCutoff P ε,regularInverseGeneratorCutoff_mem P ε⟩
+          ((scalarTomitaPolarFactor P).symm (scalarWeightGNSEmbedding P A)))).re := by
+  obtain ⟨hm,he⟩ := scalarWeight_inverseCutoff_perturbed_norm P ε hε A
+  change scalarInverseCutoffWeight P ε (positiveSquare P A.val) = _ at he
+  rw [he]
+  congr 1
+  exact represented_positive_root_norm (regularCoreAlgebra P).toStarSubalgebra
+    (scalarGNSRepresentation P)
+    ⟨regularInverseGeneratorCutoff P ε,regularInverseGeneratorCutoff_mem P ε⟩
+    (regularInverseGeneratorCutoff_nonneg P ε hε) hm _
+
+#print axioms represented_positive_root_norm
+#print axioms scalar_inverse_cutoff_weight_form

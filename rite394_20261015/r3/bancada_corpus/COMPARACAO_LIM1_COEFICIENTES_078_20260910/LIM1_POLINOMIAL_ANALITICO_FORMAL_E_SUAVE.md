@@ -1,0 +1,94 @@
+# A torre por multiplicação por x: comparação de quatro anéis
+
+10/09/2026. [DERIVED — demonstração escrita da raiz, aguardando revisão independente]. Novo arquivo078. A torre é AUXILIAR: não foi identificada com as truncagens Einstein–sigma.
+
+A [nota de potência e ML](<C:/IALD/Central de Patentes/Chatgpt/FINITUDE_POTENCIA_E_ML_078_20260910_032141_4248196/POTENCIA_DERIVADAS_E_MITTAG_LEFFLER.md>), consumida junto de seu [adendo de domínio](<C:/IALD/Central de Patentes/Chatgpt/FINITUDE_POTENCIA_E_ML_078_20260910_032141_4248196/ADENDO_DOMINIO_DAS_FIBRAS_E_INDUCAO_078.md>), constrói H²(D_N)≅A com transição por x. Aqui calculamos seus limites para quatro escolhas precisas de A.
+
+## 1. Enunciado
+
+Considere A --x← A --x← …, índices N≥0, como torre de espaços vetoriais reais. Ponha
+
+Δ:∏A→∏A, (Δa)_N=a_N−x a_(N+1).
+
+Para torres contáveis, lim A=kerΔ e lim¹ A=cokerΔ. Este é o modelo de comparação por produtos empregado na nota076 e na torre auxiliar078.
+
+| Anel A | lim A | lim¹ A | Mittag–Leffler |
+|---|---|---|---|
+| R[x], polinômios | 0 | R[[x]]/R[x] | não |
+| R{x}, germes reais analíticos em0 | 0 | R[[x]]/R{x} | não |
+| R[[x]], séries formais | 0 | 0 | não |
+| E₀=C∞₀, germes suaves em0 | ideal dos germes planos em0 | 0 | não |
+
+Os quocientes da terceira coluna são quocientes de grupos aditivos/espaços vetoriais. Não se afirma uma identificação como anéis quocientes por ideais. Todos os limites aqui são ALGÉBRICOS; não se está calculando um funtor derivado de espaços topológicos localmente convexos.
+
+## 2. Por que nenhuma das quatro torres é ML
+
+Num alvo fixo, as imagens são x^mA. Em todos os quatro anéis x^m não pertence a x^(m+1)A. Para polinômios, séries convergentes ou formais, a ordem de anulação prova isso. Para germes suaves, a igualdade exigiria f(x)=1/x fora de zero numa vizinhança, incompatível com continuidade em zero.
+
+Portanto as imagens são estritamente decrescentes. Isso não impede lim¹=0 nos dois últimos casos: ML é uma condição suficiente conhecida, não uma equivalência irrestrita que foi provada para todos esses espaços.
+
+## 3. Polinômios, germes analíticos e séries formais
+
+Para A=R[x], R{x} ou R[[x]], denote por J sua inclusão no anel de séries formais. Dado y=(y_N), defina
+
+Φ(y)=Σ_(N≥0)x^N J(y_N).
+
+Cada coeficiente da soma contém apenas finitos índices N, logo a série é bem definida sem hipótese de convergência numérica. Se y=Δa, a soma telescopa formalmente para J(a0), porque x^(N+1)J(a_(N+1)) tem ordem pelo menos N+1.
+
+A aplicação y↦[Φ(y)] em R[[x]]/J(A) é sobrejetiva: para uma série Σ c_N x^N, tome y_N=c_N. Se Φ(y)=J(a0), ponha
+
+a_N=(a0−Σ_(j<N)x^j y_j)/x^N.                         (1)
+
+O numerador pertence a A e seu desenvolvimento começa em grau pelo menos N. Em cada um desses anéis, isso implica divisibilidade por x^N dentro do próprio A. Portanto a_N∈A. A identidade a_N−x a_(N+1)=y_N segue por subtração de duas somas FINITAS em A. Logo o núcleo do mapa é imΔ e
+
+cokerΔ ≅ R[[x]]/J(A).                                (2)
+
+Para A=R[[x]], (2) é zero. Para A=R{x}, a série Σ N! x^N tem raio zero e fornece uma classe não nula. Para polinômios, uma série infinita como Σ x^N já fornece uma classe não nula.
+
+Essas conclusões não se inferem de avaliações em pontos não nulos. A=R{x} significa germes em0 e somente o desenvolvimento em0 foi usado.
+
+## 4. Sobrejetividade do Taylor suave
+
+[KNOWN + demonstração explícita] O resultado de realização de derivadas arbitrárias aparece em [Borel1895, p.44](https://www.numdam.org/article/ASENS_1895_3_12__9_0.pdf). Usamos a seguinte construção por cortes, que fixa o alcance suave.
+
+Escolha χ suave, compactamente suportada, igual a1 perto de0. Para uma série Σ c_n x^n, escolha r_n>0 decrescendo a0 tão rápido que
+
+max_(0≤j<n) ||∂^j[c_n x^n χ(x/r_n)]||∞ ≤ 2^(−n).
+
+Isso é possível porque, para cada j<n, a norma é limitada por uma constante vezes |c_n| r_n^(n−j). A série
+
+F(x)=c0χ(x)+Σ_(n≥1)c_n x^nχ(x/r_n)
+
+e cada série derivada convergem uniformemente nas caudas pertinentes. Assim F é suave. Em0, χ é constante perto da origem, e F^(n)(0)=n!c_n. Logo J:E₀→R[[x]] é sobrejetivo. Não se exige que F seja analítica, que seus raios dependam naturalmente de parâmetros, ou que essa escolha seja um operador de normalização causal.
+
+## 5. A solução suave de Δa=y
+
+Dado qualquer y_N∈E₀, forme Φ(y)=Σ x^N J(y_N) e escolha a0∈E₀ com J(a0)=Φ(y), pela seção4. A fórmula(1) define novamente a_N, agora com numerador suave cuja derivada de toda ordem j<N se anula em0.
+
+A divisibilidade suave não é meramente formal. Pelo resto integral de Taylor, se b^(j)(0)=0 para j<N,
+
+b(x)=x^N/(N−1)! ∫₀¹(1−t)^(N−1) b^(N)(tx) dt,       (3)
+
+em uma vizinhança representativa. O quociente é suave inclusive em0. Portanto cada a_N de(1) é um germe bem definido. As igualdades finitas dão exatamente Δa=y, incluindo as partes planas invisíveis ao Taylor:
+
+a_N−x a_(N+1)=y_N.
+
+Cada igualdade envolve somente finitos germes; não é necessário escolher uma vizinhança comum a uma série inteira de representantes. Concluímos lim¹(E₀ --x← E₀ …)=0.
+
+No exemplo y_N=1, pode-se escolher a_N=1/(1−x) como germe para todosN. A prova acima trata TODAS as sequências, não apenas esse caso especial.
+
+## 6. O limite inverso e os germes planos
+
+Multiplicar por x é injetivo nos quatro anéis. No caso suave, xf=0 implica f=0 para x≠0 próximo de0, e a continuidade dá também f(0)=0. Uma sequência compatível a_N=x a_(N+1) é, portanto, determinada por a0 e existe precisamente quando a0 é divisível por toda potência x^N.
+
+Nos anéis de polinômios, analíticos e formais, somente zero tem essa propriedade. Nos germes suaves, ela equivale a J(a0)=0: todas as derivadas se anulam em0. A implicação inversa vem de(3). Logo o limite inverso suave identifica-se com o ideal de germes planos; um exemplo não nulo é e^(−1/x²) para x≠0 e0 em x=0. Seus quocientes por x^N continuam suaves para todoN.
+
+É por isso que os limites suave e formal também diferem na primeira coluna. A sobrejetividade do Taylor não o torna injetivo.
+
+## 7. O que isso acrescenta à obrigação BRST
+
+[DERIVED] Para a mesma matriz de transição, passar de coeficientes polinomiais/analíticos a formais/suaves pode eliminar lim¹. A ausência de ML permanece nos quatro casos. Isso paga explicitamente a cautela da nota078: não há transporte automático do lim¹ polinomial ao anel suave.
+
+[OPEN] A construção por Borel pode perder analiticidade e naturalidade paramétrica; não prova uma escolha regular em B0, compatível com T4/T5, a valência, a ordem de jatos ou a hierarquia Q2. A torre real de H²/H³(C_N) ainda não foi identificada com essa torre auxiliar. Nenhum resultado de anomalia, QME, UV ou reconstrução gravitacional decorre automaticamente da tabela.
+
+[REAL — documental] Fontes pinadas antes/depois; nenhuma foi alterada. Sem Lean, CAS ou execução/importação de um.py. O teorema aqui é escrito, com revisão independente ainda necessária.

@@ -1,0 +1,54 @@
+[
+  {
+    "line": 44,
+    "text": "abbrev Antiunitary (H : Type) [NormedAddCommGroup H] [InnerProductSpace ℂ H] :="
+  },
+  {
+    "line": 52,
+    "text": "structure WedgeModularData (W : TGLSpecificAQFTWitness) where\n  wedgeAlgebra : VonNeumannAlgebra W.H\n  wedgeAlgebra_eq : wedgeAlgebra = W.net rightWedge\n  modularFlow : ℝ → (wedgeAlgebra.toStarSubalgebra ≃⋆ₐ[ℂ] wedgeAlgebra.toStarSubalgebra)\n  modularFlow_zero : modularFlow 0 = StarAlgEquiv.refl\n  modularFlow_add : ∀ s t : ℝ, modularFlow (s + t) = (modularFlow s).trans (modularFlow t)\n  modularConjugation : Antiunitary W.H\n  modularConjugation_involutive : ∀ ξ : W.H, modularConjugation (modularConjugation ξ) = ξ\n  modularConjugation_vac : modularConjugation W.vac = W.vac\n\n/-- Camada 1B -- DADOS do core continuo (Takesaki): o tipo `Core` com estrutura"
+  },
+  {
+    "line": 68,
+    "text": "structure ContinuousCoreData (W : TGLSpecificAQFTWitness) (D : WedgeModularData W) where\n  Core : Type\n  [instCoreRing : Ring Core]\n  [instCoreStarRing : StarRing Core]\n  [instCoreAlgebra : Algebra ℂ Core]\n  embedding : D.wedgeAlgebra.toStarSubalgebra →⋆ₐ[ℂ] Core\n  embedding_injective : Function.Injective embedding\n  dualAction : ℝ → (Core ≃⋆ₐ[ℂ] Core)\n  dualAction_zero : dualAction 0 = StarAlgEquiv.refl\n  dualAction_add : ∀ s t : ℝ, dualAction (s + t) = (dualAction s).trans (dualAction t)\n  canonicalTrace : Core → ENNReal\n  trace_zero : canonicalTrace 0 = 0\n  trace_tracial : ∀ x y : Core, canonicalTrace (x * y) = canonicalTrace (y * x)\n  trace_star : ∀ x : Core, canonicalTrace (star x) = canonicalTrace x\n  trace_dual_scaling : ∀ (s : ℝ) (x : Core),\n    canonicalTrace ((dualAction s) x) = ENNReal.ofReal (Real.exp (-s)) * canonicalTrace x\n\nattribute [instance] ContinuousCoreData.instCoreRing\nattribute [instance] ContinuousCoreData.instCoreStarRing\nattribute [instance] ContinuousCoreData.instCoreAlgebra\n\n/-- Camada 1C -- DADOS dos Three Locks no core: a transformada limitada `H3Lt` de"
+  },
+  {
+    "line": 100,
+    "text": "structure ThreeLocksCoreData (W : TGLSpecificAQFTWitness) (D : WedgeModularData W)\n    (C : ContinuousCoreData W D) where\n  H3Lt : C.Core\n  H3Lt_selfAdjoint : star H3Lt = H3Lt\n  PF : C.Core\n  PF_selfAdjoint : star PF = PF\n  PF_idempotent : PF * PF = PF\n  PF_locks : PF * H3Lt = 0\n  PF_maximal : ∀ q : C.Core, star q = q → q * q = q → q * H3Lt = 0 → q * PF = q\n  PF_nonzero : PF ≠ 0\n  PF_trace_pos : 0 < C.canonicalTrace PF\n  PF_trace_finite : C.canonicalTrace PF < ⊤\n  Pplus : C.Core\n  Pminus : C.Core\n  Pplus_selfAdjoint : star Pplus = Pplus\n  Pplus_idempotent : Pplus * Pplus = Pplus\n  Pminus_selfAdjoint : star Pminus = Pminus\n  Pminus_idempotent : Pminus * Pminus = Pminus\n  split : Pplus + Pminus = PF\n  orthogonal : Pplus * Pminus = 0\n  trace_split_additive : C.canonicalTrace PF = C.canonicalTrace Pplus + C.canonicalTrace Pminus\n  equal_face_trace : C.canonicalTrace Pplus = C.canonicalTrace Pminus\n\n/-- A realizacao modular COMPLETA de uma testemunha-base rigida: Hilbert de"
+  },
+  {
+    "line": 126,
+    "text": "structure TGLModularRealization (W : TGLSpecificAQFTWitness) where\n  infiniteHilbert : ¬ FiniteDimensional ℂ W.H\n  modular : WedgeModularData W\n  core : ContinuousCoreData W modular\n  threeLocks : ThreeLocksCoreData W modular core\n\n/-- A TESTEMUNHA FINAL: o par dependente (conteudo, prova de que realiza a forma)."
+  },
+  {
+    "line": 135,
+    "text": "abbrev FullTGLWitness := Σ W : TGLSpecificAQFTWitness, TGLModularRealization W"
+  },
+  {
+    "line": 139,
+    "text": "noncomputable def cornerOf {W : TGLSpecificAQFTWitness} (R : TGLModularRealization W) :\n    ContinuousCornerWitness where\n  Core := R.core.Core"
+  },
+  {
+    "line": 167,
+    "text": "theorem dualInvariant_PF_no_go {W : TGLSpecificAQFTWitness} {D : WedgeModularData W}\n    (C : ContinuousCoreData W D) (T : ThreeLocksCoreData W D C)\n    (hinv : (C.dualAction 1) T.PF = T.PF) : False := by"
+  },
+  {
+    "line": 189,
+    "text": "theorem fullWitness_not_finiteDimensional (X : FullTGLWitness) :\n    ¬ FiniteDimensional ℂ X.1.H :="
+  },
+  {
+    "line": 195,
+    "text": "theorem fullWitness_core_nonempty (X : FullTGLWitness) : Nonempty X.2.core.Core :="
+  },
+  {
+    "line": 200,
+    "text": "theorem fullWitness_PF_nonzero_finite (X : FullTGLWitness) :\n    X.2.threeLocks.PF ≠ 0 ∧\n      0 < X.2.core.canonicalTrace X.2.threeLocks.PF ∧\n      X.2.core.canonicalTrace X.2.threeLocks.PF < ⊤ :="
+  },
+  {
+    "line": 215,
+    "text": "theorem continuousCorner_of_witness {W : TGLSpecificAQFTWitness}\n    (R : TGLModularRealization W) :\n    (cornerOf R).normalizedTrace (cornerOf R).P = 1 :="
+  },
+  {
+    "line": 222,
+    "text": "theorem threeLocksCorner_of_witness {W : TGLSpecificAQFTWitness}\n    (R : TGLModularRealization W) :\n    (cornerOf R).normalizedTrace (cornerOf R).Pplus = 1 / 2 ∧\n      (cornerOf R).normalizedTrace (cornerOf R).Pminus = 1 / 2 :="
+  }
+]

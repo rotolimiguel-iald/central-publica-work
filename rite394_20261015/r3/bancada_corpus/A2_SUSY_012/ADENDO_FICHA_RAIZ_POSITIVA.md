@@ -1,0 +1,5 @@
+# Adendo da ficha — fornecedor de raiz positiva
+
+[REAL — leitura integral]
+
+{'timestamp': '20260915_165456_873689', 'source': 'C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\k\\TGLExt\\V350PositiveRootIntertwining.lean', 'sha256': 'f357246ac96d1d98fc1376238be4ca039f425d2782dd23d909ac5cdd3d1afaa5', 'bytes': 3330, 'decision': 'REUSAR', 'read': 'Integral', 'consumer': 'TGLV354.boundedPolar_commutes → boundedPolar_mem → Kaplansky', 'declaration': 'TGLV350.Regular.positive_sqrt_intertwines A B U hA hB (A*U=U*B)', 'hypotheses': 'A e B positivos; entrelaçamento algébrico; aplicação aqui A=B=star T*T e U=B do comutante.', 'limit': 'real_cfc_intertwines e positive_square_intertwines_roots não serão duplicados. Relação/compatibilidade do leitor total continuam com principal.'}

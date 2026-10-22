@@ -1,0 +1,36 @@
+import TGLExt.V354TraceReaderWall
+set_option pp.proofs true
+set_option pp.universes true
+#print TGLV350.Regular.regularTrace_finite_positive_below
+#print TGLV350.Regular.kernel_projection_mem_vonNeumann
+#print TGLV350.Regular.positive_operator_has_threshold_projection
+#print TGLV350.Regular.scalarTrace_finite_subprojection_exists
+#print TGLV350.Regular.regularCore_matrix_corner
+#print TGLV350.Regular.scalarTrace_finite_equal_split
+#print TGLV350.Regular.scalarTrace_finite_split_support
+#print TGLV350.Regular.scalarTrace_dual_calibration
+#print TGLV350.Regular.scalarTrace_normalized_split_exists
+#print TGLV350.Regular.regularNormalizedFaces
+#print TGLV350.Regular.regularFiniteSupport
+#print TGLV350.Regular.regularFiniteSupport_projection
+#print TGLV350.Regular.regularFiniteSupport_trace
+#print TGLV350.Regular.regularFiniteSupport_ne_zero
+#print TGLV350.Regular.regularMinimalLock
+#print TGLV350.Regular.regularMinimalLock_mem
+#print TGLV350.Regular.regularMinimalLock_selfadjoint
+#print TGLV350.Regular.regularMinimalLock_annihilation
+#print TGLV350.Regular.regularMinimalLock_maximal
+#print TGLV350.Regular.regularMinimalLock_ker
+#print TGLV350.Regular.regularMinimalLock_spectral_zero
+#print TGLV350.Regular.regularMinimalLock_relative_gap
+#print TGLV350.Regular.regularMinimalLockGraph
+#print TGLV350.Regular.regularMinimalLockGraph_selfadjoint
+#print TGLV350.Regular.regularMinimalLockGraph_closed
+#print TGLV350.Regular.regularMinimalLockGraph_domain
+#print TGLV350.Regular.regularMinimalLockGraph_affiliated
+#print TGLV350.Regular.positiveTraceReader
+#print TGLV350.Regular.positiveTraceReader_positive
+#print TGLV350.Regular.regularContinuousCorner
+#print TGLV350.Regular.regularContinuousCorner_readings
+#print TGLV350.Regular.regularMinimalLock_breuer_kernel
+#print TGLV350.Regular.positiveTraceReader_not_cyclic

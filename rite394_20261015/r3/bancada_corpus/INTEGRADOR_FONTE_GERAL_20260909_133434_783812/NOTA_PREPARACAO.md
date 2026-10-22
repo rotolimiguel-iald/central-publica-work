@@ -1,0 +1,1 @@
+[REAL] Snapshot de24módulos com recibos PASS e fontes conferidos. Scripts copiados byte a byte do integrador previamente validado. Ainda não gerou sucessor de um.py nem rodou Lean neste diretório. Novas folhas independentes poderão formar configuração sucessora; este snapshot será preservado.

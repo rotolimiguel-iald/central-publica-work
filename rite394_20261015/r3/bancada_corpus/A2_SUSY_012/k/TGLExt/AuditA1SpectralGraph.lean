@@ -1,0 +1,8 @@
+import TGLExt.V351RegularSpectralGraph
+set_option pp.universes true
+#check TGLV350.Regular.sigmoid_resolvent_equation_iff
+#print axioms TGLV350.Regular.sigmoid_resolvent_equation_iff
+#check TGLV350.Regular.regularSpectralResolvent_coordinate
+#print axioms TGLV350.Regular.regularSpectralResolvent_coordinate
+#check TGLV350.Regular.regularPositiveGenerator_graph_iff
+#print axioms TGLV350.Regular.regularPositiveGenerator_graph_iff

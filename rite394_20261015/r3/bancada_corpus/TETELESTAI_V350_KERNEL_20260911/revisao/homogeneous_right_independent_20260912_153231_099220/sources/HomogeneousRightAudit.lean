@@ -1,0 +1,63 @@
+import TGLV350.LocalRightModularTransport
+import TGLV350.HomogeneousCommutantTransport
+import TGLV350.ScalarHomogeneousRightOrbit
+import TGLV350.HomogeneousRightData
+import TGLV350.ScalarHomogeneousRightGNS
+set_option pp.universes true
+set_option pp.width 160
+#check TGLV350.Regular.baseCommutant_eq_of_vacuum
+#print axioms TGLV350.Regular.baseCommutant_eq_of_vacuum
+#check TGLV350.Regular.rTowerPi_mem_baseCommutant
+#print axioms TGLV350.Regular.rTowerPi_mem_baseCommutant
+#check TGLV350.Regular.rTowerPi_parameter_smul
+#print axioms TGLV350.Regular.rTowerPi_parameter_smul
+#check TGLV350.Regular.modularConjugation_rTowerPi
+#print axioms TGLV350.Regular.modularConjugation_rTowerPi
+#check TGLV350.Regular.rTowerPi_matrixUnit_homogeneous
+#print axioms TGLV350.Regular.rTowerPi_matrixUnit_homogeneous
+#check TGLV350.Regular.characterPhase_neg_modularPhase
+#print axioms TGLV350.Regular.characterPhase_neg_modularPhase
+#check TGLV350.Regular.homogeneous_twistedCommutantLift
+#print axioms TGLV350.Regular.homogeneous_twistedCommutantLift
+#check TGLV350.Regular.homogeneous_commutant_dual_intertwines
+#print axioms TGLV350.Regular.homogeneous_commutant_dual_intertwines
+#check TGLV350.Regular.hasFiniteScalarSquare_iff_memLp
+#print axioms TGLV350.Regular.hasFiniteScalarSquare_iff_memLp
+#check TGLV350.Regular.scalarOrbit_right_homogeneous
+#print axioms TGLV350.Regular.scalarOrbit_right_homogeneous
+#check TGLV350.Regular.scalarWeight_right_homogeneous_finite
+#print axioms TGLV350.Regular.scalarWeight_right_homogeneous_finite
+#check TGLV350.Regular.scalarOrbit_right_matrixUnit
+#print axioms TGLV350.Regular.scalarOrbit_right_matrixUnit
+#check TGLV350.Regular.modularPhase_star_frequency
+#print axioms TGLV350.Regular.modularPhase_star_frequency
+#check TGLV350.Regular.homogeneous_base_adjoint
+#print axioms TGLV350.Regular.homogeneous_base_adjoint
+#check TGLV350.Regular.homogeneousRightAmbient
+#print axioms TGLV350.Regular.homogeneousRightAmbient
+#check TGLV350.Regular.homogeneousRightAmbient_adjoint
+#print axioms TGLV350.Regular.homogeneousRightAmbient_adjoint
+#check TGLV350.Regular.matrixUnitRightData
+#print axioms TGLV350.Regular.matrixUnitRightData
+#check TGLV350.Regular.matrixUnitTwistedRightData
+#print axioms TGLV350.Regular.matrixUnitTwistedRightData
+#check TGLV350.Regular.matrixUnitRightAmbient_adjoint
+#print axioms TGLV350.Regular.matrixUnitRightAmbient_adjoint
+#check TGLV350.Regular.scalarHomogeneousRightProduct
+#print axioms TGLV350.Regular.scalarHomogeneousRightProduct
+#check TGLV350.Regular.scalarHomogeneousRightOrbit_intertwines
+#print axioms TGLV350.Regular.scalarHomogeneousRightOrbit_intertwines
+#check TGLV350.Regular.homogeneousRightAmbient_preserves_GNS
+#print axioms TGLV350.Regular.homogeneousRightAmbient_preserves_GNS
+#check TGLV350.Regular.homogeneousRightGNS
+#print axioms TGLV350.Regular.homogeneousRightGNS
+#check TGLV350.Regular.homogeneousRightGNS_intertwines
+#print axioms TGLV350.Regular.homogeneousRightGNS_intertwines
+#check TGLV350.Regular.homogeneousRightGNS_adjoint
+#print axioms TGLV350.Regular.homogeneousRightGNS_adjoint
+#check TGLV350.Regular.scalarWeight_right_adjoint_pairing
+#print axioms TGLV350.Regular.scalarWeight_right_adjoint_pairing
+#check TGLV350.Regular.matrixUnitRightGNS_adjoint
+#print axioms TGLV350.Regular.matrixUnitRightGNS_adjoint
+#check TGLV350.Regular.matrixUnit_scalarWeight_pairing
+#print axioms TGLV350.Regular.matrixUnit_scalarWeight_pairing

@@ -1,0 +1,8 @@
+import TGLExt.V351ScalarGNSClosedness
+set_option pp.universes true
+#check TGLV350.Regular.scalarGNSCutMap_weight_embedding
+#print axioms TGLV350.Regular.scalarGNSCutMap_weight_embedding
+#check TGLV350.Regular.scalarWeightGNSEmbedding_of_cut_actions
+#print axioms TGLV350.Regular.scalarWeightGNSEmbedding_of_cut_actions
+#check TGLV350.Regular.scalarWeightGNSEmbedding_closed_of_bounded_strong
+#print axioms TGLV350.Regular.scalarWeightGNSEmbedding_closed_of_bounded_strong

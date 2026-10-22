@@ -1,0 +1,10 @@
+import TGLExt.V351BaseSeriesNormality
+set_option pp.universes true
+#check TGLV351.positive_base_functional_real_mono
+#print axioms TGLV351.positive_base_functional_real_mono
+#check TGLV351.baseSeriesFunctional_positive
+#print axioms TGLV351.baseSeriesFunctional_positive
+#check TGLV351.baseVectorFunctional_normal
+#print axioms TGLV351.baseVectorFunctional_normal
+#check TGLV351.baseSeriesFunctional_normal
+#print axioms TGLV351.baseSeriesFunctional_normal

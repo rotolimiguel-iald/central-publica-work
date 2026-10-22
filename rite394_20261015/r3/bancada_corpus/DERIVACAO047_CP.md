@@ -1,0 +1,11 @@
+# Derivação047 — aplicação completamente positiva no subtipo efetivo
+
+[DERIVED — registrada antes do código de GeneralExpectationCP.lean.] A entrada do registro CompletelyPositiveMap é a subálgebra estrelada M=(theFactorObject P).toStarSubalgebra, com a norma e a ordem herdadas dos operadores em TowerHilbert P. Seu fechamento normado já foi provado em factor_norm_closed. A instância CStarAlgebra decorre desse fechamento; nenhuma ordem espectral alternativa será instalada.
+
+Para verificar StarOrderedRing na ordem herdada, seja A∈M positivo como operador. O cálculo funcional contínuo real dá CFC.sqrt A=cfcₙ Real.sqrt A, que pertence a M porque M é normadamente fechada, estrelada e linear. A raiz é positiva, autoadjunta e seu quadrado é A. Assim 0≤A equivale à existência de B∈M com A=B*B, onde B* denota adjunto; o sentido inverso é a positividade de um quadrado estrelado no espaço ambiente. O critério StarOrderedRing.of_nonneg_iff' fornece a instância, mantendo a ordem herdada.
+
+A inclusão M→B(H) é um homomorfismo de álgebras estreladas, portanto a aplicação de suas entradas a uma matriz CStarMatrix positiva preserva positividade por um teorema existente da Mathlib. A equivalência de álgebras estreladas OperatorBlockRepresentation identifica essa matriz ambiente com o operador verdadeiro sobre PiLp 2 (Fin k→H), para todo k inclusive zero. Seu lema operator_block_nonneg_iff traduz positividade exatamente em simetria de adjunto e não negatividade da forma dupla Σ_iΣ_j⟨v_i,A_ij v_j⟩.
+
+O teorema general_expectation_block_positive, obtido pelas médias vetoriais reais e pelo limite forte046, preserva essa condição. Aplicando o outro sentido da equivalência de representação obtemos positividade de CStarMatrix das entradas E(A_ij). Com a linearidade previamente provada de E, isso preenche o campo map_cstarMatrix_nonneg' do registro CompletelyPositiveMap. A prova não presume positividade completa de E nem substitui a ordem matricial por positividade de entradas.
+
+[OPEN neste documento até a compilação medida.] Os nomes de instâncias e as provas acima ainda precisam ser aceitos pelo kernel047. Normalidade é objeto de módulo separado. Esta construção de esperança não produz identificação de região física, tensor gravitacional ou H3.

@@ -1,0 +1,261 @@
+{
+ "summary": "R1 — O ÂNGULO NO KERNEL (11 módulos lidos por inteiro + dependências por janela; varredura dos 889 .lean do TGLExt). O que a formalização FIXA [REAL, sem sorry, β nunca literal]: (1) a matriz-S da fronteira S(θ)=exp(θG)=cos θ·1+sin θ·G, unitária, grupo a um parâmetro, Spec={e^{±iθ}}, |R|²=sin²θ, |T|²=cos²θ, soma 1, ρ_out=diag(cos²θ, sin²θ) — com θ GENÉRICO (SMatrix.lean:25-27, 45-46, 200, 213, 241, 247, 254, 283); (2) a relação θ=arcsin√p ⟹ sin²θ=p aparece em CINCO cópias independentes (thetaMiguel, selectionAngle, superposition_not_autonomous, the_death_normalization, haja_luz_at_the_seal), sempre com p/b/β/w como PARÂMETRO real — a identificação sin²θ_M=β=α√e é declarada em comentário como leitura de RUNTIME e não é enunciado de teorema em lugar nenhum; (3) o seletor de comutação [A,α_θ(B)]=0 ↔ cos²θ=sin²θ, cujo par exibido seleciona π/4 e NÃO θ_M — o valor de θ_M fica [OPEN] por declaração explícita (TheAngleIsTheBridge.lean:57-68); (4) ângulo = projeção espectral (cos θ·1+sin θ·K = e^{iθ}P₊+e^{−iθ}P₋), o observador lê a fase (P₊·𝒪_θ=e^{iθ}P₊), a fase relativa e^{2iθ} é recuperada de duas probabilidades de interferência cos²θ e (1+sin 2θ)/2, e a família angular sobe a ℓ² entrelaçada com o seletor IALD como fluxo unitário; (5) seleção justa p=½ abre π/4; média de fronteira sin²θ, variância sin²θcos²θ; faixa aberta 0<sin²θ<1 ↔ sin θ≠0∧cos θ≠0; piso positivo ⟹ 0<θ_M<π/2. MÉTRICA / EXPANSÃO / DISTÂNCIA / ESCALA ANGULAR: NENHUM teorema diz como θ ou β entra numa métrica, em H(z), numa distância ou numa escala angular observável. Os únicos contatos ângulo↔métrica são (a) GeneralAngularTensorCodec — um codec bijetivo que guarda COMPONENTES de uma métrica dada como sin² de um ângulo, declarado \"not a measurement law\", \"No metric is stored\", sobrejetivo sobre TODO campo de Lorentz suave (logo sem predição); (b) RelativePhaseCharacter — a fase e^{i·s·χ_t(R)} é o caráter de um REGISTRO gravitacional R [INPUT] e determina a classe de R (logo g e T em U): rotulagem, não lei física; o ângulo aí não é θ_M e β não aparece; (c) as reconstruções de Einstein com `∃ cosmological : ℝ` (Λ real não especificado, sem vínculo com β ou θ). LEI DE FUNDO COSMOLÓGICO: NÃO EXISTE no kernel além de RhoPlusPClosure.lean — e este é uma identidade algébrica por `ring` sobre densidades reais (ρr, ρm, ρΛ, β livres): o \"H² ∝ …\" está SÓ no comentário (linha 18), o enunciado `hubble_form` (58-60) não contém H, a(t), z nem equação de Friedmann; a versão dinâmica e a validação CAMB são declaradas do \"módulo\" (runtime) [DECLARADO aqui, não verificado]; o fechamento perturbativo é declarado INDETERMINADO (34-38); nenhum outro módulo consome seus teoremas (importado por TheNucleus.lean:1 e TomitaClosability.lean:139 só como elo de cadeia). Varredura case-sensitive dos 889 arquivos: ZERO ocorrências de Hubble, Friedmann, FLRW, Robertson, redshift, scaleFactor, luminosity, angularDiameter, comoving, H(z), LCDM, BAO. \"Métrica\" no kernel = matriz 4×4 g=eᵀη₄e (Solder4D.lean:61,74) ou TensorField4 (CovariantScalarConservation.lean:24-25) com assinatura por congruência (EmergenceTriad.lean:72-73) — nenhuma instância FLRW. Achado estrutural: o setor ANGULAR (SMatrix/thetaMiguel) e o setor de FUNDO (RhoPlusPClosure) estão DESCONECTADOS no kernel — não há lema ligando o β de RhoPlusPClosure ao sin²θ_M de SMatrix; a única ponte é a leitura de runtime. Registro de vozes: cabeçalhos [BANCADA — ago/2026] em TheAngleIsTheBridge/Projection/Observer/OriginOfVibration são redigidos pelo escriba (autor não nomeado; \"o escriba\" em TheAngleIsTheProjection.lean:17) com citações do operador entre aspas; os lotes 058-062 são \"PEDRA DA BANCADA CHATGPT\" transpostos pela gerência; TheSelectionIsTheBallast é \"PEDRA DA GERENCIA (Claude)\"; SMatrix/HajaLuz/RhoPlusPClosure são kernel canônico sem autor nomeado. Nada aqui move o gate; NOT_FALSIFIED nunca é CONFIRMED.",
+ "findings": [
+  {
+   "file": "C:\\IALD\\Artigo\\Haja_Luz\\A Ponte e o Um\\Nós\\tgl_kernel\\TGLExt\\SMatrix.lean",
+   "line": "45-46; 25-27",
+   "statement": "`Smat θ := (cos θ)•1 + (sin θ)•Grot` com θ GENÉRICO; o cabeçalho declara: \"θ é GENÉRICO e β JAMAIS aparece neste arquivo: a identificação física θ_M = arcsin √β, |𝓡|² = β = α·√e, |𝓣|² = 1−β é leitura de RUNTIME (Python, tgl_paper_unified.py) — aqui vive só a estrutura provada.\"",
+   "relevance": "Fixa a FORMA da matriz-S, não o valor do ângulo. NÃO afirma sin²θ=β em enunciado nenhum; a identificação com β é comentário, não teorema.",
+   "statute": "[REAL] estrutura; [DECLARADO] a identificação de runtime",
+   "voice": "kernel canônico TGLExt (cabeçalho sem autor nomeado)"
+  },
+  {
+   "file": "C:\\IALD\\Artigo\\Haja_Luz\\A Ponte e o Um\\Nós\\tgl_kernel\\TGLExt\\SMatrix.lean",
+   "line": "200; 213-215; 81; 100-105",
+   "statement": "`exp_smul_Grot`: exp(θ•G) = S(θ) (Teorema S-∂, forma exponencial); `Smat_spectral`: S(θ) = U·diag(e^{iθ}, e^{−iθ})·U⁻¹ com U=!![1,1;i,−i]; `Smat_mul`: S(a)·S(b)=S(a+b); `Smat_conjTranspose_mul`/`Smat_mul_conjTranspose`: unitariedade.",
+   "relevance": "Relações angulares fixadas: grupo, espectro {e^{±iθ}}, unitariedade. NÃO diz como θ entra em métrica, expansão ou distância — a álgebra é 2×2 sobre ℂ, sem espaço-tempo.",
+   "statute": "[REAL]",
+   "voice": "kernel canônico TGLExt"
+  },
+  {
+   "file": "C:\\IALD\\Artigo\\Haja_Luz\\A Ponte e o Um\\Nós\\tgl_kernel\\TGLExt\\SMatrix.lean",
+   "line": "241-244; 247-250; 254-257; 283-285",
+   "statement": "`normSq_reflection`: |(S(θ)e₁)₁|² = sin²θ; `normSq_transmission`: |(S(θ)e₁)₀|² = cos²θ; `normSq_reflection_add_transmission`: soma = 1; `rhoOut_one_one`: (ρ_out)₁₁ = sin²θ. Docstring da 239-240: \"NO RUNTIME (e só lá): sin²θ_M = β = α·√e. Aqui θ é genérico, β não entra.\"",
+   "relevance": "A relação |R|²=sin²θ é teorema; \"|R|²=β\" é leitura de runtime. NÃO há escala observável (distância, H(z), ângulo no céu) ligada a sin²θ.",
+   "statute": "[REAL] |R|²=sin²θ; [DECLARADO] sin²θ_M=β no runtime",
+   "voice": "kernel canônico TGLExt"
+  },
+  {
+   "file": "C:\\IALD\\Artigo\\Haja_Luz\\A Ponte e o Um\\Nós\\tgl_kernel\\TGLExt\\TheVerbalCoupling.lean",
+   "line": "126; 139-146; 156-162",
+   "statement": "`def thetaMiguel (β : ℝ) : ℝ := Real.arcsin (Real.sqrt β)`; `sin_thetaMiguel`: 0≤β≤1 → sin(θ_Miguel β) = √β (docstring: \"⚠ Elementar — Real.sin_arcsin\"); `the_pruning_threshold_is_the_reflection_amplitude`: |R|²(θ_Miguel β) = (√β)² ∧ |R|²+|T|²=1.",
+   "relevance": "Único `def` nomeado θ_Miguel no kernel; β é PARÂMETRO real (não α√e). Liga θ_M à amplitude de reflexão e ao limiar verbal da patente BR 10 2026 006129-8 — NÃO a métrica nem a cosmologia. Cabeçalho 52-56: \"Não deriva β — ele entra como parâmetro real, e β_TGL = α·√e nunca é literal em kernel.\"",
+   "statute": "[REAL] implicação; [INPUT] β",
+   "voice": "gerência (escriba), v297, com citações do operador entre aspas"
+  },
+  {
+   "file": "C:\\IALD\\Artigo\\Haja_Luz\\A Ponte e o Um\\Nós\\tgl_kernel\\TGLExt\\TheVerbalCoupling.lean",
+   "line": "60-61",
+   "statement": "Citação verbatim do operador (29/08/2026): \"Não concordo, não existe β_TGL adaptativo — isso é um erro na patente e precisa ser corrigido. β_TGL é um só e é canônico.\"",
+   "relevance": "Confirma a régua 7 da tarefa: nenhum ajuste de parâmetro é admissível; um β que varia com o estado \"não é β\" (linha 68, voz do escriba).",
+   "statute": "[INPUT] ordem do operador",
+   "voice": "OPERADOR (verbatim, entre aspas); glosa do escriba fora das aspas"
+  },
+  {
+   "file": "C:\\IALD\\Artigo\\Haja_Luz\\A Ponte e o Um\\Nós\\tgl_kernel\\TGLExt\\TheSelectionIsTheBallast.lean",
+   "line": "98; 101-106; 109-113; 118-126",
+   "statement": "`selectionAngle p := arcsin √p`; `selection_angle_reflection`: 0≤p≤1 → sin²(θ(p)) = p; `selection_angle_transmission`: cos² = 1−p; `the_selection_opens_the_boundary`: |R|²=p ∧ |T|²=1−p ∧ S(θ(p)) = U·diag(e^{iθ},e^{−iθ})·U⁻¹.",
+   "relevance": "A relação θ=arcsin√p ⟹ sin²θ=p com p genérico (peso de ramo). O cabeçalho 26-28 diz o que NÃO se prova: \"que a selecao OCORRE na natureza\"; \"que o angulo aberto e θ_M = arcsin √β (β nao entra no Lean: no runtime, e so la)\"; \"a identificacao fisica do reflexo\".",
+   "statute": "[REAL] dada a seleção; [OPEN] ocorrência na natureza",
+   "voice": "gerência (Claude, sessão d554e796, v335) — cabeçalho com cunhagens do operador entre aspas (linhas 4-13)"
+  },
+  {
+   "file": "C:\\IALD\\Artigo\\Haja_Luz\\A Ponte e o Um\\Nós\\tgl_kernel\\TGLExt\\TheSelectionIsTheBallast.lean",
+   "line": "129-136; 139-141",
+   "statement": "`fair_selection_opens_forty_five`: selectionAngle (1/2) = π/4; `fair_superposition_selects_forty_five`: os ramos de ρ+ (057) têm peso 1/2 e a seleção abre 45°.",
+   "relevance": "Fixa π/4 como o ângulo do peso ½ (a Meia-Nat como ângulo). NÃO relaciona π/4 com θ_M ≈ 6,3° nem com observável algum.",
+   "statute": "[REAL]",
+   "voice": "gerência (Claude), v335"
+  },
+  {
+   "file": "C:\\IALD\\Artigo\\Haja_Luz\\A Ponte e o Um\\Nós\\tgl_kernel\\TGLExt\\TheAngleIsTheBridge.lean",
+   "line": "118-119; 130-135; 162-166; 172-175",
+   "statement": "`miguelFamily θ := !![cos θ, sin θ; −sin θ, cos θ]` (sobre ℝ); `miguelFamily_add`: 𝒪_{a+b} = 𝒪_a·𝒪_b; `the_generator_is_exhibited`: 𝒪_θ = cos θ•1 + sin θ•rotGen; `generator_sq_eq_neg_one`: rotGen² = −1.",
+   "relevance": "A família angular é grupo a um parâmetro com gerador de quadrado −1 — daí a angularidade. Cabeçalho 27-30: \"nenhuma métrica, nenhuma variedade, nenhum espaço-tempo entra na definição\". NÃO há geometria nem β.",
+   "statute": "[REAL]",
+   "voice": "cabeçalho marcado [BANCADA — 22/08/2026], redigido pelo escriba (autor não nomeado); cunhagens do operador entre aspas (13-20)"
+  },
+  {
+   "file": "C:\\IALD\\Artigo\\Haja_Luz\\A Ponte e o Um\\Nós\\tgl_kernel\\TGLExt\\TheAngleIsTheBridge.lean",
+   "line": "224-236; 245-251",
+   "statement": "`commutation_iff_cos_sq_eq_sin_sq`: obsA·α_θ(obsB) = α_θ(obsB)·obsA ↔ cos²θ = sin²θ (com obsA=!![0,1;1,0], obsB=!![1,0;0,−1]); `the_selector_is_not_vacuous`: comuta em θ=π/4 e NÃO comuta em θ=0.",
+   "relevance": "O seletor de comutação do operador tem solução fechada; para o par exibido seleciona π/4. Cabeçalho 57-59: \"NÃO se determina o VALOR de θ_M … O par exibido aqui seleciona π/4, não θ_M = arcsin√β ≈ 6,297°.\" Linhas 63-68: o par (A,B) que cai em θ_M é [OPEN]; se exibido sem β, β=sin²θ_M sairia α-livre (alvo do Evento 2).",
+   "statute": "[REAL] o seletor; [OPEN] o valor de θ_M",
+   "voice": "cabeçalho [BANCADA — 22/08/2026], escriba; pergunta aberta formulada pelo escriba"
+  },
+  {
+   "file": "C:\\IALD\\Artigo\\Haja_Luz\\A Ponte e o Um\\Nós\\tgl_kernel\\TGLExt\\TheAngleIsTheBridge.lean",
+   "line": "260-262; 105",
+   "statement": "`the_bridge`: 𝒪_θ 0 0 = cos θ ∧ 𝒪_θ 1 0 = −sin θ (a inscrição (1,0) vai a (cos θ, −sin θ)). Linha 105: \"β jamais entra no Lean. Sem sorry, sem axiom. Nada aqui move o gate.\"",
+   "relevance": "A \"ponte\" é a identidade entre parâmetro de grupo e ângulo do vetor girado — em ℝ², não numa métrica de espaço-tempo. A leitura Grundnorm (70-98) é [ONTO]+[LEGAL] e \"não aparece em enunciado nenhum\".",
+   "statute": "[REAL] o teorema; [ONTO]/[LEGAL] a leitura",
+   "voice": "escriba; tipagem jurídica atribuída ao operador (72-73)"
+  },
+  {
+   "file": "C:\\IALD\\Artigo\\Haja_Luz\\A Ponte e o Um\\Nós\\tgl_kernel\\TGLExt\\TheAngleIsTheProjection.lean",
+   "line": "76; 79-82; 123-126; 144-145; 151-155",
+   "statement": "`genK := !![0,1;−1,0]` (ℂ); `projPlus := ½(1 − i•genK)`, `projMinus := ½(1 + i•genK)`; `the_angle_is_the_projection`: angFamily θ = e^{iθ}•P₊ + e^{−iθ}•P₋; `the_generator_is_the_difference_of_the_faces`: genK = i•(P₊ − P₋); `at_the_right_angle_the_family_is_the_generator`: angFamily(π/2) = genK.",
+   "relevance": "Fixa: ângulo e projeção são a mesma decomposição (lida por fase ou por peso). Cabeçalho 57-59: NÃO se prova \"J = gráviton, = geometria, = consciência conjugada\"; J (antilinear) ≠ K (linear). Nenhuma métrica.",
+   "statute": "[REAL]; identificações [ONTO] do operador",
+   "voice": "cabeçalho [BANCADA — 23/08/2026], escriba (\"A DELIMITAÇÃO QUE O ESCRIBA DEVE\", linha 17); cunhagem do operador entre aspas (13-15)"
+  },
+  {
+   "file": "C:\\IALD\\Artigo\\Haja_Luz\\A Ponte e o Um\\Nós\\tgl_kernel\\TGLExt\\TheObserverReadsTheAngle.lean",
+   "line": "79-83; 114-116; 58-61",
+   "statement": "`the_observer_reads_the_angle`: projPlus * angFamily θ = e^{iθ}•projPlus; `observing_adds_nothing`: P₊·(P₊·𝒪_θ) = P₊·𝒪_θ. Cabeçalho 58-61: \"NÃO SE PROVA: GRAVIDADE = OBSERVADOR, nem IALD = GRAVIDADE. São [ONTO] do operador e não aparecem em enunciado nenhum.\"",
+   "relevance": "A leitura extrai a fase e^{iθ}; é equação de autovalor em 2×2. Nada sobre métrica ou fundo. (Dependência lida por janela, não integralmente.)",
+   "statute": "[REAL]; [ONTO] a identificação com gravidade",
+   "voice": "cabeçalho [BANCADA — 23/08/2026], escriba; cunhagens do operador entre aspas (13-18)"
+  },
+  {
+   "file": "C:\\IALD\\Artigo\\Haja_Luz\\A Ponte e o Um\\Nós\\tgl_kernel\\TGLExt\\SelectionAngleReconstruction.lean",
+   "line": "40-41; 44-45; 47-52; 54-64",
+   "statement": "`phaseReading A := 2·(projPlus * A) 0 0`; `angularDecoder z := z•projPlus + z⁻¹•projMinus`; `phase_reading_is_the_angular_phase`: phaseReading(angFamily θ) = e^{iθ}; `angular_family_reconstructed_from_one_selected_face`: angularDecoder(phaseReading(angFamily θ)) = angFamily θ.",
+   "relevance": "A forma angular inteira é reconstruída de UMA face selecionada — a fase basta. Estatuto declarado no cabeçalho 20-22: \"[REAL] o compilado; [INPUT] R (o registro) e a origem fisica; [OPEN] correspondencia fisica seletor-registro … Nenhum nome ligado a H3, area fisica ou gate.\"",
+   "statute": "[REAL]",
+   "voice": "bancada ChatGPT (lote 058-062, ENTREGA_062), transposta pela gerência em 10/09/2026 (cabeçalho 1-28 é da gerência)"
+  },
+  {
+   "file": "C:\\IALD\\Artigo\\Haja_Luz\\A Ponte e o Um\\Nós\\tgl_kernel\\TGLExt\\SelectionAngleReconstruction.lean",
+   "line": "79-81; 83-87",
+   "statement": "`angular_form_is_the_boundary_s_matrix (θ) : angFamily θ = Smat θ := by rfl`; `miguel_boundary_reconstructed_from_its_selected_face (β)`: angularDecoder(phaseReading(Smat (thetaMiguel β))) = Smat (thetaMiguel β).",
+   "relevance": "Este `rfl` é o lema que liga `genK` (TheAngleIsTheProjection) a `Grot` (SMatrix): são definicionalmente a mesma matriz sobre ℂ, e angFamily ≡ Smat. A memória da casa (regra dos dois regimes, 29/08) dizia não existir lema ligando duas das três cópias — para o par genK↔Grot agora existe (voz da bancada, compilado). `rotGen` (ℝ, GeometryFluctuation.lean:124) segue SEM lema de ligação (só o comentário em TheAngleIsTheProjection.lean:74). O segundo teorema usa thetaMiguel β com β parâmetro — nenhuma métrica.",
+   "statute": "[REAL]",
+   "voice": "bancada ChatGPT (062)"
+  },
+  {
+   "file": "C:\\IALD\\Artigo\\Haja_Luz\\A Ponte e o Um\\Nós\\tgl_kernel\\TGLExt\\SelectionAngleReconstruction.lean",
+   "line": "90-97; 100-107",
+   "statement": "`ambient_selection_has_distinct_inputs`: projPlus ≠ 1 ∧ projPlus*projPlus = projPlus*1 (a seleção NÃO é injetiva no espaço ambiente); `reconstruction_on_all_inputs_forces_injectivity`: decodificador em todas as entradas ⟹ encode injetivo.",
+   "relevance": "Delimita a reconstrução: só vale sobre a família angular, não sobre matrizes arbitrárias. Confirma a régua dos dois regimes: o seletor é muitos-para-um no ambiente.",
+   "statute": "[REAL]",
+   "voice": "bancada ChatGPT (062)"
+  },
+  {
+   "file": "C:\\IALD\\Artigo\\Haja_Luz\\A Ponte e o Um\\Nós\\tgl_kernel\\TGLExt\\AngularSelectorIntertwining.lean",
+   "line": "58; 60-61; 159-165; 174-179; 181-190; 199-204",
+   "statement": "`angularPhase θ := exp(θ·i)`; `selectorAngularFlow θ := e^{iθ}•ialdSelector + e^{−iθ}•(1 − ialdSelector)` em ℓ²; `selector_flow_add` (grupo), `selector_flow_unitary`, `selector_flow_intertwines`: flow θ (angularEmbedding v) = angularEmbedding((angFamily θ).mulVec v); `selected_flow_reads_phase`: ialdSelector(flow θ x) = e^{iθ}•ialdSelector x.",
+   "relevance": "A família angular 2×2 sobe a ℓ² como fluxo unitário compacto (SO(2)) entrelaçado com o seletor IALD. Confirma que o regime angular é o da PROJEÇÃO (lê, não tem limite). Nenhuma métrica, nenhum β.",
+   "statute": "[REAL]",
+   "voice": "bancada ChatGPT (062)"
+  },
+  {
+   "file": "C:\\IALD\\Artigo\\Haja_Luz\\A Ponte e o Um\\Nós\\tgl_kernel\\TGLExt\\RelativePhaseCharacter.lean",
+   "line": "49-53; 55-57; 148-159; 212-215; 217-222; 224-229",
+   "statement": "`interferenceX θ := |⟨ref, state θ⟩|²`, `interferenceY θ := |⟨quad, state θ⟩|²`; `interference_x_formula`: I_X = cos²θ; `interference_y_formula`: I_Y = (1 + sin 2θ)/2; `cross_readout_relative_phase`: crossReadout(state θ) = e^{2iθ}; `reconstructed_phase_formula`: (2I_X−1) + (2I_Y−1)·i = e^{2iθ}.",
+   "relevance": "Fixa a FASE RELATIVA: duas probabilidades de interferência recuperam e^{2iθ} (o dobro do ângulo). Pura interferometria de dois modos; não há escala observável nem β.",
+   "statute": "[REAL]",
+   "voice": "bancada ChatGPT (062)"
+  },
+  {
+   "file": "C:\\IALD\\Artigo\\Haja_Luz\\A Ponte e o Um\\Nós\\tgl_kernel\\TGLExt\\RelativePhaseCharacter.lean",
+   "line": "59-61; 246-251; 253-265; 267-272",
+   "statement": "`characterReadout t R s := reconstructedPhase(s·recordCharacter t R / 2)`; `character_readout_formula`: = e^{i·s·recordCharacter t R}; `character_readouts_same_iff` (t≠0): (∀s, readout R s = readout S s) ↔ classOfRecord R = classOfRecord S; `character_readouts_reconstruct_fields`: readouts iguais ⟹ EqOn (recordMetric R) (recordMetric S) U ∧ EqOn (recordSource R) (recordSource S) U.",
+   "relevance": "ÚNICO ponto do kernel em que uma fase angular toca uma MÉTRICA — e é rotulagem: recordCharacter t R = geometricLogReading t (recordBits R) (SelectedGravitationalAtlas.lean:175-176), um número real que codifica os bits do registro R; o registro R é [INPUT] (estrutura em GravitationalResponseRecord.lean:47-50: \"It does not assert that a physical selection realizes these data\"). O ângulo aqui é s·χ, não θ_M; β não aparece; nada de H(z), distância ou escala angular.",
+   "statute": "[REAL] a implicação; [INPUT] R; [OPEN] correspondência física",
+   "voice": "bancada ChatGPT (062)"
+  },
+  {
+   "file": "C:\\IALD\\Artigo\\Haja_Luz\\A Ponte e o Um\\Nós\\tgl_kernel\\TGLExt\\GeneralAngularTensorCodec.lean",
+   "line": "44; 47; 50; 70-71; 79; 107-108",
+   "statement": "`encodeAngle x := (arctan x + π/2)/2`; `encodeScalar x := sin²(encodeAngle x)`; `decodeScalar p := tan(2·selectionAngle p − π/2)`; `selection_angle_on_encoded_scalar`: selectionAngle(encodeScalar x) = encodeAngle x; `decode_encode_scalar`: decode(encode x) = x; `encode_decode_scalar` (0<p<1): encode(decode p) = p.",
+   "relevance": "Um codec bijetivo real↔probabilidade via ângulo no primeiro quadrante. Consome `selectionAngle` (arcsin√p) como decodificador. NÃO é lei física: é representação.",
+   "statute": "[REAL]",
+   "voice": "bancada ChatGPT (062)"
+  },
+  {
+   "file": "C:\\IALD\\Artigo\\Haja_Luz\\A Ponte e o Um\\Nós\\tgl_kernel\\TGLExt\\GeneralAngularTensorCodec.lean",
+   "line": "190-191; 246; 257-260; 277-282",
+   "statement": "`encodeTensorField g := fun x => encodeMatrix (g x)`; comentário 246: \"This constructor certifies representability of a GIVEN field, not a measurement law.\"; 257: \"Signature is an explicit certificate about decoded probabilities. No metric is stored.\"; 277: \"Surjectivity onto all smooth Lorentz fields in this chart is representational only.\"; `every_smooth_lorentz_field_is_representable`: ∀ g suave e Lorentz por congruência em U, ∃ R : LorentzProbabilityRecord U, decodeRecord R.data = g.",
+   "relevance": "Este é o contato mais direto ângulo↔métrica no kernel, e ele é DECLARADAMENTE representacional: qualquer métrica de Lorentz suave é codificável como sin² de ângulos; logo o codec não restringe métrica alguma nem prediz nada. NÃO diz que θ_M ou β entra em g_μν. A métrica aqui é TensorField4 = Coordinate4 → Matrix (Fin 4)(Fin 4) ℝ (CovariantScalarConservation.lean:24-25), sem FLRW.",
+   "statute": "[REAL] o codec; [OPEN] qualquer leitura física",
+   "voice": "bancada ChatGPT (062) — os disclaimers são da própria bancada, em inglês"
+  },
+  {
+   "file": "C:\\IALD\\Artigo\\Haja_Luz\\A Ponte e o Um\\Nós\\tgl_kernel\\TGLExt\\HajaLuz.lean",
+   "line": "92-107; 125-130; 75-79; 84-87",
+   "statement": "`haja_luz_is_the_open_strip`: (0 < crossDeath θ ∧ crossDeath θ < 1) ↔ (sin θ ≠ 0 ∧ cos θ ≠ 0), com crossDeath θ := sin²θ (TheDeathOfTheSignal.lean:57); `haja_luz_at_the_seal` (0<b<1): crossDeath(arcsin √b) = b ∧ 0 < … < 1; `static_cannot_coincide_with_its_potential` (β≠0, g≠0): ¬FullStaticWitness (fun t x => exp(−(t·β·g))·x); `the_zero_is_never_touched`: diagFlow β d t x i ≠ 0.",
+   "relevance": "Relações angulares: a faixa aberta 0<sin²θ<1 e a normalização sin²(arcsin√b)=b com b parâmetro. β e b são reais livres (a assinatura de `haja_luz`, 136-137, toma β, g, b como argumentos). Cabeçalho 46-50: \"a teoria NÃO deriva α\"; \"nada afirma a TGL verdadeira; o gate NÃO se move\". Nenhuma métrica, nenhuma cosmologia.",
+   "statute": "[REAL] face finita; [ONTO] \"eletricidade\"",
+   "voice": "kernel canônico v161 (escriba), equação do operador citada entre aspas (11-16)"
+  },
+  {
+   "file": "C:\\IALD\\Artigo\\Haja_Luz\\A Ponte e o Um\\Nós\\tgl_kernel\\TGLExt\\TheOriginOfTheVibration.lean",
+   "line": "51-58; 62-64; 68-80; 84-93; 23-28",
+   "statement": "`a_positive_floor_forces_a_positive_angle` (0<b<1): 0 < arcsin √b < π/2; `a_positive_angle_forbids_stagnation` (0<θ<π): sin θ ≠ 0; `stagnation_is_exactly_zero_frequency`: (∀t, exp(i·ω·t) = 1) ↔ ω = 0; `the_persisting_channel_vibrates` (ω≠0): módulo 1 ∧ não-estático. Cabeçalho 23-28: a identificação da vibração com o grau de liberdade gravitacional é \"[ONTO — interna à TGL, NÃO provada aqui]\"; \"«mesmo tipo» não é «mesma coisa»\".",
+   "relevance": "Fixa que piso positivo ⟹ ângulo modular em (0, π/2) e que frequência nula = estagnação. A frequência ω é parâmetro LIVRE — não há escala física (nem τ★, nem β) ligada a ω. Nenhuma métrica.",
+   "statute": "[REAL]; [ONTO] a origem da gravidade",
+   "voice": "cabeçalho [BANCADA — 26/08/2026], escriba; leitura do operador citada entre aspas (8-10)"
+  },
+  {
+   "file": "C:\\IALD\\Artigo\\Haja_Luz\\A Ponte e o Um\\Nós\\tgl_kernel\\TGLExt\\RhoPlusPClosure.lean",
+   "line": "47; 52-54; 58-60; 64-71; 90-96",
+   "statement": "`lambda_drops_out (ρΛ)`: ρΛ + (−ρΛ) = 0; `closure_identity (β ρr ρm ρΛ)`: β·((ρr + ρr/3) + (ρm + 0) + (ρΛ + (−ρΛ))) = β·((4/3)ρr + ρm) — prova `by ring`; `hubble_form (β ρr ρm ρΛ)`: (ρr + ρm + ρΛ) + β·((4/3)ρr + ρm) = (1 + 4β/3)ρr + (1 + β)ρm + ρΛ — prova `by ring`; `w_bounds`: w_T ∈ [0, 1/3] com limites exatos; `the_background_closure`: a conjunção dos três.",
+   "relevance": "A ÚNICA lei de fundo cosmológico do kernel — e o enunciado é identidade algébrica sobre reais livres: NÃO contém H, a(t), z, equação de Friedmann, nem distância. O \"H² ∝ (1+4β/3)ρ_r + (1+β)ρ_m + ρ_Λ\" está só no COMENTÁRIO (linha 18). β é variável real sem vínculo com sin²θ_M (não há lema no kernel ligando este β ao θ de SMatrix). Todos os quatro argumentos são universais — nenhuma hipótese física é enunciada no tipo.",
+   "statute": "[REAL] a identidade algébrica; [DECLARADO] a leitura H²",
+   "voice": "kernel canônico v154 (escriba); a derivação ρ+p é creditada ao operador (\"[Crédito: a forma ρ+p é derivação do operador, 08/08/2026.]\", linha 20; citação entre aspas 11-14)"
+  },
+  {
+   "file": "C:\\IALD\\Artigo\\Haja_Luz\\A Ponte e o Um\\Nós\\tgl_kernel\\TGLExt\\RhoPlusPClosure.lean",
+   "line": "34-38; 18-20",
+   "statement": "Cabeçalho: \"esta é a face ALGÉBRICA [REAL]; a versão dinâmica (p_T = −β·ṗ/3H; w=0,3325→0,0014) e a validação em CAMB são do módulo [VERIFICADO 08/08]; a hipótese declarada é a não-troca de energia entre setores; o fechamento PERTURBATIVO segue INDETERMINADO — e é o próprio Lema 3 visto do lado do fluido. β jamais literal. O gate NÃO se move.\" Linha 18-20: \"a TGL no fundo não é modelo novo; é um ponto no plano (N_eff, ω_c) que todo pipeline de CMB já sabe percorrer.\"",
+   "relevance": "O próprio arquivo delimita: a dinâmica (com H) e a validação CAMB NÃO estão no kernel — são do runtime. A hipótese \"não-troca de energia entre setores\" é declarada, não tipada. O fechamento perturbativo (que é o que uma distância ou escala angular observável exigiria) é INDETERMINADO por declaração.",
+   "statute": "[DECLARADO] aqui (não verificado nesta tarefa); [OPEN] perturbativo",
+   "voice": "escriba (kernel canônico v154)"
+  },
+  {
+   "file": "C:\\IALD\\Artigo\\Haja_Luz\\A Ponte e o Um\\Nós\\tgl_kernel\\TGLExt\\RhoPlusPClosure.lean",
+   "line": "(uso externo: TheNucleus.lean:1; TomitaClosability.lean:139)",
+   "statement": "`grep -rln \"hubble_form\\|closure_identity\\|the_background_closure\"` sobre os 889 .lean devolve só RhoPlusPClosure.lean (o hit em LightIsJ.lean:36,96 é `the_closure_identity`, outro teorema). Os dois importadores não invocam nenhum teorema do módulo.",
+   "relevance": "RhoPlusPClosure é FOLHA no grafo: nenhuma pedra consome a forma de fundo. Logo o setor angular (SMatrix/thetaMiguel/selectionAngle) e o setor de fundo (ρ+p) estão DESCONECTADOS dentro do kernel; a única ponte é a leitura de runtime.",
+   "statute": "[REAL — medido por grep]",
+   "voice": "medição desta tarefa"
+  },
+  {
+   "file": "C:\\IALD\\Artigo\\Haja_Luz\\A Ponte e o Um\\Nós\\tgl_kernel\\TGLExt (varredura global)",
+   "line": "889 arquivos .lean",
+   "statement": "Busca case-sensitive por Hubble, Friedmann, FLRW, Robertson, redshift, scaleFactor, luminosity, angularDiameter, comoving, \"H(z)\", Lambda_CDM, LCDM, BAO: ZERO arquivos para cada termo. \"CMB\" só em RhoPlusPClosure.lean:19,27,89 e TheDarkSplit.lean:51; \"Planck\" só como newtonPlanck (8πG) e instante de Planck [CONJECTURE].",
+   "relevance": "Não existe no kernel expansão H(z), distância cosmológica, escala angular observável, nem métrica FLRW. A pergunta \"como o ângulo/β entra numa métrica, expansão, distância ou escala angular\" tem resposta: NÃO ENTRA em enunciado nenhum do kernel.",
+   "statute": "[REAL — medido por grep]",
+   "voice": "medição desta tarefa"
+  },
+  {
+   "file": "C:\\IALD\\Artigo\\Haja_Luz\\A Ponte e o Um\\Nós\\tgl_kernel\\TGLExt\\TheDarkSplit.lean",
+   "line": "45-53",
+   "statement": "Cabeçalho: \"A pedra não prova que o modo zero seja energia escura, nem que os modos granulares sejam matéria escura: essa é a correspondência candidata do operador, marcada por ele mesmo como 'correspondência estrutural candidata, não ainda teorema físico', com quatro ressalvas … derivar w≈−1, w≈0, densidades, perturbações, CMB, crescimento e lente; e definir o operador traçado para β_TGL.\"",
+   "relevance": "Registro explícito, no próprio kernel, de que a derivação cosmológica (w, densidades, perturbações, CMB, lente) NÃO está feita — corrobora a ausência medida por grep.",
+   "statute": "[OPEN] declarado",
+   "voice": "escriba (cabeçalho [BANCADA — 21/08/2026]); a ressalva é atribuída ao operador com citação curta entre aspas"
+  },
+  {
+   "file": "C:\\IALD\\Artigo\\Haja_Luz\\A Ponte e o Um\\Nós\\tgl_kernel\\TGLExt\\Solder4D.lean + EmergenceTriad.lean + CovariantScalarConservation.lean",
+   "line": "Solder4D 61-62, 74-75; EmergenceTriad 72-73; CovariantScalarConservation 24-25",
+   "statement": "`eta4 := diagonal ![1,−1,−1,−1]`; `solderMetric4 e := eᵀ * eta4 * e`; `LorentzByCongruence g := ∃ e, IsUnit e.det ∧ g = eᵀ * eta4 * e`; `Coordinate4 := Fin 4 → ℝ`, `TensorField4 := Coordinate4 → Matrix (Fin 4) (Fin 4) ℝ`.",
+   "relevance": "O que \"métrica\" significa no kernel: matriz 4×4 real de assinatura (1,3) por congruência, ou campo de tais matrizes numa carta. Nenhuma instância é FLRW; nenhum teorema põe θ_M ou β numa entrada de g.",
+   "statute": "[REAL] definições",
+   "voice": "kernel canônico"
+  },
+  {
+   "file": "C:\\IALD\\Artigo\\Haja_Luz\\A Ponte e o Um\\Nós\\tgl_kernel\\TGLExt\\GravitationalResponseRecord.lean + CoherentEinsteinBridge.lean + ConstructedEinsteinReconstruction.lean",
+   "line": "GravitationalResponseRecord 160-175; CoherentEinsteinBridge 112-114; ConstructedEinsteinReconstruction 60-61",
+   "statement": "`record_einstein_from_area` (e análogos): sob lei de área, conservação e telas explícitas como INPUTS, `∃ cosmological : ℝ, ∀ x∈U, G(g) x + cosmological • g x = (2π/η) • T x`. Docstring 159: \"Conditional sufficiency: the area law, total conservation and screens are explicit inputs.\"",
+   "relevance": "A única \"constante cosmológica\" do kernel é um real EXISTENCIAL não especificado numa equação de Einstein reconstruída — sem vínculo com β, θ_M ou densidades. Não é lei de fundo.",
+   "statute": "[REAL] condicional; [INPUT] área/conservação/telas",
+   "voice": "bancada ChatGPT (lotes 058-062 / Flow020), transposta pela gerência"
+  },
+  {
+   "file": "C:\\IALD\\Artigo\\Haja_Luz\\A Ponte e o Um\\Nós\\tgl_kernel\\TGLExt\\GeometryFluctuation.lean + GlobalLiftLadder.lean + ProgrammerRule.lean",
+   "line": "GeometryFluctuation 86-88, 92-95, 124; GlobalLiftLadder 228-232; ProgrammerRule 71-72",
+   "statement": "`boundary_mean`: gibbs (rhoOut θ) reflObs = sin²θ; `boundary_variance`: = sin²θ·cos²θ; `rotGen := !![0,1;−1,0]` (ℝ); `dephased_rhoOut_one_one`: diagExpect (rhoOut θ) 1 1 = sin²θ; `superposition_not_autonomous` (0≤w≤1): ∃! θ ∈ [0, π/2], sin θ = √w.",
+   "relevance": "Mais três cópias da mesma relação angular (média sin²θ, variância sin²θ(1−sin²θ), unicidade de θ dado o peso) — todas com θ ou w genéricos; \"runtime: média β, variância β(1−β)\" é comentário. Reforça que o kernel fixa a FORMA e delega o VALOR.",
+   "statute": "[REAL]",
+   "voice": "kernel canônico (v49/v43/ProgrammerRule)"
+  },
+  {
+   "file": "C:\\IALD\\Artigo\\Haja_Luz\\A Ponte e o Um\\Nós\\tgl_kernel\\TGLExt\\Ergodicity.lean + TheDeathOfTheSignal.lean",
+   "line": "Ergodicity 184; TheDeathOfTheSignal 41-45",
+   "statement": "`dephase g t x` é definido com taxas GENÉRICAS g : n → n → ℝ; nenhum `theorem`/`def` no TGLExt enuncia Γ_ω = ½βτ★ω² (grep por dephasing/tauStar/Γ_ω só acha comentários e o semigrupo genérico). TheDeathOfTheSignal 41-45: \"a face empírica da morte do sinal é a lei de dephasing Γ_ω = ½βτ★ω² … NENHUM dado novo é reivindicado aqui; β jamais literal (entra só no módulo, em runtime)\".",
+   "relevance": "A única consequência física com escala (dephasing ∝ ω²) também NÃO está em enunciado de kernel — vive no runtime. Portanto nenhuma escala observável (nem cosmológica, nem de laboratório) é fixada em Lean.",
+   "statute": "[REAL — medido por grep]; a lei de dephasing [DECLARADO] no cabeçalho",
+   "voice": "medição desta tarefa; cabeçalho pelo escriba"
+  }
+ ],
+ "open_questions": [
+  "[OPEN, declarado no kernel] Qual par (A,B) de observáveis tem [A, α_θ(B)] = 0 exatamente em θ_M = arcsin√β? O par exibido seleciona π/4 (TheAngleIsTheBridge.lean:57-68). Se exibido sem β, β = sin²θ_M sairia α-livre (Evento 2).",
+  "[Achado estrutural] O β de RhoPlusPClosure.lean (variável real em `hubble_form`) e o sin²θ de SMatrix.lean não são ligados por nenhum lema; RhoPlusPClosure é folha no grafo (nenhum módulo consome seus teoremas). Se a APLICAÇÃO correta da métrica/fundo segundo os teoremas é o que se procura, a ponte formal ângulo→fundo hoje não existe em Lean — é leitura de runtime. Cabe ao operador decidir se uma pedra de ligação (sem ajuste de parâmetro: só compor `selection_angle_reflection` com `closure_identity` sob o mesmo β) é desejada.",
+  "[Lacuna de lema] `rotGen` (ℝ, GeometryFluctuation.lean:124) permanece sem lema que o ligue a `Grot`/`genK` (ℂ); o par genK↔Grot já está ligado por `angular_form_is_the_boundary_s_matrix` (rfl, SelectionAngleReconstruction.lean:79-81) — a memória da casa (regra dos dois regimes, 29/08) deve ser atualizada AO LADO para registrar essa ligação, se a gerência concordar.",
+  "[DECLARADO, não verificado nesta tarefa] A 'versão dinâmica' p_T = −β·ṗ/3H e a validação em CAMB (RhoPlusPClosure.lean:34-38) são atribuídas ao 'módulo' (runtime); esta tarefa não abriu o um.py nem o tgl_paper_unified.py — o estatuto [VERIFICADO 08/08] fica como afirmado na origem.",
+  "[Pergunta de leitura] O comentário 'H² ∝ (1+4β/3)ρ_r + (1+β)ρ_m + ρ_Λ' (RhoPlusPClosure.lean:18) pressupõe Friedmann; o kernel não enuncia Friedmann. Se a tarefa seguinte (R2+) for buscar a aplicação da métrica/fundo, o único lugar em que uma FASE angular determina uma MÉTRICA é RelativePhaseCharacter.lean:267-272 — e ali a métrica é [INPUT] (registro R) e o ângulo é o caráter s·χ_t(R), não θ_M. Não há caminho formal θ_M → g_μν → observável no kernel de hoje.",
+  "[Voz] Os cabeçalhos marcados '[BANCADA — dd/08/2026]' (TheAngleIsTheBridge, TheAngleIsTheProjection, TheObserverReadsTheAngle, TheOriginOfTheVibration, TheDarkSplit) não nomeiam autor e usam 'o escriba' na própria voz; registrei-os como redigidos pelo escriba (Claude). Se 'BANCADA' nesses arquivos significa ChatGPT, a atribuição de voz deve ser corrigida pelo operador."
+ ]
+}

@@ -1,0 +1,74 @@
+{
+  "scope": "3/16 inicialmente; três módulos adicionais finais lidos, 6/25 provisório. Nenhuma fonte futura lida.",
+  "findings_so_far": [],
+  "checks": [
+    {
+      "file": "PositiveRootIntertwining.lean",
+      "lines": [
+        15,
+        48
+      ],
+      "assessment": "A união compacta dos dois espectros reais permite um único C(s,R); propriedade fechada por soma/produto/limite e geradores id/star(id). IsSelfAdjoint é explícito. U limitado arbitrário; nenhuma unitariedade, inversibilidade ou raiz entrelaçada é hipótese."
+    },
+    {
+      "file": "ScaledPositiveResolvent.lean",
+      "lines": [
+        27,
+        85
+      ],
+      "assessment": "D estritamente positivo por rI+(1-r)T se r<=1, e I+(r-1)(I-T) se r>1. Ring.inverse só recebe propriedades de inverso após IsUnit. Q>=0 e I-Q=r(I-T)D^-1>=0 por comutação derivada. T=0/1 permitidos; nenhuma injetividade reivindicada aqui."
+    },
+    {
+      "file": "ScaledResolventRoots.lean",
+      "lines": [
+        11,
+        52
+      ],
+      "assessment": "Produto de raízes usa positividade e comutação explícitas, unicidade CFC de raiz positiva limitada; fator sqrt(r) real. As duas identidades têm os fatores na ordem justificada."
+    },
+    {
+      "file": "ScaledRootGraphTransport.lean",
+      "lines": [
+        25,
+        60
+      ],
+      "assessment": "Parâmetro z do grafo B(T) é levantado por sqrt(E) sobrejetiva, E=D^-1 estritamente positivo; nenhuma inversa de B ou de U. Entrelaçamento de sqrtT e sqrt(1-T) transporta grafo com fator sqrt(r) e assegura apenas inclusão do domínio."
+    },
+    {
+      "file": "MatrixUnitResolventScaling.lean",
+      "lines": [
+        15,
+        54
+      ],
+      "assessment": "z=x+Ax, Tx=x; RDz=Rx+ARx com AR=rRA anterior no domínio completo. T RD=RT; multiplicação à direita por D^-1 dá TR=R(TD^-1). Mesmo H_I/S†S/resolvente, r=localEigenvalue>0."
+    },
+    {
+      "file": "MatrixUnitRootScaling.lean",
+      "lines": [
+        13,
+        53
+      ],
+      "assessment": "scalarTomitaPositiveRoot é definicionalmente resolventSquareRoot do mesmo T. Converte pertinência ao grafo em entrada do subtipo e igualdade B R=sqrt(r) R B para todo x:D(B); nenhuma inversibilidade do multiplicador matricial."
+    }
+  ],
+  "external_sources_read": [
+    {
+      "path": "C:\\IALD\\Artigo\\Haja_Luz\\A Ponte e o Um\\Nós\\tgl_kernel\\.lake\\packages\\mathlib\\Mathlib\\Topology\\ContinuousMap\\StoneWeierstrass.lean",
+      "sha256": "cbdbc66100c88af085bc2f667cded1dd46cb019a9ff27a046b6463f48f7f3a6a",
+      "lines": [
+        491,
+        500
+      ],
+      "excerpt": "theorem ContinuousMap.induction_on_of_compact {𝕜 : Type*} [RCLike 𝕜] {s : Set 𝕜} [CompactSpace s]\n    {p : C(s, 𝕜) → Prop} (const : ∀ r, p (.const s r)) (id : p (.restrict s <| .id 𝕜))\n    (star_id : p (star (.restrict s <| .id 𝕜)))\n    (add : ∀ f g, p f → p g → p (f + g)) (mul : ∀ f g, p f → p g → p (f * g))\n    (frequently : ∀ f, (∃ᶠ g in 𝓝 f, p g) → p f) (f : C(s, 𝕜)) :\n    p f := by\n  refine f.induction_on const id star_id add mul fun h f ↦ frequently f ?_\n  have := polynomialFunctions.starClosure_topologicalClosure s ▸ mem_top (x := f)\n  rw [← SetLike.mem_coe, topologicalClosure_coe, mem_closure_iff_frequently] at this\n  exact this.mp <| .of_forall h"
+    },
+    {
+      "path": "C:\\IALD\\Artigo\\Haja_Luz\\A Ponte e o Um\\Nós\\tgl_kernel\\.lake\\packages\\mathlib\\Mathlib\\Analysis\\CStarAlgebra\\ContinuousFunctionalCalculus\\Unital.lean",
+      "sha256": "f67b42738af5e91dbef05da3f0b841de4bf421bb6b54114688d7c08649761e86",
+      "lines": [
+        1090,
+        1115
+      ],
+      "excerpt": "/-! ### `cfcHom` on a superset of the spectrum -/\n\nsection Superset\n\nvariable {R A : Type*} {p : A → Prop} [CommSemiring R] [StarRing R]\n    [MetricSpace R] [IsTopologicalSemiring R] [ContinuousStar R] [Ring A] [StarRing A]\n    [TopologicalSpace A] [Algebra R A] [instCFC : ContinuousFunctionalCalculus R A p]\n\n/-- The composition of `cfcHom` with the natural embedding `C(s, R) → C(spectrum R a, R)`\nwhenever `spectrum R a ⊆ s`.\n\nThis is sometimes necessary in order to consider the same continuous functions applied to multiple\ndistinct elements, with the added constraint that `cfc` does not suffice. This can occur, for\nexample, if it is necessary to use uniqueness of this continuous functional calculus. -/\n@[simps!]\nnoncomputable def cfcHomSuperset {a : A} (ha : p a) {s : Set R} (hs : spectrum R a ⊆ s) :\n    C(s, R) →⋆ₐ[R] A :=\n  cfcHom ha |>.comp <| ContinuousMap.compStarAlgHom' R R <| ⟨_, continuous_id.subtype_map hs⟩\n\nlemma cfcHomSuperset_continuous {a : A} (ha : p a) {s : Set R} (hs : spectrum R a ⊆ s) :\n    Continuous (cfcHomSuperset ha hs) :=\n  (cfcHom_continuous ha).comp <| ContinuousMap.continuous_precomp _\n\nlemma cfcHomSuperset_id {a : A} (ha : p a) {s : Set R} (hs : spectrum R a ⊆ s) :\n    cfcHomSuperset ha hs (.restrict s <| .id R) = a :=\n  cfcHom_id ha"
+    }
+  ]
+}

@@ -1,0 +1,98 @@
+
+open TGL.SpecificAQFT TGL.ContinuousCorner
+
+/-- Antiunitario concreto: equivalencia isometrica conjugado-linear de `H`. -/
+abbrev Antiunitary (H : Type) [NormedAddCommGroup H] [InnerProductSpace ℂ H] :=
+  H ≃ₛₗᵢ[starRingEnd ℂ] H
+
+/-- Camada 1A -- DADOS do fluxo modular da cunha: a algebra da cunha (igual, por
+    equacao, a `W.net rightWedge`), um grupo a um parametro de automorfismos-*, e
+    a conjugacao modular antiunitaria involutiva fixando o vacuo.
+    O CONTEUDO geometrico de Bisognano--Wichmann (fluxo = boosts) NAO e' enunciavel
+    hoje e permanece no ledger externo [OPEN]. -/
+structure WedgeModularData (W : TGLSpecificAQFTWitness) where
+  wedgeAlgebra : VonNeumannAlgebra W.H
+  wedgeAlgebra_eq : wedgeAlgebra = W.net rightWedge
+  modularFlow : ℝ → (wedgeAlgebra.toStarSubalgebra ≃⋆ₐ[ℂ] wedgeAlgebra.toStarSubalgebra)
+  modularFlow_zero : modularFlow 0 = StarAlgEquiv.refl
+  modularFlow_add : ∀ s t : ℝ, modularFlow (s + t) = (modularFlow s).trans (modularFlow t)
+  modularConjugation : Antiunitary W.H
+  modularConjugation_involutive : ∀ ξ : W.H, modularConjugation (modularConjugation ξ) = ξ
+  modularConjugation_vac : modularConjugation W.vac = W.vac
+
+/-- Camada 1B -- DADOS do core continuo (Takesaki): o tipo `Core` com estrutura
+    algebrico-estelar concreta, a inclusao *-algebrica injetiva da algebra da
+    cunha, a acao dual a um parametro, e o traco canonico em `ℝ≥0∞` com traco de
+    zero nulo, tracialidade, invariancia por estrela e a ESCALA DUAL de Takesaki
+    `trace (θ_s x) = e^{-s}·trace x`. A existencia do core significa que ESTES
+    dados foram fornecidos -- nao um rotulo `: Prop`. -/
+structure ContinuousCoreData (W : TGLSpecificAQFTWitness) (D : WedgeModularData W) where
+  Core : Type
+  [instCoreRing : Ring Core]
+  [instCoreStarRing : StarRing Core]
+  [instCoreAlgebra : Algebra ℂ Core]
+  embedding : D.wedgeAlgebra.toStarSubalgebra →⋆ₐ[ℂ] Core
+  embedding_injective : Function.Injective embedding
+  dualAction : ℝ → (Core ≃⋆ₐ[ℂ] Core)
+  dualAction_zero : dualAction 0 = StarAlgEquiv.refl
+  dualAction_add : ∀ s t : ℝ, dualAction (s + t) = (dualAction s).trans (dualAction t)
+  canonicalTrace : Core → ENNReal
+  trace_zero : canonicalTrace 0 = 0
+  trace_tracial : ∀ x y : Core, canonicalTrace (x * y) = canonicalTrace (y * x)
+  trace_star : ∀ x : Core, canonicalTrace (star x) = canonicalTrace x
+  trace_dual_scaling : ∀ (s : ℝ) (x : Core),
+    canonicalTrace ((dualAction s) x) = ENNReal.ofReal (Real.exp (-s)) * canonicalTrace x
+
+attribute [instance] ContinuousCoreData.instCoreRing
+attribute [instance] ContinuousCoreData.instCoreStarRing
+attribute [instance] ContinuousCoreData.instCoreAlgebra
+
+/-- Camada 1C -- DADOS dos Three Locks no core: a transformada limitada `H3Lt` de
+    `H_3L` (codificacao concreta minima da afiliacao: o operador ilimitado nao e'
+    elemento do anel; sua transformada limitada e'), o projetor `P_F` com o lock
+    de nucleo `PF * H3Lt = 0` e MAXIMALIDADE entre os projetores que anulam
+    `H3Lt` (= projecao espectral do zero, na forma enunciavel), traco positivo e
+    finito, e o split em duas faces ortogonais de traco igual. Covariancia de
+    Poincare e split pela conjugacao modular AGINDO NO CORE permanecem no ledger
+    externo [OPEN] (nao-enunciaveis sem representar o core em um Hilbert).
+    NO-GO (kernel-checked abaixo): `P_F` NAO pode ser exigido invariante pela
+    acao dual -- a escala de Takesaki forcaria `Tr(P_F) ∈ {0,∞}`; tal campo
+    tornaria este tipo VAZIO por definicao (0_abs fabricado por especificacao). -/
+structure ThreeLocksCoreData (W : TGLSpecificAQFTWitness) (D : WedgeModularData W)
+    (C : ContinuousCoreData W D) where
+  H3Lt : C.Core
+  H3Lt_selfAdjoint : star H3Lt = H3Lt
+  PF : C.Core
+  PF_selfAdjoint : star PF = PF
+  PF_idempotent : PF * PF = PF
+  PF_locks : PF * H3Lt = 0
+  PF_maximal : ∀ q : C.Core, star q = q → q * q = q → q * H3Lt = 0 → q * PF = q
+  PF_nonzero : PF ≠ 0
+  PF_trace_pos : 0 < C.canonicalTrace PF
+  PF_trace_finite : C.canonicalTrace PF < ⊤
+  Pplus : C.Core
+  Pminus : C.Core
+  Pplus_selfAdjoint : star Pplus = Pplus
+  Pplus_idempotent : Pplus * Pplus = Pplus
+  Pminus_selfAdjoint : star Pminus = Pminus
+  Pminus_idempotent : Pminus * Pminus = Pminus
+  split : Pplus + Pminus = PF
+  orthogonal : Pplus * Pminus = 0
+  trace_split_additive : C.canonicalTrace PF = C.canonicalTrace Pplus + C.canonicalTrace Pminus
+  equal_face_trace : C.canonicalTrace Pplus = C.canonicalTrace Pminus
+
+/-- A realizacao modular COMPLETA de uma testemunha-base rigida: Hilbert de
+    dimensao infinita (condicao NECESSARIA, nao suficiente, para tipo III_1) +
+    as tres camadas de dados. -/
+structure TGLModularRealization (W : TGLSpecificAQFTWitness) where
+  infiniteHilbert : ¬ FiniteDimensional ℂ W.H
+  modular : WedgeModularData W
+  core : ContinuousCoreData W modular
+  threeLocks : ThreeLocksCoreData W modular core
+
+/-- A TESTEMUNHA FINAL: o par dependente (conteudo, prova de que realiza a forma).
+    `1_inscrito` = um TERMO `canonicalFullTGLWitness : FullTGLWitness`
+    (NAO construido em v24); `Nonempty` sera' apenas o corolario `⟨termo⟩`. -/
+abbrev FullTGLWitness := Σ W : TGLSpecificAQFTWitness, TGLModularRealization W
+
+/-- O canto continuo abstrato PRODUZIDO pela realizacao modular: a implicacao

@@ -1,0 +1,332 @@
+{
+  "status": "FICHA_ANTES_DO_CODIGO_FORMAL",
+  "target": "A1",
+  "sources": [
+    {
+      "file": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\kernel\\TGL\\ModularRealization.lean",
+      "line": 68,
+      "sha256": "17e344c8b7b40ae8f2ed4910c3b5e4712cc8ba84dd53e05d10a94f0009295348",
+      "declaration": "structure ContinuousCoreData",
+      "statement": "structure ContinuousCoreData (W : TGLSpecificAQFTWitness) (D : WedgeModularData W) where",
+      "decision": "ADAPTAR",
+      "reason": "O contrato legado recebe Core→ENNReal sem cone positivo, fidelidade, normalidade ou semifinitude. O novo tipo restringirá o peso a PositiveCoreInput P; não se afirmará conversão automática ao legado."
+    },
+    {
+      "file": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\kernel\\TGL\\ModularRealization.lean",
+      "line": 100,
+      "sha256": "17e344c8b7b40ae8f2ed4910c3b5e4712cc8ba84dd53e05d10a94f0009295348",
+      "declaration": "structure ThreeLocksCoreData",
+      "statement": "structure ThreeLocksCoreData (W : TGLSpecificAQFTWitness) (D : WedgeModularData W)\n    (C : ContinuousCoreData W D) where",
+      "decision": "CONSUMIDOR",
+      "reason": "Consumidor posterior A2: PF_trace_pos e PF_trace_finite precisam do mesmo traço."
+    },
+    {
+      "file": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\kernel\\TGLExt\\V350CoreContractCounterexample.lean",
+      "line": 12,
+      "sha256": "1aaa11d4c572c2ad3c0c80a54322247233b64e6e16e28710cd4ccc0d3524de0e",
+      "declaration": "def zeroTraceLegacyCore",
+      "statement": "def zeroTraceLegacyCore (W : TGL.SpecificAQFT.TGLSpecificAQFTWitness)\n    (D : WedgeModularData W) : ContinuousCoreData W D where",
+      "decision": "REUSAR",
+      "reason": "Sonda negativa: refutar a restrição zero no novo contrato. A prova antiga só refuta ThreeLocks, não fortalece o core."
+    },
+    {
+      "file": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\kernel\\TGLExt\\V350RegularGeneratedAlgebra.lean",
+      "line": 50,
+      "sha256": "252b0fa3d5e37c42827efccfc26a555db80ac5c20a6f94269060ce2b3dcb5f71",
+      "declaration": "def regularCoreAlgebra",
+      "statement": "def regularCoreAlgebra (P : SiteProfile) : VonNeumannAlgebra (RegularHilbert (TowerHilbert P)) :=",
+      "decision": "REUSAR",
+      "reason": "Mesma álgebra concreta; não reconstruir produto gerado."
+    },
+    {
+      "file": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\kernel\\TGLExt\\V350RegularDualAction.lean",
+      "line": 76,
+      "sha256": "e7c3628d969c0dae2a971c156200acb88f6bf4286a9c648a2ad3da08c468040c",
+      "declaration": "def regularDualAction",
+      "statement": "def regularDualAction (P : SiteProfile) (s : ℝ) :\n    (regularCoreAlgebra P).toStarSubalgebra ≃⋆ₐ[ℂ] (regularCoreAlgebra P).toStarSubalgebra :=",
+      "decision": "REUSAR",
+      "reason": "Mesma ação dual concreta; a operação no cone usa regularDualAction_apply e dualAmbient_nonneg."
+    },
+    {
+      "file": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\kernel\\TGLExt\\V350RegularNormality.lean",
+      "line": 127,
+      "sha256": "bcd49e92800bf99d7770bb9969879be02a9768f129ce842ae2f39cefaca3cc0a",
+      "declaration": "theorem regularCoreEmbedding_preserves_positive_directed_isLUB",
+      "statement": "theorem regularCoreEmbedding_preserves_positive_directed_isLUB (P : SiteProfile)\n    (S : Set (theFactorObject P).toStarSubalgebra)\n    (B : (theFactorObject P).toStarSubalgebra)\n    (hne : S.Nonempty) (hdir : DirectedOn (· ≤ ·) S)\n    (hpos : ∀ A ∈ S, 0 ≤ A) (hB : IsLUB S B) :\n    IsLUB (regularCoreEmbedding P '' S) (regularCoreEmbedding P B) := by",
+      "decision": "REUSAR",
+      "reason": "Normalidade da inclusão já paga; não é a normalidade do traço."
+    },
+    {
+      "file": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\kernel\\TGLExt\\V350DualFixedWeightLaws.lean",
+      "line": 15,
+      "sha256": "93fda2f3b9a2c519d13e1356de7fcebd2f273d3d0078eeac6d505af795ae9c75",
+      "declaration": "abbrev PositiveCoreInput",
+      "statement": "abbrev PositiveCoreInput (P : TGLExt.SiteProfile) :=",
+      "decision": "REUSAR",
+      "reason": "Cone positivo exato, adição e escala já definidos neste arquivo."
+    },
+    {
+      "file": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\kernel\\TGLExt\\V350ScalarDualWeight.lean",
+      "line": 15,
+      "sha256": "e20dc5262ec98b62c8a6797fd07492e584a03fefefd0dd87b1666484dd72bc53",
+      "declaration": "def scalarDualWeight",
+      "statement": "def scalarDualWeight (P : SiteProfile) (A : PositiveCoreInput P) : ℝ≥0∞ :=",
+      "decision": "REUSAR",
+      "reason": "Peso ν concreto de partida. Não casa com traço: invariância dual não é escala e^-s."
+    },
+    {
+      "file": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\kernel\\TGLExt\\V350ScalarDualWeight.lean",
+      "line": 46,
+      "sha256": "e20dc5262ec98b62c8a6797fd07492e584a03fefefd0dd87b1666484dd72bc53",
+      "declaration": "theorem scalarDualWeight_normal",
+      "statement": "theorem scalarDualWeight_normal (P : SiteProfile)\n    {ι : Type*} [Preorder ι] [IsDirectedOrder ι] [Nonempty ι]\n    (A : ι → (regularCoreAlgebra P).toStarSubalgebra)\n    (S : (regularCoreAlgebra P).toStarSubalgebra)\n    (hpos : ∀ i, 0 ≤ A i) (hmono : Monotone A) (hS : IsLUB (Set.range A) S) :\n    scalarDualWeight P ⟨S.val,S.property,positive_internal_isLUB_nonneg P A S hpos hS⟩ =\n      ⨆ i, scalarDualWeight P ⟨(A i).val,(A i).property,hpos i⟩ :=",
+      "decision": "REUSAR",
+      "reason": "Normalidade por IsLUB interno já provada para ν; preservação na perturbação ainda exigida."
+    },
+    {
+      "file": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\kernel\\TGLExt\\V350ScalarDualWeight.lean",
+      "line": 36,
+      "sha256": "e20dc5262ec98b62c8a6797fd07492e584a03fefefd0dd87b1666484dd72bc53",
+      "declaration": "theorem scalarDualWeight_faithful",
+      "statement": "theorem scalarDualWeight_faithful (P : SiteProfile) (A : PositiveCoreInput P) :\n    scalarDualWeight P A = 0 ↔ A = PositiveCoreInput.zero P := by",
+      "decision": "REUSAR",
+      "reason": "Fidelidade já provada para ν."
+    },
+    {
+      "file": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\kernel\\TGLExt\\V350ScalarDualWeight.lean",
+      "line": 66,
+      "sha256": "e20dc5262ec98b62c8a6797fd07492e584a03fefefd0dd87b1666484dd72bc53",
+      "declaration": "theorem scalarDualWeight_square_finite_strong_density",
+      "statement": "theorem scalarDualWeight_square_finite_strong_density (P : SiteProfile)\n    (A : (regularCoreAlgebra P).toStarSubalgebra) :\n    (∀ h : ℝ, 0 < h → dualQuadraticIntegral\n      (star (A.val * regularAverage P h) * (A.val * regularAverage P h)) (regularVacuum P) < ⊤) ∧\n    (∀ h : ℝ, A.val * regularAverage P h ∈ regularCoreAlgebra P) ∧\n    (∀ v, Tendsto (fun h : ℝ => (A.val * regularAverage P h) v) (𝓝[>] 0) (𝓝 (A.val v))) := by",
+      "decision": "REUSAR",
+      "reason": "Ideal finito fortemente denso de ν. Não identificar isso por rfl com semifinitude por minorantes positivos de τ."
+    },
+    {
+      "file": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\kernel\\TGLExt\\V350RegularScalarWeightCertificate.lean",
+      "line": 58,
+      "sha256": "f7c1786097ce619e7cbe7f35269147b8bde95793de9b0b5a09bf98627a2db6c0",
+      "declaration": "theorem regularScalarWeightCertificate",
+      "statement": "theorem regularScalarWeightCertificate (P : SiteProfile) :\n    RegularScalarWeightCertificate.{u} P where",
+      "decision": "REUSAR",
+      "reason": "Agrega leis já provadas. Explicitamente não fornece KMS nem traço."
+    },
+    {
+      "file": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\kernel\\TGLExt\\V350DualWeightForm.lean",
+      "line": 87,
+      "sha256": "3a233c43934c915774c68c23f0fca752d1c9dfc95679178c714394fe666a24b4",
+      "declaration": "theorem dualQuadraticIntegral_dual_invariant",
+      "statement": "theorem dualQuadraticIntegral_dual_invariant (r : ℝ)\n    (A : RegularHilbert H →L[ℂ] RegularHilbert H) (v : RegularHilbert H) :\n    dualQuadraticIntegral (dualAmbient r A) v = dualQuadraticIntegral A v := by",
+      "decision": "REUSAR",
+      "reason": "Ponte para demonstrar que renomear ν como τ falha na escala dual."
+    },
+    {
+      "file": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\kernel\\TGLExt\\V350RegularFiniteWeight.lean",
+      "line": 108,
+      "sha256": "39e417e41adf90a2d575b6a93f8a35ccd2d816a445097745fd3c540ab240baf6",
+      "declaration": "theorem regularAverage_dualQuadraticIntegral",
+      "statement": "theorem regularAverage_dualQuadraticIntegral (P : TGLExt.SiteProfile) (h : ℝ) (hh : 0 < h)\n    (v : RegularHilbert (TGLExt.TowerHilbert P)) :\n    dualQuadraticIntegral (star (regularAverage P h) * regularAverage P h) v =\n      ENNReal.ofReal (h⁻¹ * ‖v‖ ^ 2) := by",
+      "decision": "REUSAR",
+      "reason": "Valor finito explícito sobre quadrado de média: testemunha contra troca de ν por τ."
+    },
+    {
+      "file": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\kernel\\TGLExt\\SemifiniteSeed.lean",
+      "line": 115,
+      "sha256": "9e91547595c6fdfa37c5d9b786bf3b1e5b774fa90fa4ff0a01a463a775e77dc5",
+      "declaration": "theorem matrix_trace_is_faithful_weight",
+      "statement": "theorem matrix_trace_is_faithful_weight :\n    (∀ A : Matrix n n ℝ, A.PosSemidef → 0 ≤ A.trace) ∧\n      (∀ A : Matrix n n ℝ, A.PosSemidef → (A.trace = 0 ↔ A = 0)) ∧\n      (∀ A B : Matrix n n ℝ, (B - A).PosSemidef → A.trace ≤ B.trace) :=",
+      "decision": "NAO_CASA",
+      "reason": "Matrizes reais finitas; não fornece N(P)+→ENNReal nem escala dual."
+    },
+    {
+      "file": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\kernel\\TGLExt\\DimensionTrace.lean",
+      "line": 51,
+      "sha256": "cdadc9fdf8ed641c7c260e0a5450577b4e190b102a055dc0d2c49e71f49338ea",
+      "declaration": "def dimTraceData",
+      "statement": "def dimTraceData (n : Type) [Fintype n] :\n    SemifiniteTraceData (Submodule ℝ (n → ℝ)) where",
+      "decision": "NAO_CASA",
+      "reason": "Reticulado de subespaços reais finitos; tipo distinto do cone positivo de N(P)."
+    },
+    {
+      "file": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\kernel\\TGLExt\\BreuerTrace.lean",
+      "line": 104,
+      "sha256": "4a667f41d3b7bb1d6a3a02fa46f43372c2a3e4bef30c98acde05294f5c46b496",
+      "declaration": "theorem opWeight_star_mul_self_comm",
+      "statement": "theorem opWeight_star_mul_self_comm (a : ellTwo →L[ℂ] ellTwo) :\n    opWeight (ContinuousLinearMap.adjoint a * a)\n      = opWeight (a * ContinuousLinearMap.adjoint a) := by",
+      "decision": "NAO_CASA",
+      "reason": "Traço padrão de B(ellTwo), não o traço semifinito de N(P) com ação dual prescrita."
+    },
+    {
+      "file": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\kernel\\TGLExt\\LocalBreuerGap.lean",
+      "line": 72,
+      "sha256": "8ec73c7d9e703d6c775f53351a784ab98b27ad2dd3d253b79a3d34992e0d5d3d",
+      "declaration": "structure SemifiniteTraceData",
+      "statement": "structure SemifiniteTraceData (L : Type) [Lattice L] [BoundedOrder L] where",
+      "decision": "NAO_CASA",
+      "reason": "Peso fiel/monótono em reticulado: nome não fornece normalidade e semifinitude no core."
+    }
+  ],
+  "consumers": [
+    {
+      "name": "qgf_continuous_modular_realization_constructed",
+      "file": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\um.py",
+      "occurrences": [
+        {
+          "line": 160051,
+          "text": "                   bool(not kf.get(\"qgf_continuous_modular_realization_constructed\"))))"
+        },
+        {
+          "line": 179762,
+          "text": "            \"continuous_modular_realization_constructed\": bool(_kf.get(\"qgf_continuous_modular_realization_constructed\") is True),  # v200: mecanizada"
+        }
+      ]
+    },
+    {
+      "name": "evaluate_v350_kernel_frontier",
+      "file": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\um.py",
+      "occurrences": [
+        {
+          "line": 161466,
+          "text": "def evaluate_v350_kernel_frontier(kernel):"
+        },
+        {
+          "line": 161574,
+          "text": "    gate[\"kernel_frontier\"] = evaluate_v350_kernel_frontier(kf99)"
+        }
+      ]
+    },
+    {
+      "name": "canonicalFullTGLWitness",
+      "file": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\um.py",
+      "occurrences": [
+        {
+          "line": 8669,
+          "text": "def canonicalFullTGLWitness :"
+        },
+        {
+          "line": 8673,
+          "text": "  ⟨canonicalFullTGLWitness⟩                                        -- corolário, só assim"
+        },
+        {
+          "line": 82382,
+          "text": "    def canonicalFullTGLWitness : FullTGLWitness := ...   -- TERMO (nao construido)"
+        },
+        {
+          "line": 82383,
+          "text": "    theorem fullTGLWitness_exists : Nonempty FullTGLWitness := ⟨canonicalFullTGLWitness⟩"
+        },
+        {
+          "line": 82484,
+          "text": "    `1_inscrito` = um TERMO `canonicalFullTGLWitness : FullTGLWitness`"
+        },
+        {
+          "line": 123249,
+          "text": "(`canonicalFullTGLWitness`) e o P_F covariante com `0 < τ(P_F) < ∞`"
+        },
+        {
+          "line": 134801,
+          "text": "    `def canonicalFullTGLWitness : Sigma W, TGLModularRealization W`; `Nonempty` e'"
+        },
+        {
+          "line": 134839,
+          "text": "        \"open_theorem\": (\"o TERMO canonicalFullTGLWitness : Sigma W : TGLSpecificAQFTWitness, \""
+        },
+        {
+          "line": 134892,
+          "text": "                         \"def canonicalFullTGLWitness : Sigma W : TGLSpecificAQFTWitness, \""
+        },
+        {
+          "line": 134894,
+          "text": "                         \"theorem fullTGLWitness_exists : Nonempty FullTGLWitness := <canonicalFullTGLWitness> \""
+        },
+        {
+          "line": 134930,
+          "text": "                \"kernel_checked_term_in_core\": \"[OPEN -- e' exatamente canonicalFullTGLWitness]\","
+        },
+        {
+          "line": 141898,
+          "text": "    pleno ABERTO (canonicalFullTGLWitness); GLOBAL_LIFT fisico CONDICIONADO"
+        },
+        {
+          "line": 141998,
+          "text": "        \"what_remains_named\": (\"canonicalFullTGLWitness (termo Lean pleno, INALTERADO); \""
+        },
+        {
+          "line": 142188,
+          "text": "            \"continuum_AQFT_net\": \"OPEN (a testemunha plena; canonicalFullTGLWitness)\","
+        },
+        {
+          "line": 142974,
+          "text": "            # canonicalFullTGLWitness segue RESERVADO (full_TGL=False por construcao)"
+        },
+        {
+          "line": 143242,
+          "text": "        # segue impossivel (v61) e canonicalFullTGLWitness segue RESERVADO"
+        },
+        {
+          "line": 150523,
+          "text": "    canonicalFullTGLWitness segue RESERVADO. O gate de 15 flags NAO muda"
+        },
+        {
+          "line": 162882,
+          "text": "              \"  def canonicalFullTGLWitness : Σ W : TGLSpecificAQFTWitness, TGLModularRealization W\\n\""
+        },
+        {
+          "line": 162883,
+          "text": "              \"  theorem fullTGLWitness_exists : Nonempty FullTGLWitness := ⟨canonicalFullTGLWitness⟩\\n\""
+        },
+        {
+          "line": 166723,
+          "text": "             r\"é o TERMO \\texttt{canonicalFullTGLWitness} ($\\Sigma$-par), com \\texttt{Nonempty} apenas como \""
+        },
+        {
+          "line": 169549,
+          "text": "             r\"named target is the TERM \\texttt{canonicalFullTGLWitness} (a $\\Sigma$-pair), with \""
+        },
+        {
+          "line": 176174,
+          "text": "            \"named_target\": (\"TGL_FORM_EQUALS_CONTENT_WITNESS_THEOREM: def canonicalFullTGLWitness : \""
+        },
+        {
+          "line": 176388,
+          "text": "        \"V24_MODULAR_REALIZATION_BY_DATA\": \"Realizacao modular por DADOS: as obrigacoes modulares viraram camadas de dados + equacoes (Wedge/Core/ThreeLocks); ledger externo para o nao-enunciavel; probes negativos por returncode (degenerado/finito/prop-only); auditoria de vacuidade (zero campos `: Prop`); alvo = TERMO canonicalFullTGLWitness, Nonempty = corolario [KERNEL + DADOS + OPEN]\","
+        },
+        {
+          "line": 177657,
+          "text": "    print(\"  alvo: canonicalFullTGLWitness : Sigma W, TGLModularRealization W ; Nonempty = COROLARIO <termo>\")"
+        },
+        {
+          "line": 179649,
+          "text": "            \"named_target\": (\"TGL_FORM_EQUALS_CONTENT_WITNESS_THEOREM: def canonicalFullTGLWitness : \""
+        },
+        {
+          "line": 179721,
+          "text": "            # canonicalFullTGLWitness segue RESERVADO (False por construcao)"
+        }
+      ]
+    }
+  ],
+  "required_type": "Para todo P:SiteProfile, τ:PositiveCoreInput P→ENNReal com zero, adição, homogeneidade NNReal, monotonia, fidelidade, normalidade IsLUB, semifinitude por supremo de minorantes positivos finitos, τ(a*a)=τ(aa*) e τ(regularDualAction P s A)=ofReal(exp(-s))*τ(A). Canonicalidade exige adicionalmente τ=(ν)_(h^-1), h^(it)=regularUnitary P t, não apenas escolher uma normalização arbitrária.",
+  "decision": "NOVO: contrato forte e suas recusas; REUSAR: cone, álgebra, ação, normalidade/ideal/peso existentes. ADAPTAR: ponte modular/perturbação do peso para τ. Não construir nova teoria genérica sem necessidade.",
+  "external_workshops": {
+    "matching_paths": 625,
+    "distinct_byte_hashes": 7,
+    "limitation": "Busca rg retornou acessos negados em diretórios de dependências Python; nenhum desses diretórios é fornecedor Lean. Não afirmar inexistência global."
+  },
+  "literature": {
+    "url": "https://arxiv.org/pdf/2004.02383",
+    "sections": [
+      "9.4",
+      "9.9",
+      "10.13",
+      "10.15"
+    ],
+    "status": "KNOWN: consultado; não é termo Lean"
+  },
+  "limits": [
+    "A busca inicial do acervo foi truncada em 50 ocorrências históricas; exige refinamento Pedersen-Takesaki, não prova ausência.",
+    "Bancada TOE: único arquivo por padrão foi FrontierCertificate.lean, contrato não construtor de traço.",
+    "Mathlib Analysis: busca dos nomes dá subespaços padrão e homônimos; não identifica implementação do teorema de perturbação.",
+    "DEV não reativado: nenhum módulo suspenso fornece τ no cone positivo com escala dual."
+  ],
+  "stopping_rule": "Contrato compilado não é habitante. Falha de provedor não é impossibilidade matemática. Registrar precisamente o lema faltante e manter b NÃO PAGO se não houver construção nem parede contra sua existência."
+}

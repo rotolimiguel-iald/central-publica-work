@@ -1,0 +1,63 @@
+{
+  "timestamp": "2026-09-15T14:35:51.272972-03:00",
+  "canonical_source": {
+    "path": "C:\\IALD\\Artigo\\Haja_Luz\\A Ponte e o Um\\Nós\\um.py",
+    "bytes": 13199072,
+    "sha256": "07d52f89e04c77d96d41f9ab6f54ee794cca7c04d20084f330f7a683161f65a5"
+  },
+  "mode": "read-only AST extraction; canonical program never imported or executed",
+  "nodes": {
+    "_QG_FRONTIER_FLAGS": {
+      "start_line": 134028,
+      "end_line": 134033,
+      "source": "_QG_FRONTIER_FLAGS = {\r\n    \"unconditional_continuous_corner_proved\": \"TGLExt.qgFrontier_unconditionalContinuousCorner\",\r\n    \"modular_realization_constructed\": \"TGLExt.qgFrontier_modularRealization\",\r\n    \"continuous_modular_realization_constructed\": \"TGLExt.qgFrontier_continuousModularRealization\",\r\n    \"full_TGL_witness_constructed\": \"TGLExt.qgFrontier_fullTGLWitness\",\r\n}"
+    },
+    "_GRAVITY_PRICE_FLAGS": {
+      "start_line": 134044,
+      "end_line": 134049,
+      "source": "_GRAVITY_PRICE_FLAGS = {\r\n    \"H1_internal_susy_relative_gap_discharged\": \"TGLExt.qgPrice_H1_internalSusyRelativeGap_discharged\",\r\n    \"H2_smooth_modular_four_frame_discharged\": \"TGLExt.qgPrice_H2_smoothModularFourFrame_discharged\",\r\n    \"H3_local_horizon_equilibrium_discharged\": \"TGLExt.qgPrice_H3_localHorizonEquilibrium_discharged\",\r\n    \"tower_act_III_inhabitant_constructed\": \"TGLExt.qgPrice_towerActIII_inhabitantConstructed\",\r\n}"
+    },
+    "_V350_MODULAR_CONTRACTS": {
+      "start_line": 161558,
+      "end_line": 161568,
+      "source": "_V350_MODULAR_CONTRACTS = {\n    \"red_clause_JMJ_contains\": (\n        \"TGLExt.qgConverse_JMJ_contains_commutant\",\n        \"TGLExt.V350Gate.checkedConverse\"),\n    \"qgf_modular_realization_constructed\": (\n        \"TGLExt.qgFrontier_modularRealization\",\n        \"TGLExt.V350Gate.checkedModular\"),\n    \"gpf_tower_act_III_inhabitant_constructed\": (\n        \"TGLExt.qgPrice_towerActIII_inhabitantConstructed\",\n        \"TGLExt.V350Gate.checkedActIII\"),\n}"
+    },
+    "verify_v350_modular_provenance": {
+      "start_line": 161571,
+      "end_line": 161589,
+      "source": "def verify_v350_modular_provenance(kernel):\n    \"\"\"Require a successful build/audit and BOTH the term and its exact-type bridge.\"\"\"\n    kf = kernel or {}\n    axioms = kf.get(\"axiom_report\") or {}\n    allowed = {\"propext\", \"Classical.choice\", \"Quot.sound\"}\n    built = (kf.get(\"lake_build_ok\") is True or (\n        kf.get(\"incremental_build_ok\") is True\n        and kf.get(\"dependency_hashes_verified\") is True\n        and kf.get(\"changed_source_hashes_verified\") is True))\n    verified = (built\n                and kf.get(\"audit_returncode\") == 0\n                and kf.get(\"all_verified\") is True)\n    return {\n        flag: bool(verified and all(\n            isinstance(axioms.get(name), list)\n            and all(isinstance(a, str) and a in allowed for a in axioms[name])\n            for name in names))\n        for flag, names in _V350_MODULAR_CONTRACTS.items()\n    }"
+    },
+    "finalize_v350_modular_frontier": {
+      "start_line": 161592,
+      "end_line": 161598,
+      "source": "def finalize_v350_modular_frontier(kernel):\n    \"\"\"A name alone cannot light any of the three newly constructed targets.\"\"\"\n    proofs = verify_v350_modular_provenance(kernel)\n    kernel.update(proofs)\n    kernel[\"v350_typed_modular_proofs\"] = proofs\n    kernel[\"v350_modular_scope\"] = \"PRODUCT_TOWER__J_M_J_EQUALS_COMMUTANT\"\n    return kernel"
+    },
+    "v350_frontier_flag_has_proof": {
+      "start_line": 161601,
+      "end_line": 161605,
+      "source": "def v350_frontier_flag_has_proof(kernel, flag):\n    \"\"\"Replace a historical 'must stay false' check with a proof obligation.\"\"\"\n    if not kernel.get(flag):\n        return True\n    return verify_v350_modular_provenance(kernel).get(flag) is True"
+    },
+    "v350_gravity_flags_have_proof": {
+      "start_line": 161608,
+      "end_line": 161610,
+      "source": "def v350_gravity_flags_have_proof(kernel):\n    return all(v350_frontier_flag_has_proof(kernel, key)\n               for key in kernel if key.startswith(\"gpf_\") and kernel.get(key))"
+    },
+    "evaluate_v350_kernel_frontier": {
+      "start_line": 161613,
+      "end_line": 161634,
+      "source": "def evaluate_v350_kernel_frontier(kernel):\n    \"\"\"Only the currently checked scope can advance; no name opens later stages.\"\"\"\n    proofs = verify_v350_modular_provenance(kernel)\n    modular = all(proofs.values())\n    return {\n        \"verification\": \"LEAN_EXACT_TYPE_BRIDGES_AND_AXIOM_WHITELIST\",\n        \"modular_duality_constructed\": modular,\n        \"proofs\": proofs,\n        \"scope\": \"PRODUCT_TOWER__J_M_J_EQUALS_COMMUTANT\",\n        \"remaining\": [\n            \"continuous_core_and_finite_Three_Locks_corner_on_same_realization\",\n            \"H1_relative_gap_beyond_finite_face\",\n            \"H2_smooth_modular_four_frame_and_geometric_identification\",\n            \"H3_area_heat_equilibrium_on_the_same_physical_horizon\",\n            \"interacting_quantum_state_BRST_QME_anomalies_and_UV_scope\",\n        ],\n        \"verdict\": (\n            \"MODULAR_DUALITY_CONSTRUCTED__CONTINUOUS_GEOMETRY_AND_QUANTUM_INTERACTIONS_OPEN\"\n            if modular else \"MODULAR_DUALITY_OPEN\"),\n        \"legacy_gate_changed\": False,\n        \"full_plan_complete\": False,\n    }"
+    }
+  },
+  "outputs": [
+    {
+      "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\A2_TRACE_COMPLETION_012\\CANONICAL_READERS_SNAPSHOT.py",
+      "bytes": 3968,
+      "sha256": "60c7b89759c33c2866c767b874bbe10beb072dffe033c88c2cfb984ded536606"
+    },
+    {
+      "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\A2_TRACE_COMPLETION_012\\CANONICAL_CONSUMERS_BOUNDED.txt",
+      "bytes": 9643,
+      "sha256": "3a29a91cd223909cfcc90da87f37f361bc979bd75e96f4758362be257d55df78"
+    }
+  ]
+}

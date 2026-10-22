@@ -1,0 +1,142 @@
+134535:     res["sentinels_present"] = all(s in blob for s in _LEAN_SENTINELS)
+134536:     res["sorryAx_absent"] = ("sorryAx" not in blob)
+134537:     res["trustCompiler_absent"] = ("Lean.trustCompiler" not in blob)
+134538: 
+134539:     import re as _re
+134540:     axioms = {}
+134541:     custom = []
+134542:     for m in _re.finditer(r"'([\w.']+)' depends on axioms: \[([^\]]*)\]", blob, _re.S):
+134543:         name, lst = m.group(1), [a.strip() for a in m.group(2).replace("\n", " ").split(",") if a.strip()]
+134544:         axioms[name] = lst
+134545:         custom += [a for a in lst if a.startswith("TGL.") or a.startswith("TGLExt.")]
+134546:     # v162: a forma MAIS limpa que o kernel emite -- teorema sem axioma algum:
+134547:     # "does not depend on any axioms" => lista vazia, aprovado por construcao.
+134548:     for m in _re.finditer(r"'([\w.']+)' does not depend on any axioms", blob):
+134549:         axioms.setdefault(m.group(1), [])
+134550:     res["axiom_report"] = axioms
+134551:     res["custom_TGL_axioms_absent"] = (len(custom) == 0)
+134552:     res["custom_TGL_axioms_found"] = sorted(set(custom))
+134553: 
+134554:     for flag, thm in _LEAN_THEOREM_FLAGS.items():
+134555:         ax = axioms.get(thm)
+134556:         res[flag] = bool(res["lake_build_ok"] and ax is not None
+134557:                          and "sorryAx" not in ax and "Lean.trustCompiler" not in ax
+134558:                          and not any(a.startswith("TGL.") or a.startswith("TGLExt.") for a in ax))
+134559:     # v99: leituras do certificado de fechamento (nomes futuros; ausencia => False)
+134560:     for flag, thm in _QG_CERTIFICATE_FLAGS.items():
+134561:         ax = axioms.get(thm)
+134562:         res["qgc_" + flag] = bool(res["lake_build_ok"] and ax is not None
+134563:                                   and "sorryAx" not in ax and "Lean.trustCompiler" not in ax
+134564:                                   and not any(a.startswith("TGL.") or a.startswith("TGLExt.") for a in ax))
+134565:     # v200 [FASE 0]: leituras das flags de FRONTEIRA (mesma mecanica; nomes
+134566:     # reservados inexistentes => False por construcao — estritamente mais fechado
+134567:     # que os literais Python que estas leituras substituem)
+134568:     for flag, thm in _QG_FRONTIER_FLAGS.items():
+134569:         ax = axioms.get(thm)
+134570:         res["qgf_" + flag] = bool(res["lake_build_ok"] and ax is not None
+134571:                                   and "sorryAx" not in ax and "Lean.trustCompiler" not in ax
+134572:                                   and not any(a.startswith("TGL.") or a.startswith("TGLExt.") for a in ax))
+134573:     # v133: leituras dos certificados de FISICA (mesma mecanica fail-closed)
+134574:     for flag, thm in _QG_PHYSICS_FLAGS.items():
+134575:         ax = axioms.get(thm)
+134576:         res["qgp_" + flag] = bool(res["lake_build_ok"] and ax is not None
+134577:                                   and "sorryAx" not in ax and "Lean.trustCompiler" not in ax
+134578:                                   and not any(a.startswith("TGL.") or a.startswith("TGLExt.") for a in ax))
+134579: 
+134580:     # v220: leitura do PRECO DA PROVA (ausencia => item da divida ABERTO)
+134581:     for flag, thm in _GRAVITY_PRICE_FLAGS.items():
+134582:         ax = axioms.get(thm)
+134583:         res["gpf_" + flag] = bool(res["lake_build_ok"] and ax is not None
+134584:                                   and "sorryAx" not in ax and "Lean.trustCompiler" not in ax
+134585:                                   and not any(a.startswith("TGL.") or a.startswith("TGLExt.") for a in ax))
+134586: 
+134587:     # v253: leitura da PONTE de importacao (mesma mecanica fail-closed). Isto NAO
+134588:     # acende bandeira de kernel: quitar por importacao e outro MODO, e o razonete
+134589:     # em prove_the_mode_of_discharge os mantem separados por construcao.
+134590:     for flag, thm in _REDUCTION_FLAGS.items():
+134591:         ax = axioms.get(thm)
+134592:         res["red_" + flag] = bool(res["lake_build_ok"] and ax is not None
+134593:                                   and "sorryAx" not in ax and "Lean.trustCompiler" not in ax
+134594:                                   and not any(a.startswith("TGL.") or a.startswith("TGLExt.") for a in ax))
+134595: 
+134596:     for flag, thm in _GRAVITY_IMPORT_FLAGS.items():
+134597:         ax = axioms.get(thm)
+134598:         res["gpi_" + flag] = bool(res["lake_build_ok"] and ax is not None
+134599:                                   and "sorryAx" not in ax and "Lean.trustCompiler" not in ax
+134600:                                   and not any(a.startswith("TGL.") or a.startswith("TGLExt.") for a in ax))
+134601: 
+134602:     # (9) varredura lexical auxiliar
+
+160134:                    "Einstein-Cartan-Miguel traz beta e 8piG na mesma formula, e o um.py a emite. "
+160135:                    "Eu varri um estrato e falei do acervo -- escopo estreitado sem declarar",
+160136:                    bool(kf.get("red_delta_acts_by_the_weight_ratio") is not None)))
+160137:     # ⚠ a atermacao vive em Fin 2 x Fin 2 (dim 4). Ela e a FORMA da operacao, nao a
+160138:     # atermacao da fisica. E bellProjector NAO esta ligado a P_F, firstAtom, ao p de
+160139:     # NameRelation nem ao canto da rede -- TheNonMinimalCoupling ja declarava essa
+160140:     # ausencia, e ela PERMANECE. Sao projetores de posto 1 em ESPACOS DIFERENTES.
+160141:     checks.append(("[FAIL-CLOSED] ***a ATERMACAO esta em kernel e NAO acendeu bandeira "
+160142:                    "nenhuma de fronteira: ela e a FORMA da operacao em dim 4, e nao a "
+160143:                    "atermacao da fisica -- bellProjector segue SEM ponte para P_F",
+160144:                    bool(kf.get("red_atermation_is_irreversible")
+160145:                         and kf.get("red_bell_is_the_corner") is None
+160146:                         and not kf.get("qgf_full_TGL_witness_constructed"))))
+160147:     checks.append(('[ERRATA v350+ / proveniência] As flags modular e Ato III exigem prova tipada; este módulo isolado não as quita.',
+160148:                    bool(kf.get("red_wide_net_has_all_three")
+160149:                         and v350_frontier_flag_has_proof(kf, "gpf_tower_act_III_inhabitant_constructed"))))
+160150:     # ⚠ as pecas 2 e 3 deram NEGATIVO. O check mede que elas NAO viraram bandeira --
+160151:     # se alguem inventar a flag sem o teorema, esta linha acusa.
+160152:     checks.append(("[FAIL-CLOSED] ***e as pecas 2 e 3 NAO viraram bandeira: a identificacao "
+160153:                    "dirac.D = locks e IMPOSSIVEL POR TIPO e a covariancia do frame e FALSA "
+160154:                    "(colide com frame_nonconstant, ja selado) -- nenhuma das duas tem flag",
+
+160188:                         and kf.get("red_S_star_S_is_delta")
+160189:                         and kf.get("red_delta_positivity_is_the_norm_of_Sa")
+160190:                         and kf.get("red_delta_is_selfadjoint")
+160191:                         and kf.get("red_Jlevel_is_antiunitary"))))
+160192:     checks.append(("[MEDIDA] e o que a sustenta no COMPLETAMENTO ja era teorema: a "
+160193:                    "isometria de towerJ (o habitante antiunitario da v271b vive dela)",
+160194:                    bool(kf.get("red_antiunitary_inhabitant_symm_is_self"))))
+160195:     checks.append(("[HONESTIDADE] mas S e Delta ficam NO ANDAR: a extensao continua "
+160196:                    "ABERTA (fechabilidade de S, auto-adjunticidade de Delta) -- e por "
+160197:                    "isso nenhuma bandeira nova de fronteira acendeu",
+160198:                    bool(not kf.get("qgf_continuous_modular_realization_constructed"))))
+160199:     checks.append(("[HONESTIDADE] a metade paga E teorema, e por isso a conjectura e a OUTRA",
+160200:                    bool(kf.get("red_clause_JMJ_inside")
+160201:                         and kf.get("red_conjecture_is_the_unpaid_half"))))
+160202: 
+160203:     all_v = bool(all(x for _, x in checks))
+160204:     return {
+160205:         "checks": checks, "all_verified": all_v,
+160206:         "nomes_lidos": n_ok, "nomes_total": len(lidos),
+160207:         "folga_involucao": folga_involucao,
+160208:         "folga_nao_involutiva": folga_nao_involutiva,
+
+160988:     kf = core.get("kernel_formalization") or {}
+160989:     itens = [
+160990:         ("H1 TGL_INTERNAL_SUSY_RELATIVE_GAP fora da face finita",
+160991:          "H1_internal_susy_relative_gap_discharged", None),
+160992:         ("H2 TGL_SMOOTH_MODULAR_FOUR_FRAME fora da face finita",
+160993:          "H2_smooth_modular_four_frame_discharged", None),
+160994:         ("H3 TGL_LOCAL_HORIZON_EQUILIBRIUM (Clausius local)",
+160995:          "H3_local_horizon_equilibrium_discharged", "H3_horizon_data_produced"),
+160996:         ("Ato III da torre: o HABITANTE do FrontierCertificate",
+160997:          "tower_act_III_inhabitant_constructed", None),
+160998:     ]
+160999:     linhas = []
+161000:     n_kernel = 0
+161001:     n_import = 0
+161002:     n_open = 0
+161003:     for nome, kflag, iflag in itens:
+161004:         by_kernel = bool(kf.get("gpf_" + kflag))
+161005:         by_import = bool(iflag is not None and kf.get("gpi_" + iflag))
+161006:         if by_kernel:
+161007:             modo = "KERNEL"
+161008:             n_kernel += 1
+161009:         elif by_import:
+161010:             modo = "IMPORTED"
+161011:             n_import += 1
+161012:         else:
+161013:             modo = "OPEN"
+161014:             n_open += 1
+161015:         linhas.append({"item": nome, "modo": modo, "ponte_medida": by_import,
+161016:                        "citacoes": (_GRAVITY_IMPORT_CITATIONS.get(iflag) or []) if by_import else []})

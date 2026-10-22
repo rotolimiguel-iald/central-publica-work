@@ -1,0 +1,6 @@
+# Dedução prévia — Hamiltoniano modular finito
+[DERIVED — roteiro a verificar em Lean] Em cada andar N, H_N é a matriz diagonal real log W_N. Seus pesos já são estritamente positivos. A exponencial exp(it H_N) tem entradas exp(it log W_N); a conjugação multiplica a entrada (i,j) por exp(it(log W_i−log W_j)), exatamente flowLevel canônico.
+A representação towerPi preserva soma, produto, adjunto e exponencial; portanto a ação interna gerada pelo operador finito coincide com modularConjugation em toda álgebra do andar N.
+Para N≤M, o logaritmo dos pesos-produto separa em soma dos logaritmos. No comutador com a matriz a⊗I, a contribuição dos novos sítios cancela. Indução nos andares dá [H_M,tPush(a)]=tPush([H_N,a]). Aplicando towerPi, [H0_M−H0_N,A]=0 para todo A do andar N. A comutação espectadora é consequência desta identidade, sem hipótese circular.
+Alcance: Hamiltonianos limitados de andares finitos e sua ação na torre canônica. Não afirma convergência em norma dos H0_N, existência de gerador modular global limitado, cociclo interagente completo, anomalias ou limite UV.
+Todos os originais permanecem somente leitura. O builder compila somente fontes novas em pasta isolada; dependências canônicas são lidas e medidas, não reconstruídas. Nenhum um.py é importado ou executado.

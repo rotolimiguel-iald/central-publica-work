@@ -1,0 +1,10 @@
+import TGLExt.V351RegulatorWeightOrder
+set_option pp.universes true
+#check TGLV350.Regular.regularInverseGeneratorCutoff_commutes
+#print axioms TGLV350.Regular.regularInverseGeneratorCutoff_commutes
+#check TGLV350.Regular.regularInverseGeneratorCutoff_resolvent_identity
+#print axioms TGLV350.Regular.regularInverseGeneratorCutoff_resolvent_identity
+#check TGLV350.Regular.regularInverseGeneratorCutoff_antitone
+#print axioms TGLV350.Regular.regularInverseGeneratorCutoff_antitone
+#check TGLV350.Regular.scalarWeight_inverseCutoff_antitone
+#print axioms TGLV350.Regular.scalarWeight_inverseCutoff_antitone

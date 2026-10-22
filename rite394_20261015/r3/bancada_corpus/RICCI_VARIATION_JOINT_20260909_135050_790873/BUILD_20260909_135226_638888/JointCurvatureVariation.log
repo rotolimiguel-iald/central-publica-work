@@ -1,0 +1,154 @@
+JointCurvatureVariation.lean:58:4: error: Application type mismatch: The argument
+  HasFDerivAt.prodMk (hasFDerivAt_const x t) ?m.91
+has type
+  HasFDerivAt (fun x_1 => (x, ?m.83 x_1)) (ContinuousLinearMap.prod 0 ?m.84) t
+but is expected to have type
+  HasFDerivAt (Prod.mk t) ?m.56 x
+in the application
+  HasFDerivAt.comp x (DifferentiableAt.hasFDerivAt hF) (HasFDerivAt.prodMk (hasFDerivAt_const x t) ?m.91)
+JointCurvatureVariation.lean:58:36: error: Application type mismatch: The argument
+  hasFDerivAt_id x
+has type
+  HasFDerivAt id (ContinuousLinearMap.id ?m.85 Coordinate4) x
+but is expected to have type
+  HasFDerivAt ?m.83 ?m.84 t
+in the application
+  HasFDerivAt.prodMk (hasFDerivAt_const x t) (hasFDerivAt_id x)
+JointCurvatureVariation.lean:85:6: error: Tactic `rewrite` failed: Did not find an occurrence of the pattern
+  coordinatePartial (fun y => jointPartial F (1, 0) (t, y)) x i
+in the target expression
+  Real.instAddCommGroup = Real.normedAddCommGroup.toAddCommGroup
+
+case e'_4
+W : Set ParameterSpace
+hW : IsOpen W
+F : ParameterSpace → ℝ
+hF : ContDiffOn ℝ ∞ F W
+t : ℝ
+x : Coordinate4
+hz : (t, x) ∈ W
+i : Fin 4
+hfAt : ContDiffAt ℝ ∞ F (t, x)
+hsAt : DifferentiableAt ℝ (jointPartial F (0, Pi.single i 1)) (t, x)
+htAt : DifferentiableAt ℝ (jointPartial F (1, 0)) (t, x)
+hd :
+  HasDerivAt (fun s => jointPartial F (0, Pi.single i 1) (s, x))
+    (jointPartial (jointPartial F (0, Pi.single i 1)) (1, 0) (t, x)) t
+hmem : ∀ᶠ (s : ℝ) in 𝓝 t, (s, x) ∈ W
+he : (fun s => coordinatePartial (fun y => F (s, y)) x i) =ᶠ[𝓝 t] fun s => jointPartial F (0, Pi.single i 1) (s, x)
+H :
+  HasDerivAt (fun s => coordinatePartial (fun y => F (s, y)) x i)
+    (jointPartial (jointPartial F (0, Pi.single i 1)) (1, 0) (t, x)) t
+⊢ Real.instAddCommGroup = Real.normedAddCommGroup.toAddCommGroup
+JointCurvatureVariation.lean:118:4: error: `simp` made no progress
+JointCurvatureVariation.lean:110:87: error: unsolved goals
+case e'_8
+W : Set ParameterSpace
+hW : IsOpen W
+Gamma : ℝ → ConnectionField4
+hG : JointSmoothConnectionOn W Gamma
+t : ℝ
+x : Coordinate4
+hz : (t, x) ∈ W
+i j a b : Fin 4
+hjet :
+  ∀ (i j a b : Fin 4),
+    HasDerivAt (fun s => connectionFirstJet (Gamma s) x i j a b)
+      (connectionFirstJet (connectionTimeDerivative Gamma t) x i j a b) t
+hd : ∀ (i a b : Fin 4), HasDerivAt (fun s => Gamma s x i a b) (connectionTimeDerivative Gamma t x i a b) t
+hp :
+  ∀ (i j : Fin 4),
+    HasDerivAt (fun y => ∑ i_1, ((fun s => Gamma s x i a i_1) * fun s => Gamma s x j i_1 b) y)
+      (∑ i_1,
+        (connectionTimeDerivative Gamma t x i a i_1 * Gamma t x j i_1 b +
+          Gamma t x i a i_1 * connectionTimeDerivative Gamma t x j i_1 b))
+      t
+H :
+  HasDerivAt
+    ((((fun s => connectionFirstJet (Gamma s) x i j a b) - fun s => connectionFirstJet (Gamma s) x j i a b) + fun y =>
+        ∑ i_1, ((fun s => Gamma s x i a i_1) * fun s => Gamma s x j i_1 b) y) -
+      fun y => ∑ i_1, ((fun s => Gamma s x j a i_1) * fun s => Gamma s x i i_1 b) y)
+    (connectionFirstJet (connectionTimeDerivative Gamma t) x i j a b -
+          connectionFirstJet (connectionTimeDerivative Gamma t) x j i a b +
+        ∑ i_1,
+          (connectionTimeDerivative Gamma t x i a i_1 * Gamma t x j i_1 b +
+            Gamma t x i a i_1 * connectionTimeDerivative Gamma t x j i_1 b) -
+      ∑ i_1,
+        (connectionTimeDerivative Gamma t x j a i_1 * Gamma t x i i_1 b +
+          Gamma t x j a i_1 * connectionTimeDerivative Gamma t x i i_1 b))
+    t
+⊢ (fun s => coordinateCurvature (Gamma s) x i j a b) =
+    (((fun s => connectionFirstJet (Gamma s) x i j a b) - fun s => connectionFirstJet (Gamma s) x j i a b) + fun y =>
+        ∑ i_1, ((fun s => Gamma s x i a i_1) * fun s => Gamma s x j i_1 b) y) -
+      fun y => ∑ i_1, ((fun s => Gamma s x j a i_1) * fun s => Gamma s x i i_1 b) y
+
+case e'_9
+W : Set ParameterSpace
+hW : IsOpen W
+Gamma : ℝ → ConnectionField4
+hG : JointSmoothConnectionOn W Gamma
+t : ℝ
+x : Coordinate4
+hz : (t, x) ∈ W
+i j a b : Fin 4
+hjet :
+  ∀ (i j a b : Fin 4),
+    HasDerivAt (fun s => connectionFirstJet (Gamma s) x i j a b)
+      (connectionFirstJet (connectionTimeDerivative Gamma t) x i j a b) t
+hd : ∀ (i a b : Fin 4), HasDerivAt (fun s => Gamma s x i a b) (connectionTimeDerivative Gamma t x i a b) t
+hp :
+  ∀ (i j : Fin 4),
+    HasDerivAt (fun y => ∑ i_1, ((fun s => Gamma s x i a i_1) * fun s => Gamma s x j i_1 b) y)
+      (∑ i_1,
+        (connectionTimeDerivative Gamma t x i a i_1 * Gamma t x j i_1 b +
+          Gamma t x i a i_1 * connectionTimeDerivative Gamma t x j i_1 b))
+      t
+H :
+  HasDerivAt
+    ((((fun s => connectionFirstJet (Gamma s) x i j a b) - fun s => connectionFirstJet (Gamma s) x j i a b) + fun y =>
+        ∑ i_1, ((fun s => Gamma s x i a i_1) * fun s => Gamma s x j i_1 b) y) -
+      fun y => ∑ i_1, ((fun s => Gamma s x j a i_1) * fun s => Gamma s x i i_1 b) y)
+    (connectionFirstJet (connectionTimeDerivative Gamma t) x i j a b -
+          connectionFirstJet (connectionTimeDerivative Gamma t) x j i a b +
+        ∑ i_1,
+          (connectionTimeDerivative Gamma t x i a i_1 * Gamma t x j i_1 b +
+            Gamma t x i a i_1 * connectionTimeDerivative Gamma t x j i_1 b) -
+      ∑ i_1,
+        (connectionTimeDerivative Gamma t x j a i_1 * Gamma t x i i_1 b +
+          Gamma t x j a i_1 * connectionTimeDerivative Gamma t x i i_1 b))
+    t
+⊢ curvatureVariation (Gamma t) (connectionTimeDerivative Gamma t) x i j a b =
+    connectionFirstJet (connectionTimeDerivative Gamma t) x i j a b -
+          connectionFirstJet (connectionTimeDerivative Gamma t) x j i a b +
+        ∑ i_1,
+          (connectionTimeDerivative Gamma t x i a i_1 * Gamma t x j i_1 b +
+            Gamma t x i a i_1 * connectionTimeDerivative Gamma t x j i_1 b) -
+      ∑ i_1,
+        (connectionTimeDerivative Gamma t x j a i_1 * Gamma t x i i_1 b +
+          Gamma t x j a i_1 * connectionTimeDerivative Gamma t x i i_1 b)
+'ChatgptAudit.JointCurvature.ParameterSpace' depends on axioms: [propext, Classical.choice, Quot.sound]
+'ChatgptAudit.JointCurvature.jointPartial' depends on axioms: [propext, Classical.choice, Quot.sound]
+'ChatgptAudit.JointCurvature.JointSmoothConnectionOn' depends on axioms: [propext, Classical.choice, Quot.sound]
+'ChatgptAudit.JointCurvature.connectionTimeDerivative' depends on axioms: [propext, Classical.choice, Quot.sound]
+'ChatgptAudit.JointCurvature.joint_partial_smooth' depends on axioms: [propext, Classical.choice, Quot.sound]
+'ChatgptAudit.JointCurvature.joint_partial_second' depends on axioms: [propext, Classical.choice, Quot.sound]
+'ChatgptAudit.JointCurvature.joint_partials_commute' depends on axioms: [propext, Classical.choice, Quot.sound]
+'ChatgptAudit.JointCurvature.time_slice_derivative' depends on axioms: [propext, Classical.choice, Quot.sound]
+'ChatgptAudit.JointCurvature.space_slice_partial' depends on axioms: [propext, sorryAx, Classical.choice, Quot.sound]
+'ChatgptAudit.JointCurvature.time_derivative_of_space_partial' depends on axioms: [propext,
+ sorryAx,
+ Classical.choice,
+ Quot.sound]
+'ChatgptAudit.JointCurvature.connection_parameter_derivative' depends on axioms: [propext, Classical.choice, Quot.sound]
+'ChatgptAudit.JointCurvature.connection_first_jet_parameter_derivative' depends on axioms: [propext,
+ sorryAx,
+ Classical.choice,
+ Quot.sound]
+'ChatgptAudit.JointCurvature.curvature_of_joint_family_derivative' depends on axioms: [propext,
+ sorryAx,
+ Classical.choice,
+ Quot.sound]
+'ChatgptAudit.JointCurvature.ricci_of_joint_family_derivative' depends on axioms: [propext,
+ sorryAx,
+ Classical.choice,
+ Quot.sound]

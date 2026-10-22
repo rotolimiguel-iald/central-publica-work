@@ -1,0 +1,39 @@
+[OPEN — complemento de fornecedores, após o primeiro DEV, antes da aceitação]
+
+{
+  "timestamp": "2026-09-14T23:54:39.012601-03:00",
+  "status": "FICHE_ADDENDUM_AFTER_FIRST_DEV_BEFORE_ACCEPTANCE",
+  "providers": [
+    {
+      "name": "regularInverseGeneratorCutoff_sqrt_right",
+      "source": {
+        "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\k\\TGLExt\\V351InverseCutoffCFC.lean",
+        "bytes": 7577,
+        "sha256": "cbdf10aea749a552b0f47afb3ef59560ed47d6f46cf7dd8064dc963a092c3490"
+      },
+      "line": 125,
+      "statement": "theorem regularInverseGeneratorCutoff_sqrt_right (P : SiteProfile) (ε : ℝ) (hε : 0 < ε) :\n    ∃ h : hilbertPositiveSqrt (regularInverseGeneratorCutoff P ε) ∈ regularCoreAlgebra P,\n      (⟨hilbertPositiveSqrt (regularInverseGeneratorCutoff P ε),h⟩ :\n        (regularCoreAlgebra P).toStarSubalgebra) ∈ scalarPolarRightAlgebra P"
+    },
+    {
+      "name": "norm_le_one_iff_of_nonneg",
+      "source": {
+        "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\k\\.lake\\packages\\mathlib\\Mathlib\\Analysis\\CStarAlgebra\\ContinuousFunctionalCalculus\\Order.lean",
+        "bytes": 28173,
+        "sha256": "0802a500623d378e8c953961cac3c6391932515a7236d44dbceea11e2eb4611b"
+      },
+      "line": 245,
+      "statement": "lemma norm_le_one_iff_of_nonneg (a : A) (ha : 0 ≤ a"
+    }
+  ],
+  "consumer": {
+    "source": {
+      "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\k\\TGLExt\\V351RegularCoreTraceContract.lean",
+      "bytes": 5624,
+      "sha256": "3694175f8ef5bcf5848d88bd8061abf8546480873964ebfdc19dd41ad05928f0"
+    },
+    "line": 58,
+    "statement": "  tracial : ∀ a, value (positiveSquare P a) = value (positiveSquare P (star a))"
+  },
+  "first_dev": "dev_tracial_extension/20260914_235244_987632/run.json",
+  "scope": "Exact missing membership supplier and generic contraction order adapter; no new root. First six-mode scan failed only at TOE/acervo by sandbox read denial. Preserved error logs. Second scan with authorized read escalation succeeded in all modes and generated the pre-code fiche. Initial tracial consumer line59 corrected to measured line58 here; no older record erased."
+}

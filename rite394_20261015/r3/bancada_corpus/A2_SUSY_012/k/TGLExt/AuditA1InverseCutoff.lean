@@ -1,0 +1,18 @@
+import TGLExt.V351InverseGeneratorCutoff
+set_option pp.universes true
+#check TGLV350.Regular.regularInverseGeneratorCutoff
+#print axioms TGLV350.Regular.regularInverseGeneratorCutoff
+#check TGLV350.Regular.regularInverseGeneratorCutoff_mem
+#print axioms TGLV350.Regular.regularInverseGeneratorCutoff_mem
+#check TGLV350.Regular.regularInverseGeneratorCutoff_nonneg
+#print axioms TGLV350.Regular.regularInverseGeneratorCutoff_nonneg
+#check TGLV350.Regular.regularInverseGeneratorCutoff_le
+#print axioms TGLV350.Regular.regularInverseGeneratorCutoff_le
+#check TGLV350.Regular.regularInverseGeneratorCutoff_one
+#print axioms TGLV350.Regular.regularInverseGeneratorCutoff_one
+#check TGLV350.Regular.regularInverseGeneratorCutoff_graph
+#print axioms TGLV350.Regular.regularInverseGeneratorCutoff_graph
+#check TGLV350.Regular.regularInverseGeneratorCutoff_dual
+#print axioms TGLV350.Regular.regularInverseGeneratorCutoff_dual
+#check TGLV350.Regular.regularInverseGeneratorCutoff_graph_iff
+#print axioms TGLV350.Regular.regularInverseGeneratorCutoff_graph_iff

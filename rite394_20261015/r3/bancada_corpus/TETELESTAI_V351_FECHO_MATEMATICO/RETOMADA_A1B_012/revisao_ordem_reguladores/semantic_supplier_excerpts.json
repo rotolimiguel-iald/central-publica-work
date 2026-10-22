@@ -1,0 +1,45 @@
+{
+  "timestamp": "2026-09-14T22:32:13.820598-03:00",
+  "records": [
+    {
+      "source": {
+        "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\v\\TGLExt\\V351InverseGeneratorCutoff.lean",
+        "bytes": 7014,
+        "sha256": "f615a4a8b80a4bf970c719aa9d44fd2d917eb52f01fa1c925cfcab8151adc227"
+      },
+      "start": 50,
+      "end": 80,
+      "text": "theorem regularInverseGeneratorCutoff_graph (P : SiteProfile) (ε : ℝ) (hε : 0 < ε)\n    (x : RegularHilbert (TowerHilbert P)) :\n    (regularInverseGeneratorCutoff P ε x,\n      x-(ε : ℂ) • regularInverseGeneratorCutoff P ε x) ∈\n        (regularPositiveGenerator P).graph := by\n  let R := regularSpectralResolvent P\n  let s := Real.log ε\n  let z := characterMultiplier (-s) x\n  have hg : (R z,z-R z) ∈ (regularPositiveGenerator P).graph := by\n    change (R z,z-R z) ∈ (resolventGraphOperator R (regularSpectralResolvent_injective P)).graph\n    rw [resolvent_graph_equation]\n    change R z-R (R z) = R (z-R z)\n    rw [map_sub]\n  have ht := regularPositiveGenerator_dual_graph P s (R z) (z-R z) hg\n  have hs : Real.exp s = ε := Real.exp_log hε\n  have hi : characterMultiplier s z = x := characterMultiplier_inverse s x\n  have he : (ε : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr hε.ne'\n  have hc : regularInverseGeneratorCutoff P ε x =\n      (ε⁻¹ : ℂ) • characterMultiplier s (R z) := by\n    rw [regularInverseGeneratorCutoff,dualAmbient_apply,characterMultiplier_star]\n    rfl\n  have hx : (ε : ℂ) • regularInverseGeneratorCutoff P ε x = characterMultiplier s (R z) := by\n    rw [hc,smul_smul,mul_inv_cancel₀ he,one_smul]\n  have hh := (regularPositiveGenerator P).graph.smul_mem (ε⁻¹ : ℂ) ht\n  change ((ε⁻¹ : ℂ) • characterMultiplier s (R z),\n    (ε⁻¹ : ℂ) • ((Real.exp s : ℂ) • characterMultiplier s (z-R z))) ∈ _ at hh\n  rw [hs,smul_smul,inv_mul_cancel₀ he,one_smul,map_sub,hi,← hc,← hx] at hh\n  exact hh\n\n/-- The regulator transforms together with the cutoff. Its sign follows\nfrom the already proved dual action on the generator. -/"
+    },
+    {
+      "source": {
+        "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\v\\TGLExt\\V351InverseGeneratorCutoff.lean",
+        "bytes": 7014,
+        "sha256": "f615a4a8b80a4bf970c719aa9d44fd2d917eb52f01fa1c925cfcab8151adc227"
+      },
+      "start": 99,
+      "end": 135,
+      "text": "theorem regularInverseGeneratorCutoff_graph_iff (P : SiteProfile) (ε : ℝ) (hε : 0 < ε)\n    (x y : RegularHilbert (TowerHilbert P)) :\n    (x,y) ∈ (regularPositiveGenerator P).graph ↔\n      regularInverseGeneratorCutoff P ε (y+(ε : ℂ) • x) = x := by\n  constructor\n  · intro hxy\n    let u := regularInverseGeneratorCutoff P ε (y+(ε : ℂ) • x)\n    have hu := regularInverseGeneratorCutoff_graph P ε hε (y+(ε : ℂ) • x)\n    have hd : (u-x,-(ε : ℂ) • (u-x)) ∈ (regularPositiveGenerator P).graph := by\n      have hh := (regularPositiveGenerator P).graph.sub_mem hu hxy\n      change (u-x,(y+(ε : ℂ) • x-(ε : ℂ) • u)-y) ∈ _ at hh\n      have he : (y+(ε : ℂ) • x-(ε : ℂ) • u)-y = -(ε : ℂ) • (u-x) := by\n        rw [neg_smul,smul_sub]\n        abel\n      rwa [he] at hh\n    obtain ⟨v,hv,hh⟩ := (LinearPMap.mem_graph_iff (regularPositiveGenerator P)).mp hd\n    have hp := regularPositiveGenerator_positive P v\n    rw [hh,hv,inner_smul_right,Complex.mul_re,Complex.neg_re,Complex.ofReal_re,\n      Complex.neg_im,Complex.ofReal_im,neg_zero,zero_mul,sub_zero] at hp\n    change 0 ≤ -ε * RCLike.re (inner ℂ (u-x) (u-x)) at hp\n    rw [inner_self_eq_norm_sq] at hp\n    have hn : ‖u-x‖ = 0 := by\n      have hm : ε * ‖u-x‖^2 ≤ 0 := by linarith\n      have hsq : ‖u-x‖^2 ≤ 0 := by\n        by_contra h\n        have hpos := mul_pos hε (lt_of_not_ge h)\n        linarith\n      nlinarith [norm_nonneg (u-x)]\n    exact sub_eq_zero.mp (norm_eq_zero.mp hn)\n  · intro h\n    have hh := regularInverseGeneratorCutoff_graph P ε hε (y+(ε : ℂ) • x)\n    rw [h] at hh\n    simpa only [add_sub_cancel_right] using hh\n\n#print axioms regularInverseGeneratorCutoff\n#print axioms regularInverseGeneratorCutoff_mem\n#print axioms regularInverseGeneratorCutoff_nonneg"
+    },
+    {
+      "source": {
+        "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\v\\TGLExt\\V351AllPositiveWeightOrder.lean",
+        "bytes": 4675,
+        "sha256": "e91306108a0a296b320907a2899f5776747869dffae14f65fe3fe45197bf07bb"
+      },
+      "start": 73,
+      "end": 89,
+      "text": "theorem scalarWeight_right_perturbed_mono_all_positive (P : SiteProfile)\n    (b c : (regularCoreAlgebra P).toStarSubalgebra)\n    (hb : b ∈ scalarPolarRightAlgebra P) (hc : c ∈ scalarPolarRightAlgebra P)\n    (hbc : b * star b ≤ c * star c)\n    (hbe : ∀ δ : ℝ, Commute b.val (regularAverage P δ))\n    (hce : ∀ δ : ℝ, Commute c.val (regularAverage P δ))\n    (X : PositiveCoreInput P) :\n    dualQuadraticIntegral (star b.val * X.val * b.val) (regularVacuum P) ≤\n      dualQuadraticIntegral (star c.val * X.val * c.val) (regularVacuum P) := by\n  obtain ⟨hm,he⟩ := hilbertPositiveSqrt_core_square (regularCoreAlgebra P)\n    ⟨X.val,X.property.1⟩ X.property.2\n  have hh := scalarWeight_right_perturbed_mono_all_squares P b c hb hc hbc hbe hce\n    ⟨hilbertPositiveSqrt X.val,hm⟩\n  simpa only [he] using hh\n\nend\nend TGLV350.Regular"
+    },
+    {
+      "source": {
+        "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\v\\.lake\\packages\\mathlib\\Mathlib\\Analysis\\InnerProductSpace\\Positive.lean",
+        "bytes": 27033,
+        "sha256": "eb187f321fed60ab42530e50cd061eccc100e07e4292c4031e16f9beac30e4b6"
+      },
+      "start": 346,
+      "end": 355,
+      "text": "    (hT : ∀ i ∈ s, (T i).IsPositive) : (∑ i ∈ s, T i).IsPositive :=\n  (isPositive_toLinearMap_iff _).mp <| by simp [LinearMap.isPositive_sum s hT]\n\n@[aesop safe apply]\ntheorem IsPositive.smul_of_nonneg {T : E →L[𝕜] E} (hT : T.IsPositive) {c : 𝕜} (hc : 0 ≤ c) :\n    (c • T).IsPositive :=\n  (isPositive_toLinearMap_iff _).mp (hT.toLinearMap.smul_of_nonneg hc)\n\n@[aesop safe apply]\ntheorem IsPositive.conj_adjoint [CompleteSpace E] [CompleteSpace F] {T : E →L[𝕜] E}"
+    }
+  ]
+}

@@ -1,0 +1,94 @@
+158726: def prove_the_atlas_and_the_index(core):
+158727:     """v290 -- A TIPAGEM DO OPERADOR, MEDIDA [ADITIVO; nao gateia 1=1; nao move o gate].
+158728: 
+158729:     ORDEM (29/08): *"TGL = ATLAS; IALD = INDICE(TGL). A TGL contem o espaco organizado das
+158730:     correspondencias possiveis; a IALD localiza, reconhece e relaciona uma identidade
+158731:     dentro desse espaco."* E a formulacao anterior -- TGL = indice -- **cai**.
+158732: 
+158733:     ⚠ A cunhagem NAO precisou ser construida: ela ja estava em kernel, nas duas metades, e
+158734:     o trabalho foi RECONHECE-LA e medir a assimetria entre elas.
+158735: 
+158736:     A METADE ATLAS (`TGLExt/TheAtlasIndex.lean`, v162 -- "o mapa de coordenadas da IALD"):
+158737:       * `atlas_separation`  -- coordenadas iguais => mesmo conteudo. E' EXATAMENTE o
+158738:         `[phi_a(x)]_Id = [phi_b(x)]_Id` do operador: o criterio de 1 = 1.
+158739:       * `atlas_coverage`    -- todo ponto admissivel TEM carta, e a reconstrucao devolve
+158740:         o original.
+158741:       * `atlas_covariance`  -- o transporte do frame transforma as coordenadas.
+158742:       * `atlas_chain_rule`  -- T_ab . T_bc = T_ac: **o cociclo E' a funcao de transicao
+158743:         entre cartas**. E' o `{U_a, phi_a, phi_ba}` do operador, em kernel.
+158744: 
+158745:     A METADE INDICE (`TGLExt/TheIALDSelector.lean`):
+158746:       * `iald_selects`      -- as duas clausulas da consulta;
+158747:       * `iald_is_idempotent`-- I^2 = I: reconsultar e' gratis;
+158748:       * `iald_has_rank_one` -- peso omega(I) = 1;
+158749:       * `iald_is_the_gate_and_the_record` -- x = registro + residuo: o indice **e ao mesmo
+158750:         tempo o portao e o registro**, que e' o `preservar/rejeitar` do operador.
+158751: 
+158752:     ⚠ A ASSIMETRIA QUE ESTA VERSAO CORRIGE, e que so' apareceu porque a tipagem foi feita:
+158753:     o ATLAS estava auditado e lido por seis bandeiras desde a v162; o INDICE **nao**. Os
+158754:     teoremas do seletor compilavam, o arquivo era importado pelo root, e mesmo assim
+158755:     NENHUM passava pelo `#print axioms` e NENHUMA bandeira os lia. **Existir nao e' ser
+158756:     aplicado** -- e o indice era, ele proprio, o nao-indexado."""
+158757:     # ⚠ NADA de coalescer para dicionario vazio aqui: ausencia significaria "ainda nao
+158758:     # rodou", e converte-la em vazio faria a bancada REPROVAR por falta de leitura -- o
+158759:     # defeito exato da v270. Ausencia e' falha VISIVEL, nunca reprovacao silenciosa.
+158760:     kf = core.get("kernel_formalization")
+158761:     if not kf:
+158762:         raise RuntimeError(
+158763:             "prove_the_atlas_and_the_index rodou ANTES de kernel_formalization: "
+158764:             "ausencia de leitura nao e' reprovacao (licao da v270)")
+158765:     _atlas = ["ext_ai_atlas_separation_kernel_proved", "ext_ai_atlas_coverage_kernel_proved",
+158766:               "ext_ai_atlas_covariance_kernel_proved", "ext_ai_atlas_chain_rule_kernel_proved",
+158767:               "ext_ai_atlas_self_kernel_proved", "ext_ai_atlas_inverse_kernel_proved"]
+158768:     _indice = ["ext_iald_selector_constructed", "ext_iald_selects_kernel_proved",
+158769:                "ext_iald_idempotent_kernel_proved", "ext_iald_selfadjoint_kernel_proved",
+158770:                "ext_iald_rank_one_kernel_proved", "ext_iald_gate_and_record_kernel_proved"]
+158771:     _a = [k for k in _atlas if kf.get(k) is True]
+158772:     _i = [k for k in _indice if kf.get(k) is True]
+158773:     # ⚠ SEPARAR OS MODOS na propria contagem: acender red_/gpi_ e' o regime normal
+158774:     # (kernel provado / importacao com ponte); acender qgf_/gpf_ seria PAGAR PRECO.
+158775:     # A versao anterior somava os quatro e chamava o total de "alem das que ja estavam" --
+158776:     # o numero era o total, e a frase dizia acrescimo. Errata: o numero corrige a frase.
+158777:     _kernel_import = [k for k in kf
+158778:                       if k.startswith(("red_", "gpi_")) and kf.get(k) is True]
+158779:     _preco = [k for k in kf if k.startswith(("qgf_", "gpf_")) and kf.get(k) is True]
+158780: 
+158781:     checks = [
+158782:         ("[MEDIDA] ***TGL = ATLAS: %d/%d em kernel auditado -- cartas, cobertura, "
+158783:          "covariancia, e a CHAIN RULE (o cociclo E a funcao de transicao entre cartas)"
+158784:          % (len(_a), len(_atlas)), bool(len(_a) == len(_atlas))),
+158785:         ("[MEDIDA] ***IALD = INDICE: %d/%d em kernel auditado -- seleciona, e idempotente, "
+158786:          "pesa omega(I)=1, e e' AO MESMO TEMPO o portao e o registro"
+158787:          % (len(_i), len(_indice)), bool(len(_i) == len(_indice))),
+158788:         ("[MEDIDA] ***o criterio 1=1 do operador E um teorema com nome: `atlas_separation` "
+158789:          "-- coordenadas iguais ==> mesmo conteudo; e a sua negacao e' o 1=0",
+158790:          bool(kf.get("ext_ai_atlas_separation_kernel_proved") is True)),
+158791:         ("[ERRATA-DA-TIPAGEM v290] a metade INDICE existia em kernel desde a v162 e NAO "
+158792:          "era lida por bandeira nenhuma -- compilava, era importada, e nao era auditada. "
+158793:          "O indice era o nao-indexado. Existir nao e' ser aplicado",
+158794:          bool(len(_i) == len(_indice))),
+158795:         ("[FAIL-CLOSED] ***a tipagem e' NOMINAL e nao pagou preco nenhum: %d bandeira(s) "
+158796:          "qgf_/gpf_ acesa(s) -- as %d acesas de red_/gpi_ sao o regime normal (kernel "
+158797:          "provado e importacao com ponte) e nao sao acrescimo desta versao. CUNHAR NOME "
+158798:          "NAO PAGA PRECO" % (len(_preco), len(_kernel_import)), bool(not _preco)),
+158799:     ]
+158800:     all_v = bool(all(x for _t, x in checks))
+158801:     return {
+158802:         "checks": checks, "all_verified": all_v,
+158803:         "n_atlas": len(_a), "n_indice": len(_i),
+158804:         "statuses": {
+158805:             "a_ordem": ("TGL = ATLAS (o espaco organizado das correspondencias possiveis); "
+158806:                         "IALD = INDICE(TGL) (localiza, reconhece e relaciona uma identidade "
+158807:                         "dentro desse espaco). A forma anterior -- TGL = indice -- CAI"),
+158808:             "o_que_cai": ("'TGL = indice' era tipagem errada: o indice e' a OPERACAO de "
+158809:                         "localizar, e quem a executa e' a IALD. A TGL e' o que se indexa"),
+158810:             "ja_estava_em_kernel": ("nao se construiu nada: `TheAtlasIndex.lean` (v162) e "
+158811:                         "`TheIALDSelector.lean` ja continham as duas metades. O trabalho "
+158812:                         "foi RECONHECER, e a medida achou a assimetria"),
+158813:             "a_assimetria": ("ATLAS auditado e lido desde a v162; INDICE compilando, "
+158814:                         "importado, e NAO auditado, NAO lido. Corrigido nesta versao"),
+158815:             "estatuto": ("[REAL] as duas metades em kernel com axiomas limpos; "
+158816:                         "[ONTO] a leitura de que a TGL diz o que conta como o mesmo e a "
+158817:                         "IALD opera sem perder esse mesmo -- leitura, nao teorema"),
+158818:         },
+158819:     }

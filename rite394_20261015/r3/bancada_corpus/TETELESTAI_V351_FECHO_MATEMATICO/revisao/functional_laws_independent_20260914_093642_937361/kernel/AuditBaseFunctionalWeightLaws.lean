@@ -1,0 +1,26 @@
+import TGLExt.V351BaseFunctionalWeightLaws
+set_option pp.universes true
+#check TGLV351.ennreal_tsum_iSup_directed
+#print axioms TGLV351.ennreal_tsum_iSup_directed
+#check TGLV351.baseDualEvaluation_input_zero
+#print axioms TGLV351.baseDualEvaluation_input_zero
+#check TGLV351.baseDualEvaluation_input_add
+#print axioms TGLV351.baseDualEvaluation_input_add
+#check TGLV351.baseDualEvaluation_input_scale
+#print axioms TGLV351.baseDualEvaluation_input_scale
+#check TGLV351.baseDualEvaluation_input_mono
+#print axioms TGLV351.baseDualEvaluation_input_mono
+#check TGLV351.baseDualEvaluation_input_normal
+#print axioms TGLV351.baseDualEvaluation_input_normal
+#check TGLV351.baseDualEvaluation_eq_dual_integral
+#print axioms TGLV351.baseDualEvaluation_eq_dual_integral
+#check TGLV351.baseDualEvaluation_bounded_output
+#print axioms TGLV351.baseDualEvaluation_bounded_output
+#check TGLV351.baseDualEvaluation_bimodule
+#print axioms TGLV351.baseDualEvaluation_bimodule
+#check TGLV351.baseDualEvaluation_family_faithful
+#print axioms TGLV351.baseDualEvaluation_family_faithful
+#check TGLV351.baseDualEvaluation_averageSquare
+#print axioms TGLV351.baseDualEvaluation_averageSquare
+#check TGLV351.baseDualEvaluation_unit_infinite
+#print axioms TGLV351.baseDualEvaluation_unit_infinite

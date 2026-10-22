@@ -1,0 +1,51 @@
+import TGLV350.ScalarRegularRightPolar
+import TGLV350.ScalarRegularPolarCommutation
+import TGLV350.ScalarRegularRightContinuity
+set_option pp.universes true in
+#check TGLV350.Regular.scalarTomitaResolvent_regular_right_commutes
+#print axioms TGLV350.Regular.scalarTomitaResolvent_regular_right_commutes
+set_option pp.universes true in
+#check TGLV350.Regular.scalarTomitaPositiveRoot_regular_right_graph
+#print axioms TGLV350.Regular.scalarTomitaPositiveRoot_regular_right_graph
+set_option pp.universes true in
+#check TGLV350.Regular.scalarRegularRight_mem_rootDomain
+#print axioms TGLV350.Regular.scalarRegularRight_mem_rootDomain
+set_option pp.universes true in
+#check TGLV350.Regular.scalarRegularRightRootInput
+#print axioms TGLV350.Regular.scalarRegularRightRootInput
+set_option pp.universes true in
+#check TGLV350.Regular.scalarTomitaPositiveRoot_regular_right_commutes
+#print axioms TGLV350.Regular.scalarTomitaPositiveRoot_regular_right_commutes
+set_option pp.universes true in
+#check TGLV350.Regular.scalarRegularRight_rootDomain_iff
+#print axioms TGLV350.Regular.scalarRegularRight_rootDomain_iff
+set_option pp.universes true in
+#check TGLV350.Regular.scalarTomitaPolarFactor_regular_right
+#print axioms TGLV350.Regular.scalarTomitaPolarFactor_regular_right
+set_option pp.universes true in
+#check TGLV350.Regular.scalarTomitaPolar_conjugate_regular_right
+#print axioms TGLV350.Regular.scalarTomitaPolar_conjugate_regular_right
+set_option pp.universes true in
+#check TGLV350.Regular.scalarTomitaPolarFactor_regular_left
+#print axioms TGLV350.Regular.scalarTomitaPolarFactor_regular_left
+set_option pp.universes true in
+#check TGLV350.Regular.regularRightGNS_commutes_left
+#print axioms TGLV350.Regular.regularRightGNS_commutes_left
+set_option pp.universes true in
+#check TGLV350.Regular.scalarTomitaPolar_conjugate_regular_left
+#print axioms TGLV350.Regular.scalarTomitaPolar_conjugate_regular_left
+set_option pp.universes true in
+#check TGLV350.Regular.scalarTomitaPolar_regular_generator
+#print axioms TGLV350.Regular.scalarTomitaPolar_regular_generator
+set_option pp.universes true in
+#check TGLV350.Regular.scalarTomitaPolar_regular_generator_commutes
+#print axioms TGLV350.Regular.scalarTomitaPolar_regular_generator_commutes
+set_option pp.universes true in
+#check TGLV350.Regular.regularUnitary_norm_le_one
+#print axioms TGLV350.Regular.regularUnitary_norm_le_one
+set_option pp.universes true in
+#check TGLV350.Regular.scalarGNSRegular_strongly_continuous
+#print axioms TGLV350.Regular.scalarGNSRegular_strongly_continuous
+set_option pp.universes true in
+#check TGLV350.Regular.regularRightGNS_strongly_continuous
+#print axioms TGLV350.Regular.regularRightGNS_strongly_continuous

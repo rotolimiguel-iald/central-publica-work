@@ -1,0 +1,35 @@
+import TGLExt.V354TraceReaderWall
+
+#print axioms TGLV350.Regular.regularTrace_finite_positive_below
+#print axioms TGLV350.Regular.kernel_projection_mem_vonNeumann
+#print axioms TGLV350.Regular.positive_operator_has_threshold_projection
+#print axioms TGLV350.Regular.scalarTrace_finite_subprojection_exists
+#print axioms TGLV350.Regular.regularCore_matrix_corner
+#print axioms TGLV350.Regular.scalarTrace_finite_equal_split
+#print axioms TGLV350.Regular.scalarTrace_finite_split_support
+#print axioms TGLV350.Regular.scalarTrace_dual_calibration
+#print axioms TGLV350.Regular.scalarTrace_normalized_split_exists
+#print axioms TGLV350.Regular.regularNormalizedFaces
+#print axioms TGLV350.Regular.regularFiniteSupport
+#print axioms TGLV350.Regular.regularFiniteSupport_projection
+#print axioms TGLV350.Regular.regularFiniteSupport_trace
+#print axioms TGLV350.Regular.regularFiniteSupport_ne_zero
+#print axioms TGLV350.Regular.regularMinimalLock
+#print axioms TGLV350.Regular.regularMinimalLock_mem
+#print axioms TGLV350.Regular.regularMinimalLock_selfadjoint
+#print axioms TGLV350.Regular.regularMinimalLock_annihilation
+#print axioms TGLV350.Regular.regularMinimalLock_maximal
+#print axioms TGLV350.Regular.regularMinimalLock_ker
+#print axioms TGLV350.Regular.regularMinimalLock_spectral_zero
+#print axioms TGLV350.Regular.regularMinimalLock_relative_gap
+#print axioms TGLV350.Regular.regularMinimalLockGraph
+#print axioms TGLV350.Regular.regularMinimalLockGraph_selfadjoint
+#print axioms TGLV350.Regular.regularMinimalLockGraph_closed
+#print axioms TGLV350.Regular.regularMinimalLockGraph_domain
+#print axioms TGLV350.Regular.regularMinimalLockGraph_affiliated
+#print axioms TGLV350.Regular.positiveTraceReader
+#print axioms TGLV350.Regular.positiveTraceReader_positive
+#print axioms TGLV350.Regular.regularContinuousCorner
+#print axioms TGLV350.Regular.regularContinuousCorner_readings
+#print axioms TGLV350.Regular.regularMinimalLock_breuer_kernel
+#print axioms TGLV350.Regular.positiveTraceReader_not_cyclic

@@ -1,0 +1,12 @@
+import TGLExt.V351ScalarImaginaryCoreAction
+set_option pp.universes true
+#check TGLV350.Regular.matrixUnit_imaginaryPower_left_scaling
+#print axioms TGLV350.Regular.matrixUnit_imaginaryPower_left_scaling
+#check TGLV350.Regular.scalarTomitaImaginaryPower_regular_left_commutes
+#print axioms TGLV350.Regular.scalarTomitaImaginaryPower_regular_left_commutes
+#check TGLV350.Regular.matrixUnit_regular_core_conjugation
+#print axioms TGLV350.Regular.matrixUnit_regular_core_conjugation
+#check TGLV350.Regular.matrixUnit_imaginaryPower_base_scaling
+#print axioms TGLV350.Regular.matrixUnit_imaginaryPower_base_scaling
+#check TGLV350.Regular.scalarTomitaImaginaryPower_core_conjugation
+#print axioms TGLV350.Regular.scalarTomitaImaginaryPower_core_conjugation

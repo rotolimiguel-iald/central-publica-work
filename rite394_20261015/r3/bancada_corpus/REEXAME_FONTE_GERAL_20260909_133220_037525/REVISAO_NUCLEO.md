@@ -1,0 +1,12 @@
+# Revisão do núcleo novo, antes da integração
+[REAL — leitura das fontes congeladas e recibos PASS] JointCoherentGravitation deriva o calor da preparação conjunta real e da fonte finita correspondente. Seu teorema joint_area_matching_iff_ricci explicita a equivalência entre a lei de área e o balanço de Ricci nos vetores nulos. joint_einstein_from_area exige conservação total, família de telas, métrica suave Lorentziana e eta diferente de zero. A existência de uma constante cosmológica decorre da conexão/preconexão do domínio.
+
+[REAL — leitura das fontes congeladas e recibos PASS] GeneralSourceUnitaryRealization usa oito rótulos com pesos 1/8 e dois resultados por rótulo. A polarização assinada mais calibração unitária representa exatamente uma fonte simétrica T fornecida. A conservação total é transportada por igualdade de campos no domínio; não é inferida de equações de onda inexistentes para os covetores de polarização.
+
+[DERIVED — limite lógico] A representação geral de T remove a restrição de um único covetor. Ela não determina qual T físico ocorre: os covetores/frequências são calculados a partir de T. A base inicial é constante entre fontes distintas; o protocolo de preparação e sua resposta transportam a informação variável. Identificar dados físicos e impor a lei de área continua sendo uma correspondência explícita. Como a lei de área é equivalente ao balanço nulo de Einstein, assumi-la deve aparecer como hipótese física, nunca como verificação independente desse balanço.
+
+[REAL — revisão semântica do root] LeviCivitaMetricVariation demonstra a derivada da conexão canônica da métrica g+t h, com inversa real e jets espaciais reais. A não degenerescência é eventual por ponto, não um raio uniforme no domínio. A prova não identifica ainda a derivada do Ricci dessa família ou uma identidade de Ward métrica em fundo curvo.
+
+[OPEN] Extensão/globalização da correspondência; construção de telas no alcance geral pretendido; admissibilidade e seleção física da fonte; identificação de perturbações métricas/curvatura e simetrias físicas; anomalias quânticas da teoria interagente e controle de altas energias. Preparação unitária finita e álgebra clássica de curvatura não fecham essas últimas duas obrigações.
+
+Esta nota é um reexame local do lote. Não foi executado um.py, não foi atualizado o cânone e não foram alterados gate, selos, bandeiras ou memórias originais.

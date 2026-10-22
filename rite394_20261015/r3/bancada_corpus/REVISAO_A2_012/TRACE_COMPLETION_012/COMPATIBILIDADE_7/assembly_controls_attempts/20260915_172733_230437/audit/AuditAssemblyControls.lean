@@ -1,0 +1,10 @@
+import IndependentAssemblyControls
+#print axioms IndependentAssembly.actualSigmaTerm
+#print axioms IndependentAssembly.old_U_is_trivial
+#print axioms IndependentAssembly.assembled_H_is_minimal
+#print axioms IndependentAssembly.assembled_PF_trace_one
+#print axioms IndependentAssembly.assembled_PF_trace_not_two
+#print axioms IndependentAssembly.assembled_PF_nonzero
+#print axioms IndependentAssembly.susy_gap_equals_PF
+#print axioms IndependentAssembly.susy_gap_nonzero
+#print axioms IndependentAssembly.actualSusy

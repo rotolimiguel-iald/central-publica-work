@@ -1,0 +1,195 @@
+{
+  "timestamp": "2026-09-15T12:14:24.806686-03:00",
+  "status": "REUSE_BEFORE_A2_CODE__A2_NOT_CONSTRUCTED",
+  "orders": [
+    {
+      "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TUNEL\\PARA_CHATGPT\\ORDEM_011_fecho_matematico_da_realizacao_concreta.md",
+      "bytes": 19503,
+      "sha256": "2457c9b136025aeb24a3f9131e001d53fdcdbc8cdfa4f377da01c31f7c5304d0"
+    },
+    {
+      "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TUNEL\\PARA_CHATGPT\\ORDEM_012_RECIBO_E_ADENDO_001_quarta_face_e_sequencia.md",
+      "bytes": 37599,
+      "sha256": "679cdc94d90f4fea72dacfefb8a4ebf55a3ca87510d333b7c1b9c6c05c21f4e9"
+    }
+  ],
+  "prerequisite_review": {
+    "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\revisao_tracialidade_quadratica\\REVIEW_A1_QUADRATIC_TRACE_FINAL.json",
+    "bytes": 18926,
+    "sha256": "83ccfdd6a79a44d5361af338336b79d144826c6dcf9049baef8b107c4ce9574d"
+  },
+  "declarations": [
+    {
+      "source": {
+        "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\k\\TGL\\ModularRealization.lean",
+        "bytes": 11569,
+        "sha256": "17e344c8b7b40ae8f2ed4910c3b5e4712cc8ba84dd53e05d10a94f0009295348"
+      },
+      "line": 68,
+      "statement": "structure ContinuousCoreData (W : TGLSpecificAQFTWitness) (D : WedgeModularData W) where\n  Core : Type\n  [instCoreRing : Ring Core]\n  [instCoreStarRing : StarRing Core]\n  [instCoreAlgebra : Algebra ℂ Core]\n  embedding : D.wedgeAlgebra.toStarSubalgebra →⋆ₐ[ℂ] Core\n  embedding_injective : Function.Injective embedding\n  dualAction : ℝ → (Core ≃⋆ₐ[ℂ] Core)\n  dualAction_zero : dualAction 0 = StarAlgEquiv.refl\n  dualAction_add : ∀ s t : ℝ, dualAction (s + t) = (dualAction s).trans (dualAction t)\n  canonicalTrace : Core → ENNReal\n  trace_zero : canonicalTrace 0 = 0\n  trace_tracial : ∀ x y : Core, canonicalTrace (x * y) = canonicalTrace (y * x)\n  trace_star : ∀ x : Core, canonicalTrace (star x) = canonicalTrace x\n  trace_dual_scaling : ∀ (s : ℝ) (x : Core),\n    canonicalTrace ((dualAction s) x) = ENNReal.ofReal (Real.exp (-s)) * canonicalTrace x\n"
+    },
+    {
+      "source": {
+        "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\k\\TGL\\ModularRealization.lean",
+        "bytes": 11569,
+        "sha256": "17e344c8b7b40ae8f2ed4910c3b5e4712cc8ba84dd53e05d10a94f0009295348"
+      },
+      "line": 100,
+      "statement": "structure ThreeLocksCoreData (W : TGLSpecificAQFTWitness) (D : WedgeModularData W)\n    (C : ContinuousCoreData W D) where\n  H3Lt : C.Core\n  H3Lt_selfAdjoint : star H3Lt = H3Lt\n  PF : C.Core\n  PF_selfAdjoint : star PF = PF\n  PF_idempotent : PF * PF = PF\n  PF_locks : PF * H3Lt = 0\n  PF_maximal : ∀ q : C.Core, star q = q → q * q = q → q * H3Lt = 0 → q * PF = q\n  PF_nonzero : PF ≠ 0\n  PF_trace_pos : 0 < C.canonicalTrace PF\n  PF_trace_finite : C.canonicalTrace PF < ⊤\n  Pplus : C.Core\n  Pminus : C.Core\n  Pplus_selfAdjoint : star Pplus = Pplus\n  Pplus_idempotent : Pplus * Pplus = Pplus\n  Pminus_selfAdjoint : star Pminus = Pminus\n  Pminus_idempotent : Pminus * Pminus = Pminus\n  split : Pplus + Pminus = PF\n  orthogonal : Pplus * Pminus = 0\n  trace_split_additive : C.canonicalTrace PF = C.canonicalTrace Pplus + C.canonicalTrace Pminus\n  equal_face_trace : C.canonicalTrace Pplus = C.canonicalTrace Pminus\n"
+    },
+    {
+      "source": {
+        "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\k\\TGL\\CoreSupport.lean",
+        "bytes": 6731,
+        "sha256": "041fb863b07c3e0a167d5d0c8a522890d2da61586f41c27be2b06c46fac588e0"
+      },
+      "line": 71,
+      "statement": "noncomputable def threeLocksFromSupport {W : TGLSpecificAQFTWitness}\n    {D : WedgeModularData W} (C : ContinuousCoreData W D)\n    (q qp qm : C.Core)\n    (hq2 : q * q = q) (hqs : star q = q) (hqne : q ≠ 0)\n    (htr1 : C.canonicalTrace q = 1)\n    (hp2 : qp * qp = qp) (hps : star qp = qp)\n    (hm2 : qm * qm = qm) (hms : star qm = qm)\n    (hsum : qp + qm = q) (horto : qp * qm = 0)\n    (htradd : C.canonicalTrace q = C.canonicalTrace qp + C.canonicalTrace qm)\n    (htreq : C.canonicalTrace qp = C.canonicalTrace qm) :\n    ThreeLocksCoreData W D C where\n  H3Lt := 1 - q\n  H3Lt_selfAdjoint := hmin_selfadjoint q hqs\n  PF := q\n  PF_selfAdjoint := hqs\n  PF_idempotent := hq2\n  PF_locks := support_annihilates q hq2\n  PF_maximal := fun r _ _ hr => support_maximal q r hr\n  PF_nonzero := hqne\n  PF_trace_pos := by rw [htr1]; exact zero_lt_one\n  PF_trace_finite := by rw [htr1]; exact ENNReal.one_lt_top\n  Pplus := qp\n  Pminus := qm\n  Pplus_selfAdjoint := hps\n  Pplus_idempotent := hp2\n  Pminus_selfAdjoint := hms\n  Pminus_idempotent := hm2\n  split := hsum\n  orthogonal := horto\n  trace_split_additive := htradd\n  equal_face_trace := htreq\n"
+    },
+    {
+      "source": {
+        "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\k\\TGLExt\\V351RegularCoreTraceContract.lean",
+        "bytes": 5624,
+        "sha256": "3694175f8ef5bcf5848d88bd8061abf8546480873964ebfdc19dd41ad05928f0"
+      },
+      "line": 43,
+      "statement": "structure RegularCoreTraceData (P : SiteProfile) where\n  value : PositiveCoreInput P → ℝ≥0∞\n  zero : value (PositiveCoreInput.zero P) = 0\n  additive : ∀ A B, value (A.add B) = value A + value B\n  homogeneous : ∀ (r : ℝ≥0) A, value (A.scale r) = (r : ℝ≥0∞) * value A\n  monotone : ∀ A B, A ≤ B → value A ≤ value B\n  faithful : ∀ A, value A = 0 ↔ A = PositiveCoreInput.zero P\n  normal : ∀ {ι : Type u} [Preorder ι] [IsDirectedOrder ι] [Nonempty ι]\n    (A : ι → (regularCoreAlgebra P).toStarSubalgebra)\n    (S : (regularCoreAlgebra P).toStarSubalgebra)\n    (hpos : ∀ i, 0 ≤ A i) (_hmono : Monotone A) (hS : IsLUB (Set.range A) S),\n    value ⟨S.val, S.property, positive_internal_isLUB_nonneg P A S hpos hS⟩ =\n      ⨆ i, value ⟨(A i).val, (A i).property, hpos i⟩\n  semifinite : ∀ A, value A =\n    ⨆ (B : PositiveCoreInput P) (_ : B ≤ A) (_ : value B < ⊤), value B\n  tracial : ∀ a, value (positiveSquare P a) = value (positiveSquare P (star a))\n  dual_scaling : ∀ s A, value (positiveDual P s A) =\n    ENNReal.ofReal (Real.exp (-s)) * value A\n"
+    },
+    {
+      "source": {
+        "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\k\\TGLExt\\V351RegularCoreTraceConstruction.lean",
+        "bytes": 1095,
+        "sha256": "f741525cfa335d89221834fdb01e3f3c6b8efa435b107f0a355cc5679fe06b40"
+      },
+      "line": 15,
+      "statement": "def scalarInverseLimitTraceData (P : SiteProfile) : RegularCoreTraceData.{u} P where\n  value := scalarInverseLimitWeight P\n  zero := scalarInverseLimitWeight_zero P\n  additive := scalarInverseLimitWeight_add P\n  homogeneous := scalarInverseLimitWeight_scale P\n  monotone := scalarInverseLimitWeight_mono P\n  faithful := scalarInverseLimitWeight_faithful P\n  normal := scalarInverseLimitWeight_normal P\n  semifinite := scalarInverseLimitWeight_finite_minorants P (scalarInverseLimitWeight_tracial P)\n  tracial := scalarInverseLimitWeight_tracial P\n  dual_scaling := scalarInverseLimitWeight_dual P\n\n#print axioms scalarInverseLimitTraceData"
+    },
+    {
+      "source": {
+        "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\k\\TGLExt\\SusyRelativeGap.lean",
+        "bytes": 8700,
+        "sha256": "3aa058b5c4f098e3218ffed0bc8271a28947b56af81750019e1360754873e7f2"
+      },
+      "line": 66,
+      "statement": "structure SusyRelativeData (L : Type) [Lattice L] [BoundedOrder L]\n    (T : SubadditiveTraceData L) where\n  ker : L\n  gapD : L\n  gapD0 : L\n  diff : L\n  free_gap_finite : T.tau gapD0 < ⊤\n  gap_relative : gapD ≤ gapD0 ⊔ diff\n  diff_finite : T.tau diff < ⊤\n  ker_le_gap : ker ≤ gapD\n  ker_ne_bot : ker ≠ ⊥\n\nvariable {L : Type} [Lattice L] [BoundedOrder L] {T : SubadditiveTraceData L}\n\n/- ═══════ 2. Nível 4 ⟹ nível 3 ⟹ (B3) ═══════ -/\n"
+    },
+    {
+      "source": {
+        "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\k\\.lake\\packages\\mathlib\\Mathlib\\Analysis\\VonNeumannAlgebra\\Basic.lean",
+        "bytes": 7086,
+        "sha256": "bd6c64fbead6d030dbcc311533319d9da1a35ca16b12956979cd523dfb763a86"
+      },
+      "line": 154,
+      "statement": "theorem IsStarProjection.mem_iff {e : H →L[ℂ] H} (he : IsStarProjection e)\n    (S : VonNeumannAlgebra H) :\n    e ∈ S ↔ ∀ y ∈ S.commutant, e.range ∈ Module.End.invtSubmodule y := by\n  simp_rw [he.isIdempotentElem.mem_iff, he.isIdempotentElem.range_mem_invtSubmodule_iff,\n    he.isIdempotentElem.ker_mem_invtSubmodule_iff, forall_and, and_iff_left_iff_imp, ← mul_def]\n  intro h x hx\n  simpa [he.isSelfAdjoint.star_eq] using! congr(star $(h _ (star_mem hx)))\n"
+    }
+  ],
+  "searches": [
+    {
+      "stage": 1,
+      "pattern": "ThreeLocks|threeLocks|finite.*projection|projection.*finite|RegularCoreTraceData|SpectralApproximationWitness",
+      "scope": "kernel canônico e cópia K, nomes e enunciados",
+      "result": "Contratos legados, CoreSupport, SusyRelativeGap, SpectralReduction/ExactWitness, traço A1. Resultados amplos tiveram stdout truncado; fornecedores relevantes foram abertos separadamente. Consulta não executou um.py."
+    },
+    {
+      "stage": 2,
+      "pattern": "ThreeLocks|P_F|projection|gap|projeção",
+      "scope": "notas 11–13/09, TRACO_PROXIMAS_OBRIGACOES, CONVENCOES_DO_TRACO, AUDITORIA_DAS_PENDENCIAS, MAPA_GATE_E_REAPROVEITAMENTO",
+      "result": "CoreSupport já construía Hmin=1-q recebendo suporte. Não há ponte automática para traço A1 no cone. Estados OPEN históricos de A1 são superados pelo aceite34. DEV de pesos/grafos não fornece projeção A2 pelo nome."
+    },
+    {
+      "stage": 3,
+      "pattern": "ThreeLocks|P_F|finite.*projection|projection.*finite|Spectral",
+      "scope": "ENTREGA_0*.md e consulta_A2_CONTRATO anterior",
+      "result": "Consulta anterior delimita suporte, split, gap, fronteira do traço total. ENTREGAs de A1 reutilizáveis não são ThreeLocks construídos. A ausência é relativa às buscas, não universal."
+    },
+    {
+      "stage": 4,
+      "pattern": "Three Locks|H1|A2|core|traço",
+      "scope": "A_PROVA_DA_QG_TGL_arvore.md canônico",
+      "result": "Adendo v354 registra A1 concluído e falta A2. Antigo adendo v353 OPEN sobrevive historicamente; não reabrir A1. Não foram lidos resultados de natureza para mover gate."
+    },
+    {
+      "stage": 5,
+      "pattern": "ThreeLocks|threeLocks|finite.*projection|projection.*finite|spectralProjection|spectral_projection|RegularCoreTraceData",
+      "scope": "C:\\IALD\\Artigo\\BANCADA_TOE\\kernel_bancada, *.lean",
+      "result": "Ocorrências em TheAngleIsTheProjection/CoFoundation/ObserverReadsTheAngle; projeções matriciais de outro tipo, não suporte finito do mesmo core."
+    },
+    {
+      "stage": 6,
+      "pattern": "threeLocksFromSupport|scalarInverseLimitTraceData|proje[cç][aã]o.{0,35}tra[cç]o.{0,20}finit",
+      "scope": "buscar.py --ctx 140 --max 22",
+      "result": "Consulta rc0 truncou nos registros de julho. Refinamento --desde 2026-09-10 devolveu ZERO DOCUMENTOS INDEXADOS, não ausência de provas recentes. buscar.py omite erros de leitura de corpus; índice não constitui busca exaustiva confiável por si. Leitura recente feita diretamente nas fontes e pastas atuais."
+    },
+    {
+      "stage": "mathlib",
+      "pattern": "exists.*StarProjection|starProjection|ker.*commut|posPart_sub_negPart",
+      "scope": "Mathlib Analysis/VonNeumannAlgebra e ContinuousFunctionalCalculus",
+      "result": "IsStarProjection.mem_iff fornece critério exato de pertinência; adaptar à projeção do núcleo. CFC.posPart/negPart e corte de limiar são candidatos para finitude; extrair projeção via invariância evita pedir antecipadamente SpectralApproximationWitness."
+    }
+  ],
+  "requirements": [
+    [
+      "A2",
+      "ThreeLocks no mesmo N e tau A1; projeção finita positiva, split, domínios/afiliação, gap relativo, identificação espectral; canto sem testemunha recebida",
+      "OPEN"
+    ],
+    [
+      "B1_PRIME",
+      "Quarta face beta, ficha, EOM tipada xi separado, trio/controles/consumidor proposto",
+      "DELEGATED_AUTHOR_POINCARE"
+    ],
+    [
+      "route",
+      "Ratificação do operador fator total documentada; D1 V3 da gerência",
+      "CONCEPTUAL_CHOICE_RECORDED"
+    ],
+    [
+      "5.4a",
+      "Explicar namespace TGLV350.Regular em V351",
+      "OPEN"
+    ],
+    [
+      "5.4b",
+      "Sanear homônimo H_nx em B3/B4 ao tocar cópias",
+      "OPEN"
+    ],
+    [
+      "5.4c",
+      "Sondas negativas dos sete órfãos, por módulo",
+      "OPEN"
+    ],
+    [
+      "5.4d",
+      "Explicar/sanear duas declarações antiunitárias duplicadas",
+      "OPEN"
+    ],
+    [
+      "5.4e",
+      "Errata ao lado de LACUNAS_A1, pontes 1–4 com rota efetiva",
+      "OPEN"
+    ],
+    [
+      "5.4f",
+      "Corolário B3 ADITIVO sem hr/he preservando Lambda",
+      "OPEN"
+    ],
+    [
+      "5.4g",
+      "Investigar/documentar três olean B6 divergentes sem inventar causa",
+      "OPEN"
+    ],
+    [
+      "5.4h",
+      "Declarar motivo do maxHeartbeats por módulo",
+      "OPEN"
+    ]
+  ],
+  "decisions": [
+    "REUSAR scalarInverseLimitTraceData: obter positivo finito não nulo sob qualquer positivo não nulo a partir do campo semifinite e faithful. Não reconstruir peso ou tracialidade.",
+    "ADAPTAR IsStarProjection.mem_iff: projeção ortogonal do núcleo de A em N pertence a N por invariância sob comutante. O alvo é exatamente pertinência do futuro corte espectral A2.",
+    "ADAPTAR CFC posPart/negPart: de X positivo finito não nulo extrair limiar epsilon>0 e q projetor não nulo com epsilon*q<=X. Usar ordem/homogeneidade/fidelidade A1 para traço positivo finito. Prova ainda a construir.",
+    "ADAPTAR sistema matricial representado para obter faces iguais com tracialidade A1. Semicorte finito sob projeção matricial, não projeção dual-fixa tomada como finita.",
+    "REUSAR CoreSupport quando suporte, faces e traço compatíveis forem produzidos; gap do representante 1-q não identifica outro operador por nome.",
+    "OPEN contrato: ContinuousCoreData exige função total cíclica em Core->ENNReal; A1 fornece traço no cone. Não usar tau(x*x) como extensão cíclica, não alterar silenciosamente o contrato. Essa obrigação não desaparece com a existência da projeção."
+  ]
+}

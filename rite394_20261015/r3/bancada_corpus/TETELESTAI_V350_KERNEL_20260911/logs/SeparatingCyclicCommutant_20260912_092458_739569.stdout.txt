@@ -1,0 +1,31 @@
+C:\IALD\Central de Patentes\Chatgpt\TETELESTAI_V350_KERNEL_20260911\kernel\TGLV350\SeparatingCyclicCommutant.lean:39:8: error: Tactic `rewrite` failed: motive is not type correct:
+  fun _a => E.starProjection ∈ _a
+Error: Application type mismatch: The argument
+  vectorOrbitSubspace_complete _a.commutant v
+has type
+  CompleteSpace ↥(vectorOrbitSubspace _a.commutant v)
+but is expected to have type
+  CompleteSpace ↥E
+in the application
+  @Submodule.HasOrthogonalProjection.ofCompleteSpace ℂ H Complex.instRCLike inst✝² inst✝¹ E
+    (vectorOrbitSubspace_complete _a.commutant v)
+
+Explanation: The rewrite tactic rewrites an expression 'e' using an equality 'a = b' by the following process. First, it looks for all 'a' in 'e'. Second, it tries to abstract these occurrences of 'a' to create a function 'm := fun _a => ...', called the *motive*, with the property that 'm a' is definitionally equal to 'e'. Third, we observe that 'congrArg' implies that 'm a = m b', which can be used with lemmas such as 'Eq.mpr' to change the goal. However, if 'e' depends on specific properties of 'a', then the motive 'm' might not typecheck.
+
+Possible solutions: use rewrite's 'occs' configuration option to limit which occurrences are rewritten, or use 'simp' or 'conv' mode, which have strategies for certain kinds of dependencies (these tactics can handle proofs and 'Decidable' instances whose types depend on the rewritten term, and 'simp' can apply user-defined '@[congr]' theorems as well).
+
+H : Type
+inst✝² : NormedAddCommGroup H
+inst✝¹ : InnerProductSpace ℂ H
+inst✝ : CompleteSpace H
+N : VonNeumannAlgebra H
+v : H
+hsep : ∀ A ∈ N, A v = 0 → A = 0
+E : Submodule ℂ H := vectorOrbitSubspace N.commutant v
+⊢ E.starProjection ∈ N
+'TGLV350.Regular.vectorOrbitLinear' depends on axioms: [propext, Classical.choice, Quot.sound]
+'TGLV350.Regular.vectorOrbitSubspace' depends on axioms: [propext, Classical.choice, Quot.sound]
+'TGLV350.Regular.vectorOrbitSubspace_complete' depends on axioms: [propext, Classical.choice, Quot.sound]
+'TGLV350.Regular.vectorOrbitSubspace_invariant' depends on axioms: [propext, Classical.choice, Quot.sound]
+'TGLV350.Regular.separating_commutant_orbit_top' depends on axioms: [propext, sorryAx, Classical.choice, Quot.sound]
+'TGLV350.Regular.separating_commutant_orbit_dense' depends on axioms: [propext, sorryAx, Classical.choice, Quot.sound]

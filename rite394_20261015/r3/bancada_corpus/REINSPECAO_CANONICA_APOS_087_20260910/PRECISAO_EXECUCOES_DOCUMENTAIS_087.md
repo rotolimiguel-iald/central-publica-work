@@ -1,0 +1,5 @@
+# Precisão sobre as execuções documentais desta reinspeção
+
+[REAL] A frase final do parecer que menciona a execução do helper deve ser lida como delimitação de natureza documental, e não como contagem de uma única invocação. Foram executados o emissor inicial (exit1, antes de produzir a nota), o preparador da cópia V2 (exit0) e o emissor V2 (exit0). O primeiro comparava um inteiro com o campo absent da captura086, que é uma lista. A cópia V2 usa len(absent); a falha e os dois códigos permanecem preservados.
+
+A proveniência está em PROVENIENCIA_EMISSOR_V2_REINSPECAO_087.json. Nenhum desses helpers executa ou importa um.py, Lean ou CAS. As demais invocações foram leituras, medições e esta emissão documental. A conclusão de quatro pins canônicos idênticos à captura086 e seis inputs estáveis na janela do emissor V2 permanece a mesma. Nenhum arquivo existente foi corrigido por sobrescrita.

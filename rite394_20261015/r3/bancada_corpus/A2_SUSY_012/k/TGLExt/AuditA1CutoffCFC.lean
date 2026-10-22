@@ -1,0 +1,16 @@
+import TGLExt.V351InverseCutoffCFC
+set_option pp.universes true
+#check TGLV350.Regular.inverseCutoffFunction
+#print axioms TGLV350.Regular.inverseCutoffFunction
+#check TGLV350.Regular.inverseCutoffFunction_continuous
+#print axioms TGLV350.Regular.inverseCutoffFunction_continuous
+#check TGLV350.Regular.inverseCutoffFunction_sigmoid
+#print axioms TGLV350.Regular.inverseCutoffFunction_sigmoid
+#check TGLV350.Regular.regularInverseGeneratorCutoff_cfc
+#print axioms TGLV350.Regular.regularInverseGeneratorCutoff_cfc
+#check TGLV350.Regular.regularInverseGeneratorCutoff_right
+#print axioms TGLV350.Regular.regularInverseGeneratorCutoff_right
+#check TGLV350.Regular.scalarRightAction_sqrt
+#print axioms TGLV350.Regular.scalarRightAction_sqrt
+#check TGLV350.Regular.regularInverseGeneratorCutoff_sqrt_right
+#print axioms TGLV350.Regular.regularInverseGeneratorCutoff_sqrt_right

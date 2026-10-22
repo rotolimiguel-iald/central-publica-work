@@ -1,0 +1,17 @@
+# Memória de continuidade em português — entrega 067
+
+Este registro acrescenta a leitura em português da memória técnica da entrega 067, preservando os arquivos anteriores. A fonte documental canônica continua sendo o Atlas; este arquivo registra apenas o trabalho desta bancada e suas referências.
+
+[REAL] A v338 foi novamente conferida por leitura estática e comparação de bytes do programa, selo, manifesto e relatório da rodada. Os quatro artefatos coincidem com a entrega 066. Dos 98 módulos inventariados da bancada, 77 estão incorporados e 21 aguardam integração. A integração 98 permanece congelada; seu programa é uma cópia derivada de base histórica e não deve substituir o canônico vivo. Os hashes e os nomes pendentes estão em `RESULTADO_ENTREGA_067.json` e `ESTADO_CANONICO_067.json` nesta pasta.
+
+[DERIVED] As probabilidades agrupadas preservam as condicionais e fornecem um inverso explícito AR=Id da variação conjunta de métrica e matéria sigma. Uma construção suficiente usa 429 probabilidades, incluindo um bloco normal explícito de quinze categorias. O relógio fixado exige o residual positivo exposto na prova; um relógio temporal livre pode ser escolhido lento para assegurar a realização local. A ação Einstein–sigma e a partição continuam entradas declaradas. O recíproco variacional fecha nessa classe local. O resultado de puro calibre e o contraexemplo da classe antiga de cinco categorias permanecem válidos.
+
+[DERIVED] Para a Hessiana sigma restrita, B=A*HA e R*A*=Id implicam equivalência das equações linearizadas. A corrente simplética foi transportada com os termos de fronteira explícitos. A convenção nova casa o sinal da ação física com a quantização. Não se deduz uma carta probabilística global em S³ ou positividade operatorial de flutuações arbitrárias.
+
+[DERIVED + KNOWN] No fundo g=dr²−4cos²(r/2)γ, φ=id, κc=4, Λ=3/4, c>0 e I contido em (0,π), as reduções escalar, vetorial e tensorial resolvem as restrições e o calibre. Os modos físicos de grau pelo menos dois possuem cinética positiva e soluções exatas. A composição constrói covariância quase livre positiva, com comutador canônico no quociente físico e representante com a condição microlocal indicada. A revisão por corte temporal mostra que os testes invariantes alcançam todas as classes físicas desse domínio. O transporte à representação probabilística exige domínio, grupo de calibre e condições de fronteira compatíveis.
+
+[REAL] Há 113 controles simbólicos exatos: 84 da carta livre, 17 da redução escalar/vetorial e 12 da ação e modos tensoriais. Não houve nova compilação Lean ou novos teoremas Lean nesta entrega. As demonstrações analíticas escritas têm seu próprio estatuto e não são certificadas pela contagem dos controles.
+
+[OPEN] Continuam no caminho crítico a teoria quântica gravitacional interagente, as identidades quânticas e possíveis anomalias, a rota de altas energias, a extensão global e a correspondência física no alcance reivindicado. A matriz de calibre e fantasmas exigida para funcionais não lineares permanece separada do estado físico linear construído. Também restam a incorporação dos 21 módulos e a formalização das notas novas.
+
+A meta permanece ativa. Esta entrega representa progresso, sem declarar bloqueio ou conclusão geral. Nenhum `um.py` foi executado ou importado. Todos os arquivos novos estão em Chatgpt; originais, Atlas, índices, linhagem canônica e bandeiras do programa foram preservados. A entrega 067 já foi registrada no túnel.

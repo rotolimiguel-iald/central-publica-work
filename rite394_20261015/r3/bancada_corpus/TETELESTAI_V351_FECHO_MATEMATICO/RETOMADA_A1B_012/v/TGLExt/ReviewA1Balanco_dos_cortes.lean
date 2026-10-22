@@ -1,0 +1,4 @@
+import TGLExt.V351ModularCutBalance
+set_option pp.universes true
+#check TGLV350.Regular.scalarTomitaResolvent_double_cut_balance
+#print axioms TGLV350.Regular.scalarTomitaResolvent_double_cut_balance

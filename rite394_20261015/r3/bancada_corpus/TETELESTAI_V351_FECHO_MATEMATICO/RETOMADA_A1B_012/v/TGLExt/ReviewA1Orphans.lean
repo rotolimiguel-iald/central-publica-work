@@ -1,0 +1,130 @@
+import TGLExt.V351ResolventImaginaryIntertwining
+import TGLExt.V351ScaledResolventFunctions
+import TGLExt.V351ScaledResolventCalculus
+import TGLExt.V351ImaginaryPowerScaling
+import TGLExt.V351ScalarImaginaryRightTransport
+import TGLExt.V351AntiunitaryResolventPhase
+import TGLExt.V351ScalarTomitaImaginaryConjugation
+
+set_option pp.universes true
+
+#check TGLV350.Regular.complex_cfc_selfadjoint_intertwines
+#print axioms TGLV350.Regular.complex_cfc_selfadjoint_intertwines
+
+#check TGLV350.Regular.resolventDampingOperator_intertwines
+#print axioms TGLV350.Regular.resolventDampingOperator_intertwines
+
+#check TGLV350.Regular.resolventPhaseOperator_intertwines
+#print axioms TGLV350.Regular.resolventPhaseOperator_intertwines
+
+#check TGLV350.Regular.resolventImaginaryPower_intertwines
+#print axioms TGLV350.Regular.resolventImaginaryPower_intertwines
+
+#check TGLV350.Regular.scaledResolventCoordinate
+#print axioms TGLV350.Regular.scaledResolventCoordinate
+
+#check TGLV350.Regular.scaledResolventDampingFactor
+#print axioms TGLV350.Regular.scaledResolventDampingFactor
+
+#check TGLV350.Regular.scaledResolventDenominator_scalar_pos
+#print axioms TGLV350.Regular.scaledResolventDenominator_scalar_pos
+
+#check TGLV350.Regular.scaledResolventCoordinate_complement
+#print axioms TGLV350.Regular.scaledResolventCoordinate_complement
+
+#check TGLV350.Regular.scaledResolventCoordinate_ratio
+#print axioms TGLV350.Regular.scaledResolventCoordinate_ratio
+
+#check TGLV350.Regular.scaledResolventCoordinate_damping
+#print axioms TGLV350.Regular.scaledResolventCoordinate_damping
+
+#check TGLV350.Regular.scaledResolventCoordinate_phase
+#print axioms TGLV350.Regular.scaledResolventCoordinate_phase
+
+#check TGLV350.Regular.positive_contraction_spectrum_bounds
+#print axioms TGLV350.Regular.positive_contraction_spectrum_bounds
+
+#check TGLV350.Regular.scaledResolventDenominator_real_cfc
+#print axioms TGLV350.Regular.scaledResolventDenominator_real_cfc
+
+#check TGLV350.Regular.scaledResolventCoordinate_cfc
+#print axioms TGLV350.Regular.scaledResolventCoordinate_cfc
+
+#check TGLV350.Regular.scaledResolventCoordinate_continuousOn_spectrum
+#print axioms TGLV350.Regular.scaledResolventCoordinate_continuousOn_spectrum
+
+#check TGLV350.Regular.scaledResolventDampingFactor_continuousOn_spectrum
+#print axioms TGLV350.Regular.scaledResolventDampingFactor_continuousOn_spectrum
+
+#check TGLV350.Regular.scaledResolventDampingOperator
+#print axioms TGLV350.Regular.scaledResolventDampingOperator
+
+#check TGLV350.Regular.scaledResolventDampingOperator_isUnit
+#print axioms TGLV350.Regular.scaledResolventDampingOperator_isUnit
+
+#check TGLV350.Regular.scaledPositiveResolvent_damping
+#print axioms TGLV350.Regular.scaledPositiveResolvent_damping
+
+#check TGLV350.Regular.scaledPositiveResolvent_phase
+#print axioms TGLV350.Regular.scaledPositiveResolvent_phase
+
+#check TGLV350.Regular.scaledResolventDamping_denseRange
+#print axioms TGLV350.Regular.scaledResolventDamping_denseRange
+
+#check TGLV350.Regular.resolventImaginaryPower_scaled_intertwining
+#print axioms TGLV350.Regular.resolventImaginaryPower_scaled_intertwining
+
+#check TGLV350.Regular.matrixUnit_imaginaryPower_right_scaling
+#print axioms TGLV350.Regular.matrixUnit_imaginaryPower_right_scaling
+
+#check TGLV350.Regular.scalarTomitaImaginaryPower_regular_right_commutes
+#print axioms TGLV350.Regular.scalarTomitaImaginaryPower_regular_right_commutes
+
+#check TGLV350.Regular.resolventPhaseFunction_reflection
+#print axioms TGLV350.Regular.resolventPhaseFunction_reflection
+
+#check TGLV350.Regular.antiunitaryConjugate_star
+#print axioms TGLV350.Regular.antiunitaryConjugate_star
+
+#check TGLV350.Regular.antiunitaryConjugate_add
+#print axioms TGLV350.Regular.antiunitaryConjugate_add
+
+#check TGLV350.Regular.antiunitaryConjugate_smul
+#print axioms TGLV350.Regular.antiunitaryConjugate_smul
+
+#check TGLV350.Regular.antiunitaryConjugateRealHom
+#print axioms TGLV350.Regular.antiunitaryConjugateRealHom
+
+#check TGLV350.Regular.antiunitaryConjugate_continuous
+#print axioms TGLV350.Regular.antiunitaryConjugate_continuous
+
+#check TGLV350.Regular.antiunitaryConjugate_selfadjoint
+#print axioms TGLV350.Regular.antiunitaryConjugate_selfadjoint
+
+#check TGLV350.Regular.antiunitaryConjugate_real_cfc
+#print axioms TGLV350.Regular.antiunitaryConjugate_real_cfc
+
+#check TGLV350.Regular.complex_cfc_real_imaginary
+#print axioms TGLV350.Regular.complex_cfc_real_imaginary
+
+#check TGLV350.Regular.antiunitaryConjugate_complex_cfc
+#print axioms TGLV350.Regular.antiunitaryConjugate_complex_cfc
+
+#check TGLV350.Regular.antiunitaryConjugate_resolventPhase
+#print axioms TGLV350.Regular.antiunitaryConjugate_resolventPhase
+
+#check TGLV350.Regular.antiunitaryConjugate_resolventDamping
+#print axioms TGLV350.Regular.antiunitaryConjugate_resolventDamping
+
+#check TGLV350.Regular.resolventImaginaryPower_antiunitary
+#print axioms TGLV350.Regular.resolventImaginaryPower_antiunitary
+
+#check TGLV350.Regular.scalarTomitaImaginaryPower_polar_commutes
+#print axioms TGLV350.Regular.scalarTomitaImaginaryPower_polar_commutes
+
+#check TGLV350.Regular.scalarTomitaImaginaryPower_polar_conjugate
+#print axioms TGLV350.Regular.scalarTomitaImaginaryPower_polar_conjugate
+
+#check TGLV350.Regular.scalarTomitaImaginaryPower_polar_operator
+#print axioms TGLV350.Regular.scalarTomitaImaginaryPower_polar_operator
+

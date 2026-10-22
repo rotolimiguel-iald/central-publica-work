@@ -1,0 +1,92 @@
+def prove_qg_closure_gate(ONE, kernel_formalization=None, independent_rite=None):
+    """v75 -- O GATE DO FECHAMENTO [ADITIVO; nao gateia 1=1]. O veredito do
+    fechamento definitivo instalado no canonico: (i) as FLAGS NOVAS do fecho
+    (o gate da 'testemunha full' e' impossivel POR TEOREMA v61 -- o sucesso e'
+    a testemunha de fronteira dinamica: canonical_boundary_transport_witness);
+    (ii) a funcao fail-closed evaluate_quantum_gravity_closure com os QUATRO
+    selos legitimos; (iii) os PROBES NEGATIVOS em runtime: cosmologia jamais
+    altera flag matematica (ProbeVoidFloorAsProof), dicts vazios jamais
+    aprovam (ProbeEmptyDefaults), experimento perfeito sem matematica
+    continua CONDITIONAL. Estado atual honesto:
+    TGL_QG_CONDITIONAL_ARCHITECTURE_ONLY."""
+    # as flags do fecho -- v99: LIDAS de nomes de termo Lean (_QG_CERTIFICATE_FLAGS);
+    # nome ausente/sujo => False. Fail-closed por CONSTRUCAO, nao por declaracao:
+    # o certificado (TGLExt/ClosureCertificate.lean) tipa o que falta e os probes
+    # em kernel mostram que os habitantes atuais NAO o alimentam.
+    kf99 = kernel_formalization if isinstance(kernel_formalization, dict) else {}
+    formal = {k: bool(kf99.get("qgc_" + k) is True) for k in _QG_CERTIFICATE_FLAGS}
+    # v133: os 5 flags de fisica LIDOS de nomes Lean (qgPhysicsCertificate_*,
+    # pedra 95: massless forcado pelo cone; TT/gauge = R^2 exato; cinetica > 0;
+    # Bianchi no simbolo; Ward linearizado) -- fail-closed: ausencia => False.
+    # ESCOPO HONESTO (nomeado): a familia concreta de ondas planas do programa
+    # (a mesma disciplina do einstein v116); perturbacoes GERAIS e anomalias
+    # QUANTICAS seguem abertas como programa.
+    physics = {k: bool(kf99.get("qgp_" + k) is True) for k in _QG_PHYSICS_FLAGS}
+    physics["linearized_spin2_finite_face"] = True   # v75 [KERNEL] informativo
+    # v134: os 4 flags de EXPERIMENTO lidos do RITO INDEPENDENTE (V11 SDSS),
+    # fail-closed: ausencia/recusa/UNDERPOWERED => False; a maquina emite, o
+    # gate le -- nenhum humano declara nada (a mecanica v99 estendida ao dado).
+    _feed = ((independent_rite or {}).get("experiment_feed") or {})
+    experiment = {
+        "independent_v3_profiles_unblinded": bool(_feed.get("independent_v3_profiles_unblinded") is True),
+        "independent_v3_survey_mocks_passed": bool(_feed.get("independent_v3_survey_mocks_passed") is True),
+        "independent_v3_systematics_passed": bool(_feed.get("independent_v3_systematics_passed") is True),
+        "independent_v3_powered_verdict_emitted": bool(_feed.get("independent_v3_powered_verdict_emitted") is True),
+        "protocol_pre_registered": True,          # v67 [hash]
+        "null_tests_passed_blind": True,          # v73 [dados reais]
+    }
+    gate = evaluate_quantum_gravity_closure(formal, physics, experiment)
+    gate["kernel_frontier"] = evaluate_v350_kernel_frontier(kf99)
+    # PROBES NEGATIVOS (a auditoria da auditoria, em runtime)
+    probe_void_as_proof = evaluate_quantum_gravity_closure(
+        formal, physics, {k: True for k in experiment})
+    # v132: com 6 formais True o degrau do kernel e' MATHEMATICAL_MODEL; o probe
+    # verifica que experimento perfeito NAO escala o selo ALEM desse degrau
+    p1 = bool(probe_void_as_proof["mathematical_model_constructed"]
+              == gate["mathematical_model_constructed"]
+              and probe_void_as_proof["physical_quantum_gravity_constructed"]
+              == gate["physical_quantum_gravity_constructed"])
+    probe_empty = evaluate_quantum_gravity_closure({}, {}, {})
+    p2 = bool(probe_empty["verdict"] == "TGL_QG_CONDITIONAL_ARCHITECTURE_ONLY"
+              and not probe_empty["mathematical_model_constructed"])
+    probe_physics_without_math = evaluate_quantum_gravity_closure(
+        {}, {k: True for k in physics}, {k: True for k in experiment})
+    p3 = bool(probe_physics_without_math["verdict"] == "TGL_QG_CONDITIONAL_ARCHITECTURE_ONLY")
+    checks = [
+        ("gate fail-closed instalado (4 selos legitimos; nunca default True)", True),
+        ("v99/v121/v132/v133: flags lidas de NOMES LEAN (mecanico); estado POR CONSTRUCAO: 6 formais + 5 fisicos", bool(
+            formal.get("concrete_aqft_core_constructed") is True
+            and formal.get("concrete_breuer_corner_constructed") is True
+            and formal.get("concrete_modular_four_frame_constructed") is True
+            and formal.get("concrete_solder_field_constructed") is True
+            and formal.get("concrete_emergent_einstein_proved") is True
+            and formal.get("canonical_boundary_transport_witness_constructed") is True)),
+        ("ProbeVoidFloorAsProof: experimento perfeito NAO altera flag matematica nem fisica", p1),
+        ("ProbeEmptyDefaults: dicts vazios => CONDITIONAL", p2),
+        ("ProbePhysicsWithoutMath: fisica sem matematica => CONDITIONAL", p3),
+        ("estado honesto: 6 formais + 5 fisicos POR CONSTRUCAO; o degrau final e' DO DADO (o rito V11 alimenta, o gate le)", bool(gate["verdict"] in ("TGL_QG_PHYSICAL_MODEL_CONSTRUCTED__EMPIRICAL_TEST_OPEN", "TGL_QG_MODEL_FORMALLY_CLOSED__NATURE_TEST_COMPLETED_WITHIN_LOCAL_BULK_AT_AVAILABLE_SENSITIVITY__MORE_SENSITIVE_DATA_COULD_REVISE") and gate["mathematical_model_constructed"] and gate["physical_quantum_gravity_constructed"])),
+    ]
+    all_v = bool(all(v for _, v in checks))
+    return {
+        "gate": gate, "formal_flags": formal, "physics_flags": physics,
+        "experiment_flags": experiment,
+        "legitimate_seals": ["TGL_QG_CONDITIONAL_ARCHITECTURE_ONLY",
+                             "TGL_QG_MATHEMATICAL_MODEL_CONSTRUCTED__PHYSICAL_SPECTRUM_OPEN",
+                             "TGL_QG_PHYSICAL_MODEL_CONSTRUCTED__EMPIRICAL_TEST_OPEN",
+                             "TGL_QG_MODEL_FORMALLY_CLOSED__NATURE_TEST_COMPLETED_WITHIN_LOCAL_BULK_AT_AVAILABLE_SENSITIVITY__MORE_SENSITIVE_DATA_COULD_REVISE"],
+        "closure_order": ("core concreto -> canto Breuer -> four-frame -> solda -> "
+                          "Einstein -> spin-2 -> teste empirico"),
+        "checks": checks, "all_verified": all_v,
+        "statuses": {
+            "correcao_do_nome": "o gate 'testemunha full' e' IMPOSSIVEL por teorema (v61); o alvo correto e' canonical_boundary_transport_witness (testemunha de fronteira dinamica) -- flags novas instaladas, todas False (fail-closed)",
+            "faces_ja_em_kernel": "spin-2 face finita [v75: helice 2theta, TT>0, 2 polarizacoes]; teorema mestre condicional [v74]; pacotes abstratos [v64-66] -- NENHUMA delas move as flags concretas (probes garantem)",
+            "estado": gate["verdict"],
+            "o_caminho": "a ordem do fecho: SemifiniteAnalysis -> ConcreteAQFTCore -> ConcreteBreuerCorner -> ConcreteModularFourFrame -> ConcreteSolderField -> ConcreteEmergentEinstein -> LinearizedSpin2(continuo) -> CanonicalBoundaryWitness (TERMO, nao Nonempty)",
+            "estado_tecnico_ext_confirmado": ("[EXT, leitura externa 17/07/2026 -- confirmada pelo runtime] INFINITE_DIMENSIONAL_INHABITANT_CONSTRUCTED__MASTER_THEOREM_FIRES_ON_EXPLICIT_MODEL__PHYSICAL_AQFT_CORE_AND_CONTINUOUS_GEOMETRY_REMAIN_OPEN"),
+            "v99_certificado": ("as flags apontam aos termos Lean do certificado (ClosureCertificate.lean v1 tipa: rede fisica nao-constante c/ grupo nao-trivial; Dirac ILIMITADO star(D)=D c/ gap quadratico; canto no kernel do Dirac; frame-CAMPO suave; a metade nao-tipavel [III1, afiliacao semifinita, H3 derivado, spin-2 continuo] nomeada p/ o v2)"),
+        },
+        "does_not_gate_core": True,
+        "verdict": (("QG_CLOSURE_GATE_INSTALLED_FAIL_CLOSED__NEGATIVE_PROBES_PASS__CURRENT_STATE_"
+                     + str(gate.get("verdict") or "UNKNOWN")) if all_v
+                    else "QG_CLOSURE_GATE_NOT_VERIFIED_THIS_RUN"),
+    }

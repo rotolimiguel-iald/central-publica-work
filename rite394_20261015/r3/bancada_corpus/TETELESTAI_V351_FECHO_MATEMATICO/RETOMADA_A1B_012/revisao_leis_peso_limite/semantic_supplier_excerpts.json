@@ -1,0 +1,55 @@
+{
+  "timestamp": "2026-09-14T22:46:02.867154-03:00",
+  "records": [
+    {
+      "source": {
+        "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\v\\TGLExt\\V350DualFormNormality.lean",
+        "bytes": 4836,
+        "sha256": "feace23e31954e69de8103646211acd6d59a1b859e3b9ec109c142b1c994fdaa"
+      },
+      "start": 13,
+      "end": 48,
+      "text": "\nvariable {ι : Type*} [Preorder ι] [IsDirectedOrder ι] [Nonempty ι]\n\n/-- Extended integral evaluations preserve arbitrary positive monotone strong limits.\nThe proof passes through finite compact cuts, not a countability assumption on the net. -/\ntheorem dualQuadraticIntegral_of_monotone_strong_limit\n    (A : ι → RegularHilbert H →L[ℂ] RegularHilbert H)\n    (S : RegularHilbert H →L[ℂ] RegularHilbert H)\n    (hpos : ∀ i, 0 ≤ A i) (hmono : Monotone A)\n    (hlim : ∀ v, Tendsto (fun i => A i v) atTop (𝓝 (S v)))\n    (v : RegularHilbert H) :\n    dualQuadraticIntegral S v = ⨆ i, dualQuadraticIntegral (A i) v := by\n  have hS := ChatgptAudit.Expectation047.positive_of_strong_limit\n    A S (Eventually.of_forall hpos) hlim\n  have hsup := ChatgptAudit.Expectation047.monotone_strong_limit_isLUB A hmono S hlim\n  apply le_antisymm\n  · rw [dualQuadraticIntegral_eq_iSup_cuts S hS v]\n    apply iSup_le\n    intro n\n    have ht : Tendsto (fun i => ENNReal.ofReal (dualHaarFactor *\n        (inner ℂ v (dualWeightCut (n : ℝ) (A i) v)).re)) atTop\n        (𝓝 (ENNReal.ofReal (dualHaarFactor *\n          (inner ℂ v (dualWeightCut (n : ℝ) S v)).re))) :=\n      ENNReal.continuous_ofReal.continuousAt.tendsto.comp\n        (tendsto_const_nhds.mul (dualWeightCut_tendsto_quadratic A S hmono hlim v (n : ℝ)))\n    have ht' : Tendsto (fun i => ENNReal.ofReal dualHaarFactor *\n        ENNReal.ofReal (inner ℂ v (dualWeightCut (n : ℝ) (A i) v)).re) atTop\n        (𝓝 (ENNReal.ofReal dualHaarFactor *\n          ENNReal.ofReal (inner ℂ v (dualWeightCut (n : ℝ) S v)).re)) := by\n      simpa only [ENNReal.ofReal_mul dualHaarFactor_pos.le] using ht\n    apply le_of_tendsto ht'\n    apply Eventually.of_forall\n    intro i\n    exact (dualWeightCut_quadratic_le (n : ℝ) (Nat.cast_nonneg n) (A i) (hpos i) v).trans\n      (le_iSup (fun j => dualQuadraticIntegral (A j) v) i)\n  · exact iSup_le fun i => dualQuadraticIntegral_mono (A i) S"
+    },
+    {
+      "source": {
+        "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\v\\TGLExt\\V350RegularNormality.lean",
+        "bytes": 7918,
+        "sha256": "bcd49e92800bf99d7770bb9969879be02a9768f129ce842ae2f39cefaca3cc0a"
+      },
+      "start": 50,
+      "end": 70,
+      "text": "/-- A positive increasing norm-bounded net in a von Neumann algebra has a strong\nlimit in that algebra, which is both its ambient and its internal supremum. -/\ntheorem vonNeumann_exists_positive_isLUB (N : VonNeumannAlgebra H)\n    {ι : Type*} [Preorder ι] [IsDirectedOrder ι] [Nonempty ι]\n    (T : ι → N.toStarSubalgebra) (hpos : ∀ i, 0 ≤ T i) (hmono : Monotone T)\n    (C : ℝ) (hC : 0 ≤ C) (hbound : ∀ i, ‖(T i : H →L[ℂ] H)‖ ≤ C) :\n    ∃ B : N.toStarSubalgebra, 0 ≤ B ∧ ‖(B : H →L[ℂ] H)‖ ≤ C ∧\n      (∀ v, Tendsto (fun i => (T i : H →L[ℂ] H) v) atTop\n        (𝓝 ((B : H →L[ℂ] H) v))) ∧\n      IsLUB (Set.range (fun i => (T i : H →L[ℂ] H))) (B : H →L[ℂ] H) ∧\n      IsLUB (Set.range T) B := by\n  obtain ⟨B, hBpos, hBnorm, hstrong, hB⟩ :=\n    ChatgptAudit.Expectation047.monotone_operator_limit\n      (fun i => (T i : H →L[ℂ] H)) hpos hmono C hC hbound\n  have hmem : B ∈ N := vonNeumann_mem_of_strong_limit N _ B\n    (Eventually.of_forall (fun i => (T i).property)) hstrong\n  refine ⟨⟨B, hmem⟩, hBpos, hBnorm, hstrong, hB, ?_⟩\n  exact vonNeumann_isLUB_of_coe_isLUB N T ⟨B, hmem⟩ hB\n\n/-- For positive increasing nets, an internal supremum of a von Neumann algebra\nis its ambient supremum. The ambient limit is constructed, not assumed. -/"
+    },
+    {
+      "source": {
+        "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\v\\TGLExt\\V350DualFixedWeightLaws.lean",
+        "bytes": 7187,
+        "sha256": "93fda2f3b9a2c519d13e1356de7fcebd2f273d3d0078eeac6d505af795ae9c75"
+      },
+      "start": 116,
+      "end": 123,
+      "text": "variable {ι : Type*} [Preorder ι] [IsDirectedOrder ι] [Nonempty ι]\n\ntheorem positive_internal_isLUB_nonneg (P : TGLExt.SiteProfile)\n    (A : ι → (regularCoreAlgebra P).toStarSubalgebra)\n    (S : (regularCoreAlgebra P).toStarSubalgebra)\n    (hpos : ∀ i, 0 ≤ A i) (hS : IsLUB (Set.range A) S) : 0 ≤ S :=\n  (hpos (Classical.arbitrary ι)).trans (hS.1 (Set.mem_range_self _))\n"
+    },
+    {
+      "source": {
+        "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\v\\.lake\\packages\\mathlib\\Mathlib\\Data\\ENNReal\\Operations.lean",
+        "bytes": 31884,
+        "sha256": "ef1b535b89d2f3ff0f710bec2a74a7943a09cfebe9ea4dbd7dc8d67b10873e46"
+      },
+      "start": 686,
+      "end": 689,
+      "text": "lemma iSup_add_iSup_of_monotone {ι : Type*} [Preorder ι] [IsDirectedOrder ι] {f g : ι → ℝ≥0∞}\n    (hf : Monotone f) (hg : Monotone g) : iSup f + iSup g = ⨆ a, f a + g a :=\n  iSup_add_iSup fun i j ↦ (exists_ge_ge i j).imp fun _k ⟨hi, hj⟩ ↦ by gcongr <;> apply_rules\n"
+    },
+    {
+      "source": {
+        "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\v\\.lake\\packages\\mathlib\\Mathlib\\Data\\ENNReal\\Inv.lean",
+        "bytes": 44868,
+        "sha256": "261c1dfb4e4f5f56462686c82a762fb3c1f4f9d2e5af144c94f64bb7aefadb89"
+      },
+      "start": 803,
+      "end": 809,
+      "text": "  map_rel_iff' := by simp [ENNReal.mul_le_mul_iff_left, ha.ne_zero, (isUnit_iff.1 ha).2]\n\nvariable {ι κ : Sort*} {f g : ι → ℝ≥0∞} {s : Set ℝ≥0∞} {a : ℝ≥0∞}\n\nlemma mul_iSup (a : ℝ≥0∞) (f : ι → ℝ≥0∞) : a * ⨆ i, f i = ⨆ i, a * f i := by\n  by_cases hf : ∀ i, f i = 0\n  · simp [hf]"
+    }
+  ]
+}

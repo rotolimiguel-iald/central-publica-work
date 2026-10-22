@@ -1,0 +1,6 @@
+import TGLExt.V351PerturbedWeightNorm
+set_option pp.universes true
+#check TGLV350.Regular.scalarWeight_right_perturbed_norm
+#print axioms TGLV350.Regular.scalarWeight_right_perturbed_norm
+#check TGLV350.Regular.scalarWeight_inverseCutoff_perturbed_norm
+#print axioms TGLV350.Regular.scalarWeight_inverseCutoff_perturbed_norm

@@ -1,0 +1,381 @@
+{
+  "timestamp": "2026-09-14T16:47:06.188601-03:00",
+  "status": "B2_DEV_REVIEW_ACCEPTED__INTEGRATION_NOT_REVIEWED",
+  "marker": "B2_DEV_REVIEW",
+  "P0": [],
+  "P1": [],
+  "P2": [],
+  "findings": [],
+  "compilation": {
+    "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V353_A_PASSAGEM_DA_ACAO_A_METRICA\\revisao_b2\\compilation.json",
+    "bytes": 158065,
+    "sha256": "7b7bb4682c3e7cfda77b1eb26bdf92860c820300f4bf5ddc51368fd8de2f9a5d"
+  },
+  "semantic_inspection": {
+    "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V353_A_PASSAGEM_DA_ACAO_A_METRICA\\revisao_b2\\b2_final_20260914_162338_684119\\semantic_inspection.json",
+    "bytes": 9151,
+    "sha256": "e7f4db25a98cc3c9a0ce4f02e8fe68e9b7478682f893274c0ba01b797e9c3aad"
+  },
+  "semantic": {
+    "timestamp": "2026-09-14T16:27:36.801398-03:00",
+    "scope": "READ_ONLY_B2_SEMANTIC_REVIEW__BUILD_PENDING",
+    "snapshot": {
+      "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V353_A_PASSAGEM_DA_ACAO_A_METRICA\\revisao_b2\\b2_final_20260914_162338_684119\\snapshot.json",
+      "bytes": 81907,
+      "sha256": "891398acd7c415e1787aa12ff99b415063f469ac13b81626750d9c2397e9860e"
+    },
+    "P0": [],
+    "P1": [],
+    "P2": [],
+    "findings": [],
+    "reviews": [
+      {
+        "target": "flrw_metric_inverse",
+        "note": "Explicit inverse identified with metricInverse by the existing uniqueness theorem; same metric throughout.",
+        "statement": {
+          "name": "ChatgptAudit.FLRW.flrw_metric_inverse",
+          "kind": "theorem",
+          "module": "TGLExt.FLRWGeometry",
+          "line": 47,
+          "statement": "theorem flrw_metric_inverse (a : ℝ → ℝ) (x : Coordinate4)\n    (ha : a (x 0) ≠ 0) : metricInverse (flrwMetric a) x = flrwInverse a x"
+        }
+      },
+      {
+        "target": "flrw_ricci",
+        "note": "Connection equality on open U is transported to its derivative using tensorFieldJet_congr_on. hJ in the generic evaluated-connection lemma is discharged, not assumed in flrw_ricci.",
+        "statement": {
+          "name": "ChatgptAudit.FLRW.flrw_ricci",
+          "kind": "theorem",
+          "module": "TGLExt.FLRWGeometry",
+          "line": 145,
+          "statement": "theorem flrw_ricci (U : Set Coordinate4) (hU : IsOpen U) (a : ℝ → ℝ)\n    (ha : ∀ y∈U, ContDiffAt ℝ ∞ a (y 0)) (hpos : ∀ y∈U, 0 < a (y 0))\n    (x : Coordinate4) (hx : x∈U) :\n    coordinateRicci (leviCivitaField (flrwMetric a) (metricInverse (flrwMetric a))) x =\n      Matrix.diagonal ![-3*deriv (deriv a) (x 0)/a (x 0),\n        a (x 0)*deriv (deriv a) (x 0)+2*(deriv a (x 0))^2,\n        a (x 0)*deriv (deriv a) (x 0)+2*(deriv a (x 0))^2,\n        a (x 0)*deriv (deriv a) (x 0)+2*(deriv a (x 0))^2]"
+        }
+      },
+      {
+        "target": "flrw_einstein_tensor",
+        "note": "Whole diagonal tensor identity supplies off-diagonal zero too; no Ricci/Einstein component input fields.",
+        "statement": {
+          "name": "ChatgptAudit.FLRW.flrw_einstein_tensor",
+          "kind": "theorem",
+          "module": "TGLExt.FLRWFieldEquations",
+          "line": 13,
+          "statement": "theorem flrw_einstein_tensor (U : Set Coordinate4) (hU : IsOpen U) (a : ℝ → ℝ)\n    (ha : ∀ y∈U, ContDiffAt ℝ ∞ a (y 0)) (hpos : ∀ y∈U, 0 < a (y 0))\n    (x : Coordinate4) (hx : x∈U) :\n    geometricEinsteinTensor (flrwMetric a) (metricInverse (flrwMetric a))\n      (leviCivitaField (flrwMetric a) (metricInverse (flrwMetric a))) x =\n      Matrix.diagonal ![3*(flrwHubble a (x 0))^2,\n        -(2*a (x 0)*deriv (deriv a) (x 0)+(deriv a (x 0))^2),\n        -(2*a (x 0)*deriv (deriv a) (x 0)+(deriv a (x 0))^2),\n        -(2*a (x 0)*deriv (deriv a) (x 0)+(deriv a (x 0))^2)]"
+        }
+      },
+      {
+        "target": "flrw_null_ricci",
+        "note": "Uses actual tensorQuad nullity for the same (+---) metric. Zero null vector is permitted and satisfies the identity.",
+        "statement": {
+          "name": "ChatgptAudit.FLRW.flrw_null_ricci",
+          "kind": "theorem",
+          "module": "TGLExt.FLRWFieldEquations",
+          "line": 47,
+          "statement": "theorem flrw_null_ricci (U : Set Coordinate4) (hU : IsOpen U) (a : ℝ → ℝ)\n    (ha : ∀ y∈U, ContDiffAt ℝ ∞ a (y 0)) (hpos : ∀ y∈U, 0 < a (y 0))\n    (x : Coordinate4) (hx : x∈U) (k : SpacetimeVector)\n    (hk : tensorQuad (flrwMetric a x) k = 0) :\n    tensorQuad (coordinateRicci\n      (leviCivitaField (flrwMetric a) (metricInverse (flrwMetric a))) x) k =\n      2*((flrwHubble a (x 0))^2-deriv (deriv a) (x 0)/a (x 0))*(k 0)^2"
+        }
+      },
+      {
+        "target": "flrw_stress_divergence",
+        "note": "Computes all four covector components. flrw_continuity consumes the temporal zero component, without asserting conservation unconditionally.",
+        "statement": {
+          "name": "ChatgptAudit.FLRW.flrw_stress_divergence",
+          "kind": "theorem",
+          "module": "TGLExt.FLRWFieldEquations",
+          "line": 109,
+          "statement": "theorem flrw_stress_divergence (a rho pressure : ℝ → ℝ) (x : Coordinate4)\n    (hz : a (x 0) ≠ 0) (ha : DifferentiableAt ℝ a (x 0))\n    (hr : DifferentiableAt ℝ rho (x 0)) (hp : DifferentiableAt ℝ pressure (x 0)) :\n    tensorFieldDivergence (metricInverse (flrwMetric a))\n      (leviCivitaField (flrwMetric a) (metricInverse (flrwMetric a)))\n      (flrwStress a rho pressure) x =\n      ![deriv rho (x 0)+3*flrwHubble a (x 0)*(rho (x 0)+pressure (x 0)),0,0,0]"
+        }
+      },
+      {
+        "target": "flrw_friedmann_first",
+        "note": "Explicit hE is a local tensor-equation hypothesis; Lambda sign is negative in H squared for G+Lambda*g=coupling*T.",
+        "statement": {
+          "name": "ChatgptAudit.FLRW.flrw_friedmann_first",
+          "kind": "theorem",
+          "module": "TGLExt.FLRWFieldEquations",
+          "line": 135,
+          "statement": "theorem flrw_friedmann_first (U : Set Coordinate4) (hU : IsOpen U)\n    (a rho pressure : ℝ → ℝ) (ha : ∀ y∈U, ContDiffAt ℝ ∞ a (y 0))\n    (hpos : ∀ y∈U, 0 < a (y 0)) (x : Coordinate4) (hx : x∈U)\n    (coupling cosmological : ℝ)\n    (hE : geometricEinsteinTensor (flrwMetric a) (metricInverse (flrwMetric a))\n      (leviCivitaField (flrwMetric a) (metricInverse (flrwMetric a))) x +\n      cosmological • flrwMetric a x = coupling • flrwStress a rho pressure x) :\n    (flrwHubble a (x 0))^2 = coupling/3*rho (x 0)-cosmological/3"
+        }
+      },
+      {
+        "target": "flrw_friedmann_second",
+        "note": "Uses actual derivative of H=a prime/a, proves H prime=-coupling*(rho+p)/2; no division by H, so H=0 is not excluded.",
+        "statement": {
+          "name": "ChatgptAudit.FLRW.flrw_friedmann_second",
+          "kind": "theorem",
+          "module": "TGLExt.FLRWFieldEquations",
+          "line": 167,
+          "statement": "theorem flrw_friedmann_second (U : Set Coordinate4) (hU : IsOpen U)\n    (a rho pressure : ℝ → ℝ) (ha : ∀ y∈U, ContDiffAt ℝ ∞ a (y 0))\n    (hpos : ∀ y∈U, 0 < a (y 0)) (x : Coordinate4) (hx : x∈U)\n    (coupling cosmological : ℝ)\n    (hE : geometricEinsteinTensor (flrwMetric a) (metricInverse (flrwMetric a))\n      (leviCivitaField (flrwMetric a) (metricInverse (flrwMetric a))) x +\n      cosmological • flrwMetric a x = coupling • flrwStress a rho pressure x) :\n    deriv (flrwHubble a) (x 0) = -coupling/2*(rho (x 0)+pressure (x 0))"
+        }
+      },
+      {
+        "target": "flrw_friedmann_from_general_metric",
+        "note": "Uses metric_only_einstein_equation with concrete Lorentz, smoothness, stress differentiability and symmetry proofs. H_null and H_conservation are named inputs. Lambda is one constant over preconnected U.",
+        "statement": {
+          "name": "ChatgptAudit.FLRW.flrw_friedmann_from_general_metric",
+          "kind": "theorem",
+          "module": "TGLExt.FLRWFieldEquations",
+          "line": 192,
+          "statement": "theorem flrw_friedmann_from_general_metric\n    (U : Set Coordinate4) (hU : IsOpen U) (hconn : IsPreconnected U)\n    (a rho pressure : ℝ → ℝ) (eta : ℝ)\n    (ha : ∀ y∈U, ContDiffAt ℝ ∞ a (y 0)) (hpos : ∀ y∈U, 0 < a (y 0))\n    (hr : ∀ y∈U, DifferentiableAt ℝ rho (y 0))\n    (hp : ∀ y∈U, DifferentiableAt ℝ pressure (y 0))\n    (H_null : ∀ x∈U, ∀ v, tensorQuad (flrwMetric a x) v = 0 →\n      tensorQuad (coordinateRicci (leviCivitaField (flrwMetric a) (metricInverse (flrwMetric a))) x-\n        (2*Real.pi/eta) • flrwStress a rho pressure x) v = 0)\n    (H_conservation : ∀ x∈U, ∀ j, tensorFieldDivergence (metricInverse (flrwMetric a))\n      (leviCivitaField (flrwMetric a) (metricInverse (flrwMetric a)))\n      (flrwStress a rho pressure) x j = 0) :\n    ∃ cosmological : ℝ, ∀ x∈U,\n      (flrwHubble a (x 0))^2 = (2*Real.pi/eta)/3*rho (x 0)-cosmological/3 ∧\n      deriv (flrwHubble a) (x 0) = -(2*Real.pi/eta)/2*(rho (x 0)+pressure (x 0)) ∧\n      deriv rho (x 0)+3*flrwHubble a (x 0)*(rho (x 0)+pressure (x 0)) = 0"
+        }
+      },
+      {
+        "target": "flrw_newton_coefficient",
+        "note": "Consumes einstein_coefficient_from_clausius via congrArg inverse. Positive G and area calibration remain INPUT; no numerical value of G or beta.",
+        "statement": {
+          "name": "ChatgptAudit.FLRW.flrw_newton_coefficient",
+          "kind": "theorem",
+          "module": "TGLExt.FLRWFieldEquations",
+          "line": 222,
+          "statement": "theorem flrw_newton_coefficient (G : ℝ) (hG : 0 < G) :\n    (2*Real.pi/(1/(4*G)))/3 = 8*Real.pi*G/3"
+        }
+      }
+    ],
+    "limits": [
+      "B2 accepts conditional geometry/field equations only, not natural realization or B3-B6.",
+      "Eta is arbitrary real in the algebraic theorem (Lean total division includes eta=0). Physical Newton specialization has positive G; no derivation of calibration is claimed.",
+      "No global regularity outside U; conclusions evaluated at x in U; empty U would be vacuous as expected for local conditional theorems.",
+      "No additional tests or modules constructed."
+    ]
+  },
+  "contract_inspection": {
+    "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V353_A_PASSAGEM_DA_ACAO_A_METRICA\\revisao_b2\\REVIEW_B2_PREPARACAO.json",
+    "bytes": 20685,
+    "sha256": "d9f542f806aae9e0ad77a3a0de787ea4a4f69b590559cacb440a24e2c60469cc"
+  },
+  "fiche_chronology": {
+    "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V353_A_PASSAGEM_DA_ACAO_A_METRICA\\revisao_b2\\fiche_chronology.json",
+    "bytes": 2092,
+    "sha256": "385911efba44e02f798b2914c2e425ce531c23d2488976afecc07279d33a7608"
+  },
+  "source_snapshot": {
+    "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V353_A_PASSAGEM_DA_ACAO_A_METRICA\\revisao_b2\\b2_final_20260914_162338_684119\\snapshot.json",
+    "bytes": 81907,
+    "sha256": "891398acd7c415e1787aa12ff99b415063f469ac13b81626750d9c2397e9860e"
+  },
+  "author_audit": {
+    "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V353_A_PASSAGEM_DA_ACAO_A_METRICA\\AUDITORIA_B2.json",
+    "bytes": 17098,
+    "sha256": "b34ac3c993f086261a421bf945625e9783c9029f8238edc99ac0ef7eda9ed4fc"
+  },
+  "author_commands": [
+    {
+      "command": [
+        "C:\\Users\\rotol\\.elan\\toolchains\\leanprover--lean4---v4.31.0\\bin\\lake.exe",
+        "env",
+        "lean",
+        "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V353_A_PASSAGEM_DA_ACAO_A_METRICA\\kernel\\TGLExt\\AuditFLRW.lean"
+      ],
+      "label": "AuditFLRW",
+      "returncode": 0,
+      "source": {
+        "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V353_A_PASSAGEM_DA_ACAO_A_METRICA\\kernel\\TGLExt\\AuditFLRW.lean",
+        "bytes": 1679,
+        "sha256": "db1f1b0f494bca195511cbb7316e8d504760b3508301674bfbee81113e990730"
+      },
+      "stdout": {
+        "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V353_A_PASSAGEM_DA_ACAO_A_METRICA\\audit_B2\\20260914_162529_774695\\AuditFLRW.stdout.txt",
+        "bytes": 3150,
+        "sha256": "3c453778632a01053cdb81c6cccc2932bb77b036597e9232f4703cab1b47efd7"
+      },
+      "stderr": {
+        "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V353_A_PASSAGEM_DA_ACAO_A_METRICA\\audit_B2\\20260914_162529_774695\\AuditFLRW.stderr.txt",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "review_scope": "Author execution, source and raw streams re-read independently; not re-executed"
+    },
+    {
+      "command": [
+        "C:\\Users\\rotol\\.elan\\toolchains\\leanprover--lean4---v4.31.0\\bin\\lake.exe",
+        "env",
+        "lean",
+        "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V353_A_PASSAGEM_DA_ACAO_A_METRICA\\probes_B2\\BadFLRW00.lean"
+      ],
+      "label": "BadFLRW00",
+      "returncode": 1,
+      "source": {
+        "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V353_A_PASSAGEM_DA_ACAO_A_METRICA\\probes_B2\\BadFLRW00.lean",
+        "bytes": 669,
+        "sha256": "2219fda0901410631759fc3bce36529810198e7c3938221cf51b7b0fd278fcf8"
+      },
+      "stdout": {
+        "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V353_A_PASSAGEM_DA_ACAO_A_METRICA\\audit_B2\\20260914_162529_774695\\BadFLRW00.stdout.txt",
+        "bytes": 572,
+        "sha256": "5dcfc6e6daef87b0611ab983acccfb57e8fd5d66b97890cba539d9e9a4ff45b6"
+      },
+      "stderr": {
+        "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V353_A_PASSAGEM_DA_ACAO_A_METRICA\\audit_B2\\20260914_162529_774695\\BadFLRW00.stderr.txt",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "review_scope": "Author execution, source and raw streams re-read independently; not re-executed"
+    },
+    {
+      "command": [
+        "C:\\Users\\rotol\\.elan\\toolchains\\leanprover--lean4---v4.31.0\\bin\\lake.exe",
+        "env",
+        "lean",
+        "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V353_A_PASSAGEM_DA_ACAO_A_METRICA\\probes_B2\\BadFLRWLambda.lean"
+      ],
+      "label": "BadFLRWLambda",
+      "returncode": 1,
+      "source": {
+        "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V353_A_PASSAGEM_DA_ACAO_A_METRICA\\probes_B2\\BadFLRWLambda.lean",
+        "bytes": 870,
+        "sha256": "1d595119e7584c8f9c8b9160fe8bfa842bcc6ac0f87c642d63345295a6299002"
+      },
+      "stdout": {
+        "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V353_A_PASSAGEM_DA_ACAO_A_METRICA\\audit_B2\\20260914_162529_774695\\BadFLRWLambda.stdout.txt",
+        "bytes": 398,
+        "sha256": "fb6352592269febe12a4d44562dd938da3cfa20a89c9e900ebf3378da6d7f32d"
+      },
+      "stderr": {
+        "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V353_A_PASSAGEM_DA_ACAO_A_METRICA\\audit_B2\\20260914_162529_774695\\BadFLRWLambda.stderr.txt",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "review_scope": "Author execution, source and raw streams re-read independently; not re-executed"
+    }
+  ],
+  "author_failed_syntax_attempts_excluded": [
+    {
+      "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V353_A_PASSAGEM_DA_ACAO_A_METRICA\\audit_B2\\20260914_162254_145307\\AuditFLRW.stderr.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V353_A_PASSAGEM_DA_ACAO_A_METRICA\\audit_B2\\20260914_162254_145307\\AuditFLRW.stdout.txt",
+      "bytes": 3150,
+      "sha256": "3c453778632a01053cdb81c6cccc2932bb77b036597e9232f4703cab1b47efd7"
+    },
+    {
+      "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V353_A_PASSAGEM_DA_ACAO_A_METRICA\\audit_B2\\20260914_162254_145307\\BadFLRW00.stderr.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V353_A_PASSAGEM_DA_ACAO_A_METRICA\\audit_B2\\20260914_162254_145307\\BadFLRW00.stdout.txt",
+      "bytes": 154,
+      "sha256": "7d3be3c5c08d979f465227878814041b1ff456e8f9fd8a8b3b6acfe5f83a5c6a"
+    },
+    {
+      "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V353_A_PASSAGEM_DA_ACAO_A_METRICA\\audit_B2\\20260914_162254_145307\\BadFLRW00_FAILED_SYNTAX.lean",
+      "bytes": 666,
+      "sha256": "eca9a9aca4baa517f781ce7ec61b754909f0a288c41ee4b1e6b510b2aee1489e"
+    },
+    {
+      "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V353_A_PASSAGEM_DA_ACAO_A_METRICA\\audit_B2\\20260914_162254_145307\\BadFLRWLambda.stderr.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V353_A_PASSAGEM_DA_ACAO_A_METRICA\\audit_B2\\20260914_162254_145307\\BadFLRWLambda.stdout.txt",
+      "bytes": 158,
+      "sha256": "7ecf78e28d4acb1c7e0e750caa69bc96dcd8464a1315651bd01a58cb01ce3a92"
+    },
+    {
+      "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V353_A_PASSAGEM_DA_ACAO_A_METRICA\\audit_B2\\20260914_162254_145307\\BadFLRWLambda_FAILED_SYNTAX.lean",
+      "bytes": 866,
+      "sha256": "1c86db8c3267614f5d6c16c96856865fcddd54ee4acab8d2bfa9f5a674f178d4"
+    }
+  ],
+  "author_baseline_941_claim": "Author audit states 941 base sources and um.py unchanged; no independent re-audit of those 941 files or um.py in this restricted turn.",
+  "new_source_object_pins": [
+    {
+      "own": {
+        "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V353_A_PASSAGEM_DA_ACAO_A_METRICA\\s\\.lake\\build\\lib\\lean\\TGLExt\\AuditFLRW.olean",
+        "bytes": 1576,
+        "sha256": "fdcc722800d1ad2d3bb9ad301c4c1325dc698bcf142318d635cc29a5121bd71e"
+      },
+      "trace": {
+        "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V353_A_PASSAGEM_DA_ACAO_A_METRICA\\s\\.lake\\build\\lib\\lean\\TGLExt\\AuditFLRW.trace",
+        "bytes": 8776,
+        "sha256": "f425df4b2bb4fed666054b57540ff9387eddbb2dbd6299a647e9156f5eb5ec73"
+      },
+      "author": {
+        "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V353_A_PASSAGEM_DA_ACAO_A_METRICA\\kernel\\.lake\\build\\lib\\lean\\TGLExt\\AuditFLRW.olean",
+        "bytes": 1576,
+        "sha256": "fdcc722800d1ad2d3bb9ad301c4c1325dc698bcf142318d635cc29a5121bd71e"
+      },
+      "equal_to_author": true
+    },
+    {
+      "own": {
+        "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V353_A_PASSAGEM_DA_ACAO_A_METRICA\\s\\.lake\\build\\lib\\lean\\TGLExt\\FLRWFieldEquations.olean",
+        "bytes": 2543960,
+        "sha256": "5730c9d4cc58e486f06c5d3faa55cbab4e5026795af1f1b50e2d1a4fae280fe2"
+      },
+      "trace": {
+        "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V353_A_PASSAGEM_DA_ACAO_A_METRICA\\s\\.lake\\build\\lib\\lean\\TGLExt\\FLRWFieldEquations.trace",
+        "bytes": 3623,
+        "sha256": "d4637331daf24ab6151f78503f4fdb3adafad350fc840d654a4ef6e2a247e94c"
+      },
+      "author": {
+        "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V353_A_PASSAGEM_DA_ACAO_A_METRICA\\kernel\\.lake\\build\\lib\\lean\\TGLExt\\FLRWFieldEquations.olean",
+        "bytes": 2543960,
+        "sha256": "5730c9d4cc58e486f06c5d3faa55cbab4e5026795af1f1b50e2d1a4fae280fe2"
+      },
+      "equal_to_author": true
+    },
+    {
+      "own": {
+        "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V353_A_PASSAGEM_DA_ACAO_A_METRICA\\s\\.lake\\build\\lib\\lean\\TGLExt\\FLRWGeometry.olean",
+        "bytes": 6517056,
+        "sha256": "c492c87f27c2f751ef9b5a6b58ad874489ecf506cc2447ad0bb1bf6b4512f09f"
+      },
+      "trace": {
+        "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V353_A_PASSAGEM_DA_ACAO_A_METRICA\\s\\.lake\\build\\lib\\lean\\TGLExt\\FLRWGeometry.trace",
+        "bytes": 3456,
+        "sha256": "e283707e7dcfbd1f1c9d4fc24efadcbabd1f0e5dbe0b5f3fc2c575364b64d33d"
+      },
+      "author": {
+        "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V353_A_PASSAGEM_DA_ACAO_A_METRICA\\kernel\\.lake\\build\\lib\\lean\\TGLExt\\FLRWGeometry.olean",
+        "bytes": 6517056,
+        "sha256": "c492c87f27c2f751ef9b5a6b58ad874489ecf506cc2447ad0bb1bf6b4512f09f"
+      },
+      "equal_to_author": true
+    },
+    {
+      "own": {
+        "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V353_A_PASSAGEM_DA_ACAO_A_METRICA\\s\\.lake\\build\\lib\\lean\\TGLExt\\ReviewFLRW.olean",
+        "bytes": 1576,
+        "sha256": "1875a76eaa38ecfb3172cfcb63aebfc70008ddf593a5cb196bf37967de427e0c"
+      },
+      "trace": {
+        "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V353_A_PASSAGEM_DA_ACAO_A_METRICA\\s\\.lake\\build\\lib\\lean\\TGLExt\\ReviewFLRW.trace",
+        "bytes": 33164,
+        "sha256": "2ae1b9a5783437cd55c0c688cc059fc2bfd83dd56b316b80ecadaaa04f3d4e24"
+      },
+      "author": null,
+      "equal_to_author": null
+    }
+  ],
+  "scope": "B2 only: flat FLRW geometry and conditional Friedmann/conservation in original chart; no physical calibration derived; no B3-B6, A1, um.py, data, Atlas or integration.",
+  "B1_protected_pins": [
+    {
+      "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V353_A_PASSAGEM_DA_ACAO_A_METRICA\\revisao\\REVIEW_B1_FINAL.md",
+      "bytes": 8381,
+      "sha256": "890dc58651cb5a0d51d418d0cc5542666afebb1c8088c2ed3bc4fa0dea6247e8"
+    },
+    {
+      "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V353_A_PASSAGEM_DA_ACAO_A_METRICA\\revisao\\REVIEW_B1_FINAL.json",
+      "bytes": 188139,
+      "sha256": "46c54ffb2680abae12b3d96caa5bdffc1ae12db1fd93015465bc452021005446"
+    },
+    {
+      "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V353_A_PASSAGEM_DA_ACAO_A_METRICA\\r\\compilation.json",
+      "bytes": 23530,
+      "sha256": "58a2f96e065eb9b9660c2d49f5fb76483b3610cda3c52d274416bace880dd74a"
+    },
+    {
+      "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V353_A_PASSAGEM_DA_ACAO_A_METRICA\\r\\run.json",
+      "bytes": 1369,
+      "sha256": "720ca3fa2844b42a82bda5250bd84fbaccdfb0596f3239a7e3609b8f8dbc55da"
+    },
+    {
+      "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V353_A_PASSAGEM_DA_ACAO_A_METRICA\\MANIFESTO_B1.json",
+      "bytes": 12163,
+      "sha256": "3c3d11820b7ff6e8d119bfac16d7faffa53c43dde5a1219480944e60e28d7d95"
+    }
+  ],
+  "B1_unchanged": true
+}

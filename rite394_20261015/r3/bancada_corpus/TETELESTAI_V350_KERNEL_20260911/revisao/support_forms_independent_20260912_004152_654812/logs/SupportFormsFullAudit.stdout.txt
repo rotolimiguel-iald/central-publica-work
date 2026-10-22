@@ -1,0 +1,139 @@
+TGLV350.Regular.dualEnergy {H : Type} [NormedAddCommGroup.{0} H] [InnerProductSpace.{0, 0} ℂ H] [CompleteSpace.{0} H]
+  (A :
+    ContinuousLinearMap.{0, 0, 0, 0} (RingHom.id.{0} ℂ) ↥(TGLV350.Regular.RegularHilbert H)
+      ↥(TGLV350.Regular.RegularHilbert H))
+  (v w : ↥(TGLV350.Regular.RegularHilbert H)) : ENNReal
+'TGLV350.Regular.dualEnergy' depends on axioms: [propext, Classical.choice, Quot.sound]
+TGLV350.Regular.positiveResolvent_energy_identity {H : Type} [NormedAddCommGroup.{0} H] [InnerProductSpace.{0, 0} ℂ H]
+  [CompleteSpace.{0} H] (C : ContinuousLinearMap.{0, 0, 0, 0} (RingHom.id.{0} ℂ) H H) (hC : LE.le.{0} 0 C) (v w : H) :
+  Eq.{1} (HAdd.hAdd.{0, 0, 0} (HPow.hPow.{0, 0, 0} (norm.{0} (HSub.hSub.{0, 0, 0} w v)) 2) (inner.{0, 0} ℂ w (C w)).re)
+    (HAdd.hAdd.{0, 0, 0}
+      (HAdd.hAdd.{0, 0, 0}
+        (HAdd.hAdd.{0, 0, 0}
+          (HPow.hPow.{0, 0, 0} (norm.{0} (HSub.hSub.{0, 0, 0} ((TGLV350.Regular.positiveResolvent C) v) v)) 2)
+          (inner.{0, 0} ℂ ((TGLV350.Regular.positiveResolvent C) v) (C ((TGLV350.Regular.positiveResolvent C) v))).re)
+        (HPow.hPow.{0, 0, 0} (norm.{0} (HSub.hSub.{0, 0, 0} w ((TGLV350.Regular.positiveResolvent C) v))) 2))
+      (inner.{0, 0} ℂ (HSub.hSub.{0, 0, 0} w ((TGLV350.Regular.positiveResolvent C) v))
+          (C (HSub.hSub.{0, 0, 0} w ((TGLV350.Regular.positiveResolvent C) v)))).re)
+'TGLV350.Regular.positiveResolvent_energy_identity' depends on axioms: [propext, Classical.choice, Quot.sound]
+TGLV350.Regular.positiveResolvent_minimizes_energy {H : Type} [NormedAddCommGroup.{0} H] [InnerProductSpace.{0, 0} ℂ H]
+  [CompleteSpace.{0} H] (C : ContinuousLinearMap.{0, 0, 0, 0} (RingHom.id.{0} ℂ) H H) (hC : LE.le.{0} 0 C) (v w : H) :
+  LE.le.{0}
+    (HAdd.hAdd.{0, 0, 0}
+      (HPow.hPow.{0, 0, 0} (norm.{0} (HSub.hSub.{0, 0, 0} ((TGLV350.Regular.positiveResolvent C) v) v)) 2)
+      (inner.{0, 0} ℂ ((TGLV350.Regular.positiveResolvent C) v) (C ((TGLV350.Regular.positiveResolvent C) v))).re)
+    (HAdd.hAdd.{0, 0, 0} (HPow.hPow.{0, 0, 0} (norm.{0} (HSub.hSub.{0, 0, 0} w v)) 2) (inner.{0, 0} ℂ w (C w)).re)
+'TGLV350.Regular.positiveResolvent_minimizes_energy' depends on axioms: [propext, Classical.choice, Quot.sound]
+TGLV350.Regular.dualEnergy_eq_iSup_cuts {H : Type} [NormedAddCommGroup.{0} H] [InnerProductSpace.{0, 0} ℂ H]
+  [CompleteSpace.{0} H]
+  (A :
+    ContinuousLinearMap.{0, 0, 0, 0} (RingHom.id.{0} ℂ) ↥(TGLV350.Regular.RegularHilbert H)
+      ↥(TGLV350.Regular.RegularHilbert H))
+  (hA : LE.le.{0} 0 A) (v w : ↥(TGLV350.Regular.RegularHilbert H)) :
+  Eq.{1} (TGLV350.Regular.dualEnergy A v w)
+    (⨆ n,
+      ENNReal.ofReal
+        (HAdd.hAdd.{0, 0, 0} (HPow.hPow.{0, 0, 0} (norm.{0} (HSub.hSub.{0, 0, 0} w v)) 2)
+          (inner.{0, 0} ℂ w ((TGLV350.Regular.normalizedDualCut (↑n) A) w)).re))
+'TGLV350.Regular.dualEnergy_eq_iSup_cuts' depends on axioms: [propext, Classical.choice, Quot.sound]
+TGLV350.Regular.dualResolvent_limit_minimizes_energy {H : Type} [NormedAddCommGroup.{0} H]
+  [InnerProductSpace.{0, 0} ℂ H] [CompleteSpace.{0} H]
+  (A R :
+    ContinuousLinearMap.{0, 0, 0, 0} (RingHom.id.{0} ℂ) ↥(TGLV350.Regular.RegularHilbert H)
+      ↥(TGLV350.Regular.RegularHilbert H))
+  (hA : LE.le.{0} 0 A)
+  (hlim :
+    ∀ (v : ↥(TGLV350.Regular.RegularHilbert H)),
+      Filter.Tendsto.{0, 0} (fun n => (TGLV350.Regular.dualCutResolvent n A) v) Filter.atTop.{0} (nhds.{0} (R v)))
+  (v w : ↥(TGLV350.Regular.RegularHilbert H)) :
+  LE.le.{0} (TGLV350.Regular.dualEnergy A v (R v)) (TGLV350.Regular.dualEnergy A v w)
+'TGLV350.Regular.dualResolvent_limit_minimizes_energy' depends on axioms: [propext, Classical.choice, Quot.sound]
+TGLV350.Regular.linear_coefficient_zero_of_nonnegative_quadratic (a b : ℝ) (ha : LE.le.{0} 0 a)
+  (h :
+    ∀ (t : ℝ),
+      LE.le.{0} 0
+        (HSub.hSub.{0, 0, 0} (HMul.hMul.{0, 0, 0} a (HPow.hPow.{0, 0, 0} t 2))
+          (HMul.hMul.{0, 0, 0} (HMul.hMul.{0, 0, 0} 2 b) t))) :
+  Eq.{1} b 0
+'TGLV350.Regular.linear_coefficient_zero_of_nonnegative_quadratic' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+TGLV350.Regular.ClosedPositiveForm.zero_minimizer_orthogonal {H : Type} [NormedAddCommGroup.{0} H]
+  [InnerProductSpace.{0, 0} ℂ H] [CompleteSpace.{0} H] (Q : TGLV350.Regular.ClosedPositiveForm H) (v : H)
+  (hmin :
+    ∀ (w : H),
+      LE.le.{0} (ENNReal.ofReal (HPow.hPow.{0, 0, 0} (norm.{0} v) 2))
+        (HAdd.hAdd.{0, 0, 0} (ENNReal.ofReal (HPow.hPow.{0, 0, 0} (norm.{0} (HSub.hSub.{0, 0, 0} w v)) 2))
+          (Q.value w))) :
+  Membership.mem.{0, 0} (Submodule.orthogonal.{0, 0} Q.finiteDomain) v
+'TGLV350.Regular.ClosedPositiveForm.zero_minimizer_orthogonal' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+TGLV350.Regular.dualResolvent_kernel_eq_finiteDomain_orthogonal {H : Type} [NormedAddCommGroup.{0} H]
+  [InnerProductSpace.{0, 0} ℂ H] [CompleteSpace.{0} H]
+  (A R :
+    ContinuousLinearMap.{0, 0, 0, 0} (RingHom.id.{0} ℂ) ↥(TGLV350.Regular.RegularHilbert H)
+      ↥(TGLV350.Regular.RegularHilbert H))
+  (hA : LE.le.{0} 0 A) (hR : LE.le.{0} 0 R)
+  (hlim :
+    ∀ (v : ↥(TGLV350.Regular.RegularHilbert H)),
+      Filter.Tendsto.{0, 0} (fun n => (TGLV350.Regular.dualCutResolvent n A) v) Filter.atTop.{0} (nhds.{0} (R v))) :
+  Eq.{1} (LinearMap.ker.{0, 0, 0, 0} ↑R)
+    (Submodule.orthogonal.{0, 0} (TGLV350.Regular.dualClosedPositiveForm A hA).finiteDomain)
+'TGLV350.Regular.dualResolvent_kernel_eq_finiteDomain_orthogonal' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+TGLV350.Regular.dualResolvent_range_closure_eq_finiteDomain_closure {H : Type} [NormedAddCommGroup.{0} H]
+  [InnerProductSpace.{0, 0} ℂ H] [CompleteSpace.{0} H]
+  (A R :
+    ContinuousLinearMap.{0, 0, 0, 0} (RingHom.id.{0} ℂ) ↥(TGLV350.Regular.RegularHilbert H)
+      ↥(TGLV350.Regular.RegularHilbert H))
+  (hA : LE.le.{0} 0 A) (hR : LE.le.{0} 0 R)
+  (hlim :
+    ∀ (v : ↥(TGLV350.Regular.RegularHilbert H)),
+      Filter.Tendsto.{0, 0} (fun n => (TGLV350.Regular.dualCutResolvent n A) v) Filter.atTop.{0} (nhds.{0} (R v))) :
+  Eq.{1} (Submodule.topologicalClosure.{0, 0} (LinearMap.range.{0, 0, 0, 0} ↑R))
+    (Submodule.topologicalClosure.{0, 0} (TGLV350.Regular.dualClosedPositiveForm A hA).finiteDomain)
+'TGLV350.Regular.dualResolvent_range_closure_eq_finiteDomain_closure' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+TGLV350.Regular.resolventGraphOperator {H : Type} [NormedAddCommGroup.{0} H] [InnerProductSpace.{0, 0} ℂ H]
+  (R : ContinuousLinearMap.{0, 0, 0, 0} (RingHom.id.{0} ℂ) H H) (hi : Function.Injective.{1, 1} ⇑R) :
+  LinearPMap.{0, 0, 0, 0} (RingHom.id.{0} ℂ) H H
+'TGLV350.Regular.resolventGraphOperator' depends on axioms: [propext, Classical.choice, Quot.sound]
+TGLV350.Regular.resolvent_graph_commute {H : Type} [NormedAddCommGroup.{0} H] [InnerProductSpace.{0, 0} ℂ H]
+  [CompleteSpace.{0} H] (R : ContinuousLinearMap.{0, 0, 0, 0} (RingHom.id.{0} ℂ) H H) :
+  Eq.{1} (HMul.hMul.{0, 0, 0} R (HSub.hSub.{0, 0, 0} 1 R)) (HMul.hMul.{0, 0, 0} (HSub.hSub.{0, 0, 0} 1 R) R)
+'TGLV350.Regular.resolvent_graph_commute' depends on axioms: [propext, Classical.choice, Quot.sound]
+TGLV350.Regular.resolvent_graph_equation {H : Type} [NormedAddCommGroup.{0} H] [InnerProductSpace.{0, 0} ℂ H]
+  [CompleteSpace.{0} H] (R : ContinuousLinearMap.{0, 0, 0, 0} (RingHom.id.{0} ℂ) H H)
+  (hi : Function.Injective.{1, 1} ⇑R) (x y : H) :
+  Membership.mem.{0, 0} (LinearPMap.graph.{0, 0, 0} (TGLV350.Regular.resolventGraphOperator R hi))
+      (Prod.mk.{0, 0} x y) ↔
+    Eq.{1} ((HSub.hSub.{0, 0, 0} 1 R) x) (R y)
+'TGLV350.Regular.resolvent_graph_equation' depends on axioms: [propext, Classical.choice, Quot.sound]
+TGLV350.Regular.resolvent_graph_closed {H : Type} [NormedAddCommGroup.{0} H] [InnerProductSpace.{0, 0} ℂ H]
+  [CompleteSpace.{0} H] (R : ContinuousLinearMap.{0, 0, 0, 0} (RingHom.id.{0} ℂ) H H)
+  (hi : Function.Injective.{1, 1} ⇑R) : LinearPMap.IsClosed.{0, 0, 0} (TGLV350.Regular.resolventGraphOperator R hi)
+'TGLV350.Regular.resolvent_graph_closed' depends on axioms: [propext, Classical.choice, Quot.sound]
+TGLV350.Regular.resolvent_graph_domain_dense {H : Type} [NormedAddCommGroup.{0} H] [InnerProductSpace.{0, 0} ℂ H]
+  [CompleteSpace.{0} H] (R : ContinuousLinearMap.{0, 0, 0, 0} (RingHom.id.{0} ℂ) H H)
+  (hi : Function.Injective.{1, 1} ⇑R) (hR : IsSelfAdjoint.{0} R) :
+  Dense.{0} ↑(LinearPMap.domain.{0, 0, 0, 0} (TGLV350.Regular.resolventGraphOperator R hi))
+'TGLV350.Regular.resolvent_graph_domain_dense' depends on axioms: [propext, Classical.choice, Quot.sound]
+TGLV350.Regular.resolvent_graph_selfadjoint {H : Type} [NormedAddCommGroup.{0} H] [InnerProductSpace.{0, 0} ℂ H]
+  [CompleteSpace.{0} H] (R : ContinuousLinearMap.{0, 0, 0, 0} (RingHom.id.{0} ℂ) H H)
+  (hi : Function.Injective.{1, 1} ⇑R) (hR : IsSelfAdjoint.{0} R) :
+  IsSelfAdjoint.{0} (TGLV350.Regular.resolventGraphOperator R hi)
+'TGLV350.Regular.resolvent_graph_selfadjoint' depends on axioms: [propext, Classical.choice, Quot.sound]
+TGLV350.Regular.resolvent_graph_positive {H : Type} [NormedAddCommGroup.{0} H] [InnerProductSpace.{0, 0} ℂ H]
+  [CompleteSpace.{0} H] (R : ContinuousLinearMap.{0, 0, 0, 0} (RingHom.id.{0} ℂ) H H)
+  (hi : Function.Injective.{1, 1} ⇑R) (hR : LE.le.{0} 0 R) (hone : LE.le.{0} R 1)
+  (x : ↥(LinearPMap.domain.{0, 0, 0, 0} (TGLV350.Regular.resolventGraphOperator R hi))) :
+  LE.le.{0} 0 (inner.{0, 0} ℂ (↑x) (↑(TGLV350.Regular.resolventGraphOperator R hi) x)).re
+'TGLV350.Regular.resolvent_graph_positive' depends on axioms: [propext, Classical.choice, Quot.sound]
+TGLV350.Regular.resolvent_graph_resolvent_equation {H : Type} [NormedAddCommGroup.{0} H] [InnerProductSpace.{0, 0} ℂ H]
+  [CompleteSpace.{0} H] (R : ContinuousLinearMap.{0, 0, 0, 0} (RingHom.id.{0} ℂ) H H)
+  (hi : Function.Injective.{1, 1} ⇑R) (u : H) :
+  ∃ x, Eq.{1} (↑x) (R u) ∧ Eq.{1} (HAdd.hAdd.{0, 0, 0} (↑x) (↑(TGLV350.Regular.resolventGraphOperator R hi) x)) u
+'TGLV350.Regular.resolvent_graph_resolvent_equation' depends on axioms: [propext, Classical.choice, Quot.sound]

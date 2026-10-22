@@ -1,0 +1,59 @@
+/-- Traciality of the original inverse-cutoff supremum on the same regular core.
+The finite star-core equality is paid by the original Tomita graph and bounded
+cut balance; the previously proved extension supplies every bounded element. -/
+set_option maxHeartbeats 6000000 in
+theorem scalarInverseLimitWeight_tracial (P : SiteProfile)
+    (A : (regularCoreAlgebra P).toStarSubalgebra) :
+    scalarInverseLimitWeight P (positiveSquare P A) =
+      scalarInverseLimitWeight P (positiveSquare P (star A)) := by
+  apply (scalarInverseLimitWeight_tracial_iff_core P).2 ?_ A
+  intro a ha
+  let b : finiteDualStarCore P := ⟨a,ha⟩
+  let J := scalarTomitaPolarFactor P
+  let X : scalarClosedTomitaDomain P :=
+    ⟨scalarGNSStarEmbedding P b,scalarStarCore_mem_closedTomitaDomain b⟩
+  let x : (scalarTomitaPositiveRoot P).domain :=
+    Submodule.inclusion (scalarClosedTomitaDomain_le_root P) X
+  let y := scalarTomitaPositiveRoot P x
+  let C (n : ℕ) := scalarGNSRepresentation P
+    ⟨regularInverseGeneratorCutoff P (1/((n : ℝ)+1)),
+      regularInverseGeneratorCutoff_mem P (1/((n : ℝ)+1))⟩
+  have hx : (x : ScalarGNSHilbert P) = scalarGNSStarEmbedding P b := rfl
+  have hJy : J.symm (scalarGNSStarEmbedding P (star b)) = y := by
+    apply J.injective
+    rw [LinearIsometryEquiv.apply_symm_apply]
+    exact (scalarClosedTomita_extends_star b).symm.trans
+      (scalarTomitaPolarFactor_factorization P X).symm
+  have hw (d : finiteDualStarCore P) :
+      scalarInverseLimitWeight P (positiveSquare P d.val) =
+        ⨆ n : ℕ, ENNReal.ofReal (inner ℂ (J.symm (scalarGNSStarEmbedding P d))
+          (C n (J.symm (scalarGNSStarEmbedding P d)))).re := by
+    unfold scalarInverseLimitWeight
+    congr 1
+    funext n
+    let dw : scalarWeightLeftIdeal P :=
+      Submodule.inclusion (finiteDualLeftIdeal_le_scalarWeight P) ⟨d.val,d.property.1⟩
+    have he := scalar_inverse_cutoff_weight_form P (1/((n : ℝ)+1)) (by positivity) dw
+    simpa only [dw,scalarWeightGNSEmbedding_uniform,scalarGNSStarEmbedding] using he
+  symm
+  calc
+    scalarInverseLimitWeight P (positiveSquare P (star a)) =
+        ⨆ n : ℕ, ENNReal.ofReal (inner ℂ y (C n y)).re := by
+      have he := hw (star b)
+      rw [hJy] at he
+      exact he
+    _ = ⨆ n : ℕ, ENNReal.ofReal (inner ℂ (x : ScalarGNSHilbert P)
+        (antiunitaryConjugate J (C n) x)).re := scalar_root_cut_supremum P x
+    _ = ⨆ n : ℕ, ENNReal.ofReal (inner ℂ (J.symm (scalarGNSStarEmbedding P b))
+        (C n (J.symm (scalarGNSStarEmbedding P b)))).re := by
+      congr 1
+      funext n
+      congr 1
+      have he := ChatgptAudit.Continuous050.antiunitary_inner_conj J
+        (J.symm (x : ScalarGNSHilbert P)) (C n (J.symm x))
+      simp only [LinearIsometryEquiv.apply_symm_apply] at he
+      have hr := congrArg Complex.re he
+      simpa only [antiunitaryConjugate_apply,hx,Complex.star_def,Complex.conj_re] using hr
+    _ = scalarInverseLimitWeight P (positiveSquare P a) := (hw b).symm
+
+#print axioms scalarInverseLimitWeight_tracial

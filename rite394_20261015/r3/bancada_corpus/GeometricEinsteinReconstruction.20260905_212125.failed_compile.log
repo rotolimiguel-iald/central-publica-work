@@ -1,0 +1,64 @@
+GeometricEinsteinReconstruction.lean:133:4: error: Type mismatch: After simplification, term
+  DifferentiableAt.mul hS (differentiableAt_const 2⁻¹)
+ has type
+  @DifferentiableAt ℝ DenselyNormedField.toNontriviallyNormedField Coordinate4 Pi.normedAddCommGroup.toAddCommGroup
+    Pi.normedSpace.toModule PseudoMetricSpace.toUniformSpace.toTopologicalSpace ℝ Real.normedCommRing.toAddCommGroup
+    (NormedAlgebra.toNormedSpace ℝ).toModule PseudoMetricSpace.toUniformSpace.toTopologicalSpace
+    (coordinateScalarCurvature gInv Gamma * fun x => 2⁻¹) x
+but is expected to have type
+  @DifferentiableAt ℝ DenselyNormedField.toNontriviallyNormedField Coordinate4 Pi.addCommGroup
+    (Pi.Function.module (Fin 4) ℝ ℝ) Pi.topologicalSpace ℝ Real.instAddCommGroup Semiring.toModule
+    PseudoMetricSpace.toUniformSpace.toTopologicalSpace (fun y => coordinateScalarCurvature gInv Gamma y * 2⁻¹) x
+GeometricEinsteinReconstruction.lean:144:6: error: Tactic `rewrite` failed: Did not find an occurrence of the pattern
+  tensorFieldDivergence ?m.205 ?m.206
+    (fun y =>
+      coordinateRicci Gamma y - fun a b => ((fun y => coordinateScalarCurvature gInv Gamma y / 2) * fun y => g y a b) y)
+    x j
+in the target expression
+  tensorFieldDivergence gInv Gamma
+      (fun y => coordinateRicci Gamma y - (coordinateScalarCurvature gInv Gamma y / 2) • g y) x j =
+    0
+
+U : Set Coordinate4
+hU : IsOpen U
+g gInv : TensorField4
+Gamma : ConnectionField4
+hg : SmoothMatrixOn U g
+hgi : SmoothMatrixOn U gInv
+hG : SmoothConnectionOn U Gamma
+hm : MetricCompatibleOn U g Gamma
+hs : ∀ x ∈ U, (g x)ᵀ = g x
+ht : ∀ x ∈ U, ∀ (i j l : Fin 4), Gamma x i l j = Gamma x j l i
+hl : ∀ x ∈ U, gInv x * g x = 1
+hr : ∀ x ∈ U, g x * gInv x = 1
+x : Coordinate4
+hx : x ∈ U
+j : Fin 4
+hS : DifferentiableAt ℝ (coordinateScalarCurvature gInv Gamma) x
+hf : DifferentiableAt ℝ (fun y => coordinateScalarCurvature gInv Gamma y / 2) x
+hga : ∀ (j k : Fin 4), DifferentiableAt ℝ (fun y => g y j k) x
+hRa : ∀ (j k : Fin 4), DifferentiableAt ℝ (fun y => coordinateRicci Gamma y j k) x
+hp :
+  coordinatePartial (fun y => coordinateScalarCurvature gInv Gamma y / 2) x j =
+    coordinatePartial (coordinateScalarCurvature gInv Gamma) x j / 2
+⊢ tensorFieldDivergence gInv Gamma
+      (fun y => coordinateRicci Gamma y - (coordinateScalarCurvature gInv Gamma y / 2) • g y) x j =
+    0
+'ChatgptAudit.frameLeviCivita' depends on axioms: [propext, Classical.choice, Quot.sound]
+'ChatgptAudit.frameEinsteinTensor' depends on axioms: [propext, Classical.choice, Quot.sound]
+'ChatgptAudit.frame_metric_smooth' depends on axioms: [propext, Classical.choice, Quot.sound]
+'ChatgptAudit.inverse_frame_metric_smooth' depends on axioms: [propext, Classical.choice, Quot.sound]
+'ChatgptAudit.levi_civita_field_smooth' depends on axioms: [propext, Classical.choice, Quot.sound]
+'ChatgptAudit.tensorQuad_sub_smul' depends on axioms: [propext, Classical.choice, Quot.sound]
+'ChatgptAudit.geometric_einstein_equation_from_ricci_null_balance' depends on axioms: [propext,
+ sorryAx,
+ Classical.choice,
+ Quot.sound]
+'ChatgptAudit.inverse_metric_derivative' depends on axioms: [propext, Classical.choice, Quot.sound]
+'ChatgptAudit.coordinatePartial_trace' depends on axioms: [propext, Classical.choice, Quot.sound]
+'ChatgptAudit.matrix_contraction_eq_trace' depends on axioms: [propext, Classical.choice, Quot.sound]
+'ChatgptAudit.scalar_curvature_smooth' depends on axioms: [propext, Classical.choice, Quot.sound]
+'ChatgptAudit.scalar_curvature_derivative' depends on axioms: [propext, Classical.choice, Quot.sound]
+'ChatgptAudit.geometric_contracted_bianchi' depends on axioms: [propext, Classical.choice, Quot.sound]
+'ChatgptAudit.geometric_einstein_smooth' depends on axioms: [propext, Classical.choice, Quot.sound]
+'ChatgptAudit.geometric_einstein_conserved' depends on axioms: [propext, sorryAx, Classical.choice, Quot.sound]

@@ -1,0 +1,19 @@
+[OPEN — complemento posterior ao DEV e anterior ao aceite]
+
+{
+  "timestamp": "2026-09-15T00:29:17.387887-03:00",
+  "status": "ADDENDUM_AFTER_DEV_BEFORE_ACCEPTANCE",
+  "decision": "Exact partition replaces a generic Riemann-sum framework as proposed before coding. Two public theorems, three private helpers, no global definitions. The contraction-bound argument is local within the approximation theorem.",
+  "corrections": "First DEV timeouts from incomplete scalar coercions and broad ext descending into Lp; explicit real-to-complex casts and ext1 resolve without raising heartbeats. Second DEV had unresolved measure/filter/metavariables and fixed with actual volume, atTop and typed limits. Third DEV rc0 clean. Original operatorIntegral commutation provider remains adequate mathematically; its concrete instance wrapper needed the already used vector-integral transport shape from V351CutoffAverageCommutation, not another integral.",
+  "adapter": {
+    "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\k\\TGLExt\\V351CutoffAverageCommutation.lean",
+    "bytes": 3148,
+    "sha256": "bc881ee5df7e027859ef14d7379b27bc9c2a27bea3b08cf42d6604805afa2a66"
+  },
+  "final_dev": {
+    "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\dev_average_polar_right\\20260915_002754_463277\\run.json",
+    "bytes": 3120,
+    "sha256": "8acd6a5bd7c2253b66fcc0cf76d173c896d0b5867bd0c7674ab5bf2131d6c446"
+  },
+  "limitations": "The average is one-sided and is not claimed selfadjoint. Negative control deliberately confuses algebra membership with selfadjointness. No fixed S/F vector, U=pi(lambda)R_-t, Q, traciality or trace contract is proved in this delta."
+}

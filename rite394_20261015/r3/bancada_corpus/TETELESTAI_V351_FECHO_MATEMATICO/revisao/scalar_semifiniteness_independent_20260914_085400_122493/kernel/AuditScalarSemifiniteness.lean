@@ -1,0 +1,6 @@
+import TGLExt.V351ScalarWeightSemifiniteness
+set_option pp.universes true
+#check TGLV351.scalarWeight_square_finite_wot_closure
+#print axioms TGLV351.scalarWeight_square_finite_wot_closure
+#check TGLV351.scalarWeight_unit_not_square_finite
+#print axioms TGLV351.scalarWeight_unit_not_square_finite

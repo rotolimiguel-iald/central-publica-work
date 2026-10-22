@@ -1,0 +1,9 @@
+# Derivação047 — amplificações finitas e a ponte de positividade
+
+[DERIVED — registrada antes do novo código.] Para cada k:ℕ e matriz A=(A_ij) de operadores limitados em H=TowerHilbert P, definimos a forma Q_A(v)=Σ_iΣ_j⟨v_i,A_ij v_j⟩, v:Fin k→H. A condição de blocos positivos combina A_ji=A_ij* com Re Q_A(v)≥0 para todo v. Não a substituímos por positividade de entradas individuais.
+
+Se todas as entradas pertencem a M e o bloco é positivo, aplicar o mesmo U_{−t} a todas as componentes mostra Q_{σ_t(A)}(v)=Q_A(U_{−t}v). As somas são finitas; os funcionais vetoriais contínuos, a parte real e a integral comutam. Portanto a média de cada entrada satisfaz Re Q_{C_T(A)}(v)≥0. A convergência forte046 por entrada e as somas finitas dão Re Q_{E(A)}(v)≥0. A identidade de estrela de E fornece a simetria do bloco resultante. Isso vale para todo k, incluindo k=0, sem período comum.
+
+Esse teorema de todas as formas quadráticas finitas é distinto do registro Mathlib CompletelyPositiveMap. Para preencher map_cstarMatrix_nonneg', é preciso provar que a ordem de CStarMatrix de operadores é refletida pela representação de blocos em H^k com norma ℓ². A representação candidata aplica (A v)_i=Σ_j A_ij v_j; ela deve ser construída como aplicação linear contínua, multiplicativa, preservadora de estrela e injetiva. Somente após provar que essa representação reflete a ordem será legítimo converter o teorema de formas no registro CP. A ponte não entra como axioma nem como hipótese que repita a conclusão.
+
+Um controle possível de não vacuidade são blocos de Gram A_ij=B_i*B_j, cuja forma é ‖Σ_jB_jv_j‖². Se a representação completa não for terminada nesta etapa, o código e o parecer identificarão explicitamente a parte provada para todos k e a parte de empacotamento CStarMatrix ainda aberta. Nada aqui produz normalidade, área física ou H3.

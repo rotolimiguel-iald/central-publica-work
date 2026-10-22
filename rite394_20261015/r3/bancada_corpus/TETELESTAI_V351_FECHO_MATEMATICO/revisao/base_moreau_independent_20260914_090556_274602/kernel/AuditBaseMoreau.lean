@@ -1,0 +1,8 @@
+import TGLExt.V351BaseMoreauApproximants
+set_option pp.universes true
+#check TGLV351.dualResolvent_minimum_energy_value
+#print axioms TGLV351.dualResolvent_minimum_energy_value
+#check TGLV351.exists_base_moreau_approximant
+#print axioms TGLV351.exists_base_moreau_approximant
+#check TGLV351.exists_monotone_base_dual_approximation
+#print axioms TGLV351.exists_monotone_base_dual_approximation

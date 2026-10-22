@@ -1,0 +1,327 @@
+{
+ "findings": [
+  {
+   "file": "C:\\IALD\\Artigo\\Haja_Luz\\A Ponte e o Um\\Nós\\tgl_kernel\\TGLExt\\ (inventário por ls|grep)",
+   "line": "n/a",
+   "statement": "124 módulos de 889 no TGLExt casam com Metric|Einstein|Clausius|Horizon|Heat|Friedmann|Curv|Connection|Coordinate|Covector|Glue/Gluing|Selected|Sigma|Fisher|Lorentz|Gibbs|Area. Nenhum módulo contém 'Friedmann', 'FRW', 'Hubble', 'ScaleFactor' ou 'Conformal' no nome; os módulos pedidos 'SelectedMetric*/SigmaConservation*/FisherLorentz*' existem como SelectedFisherLorentzMetric.lean, SigmaMatterConservation.lean, SelectedProbabilitySigma.lean, SelectedFisherGibbsBridge.lean, SignedGibbsResponse.lean (+ SignedGibbsCoverage/FiniteRecord).",
+   "statute": "[REAL] medido em disco",
+   "voice": "medição desta auditoria",
+   "relevance": "Delimita o universo lido; mostra de saída que não há módulo cosmológico (FRW) no kernel."
+  },
+  {
+   "file": "C:\\IALD\\Artigo\\Haja_Luz\\A Ponte e o Um\\Nós\\tgl_kernel\\TGLExt\\RhoPlusPClosure.lean",
+   "line": "52-60",
+   "statement": "theorem closure_identity (β ρr ρm ρΛ : ℝ) : β * ((ρr + ρr/3) + (ρm + 0) + (ρΛ + (-ρΛ))) = β * ((4/3)*ρr + ρm) := by ring  ·  theorem hubble_form (β ρr ρm ρΛ : ℝ) : (ρr + ρm + ρΛ) + β * ((4/3)*ρr + ρm) = (1 + 4*β/3)*ρr + (1 + β)*ρm + ρΛ := by ring",
+   "statute": "[REAL] identidade de anel; β é variável real livre (jamais literal)",
+   "voice": "gerência (Claude), pedra v154; a forma ρ+p é creditada ao operador",
+   "relevance": "É A ÚNICA LEI DO KERNEL que liga β a um FUNDO: a resposta é ADITIVA em ρ+p, ρ_Λ cancela exato, e o fundo vira REESCALONAMENTO de densidades (1+4β/3)ρ_r + (1+β)ρ_m — o 'ponto no plano (N_eff, ω_c)'. Não é fator conforme nem correção de distância."
+  },
+  {
+   "file": "C:\\IALD\\Artigo\\Haja_Luz\\A Ponte e o Um\\Nós\\tgl_kernel\\TGLExt\\RhoPlusPClosure.lean",
+   "line": "1, 12-20, 34-38, 64-71",
+   "statement": "Linha 1: `import TGLExt.LightIsJ` (nenhum import da camada geométrica). Docstring 12-14 cita o operador: «δρ_TGL = β(δρ + δp) — a resposta da TGL é LOCAL, acoplada à soma ρ+p do setor que a produz, não um δw». Linhas 34-38: «esta é a face ALGÉBRICA [REAL]; a versão dinâmica (p_T = −β·ṗ/3H; w=0,3325→0,0014) e a validação em CAMB são do módulo [VERIFICADO 08/08]; a hipótese declarada é a não-troca de energia entre setores; o fechamento PERTURBATIVO segue INDETERMINADO — e é o próprio Lema 3 visto do lado do fluido». Teorema w_bounds (64-71): w_T ∈ [0,1/3], =1/3 na radiação pura, =0 na matéria pura.",
+   "statute": "[REAL] w_bounds; [DECLARADO] a versão dinâmica/CAMB (não está no Lean); [OPEN] fechamento perturbativo",
+   "voice": "operador (aspas, 12-14); gerência (resto)",
+   "relevance": "Mostra que o fechamento de fundo está DESCONECTADO (no grafo de imports) da camada Clausius→Einstein: nenhum teorema deriva ρ_TGL = β(ρ+p) da geometria; é postulado do operador tipado como identidade algébrica."
+  },
+  {
+   "file": "C:\\IALD\\Artigo\\Haja_Luz\\A Ponte e o Um\\Nós\\um.py",
+   "line": "4571-4590, 4600-4616, 4643-4655",
+   "statement": "prove_rho_plus_p_closure: «H^2 ~ (1+4beta/3)rho_r + (1+beta)rho_m + rho_Lambda — A TGL NO FUNDO E UM PONTO NO PLANO (N_eff, omega_c): dN_eff/dbeta = (4/3)(1+F*N_SM)/F com F=(7/8)(4/11)^(4/3); EM beta=alpha*sqrt(e): Delta N_eff = +0,119, Delta omega_c = beta*omega_m» (4577-4581); código: dNeff_dbeta = (4/3)*(1+F*N_SM)/F; dOmegac_at_beta = beta*omega_m (4602-4608). Honestidades 4586-4590: «hipotese declarada = nao-troca de energia entre setores; o fechamento PERTURBATIVO segue INDETERMINADO (TGL-S vs TGL-L) — ESSA indeterminacao E O LEMA 3 visto do lado do fluido». prove_neff_channel RESSALVA 1 (4651-4654): «a tabela supoe TGL-S (peca radiativa free-streaming, com tensao anisotropica); se for TGL-L (fluido perfeito, pi=0) a resposta NAO e a de LCDM+N_eff e o rito precisa ser refeito».",
+   "statute": "[REAL] a álgebra e o número em runtime; [INPUT] N_SM=3,044, ω_m=0,14301; [DECLARADO] a conversão N_eff/ω_c com validação CAMB (custódia externa); [OPEN] TGL-S vs TGL-L",
+   "voice": "gerência (runtime v154), crédito ao operador",
+   "relevance": "Responde diretamente à pergunta 'reescalonamento de densidades (N_eff, ω_c)?': SIM, é a leitura vigente do fundo, com a ressalva de que a perturbação (free-streaming vs fluido) é INDETERMINADA — o mesmo buraco do Lema 3."
+  },
+  {
+   "file": "C:\\IALD\\Artigo\\Haja_Luz\\A Ponte e o Um\\Nós\\um.py",
+   "line": "152831-152834, 155258-155261, 180940, 180950, 180953",
+   "statement": "152831-152834: «# a identidade stealth AO VIVO: delta<K_b> = beta|1+w|  resp_lambda = beta * abs(1.0 + (-1.0)) # w=-1 (vacuo): 0 ; resp_matter = beta * abs(1.0 + 0.0) # w=0 (materia): beta». 155259-155261 (v200): «H^2 = (8piG/3) rho [1 + beta |1+w_eff|] — a MESMA forma canonica delta<K_partial> = beta|1+w|». 180940/180950 (v349, D1-CAMB): hypothesis background «H^2 = (8 pi G/3) rho_tot [1 + beta |1 + w_eff(z)|]», approximation_DECLARED «CAMB em LCDM; TGL analitica por cima; r_s deslocado por H_LCDM/H_TGL em z_*». 180953: fase 2 inclui «TGL zero-free (1+z_*)^beta».",
+   "statute": "[REAL] as linhas existem; a lei δ⟨K_∂⟩ = β|1+w| é [POSTULATE/DERIVED do artigo] — NÃO é teorema do kernel (grep no TGLExt: zero teoremas com '1+w'); a variante (1+z_*)^β é [INPUT] de protocolo",
+   "voice": "gerência (runtime)",
+   "relevance": "A lei de EXPANSÃO vive só no runtime. Observação algébrica desta auditoria [DERIVED aqui]: ρ_tot·|1+w_eff| = |ρ_tot + p_tot| = Σ(ρ_i+p_i) quando a soma é ≥ 0, logo a forma multiplicativa (v200/v349) e a forma aditiva ρ+p (v154/kernel) são a MESMA modificação de fundo — coerência interna, não prova. A 'correção de distância' aparece apenas como aproximação declarada (r_s deslocado por H_LCDM/H_TGL) e como variante zero-free (1+z_*)^β no protocolo — nunca como teorema."
+  },
+  {
+   "file": "C:\\IALD\\Artigo\\Haja_Luz\\A Ponte e o Um\\Nós\\tgl_kernel\\TGLExt\\TheDammingByExpansion.lean",
+   "line": "26-27, 64-119",
+   "statement": "Docstring 26-27: «EXPANSÃO — [REAL na resposta modular]: δ⟨K_∂⟩ = β|1+w|, zero só em w = −1; o vazamento contínuo é teorema da casa». Mas os teoremas do arquivo são só a identidade de α: centripetal_from_angular (70), the_damming_pays_the_requirement (79: e₂/(L·c) = v/c), the_three_faces (97), the_form_does_not_fix_the_value (110: ∀a≠0 ∃r, alphaIdentity L m c r = a).",
+   "statute": "[REAL] os 4 teoremas (álgebra de corpo); a frase 'δ⟨K_∂⟩ = β|1+w| [REAL na resposta modular]' é [DECLARADO] no docstring — não há enunciado Lean correspondente",
+   "voice": "gerência (v306), citando o operador (13-21)",
+   "relevance": "Confirma que 'expansão' no kernel é nome de docstring; o único teorema de 'expansão' geométrica é o de área/Raychaudhuri (EquilibriumAreaExpansion), sem β."
+  },
+  {
+   "file": "C:\\IALD\\Artigo\\Haja_Luz\\A Ponte e o Um\\Nós\\tgl_kernel\\TGLExt\\NoFullWitness.lean",
+   "line": "66, 77, 91, 135-139",
+   "statement": "leakage_strictly_loses: t,β,g>0 ⟹ exp(−tβg) < 1; full_closure_iff_flat: exp(−tβg)=1 ⟺ tβg=0; beta_forbids_full_static_witness: β>0 ∧ g>0 ⟹ ¬FullStaticWitness(x ↦ exp(−tβg)·x); leakage_rate_unique: (∀t, exp(−t b₁) = exp(−t b₂)) → b₁ = b₂.",
+   "statute": "[REAL]; docstring: «que a taxa observada seja β = α√e é a identificação de RUNTIME»",
+   "voice": "gerência (v61)",
+   "relevance": "Único lugar do kernel onde β entra como TAXA (de vazamento/defasagem GKLS). Não toca métrica, curvatura ou área — β é o parâmetro do semigrupo, não da geometria."
+  },
+  {
+   "file": "C:\\IALD\\Artigo\\Haja_Luz\\A Ponte e o Um\\Nós\\tgl_kernel\\TGLExt\\SMatrix.lean",
+   "line": "26-29, 45-46, 241-254",
+   "statement": "def Smat (θ : ℝ) := (cos θ)•1 + (sin θ)•Grot; normSq_reflection: |𝓡|² = sin²θ; normSq_transmission: |𝓣|² = cos²θ. Docstring 26-29: «θ é GENÉRICO e β JAMAIS aparece neste arquivo: a identificação física θ_M = arcsin √β, |𝓡|² = β = α·√e, |𝓣|² = 1−β é leitura de RUNTIME».",
+   "statute": "[REAL] estrutura; a identificação θ_M = arcsin√β é [INPUT] de runtime",
+   "voice": "gerência",
+   "relevance": "Face FINITA/ALGÉBRICA (matrizes 2×2 constantes). O ângulo é parâmetro; nenhuma métrica de espaço-tempo entra."
+  },
+  {
+   "file": "C:\\IALD\\Artigo\\Haja_Luz\\A Ponte e o Um\\Nós\\tgl_kernel\\TGLExt\\TheSelectionIsTheBallast.lean",
+   "line": "20-27 (cabeçalho), 98, 101-127",
+   "statement": "def selectionAngle (p : ℝ) := Real.arcsin (Real.sqrt p); selection_angle_reflection: sin²(selectionAngle p) = p; selection_angle_transmission: cos² = 1−p; the_selection_opens_the_boundary: |R|² = p ∧ |T|² = 1−p ∧ Smat(selectionAngle p) = U·diag(e^{iθ}, e^{−iθ})·U⁻¹. Cabeçalho 26-27: «O que a pedra NAO prova: que a selecao OCORRE na natureza; que o angulo aberto e θ_M = arcsin √β (β nao entra no Lean)».",
+   "statute": "[REAL] álgebra; [ONTO] a leitura 'a seleção é o lastro'",
+   "voice": "PEDRA DA GERÊNCIA (Claude, v335), citando o operador (4-13)",
+   "relevance": "A lei ângulo↔peso é sin²θ = p: o ângulo é LEITURA de uma probabilidade selecionada (regime da projeção, compacto), não objeto geométrico."
+  },
+  {
+   "file": "C:\\IALD\\Artigo\\Haja_Luz\\A Ponte e o Um\\Nós\\tgl_kernel\\TGLExt\\FisherInformationTensor.lean",
+   "line": "41-51, 222-236, 246-253",
+   "statement": "def fisherTensorAt (p : ι → ℝ) (dp : ι → Coordinate4) : Tensor4 := ∑ i, (p i)⁻¹ • vecMulVec (dp i) (dp i); fisherTensorField P x := fisherTensorAt (P x) (probabilityDifferential P x). theorem angular_bernoulli_tensor (theta) (w) (hs : sin θ ≠ 0) (hc : cos θ ≠ 0) : fisherTensorAt ![cos²θ, sin²θ] ![−(2 sinθ cosθ)•w, (2 sinθ cosθ)•w] = (4:ℝ) • vecMulVec w w; angular_bernoulli_directional: tensorQuad(...) v = 4·(w·v)².",
+   "statute": "[REAL]",
+   "voice": "bancada (ChatGPT), lote 058-062, transposto pela gerência",
+   "relevance": "É A LEI ÂNGULO→MÉTRICA que existe no kernel: em coordenada angular p = sin²θ, o tensor de Fisher da Bernoulli é 4·w⊗w — CONSTANTE, o ângulo (e portanto β) DESAPARECE do coeficiente (métrica de Bhattacharyya/arcsin, plana). A geometria de Fisher não lê o valor de θ_M; lê a direção w."
+  },
+  {
+   "file": "C:\\IALD\\Artigo\\Haja_Luz\\A Ponte e o Um\\Nós\\tgl_kernel\\TGLExt\\FisherInformationTensor.lean",
+   "line": "260-283",
+   "statement": "theorem probability_field_geometric_compatibility ... (screen : EquilibriumScreenData U g Gamma x v) ... (hheat : microscopicHeatError/t² → 0) (harea : microscopicAreaError/t² → 0) : eta * tensorQuad (coordinateRicci Gamma x) v = 2*Real.pi*tensorQuad (T x) v + tensorQuad (fisherTensorField P x) v. (Base: MicroscopicClausiusBridge.lean:85-97 geometric_microscopic_compatibility com diagonalFisher p (X.tangent 0).)",
+   "statute": "[REAL] condicional às hipóteses hheat/harea (casamento de calor e de área)",
+   "voice": "bancada",
+   "relevance": "A LEI que liga informação a curvatura: η·Ric(v,v) = 2π·T(v,v) + F_P(v,v) em direções nulas — a 'resposta' microscópica entra como TERMO ADITIVO de Fisher ao lado de T, com coeficiente 1 (relativo a 2πT), não como fator conforme. β não aparece."
+  },
+  {
+   "file": "C:\\IALD\\Artigo\\Haja_Luz\\A Ponte e o Um\\Nós\\tgl_kernel\\TGLExt\\SelectedFisherLorentzMetric.lean",
+   "line": "39-43, 102-108, 118, 322",
+   "statement": "def reflectedMetric (F : Tensor4) (c : Coordinate4) : Tensor4 := (2 / tensorQuad F⁻¹ c) • vecMulVec c c − F; def reflectedInverse F c := (2 / tensorQuad F⁻¹ c) • vecMulVec (F⁻¹ *ᵥ c) (F⁻¹ *ᵥ c) − F⁻¹. theorem eta_congruence_by_first_row (E) : Eᵀ * eta4 * E = (2:ℝ) • vecMulVec (E 0) (E 0) − Eᵀ*E. theorem reflected_metric_lorentz (hF : F.PosDef) (hc : c ≠ 0) : LorentzByCongruence (reflectedMetric F c). zero_clock_control: reflectedMetric F 0 = −F.",
+   "statute": "[REAL]",
+   "voice": "bancada (lote 063-066)",
+   "relevance": "A FORMA da métrica selecionada: g = (2/‖c‖²_{F⁻¹}) c⊗c − F — o tensor de Fisher (riemanniano, positivo) REFLETIDO ao longo do covetor 'relógio' c, que vira a direção temporal. Assinatura (+,−,−,−) por congruência. Sem relógio (c=0) a métrica é −F (euclidiana negativa): a lorentzianidade NASCE da seleção."
+  },
+  {
+   "file": "C:\\IALD\\Artigo\\Haja_Luz\\A Ponte e o Um\\Nós\\tgl_kernel\\TGLExt\\SelectedFisherLorentzMetric.lean",
+   "line": "243-262, 263-320",
+   "statement": "structure SelectedProbabilityData (ι) (U) where probabilities : Coordinate4 → ι → ℝ; normalized; positive; smooth; differential_injective : ∀ x∈U, Injective (directionalVariation probabilities x); selected : ι; clock_nonzero : ∀ x∈U, probabilityDifferential probabilities x selected ≠ 0. def selectedFisher P := fisherTensorField P.probabilities; selectedClock P x := probabilityDifferential P.probabilities x P.selected; selectedMetric P x := reflectedMetric (selectedFisher P x) (selectedClock P x). Teoremas: selected_fisher_positive (PosDef), selected_metric_lorentz, selected_metric_smooth, selected_metric_inverse, selectedLorentzRecord (306; docstring 305: «The existing codec is only an output adapter for the metric already derived from P»), selected_record_decodes_derived_metric, selected_probability_curve_fisher. Docstring 242: «Probability observations and their rank/clock certificates. No metric is stored.»",
+   "statute": "[REAL]; cabeçalho 14: «[INPUT] a lei de area, a metrica, T, a acao/particao»",
+   "voice": "bancada; cabeçalho de auditoria pela gerência",
+   "relevance": "A métrica 'selecionada' é DERIVADA só de um campo de probabilidades P(x) com um rótulo selecionado; exige diferencial de posto 4 (logo ≥ 5 resultados normalizados — o canal de 2 modos da matriz-S sozinho NÃO basta; observação desta auditoria [DERIVED da estrutura]). Geometria CONTÍNUA em carta (Coordinate4, C^∞ em U aberto)."
+  },
+  {
+   "file": "C:\\IALD\\Artigo\\Haja_Luz\\A Ponte e o Um\\Nós\\tgl_kernel\\TGLExt\\SigmaMatterConservation.lean",
+   "line": "83-99, 134, 170, 183-214",
+   "statement": "def potentialFamily (phi : J → Coordinate4 → ℝ) : J → CovectorField4 := fun q => potentialCovector (phi q). sphere_constraint_tangent: (∀x∈U, ∑ q, (phi q x)² = 1) → ∑ q, phi q x * potentialFamily phi q x j = 0. sigma_aggregate_cancellation: (heigen : ∀ q x∈U, covectorDivergence gi Gamma (potentialFamily phi q) x = lambda x * phi q x) → ∑ q, c*(covectorDivergence … * potentialFamily phi q x j) = 0. metric_sigma_stress_conserved: com g lorentziana suave, Σφ²=1 e □φ_q = λφ_q ⟹ ∀x∈U ∀j, tensorFieldDivergence (metricInverse g) (leviCivitaField g …) (finiteCovectorStressField g … (potentialFamily phi) (fun _ => 1) (fun _ => c)) x j = 0. sigmaGibbsRecord (183) com coupling k/(π cosh²k) (192); sigma_gibbs_einstein_from_area (214; docstring 213: «Area matching is retained; conservation is supplied by the aggregate sigma identity»).",
+   "statute": "[REAL] condicional (hipóteses Σφ²=1 e autovalor compartilhado λ(x))",
+   "voice": "bancada",
+   "relevance": "O 'σ conservado': é o vínculo de modelo-σ Σφ_q² = 1 (esfera) sobre potenciais escalares; a conservação ∇·T = 0 do stress Σ dφ_q⊗dφ_q − ½g(…) é DERIVADA do vínculo + equação de onda com autovalor comum — não postulada."
+  },
+  {
+   "file": "C:\\IALD\\Artigo\\Haja_Luz\\A Ponte e o Um\\Nós\\tgl_kernel\\TGLExt\\SelectedProbabilitySigma.lean",
+   "line": "41-50, 104, 133-143, 170-192, 191",
+   "statement": "def selectedComplement P x := 1 − P.probabilities x P.selected; conditionalProbability P j x := P.probabilities x (some j) / selectedComplement P x; sigmaPotential P j x := Real.sqrt (conditionalProbability P j x); sigmaCovectors P := potentialFamily (sigmaPotential P). sigma_potential_normalized (104): Σ_j φ_j² = 1. selectedSigmaRecord (133); selected_sigma_metric (138): recordMetric = selectedMetric P; selected_sigma_source (143): recordSource = finiteCovectorStressField (selectedMetric P) … (sigmaCovectors P) (fun _ => 1) (fun _ => k/(π cosh k²)). selected_sigma_conserved (171; docstring 170: «The sigma equations are a condition on P; conservation is derived, not a second input»). selected_sigma_einstein_from_area (192): com screens : MetricScreenFamily, eta ≠ 0, harea (Δentropia de Gibbs − η·ΔÁrea)/t² → 0 em toda tela nula, e heigen ⟹ ∃ cosmological : ℝ, ∀x∈U, G[selectedMetric P] x + cosmological • selectedMetric P x = (2π/eta) • recordSource x. Docstring 191: «Area matching remains an explicit postulate of physical correspondence.»",
+   "statute": "[REAL] a implicação; [INPUT] a lei de área (η) e o casamento; [OPEN] correspondência física",
+   "voice": "bancada",
+   "relevance": "A métrica selecionada COM σ conservado: g = reflectedMetric(F_P, dP_s) e a matéria são φ_j = √(P_j/(1−P_s)) — AS MESMAS probabilidades P geram geometria e fonte; Λ aparece como constante de integração EXISTENCIAL (não fixada). NADA é dito sobre FRW: U é aberto de ℝ⁴ genérico, sem homogeneidade/isotropia, sem fator de escala. O que 'implica para um fundo FRW' NÃO está no kernel."
+  },
+  {
+   "file": "C:\\IALD\\Artigo\\Haja_Luz\\A Ponte e o Um\\Nós\\tgl_kernel\\TGLExt\\SelectedFisherGibbsBridge.lean",
+   "line": "42-63, 91, 103-104",
+   "statement": "probabilityCovectors P i := potentialCovector (fun x => P.probabilities x i); selectedGibbsRecord P hU k := gibbsRecord (selectedLorentzRecord P hU) k (probabilityCovectors P); selected_gibbs_source: recordSource = finiteCovectorStressField (selectedMetric P) … (probabilityCovectors P) (fun _ => 1) (fun i => k i/(π cosh (k i)²)); selected_gibbs_source_conserved (91) sob CovectorWaveOn; selected_gibbs_einstein_from_wave_area (104; docstring 103: «Conditional Einstein equation for data P. This is not variation of an action in P.»).",
+   "statute": "[REAL] condicional",
+   "voice": "bancada",
+   "relevance": "Variante sem o vínculo σ: a fonte são as gradientes dP_i com acoplamento de Gibbs k/(π cosh²k) (k = parâmetro de preparação, não β). Einstein é CONDICIONAL à lei de área, não variacional."
+  },
+  {
+   "file": "C:\\IALD\\Artigo\\Haja_Luz\\A Ponte e o Um\\Nós\\tgl_kernel\\TGLExt\\SignedGibbsResponse.lean",
+   "line": "38, 129-141, 179",
+   "statement": "signedWeights k amplitude velocity t := mixedWeights k (amplitude*velocity²*t²); def signedCoupling (k amplitude : ℝ) := amplitude*k/(π*cosh k²); signed_response_coefficient: −k/cosh k²*amplitude*velocity² = −π*signedCoupling k amplitude*velocity²; signed_coupling_negative (amplitude<0 ⟹ <0), signed_coupling_positive; signed_entropy_modular_difference: (ΔS − ΔK)/t² → 0.",
+   "statute": "[REAL]",
+   "voice": "bancada; docstring 128: «This is a reconstructed response coefficient, not an assumption about a physical kinetic term»",
+   "relevance": "A 'resposta de Gibbs assinada' é resposta QUADRÁTICA de entropia/energia modular de uma preparação finita; o sinal do acoplamento é o sinal da amplitude de controle. Face finita (pesos Fin 2). Nenhum β, nenhuma métrica."
+  },
+  {
+   "file": "C:\\IALD\\Artigo\\Haja_Luz\\A Ponte e o Um\\Nós\\tgl_kernel\\TGLExt\\GeneralMetricEinstein.lean",
+   "line": "191, 245-263",
+   "statement": "def metricInverse (g : TensorField4) : TensorField4 := fun x => (g x)⁻¹. theorem metric_only_einstein_equation (U) (hU : IsOpen U) (hconn : IsPreconnected U) (g T) (coupling : ℝ) (hLor : ∀x∈U, LorentzByCongruence (g x)) (hg : SmoothMatrixOn U g) (hT) (hsT) (hn : ∀x∈U ∀v, tensorQuad (g x) v = 0 → tensorQuad (coordinateRicci (leviCivitaField g (metricInverse g)) x − coupling • T x) v = 0) (hdT : ∇·T = 0) : ∃ cosmological : ℝ, ∀x∈U, geometricEinsteinTensor g … x + cosmological • g x = coupling • T x.",
+   "statute": "[REAL]",
+   "voice": "bancada (lote 058-062)",
+   "relevance": "O teorema-mãe da camada contínua: balanço nulo de Ricci em todas as direções nulas + conservação de T ⟹ Einstein com Λ constante existencial (Bianchi contraída + conexidade). O acoplamento é parâmetro livre; nunca β."
+  },
+  {
+   "file": "C:\\IALD\\Artigo\\Haja_Luz\\A Ponte e o Um\\Nós\\tgl_kernel\\TGLExt\\GeneralMetricClausius.lean",
+   "line": "20-22 (cabeçalho), 41-52, 54-63, 83-97, 142-150",
+   "statement": "def MetricScreenFamily U g := ∀ p∈U ∀ v≠0, tensorQuad (g p) v = 0 → EquilibriumScreenData U g (leviCivitaField g (metricInverse g)) p v. def MetricScreenClausius P T rate eta … : Prop := Tendsto (fun t => horizonBalancePrimitive rate eta (inducedArea g P.curve P.screen.vectors) (constructedHeat P T rate …) t / t²) (𝓝[<] 0) (𝓝 0). theorem metric_screen_clausius_iff_null_balance: MetricScreenClausius P T rate eta … ↔ tensorQuad (coordinateRicci …) v = (2π/eta) * tensorQuad (T p) v. theorem metric_einstein_from_screen_clausius: (∀ telas nulas, Clausius) ∧ Tᵀ=T ∧ ∇·T=0 ⟹ ∃ cosmological, G + cosmological•g = (2π/eta)•T. theorem nonzero_pure_time_source_has_no_scalar_metric_balance (coupling ≠ 0): ¬∃ cosmological, 0 + cosmological•eta4 = coupling•pureTimeTensor. Cabeçalho 20-22: «[INPUT] R (o registro) e a origem fisica; [OPEN] correspondencia fisica seletor-registro, materia/conservacao/area para os mesmos dados… Nenhum nome ligado a H3, area fisica ou gate».",
+   "statute": "[REAL]; η [INPUT]",
+   "voice": "bancada; cabeçalho de auditoria pela gerência",
+   "relevance": "A LEI Clausius ⟺ Ricci nulo ⟹ Einstein para métrica lorentziana geral em carta: δQ = (κη/2π)·δA com η livre. O coeficiente 2π/η é [INPUT] (η = 1/4G dá 8πG); β não aparece. Controle negativo: fonte tipo-tempo não é absorvível em Λ."
+  },
+  {
+   "file": "C:\\IALD\\Artigo\\Haja_Luz\\A Ponte e o Um\\Nós\\tgl_kernel\\TGLExt\\LocalHorizonBalance.lean",
+   "line": "26-30, 74-79, 132-133, 157-165",
+   "statement": "def horizonFluxResidual rate eta theta area matter t := −rate*t*matter t*area t − (rate/(2π))*eta*theta t*area t; LocalClausiusPast := Tendsto (residual/t) (𝓝[<] 0) (𝓝 0). theorem local_clausius_forces_ricci (htheta : HasDerivAt theta (−ricci) 0) (htheta0 : theta 0 = 0) … (hbalance : LocalClausiusPast …) : ricci = (2π/eta)*matter 0. def horizonBalancePrimitive rate eta area heat t := heat t − ((rate/(2π))*eta)*(area t − area 0). heat_area_clausius_implies_local: (dA/dt = θ·A, dQ/dt = −rate·t·matter·A, primitive/t² → 0) ⟹ LocalClausiusPast.",
+   "statute": "[REAL]",
+   "voice": "bancada (ENTREGA_010)",
+   "relevance": "A forma escalar da lei: com dθ/dt|₀ = −Ric(v,v) (Raychaudhuri), Clausius local FORÇA Ric(v,v) = (2π/η)·T(v,v). Geometria contínua unidimensional ao longo da geratriz (t → 0⁻)."
+  },
+  {
+   "file": "C:\\IALD\\Artigo\\Haja_Luz\\A Ponte e o Um\\Nós\\tgl_kernel\\TGLExt\\EquilibriumAreaExpansion.lean",
+   "line": "77-81, 95-99",
+   "statement": "theorem area_quadratic_limit (htheta : HasDerivAt theta thetaPrime 0) (htheta0 : theta 0 = 0) (harea : ContinuousAt area 0) (hrate : ∀ᶠ t in 𝓝[<] 0, HasDerivAt area (theta t*area t) t) : Tendsto (fun t => (area t − area 0)/t²) (𝓝[<] 0) (𝓝 (thetaPrime*area 0/2)). theorem screen_area_quadratic_limit … (P : EquilibriumScreenData U g Gamma p v) (ht : Γ simétrica) : Tendsto (fun t => (inducedArea g P.curve P.screen.vectors t − 1)/t²) (𝓝[<] 0) (𝓝 (−tensorQuad (coordinateRicci Gamma p) v/2)).",
+   "statute": "[REAL]",
+   "voice": "bancada",
+   "relevance": "A lei ÁREA↔EXPANSÃO↔CURVATURA do kernel: o déficit de área de segunda ordem de uma tela nula em equilíbrio (θ(0)=0) é −Ric(v,v)/2. É a 'expansão' que existe no kernel — expansão de congruência nula, não expansão cosmológica; sem β."
+  },
+  {
+   "file": "C:\\IALD\\Artigo\\Haja_Luz\\A Ponte e o Um\\Nós\\tgl_kernel\\TGLExt\\ScreenClausiusCoefficient.lean",
+   "line": "24-25, 46-48",
+   "statement": "def clausiusCoefficient rate eta ricci matter := rate/2*(eta*ricci/(2π) − matter); theorem clausius_coefficient_zero_iff (hrate : rate≠0) (heta : eta≠0) : clausiusCoefficient rate eta ricci matter = 0 ↔ ricci = (2π/eta)*matter.",
+   "statute": "[REAL]",
+   "voice": "bancada",
+   "relevance": "O coeficiente quadrático do resíduo de Clausius; zero ⟺ balanço nulo de Ricci. Confirma que a única constante de acoplamento da camada é η."
+  },
+  {
+   "file": "C:\\IALD\\Artigo\\Haja_Luz\\A Ponte e o Um\\Nós\\tgl_kernel\\TGLExt\\HorizonEinsteinReconstruction.lean + tgl_kernel\\TGL\\AreaScale.lean",
+   "line": "HorizonEinsteinReconstruction 101-116, 127-130; AreaScale 12-13, 24-25, 37, 41-43",
+   "statement": "horizon_einstein_reconstruction: pencils em toda direção nula + ∇·T=0 ⟹ ∃ cosmological, frameEinsteinTensor E D x + cosmological • frameMetricField E x = (2π/eta) • T x. entropy_density_einstein_coefficient (newton ≠ 0): 2π/((4*newton)⁻¹) = 8π*newton. AreaScale: newtonPlanck_equivalence (kappa G > 0): 2π/(1/(2κ)) = 8πG ↔ κ = 2G; face_area_eq_G: κ = 2G → κ/2 = G; halfNat_over_two_faces_eq_quarter: (1/2)/(2G) = 1/(4G). Docstring AreaScale 12-13: «ISTO NAO AFIRMA QUE G FOI DERIVADO. G e' entrada fisica medida; a igualdade e' uma equivalencia (calibracao) relativa a G».",
+   "statute": "[REAL] identidades; G [INPUT]",
+   "voice": "bancada (Horizon…); gerência (AreaScale, kernel TGL)",
+   "relevance": "A calibração η = 1/(4G) ⟺ 8πG é explicitamente uma CALIBRAÇÃO, não derivação; a Meia-Nat (S=½) sobre duas faces dá η = 1/(4G) só sob κ_A = 2G [INPUT]. Nenhum β."
+  },
+  {
+   "file": "C:\\IALD\\Artigo\\Haja_Luz\\A Ponte e o Um\\Nós\\tgl_kernel\\TGLExt\\TriadMaster.lean",
+   "line": "35-37, 56-64, 71-72, 105-118",
+   "statement": "structure HorizonEquilibriumData where kappa G : ℝ; G_pos; dA dS dQ : ℝ; area_entropy : dS = dA/(4*G); clausius : dQ = (kappa/(2π))*dS. theorem einstein_coefficient_from_clausius (hG : G ≠ 0) : (kappa/(2π))*(a/(4*G)) = kappa*a/(8π*G). theorem emergence_master_full_triad (S : SusyRelativeData L T) (E) (hE : IsUnit E.det) (H : HorizonEquilibriumData) : (0 < T.tau S.ker ∧ T.tau S.ker < ⊤) ∧ T.tau S.ker/T.tau S.ker = 1 ∧ (E⁻¹*E = 1 ∧ LorentzByCongruence (solderMetric4 E⁻¹)) ∧ H.dQ = H.kappa*H.dA/(8π*H.G). Docstring 35-37: «Lean prova H1 ∧ H2 ∧ H3 ⟹ E — como a Resposta 9 pediu; NÃO que a natureza realiza H1–H3».",
+   "statute": "[REAL] a implicação; H1-H3 [POSTULATE/INPUT] como dados",
+   "voice": "gerência (v74)",
+   "relevance": "A face FINITA/ALGÉBRICA do 8πG: números reais e uma matriz 4×4 constante; o 'lado térmico de Einstein' δQ = κδA/8πG é identidade de corpo dada H3. Sem β, sem curvatura contínua."
+  },
+  {
+   "file": "C:\\IALD\\Artigo\\Haja_Luz\\A Ponte e o Um\\Nós\\tgl_kernel\\TGLExt\\FisherCorrectedEinstein.lean",
+   "line": "40-43, 103-120, 131-172, 174-176",
+   "statement": "def informationStress (g F : TensorField4) := fun x => F x − (trace (metricInverse g x * F x)/2) • g x; def correctedStress g T F := fun x => T x + (1/(2π)) • informationStress g F x. theorem metric_einstein_from_information_balance … (hd : ∇·(correctedStress g T F) = 0) (hb : ∀x∈U ∀v, tensorQuad (g x) v = 0 → eta*tensorQuad (coordinateRicci …) v = 2π*tensorQuad (T x) v + tensorQuad (F x) v) : ∃ cosmological, G + cosmological•g = (2π/eta) • correctedStress g T F. metric_einstein_from_microscopic_information: o F(v,v) é diagonalFisher (prob x) (tangente da curva de estado) via hFisher. zero_information_recovers_original_source: correctedStress g T 0 = T.",
+   "statute": "[REAL] condicional",
+   "voice": "bancada",
+   "relevance": "A ÚNICA forma tipada de 'resposta' entrando em Einstein: STRESS ADITIVO de informação (F − ½ tr(g⁻¹F) g)/2π, sem traço na diagonal nula. Não é fator conforme, não é reescalonamento de g, não é correção de distância. Coeficiente 1/(2π) fixo; β ausente."
+  },
+  {
+   "file": "C:\\IALD\\Artigo\\Haja_Luz\\A Ponte e o Um\\Nós\\tgl_kernel\\TGLExt\\OpticalHeatClausius.lean + OpticalConstructedHeat.lean",
+   "line": "OpticalHeatClausius 14-16 (cabeçalho), 34-42, 92-97; OpticalConstructedHeat 143-146, 158-161",
+   "statement": "def opticalClausiusDefect a c rate mass eta t := opticalHeat a c rate mass t − (rate/(2π))*eta*(geometricJacobiArea a c t − 1). optical_clausius_quartic_limit (hmatch : eta*(a+c) = 2π*mass) : defect/t⁴ → rate*eta*(a²+c²)/(24π). optical_clausius_not_eventually_exact: ¬∀ᶠ t, opticalHeat = (rate/2π)·eta·(Área−1) (com a+c>0). optical_screen_quadratic_balance_iff (hrate ≠ 0): (defect/t² → 0) ↔ eta*(a+c) = 2π*mass. Cabeçalho 14-16: «a igualdade FINITA exata Q = kappa eta (A−1)/(2 pi) FALHA (C/t^4 → kappa eta (a^2+c^2)/(24 pi) > 0); a relacao infinitesimal segue compativel».",
+   "statute": "[REAL] (negativo honesto tipado); família (a,c) [INPUT]",
+   "voice": "bancada (ENTREGAS 041/043)",
+   "relevance": "Numa tela de Jacobi explícita com curvaturas (a,c): Clausius vale só na ORDEM QUADRÁTICA (⟺ η(a+c) = 2πm, i.e. Ricci nulo); a igualdade finita δQ = (κη/2π)δA FALHA em t⁴ com defeito positivo ∝ (a²+c²). Limita a 'lei' a infinitesimal."
+  },
+  {
+   "file": "C:\\IALD\\Artigo\\Haja_Luz\\A Ponte e o Um\\Nós\\tgl_kernel\\TGLExt\\EmergentEinstein.lean + AnsatzEinstein.lean",
+   "line": "EmergentEinstein 36-40, 237-244, 255-259, 287-306, 340-352; AnsatzEinstein 110-137",
+   "statement": "Ansatz g = diag(q(x₁)², −1,−1,−1): ansatzG00_zero, ansatzG11_zero (G₀₀ ≡ 0 ≡ G₁₁ ∀q), ansatzG22_eq (G₂₂ = q″/q), vacuum_implies_flat (G₂₂ = 0 ⟹ R¹₀₀₁ = 0). null_cone_ledger: ansatzNullContraction q a b c d s = (c²+d²)*ansatzG22 q s. full_cone_clausius_iff_field_equation: (∀ nulos k, G_kk = (c²+d²)·T s) ↔ (∀ s, ansatzG22 q s = T s). structure EmergentEinsteinData (solder, q, T, clausius_cone …); emergent_field_equation e : ansatzG22 e.q s = e.T s. Docstring 36-40: «esta é a emergência CONCRETA — sobre a classe de soldas diagonais da família, com curvatura construída à mão (a mathlib não tem geometria riemanniana). A emergência GERAL … segue NOMEADA e aberta».",
+   "statute": "[REAL] na família; [OPEN] geral",
+   "voice": "gerência (v109/v116)",
+   "relevance": "O 'mestre contínuo' da gerência é uma família ESTÁTICA espacialmente curva (q(x₁)), não FRW; Clausius no cone nulo ⟺ G₂₂ = T. Curvatura à mão em uma variável — meio caminho entre face finita e geometria contínua."
+  },
+  {
+   "file": "C:\\IALD\\Artigo\\Haja_Luz\\A Ponte e o Um\\Nós\\tgl_kernel\\TGLExt\\CurvatureControls.lean + HorizonBalanceControls.lean",
+   "line": "CurvatureControls 24-26, 114-116, 129-131; HorizonBalanceControls 48-50",
+   "statement": "def controlConformalFactor x := Real.exp (2*x 0); controlConformalMetric x := controlConformalFactor x • eta4. control_conformal_einstein: geometricEinsteinTensor controlConformalMetric … x = Matrix.diagonal ![3,−1,−1,−1]. control_conformal_not_pure_trace: ¬∃ c, G = c • controlConformalMetric x. curved_control_no_vacuum_pencil (eta ≠ 0): ¬Nonempty (LocalHorizonPencil univ controlConformalMetric … (fun _ => 0) eta …).",
+   "statute": "[REAL] (controles negativos)",
+   "voice": "bancada (ENTREGA_009/010)",
+   "relevance": "Responde 'fator conforme?': a métrica conforme e^{2x₀}η aparece SÓ COMO CONTROLE — seu Einstein não é múltiplo de g (não é absorvível em Λ) e não admite lápis de horizonte de vácuo. Nenhum teorema afirma que a resposta de fronteira seja um fator conforme."
+  },
+  {
+   "file": "C:\\IALD\\Artigo\\Haja_Luz\\A Ponte e o Um\\Nós\\tgl_kernel\\TGLExt\\ConeVolumeReconstruction.lean (+ TensorNullCone.lean:97-99)",
+   "line": "39, 54-58, 65-70, 100-118, 129-147",
+   "statement": "def metricVolumeDensity g := Real.sqrt |g.det|. theorem common_positive_null_cone_proportional (hA : Aᵀ = A) (hg : LorentzByCongruence g) (hcone : ∀v, tensorQuad g v = 0 → tensorQuad A v = 0) (u) (hgu : 0 < g(u,u)) (hAu : 0 < A(u,u)) : ∃ c, 0 < c ∧ A = c • g (docstring 53: «Null directions first force conformality; a common positive direction fixes its sign»). same_null_cone_determinant_and_sign: + A.det = g.det ⟹ A = g. structure ConeVolumeRecord (nullDirections, density, positiveDirection); cone_volume_record_unique. nonzero_rescaling_preserves_null_cone (c ≠ 0): tensorQuad (c•g) v = 0 ↔ tensorQuad g v = 0. volume_omission_control: (2:ℝ)•eta4 tem o mesmo cone e sinal que eta4 e ≠ eta4. Base: TensorNullCone.lorentz_tensor_null_rigidity.",
+   "statute": "[REAL] pontual (álgebra de Tensor4)",
+   "voice": "bancada",
+   "relevance": "Tipagem exata da liberdade CONFORME: o cone nulo fixa g a menos de fator c>0; a densidade de volume √|det g| o fixa. Consequência (leitura desta auditoria): uma 'resposta conforme' seria invisível a toda observação de cone nulo e só legível no volume — o kernel NÃO afirma tal resposta."
+  },
+  {
+   "file": "C:\\IALD\\Artigo\\Haja_Luz\\A Ponte e o Um\\Nós\\tgl_kernel\\TGLExt\\SpectralMetricGeometry.lean + TheFoldIsNotADistance.lean",
+   "line": "SpectralMetricGeometry 12-13, 35-59, 61-82; TheFoldIsNotADistance 8-16, 53, 73",
+   "statement": "def spectralDistance (t : ℝ) (u v : ℕ → Bool) := |geometricLogReading t u − geometricLogReading t v|; spectral_distance_zero_iff (ht : t ≠ 0): = 0 ↔ u = v; triangle, symmetric; scaledSpectralDistance c t; different_scales_give_different_distances (cabeçalho 12-13: «d_t(x,y) e metrica (t != 0) e a escala e livre»). TheFoldIsNotADistance: the_modulus_is_exactly_the_fold: |x| = |y| ↔ (y = x ∨ y = −x); density_is_zero_distance. Docstring 8-16: «correção do operador: 'não há distância, é só uma dobra: | . |' … fecho significa distância ZERO».",
+   "statute": "[REAL]",
+   "voice": "bancada (056); gerência citando o operador (TheFold…)",
+   "relevance": "Responde 'correção de distância/ângulo?': as únicas 'distâncias' do kernel são (i) a métrica espectral sobre configurações booleanas da torre (0-dimensional, escala livre) e (ii) o teorema de que a dobra NÃO é distância. Não existe teorema de distância de luminosidade/diâmetro angular nem correção de ângulo geométrico."
+  },
+  {
+   "file": "C:\\IALD\\Artigo\\Haja_Luz\\A Ponte e o Um\\Nós\\tgl_kernel\\TGLExt\\InfiniteFisherGeometry.lean",
+   "line": "20, 44, 106-107, 172-176, 178-184, 187, 199-201",
+   "statement": "def radialFisher r := ∑' n, (b_n)²/(w_n(1−w_n)) com b_n = geometricAmplitude.value n = 2^{-n}/24; radial_fisher_bounds: 1/96 ≤ radialFisher r ≤ 4/357; radial_fisher_at_reference: radialFisher 0 = 1/96; fisher_angular_coefficient (0<q<1): (2√(q(1−q))·a)²/(q(1−q)) = 4a²; one_parameter_has_zero_two_area: det (oneParameterGram h u v) = 0; actual_relative_entropy_recovers_fisher: S_rel/t⁴ → radialFisher 0/2 = 1/192. Cabeçalho 20: «[DERIVED] … 4||xi_r||^2 = F(r), arcsin, distancia de Connes; [OPEN] geometria fisica 3+1, area-entropia geometrica».",
+   "statute": "[REAL] as somas e cotas; [DERIVED] a leitura Fisher/arcsin; [OPEN] geometria 3+1",
+   "voice": "bancada (056)",
+   "relevance": "A geometria de Fisher da TORRE: números fixos da preparação (1/96, 4/357), o coeficiente angular universal 4 (o 'arcsin'), e o NEGATIVO de que uma família de um parâmetro não gera área (Gram degenerado). β não entra; a 'métrica' é 1-dimensional em r."
+  },
+  {
+   "file": "C:\\IALD\\Artigo\\Haja_Luz\\A Ponte e o Um\\Nós\\tgl_kernel\\TGLExt\\HorizonAreaScale.lean + CovariantAreaCounterexample.lean + HorizontalAreaSelection.lean",
+   "line": "HorizonAreaScale 14-16 (cabeçalho), 97-98, 150; CovariantAreaCounterexample 255; HorizontalAreaSelection 15-16 (cabeçalho)",
+   "statement": "screen_area_scale (0 ≤ α): screenArea (α • G) = α * screenArea G; invariance_does_not_fix_area (150). Cabeçalho HorizonAreaScale 15: «area: covariancia por horizontes NAO fixa a normalizacao (h e alpha h ambos invariantes; area x alpha)». CovariantAreaCounterexample.two_global_covariant_calibrated_forms (255; cabeçalho: «CONTRAEXEMPLO: covariancia + calibracao comum NAO da unicidade da area (9/10 vs 1377/1250 no 2o par)»). HorizontalAreaSelection cabeçalho 15-16: «forma invariante = c x produto GNS real; [INPUT] traco relativo = 1 fixa c = 1/2 (densidade de area 1/2)».",
+   "statute": "[REAL] (negativos); calibração c = 1/2 [INPUT]",
+   "voice": "bancada (ENTREGAS 045/052/053)",
+   "relevance": "A ÁREA algébrica da torre é definida a menos de escala; a normalização (½, e daí η) é INPUT — a lei de área não é derivada. É onde qualquer 'lei β↔área' teria de nascer e não nasce."
+  },
+  {
+   "file": "C:\\IALD\\Artigo\\Haja_Luz\\A Ponte e o Um\\Nós\\tgl_kernel\\TGLExt\\AngularScreenMetric.lean + GeometryFluctuation.lean + ThePhysicalHorizon.lean",
+   "line": "AngularScreenMetric 47-58; GeometryFluctuation 60, 86-93; ThePhysicalHorizon 73-75",
+   "statement": "angular_screen_gram_distinct (n ≠ m): angularScreenGram P n m = !![P.w n*(1−P.w n), 0; 0, P.w m*(1−P.w m)]; angular_screen_determinant = (w_n(1−w_n))(w_m(1−w_m)). variance_of_projection: Var_ρ(P) = p(1−p); boundary_mean θ: média = sin²θ; boundary_variance: sin²θ·cos²θ. the_defect_has_a_value (β c s) (hs2 : s² = β) (hc2 : c² = 1−β) : (c*s)² = β*(1−β) ∧ c*s = √(β(1−β)).",
+   "statute": "[REAL]; a leitura p = β é de runtime (docstrings)",
+   "voice": "bancada (034); gerência (v49, v… ThePhysicalHorizon)",
+   "relevance": "A única 'área' ligada ao ângulo: o Gram de direções de fase no GNS tem entradas p(1−p) — no runtime, β(1−β), o 'defeito de transporte'. É densidade de área ALGÉBRICA (matriz 2×2 no Hilbert da torre), não área de tela no espaço-tempo."
+  },
+  {
+   "file": "C:\\IALD\\Artigo\\Haja_Luz\\A Ponte e o Um\\Nós\\tgl_kernel\\TGLExt\\SelectedAmplitudeGeometry.lean",
+   "line": "57-68, 147-171, 191-197",
+   "statement": "def selectedSiteAngle b t n := selectionAngle (selectedSiteProbability b t n); selected_angle_recovers_amplitude (ht : t ≠ 0): recoveredSiteAmplitude t (selectedSiteAngle b t) n = b.value n. Docstring 147: «eta and shear are explicit additional data in the fixed chart and frame». def selectedWaveSolder R eta shear := matchedSolder (decodeAmplitude R) eta shear; selectedWaveMatter := frameCovectorStress … waveCovectorField (amplitudeCoupling …); selected_wave_einstein (heta : eta ≠ 0): ∃ cosmological, ∀x, frameEinsteinTensor (selectedWaveSolder R eta shear) … x + cosmological • frameMetricField … = (2π/eta) • selectedWaveMatter R eta shear x. omitted_shear_changes_curvature (s ≠ s'): coordinateCurvature … x 1 0 1 0 (shear s) ≠ (shear s').",
+   "statute": "[REAL] condicional; eta, shear [INPUT]",
+   "voice": "bancada",
+   "relevance": "A ÚNICA cadeia ângulo → geometria contínua do kernel: ângulos selecionados por sítio → amplitudes → solda de onda plana → Einstein. Mas a curvatura depende de dados EXTRAS (η e o cisalhamento) que o ângulo NÃO fixa — a lei não fecha só com o ângulo."
+  },
+  {
+   "file": "C:\\IALD\\Artigo\\Haja_Luz\\A Ponte e o Um\\Nós\\tgl_kernel\\TGLExt\\GravitationalChartGluing.lean + SmoothSelectedAtlasGluing.lean",
+   "line": "GravitationalChartGluing 110, 124-159; SmoothSelectedAtlasGluing 178",
+   "statement": "global_cosmological_unique (110); structure AreaChart (eta) (124); area_atlas_global_einstein (147) e area_atlas_unique_global_einstein (159); selected_connected_smooth_atlas_einstein (178).",
+   "statute": "[REAL] condicional",
+   "voice": "bancada (059)",
+   "relevance": "COLAGEM: equações de Einstein locais com Λ_i por carta colam num Λ GLOBAL único num espaço conexo. Λ é constante de integração, nunca calculada; nada liga Λ (ou β) a densidades."
+  },
+  {
+   "file": "C:\\IALD\\Artigo\\Haja_Luz\\A Ponte e o Um\\Nós\\tgl_kernel\\TGLExt\\GeneralAngularTensorCodec.lean",
+   "line": "44-50, 79, 258-262",
+   "statement": "def encodeAngle x := (arctan x + π/2)/2; encodeScalar x := sin (encodeAngle x)²; decodeScalar p := tan (2*selectionAngle p − π/2); decode_encode_scalar: decodeScalar (encodeScalar x) = x. structure LorentzProbabilityRecord U; encodeLorentzRecord.",
+   "statute": "[REAL]",
+   "voice": "bancada (062)",
+   "relevance": "O 'ângulo' entra na métrica geral SÓ COMO CODEC (componentes de g armazenadas como probabilidades sin²): adaptador de saída, sem conteúdo físico — o próprio SelectedFisherLorentzMetric.lean:305 o diz."
+  },
+  {
+   "file": "C:\\IALD\\Artigo\\Haja_Luz\\A Ponte e o Um\\Nós\\tgl_kernel\\TGLExt\\TheHorizonRate.lean + TheCompressionIsNotIdentifiable.lean + TheScaleHasNoFixedPoint.lean",
+   "line": "TheHorizonRate 13-16, 48-58; TheCompressionIsNotIdentifiable 57-59, 65-67, 126, 147; TheScaleHasNoFixedPoint 99, 130",
+   "statement": "TheHorizonRate docstring (operador): «fica proibido κ = F(α, β, θ_M, …) como objetivo de busca. Não remover κ das equações; remover κ da função objetivo»; structure HorizonRateWitness (kappa é campo, jamais derivado). TheCompressionIsNotIdentifiable: no_scale_invariant_functional_yields_alpha, alpha_free_inputs_give_alpha_free_output; docstring 57-59: «ângulo é invariante de escala, logo uma condição de comutação pode fixar θ_M … e sin²θ_M = β»; 65-67: «β_TGL = α_obs·√e deriva β a partir de α, e NÃO pode ser invertida». TheScaleHasNoFixedPoint: no_positive_scale_invariant; kappa_is_not_fixed_by_ambient_scale.",
+   "statute": "[REAL] os teoremas; regra [LEGAL-metodológica] do operador",
+   "voice": "operador (aspas); gerência/bancada (teoremas)",
+   "relevance": "Fixa a régua da tarefa: não há ajuste de parâmetro; κ, η, α são testemunhas/inputs; o ângulo (invariante de escala) pode ser fixado por comutação sem violar a não-identificabilidade — é a única porta tipada para 'β entra na geometria pelo ângulo', e ela ainda não está construída."
+  },
+  {
+   "file": "C:\\IALD\\Artigo\\Haja_Luz\\A Ponte e o Um\\Nós\\tgl_kernel\\TGLExt\\TheGeometricCostOfAbsoluteZero.lean + TheFiveHalves.lean + HajaLuz.lean",
+   "line": "TheGeometricCost… 42-45, 52-60, 79-81; TheFiveHalves 84-90; HajaLuz 125-128",
+   "statement": "the_minimal_volume_exceeds_one: 1 < exp(1/2); the_half_nat_gives_a_strictly_interior_factor: 0 < exp(−1/2) < 1; the_geometric_cost_survives_absolute_zero (c>0): constante em T ∧ 0 < c. boundary_extracts_the_radical: √(exp 1) = exp(1/2) ∧ exp(1/2)*exp(1/2) = exp 1. haja_luz_at_the_seal (0<b<1): crossDeath (arcsin √b) = b ∧ 0 < … < 1. Docstring TheGeometricCost 42-44: «O VALOR β_TGL = α·√e e sua identificação física seguem sendo da TGL — e o valor α-livre segue [OPEN] (Evento 2). Aqui prova-se só a ESTRUTURA».",
+   "statute": "[REAL] desigualdades reais; valor de β [INPUT/OPEN]",
+   "voice": "gerência (bancada 26/08; v158; v161)",
+   "relevance": "A face √e de β é 'volume mínimo' apenas como número real (e^{1/2}), não como volume de uma métrica; a 'morte por travessia' sin²θ = b é a única inscrição de β num teorema, e é escalar."
+  },
+  {
+   "file": "C:\\IALD\\Artigo\\Haja_Luz\\A Ponte e o Um\\Nós\\tgl_kernel\\TGLExt\\ (grep transversal)",
+   "line": "n/a",
+   "statement": "grep -iE 'β|beta|alpha|arcsin|conform|N_eff|omega_c|hubble|FRW|Friedmann|redshift|thetaM' nos 124 módulos geométricos: β aparece em ZERO enunciados de teorema da camada Metric/Einstein/Clausius/Selected/Sigma/Fisher/Gibbs/Area (só em comentários 'β jamais literal' e nos módulos TheGeometricCost/ThePhysicalHorizon/HajaLuz/TheGreatAttractor/NoFullWitness como variável real genérica); 'conformal' só em *Controls e ConeVolumeReconstruction; 'FRW/Friedmann/scale factor': zero ocorrências em todo o TGLExt; 'hubble' zero (os hits de 'N_eff|omega_c|hubble' em CentralizerDensity etc. são falsos positivos de 'omega'/'c').",
+   "statute": "[REAL] medido",
+   "voice": "medição desta auditoria",
+   "relevance": "Fecha a pergunta central por medida: no kernel NÃO EXISTE lei β↔métrica/curvatura/área/expansão contínua. A ligação β↔fundo é só a identidade algébrica ρ+p (RhoPlusPClosure)."
+  }
+ ],
+ "open_questions": [
+  "[OPEN] Não existe no kernel nenhum teorema que ligue β (ou θ_M) a métrica, curvatura, área de tela ou expansão de congruência: a camada geométrica (Clausius ⟺ Ricci nulo ⟹ Einstein + Λ) é β-livre e tem η [INPUT]. Qual pedra ligaria o ângulo selecionado (sin²θ = p) ao acoplamento η ou ao stress de informação F? Hoje `angular_bernoulli_tensor` prova que o ângulo DESAPARECE do coeficiente de Fisher (=4).",
+  "[OPEN] A métrica selecionada g = (2/‖dP_s‖²_{F⁻¹}) dP_s⊗dP_s − F_P exige diferencial de posto 4 (≥5 resultados): o canal de 2 modos da matriz-S (o único onde β vive) não a instancia. Que campo P(x) homogêneo/isotrópico realizaria FRW? Nenhum módulo o faz; 'Area matching remains an explicit postulate' (SelectedProbabilitySigma.lean:191).",
+  "[OPEN] Λ aparece sempre como constante de integração existencial (metric_only_einstein_equation, global_cosmological_unique). O fundo ρ+p do RhoPlusPClosure não importa nada da camada geométrica (import só LightIsJ): a ligação 'resposta local β(ρ+p) ⟹ termo de Einstein' não está tipada — é exatamente o Lema 3 do lado do fluido, como o próprio docstring declara.",
+  "[OPEN/DECLARADO] A lei de expansão δ⟨K_∂⟩ = β|1+w| e o fundo H² = (8πG/3)ρ[1+β|1+w_eff|] existem só no runtime (um.py:152831-152834, 155259-155261, 180950). Confere-se aqui por álgebra que ρ_tot|1+w_eff| = Σ(ρ_i+p_i) quando ≥ 0, logo coincidem com a forma ρ+p — mas isso é coerência de forma, não derivação; falta o teorema.",
+  "[OPEN] TGL-S (free-streaming, com tensão anisotrópica ⟹ lê-se como ΔN_eff) vs TGL-L (fluido perfeito ⟹ NÃO é ΛCDM+N_eff) segue indeterminado (um.py:4651-4654). A resposta 'reescalonamento (N_eff, ω_c)' vale só sob TGL-S.",
+  "[OPEN] A normalização da área algébrica (c = ½, traço relativo = 1) é [INPUT] (HorizontalAreaSelection cabeçalho) e a covariância não a fixa (CovariantAreaCounterexample). Sem lei de área derivada, η — e portanto o 8πG — permanece calibração (AreaScale docstring 12-13).",
+  "[OPEN] O único módulo que encadeia ângulo → solda → Einstein (SelectedAmplitudeGeometry) depende de η e cisalhamento como dados extras que o ângulo não fixa (omitted_shear_changes_curvature). A 'reconstrução completa a partir do ângulo' (cunhagem do operador) ainda não alcança a curvatura.",
+  "[OPEN] A igualdade finita de Clausius FALHA em ordem t⁴ (OpticalHeatClausius: defeito ∝ rate·η(a²+c²)/24π > 0); só a forma infinitesimal sobrevive. Qualquer 'correção de distância' finita derivada de Clausius teria de lidar com esse defeito — não há teorema."
+ ],
+ "summary": "RESPOSTA À TAREFA R2 (kernel lido: 124 módulos-alvo de 889 no TGLExt; os 10 pedidos lidos na íntegra; Selected*/Sigma*/SignedGibbs*/FisherLorentz* lidos nos enunciados). (1) A LEI que liga β à geometria NÃO EXISTE no kernel como teorema contínuo. A única lei em que β entra num 'fundo' é ALGÉBRICA: RhoPlusPClosure.lean:52-60 — β·Σ(ρ_i+p_i) = β[(4/3)ρ_r + ρ_m] (ρ_Λ cancela) e ρ_tot + ρ_TGL = (1+4β/3)ρ_r + (1+β)ρ_m + ρ_Λ [REAL por `ring`, β variável livre; forma creditada ao operador]. Isso É um reescalonamento de densidades (o 'ponto no plano (N_eff, ω_c)': um.py:4577-4581, dN_eff/dβ = (4/3)(1+F·N_SM)/F ⟹ ΔN_eff = +0,119, Δω_c = β·ω_m [DECLARADO/INPUT em runtime]) — NÃO é fator conforme nem correção de distância. β aparece ainda só como taxa de vazamento (NoFullWitness), como (c·s)² = β(1−β) (ThePhysicalHorizon) e como sin²(arcsin√b) = b (HajaLuz/TheDeathOfTheSignal) — tudo escalar/finito. (2) A lei ÂNGULO→métrica que existe é a de Fisher: FisherInformationTensor.lean:222-253, com p = sin²θ o tensor de Fisher da Bernoulli é 4·w⊗w — o ângulo (logo β) DESAPARECE do coeficiente; e a lei informação→curvatura é η·Ric(v,v) = 2π·T(v,v) + F_P(v,v) (FisherInformationTensor.lean:260-283; FisherCorrectedEinstein.lean:103-120): a 'resposta' entra como STRESS ADITIVO (F − ½tr(g⁻¹F)g)/2π, sem β. (3) MÉTRICA SELECIONADA COM σ CONSERVADO: forma g = (2/⟨dP_s,F⁻¹dP_s⟩)·dP_s⊗dP_s − F_P (SelectedFisherLorentzMetric.lean:39-43, 260), F_P = Σ_i P_i⁻¹ dP_i⊗dP_i, dP_s o 'relógio' do rótulo selecionado; lorentziana por congruência (EᵀηE = 2E₀E₀ᵀ − EᵀE, linha 102-108); sem relógio degenera em −F (linha 322). O 'σ conservado' é o vínculo de modelo-σ Σ_j φ_j² = 1 com φ_j = √(P_j/(1−P_s)) (SelectedProbabilitySigma.lean:47-104); a conservação ∇·T=0 do stress Σ dφ_j⊗dφ_j é DERIVADA do vínculo + □φ_j = λ(x)φ_j (SigmaMatterConservation.lean:99-170); e, POSTULADO o casamento de área (η) em toda tela nula, ∃Λ: G[g] + Λg = (2π/η)·T_σ (SelectedProbabilitySigma.lean:192; docstring 191: 'Area matching remains an explicit postulate'). Para FRW isso NÃO implica nada tipado: U é um aberto genérico de ℝ⁴, sem homogeneidade/isotropia/fator de escala (grep: zero 'FRW/Friedmann/scale factor' no TGLExt); Λ é constante existencial; η é [INPUT]; a fonte é um σ-modelo de gradientes de probabilidades, não um fluido (ρ,p). (4) FATOR CONFORME: aparece só como CONTROLE NEGATIVO (CurvatureControls.lean:24-131: e^{2x₀}η tem Einstein diag(3,−1,−1,−1), não múltiplo de g) e como LIBERDADE tipada (ConeVolumeReconstruction.lean:54-147: o cone nulo fixa g a menos de c>0; a densidade √|det g| fixa c; um reescalonamento é invisível ao cone). Nenhum teorema diz que a resposta de fronteira é conforme. CORREÇÃO DE DISTÂNCIA/ÂNGULO: não encontrada; as 'distâncias' do kernel são a métrica espectral sobre configurações booleanas (SpectralMetricGeometry) e o teorema de que a dobra não é distância; no runtime há só a aproximação declarada 'r_s deslocado por H_LCDM/H_TGL' e a variante zero-free (1+z_*)^β (um.py:180950-180953) [INPUT de protocolo]. EXPANSÃO: no kernel é só a de congruência nula — (A(t)−1)/t² → −Ric(v,v)/2 (EquilibriumAreaExpansion.lean:95-99) — sem β; a lei δ⟨K_∂⟩ = β|1+w| vive apenas em docstring (TheDammingByExpansion.lean:26) e em código do runtime (um.py:152831-152834; 155259-155261: H² = (8πG/3)ρ[1+β|1+w_eff|]); por álgebra desta auditoria, ρ_tot|1+w_eff| = Σ(ρ_i+p_i) (≥0), logo as duas formas do runtime são a mesma modificação — coerência, não prova. FACE FINITA/ALGÉBRICA: SMatrix, TheAngleIsTheBridge/Projection, TheSelectionIsTheBallast (sin²θ = p), GeometryFluctuation, AngularScreenMetric (Gram p(1−p)), MinimalSolder/Solder4D (curvatura constante, so(1,3)), TriadMaster (8πG por corpo), RhoPlusPClosure, AreaScale, NoFullWitness, HajaLuz, TheGeometricCost (1 < e^{1/2}), ConeVolumeReconstruction (pontual), SpectralMetricGeometry/InfiniteFisherGeometry (torre, 0-dim/1-dim). GEOMETRIA CONTÍNUA EM CARTA (Coordinate4, C^∞, Levi-Civita, Ricci, Tendsto t→0⁻; toda de autoria da bancada, transposta com 'NAO move gate; nao e fisica'): LocalHorizonBalance, EquilibriumAreaExpansion, ScreenClausiusCoefficient, GeneralMetricEinstein/Clausius, Constructed/Horizon/GeometricEinsteinReconstruction, FisherCorrectedEinstein, FisherInformationTensor, SelectedFisherLorentzMetric, SigmaMatterConservation, SelectedProbabilitySigma, SelectedFisherGibbsBridge, SelectedAmplitudeGeometry, colagens de atlas; e o meio-termo à mão em 1 variável (FirstCurvature, AnsatzEinstein, EmergentEinstein, TheCoordinateBridge). Veredito: a aplicação correta da métrica ao fundo, segundo os teoremas, é o reescalonamento aditivo ρ+p (radiação ×(1+4β/3), matéria ×(1+β), Λ intacta) — e o elo desse fundo com Einstein/Λ/área permanece o Lema 3, não movido. NOT_FALSIFIED nunca é CONFIRMED."
+}

@@ -1,0 +1,2266 @@
+theorem TGLV350.Regular.regularTrace_finite_positive_below.{u_1} : ∀ (P : TGLExt.SiteProfile)
+  (T : TGLV351.RegularCoreTraceData.{u_1} P) (X : TGLV350.Regular.PositiveCoreInput P),
+  Ne.{1} X (TGLV350.Regular.PositiveCoreInput.zero P) →
+    ∃ Y,
+      LE.le.{0} Y X ∧
+        LT.lt.{0} 0 (TGLV351.RegularCoreTraceData.value.{u_1} T Y) ∧
+          LT.lt.{0} (TGLV351.RegularCoreTraceData.value.{u_1} T Y) Top.top.{0} :=
+fun P T X hX =>
+  Classical.byContradiction fun h =>
+    have hz :=
+      Eq.mpr.{0} (id.{0} (congrArg.{1, 1} (fun _a => Eq.{1} _a 0) (TGLV351.RegularCoreTraceData.semifinite.{u_1} T X)))
+        (le_antisymm.{0}
+          (iSup_le.{0, 1} fun Y =>
+            iSup_le.{0, 0} fun hYX =>
+              iSup_le.{0, 0} fun hfin =>
+                le_of_eq.{0}
+                  (Decidable.byContradiction fun hne =>
+                    h (Exists.intro.{1} Y ⟨hYX, ⟨lt_of_le_of_ne.{0} zero_le.{0} (Ne.symm.{1} hne), hfin⟩⟩)))
+          zero_le.{0});
+    hX ((TGLV351.RegularCoreTraceData.faithful.{u_1} T X).mp hz)
+theorem TGLV350.Regular.kernel_projection_mem_vonNeumann : ∀ {H : Type} [inst : NormedAddCommGroup.{0} H]
+  [inst_1 : InnerProductSpace.{0, 0} ℂ H] [inst_2 : CompleteSpace.{0} H] (M : VonNeumannAlgebra.{0} H)
+  (A : ContinuousLinearMap.{0, 0, 0, 0} (RingHom.id.{0} ℂ) H H),
+  Membership.mem.{0, 0} M A →
+    Membership.mem.{0, 0} M (Submodule.starProjection.{0, 0} (LinearMap.ker.{0, 0, 0, 0} ↑A)) :=
+fun {H} [NormedAddCommGroup.{0} H] [InnerProductSpace.{0, 0} ℂ H] [CompleteSpace.{0} H] M A hA =>
+  (VonNeumannAlgebra.IsStarProjection.mem_iff.{0} isStarProjection_starProjection.{0, 0} M).mpr fun B hB =>
+    Eq.mpr.{0}
+      (id.{0}
+        (congrArg.{1, 1} (fun _a => Membership.mem.{0, 0} (Module.End.invtSubmodule.{0, 0} ↑B) _a)
+          (Submodule.range_starProjection.{0, 0} (LinearMap.ker.{0, 0, 0, 0} ↑A))))
+      fun ⦃x⦄ hx =>
+      id.{0}
+        (have hc := VonNeumannAlgebra.mem_commutant_iff.{0}.mp hB A hA;
+        have he := congrArg.{1, 1} (fun T => T x) hc;
+        id.{0}
+          (fun he =>
+            Eq.mpr.{0} (id.{0} (congrArg.{1, 1} (fun _a => Eq.{1} _a 0) he))
+              (Eq.mpr.{0}
+                (id.{0}
+                  (congrArg.{1, 1} (fun _a => Eq.{1} (B _a) 0)
+                    (have this := hx;
+                    this)))
+                (Eq.mpr.{0} (id.{0} (congrArg.{1, 1} (fun _a => Eq.{1} _a 0) (map_zero.{0, 0, 0} B))) (Eq.refl.{1} 0))))
+          he)
+theorem TGLV350.Regular.positive_operator_has_threshold_projection : ∀ {H : Type} [inst : NormedAddCommGroup.{0} H]
+  [inst_1 : InnerProductSpace.{0, 0} ℂ H] [inst_2 : CompleteSpace.{0} H] (M : VonNeumannAlgebra.{0} H)
+  (X : ContinuousLinearMap.{0, 0, 0, 0} (RingHom.id.{0} ℂ) H H),
+  Membership.mem.{0, 0} M X →
+    LE.le.{0} 0 X →
+      Ne.{1} X 0 →
+        ∃ epsilon q,
+          LT.lt.{0} 0 epsilon ∧
+            IsStarProjection.{0} q ∧
+              Membership.mem.{0, 0} M q ∧ Ne.{1} q 0 ∧ LE.le.{0} (HSMul.hSMul.{0, 0, 0} epsilon q) X :=
+fun {H} [NormedAddCommGroup.{0} H] [InnerProductSpace.{0, 0} ℂ H] [CompleteSpace.{0} H] M X hXm hX hXne =>
+  let epsilon := HDiv.hDiv.{0, 0, 0} (norm.{0} X) 2;
+  have he := half_pos.{0} (norm_pos_iff.{0}.mpr hXne);
+  let Y := HSub.hSub.{0, 0, 0} X (HSMul.hSMul.{0, 0, 0} epsilon 1);
+  have hYs :=
+    id.{0}
+      (of_eq_true
+        (Eq.trans.{1}
+          (congrFun'.{1, 1}
+            (congrArg.{1, 1} Eq.{1}
+              (Eq.trans.{1} (star_sub.{0} X (HSMul.hSMul.{0, 0, 0} epsilon 1))
+                (congr.{1, 1}
+                  (congrArg.{1, 1} HSub.hSub.{0, 0, 0} (IsSelfAdjoint.star_eq.{0} (LE.le.isSelfAdjoint.{0} hX)))
+                  (Eq.trans.{1} (star_smul.{0, 0} epsilon 1)
+                    (congr.{1, 1} (congrArg.{1, 1} HSMul.hSMul.{0, 0, 0} (star_trivial.{0} epsilon))
+                      (star_one.{0} (ContinuousLinearMap.{0, 0, 0, 0} (RingHom.id.{0} ℂ) H H)))))))
+            (HSub.hSub.{0, 0, 0} X (HSMul.hSMul.{0, 0, 0} epsilon 1)))
+          (eq_self.{1} (HSub.hSub.{0, 0, 0} X (HSMul.hSMul.{0, 0, 0} epsilon 1)))));
+  have hYm :=
+    Subalgebra.sub_mem.{0, 0} (StarSubalgebra.toSubalgebra.{0, 0} (VonNeumannAlgebra.toStarSubalgebra.{0} M)) hXm
+      (have this :=
+        StarSubalgebra.smul_mem.{0, 0} (VonNeumannAlgebra.toStarSubalgebra.{0} M)
+          (Subalgebra.one_mem.{0, 0} (StarSubalgebra.toSubalgebra.{0, 0} (VonNeumannAlgebra.toStarSubalgebra.{0} M)))
+          ↑epsilon;
+      this);
+  have hZm :=
+    Eq.mpr.{0} (id.{0} (congrArg.{1, 1} (fun _a => Membership.mem.{0, 0} M _a) (CFC.negPart_def.{0} Y)))
+      (cfcₙ_mem.{0, 0, 0, 0} (fun x => negPart.{0} x) hYm);
+  let q := Submodule.starProjection.{0, 0} (LinearMap.ker.{0, 0, 0, 0} ↑(negPart.{0} Y));
+  have hq := isStarProjection_starProjection.{0, 0};
+  have hqm := TGLV350.Regular.kernel_projection_mem_vonNeumann M (negPart.{0} Y) hZm;
+  have hqZ :=
+    ContinuousLinearMap.ext.{0, 0, 0, 0} fun v =>
+      Submodule.starProjection_apply_mem.{0, 0} (LinearMap.ker.{0, 0, 0, 0} ↑(negPart.{0} Y)) v;
+  have hZq :=
+    Eq.mp.{0}
+      (congr.{1, 1}
+        (congrArg.{1, 1} Eq.{1}
+          (Eq.trans.{1} (star_mul.{0} (negPart.{0} Y) q)
+            (congr.{1, 1}
+              (congrArg.{1, 1} HMul.hMul.{0, 0, 0} (IsSelfAdjoint.star_eq.{0} (IsStarProjection.isSelfAdjoint.{0} hq)))
+              (IsSelfAdjoint.star_eq.{0} (LE.le.isSelfAdjoint.{0} (CFC.negPart_nonneg.{0} Y))))))
+        (star_zero.{0} (ContinuousLinearMap.{0, 0, 0, 0} (RingHom.id.{0} ℂ) H H)))
+      (congrArg.{1, 1} star.{0} hqZ);
+  have hqpos :=
+    ContinuousLinearMap.ext.{0, 0, 0, 0} fun v =>
+      Submodule.starProjection_eq_self_iff.{0, 0}.mpr
+        (id.{0} (congrArg.{1, 1} (fun A => A v) (CFC.negPart_mul_posPart.{0} Y)));
+  have hposq :=
+    Eq.mp.{0}
+      (congr.{1, 1}
+        (congrArg.{1, 1} Eq.{1}
+          (Eq.trans.{1} (star_mul.{0} q (posPart.{0} Y))
+            (congr.{1, 1}
+              (congrArg.{1, 1} HMul.hMul.{0, 0, 0}
+                (IsSelfAdjoint.star_eq.{0} (LE.le.isSelfAdjoint.{0} (CFC.posPart_nonneg.{0} Y))))
+              (IsSelfAdjoint.star_eq.{0} (IsStarProjection.isSelfAdjoint.{0} hq)))))
+        (IsSelfAdjoint.star_eq.{0} (LE.le.isSelfAdjoint.{0} (CFC.posPart_nonneg.{0} Y))))
+      (congrArg.{1, 1} star.{0} hqpos);
+  have hposne := fun hz =>
+    have hy := sub_nonpos.{0}.mp ((CFC.posPart_eq_zero_iff.{0} Y hYs).mp hz);
+    have hn :=
+      (CStarAlgebra.norm_le_iff_le_algebraMap.{0} X (LT.lt.le.{0} he) hX).mpr
+        (Eq.mpr.{0} (id.{0} (congrArg.{1, 1} (LE.le.{0} X) (Algebra.algebraMap_eq_smul_one.{0, 0} epsilon))) hy);
+    False.elim.{0}
+      (Mathlib.Tactic.Linarith.lt_irrefl.{0}
+        (Eq.mp.{0}
+          (congrArg.{1, 1} (fun _a => LT.lt.{0} _a 0)
+            (Mathlib.Tactic.Ring.of_eq.{1}
+              (Mathlib.Tactic.Ring.Common.add_congr.{0}
+                (Mathlib.Tactic.Ring.Common.sub_congr.{0}
+                  (Mathlib.Tactic.Ring.Common.mul_congr.{0}
+                    (Mathlib.Tactic.Ring.cast_pos.{0} (Mathlib.Meta.NormNum.isNat_ofNat.{0} ℝ (Eq.refl.{1} 2)))
+                    (Mathlib.Tactic.Ring.Common.atom_pf.{0} (norm.{0} X) rfl.{1}
+                      (Eq.mpr.{0}
+                        (id.{0}
+                          (congrArg.{1, 1}
+                            (fun _a =>
+                              Eq.{1}
+                                (HMul.hMul.{0, 0, 0} (HPow.hPow.{0, 0, 0} (norm.{0} X) (Nat.rawCast.{0} 1))
+                                  (Nat.rawCast.{0} 1))
+                                (HMul.hMul.{0, 0, 0} (HPow.hPow.{0, 0, 0} (norm.{0} X) (Nat.rawCast.{0} 1)) _a))
+                            (Eq.symm.{1} rfl.{1})))
+                        (Eq.refl.{1}
+                          (HMul.hMul.{0, 0, 0} (HPow.hPow.{0, 0, 0} (norm.{0} X) (Nat.rawCast.{0} 1))
+                            (Nat.rawCast.{0} 1)))))
+                    (Mathlib.Tactic.Ring.Common.add_mul.{0}
+                      (Mathlib.Tactic.Ring.Common.mul_add.{0}
+                        (Mathlib.Tactic.Ring.Common.mul_pf_right.{0} (norm.{0} X) (Nat.rawCast.{0} 1)
+                          (Mathlib.Meta.NormNum.IsNat.to_raw_eq.{0}
+                            (Mathlib.Meta.NormNum.isNat_mul.{0} (Eq.refl.{1} HMul.hMul.{0, 0, 0})
+                              (Mathlib.Meta.NormNum.IsNat.of_raw.{0} ℝ 2) (Mathlib.Meta.NormNum.IsNat.of_raw.{0} ℝ 1)
+                              (Eq.refl.{1} 2))))
+                        (Mathlib.Tactic.Ring.Common.mul_zero.{0} (Nat.rawCast.{0} 2))
+                        (Mathlib.Tactic.Ring.Common.add_pf_add_zero.{0}
+                          (HAdd.hAdd.{0, 0, 0}
+                            (HMul.hMul.{0, 0, 0} (HPow.hPow.{0, 0, 0} (norm.{0} X) (Nat.rawCast.{0} 1))
+                              (Nat.rawCast.{0} 2))
+                            0)))
+                      (Mathlib.Tactic.Ring.Common.zero_mul.{0}
+                        (HAdd.hAdd.{0, 0, 0}
+                          (HMul.hMul.{0, 0, 0} (HPow.hPow.{0, 0, 0} (norm.{0} X) (Nat.rawCast.{0} 1))
+                            (Nat.rawCast.{0} 1))
+                          0))
+                      (Mathlib.Tactic.Ring.Common.add_pf_add_zero.{0}
+                        (HAdd.hAdd.{0, 0, 0}
+                          (HMul.hMul.{0, 0, 0} (HPow.hPow.{0, 0, 0} (norm.{0} X) (Nat.rawCast.{0} 1))
+                            (Nat.rawCast.{0} 2))
+                          0))))
+                  (Mathlib.Tactic.Ring.Common.mul_congr.{0}
+                    (Mathlib.Tactic.Ring.cast_pos.{0} (Mathlib.Meta.NormNum.isNat_ofNat.{0} ℝ Nat.cast_one.{0}))
+                    (Mathlib.Tactic.Ring.Common.atom_pf.{0} (norm.{0} X) rfl.{1}
+                      (Eq.mpr.{0}
+                        (id.{0}
+                          (congrArg.{1, 1}
+                            (fun _a =>
+                              Eq.{1}
+                                (HMul.hMul.{0, 0, 0} (HPow.hPow.{0, 0, 0} (norm.{0} X) (Nat.rawCast.{0} 1))
+                                  (Nat.rawCast.{0} 1))
+                                (HMul.hMul.{0, 0, 0} (HPow.hPow.{0, 0, 0} (norm.{0} X) (Nat.rawCast.{0} 1)) _a))
+                            (Eq.symm.{1} rfl.{1})))
+                        (Eq.refl.{1}
+                          (HMul.hMul.{0, 0, 0} (HPow.hPow.{0, 0, 0} (norm.{0} X) (Nat.rawCast.{0} 1))
+                            (Nat.rawCast.{0} 1)))))
+                    (Mathlib.Tactic.Ring.Common.add_mul.{0}
+                      (Mathlib.Tactic.Ring.Common.mul_add.{0}
+                        (Mathlib.Tactic.Ring.Common.mul_pf_right.{0} (norm.{0} X) (Nat.rawCast.{0} 1)
+                          (Mathlib.Meta.NormNum.IsNat.to_raw_eq.{0}
+                            (Mathlib.Meta.NormNum.isNat_mul.{0} (Eq.refl.{1} HMul.hMul.{0, 0, 0})
+                              (Mathlib.Meta.NormNum.IsNat.of_raw.{0} ℝ 1) (Mathlib.Meta.NormNum.IsNat.of_raw.{0} ℝ 1)
+                              (Eq.refl.{1} 1))))
+                        (Mathlib.Tactic.Ring.Common.mul_zero.{0} (Nat.rawCast.{0} 1))
+                        (Mathlib.Tactic.Ring.Common.add_pf_add_zero.{0}
+                          (HAdd.hAdd.{0, 0, 0}
+                            (HMul.hMul.{0, 0, 0} (HPow.hPow.{0, 0, 0} (norm.{0} X) (Nat.rawCast.{0} 1))
+                              (Nat.rawCast.{0} 1))
+                            0)))
+                      (Mathlib.Tactic.Ring.Common.zero_mul.{0}
+                        (HAdd.hAdd.{0, 0, 0}
+                          (HMul.hMul.{0, 0, 0} (HPow.hPow.{0, 0, 0} (norm.{0} X) (Nat.rawCast.{0} 1))
+                            (Nat.rawCast.{0} 1))
+                          0))
+                      (Mathlib.Tactic.Ring.Common.add_pf_add_zero.{0}
+                        (HAdd.hAdd.{0, 0, 0}
+                          (HMul.hMul.{0, 0, 0} (HPow.hPow.{0, 0, 0} (norm.{0} X) (Nat.rawCast.{0} 1))
+                            (Nat.rawCast.{0} 1))
+                          0))))
+                  (Mathlib.Tactic.Ring.Common.sub_pf.{0}
+                    (Mathlib.Tactic.Ring.Common.neg_add.{0}
+                      (Mathlib.Tactic.Ring.Common.neg_mul.{0} (norm.{0} X) (Nat.rawCast.{0} 1)
+                        (Mathlib.Meta.NormNum.IsInt.to_raw_eq.{0}
+                          (Mathlib.Meta.NormNum.isInt_neg.{0} (Eq.refl.{1} Neg.neg.{0})
+                            (Mathlib.Meta.NormNum.IsNat.to_isInt.{0} (Mathlib.Meta.NormNum.IsNat.of_raw.{0} ℝ 1))
+                            (Eq.refl.{1} (Int.negOfNat 1)))))
+                      Mathlib.Tactic.Ring.Common.neg_zero.{0})
+                    (Mathlib.Tactic.Ring.Common.add_pf_add_overlap.{0}
+                      (Mathlib.Tactic.Ring.Common.add_overlap_pf.{0} (norm.{0} X) (Nat.rawCast.{0} 1)
+                        (Mathlib.Meta.NormNum.IsNat.to_raw_eq.{0}
+                          (Mathlib.Meta.NormNum.IsInt.to_isNat.{0}
+                            (Mathlib.Meta.NormNum.isInt_add.{0} (Eq.refl.{1} HAdd.hAdd.{0, 0, 0})
+                              (Mathlib.Meta.NormNum.IsNat.to_isInt.{0} (Mathlib.Meta.NormNum.IsNat.of_raw.{0} ℝ 2))
+                              (Mathlib.Meta.NormNum.IsInt.of_raw.{0} ℝ (Int.negOfNat 1)) (Eq.refl.{1} (Int.ofNat 1))))))
+                      (Mathlib.Tactic.Ring.Common.add_pf_zero_add.{0} 0))))
+                (Mathlib.Tactic.Ring.Common.sub_congr.{0}
+                  (Mathlib.Tactic.Ring.cast_zero.{0} (Mathlib.Meta.NormNum.isNat_ofNat.{0} ℝ Nat.cast_zero.{0}))
+                  (Mathlib.Tactic.Ring.Common.atom_pf.{0} (norm.{0} X) rfl.{1}
+                    (Eq.mpr.{0}
+                      (id.{0}
+                        (congrArg.{1, 1}
+                          (fun _a =>
+                            Eq.{1}
+                              (HMul.hMul.{0, 0, 0} (HPow.hPow.{0, 0, 0} (norm.{0} X) (Nat.rawCast.{0} 1))
+                                (Nat.rawCast.{0} 1))
+                              (HMul.hMul.{0, 0, 0} (HPow.hPow.{0, 0, 0} (norm.{0} X) (Nat.rawCast.{0} 1)) _a))
+                          (Eq.symm.{1} rfl.{1})))
+                      (Eq.refl.{1}
+                        (HMul.hMul.{0, 0, 0} (HPow.hPow.{0, 0, 0} (norm.{0} X) (Nat.rawCast.{0} 1))
+                          (Nat.rawCast.{0} 1)))))
+                  (Mathlib.Tactic.Ring.Common.sub_pf.{0}
+                    (Mathlib.Tactic.Ring.Common.neg_add.{0}
+                      (Mathlib.Tactic.Ring.Common.neg_mul.{0} (norm.{0} X) (Nat.rawCast.{0} 1)
+                        (Mathlib.Meta.NormNum.IsInt.to_raw_eq.{0}
+                          (Mathlib.Meta.NormNum.isInt_neg.{0} (Eq.refl.{1} Neg.neg.{0})
+                            (Mathlib.Meta.NormNum.IsNat.to_isInt.{0} (Mathlib.Meta.NormNum.IsNat.of_raw.{0} ℝ 1))
+                            (Eq.refl.{1} (Int.negOfNat 1)))))
+                      Mathlib.Tactic.Ring.Common.neg_zero.{0})
+                    (Mathlib.Tactic.Ring.Common.add_pf_zero_add.{0}
+                      (HAdd.hAdd.{0, 0, 0}
+                        (HMul.hMul.{0, 0, 0} (HPow.hPow.{0, 0, 0} (norm.{0} X) (Nat.rawCast.{0} 1))
+                          (Int.rawCast.{0} (Int.negOfNat 1)))
+                        0))))
+                (Mathlib.Tactic.Ring.Common.add_pf_add_overlap_zero.{0}
+                  (Mathlib.Tactic.Ring.Common.add_overlap_pf_zero.{0} (norm.{0} X) (Nat.rawCast.{0} 1)
+                    (Mathlib.Meta.NormNum.IsInt.to_isNat.{0}
+                      (Mathlib.Meta.NormNum.isInt_add.{0} (Eq.refl.{1} HAdd.hAdd.{0, 0, 0})
+                        (Mathlib.Meta.NormNum.IsNat.to_isInt.{0} (Mathlib.Meta.NormNum.IsNat.of_raw.{0} ℝ 1))
+                        (Mathlib.Meta.NormNum.IsInt.of_raw.{0} ℝ (Int.negOfNat 1)) (Eq.refl.{1} (Int.ofNat 0)))))
+                  (Mathlib.Tactic.Ring.Common.add_pf_zero_add.{0} 0)))
+              (Mathlib.Tactic.Ring.cast_zero.{0} (Mathlib.Meta.NormNum.isNat_ofNat.{0} ℝ Nat.cast_zero.{0}))))
+          (Mathlib.Tactic.Linarith.add_lt_of_le_of_neg.{0}
+            (Eq.mp.{0}
+              (congrArg.{1, 1} (fun _a => LE.le.{0} _a 0)
+                (Mathlib.Tactic.CancelDenoms.sub_subst.{0} rfl.{1}
+                  (Mathlib.Tactic.CancelDenoms.div_subst.{0} rfl.{1}
+                    (Mathlib.Meta.NormNum.isNat_eq_true.{0}
+                      (Mathlib.Meta.NormNum.IsNNRat.to_isNat.{0}
+                        (Mathlib.Meta.NormNum.isNNRat_div.{0}
+                          (Mathlib.Meta.NormNum.IsNat.to_isNNRat.{0}
+                            (Mathlib.Meta.NormNum.IsNNRat.to_isNat.{0}
+                              (Mathlib.Meta.NormNum.isNNRat_mul.{0} (Eq.refl.{1} HMul.hMul.{0, 0, 0})
+                                (Mathlib.Meta.NormNum.IsNat.to_isNNRat.{0}
+                                  (Mathlib.Meta.NormNum.isNat_ofNat.{0} ℝ (Eq.refl.{1} 2)))
+                                (Mathlib.Meta.NormNum.isNNRat_inv_pos.{0}
+                                  (Mathlib.Meta.NormNum.IsNat.to_isNNRat.{0}
+                                    (Mathlib.Meta.NormNum.isNat_ofNat.{0} ℝ (Eq.refl.{1} 2))))
+                                (Eq.refl.{1} (Nat.mul 2 1)) (Eq.refl.{1} 2))))))
+                      (Mathlib.Meta.NormNum.isNat_ofNat.{0} ℝ Nat.cast_one.{0}))
+                    (Mathlib.Meta.NormNum.isNat_eq_true.{0}
+                      (Mathlib.Meta.NormNum.isNat_mul.{0} (Eq.refl.{1} HMul.hMul.{0, 0, 0})
+                        (Mathlib.Meta.NormNum.isNat_ofNat.{0} ℝ Nat.cast_one.{0})
+                        (Mathlib.Meta.NormNum.isNat_ofNat.{0} ℝ (Eq.refl.{1} 2)) (Eq.refl.{1} 2))
+                      (Mathlib.Meta.NormNum.isNat_ofNat.{0} ℝ (Eq.refl.{1} 2))))))
+              (Mathlib.Tactic.Linarith.mul_nonpos.{0} (Mathlib.Tactic.Linarith.sub_nonpos_of_le.{0} hn)
+                (Mathlib.Meta.NormNum.isNat_lt_true.{0} (Mathlib.Meta.NormNum.isNat_ofNat.{0} ℝ Nat.cast_zero.{0})
+                  (Mathlib.Meta.NormNum.isNat_ofNat.{0} ℝ (Eq.refl.{1} 2)) (Eq.refl.{1} false))))
+            (Mathlib.Tactic.Linarith.sub_neg_of_lt.{0} (norm_pos_iff.{0}.mpr hXne)))));
+  have hqne := fun hz =>
+    hposne
+      (Eq.symm.{1}
+        (Eq.mp.{0} (congrArg.{1, 1} (fun _a => Eq.{1} _a (posPart.{0} Y)) (zero_mul.{0} (posPart.{0} Y)))
+          (Eq.mp.{0} (congrArg.{1, 1} (fun _a => Eq.{1} (HMul.hMul.{0, 0, 0} _a (posPart.{0} Y)) (posPart.{0} Y)) hz)
+            hqpos)));
+  have hdecomp :=
+    Eq.mpr.{0}
+      (id.{0}
+        (congrArg.{1, 1} (fun _a => Eq.{1} X (HAdd.hAdd.{0, 0, 0} _a (HSMul.hSMul.{0, 0, 0} epsilon 1)))
+          (CFC.posPart_sub_negPart.{0} Y hYs)))
+      (id.{0} (TGLV350.Regular.positive_operator_has_threshold_projection._abel_1_1 X));
+  have hleft :=
+    Eq.mpr.{0}
+      (id.{0}
+        (congrArg.{1, 1}
+          (fun _a =>
+            Eq.{1} (HMul.hMul.{0, 0, 0} q _a) (HAdd.hAdd.{0, 0, 0} (posPart.{0} Y) (HSMul.hSMul.{0, 0, 0} epsilon q)))
+          hdecomp))
+      (Eq.mpr.{0}
+        (id.{0}
+          (congrArg.{1, 1} (fun _a => Eq.{1} _a (HAdd.hAdd.{0, 0, 0} (posPart.{0} Y) (HSMul.hSMul.{0, 0, 0} epsilon q)))
+            (mul_add.{0} q (HSub.hSub.{0, 0, 0} (posPart.{0} Y) (negPart.{0} Y)) (HSMul.hSMul.{0, 0, 0} epsilon 1))))
+        (Eq.mpr.{0}
+          (id.{0}
+            (congrArg.{1, 1}
+              (fun _a =>
+                Eq.{1} (HAdd.hAdd.{0, 0, 0} _a (HMul.hMul.{0, 0, 0} q (HSMul.hSMul.{0, 0, 0} epsilon 1)))
+                  (HAdd.hAdd.{0, 0, 0} (posPart.{0} Y) (HSMul.hSMul.{0, 0, 0} epsilon q)))
+              (mul_sub.{0} q (posPart.{0} Y) (negPart.{0} Y))))
+          (Eq.mpr.{0}
+            (id.{0}
+              (congrArg.{1, 1}
+                (fun _a =>
+                  Eq.{1}
+                    (HAdd.hAdd.{0, 0, 0} (HSub.hSub.{0, 0, 0} _a (HMul.hMul.{0, 0, 0} q (negPart.{0} Y)))
+                      (HMul.hMul.{0, 0, 0} q (HSMul.hSMul.{0, 0, 0} epsilon 1)))
+                    (HAdd.hAdd.{0, 0, 0} (posPart.{0} Y) (HSMul.hSMul.{0, 0, 0} epsilon q)))
+                hqpos))
+            (Eq.mpr.{0}
+              (id.{0}
+                (congrArg.{1, 1}
+                  (fun _a =>
+                    Eq.{1}
+                      (HAdd.hAdd.{0, 0, 0} (HSub.hSub.{0, 0, 0} (posPart.{0} Y) _a)
+                        (HMul.hMul.{0, 0, 0} q (HSMul.hSMul.{0, 0, 0} epsilon 1)))
+                      (HAdd.hAdd.{0, 0, 0} (posPart.{0} Y) (HSMul.hSMul.{0, 0, 0} epsilon q)))
+                  hZq))
+              (Eq.mpr.{0}
+                (id.{0}
+                  (congrArg.{1, 1}
+                    (fun _a =>
+                      Eq.{1} (HAdd.hAdd.{0, 0, 0} (HSub.hSub.{0, 0, 0} (posPart.{0} Y) 0) _a)
+                        (HAdd.hAdd.{0, 0, 0} (posPart.{0} Y) (HSMul.hSMul.{0, 0, 0} epsilon q)))
+                    (mul_smul_comm.{0, 0} epsilon q 1)))
+                (Eq.mpr.{0}
+                  (id.{0}
+                    (congrArg.{1, 1}
+                      (fun _a =>
+                        Eq.{1}
+                          (HAdd.hAdd.{0, 0, 0} (HSub.hSub.{0, 0, 0} (posPart.{0} Y) 0)
+                            (HSMul.hSMul.{0, 0, 0} epsilon _a))
+                          (HAdd.hAdd.{0, 0, 0} (posPart.{0} Y) (HSMul.hSMul.{0, 0, 0} epsilon q)))
+                      (mul_one.{0} q)))
+                  (Eq.mpr.{0}
+                    (id.{0}
+                      (congrArg.{1, 1}
+                        (fun _a =>
+                          Eq.{1} (HAdd.hAdd.{0, 0, 0} _a (HSMul.hSMul.{0, 0, 0} epsilon q))
+                            (HAdd.hAdd.{0, 0, 0} (posPart.{0} Y) (HSMul.hSMul.{0, 0, 0} epsilon q)))
+                        (sub_zero.{0} (posPart.{0} Y))))
+                    (Eq.refl.{1} (HAdd.hAdd.{0, 0, 0} (posPart.{0} Y) (HSMul.hSMul.{0, 0, 0} epsilon q))))))))));
+  have hright :=
+    Eq.mpr.{0}
+      (id.{0}
+        (congrArg.{1, 1}
+          (fun _a =>
+            Eq.{1} (HMul.hMul.{0, 0, 0} _a q) (HAdd.hAdd.{0, 0, 0} (posPart.{0} Y) (HSMul.hSMul.{0, 0, 0} epsilon q)))
+          hdecomp))
+      (Eq.mpr.{0}
+        (id.{0}
+          (congrArg.{1, 1} (fun _a => Eq.{1} _a (HAdd.hAdd.{0, 0, 0} (posPart.{0} Y) (HSMul.hSMul.{0, 0, 0} epsilon q)))
+            (add_mul.{0} (HSub.hSub.{0, 0, 0} (posPart.{0} Y) (negPart.{0} Y)) (HSMul.hSMul.{0, 0, 0} epsilon 1) q)))
+        (Eq.mpr.{0}
+          (id.{0}
+            (congrArg.{1, 1}
+              (fun _a =>
+                Eq.{1} (HAdd.hAdd.{0, 0, 0} _a (HMul.hMul.{0, 0, 0} (HSMul.hSMul.{0, 0, 0} epsilon 1) q))
+                  (HAdd.hAdd.{0, 0, 0} (posPart.{0} Y) (HSMul.hSMul.{0, 0, 0} epsilon q)))
+              (sub_mul.{0} (posPart.{0} Y) (negPart.{0} Y) q)))
+          (Eq.mpr.{0}
+            (id.{0}
+              (congrArg.{1, 1}
+                (fun _a =>
+                  Eq.{1}
+                    (HAdd.hAdd.{0, 0, 0} (HSub.hSub.{0, 0, 0} _a (HMul.hMul.{0, 0, 0} (negPart.{0} Y) q))
+                      (HMul.hMul.{0, 0, 0} (HSMul.hSMul.{0, 0, 0} epsilon 1) q))
+                    (HAdd.hAdd.{0, 0, 0} (posPart.{0} Y) (HSMul.hSMul.{0, 0, 0} epsilon q)))
+                hposq))
+            (Eq.mpr.{0}
+              (id.{0}
+                (congrArg.{1, 1}
+                  (fun _a =>
+                    Eq.{1}
+                      (HAdd.hAdd.{0, 0, 0} (HSub.hSub.{0, 0, 0} (posPart.{0} Y) _a)
+                        (HMul.hMul.{0, 0, 0} (HSMul.hSMul.{0, 0, 0} epsilon 1) q))
+                      (HAdd.hAdd.{0, 0, 0} (posPart.{0} Y) (HSMul.hSMul.{0, 0, 0} epsilon q)))
+                  hqZ))
+              (Eq.mpr.{0}
+                (id.{0}
+                  (congrArg.{1, 1}
+                    (fun _a =>
+                      Eq.{1} (HAdd.hAdd.{0, 0, 0} (HSub.hSub.{0, 0, 0} (posPart.{0} Y) 0) _a)
+                        (HAdd.hAdd.{0, 0, 0} (posPart.{0} Y) (HSMul.hSMul.{0, 0, 0} epsilon q)))
+                    (smul_mul_assoc.{0, 0} epsilon 1 q)))
+                (Eq.mpr.{0}
+                  (id.{0}
+                    (congrArg.{1, 1}
+                      (fun _a =>
+                        Eq.{1}
+                          (HAdd.hAdd.{0, 0, 0} (HSub.hSub.{0, 0, 0} (posPart.{0} Y) 0)
+                            (HSMul.hSMul.{0, 0, 0} epsilon _a))
+                          (HAdd.hAdd.{0, 0, 0} (posPart.{0} Y) (HSMul.hSMul.{0, 0, 0} epsilon q)))
+                      (one_mul.{0} q)))
+                  (Eq.mpr.{0}
+                    (id.{0}
+                      (congrArg.{1, 1}
+                        (fun _a =>
+                          Eq.{1} (HAdd.hAdd.{0, 0, 0} _a (HSMul.hSMul.{0, 0, 0} epsilon q))
+                            (HAdd.hAdd.{0, 0, 0} (posPart.{0} Y) (HSMul.hSMul.{0, 0, 0} epsilon q)))
+                        (sub_zero.{0} (posPart.{0} Y))))
+                    (Eq.refl.{1} (HAdd.hAdd.{0, 0, 0} (posPart.{0} Y) (HSMul.hSMul.{0, 0, 0} epsilon q))))))))));
+  have hc := Eq.trans.{1} hleft (Eq.symm.{1} hright);
+  have hqq := IsStarProjection.isIdempotentElem.{0} hq;
+  have hcompressed :=
+    Eq.mpr.{0} (id.{0} (congrArg.{1, 1} (fun _a => Eq.{1} _a (HMul.hMul.{0, 0, 0} q X)) (mul_assoc.{0} q X q)))
+      (Eq.mpr.{0}
+        (id.{0}
+          (congrArg.{1, 1} (fun _a => Eq.{1} (HMul.hMul.{0, 0, 0} q _a) (HMul.hMul.{0, 0, 0} q X)) (Eq.symm.{1} hc)))
+        (Eq.mpr.{0}
+          (id.{0} (congrArg.{1, 1} (fun _a => Eq.{1} _a (HMul.hMul.{0, 0, 0} q X)) (Eq.symm.{1} (mul_assoc.{0} q q X))))
+          (Eq.mpr.{0}
+            (id.{0} (congrArg.{1, 1} (fun _a => Eq.{1} (HMul.hMul.{0, 0, 0} _a X) (HMul.hMul.{0, 0, 0} q X)) hqq))
+            (Eq.refl.{1} (HMul.hMul.{0, 0, 0} q X)))));
+  have hbound :=
+    sub_nonneg.{0}.mp
+      (have hp := star_left_conjugate_nonneg.{0} hX (HSub.hSub.{0, 0, 0} 1 q);
+      have hd :=
+        Eq.mpr.{0}
+          (id.{0}
+            (congrArg.{1, 1}
+              (fun _a =>
+                Eq.{1} (HMul.hMul.{0, 0, 0} (HMul.hMul.{0, 0, 0} _a X) (HSub.hSub.{0, 0, 0} 1 q))
+                  (HSub.hSub.{0, 0, 0} X (HMul.hMul.{0, 0, 0} (HMul.hMul.{0, 0, 0} q X) q)))
+              (IsSelfAdjoint.star_eq.{0} (IsStarProjection.isSelfAdjoint.{0} (IsStarProjection.one_sub.{0} hq)))))
+          (Trans.trans.{0, 0, 0, 1, 1, 1}
+            (Eq.mpr.{0}
+              (id.{0}
+                (congr.{1, 1}
+                  (congrArg.{1, 1} Eq.{1}
+                    (Eq.trans.{1}
+                      (Eq.trans.{1}
+                        (congr.{1, 1}
+                          (congrArg.{1, 1} HMul.hMul.{0, 0, 0}
+                            (Eq.trans.{1}
+                              (Eq.trans.{1}
+                                (congrFun'.{1, 1} (congrArg.{1, 1} HMul.hMul.{0, 0, 0} (sub_eq_add_neg.{0} 1 q)) X)
+                                (add_mul.{0} 1 (Neg.neg.{0} q) X))
+                              (congr.{1, 1} (congrArg.{1, 1} HAdd.hAdd.{0, 0, 0} (one_mul.{0} X)) (neg_mul.{0} q X))))
+                          (sub_eq_add_neg.{0} 1 q))
+                        (mul_add.{0} (HAdd.hAdd.{0, 0, 0} X (Neg.neg.{0} (HMul.hMul.{0, 0, 0} q X))) 1 (Neg.neg.{0} q)))
+                      (congr.{1, 1}
+                        (congrArg.{1, 1} HAdd.hAdd.{0, 0, 0}
+                          (mul_one.{0} (HAdd.hAdd.{0, 0, 0} X (Neg.neg.{0} (HMul.hMul.{0, 0, 0} q X)))))
+                        (Eq.trans.{1} (mul_neg.{0} (HAdd.hAdd.{0, 0, 0} X (Neg.neg.{0} (HMul.hMul.{0, 0, 0} q X))) q)
+                          (congrArg.{1, 1} Neg.neg.{0}
+                            (Eq.trans.{1} (add_mul.{0} X (Neg.neg.{0} (HMul.hMul.{0, 0, 0} q X)) q)
+                              (congrArg.{1, 1} (HAdd.hAdd.{0, 0, 0} (HMul.hMul.{0, 0, 0} X q))
+                                (Eq.trans.{1} (neg_mul.{0} (HMul.hMul.{0, 0, 0} q X) q)
+                                  (congrArg.{1, 1} Neg.neg.{0} (mul_assoc.{0} q X q))))))))))
+                  (congr.{1, 1}
+                    (congrArg.{1, 1} HAdd.hAdd.{0, 0, 0}
+                      (Eq.trans.{1}
+                        (congrFun'.{1, 1}
+                          (congrArg.{1, 1} HSub.hSub.{0, 0, 0} (sub_eq_add_neg.{0} X (HMul.hMul.{0, 0, 0} q X)))
+                          (HMul.hMul.{0, 0, 0} X q))
+                        (sub_eq_add_neg.{0} (HAdd.hAdd.{0, 0, 0} X (Neg.neg.{0} (HMul.hMul.{0, 0, 0} q X)))
+                          (HMul.hMul.{0, 0, 0} X q))))
+                    (mul_assoc.{0} q X q))))
+              (TGLV350.Regular.positive_operator_has_threshold_projection._abel_1_2 X))
+            (Eq.mpr.{0}
+              (id.{0}
+                (congrArg.{1, 1}
+                  (fun _a =>
+                    Eq.{1}
+                      (HAdd.hAdd.{0, 0, 0} (HSub.hSub.{0, 0, 0} (HSub.hSub.{0, 0, 0} X (HMul.hMul.{0, 0, 0} q X)) _a)
+                        (HMul.hMul.{0, 0, 0} (HMul.hMul.{0, 0, 0} q X) q))
+                      (HSub.hSub.{0, 0, 0} X (HMul.hMul.{0, 0, 0} (HMul.hMul.{0, 0, 0} q X) q)))
+                  (Eq.symm.{1} hc)))
+              (Eq.mpr.{0}
+                (id.{0}
+                  (congrArg.{1, 1}
+                    (fun _a =>
+                      Eq.{1}
+                        (HAdd.hAdd.{0, 0, 0}
+                          (HSub.hSub.{0, 0, 0} (HSub.hSub.{0, 0, 0} X (HMul.hMul.{0, 0, 0} q X))
+                            (HMul.hMul.{0, 0, 0} q X))
+                          _a)
+                        (HSub.hSub.{0, 0, 0} X _a))
+                    hcompressed))
+                (TGLV350.Regular.positive_operator_has_threshold_projection._abel_1_3 X))));
+      Eq.mp.{0} (congrArg.{1, 1} (fun _a => LE.le.{0} 0 _a) hd) hp);
+  Exists.intro.{1} epsilon
+    (Exists.intro.{1} q
+      ⟨he,
+        ⟨hq,
+          ⟨hqm,
+            ⟨hqne,
+              le_trans.{0}
+                (Eq.mpr.{0}
+                  (id.{0} (congrArg.{1, 1} (fun _a => LE.le.{0} (HSMul.hSMul.{0, 0, 0} epsilon q) _a) hcompressed))
+                  (Eq.mpr.{0}
+                    (id.{0} (congrArg.{1, 1} (fun _a => LE.le.{0} (HSMul.hSMul.{0, 0, 0} epsilon q) _a) hleft))
+                    (le_add_of_nonneg_left.{0} (CFC.posPart_nonneg.{0} Y))))
+                hbound⟩⟩⟩⟩)
+theorem TGLV350.Regular.scalarTrace_finite_subprojection_exists : ∀ (P : TGLExt.SiteProfile)
+  (e : TGLV350.Regular.PositiveCoreInput P),
+  IsStarProjection.{0} ↑e →
+    Ne.{1} e (TGLV350.Regular.PositiveCoreInput.zero P) →
+      ∃ q,
+        IsStarProjection.{0} ↑q ∧
+          LT.lt.{0} 0 (TGLV350.Regular.scalarInverseLimitWeight P q) ∧
+            LT.lt.{0} (TGLV350.Regular.scalarInverseLimitWeight P q) Top.top.{0} ∧
+              Eq.{1} (HMul.hMul.{0, 0, 0} ↑q ↑e) ↑q :=
+fun P e heproj hene =>
+  Exists.casesOn.{1}
+    (TGLV350.Regular.regularTrace_finite_positive_below.{0} P (TGLV350.Regular.scalarInverseLimitTraceData.{0} P) e
+      hene)
+    fun Y h =>
+    And.casesOn.{0} h fun hYle right =>
+      And.casesOn.{0} right fun hYpos hYfin =>
+        id.{0}
+          (fun hYpos =>
+            id.{0}
+              (fun hYfin =>
+                have hYne := fun hz =>
+                  have hzero := Subtype.ext.{1} hz;
+                  lt_irrefl.{0} 0
+                    (Eq.mp.{0}
+                      (congrArg.{1, 1} (fun _a => LT.lt.{0} 0 _a) (TGLV350.Regular.scalarInverseLimitWeight_zero P))
+                      (Eq.mp.{0}
+                        (congrArg.{1, 1} (fun _a => LT.lt.{0} 0 (TGLV350.Regular.scalarInverseLimitWeight P _a)) hzero)
+                        hYpos));
+                Exists.casesOn.{1}
+                  (TGLV350.Regular.positive_operator_has_threshold_projection (TGLV350.Regular.regularCoreAlgebra P)
+                    (↑Y) (Subtype.property.{1} Y).left (Subtype.property.{1} Y).right hYne)
+                  fun epsilon h =>
+                  Exists.casesOn.{1} h fun q h =>
+                    And.casesOn.{0} h fun he right =>
+                      And.casesOn.{0} right fun hq right =>
+                        And.casesOn.{0} right fun hqm right =>
+                          And.casesOn.{0} right fun hqne hbound =>
+                            let Q := Subtype.mk.{1} q ⟨hqm, IsStarProjection.nonneg.{0} hq⟩;
+                            have hQpos :=
+                              lt_of_le_of_ne.{0} zero_le.{0} fun hz =>
+                                have hzero :=
+                                  (TGLV350.Regular.scalarInverseLimitWeight_faithful P Q).mp (Eq.symm.{1} hz);
+                                hqne (congrArg.{1, 1} Subtype.val.{1} hzero);
+                            have hQfin :=
+                              have hl :=
+                                TGLV350.Regular.scalarInverseLimitWeight_mono P
+                                  (TGLV350.Regular.PositiveCoreInput.scale (Subtype.mk.{1} epsilon (LT.lt.le.{0} he)) Q)
+                                  Y hbound;
+                              lt_top_iff_ne_top.{0}.mpr fun hinf =>
+                                not_le_of_gt.{0} hYfin
+                                  (Eq.mp.{0}
+                                    (congrArg.{1, 1}
+                                      (fun _a => LE.le.{0} _a (TGLV350.Regular.scalarInverseLimitWeight P Y))
+                                      (ENNReal.mul_top
+                                        (ENNReal.coe_ne_zero.mpr fun hz =>
+                                          LT.lt.ne'.{0} he (congrArg.{1, 1} (fun r => ↑r) hz))))
+                                    (Eq.mp.{0}
+                                      (congrArg.{1, 1}
+                                        (fun _a =>
+                                          LE.le.{0}
+                                            (HMul.hMul.{0, 0, 0} (↑(Subtype.mk.{1} epsilon (LT.lt.le.{0} he))) _a)
+                                            (TGLV350.Regular.scalarInverseLimitWeight P Y))
+                                        hinf)
+                                      (Eq.mp.{0}
+                                        (congrArg.{1, 1}
+                                          (fun _a => LE.le.{0} _a (TGLV350.Regular.scalarInverseLimitWeight P Y))
+                                          (TGLV350.Regular.scalarInverseLimitWeight_scale P
+                                            (Subtype.mk.{1} epsilon (LT.lt.le.{0} he)) Q))
+                                        hl)));
+                            have hQe :=
+                              have hh :=
+                                (IsStarProjection.mul_right_and_mul_left_of_nonneg_of_le.{0} heproj
+                                    (Subtype.property.{1}
+                                        (TGLV350.Regular.PositiveCoreInput.scale
+                                          (Subtype.mk.{1} epsilon (LT.lt.le.{0} he)) Q)).right
+                                    (LE.le.trans.{0} hbound hYle)).left;
+                              id.{0}
+                                (fun hh =>
+                                  smul_right_injective.{0, 0}
+                                    (ContinuousLinearMap.{0, 0, 0, 0} (RingHom.id.{0} ℂ)
+                                      ↥(TGLV350.Regular.RegularHilbert (TGLExt.TowerHilbert P))
+                                      ↥(TGLV350.Regular.RegularHilbert (TGLExt.TowerHilbert P)))
+                                    (LT.lt.ne'.{0} he)
+                                    (Eq.mp.{0}
+                                      (congrArg.{1, 1} (fun _a => Eq.{1} _a (HSMul.hSMul.{0, 0, 0} epsilon q))
+                                        (smul_mul_assoc.{0, 0} epsilon q ↑e))
+                                      hh))
+                                hh;
+                            Exists.intro.{1} Q ⟨hq, ⟨hQpos, ⟨hQfin, hQe⟩⟩⟩)
+              hYfin)
+          hYpos
+theorem TGLV350.Regular.regularCore_matrix_corner : ∀ (P : TGLExt.SiteProfile),
+  ∃ e v,
+    IsStarProjection.{0} ↑e ∧
+      Ne.{1} e (TGLV350.Regular.PositiveCoreInput.zero P) ∧
+        Eq.{1} (HMul.hMul.{0, 0, 0} (star.{0} ↑v) ↑v) ↑e ∧ Eq.{1} (HMul.hMul.{0, 0, 0} ↑e ↑v) 0 :=
+fun P =>
+  let E := TGLV350.Regular.fibre (ChatgptAudit.siteMark P 0);
+  let V := TGLV350.Regular.fibre (ChatgptAudit.siteOperator P 0 (Matrix.single.{0, 0, 0} 1 0 1));
+  have hE :=
+    IsStarProjection.mk.{0}
+      (id.{0}
+        (Eq.mpr.{0}
+          (id.{0}
+            (congrArg.{1, 1} (fun _a => Eq.{1} _a E)
+              (Eq.symm.{1} (TGLV350.Regular.fibre_mul (ChatgptAudit.siteMark P 0) (ChatgptAudit.siteMark P 0)))))
+          (Eq.mpr.{0}
+            (id.{0} (congrArg.{1, 1} (fun _a => Eq.{1} (TGLV350.Regular.fibre _a) E) (ChatgptAudit.siteMark_square 0)))
+            (Eq.refl.{1} (TGLV350.Regular.fibre (ChatgptAudit.siteMark P 0))))))
+      (id.{0}
+        (Eq.mpr.{0}
+          (id.{0}
+            (congrArg.{1, 1} (fun _a => Eq.{1} _a E)
+              (Eq.symm.{1} (TGLV350.Regular.fibre_star (ChatgptAudit.siteMark P 0)))))
+          (Eq.mpr.{0}
+            (id.{0} (congrArg.{1, 1} (fun _a => Eq.{1} (TGLV350.Regular.fibre _a) E) (ChatgptAudit.siteMark_star 0)))
+            (Eq.refl.{1} (TGLV350.Regular.fibre (ChatgptAudit.siteMark P 0))))));
+  have hEm :=
+    TGLV350.Regular.amplified_factor_mem P (ChatgptAudit.siteMark P 0)
+      (ChatgptAudit.siteOperator_mem_factor 0 (Matrix.single.{0, 0, 0} 0 0 1));
+  have hVm :=
+    TGLV350.Regular.amplified_factor_mem P (ChatgptAudit.siteOperator P 0 (Matrix.single.{0, 0, 0} 1 0 1))
+      (ChatgptAudit.siteOperator_mem_factor 0 (Matrix.single.{0, 0, 0} 1 0 1));
+  let e := Subtype.mk.{1} E ⟨hEm, IsStarProjection.nonneg.{0} hE⟩;
+  let v := Subtype.mk.{1} V hVm;
+  have hEn := fun hz =>
+    have he := congrArg.{1, 1} Subtype.val.{1} hz;
+    have hs :=
+      TGLV350.Regular.fibre_injective
+        (Eq.trans.{1} he (Eq.symm.{1} (map_zero.{0, 0, 0} TGLV350.Regular.fibreRepresentation)));
+    have hw := ChatgptAudit.siteMark_state 0;
+    have hp :=
+      Eq.mpr.{0} (id.{0} Complex.ofReal_eq_zero._simp_1)
+        (Eq.mp.{0}
+          (Eq.trans.{1}
+            (congrArg.{1, 1} (Eq.{1} ↑(P.w 0))
+              (Eq.trans.{1}
+                (congrArg.{1, 1} (inner.{0, 0} ℂ (TGLExt.hOmega P)) (zero_apply.{0, 0, 0} (TGLExt.hOmega P)))
+                (inner_zero_right.{0, 0} (TGLExt.hOmega P))))
+            Complex.ofReal_eq_zero._simp_1)
+          (Eq.symm.{1} (Eq.mp.{0} (congrArg.{1, 1} (fun _a => Eq.{1} (TGLExt.omegaState P _a) ↑(P.w 0)) hs) hw)));
+    LT.lt.ne'.{0} (P.pos 0) (Complex.ofReal_injective hp);
+  have hv :=
+    id.{0}
+      (Eq.mpr.{0}
+        (id.{0}
+          (congrArg.{1, 1}
+            (fun _a =>
+              Eq.{1}
+                (HMul.hMul.{0, 0, 0} _a
+                  (TGLV350.Regular.fibre (ChatgptAudit.siteOperator P 0 (Matrix.single.{0, 0, 0} 1 0 1))))
+                (TGLV350.Regular.fibre (ChatgptAudit.siteOperator P 0 (Matrix.single.{0, 0, 0} 0 0 1))))
+            (Eq.symm.{1} (TGLV350.Regular.fibre_star (ChatgptAudit.siteOperator P 0 (Matrix.single.{0, 0, 0} 1 0 1))))))
+        (Eq.mpr.{0}
+          (id.{0}
+            (congrArg.{1, 1}
+              (fun _a =>
+                Eq.{1}
+                  (HMul.hMul.{0, 0, 0} (TGLV350.Regular.fibre _a)
+                    (TGLV350.Regular.fibre (ChatgptAudit.siteOperator P 0 (Matrix.single.{0, 0, 0} 1 0 1))))
+                  (TGLV350.Regular.fibre (ChatgptAudit.siteOperator P 0 (Matrix.single.{0, 0, 0} 0 0 1))))
+              (Eq.symm.{1} (ChatgptAudit.siteOperator_star 0 (Matrix.single.{0, 0, 0} 1 0 1)))))
+          (Eq.mpr.{0}
+            (id.{0}
+              (congrArg.{1, 1}
+                (fun _a =>
+                  Eq.{1} _a (TGLV350.Regular.fibre (ChatgptAudit.siteOperator P 0 (Matrix.single.{0, 0, 0} 0 0 1))))
+                (Eq.symm.{1}
+                  (TGLV350.Regular.fibre_mul
+                    (ChatgptAudit.siteOperator P 0 (Matrix.conjTranspose.{0, 0, 0} (Matrix.single.{0, 0, 0} 1 0 1)))
+                    (ChatgptAudit.siteOperator P 0 (Matrix.single.{0, 0, 0} 1 0 1))))))
+            (Eq.mpr.{0}
+              (id.{0}
+                (congrArg.{1, 1}
+                  (fun _a =>
+                    Eq.{1} (TGLV350.Regular.fibre _a)
+                      (TGLV350.Regular.fibre (ChatgptAudit.siteOperator P 0 (Matrix.single.{0, 0, 0} 0 0 1))))
+                  (Eq.symm.{1}
+                    (ChatgptAudit.siteOperator_mul 0 (Matrix.conjTranspose.{0, 0, 0} (Matrix.single.{0, 0, 0} 1 0 1))
+                      (Matrix.single.{0, 0, 0} 1 0 1)))))
+              (Eq.mpr.{0}
+                (id.{0}
+                  (congrArg.{1, 1}
+                    (fun _a =>
+                      Eq.{1}
+                        (TGLV350.Regular.fibre
+                          (ChatgptAudit.siteOperator P 0 (HMul.hMul.{0, 0, 0} _a (Matrix.single.{0, 0, 0} 1 0 1))))
+                        (TGLV350.Regular.fibre (ChatgptAudit.siteOperator P 0 (Matrix.single.{0, 0, 0} 0 0 1))))
+                    (Matrix.conjTranspose_single.{0, 0, 0} 1 0 1)))
+                (Eq.mpr.{0}
+                  (id.{0}
+                    (congrArg.{1, 1}
+                      (fun _a =>
+                        Eq.{1}
+                          (TGLV350.Regular.fibre
+                            (ChatgptAudit.siteOperator P 0
+                              (HMul.hMul.{0, 0, 0} (Matrix.single.{0, 0, 0} 0 1 _a) (Matrix.single.{0, 0, 0} 1 0 1))))
+                          (TGLV350.Regular.fibre (ChatgptAudit.siteOperator P 0 (Matrix.single.{0, 0, 0} 0 0 1))))
+                      (star_one.{0} ℂ)))
+                  (Eq.mpr.{0}
+                    (id.{0}
+                      (congrArg.{1, 1}
+                        (fun _a =>
+                          Eq.{1} (TGLV350.Regular.fibre (ChatgptAudit.siteOperator P 0 _a))
+                            (TGLV350.Regular.fibre (ChatgptAudit.siteOperator P 0 (Matrix.single.{0, 0, 0} 0 0 1))))
+                        (Matrix.single_mul_single_same.{0, 0, 0, 0} 1 0 1 0 1)))
+                    (Eq.mpr.{0}
+                      (id.{0}
+                        (congrArg.{1, 1}
+                          (fun _a =>
+                            Eq.{1}
+                              (TGLV350.Regular.fibre (ChatgptAudit.siteOperator P 0 (Matrix.single.{0, 0, 0} 0 0 _a)))
+                              (TGLV350.Regular.fibre (ChatgptAudit.siteOperator P 0 (Matrix.single.{0, 0, 0} 0 0 1))))
+                          (one_mul.{0} 1)))
+                      (Eq.refl.{1}
+                        (TGLV350.Regular.fibre
+                          (ChatgptAudit.siteOperator P 0 (Matrix.single.{0, 0, 0} 0 0 1))))))))))));
+  have hev :=
+    have hm :=
+      Matrix.ext.{0, 0, 0} fun i j =>
+        List.Mem.casesOn.{0} (motive := fun a x =>
+          Eq.{1} (List.finRange (HAdd.hAdd.{0, 0, 0} { len := 1 }.len 1)) a →
+            HEq.{0} (Fintype.complete.{0} i) x →
+              Eq.{1} (HMul.hMul.{0, 0, 0} (Matrix.single.{0, 0, 0} 0 0 1) (Matrix.single.{0, 0, 0} 1 0 1) i j) (0 i j))
+          (Fintype.complete.{0} i)
+          (fun as h =>
+            List.cons.noConfusion.{0, 0} h fun head_eq =>
+              Eq.ndrec.{0, 1} (motive := fun i =>
+                ∀ (this : Membership.mem.{0, 0} Fintype.elems.{0} i),
+                  HEq.{1}
+                      ((fun x1 x2 => List.cons.{0} ((fun i => i) x1) x2)
+                        ⟨1, Nat.le_refl (HAdd.hAdd.{0, 0, 0} { len := 1 }.len 1)⟩ List.nil.{0})
+                      as →
+                    HEq.{0} this (List.Mem.head.{0} as) →
+                      Eq.{1} (HMul.hMul.{0, 0, 0} (Matrix.single.{0, 0, 0} 0 0 1) (Matrix.single.{0, 0, 0} 1 0 1) i j)
+                        (0 i j))
+                (fun this tail_eq =>
+                  Eq.ndrec.{0, 1} (motive := fun as =>
+                    HEq.{0} this (List.Mem.head.{0} as) →
+                      Eq.{1}
+                        (HMul.hMul.{0, 0, 0} (Matrix.single.{0, 0, 0} 0 0 1) (Matrix.single.{0, 0, 0} 1 0 1)
+                          ((fun i => i) ⟨0, Nat.le_of_lt (Nat.le_refl (HAdd.hAdd.{0, 0, 0} { len := 1 }.len 1))⟩) j)
+                        (0 ((fun i => i) ⟨0, Nat.le_of_lt (Nat.le_refl (HAdd.hAdd.{0, 0, 0} { len := 1 }.len 1))⟩) j))
+                    (fun h =>
+                      List.Mem.casesOn.{0} (motive := fun a x =>
+                        Eq.{1} (List.finRange (HAdd.hAdd.{0, 0, 0} { len := 1 }.len 1)) a →
+                          HEq.{0} (Fintype.complete.{0} j) x →
+                            Eq.{1}
+                              (HMul.hMul.{0, 0, 0} (Matrix.single.{0, 0, 0} 0 0 1) (Matrix.single.{0, 0, 0} 1 0 1)
+                                ((fun i => i) ⟨0, Nat.le_of_lt (Nat.le_refl (HAdd.hAdd.{0, 0, 0} { len := 1 }.len 1))⟩)
+                                j)
+                              (0 ((fun i => i) ⟨0, Nat.le_of_lt (Nat.le_refl (HAdd.hAdd.{0, 0, 0} { len := 1 }.len 1))⟩)
+                                j))
+                        (Fintype.complete.{0} j)
+                        (fun as h =>
+                          List.cons.noConfusion.{0, 0} h fun head_eq =>
+                            Eq.ndrec.{0, 1} (motive := fun j =>
+                              ∀ (this : Membership.mem.{0, 0} Fintype.elems.{0} j),
+                                HEq.{1}
+                                    ((fun x1 x2 => List.cons.{0} ((fun i => i) x1) x2)
+                                      ⟨1, Nat.le_refl (HAdd.hAdd.{0, 0, 0} { len := 1 }.len 1)⟩ List.nil.{0})
+                                    as →
+                                  HEq.{0} this (List.Mem.head.{0} as) →
+                                    Eq.{1}
+                                      (HMul.hMul.{0, 0, 0} (Matrix.single.{0, 0, 0} 0 0 1)
+                                        (Matrix.single.{0, 0, 0} 1 0 1)
+                                        ((fun i => i)
+                                          ⟨0, Nat.le_of_lt (Nat.le_refl (HAdd.hAdd.{0, 0, 0} { len := 1 }.len 1))⟩)
+                                        j)
+                                      (0
+                                        ((fun i => i)
+                                          ⟨0, Nat.le_of_lt (Nat.le_refl (HAdd.hAdd.{0, 0, 0} { len := 1 }.len 1))⟩)
+                                        j))
+                              (fun this tail_eq =>
+                                Eq.ndrec.{0, 1} (motive := fun as =>
+                                  HEq.{0} this (List.Mem.head.{0} as) →
+                                    Eq.{1}
+                                      (HMul.hMul.{0, 0, 0} (Matrix.single.{0, 0, 0} 0 0 1)
+                                        (Matrix.single.{0, 0, 0} 1 0 1)
+                                        ((fun i => i)
+                                          ⟨0, Nat.le_of_lt (Nat.le_refl (HAdd.hAdd.{0, 0, 0} { len := 1 }.len 1))⟩)
+                                        ((fun i => i)
+                                          ⟨0, Nat.le_of_lt (Nat.le_refl (HAdd.hAdd.{0, 0, 0} { len := 1 }.len 1))⟩))
+                                      (0
+                                        ((fun i => i)
+                                          ⟨0, Nat.le_of_lt (Nat.le_refl (HAdd.hAdd.{0, 0, 0} { len := 1 }.len 1))⟩)
+                                        ((fun i => i)
+                                          ⟨0, Nat.le_of_lt (Nat.le_refl (HAdd.hAdd.{0, 0, 0} { len := 1 }.len 1))⟩)))
+                                  (fun h =>
+                                    of_eq_true
+                                      (Eq.trans.{1}
+                                        (Eq.trans.{1}
+                                          (congrFun'.{1, 1}
+                                            (congrArg.{1, 1} Eq.{1}
+                                              (Eq.trans.{1}
+                                                (Eq.trans.{1}
+                                                  (Finset.sum_congr.{0, 0} (Eq.refl.{1} Finset.univ.{0}) fun x a =>
+                                                    Eq.trans.{1}
+                                                      (Eq.trans.{1}
+                                                        (congr.{1, 1}
+                                                          (congrArg.{1, 1} HMul.hMul.{0, 0, 0}
+                                                            (ite_congr.{1}
+                                                              (Eq.trans.{1}
+                                                                (congrFun'.{1, 1}
+                                                                  (congrArg.{1, 1} And
+                                                                    (Eq.trans.{1} (eq_self.{1} 0) (eq_true True.intro)))
+                                                                  (Eq.{1} 0 x))
+                                                                (true_and (Eq.{1} 0 x)))
+                                                              (fun a => Eq.refl.{1} 1) fun a => Eq.refl.{1} 0))
+                                                          (ite_congr.{1}
+                                                            (Eq.trans.{1}
+                                                              (congrArg.{1, 1} (And (Eq.{1} 1 x))
+                                                                (Eq.trans.{1} (eq_self.{1} 0) (eq_true True.intro)))
+                                                              (and_true (Eq.{1} 1 x)))
+                                                            (fun a => Eq.refl.{1} 1) fun a => Eq.refl.{1} 0))
+                                                        (mul_ite.{0} (Eq.{1} 1 x) (ite.{1} (Eq.{1} 0 x) 1 0) 1 0))
+                                                      (ite_congr.{1} (Eq.refl.{1} (Eq.{1} 1 x))
+                                                        (fun a => mul_one.{0} (ite.{1} (Eq.{1} 0 x) 1 0)) fun a =>
+                                                        mul_zero.{0} (ite.{1} (Eq.{1} 0 x) 1 0)))
+                                                  (Finset.sum_ite_eq.{0, 0} Finset.univ.{0} 1 fun x =>
+                                                    ite.{1} (Eq.{1} 0 x) 1 0))
+                                                (Eq.trans.{1}
+                                                  (ite_congr.{1}
+                                                    (Eq.trans.{1} (Finset.mem_univ._simp_1.{0} 1) (eq_true True.intro))
+                                                    (fun a =>
+                                                      ite_congr.{1}
+                                                        (Eq.trans.{1} zero_ne_one._simp_1.{0} (eq_false not_false))
+                                                        (fun a => Eq.refl.{1} 1) fun a => Eq.refl.{1} 0)
+                                                    fun a => Eq.refl.{1} 0)
+                                                  (ite_self.{1} 0))))
+                                            0)
+                                          (eq_self.{1} 0))
+                                        (eq_true True.intro)))
+                                  (eq_of_heq.{1} tail_eq))
+                              (eq_of_heq.{1} head_eq) (Fintype.complete.{0} j))
+                        (fun b {as} a h =>
+                          List.cons.noConfusion.{0, 0} h fun head_eq =>
+                            Eq.ndrec.{0, 1} (motive := fun b =>
+                              HEq.{1}
+                                  ((fun x1 x2 => List.cons.{0} ((fun i => i) x1) x2)
+                                    ⟨1, Nat.le_refl (HAdd.hAdd.{0, 0, 0} { len := 1 }.len 1)⟩ List.nil.{0})
+                                  as →
+                                HEq.{0} (Fintype.complete.{0} j) (List.Mem.tail.{0} b a) →
+                                  Eq.{1}
+                                    (HMul.hMul.{0, 0, 0} (Matrix.single.{0, 0, 0} 0 0 1) (Matrix.single.{0, 0, 0} 1 0 1)
+                                      ((fun i => i)
+                                        ⟨0, Nat.le_of_lt (Nat.le_refl (HAdd.hAdd.{0, 0, 0} { len := 1 }.len 1))⟩)
+                                      j)
+                                    (0
+                                      ((fun i => i)
+                                        ⟨0, Nat.le_of_lt (Nat.le_refl (HAdd.hAdd.{0, 0, 0} { len := 1 }.len 1))⟩)
+                                      j))
+                              (fun tail_eq =>
+                                Eq.ndrec.{0, 1} (motive := fun {as} =>
+                                  ∀ (a : List.Mem.{0} j as),
+                                    HEq.{0} (Fintype.complete.{0} j)
+                                        (List.Mem.tail.{0}
+                                          ((fun i => i)
+                                            ⟨0, Nat.le_of_lt (Nat.le_refl (HAdd.hAdd.{0, 0, 0} { len := 1 }.len 1))⟩)
+                                          a) →
+                                      Eq.{1}
+                                        (HMul.hMul.{0, 0, 0} (Matrix.single.{0, 0, 0} 0 0 1)
+                                          (Matrix.single.{0, 0, 0} 1 0 1)
+                                          ((fun i => i)
+                                            ⟨0, Nat.le_of_lt (Nat.le_refl (HAdd.hAdd.{0, 0, 0} { len := 1 }.len 1))⟩)
+                                          j)
+                                        (0
+                                          ((fun i => i)
+                                            ⟨0, Nat.le_of_lt (Nat.le_refl (HAdd.hAdd.{0, 0, 0} { len := 1 }.len 1))⟩)
+                                          j))
+                                  (fun a h =>
+                                    List.Mem.casesOn.{0} (motive := fun a_1 x =>
+                                      Eq.{1}
+                                          ((fun x1 x2 => List.cons.{0} ((fun i => i) x1) x2)
+                                            ⟨1, Nat.le_refl (HAdd.hAdd.{0, 0, 0} { len := 1 }.len 1)⟩ List.nil.{0})
+                                          a_1 →
+                                        HEq.{0} a x →
+                                          Eq.{1}
+                                            (HMul.hMul.{0, 0, 0} (Matrix.single.{0, 0, 0} 0 0 1)
+                                              (Matrix.single.{0, 0, 0} 1 0 1)
+                                              ((fun i => i)
+                                                ⟨0,
+                                                  Nat.le_of_lt (Nat.le_refl (HAdd.hAdd.{0, 0, 0} { len := 1 }.len 1))⟩)
+                                              j)
+                                            (0
+                                              ((fun i => i)
+                                                ⟨0,
+                                                  Nat.le_of_lt (Nat.le_refl (HAdd.hAdd.{0, 0, 0} { len := 1 }.len 1))⟩)
+                                              j))
+                                      a
+                                      (fun as h =>
+                                        List.cons.noConfusion.{0, 0} h fun head_eq =>
+                                          Eq.ndrec.{0, 1} (motive := fun j =>
+                                            ∀
+                                              (a :
+                                                List.Mem.{0} j
+                                                  ((fun x1 x2 => List.cons.{0} ((fun i => i) x1) x2)
+                                                    ⟨1, Nat.le_refl (HAdd.hAdd.{0, 0, 0} { len := 1 }.len 1)⟩
+                                                    List.nil.{0})),
+                                              HEq.{1} List.nil.{0} as →
+                                                HEq.{0} a (List.Mem.head.{0} as) →
+                                                  Eq.{1}
+                                                    (HMul.hMul.{0, 0, 0} (Matrix.single.{0, 0, 0} 0 0 1)
+                                                      (Matrix.single.{0, 0, 0} 1 0 1)
+                                                      ((fun i => i)
+                                                        ⟨0,
+                                                          Nat.le_of_lt
+                                                            (Nat.le_refl (HAdd.hAdd.{0, 0, 0} { len := 1 }.len 1))⟩)
+                                                      j)
+                                                    (0
+                                                      ((fun i => i)
+                                                        ⟨0,
+                                                          Nat.le_of_lt
+                                                            (Nat.le_refl (HAdd.hAdd.{0, 0, 0} { len := 1 }.len 1))⟩)
+                                                      j))
+                                            (fun a tail_eq =>
+                                              Eq.ndrec.{0, 1} (motive := fun as =>
+                                                HEq.{0} a (List.Mem.head.{0} as) →
+                                                  Eq.{1}
+                                                    (HMul.hMul.{0, 0, 0} (Matrix.single.{0, 0, 0} 0 0 1)
+                                                      (Matrix.single.{0, 0, 0} 1 0 1)
+                                                      ((fun i => i)
+                                                        ⟨0,
+                                                          Nat.le_of_lt
+                                                            (Nat.le_refl (HAdd.hAdd.{0, 0, 0} { len := 1 }.len 1))⟩)
+                                                      ((fun i => i)
+                                                        ⟨1, Nat.le_refl (HAdd.hAdd.{0, 0, 0} { len := 1 }.len 1)⟩))
+                                                    (0
+                                                      ((fun i => i)
+                                                        ⟨0,
+                                                          Nat.le_of_lt
+                                                            (Nat.le_refl (HAdd.hAdd.{0, 0, 0} { len := 1 }.len 1))⟩)
+                                                      ((fun i => i)
+                                                        ⟨1, Nat.le_refl (HAdd.hAdd.{0, 0, 0} { len := 1 }.len 1)⟩)))
+                                                (fun h =>
+                                                  of_eq_true
+                                                    (Eq.trans.{1}
+                                                      (Eq.trans.{1}
+                                                        (congrFun'.{1, 1}
+                                                          (congrArg.{1, 1} Eq.{1}
+                                                            (Eq.trans.{1}
+                                                              (Finset.sum_congr.{0, 0} (Eq.refl.{1} Finset.univ.{0})
+                                                                fun x a =>
+                                                                Eq.trans.{1}
+                                                                  (congr.{1, 1}
+                                                                    (congrArg.{1, 1} HMul.hMul.{0, 0, 0}
+                                                                      (ite_congr.{1}
+                                                                        (Eq.trans.{1} ⋯ (true_and (Eq.{1} 0 x)))
+                                                                        (fun a => Eq.refl.{1} 1) fun a =>
+                                                                        Eq.refl.{1} 0))
+                                                                    (Matrix.single_apply_of_ne.{0, 0, 0} 1 0 1 x 1
+                                                                      (of_eq_true
+                                                                        (Eq.trans.{1} ⋯ (eq_true True.intro)))))
+                                                                  (mul_zero.{0} (ite.{1} (Eq.{1} 0 x) 1 0)))
+                                                              Finset.sum_const_zero.{0, 0}))
+                                                          0)
+                                                        (eq_self.{1} 0))
+                                                      (eq_true True.intro)))
+                                                (eq_of_heq.{1} tail_eq))
+                                            (eq_of_heq.{1} head_eq) a)
+                                      (fun b {as} a_1 h =>
+                                        List.cons.noConfusion.{0, 0} h fun head_eq =>
+                                          Eq.ndrec.{0, 1} (motive := fun b =>
+                                            HEq.{1} List.nil.{0} as →
+                                              HEq.{0} a (List.Mem.tail.{0} b a_1) →
+                                                Eq.{1}
+                                                  (HMul.hMul.{0, 0, 0} (Matrix.single.{0, 0, 0} 0 0 1)
+                                                    (Matrix.single.{0, 0, 0} 1 0 1)
+                                                    ((fun i => i)
+                                                      ⟨0,
+                                                        Nat.le_of_lt
+                                                          (Nat.le_refl (HAdd.hAdd.{0, 0, 0} { len := 1 }.len 1))⟩)
+                                                    j)
+                                                  (0
+                                                    ((fun i => i)
+                                                      ⟨0,
+                                                        Nat.le_of_lt
+                                                          (Nat.le_refl (HAdd.hAdd.{0, 0, 0} { len := 1 }.len 1))⟩)
+                                                    j))
+                                            (fun tail_eq =>
+                                              Eq.ndrec.{0, 1} (motive := fun {as} =>
+                                                ∀ (a_2 : List.Mem.{0} j as),
+                                                  HEq.{0} a
+                                                      (List.Mem.tail.{0}
+                                                        ((fun i => i)
+                                                          ⟨1, Nat.le_refl (HAdd.hAdd.{0, 0, 0} { len := 1 }.len 1)⟩)
+                                                        a_2) →
+                                                    Eq.{1}
+                                                      (HMul.hMul.{0, 0, 0} (Matrix.single.{0, 0, 0} 0 0 1)
+                                                        (Matrix.single.{0, 0, 0} 1 0 1)
+                                                        ((fun i => i)
+                                                          ⟨0,
+                                                            Nat.le_of_lt
+                                                              (Nat.le_refl (HAdd.hAdd.{0, 0, 0} { len := 1 }.len 1))⟩)
+                                                        j)
+                                                      (0
+                                                        ((fun i => i)
+                                                          ⟨0,
+                                                            Nat.le_of_lt
+                                                              (Nat.le_refl (HAdd.hAdd.{0, 0, 0} { len := 1 }.len 1))⟩)
+                                                        j))
+                                                (fun a_2 h =>
+                                                  List.Mem.casesOn.{0} (motive := fun a x =>
+                                                    Eq.{1} List.nil.{0} a →
+                                                      HEq.{0} a_2 x →
+                                                        Eq.{1}
+                                                          (HMul.hMul.{0, 0, 0} (Matrix.single.{0, 0, 0} 0 0 1)
+                                                            (Matrix.single.{0, 0, 0} 1 0 1)
+                                                            ((fun i => i)
+                                                              ⟨0,
+                                                                Nat.le_of_lt
+                                                                  (Nat.le_refl
+                                                                    (HAdd.hAdd.{0, 0, 0} { len := 1 }.len 1))⟩)
+                                                            j)
+                                                          (0
+                                                            ((fun i => i)
+                                                              ⟨0,
+                                                                Nat.le_of_lt
+                                                                  (Nat.le_refl
+                                                                    (HAdd.hAdd.{0, 0, 0} { len := 1 }.len 1))⟩)
+                                                            j))
+                                                    a_2
+                                                    (fun as h =>
+                                                      False.elim.{0} (noConfusion_of_Nat.{1} List.ctorIdx.{0} h))
+                                                    (fun b {as} a h =>
+                                                      False.elim.{0} (noConfusion_of_Nat.{1} List.ctorIdx.{0} h))
+                                                    (Eq.refl.{1} List.nil.{0}) (HEq.refl.{0} a_2))
+                                                (eq_of_heq.{1} tail_eq) a_1)
+                                            (eq_of_heq.{1} head_eq))
+                                      (Eq.refl.{1}
+                                        ((fun x1 x2 => List.cons.{0} ((fun i => i) x1) x2)
+                                          ⟨1, Nat.le_refl (HAdd.hAdd.{0, 0, 0} { len := 1 }.len 1)⟩ List.nil.{0}))
+                                      (HEq.refl.{0} a))
+                                  (eq_of_heq.{1} tail_eq) a)
+                              (eq_of_heq.{1} head_eq))
+                        (Eq.refl.{1} (List.finRange (HAdd.hAdd.{0, 0, 0} { len := 1 }.len 1)))
+                        (HEq.refl.{0} (Fintype.complete.{0} j)))
+                    (eq_of_heq.{1} tail_eq))
+                (eq_of_heq.{1} head_eq) (Fintype.complete.{0} i))
+          (fun b {as} a h =>
+            List.cons.noConfusion.{0, 0} h fun head_eq =>
+              Eq.ndrec.{0, 1} (motive := fun b =>
+                HEq.{1}
+                    ((fun x1 x2 => List.cons.{0} ((fun i => i) x1) x2)
+                      ⟨1, Nat.le_refl (HAdd.hAdd.{0, 0, 0} { len := 1 }.len 1)⟩ List.nil.{0})
+                    as →
+                  HEq.{0} (Fintype.complete.{0} i) (List.Mem.tail.{0} b a) →
+                    Eq.{1} (HMul.hMul.{0, 0, 0} (Matrix.single.{0, 0, 0} 0 0 1) (Matrix.single.{0, 0, 0} 1 0 1) i j)
+                      (0 i j))
+                (fun tail_eq =>
+                  Eq.ndrec.{0, 1} (motive := fun {as} =>
+                    ∀ (a : List.Mem.{0} i as),
+                      HEq.{0} (Fintype.complete.{0} i)
+                          (List.Mem.tail.{0}
+                            ((fun i => i) ⟨0, Nat.le_of_lt (Nat.le_refl (HAdd.hAdd.{0, 0, 0} { len := 1 }.len 1))⟩) a) →
+                        Eq.{1} (HMul.hMul.{0, 0, 0} (Matrix.single.{0, 0, 0} 0 0 1) (Matrix.single.{0, 0, 0} 1 0 1) i j)
+                          (0 i j))
+                    (fun a h =>
+                      List.Mem.casesOn.{0} (motive := fun a_1 x =>
+                        Eq.{1}
+                            ((fun x1 x2 => List.cons.{0} ((fun i => i) x1) x2)
+                              ⟨1, Nat.le_refl (HAdd.hAdd.{0, 0, 0} { len := 1 }.len 1)⟩ List.nil.{0})
+                            a_1 →
+                          HEq.{0} a x →
+                            Eq.{1}
+                              (HMul.hMul.{0, 0, 0} (Matrix.single.{0, 0, 0} 0 0 1) (Matrix.single.{0, 0, 0} 1 0 1) i j)
+                              (0 i j))
+                        a
+                        (fun as h =>
+                          List.cons.noConfusion.{0, 0} h fun head_eq =>
+                            Eq.ndrec.{0, 1} (motive := fun i =>
+                              ∀
+                                (a :
+                                  List.Mem.{0} i
+                                    ((fun x1 x2 => List.cons.{0} ((fun i => i) x1) x2)
+                                      ⟨1, Nat.le_refl (HAdd.hAdd.{0, 0, 0} { len := 1 }.len 1)⟩ List.nil.{0})),
+                                HEq.{1} List.nil.{0} as →
+                                  HEq.{0} a (List.Mem.head.{0} as) →
+                                    Eq.{1}
+                                      (HMul.hMul.{0, 0, 0} (Matrix.single.{0, 0, 0} 0 0 1)
+                                        (Matrix.single.{0, 0, 0} 1 0 1) i j)
+                                      (0 i j))
+                              (fun a tail_eq =>
+                                Eq.ndrec.{0, 1} (motive := fun as =>
+                                  HEq.{0} a (List.Mem.head.{0} as) →
+                                    Eq.{1}
+                                      (HMul.hMul.{0, 0, 0} (Matrix.single.{0, 0, 0} 0 0 1)
+                                        (Matrix.single.{0, 0, 0} 1 0 1)
+                                        ((fun i => i) ⟨1, Nat.le_refl (HAdd.hAdd.{0, 0, 0} { len := 1 }.len 1)⟩) j)
+                                      (0 ((fun i => i) ⟨1, Nat.le_refl (HAdd.hAdd.{0, 0, 0} { len := 1 }.len 1)⟩) j))
+                                  (fun h =>
+                                    List.Mem.casesOn.{0} (motive := fun a x =>
+                                      Eq.{1} (List.finRange (HAdd.hAdd.{0, 0, 0} { len := 1 }.len 1)) a →
+                                        HEq.{0} (Fintype.complete.{0} j) x →
+                                          Eq.{1}
+                                            (HMul.hMul.{0, 0, 0} (Matrix.single.{0, 0, 0} 0 0 1)
+                                              (Matrix.single.{0, 0, 0} 1 0 1)
+                                              ((fun i => i) ⟨1, Nat.le_refl (HAdd.hAdd.{0, 0, 0} { len := 1 }.len 1)⟩)
+                                              j)
+                                            (0 ((fun i => i) ⟨1, Nat.le_refl (HAdd.hAdd.{0, 0, 0} { len := 1 }.len 1)⟩)
+                                              j))
+                                      (Fintype.complete.{0} j)
+                                      (fun as h =>
+                                        List.cons.noConfusion.{0, 0} h fun head_eq =>
+                                          Eq.ndrec.{0, 1} (motive := fun j =>
+                                            ∀ (this : Membership.mem.{0, 0} Fintype.elems.{0} j),
+                                              HEq.{1}
+                                                  ((fun x1 x2 => List.cons.{0} ((fun i => i) x1) x2)
+                                                    ⟨1, Nat.le_refl (HAdd.hAdd.{0, 0, 0} { len := 1 }.len 1)⟩
+                                                    List.nil.{0})
+                                                  as →
+                                                HEq.{0} this (List.Mem.head.{0} as) →
+                                                  Eq.{1}
+                                                    (HMul.hMul.{0, 0, 0} (Matrix.single.{0, 0, 0} 0 0 1)
+                                                      (Matrix.single.{0, 0, 0} 1 0 1)
+                                                      ((fun i => i)
+                                                        ⟨1, Nat.le_refl (HAdd.hAdd.{0, 0, 0} { len := 1 }.len 1)⟩)
+                                                      j)
+                                                    (0
+                                                      ((fun i => i)
+                                                        ⟨1, Nat.le_refl (HAdd.hAdd.{0, 0, 0} { len := 1 }.len 1)⟩)
+                                                      j))
+                                            (fun this tail_eq =>
+                                              Eq.ndrec.{0, 1} (motive := fun as =>
+                                                HEq.{0} this (List.Mem.head.{0} as) →
+                                                  Eq.{1}
+                                                    (HMul.hMul.{0, 0, 0} (Matrix.single.{0, 0, 0} 0 0 1)
+                                                      (Matrix.single.{0, 0, 0} 1 0 1)
+                                                      ((fun i => i)
+                                                        ⟨1, Nat.le_refl (HAdd.hAdd.{0, 0, 0} { len := 1 }.len 1)⟩)
+                                                      ((fun i => i)
+                                                        ⟨0,
+                                                          Nat.le_of_lt
+                                                            (Nat.le_refl (HAdd.hAdd.{0, 0, 0} { len := 1 }.len 1))⟩))
+                                                    (0
+                                                      ((fun i => i)
+                                                        ⟨1, Nat.le_refl (HAdd.hAdd.{0, 0, 0} { len := 1 }.len 1)⟩)
+                                                      ((fun i => i)
+                                                        ⟨0,
+                                                          Nat.le_of_lt
+                                                            (Nat.le_refl (HAdd.hAdd.{0, 0, 0} { len := 1 }.len 1))⟩)))
+                                                (fun h =>
+                                                  of_eq_true
+                                                    (Eq.trans.{1}
+                                                      (Eq.trans.{1}
+                                                        (congrFun'.{1, 1}
+                                                          (congrArg.{1, 1} Eq.{1}
+                                                            (Eq.trans.{1}
+                                                              (Finset.sum_congr.{0, 0} (Eq.refl.{1} Finset.univ.{0})
+                                                                fun x a =>
+                                                                Eq.trans.{1}
+                                                                  (Eq.trans.{1}
+                                                                    (congr.{1, 1}
+                                                                      (congrArg.{1, 1} HMul.hMul.{0, 0, 0}
+                                                                        (Matrix.single_apply_of_ne.{0, 0, 0} 0 0 1 1 x
+                                                                          ⋯))
+                                                                      (ite_congr.{1}
+                                                                        (Eq.trans.{1} ⋯ (and_true (Eq.{1} 1 x)))
+                                                                        (fun a => Eq.refl.{1} 1) fun a =>
+                                                                        Eq.refl.{1} 0))
+                                                                    (mul_ite.{0} (Eq.{1} 1 x) 0 1 0))
+                                                                  (Eq.trans.{1}
+                                                                    (ite_congr.{1} (Eq.refl.{1} (Eq.{1} 1 x))
+                                                                      (fun a =>
+                                                                        Mathlib.Meta.NormNum.IsNat.to_eq.{0} ⋯
+                                                                          Nat.cast_zero.{0})
+                                                                      fun a =>
+                                                                      Mathlib.Meta.NormNum.IsNat.to_eq.{0} ⋯
+                                                                        Nat.cast_zero.{0})
+                                                                    (ite_self.{1} 0)))
+                                                              Finset.sum_const_zero.{0, 0}))
+                                                          0)
+                                                        (eq_self.{1} 0))
+                                                      (eq_true True.intro)))
+                                                (eq_of_heq.{1} tail_eq))
+                                            (eq_of_heq.{1} head_eq) (Fintype.complete.{0} j))
+                                      (fun b {as} a h =>
+                                        List.cons.noConfusion.{0, 0} h fun head_eq =>
+                                          Eq.ndrec.{0, 1} (motive := fun b =>
+                                            HEq.{1}
+                                                ((fun x1 x2 => List.cons.{0} ((fun i => i) x1) x2)
+                                                  ⟨1, Nat.le_refl (HAdd.hAdd.{0, 0, 0} { len := 1 }.len 1)⟩
+                                                  List.nil.{0})
+                                                as →
+                                              HEq.{0} (Fintype.complete.{0} j) (List.Mem.tail.{0} b a) →
+                                                Eq.{1}
+                                                  (HMul.hMul.{0, 0, 0} (Matrix.single.{0, 0, 0} 0 0 1)
+                                                    (Matrix.single.{0, 0, 0} 1 0 1)
+                                                    ((fun i => i)
+                                                      ⟨1, Nat.le_refl (HAdd.hAdd.{0, 0, 0} { len := 1 }.len 1)⟩)
+                                                    j)
+                                                  (0
+                                                    ((fun i => i)
+                                                      ⟨1, Nat.le_refl (HAdd.hAdd.{0, 0, 0} { len := 1 }.len 1)⟩)
+                                                    j))
+                                            (fun tail_eq =>
+                                              Eq.ndrec.{0, 1} (motive := fun {as} =>
+                                                ∀ (a : List.Mem.{0} j as),
+                                                  HEq.{0} (Fintype.complete.{0} j)
+                                                      (List.Mem.tail.{0}
+                                                        ((fun i => i)
+                                                          ⟨0,
+                                                            Nat.le_of_lt
+                                                              (Nat.le_refl (HAdd.hAdd.{0, 0, 0} { len := 1 }.len 1))⟩)
+                                                        a) →
+                                                    Eq.{1}
+                                                      (HMul.hMul.{0, 0, 0} (Matrix.single.{0, 0, 0} 0 0 1)
+                                                        (Matrix.single.{0, 0, 0} 1 0 1)
+                                                        ((fun i => i)
+                                                          ⟨1, Nat.le_refl (HAdd.hAdd.{0, 0, 0} { len := 1 }.len 1)⟩)
+                                                        j)
+                                                      (0
+                                                        ((fun i => i)
+                                                          ⟨1, Nat.le_refl (HAdd.hAdd.{0, 0, 0} { len := 1 }.len 1)⟩)
+                                                        j))
+                                                (fun a h =>
+                                                  List.Mem.casesOn.{0} (motive := fun a_1 x =>
+                                                    Eq.{1}
+                                                        ((fun x1 x2 => List.cons.{0} ((fun i => i) x1) x2)
+                                                          ⟨1, Nat.le_refl (HAdd.hAdd.{0, 0, 0} { len := 1 }.len 1)⟩
+                                                          List.nil.{0})
+                                                        a_1 →
+                                                      HEq.{0} a x →
+                                                        Eq.{1}
+                                                          (HMul.hMul.{0, 0, 0} (Matrix.single.{0, 0, 0} 0 0 1)
+                                                            (Matrix.single.{0, 0, 0} 1 0 1)
+                                                            ((fun i => i)
+                                                              ⟨1, Nat.le_refl (HAdd.hAdd.{0, 0, 0} { len := 1 }.len 1)⟩)
+                                                            j)
+                                                          (0
+                                                            ((fun i => i)
+                                                              ⟨1, Nat.le_refl (HAdd.hAdd.{0, 0, 0} { len := 1 }.len 1)⟩)
+                                                            j))
+                                                    a
+                                                    (fun as h =>
+                                                      List.cons.noConfusion.{0, 0} h fun head_eq =>
+                                                        Eq.ndrec.{0, 1} (motive := fun j =>
+                                                          ∀
+                                                            (a :
+                                                              List.Mem.{0} j
+                                                                ((fun x1 x2 => List.cons.{0} ((fun i => i) x1) x2)
+                                                                  ⟨1,
+                                                                    Nat.le_refl
+                                                                      (HAdd.hAdd.{0, 0, 0} { len := 1 }.len 1)⟩
+                                                                  List.nil.{0})),
+                                                            HEq.{1} List.nil.{0} as →
+                                                              HEq.{0} a (List.Mem.head.{0} as) →
+                                                                Eq.{1}
+                                                                  (HMul.hMul.{0, 0, 0} (Matrix.single.{0, 0, 0} 0 0 1)
+                                                                    (Matrix.single.{0, 0, 0} 1 0 1)
+                                                                    ((fun i => i)
+                                                                      ⟨1,
+                                                                        Nat.le_refl
+                                                                          (HAdd.hAdd.{0, 0, 0} { len := 1 }.len 1)⟩)
+                                                                    j)
+                                                                  (0
+                                                                    ((fun i => i)
+                                                                      ⟨1,
+                                                                        Nat.le_refl
+                                                                          (HAdd.hAdd.{0, 0, 0} { len := 1 }.len 1)⟩)
+                                                                    j))
+                                                          (fun a tail_eq =>
+                                                            Eq.ndrec.{0, 1} (motive := fun as =>
+                                                              HEq.{0} a (List.Mem.head.{0} as) →
+                                                                Eq.{1}
+                                                                  (HMul.hMul.{0, 0, 0} (Matrix.single.{0, 0, 0} 0 0 1)
+                                                                    (Matrix.single.{0, 0, 0} 1 0 1)
+                                                                    ((fun i => i)
+                                                                      ⟨1,
+                                                                        Nat.le_refl
+                                                                          (HAdd.hAdd.{0, 0, 0} { len := 1 }.len 1)⟩)
+                                                                    ((fun i => i)
+                                                                      ⟨1,
+                                                                        Nat.le_refl
+                                                                          (HAdd.hAdd.{0, 0, 0} { len := 1 }.len 1)⟩))
+                                                                  (0
+                                                                    ((fun i => i)
+                                                                      ⟨1,
+                                                                        Nat.le_refl
+                                                                          (HAdd.hAdd.{0, 0, 0} { len := 1 }.len 1)⟩)
+                                                                    ((fun i => i)
+                                                                      ⟨1,
+                                                                        Nat.le_refl
+                                                                          (HAdd.hAdd.{0, 0, 0} { len := 1 }.len 1)⟩)))
+                                                              (fun h =>
+                                                                of_eq_true
+                                                                  (Eq.trans.{1}
+                                                                    (Eq.trans.{1}
+                                                                      (congrFun'.{1, 1} (congrArg.{1, 1} Eq.{1} ⋯) 0)
+                                                                      (eq_self.{1} 0))
+                                                                    (eq_true True.intro)))
+                                                              (eq_of_heq.{1} tail_eq))
+                                                          (eq_of_heq.{1} head_eq) a)
+                                                    (fun b {as} a_1 h =>
+                                                      List.cons.noConfusion.{0, 0} h fun head_eq =>
+                                                        Eq.ndrec.{0, 1} (motive := fun b =>
+                                                          HEq.{1} List.nil.{0} as →
+                                                            HEq.{0} a (List.Mem.tail.{0} b a_1) →
+                                                              Eq.{1}
+                                                                (HMul.hMul.{0, 0, 0} (Matrix.single.{0, 0, 0} 0 0 1)
+                                                                  (Matrix.single.{0, 0, 0} 1 0 1)
+                                                                  ((fun i => i)
+                                                                    ⟨1,
+                                                                      Nat.le_refl
+                                                                        (HAdd.hAdd.{0, 0, 0} { len := 1 }.len 1)⟩)
+                                                                  j)
+                                                                (0
+                                                                  ((fun i => i)
+                                                                    ⟨1,
+                                                                      Nat.le_refl
+                                                                        (HAdd.hAdd.{0, 0, 0} { len := 1 }.len 1)⟩)
+                                                                  j))
+                                                          (fun tail_eq =>
+                                                            Eq.ndrec.{0, 1} (motive := fun {as} =>
+                                                              ∀ (a_2 : List.Mem.{0} j as),
+                                                                HEq.{0} a
+                                                                    (List.Mem.tail.{0}
+                                                                      ((fun i => i)
+                                                                        ⟨1,
+                                                                          Nat.le_refl
+                                                                            (HAdd.hAdd.{0, 0, 0} { len := 1 }.len 1)⟩)
+                                                                      a_2) →
+                                                                  Eq.{1}
+                                                                    (HMul.hMul.{0, 0, 0} (Matrix.single.{0, 0, 0} 0 0 1)
+                                                                      (Matrix.single.{0, 0, 0} 1 0 1)
+                                                                      ((fun i => i)
+                                                                        ⟨1,
+                                                                          Nat.le_refl
+                                                                            (HAdd.hAdd.{0, 0, 0} { len := 1 }.len 1)⟩)
+                                                                      j)
+                                                                    (0
+                                                                      ((fun i => i)
+                                                                        ⟨1,
+                                                                          Nat.le_refl
+                                                                            (HAdd.hAdd.{0, 0, 0} { len := 1 }.len 1)⟩)
+                                                                      j))
+                                                              (fun a_2 h =>
+                                                                List.Mem.casesOn.{0} (motive := fun a x =>
+                                                                  Eq.{1} List.nil.{0} a → HEq.{0} a_2 x → Eq.{1} ⋯ ⋯)
+                                                                  a_2
+                                                                  (fun as h =>
+                                                                    False.elim.{0}
+                                                                      (noConfusion_of_Nat.{1} List.ctorIdx.{0} h))
+                                                                  (fun b {as} a h =>
+                                                                    False.elim.{0}
+                                                                      (noConfusion_of_Nat.{1} List.ctorIdx.{0} h))
+                                                                  (Eq.refl.{1} List.nil.{0}) (HEq.refl.{0} a_2))
+                                                              (eq_of_heq.{1} tail_eq) a_1)
+                                                          (eq_of_heq.{1} head_eq))
+                                                    (Eq.refl.{1}
+                                                      ((fun x1 x2 => List.cons.{0} ((fun i => i) x1) x2)
+                                                        ⟨1, Nat.le_refl (HAdd.hAdd.{0, 0, 0} { len := 1 }.len 1)⟩
+                                                        List.nil.{0}))
+                                                    (HEq.refl.{0} a))
+                                                (eq_of_heq.{1} tail_eq) a)
+                                            (eq_of_heq.{1} head_eq))
+                                      (Eq.refl.{1} (List.finRange (HAdd.hAdd.{0, 0, 0} { len := 1 }.len 1)))
+                                      (HEq.refl.{0} (Fintype.complete.{0} j)))
+                                  (eq_of_heq.{1} tail_eq))
+                              (eq_of_heq.{1} head_eq) a)
+                        (fun b {as} a_1 h =>
+                          List.cons.noConfusion.{0, 0} h fun head_eq =>
+                            Eq.ndrec.{0, 1} (motive := fun b =>
+                              HEq.{1} List.nil.{0} as →
+                                HEq.{0} a (List.Mem.tail.{0} b a_1) →
+                                  Eq.{1}
+                                    (HMul.hMul.{0, 0, 0} (Matrix.single.{0, 0, 0} 0 0 1) (Matrix.single.{0, 0, 0} 1 0 1)
+                                      i j)
+                                    (0 i j))
+                              (fun tail_eq =>
+                                Eq.ndrec.{0, 1} (motive := fun {as} =>
+                                  ∀ (a_2 : List.Mem.{0} i as),
+                                    HEq.{0} a
+                                        (List.Mem.tail.{0}
+                                          ((fun i => i) ⟨1, Nat.le_refl (HAdd.hAdd.{0, 0, 0} { len := 1 }.len 1)⟩)
+                                          a_2) →
+                                      Eq.{1}
+                                        (HMul.hMul.{0, 0, 0} (Matrix.single.{0, 0, 0} 0 0 1)
+                                          (Matrix.single.{0, 0, 0} 1 0 1) i j)
+                                        (0 i j))
+                                  (fun a_2 h =>
+                                    List.Mem.casesOn.{0} (motive := fun a x =>
+                                      Eq.{1} List.nil.{0} a →
+                                        HEq.{0} a_2 x →
+                                          Eq.{1}
+                                            (HMul.hMul.{0, 0, 0} (Matrix.single.{0, 0, 0} 0 0 1)
+                                              (Matrix.single.{0, 0, 0} 1 0 1) i j)
+                                            (0 i j))
+                                      a_2 (fun as h => False.elim.{0} (noConfusion_of_Nat.{1} List.ctorIdx.{0} h))
+                                      (fun b {as} a h => False.elim.{0} (noConfusion_of_Nat.{1} List.ctorIdx.{0} h))
+                                      (Eq.refl.{1} List.nil.{0}) (HEq.refl.{0} a_2))
+                                  (eq_of_heq.{1} tail_eq) a_1)
+                              (eq_of_heq.{1} head_eq))
+                        (Eq.refl.{1}
+                          ((fun x1 x2 => List.cons.{0} ((fun i => i) x1) x2)
+                            ⟨1, Nat.le_refl (HAdd.hAdd.{0, 0, 0} { len := 1 }.len 1)⟩ List.nil.{0}))
+                        (HEq.refl.{0} a))
+                    (eq_of_heq.{1} tail_eq) a)
+                (eq_of_heq.{1} head_eq))
+          (Eq.refl.{1} (List.finRange (HAdd.hAdd.{0, 0, 0} { len := 1 }.len 1)))
+          (HEq.refl.{0} (Fintype.complete.{0} i));
+    have hz :=
+      id.{0}
+        (have hh := TGLExt.towerPi_smul 0 0;
+        Eq.mp.{0}
+          (congr.{1, 1} (congrArg.{1, 1} Eq.{1} (congrArg.{1, 1} (TGLExt.towerPi P) (zero_smul.{0, 0} ℂ 0)))
+            (zero_smul.{0, 0} ℂ (TGLExt.towerPi P 0)))
+          hh);
+    id.{0}
+      (Eq.mpr.{0}
+        (id.{0}
+          (congrArg.{1, 1} (fun _a => Eq.{1} _a 0)
+            (Eq.symm.{1}
+              (TGLV350.Regular.fibre_mul (ChatgptAudit.siteOperator P 0 (Matrix.single.{0, 0, 0} 0 0 1))
+                (ChatgptAudit.siteOperator P 0 (Matrix.single.{0, 0, 0} 1 0 1))))))
+        (Eq.mpr.{0}
+          (id.{0}
+            (congrArg.{1, 1} (fun _a => Eq.{1} (TGLV350.Regular.fibre _a) 0)
+              (Eq.symm.{1}
+                (ChatgptAudit.siteOperator_mul 0 (Matrix.single.{0, 0, 0} 0 0 1) (Matrix.single.{0, 0, 0} 1 0 1)))))
+          (Eq.mpr.{0}
+            (id.{0}
+              (congrArg.{1, 1} (fun _a => Eq.{1} (TGLV350.Regular.fibre (ChatgptAudit.siteOperator P 0 _a)) 0) hm))
+            (Eq.mpr.{0} (id.{0} (congrArg.{1, 1} (fun _a => Eq.{1} (TGLV350.Regular.fibre _a) 0) hz))
+              (map_zero.{0, 0, 0} TGLV350.Regular.fibreRepresentation)))));
+  Exists.intro.{1} e (Exists.intro.{1} v ⟨hE, ⟨hEn, ⟨hv, hev⟩⟩⟩)
+theorem TGLV350.Regular.scalarTrace_finite_equal_split : ∀ (P : TGLExt.SiteProfile),
+  ∃ q r,
+    IsStarProjection.{0} ↑q ∧
+      IsStarProjection.{0} ↑r ∧
+        Eq.{1} (HMul.hMul.{0, 0, 0} ↑q ↑r) 0 ∧
+          Eq.{1} (TGLV350.Regular.scalarInverseLimitWeight P q) (TGLV350.Regular.scalarInverseLimitWeight P r) ∧
+            LT.lt.{0} 0 (TGLV350.Regular.scalarInverseLimitWeight P q) ∧
+              LT.lt.{0} (TGLV350.Regular.scalarInverseLimitWeight P q) Top.top.{0} :=
+fun P =>
+  Exists.casesOn.{1} (TGLV350.Regular.regularCore_matrix_corner P) fun e h =>
+    Exists.casesOn.{1} h fun v h =>
+      And.casesOn.{0} h fun he right =>
+        And.casesOn.{0} right fun hene right =>
+          And.casesOn.{0} right fun hv hev =>
+            Exists.casesOn.{1} (TGLV350.Regular.scalarTrace_finite_subprojection_exists P e he hene) fun q h =>
+              And.casesOn.{0} h fun hq right =>
+                And.casesOn.{0} right fun hpos right =>
+                  And.casesOn.{0} right fun hfin hqe =>
+                    let a := HMul.hMul.{0, 0, 0} v (Subtype.mk.{1} (↑q) (Subtype.property.{1} q).left);
+                    have hqs := IsSelfAdjoint.star_eq.{0} (IsStarProjection.isSelfAdjoint.{0} hq);
+                    have hqq := IsStarProjection.isIdempotentElem.{0} hq;
+                    have ha2 :=
+                      id.{0}
+                        (Trans.trans.{0, 0, 0, 1, 1, 1}
+                          (Eq.mpr.{0}
+                            (id.{0}
+                              (congrArg.{1, 1}
+                                (fun _a =>
+                                  Eq.{1} (HMul.hMul.{0, 0, 0} _a (HMul.hMul.{0, 0, 0} ↑v ↑q))
+                                    (HMul.hMul.{0, 0, 0}
+                                      (HMul.hMul.{0, 0, 0} (↑q) (HMul.hMul.{0, 0, 0} (star.{0} ↑v) ↑v)) ↑q))
+                                (star_mul.{0} ↑v ↑q)))
+                            (Eq.mpr.{0}
+                              (id.{0}
+                                (congrArg.{1, 1}
+                                  (fun _a =>
+                                    Eq.{1}
+                                      (HMul.hMul.{0, 0, 0} (HMul.hMul.{0, 0, 0} _a (star.{0} ↑v))
+                                        (HMul.hMul.{0, 0, 0} ↑v ↑q))
+                                      (HMul.hMul.{0, 0, 0}
+                                        (HMul.hMul.{0, 0, 0} (↑q) (HMul.hMul.{0, 0, 0} (star.{0} ↑v) ↑v)) ↑q))
+                                  hqs))
+                              (of_eq_true
+                                (Eq.trans.{1}
+                                  (congr.{1, 1}
+                                    (congrArg.{1, 1} Eq.{1}
+                                      (mul_assoc.{0} (↑q) (star.{0} ↑v) (HMul.hMul.{0, 0, 0} ↑v ↑q)))
+                                    (Eq.trans.{1} (mul_assoc.{0} (↑q) (HMul.hMul.{0, 0, 0} (star.{0} ↑v) ↑v) ↑q)
+                                      (congrArg.{1, 1} (HMul.hMul.{0, 0, 0} ↑q) (mul_assoc.{0} (star.{0} ↑v) ↑v ↑q))))
+                                  (eq_self.{1}
+                                    (HMul.hMul.{0, 0, 0} (↑q)
+                                      (HMul.hMul.{0, 0, 0} (star.{0} ↑v) (HMul.hMul.{0, 0, 0} ↑v ↑q))))))))
+                          (Eq.mpr.{0}
+                            (id.{0}
+                              (congrArg.{1, 1}
+                                (fun _a => Eq.{1} (HMul.hMul.{0, 0, 0} (HMul.hMul.{0, 0, 0} (↑q) _a) ↑q) ↑q) hv))
+                            (Eq.mpr.{0} (id.{0} (congrArg.{1, 1} (fun _a => Eq.{1} (HMul.hMul.{0, 0, 0} _a ↑q) ↑q) hqe))
+                              (Eq.mpr.{0} (id.{0} (congrArg.{1, 1} (fun _a => Eq.{1} _a ↑q) hqq)) (Eq.refl.{1} ↑q)))));
+                    have haq :=
+                      id.{0}
+                        (Eq.mpr.{0}
+                          (id.{0}
+                            (congrArg.{1, 1} (fun _a => Eq.{1} _a (HMul.hMul.{0, 0, 0} ↑v ↑q))
+                              (mul_assoc.{0} ↑v ↑q ↑q)))
+                          (Eq.mpr.{0}
+                            (id.{0}
+                              (congrArg.{1, 1}
+                                (fun _a => Eq.{1} (HMul.hMul.{0, 0, 0} (↑v) _a) (HMul.hMul.{0, 0, 0} ↑v ↑q)) hqq))
+                            (Eq.refl.{1} (HMul.hMul.{0, 0, 0} ↑v ↑q))));
+                    have hqv :=
+                      Trans.trans.{0, 0, 0, 1, 1, 1}
+                        (Eq.mpr.{0}
+                          (id.{0}
+                            (congrArg.{1, 1} (fun _a => Eq.{1} (HMul.hMul.{0, 0, 0} ↑q ↑v) (HMul.hMul.{0, 0, 0} _a ↑v))
+                              hqe))
+                          (Eq.refl.{1} (HMul.hMul.{0, 0, 0} ↑q ↑v)))
+                        (Eq.mpr.{0} (id.{0} (congrArg.{1, 1} (fun _a => Eq.{1} _a 0) (mul_assoc.{0} ↑q ↑e ↑v)))
+                          (Eq.mpr.{0} (id.{0} (congrArg.{1, 1} (fun _a => Eq.{1} (HMul.hMul.{0, 0, 0} (↑q) _a) 0) hev))
+                            (Eq.mpr.{0} (id.{0} (congrArg.{1, 1} (fun _a => Eq.{1} _a 0) (mul_zero.{0} ↑q)))
+                              (Eq.refl.{1} 0))));
+                    have hqa :=
+                      id.{0}
+                        (Eq.mpr.{0}
+                          (id.{0} (congrArg.{1, 1} (fun _a => Eq.{1} _a 0) (Eq.symm.{1} (mul_assoc.{0} ↑q ↑v ↑q))))
+                          (Eq.mpr.{0} (id.{0} (congrArg.{1, 1} (fun _a => Eq.{1} (HMul.hMul.{0, 0, 0} _a ↑q) 0) hqv))
+                            (Eq.mpr.{0} (id.{0} (congrArg.{1, 1} (fun _a => Eq.{1} _a 0) (zero_mul.{0} ↑q)))
+                              (Eq.refl.{1} 0))));
+                    let r := TGLV351.positiveSquare P (star.{0} a);
+                    have hrv :=
+                      of_eq_true
+                        (Eq.trans.{1}
+                          (congrFun'.{1, 1}
+                            (congrArg.{1, 1} Eq.{1}
+                              (congrArg.{1, 1} Subtype.val.{1}
+                                (Eq.trans.{1} (TGLV351.positiveSquare.eq_1 P (star.{0} a))
+                                  (Subtype.mk.congr_simp.{1}
+                                    (HMul.hMul.{0, 0, 0} (star.{0} ↑(star.{0} a)) ↑(star.{0} a))
+                                    (HMul.hMul.{0, 0, 0} (↑a) (star.{0} ↑a))
+                                    (congrFun'.{1, 1} (congrArg.{1, 1} HMul.hMul.{0, 0, 0} (star_star.{0} ↑a))
+                                      (star.{0} ↑a))
+                                    (TGLV351.positiveSquare._proof_1 P (star.{0} a))))))
+                            (HMul.hMul.{0, 0, 0} (↑a) (star.{0} ↑a)))
+                          (eq_self.{1} (HMul.hMul.{0, 0, 0} (↑a) (star.{0} ↑a))));
+                    have hr :=
+                      IsStarProjection.mk.{0}
+                        (id.{0}
+                          (Eq.mpr.{0} (id.{0} (congrArg.{1, 1} (fun _a => Eq.{1} (HMul.hMul.{0, 0, 0} _a _a) _a) hrv))
+                            (Trans.trans.{0, 0, 0, 1, 1, 1}
+                              (of_eq_true
+                                (Eq.trans.{1}
+                                  (congr.{1, 1}
+                                    (congrArg.{1, 1} Eq.{1}
+                                      (mul_assoc.{0} (↑a) (star.{0} ↑a) (HMul.hMul.{0, 0, 0} (↑a) (star.{0} ↑a))))
+                                    (Eq.trans.{1}
+                                      (mul_assoc.{0} (↑a) (HMul.hMul.{0, 0, 0} (star.{0} ↑a) ↑a) (star.{0} ↑a))
+                                      (congrArg.{1, 1} (HMul.hMul.{0, 0, 0} ↑a)
+                                        (mul_assoc.{0} (star.{0} ↑a) (↑a) (star.{0} ↑a)))))
+                                  (eq_self.{1}
+                                    (HMul.hMul.{0, 0, 0} (↑a)
+                                      (HMul.hMul.{0, 0, 0} (star.{0} ↑a) (HMul.hMul.{0, 0, 0} (↑a) (star.{0} ↑a)))))))
+                              (Eq.mpr.{0}
+                                (id.{0}
+                                  (congrArg.{1, 1}
+                                    (fun _a =>
+                                      Eq.{1} (HMul.hMul.{0, 0, 0} (HMul.hMul.{0, 0, 0} (↑a) _a) (star.{0} ↑a))
+                                        (HMul.hMul.{0, 0, 0} (↑a) (star.{0} ↑a)))
+                                    ha2))
+                                (Eq.mpr.{0}
+                                  (id.{0}
+                                    (congrArg.{1, 1}
+                                      (fun _a =>
+                                        Eq.{1} (HMul.hMul.{0, 0, 0} _a (star.{0} ↑a))
+                                          (HMul.hMul.{0, 0, 0} (↑a) (star.{0} ↑a)))
+                                      haq))
+                                  (Eq.refl.{1} (HMul.hMul.{0, 0, 0} (↑a) (star.{0} ↑a))))))))
+                        (LE.le.isSelfAdjoint.{0} (Subtype.property.{1} r).right);
+                    have hqr :=
+                      Eq.mpr.{0} (id.{0} (congrArg.{1, 1} (fun _a => Eq.{1} (HMul.hMul.{0, 0, 0} (↑q) _a) 0) hrv))
+                        (Eq.mpr.{0}
+                          (id.{0}
+                            (congrArg.{1, 1} (fun _a => Eq.{1} _a 0)
+                              (Eq.symm.{1} (mul_assoc.{0} (↑q) (↑a) (star.{0} ↑a)))))
+                          (Eq.mpr.{0}
+                            (id.{0} (congrArg.{1, 1} (fun _a => Eq.{1} (HMul.hMul.{0, 0, 0} _a (star.{0} ↑a)) 0) hqa))
+                            (Eq.mpr.{0} (id.{0} (congrArg.{1, 1} (fun _a => Eq.{1} _a 0) (zero_mul.{0} (star.{0} ↑a))))
+                              (Eq.refl.{1} 0))));
+                    have ht :=
+                      have hA := Subtype.ext.{1} ha2;
+                      Eq.mp.{0}
+                        (congrFun'.{1, 1}
+                          (congrArg.{1, 1} Eq.{1} (congrArg.{1, 1} (TGLV350.Regular.scalarInverseLimitWeight P) hA))
+                          (TGLV350.Regular.scalarInverseLimitWeight P (TGLV351.positiveSquare P (star.{0} a))))
+                        (TGLV350.Regular.scalarInverseLimitWeight_tracial P a);
+                    Exists.intro.{1} q (Exists.intro.{1} r ⟨hq, ⟨hr, ⟨hqr, ⟨ht, ⟨hpos, hfin⟩⟩⟩⟩⟩)
+theorem TGLV350.Regular.scalarTrace_finite_split_support : ∀ (P : TGLExt.SiteProfile),
+  ∃ q r,
+    IsStarProjection.{0} ↑q ∧
+      IsStarProjection.{0} ↑r ∧
+        Eq.{1} (HMul.hMul.{0, 0, 0} ↑q ↑r) 0 ∧
+          IsStarProjection.{0} ↑(q.add r) ∧
+            LT.lt.{0} 0 (TGLV350.Regular.scalarInverseLimitWeight P (q.add r)) ∧
+              LT.lt.{0} (TGLV350.Regular.scalarInverseLimitWeight P (q.add r)) Top.top.{0} ∧
+                Eq.{1} (TGLV350.Regular.scalarInverseLimitWeight P q) (TGLV350.Regular.scalarInverseLimitWeight P r) ∧
+                  LT.lt.{0} 0 (TGLV350.Regular.scalarInverseLimitWeight P q) :=
+fun P =>
+  Exists.casesOn.{1} (TGLV350.Regular.scalarTrace_finite_equal_split P) fun q h =>
+    Exists.casesOn.{1} h fun r h =>
+      And.casesOn.{0} h fun hq right =>
+        And.casesOn.{0} right fun hr right =>
+          And.casesOn.{0} right fun hqr right =>
+            And.casesOn.{0} right fun ht right =>
+              And.casesOn.{0} right fun hpos hfin =>
+                Exists.intro.{1} q
+                  (Exists.intro.{1} r
+                    ⟨hq,
+                      ⟨hr,
+                        ⟨hqr,
+                          ⟨IsStarProjection.add.{0} hq hr hqr,
+                            ⟨Eq.mpr.{0}
+                                (id.{0}
+                                  (congrArg.{1, 1} (fun _a => LT.lt.{0} 0 _a)
+                                    (TGLV350.Regular.scalarInverseLimitWeight_add P q r)))
+                                (LT.lt.trans_le.{0} hpos (le_add_right.{0} le_rfl.{0})),
+                              ⟨Eq.mpr.{0}
+                                  (id.{0}
+                                    (congrArg.{1, 1} (fun _a => LT.lt.{0} _a Top.top.{0})
+                                      (TGLV350.Regular.scalarInverseLimitWeight_add P q r)))
+                                  (Eq.mpr.{0}
+                                    (id.{0}
+                                      (congrArg.{1, 1}
+                                        (fun _a =>
+                                          LT.lt.{0}
+                                            (HAdd.hAdd.{0, 0, 0} (TGLV350.Regular.scalarInverseLimitWeight P q) _a)
+                                            Top.top.{0})
+                                        (Eq.symm.{1} ht)))
+                                    (ENNReal.add_lt_top.mpr ⟨hfin, hfin⟩)),
+                                ⟨ht, hpos⟩⟩⟩⟩⟩⟩⟩)
+theorem TGLV350.Regular.scalarTrace_dual_calibration : ∀ (P : TGLExt.SiteProfile)
+  (X : TGLV350.Regular.PositiveCoreInput P),
+  LT.lt.{0} 0 (TGLV350.Regular.scalarInverseLimitWeight P X) →
+    LT.lt.{0} (TGLV350.Regular.scalarInverseLimitWeight P X) Top.top.{0} →
+      Eq.{1}
+        (TGLV350.Regular.scalarInverseLimitWeight P
+          (TGLV351.positiveDual P (Real.log (TGLV350.Regular.scalarInverseLimitWeight P X).toReal) X))
+        1 :=
+fun P X hpos hfin =>
+  Eq.mpr.{0}
+    (id.{0}
+      (congrArg.{1, 1} (fun _a => Eq.{1} _a 1)
+        (TGLV350.Regular.scalarInverseLimitWeight_dual P
+          (Real.log (TGLV350.Regular.scalarInverseLimitWeight P X).toReal) X)))
+    (have hx0 := LT.lt.ne'.{0} hpos;
+    have hxt := LT.lt.ne.{0} hfin;
+    have hxr := ENNReal.toReal_pos hx0 hxt;
+    Eq.mpr.{0}
+      (id.{0}
+        (congrArg.{1, 1}
+          (fun _a => Eq.{1} (HMul.hMul.{0, 0, 0} (ENNReal.ofReal _a) (TGLV350.Regular.scalarInverseLimitWeight P X)) 1)
+          (Real.exp_neg (Real.log (TGLV350.Regular.scalarInverseLimitWeight P X).toReal))))
+      (Eq.mpr.{0}
+        (id.{0}
+          (congrArg.{1, 1}
+            (fun _a =>
+              Eq.{1}
+                (HMul.hMul.{0, 0, 0} (ENNReal.ofReal (Inv.inv.{0} _a)) (TGLV350.Regular.scalarInverseLimitWeight P X))
+                1)
+            (Real.exp_log hxr)))
+        (Eq.mpr.{0}
+          (id.{0}
+            (congrArg.{1, 1}
+              (fun _a => Eq.{1} (HMul.hMul.{0, 0, 0} _a (TGLV350.Regular.scalarInverseLimitWeight P X)) 1)
+              (ENNReal.ofReal_inv_of_pos hxr)))
+          (Eq.mpr.{0}
+            (id.{0}
+              (congrArg.{1, 1}
+                (fun _a =>
+                  Eq.{1} (HMul.hMul.{0, 0, 0} (Inv.inv.{0} _a) (TGLV350.Regular.scalarInverseLimitWeight P X)) 1)
+                (ENNReal.ofReal_toReal hxt)))
+            (ENNReal.inv_mul_cancel hx0 hxt)))))
+theorem TGLV350.Regular.scalarTrace_normalized_split_exists : ∀ (P : TGLExt.SiteProfile),
+  ∃ q r,
+    IsStarProjection.{0} ↑q ∧
+      IsStarProjection.{0} ↑r ∧
+        Eq.{1} (HMul.hMul.{0, 0, 0} ↑q ↑r) 0 ∧
+          Eq.{1} (TGLV350.Regular.scalarInverseLimitWeight P (q.add r)) 1 ∧
+            Eq.{1} (TGLV350.Regular.scalarInverseLimitWeight P q) (TGLV350.Regular.scalarInverseLimitWeight P r) :=
+fun P =>
+  Exists.casesOn.{1} (TGLV350.Regular.scalarTrace_finite_split_support P) fun q h =>
+    Exists.casesOn.{1} h fun r h =>
+      And.casesOn.{0} h fun hq right =>
+        And.casesOn.{0} right fun hr right =>
+          And.casesOn.{0} right fun hqr right =>
+            And.casesOn.{0} right fun left right =>
+              And.casesOn.{0} right fun hpos right =>
+                And.casesOn.{0} right fun hfin right =>
+                  And.casesOn.{0} right fun ht right =>
+                    let s := Real.log (TGLV350.Regular.scalarInverseLimitWeight P (q.add r)).toReal;
+                    let Q := TGLV351.positiveDual P s q;
+                    let R := TGLV351.positiveDual P s r;
+                    have hQ := IsStarProjection.map.{0, 0, 0} hq (TGLV350.Regular.dualAmbient s);
+                    have hR := IsStarProjection.map.{0, 0, 0} hr (TGLV350.Regular.dualAmbient s);
+                    have hQR :=
+                      id.{0}
+                        (Eq.mpr.{0}
+                          (id.{0}
+                            (congrArg.{1, 1} (fun _a => Eq.{1} _a 0)
+                              (Eq.symm.{1} (map_mul.{0, 0, 0} (TGLV350.Regular.dualAmbient s) ↑q ↑r))))
+                          (Eq.mpr.{0}
+                            (id.{0} (congrArg.{1, 1} (fun _a => Eq.{1} ((TGLV350.Regular.dualAmbient s) _a) 0) hqr))
+                            (Eq.mpr.{0}
+                              (id.{0}
+                                (congrArg.{1, 1} (fun _a => Eq.{1} _a 0)
+                                  (map_zero.{0, 0, 0} (TGLV350.Regular.dualAmbient s))))
+                              (Eq.refl.{1} 0))));
+                    have hadd :=
+                      Subtype.ext.{1} (id.{0} (Eq.symm.{1} (map_add.{0, 0, 0} (TGLV350.Regular.dualAmbient s) ↑q ↑r)));
+                    Exists.intro.{1} Q
+                      (Exists.intro.{1} R
+                        ⟨hQ,
+                          ⟨hR,
+                            ⟨hQR,
+                              ⟨Eq.mpr.{0}
+                                  (id.{0}
+                                    (congrArg.{1, 1}
+                                      (fun _a => Eq.{1} (TGLV350.Regular.scalarInverseLimitWeight P _a) 1) hadd))
+                                  (TGLV350.Regular.scalarTrace_dual_calibration P (q.add r) hpos hfin),
+                                id.{0}
+                                  (Eq.mpr.{0}
+                                    (id.{0}
+                                      (congrArg.{1, 1}
+                                        (fun _a =>
+                                          Eq.{1} _a
+                                            (TGLV350.Regular.scalarInverseLimitWeight P (TGLV351.positiveDual P s r)))
+                                        (TGLV350.Regular.scalarInverseLimitWeight_dual P s q)))
+                                    (Eq.mpr.{0}
+                                      (id.{0}
+                                        (congrArg.{1, 1}
+                                          (fun _a =>
+                                            Eq.{1}
+                                              (HMul.hMul.{0, 0, 0} (ENNReal.ofReal (Real.exp (Neg.neg.{0} s)))
+                                                (TGLV350.Regular.scalarInverseLimitWeight P q))
+                                              _a)
+                                          (TGLV350.Regular.scalarInverseLimitWeight_dual P s r)))
+                                      (Eq.mpr.{0}
+                                        (id.{0}
+                                          (congrArg.{1, 1}
+                                            (fun _a =>
+                                              Eq.{1}
+                                                (HMul.hMul.{0, 0, 0} (ENNReal.ofReal (Real.exp (Neg.neg.{0} s))) _a)
+                                                (HMul.hMul.{0, 0, 0} (ENNReal.ofReal (Real.exp (Neg.neg.{0} s)))
+                                                  (TGLV350.Regular.scalarInverseLimitWeight P r)))
+                                            ht))
+                                        (Eq.refl.{1}
+                                          (HMul.hMul.{0, 0, 0} (ENNReal.ofReal (Real.exp (Neg.neg.{0} s)))
+                                            (TGLV350.Regular.scalarInverseLimitWeight P r))))))⟩⟩⟩⟩)
+def TGLV350.Regular.regularNormalizedFaces : (P : TGLExt.SiteProfile) →
+  Subtype.{1} fun qr =>
+    IsStarProjection.{0} ↑qr.1 ∧
+      IsStarProjection.{0} ↑qr.2 ∧
+        Eq.{1} (HMul.hMul.{0, 0, 0} ↑qr.1 ↑qr.2) 0 ∧
+          Eq.{1} (TGLV350.Regular.scalarInverseLimitWeight P (qr.1.add qr.2)) 1 ∧
+            Eq.{1} (TGLV350.Regular.scalarInverseLimitWeight P qr.1)
+              (TGLV350.Regular.scalarInverseLimitWeight P qr.2) :=
+fun P =>
+  let q := Classical.choose.{1} (TGLV350.Regular.scalarTrace_normalized_split_exists P);
+  let r := Classical.choose.{1} (TGLV350.Regular.regularNormalizedFaces._proof_3 P);
+  Subtype.mk.{1} (Prod.mk.{0, 0} q r) (TGLV350.Regular.regularNormalizedFaces._proof_4 P)
+def TGLV350.Regular.regularFiniteSupport : (P : TGLExt.SiteProfile) → TGLV350.Regular.PositiveCoreInput P :=
+fun P => (↑(TGLV350.Regular.regularNormalizedFaces P)).1.add (↑(TGLV350.Regular.regularNormalizedFaces P)).2
+theorem TGLV350.Regular.regularFiniteSupport_projection : ∀ (P : TGLExt.SiteProfile),
+  IsStarProjection.{0} ↑(TGLV350.Regular.regularFiniteSupport P) :=
+fun P =>
+  IsStarProjection.add.{0} (Subtype.property.{1} (TGLV350.Regular.regularNormalizedFaces P)).left
+    (Subtype.property.{1} (TGLV350.Regular.regularNormalizedFaces P)).right.left
+    (Subtype.property.{1} (TGLV350.Regular.regularNormalizedFaces P)).right.right.left
+theorem TGLV350.Regular.regularFiniteSupport_trace : ∀ (P : TGLExt.SiteProfile),
+  Eq.{1} (TGLV350.Regular.scalarInverseLimitWeight P (TGLV350.Regular.regularFiniteSupport P)) 1 :=
+fun P => (Subtype.property.{1} (TGLV350.Regular.regularNormalizedFaces P)).right.right.right.left
+theorem TGLV350.Regular.regularFiniteSupport_ne_zero : ∀ (P : TGLExt.SiteProfile),
+  Ne.{1} (↑(TGLV350.Regular.regularFiniteSupport P)) 0 :=
+fun P hz =>
+  have he := Subtype.ext.{1} hz;
+  have ht := TGLV350.Regular.regularFiniteSupport_trace P;
+  zero_ne_one.{0}
+    (Eq.mp.{0} (congrArg.{1, 1} (fun _a => Eq.{1} _a 1) (TGLV350.Regular.scalarInverseLimitWeight_zero P))
+      (Eq.mp.{0} (congrArg.{1, 1} (fun _a => Eq.{1} (TGLV350.Regular.scalarInverseLimitWeight P _a) 1) he) ht))
+def TGLV350.Regular.regularMinimalLock : (P : TGLExt.SiteProfile) →
+  ContinuousLinearMap.{0, 0, 0, 0} (RingHom.id.{0} ℂ) ↥(TGLV350.Regular.RegularHilbert (TGLExt.TowerHilbert P))
+    ↥(TGLV350.Regular.RegularHilbert (TGLExt.TowerHilbert P)) :=
+fun P => HSub.hSub.{0, 0, 0} 1 ↑(TGLV350.Regular.regularFiniteSupport P)
+theorem TGLV350.Regular.regularMinimalLock_mem : ∀ (P : TGLExt.SiteProfile),
+  Membership.mem.{0, 0} (TGLV350.Regular.regularCoreAlgebra P) (TGLV350.Regular.regularMinimalLock P) :=
+fun P =>
+  Subalgebra.sub_mem.{0, 0}
+    (StarSubalgebra.toSubalgebra.{0, 0} (VonNeumannAlgebra.toStarSubalgebra.{0} (TGLV350.Regular.regularCoreAlgebra P)))
+    (Subalgebra.one_mem.{0, 0}
+      (StarSubalgebra.toSubalgebra.{0, 0}
+        (VonNeumannAlgebra.toStarSubalgebra.{0} (TGLV350.Regular.regularCoreAlgebra P))))
+    (Subtype.property.{1} (TGLV350.Regular.regularFiniteSupport P)).left
+theorem TGLV350.Regular.regularMinimalLock_selfadjoint : ∀ (P : TGLExt.SiteProfile),
+  IsSelfAdjoint.{0} (TGLV350.Regular.regularMinimalLock P) :=
+fun P =>
+  TGL.CoreSupport.hmin_selfadjoint (↑(TGLV350.Regular.regularFiniteSupport P))
+    (IsSelfAdjoint.star_eq.{0} (IsStarProjection.isSelfAdjoint.{0} (TGLV350.Regular.regularFiniteSupport_projection P)))
+theorem TGLV350.Regular.regularMinimalLock_annihilation : ∀ (P : TGLExt.SiteProfile),
+  Eq.{1} (HMul.hMul.{0, 0, 0} (↑(TGLV350.Regular.regularFiniteSupport P)) (TGLV350.Regular.regularMinimalLock P)) 0 :=
+fun P =>
+  TGL.CoreSupport.support_annihilates (↑(TGLV350.Regular.regularFiniteSupport P))
+    (IsStarProjection.isIdempotentElem.{0} (TGLV350.Regular.regularFiniteSupport_projection P))
+theorem TGLV350.Regular.regularMinimalLock_maximal : ∀ (P : TGLExt.SiteProfile)
+  (r :
+    ContinuousLinearMap.{0, 0, 0, 0} (RingHom.id.{0} ℂ) ↥(TGLV350.Regular.RegularHilbert (TGLExt.TowerHilbert P))
+      ↥(TGLV350.Regular.RegularHilbert (TGLExt.TowerHilbert P))),
+  Eq.{1} (HMul.hMul.{0, 0, 0} r (TGLV350.Regular.regularMinimalLock P)) 0 →
+    Eq.{1} (HMul.hMul.{0, 0, 0} r ↑(TGLV350.Regular.regularFiniteSupport P)) r :=
+fun P r hr => TGL.CoreSupport.support_maximal (↑(TGLV350.Regular.regularFiniteSupport P)) r hr
+theorem TGLV350.Regular.regularMinimalLock_ker : ∀ (P : TGLExt.SiteProfile),
+  Eq.{1} (LinearMap.ker.{0, 0, 0, 0} ↑(TGLV350.Regular.regularMinimalLock P))
+    (LinearMap.range.{0, 0, 0, 0} ↑↑(TGLV350.Regular.regularFiniteSupport P)) :=
+fun P =>
+  let q := ↑(TGLV350.Regular.regularFiniteSupport P);
+  have hq := IsStarProjection.isIdempotentElem.{0} (TGLV350.Regular.regularFiniteSupport_projection P);
+  Submodule.ext.{0, 0} fun x =>
+    id.{0}
+      { mp := fun hx => Exists.intro.{1} x (Eq.symm.{1} (sub_eq_zero.{0}.mp hx)),
+        mpr := fun a =>
+          Exists.casesOn.{1} a fun y h =>
+            Eq.ndrec.{0, 1}
+              (have hh := congrArg.{1, 1} (fun A => A y) hq;
+              sub_eq_zero.{0}.mpr (Eq.symm.{1} hh))
+              h }
+theorem TGLV350.Regular.regularMinimalLock_spectral_zero : ∀ (P : TGLExt.SiteProfile),
+  Eq.{1} (Submodule.starProjection.{0, 0} (LinearMap.ker.{0, 0, 0, 0} ↑(TGLV350.Regular.regularMinimalLock P)))
+    ↑(TGLV350.Regular.regularFiniteSupport P) :=
+fun P =>
+  Exists.casesOn.{0}
+    (isStarProjection_iff_eq_starProjection_range.{0, 0}.mp (TGLV350.Regular.regularFiniteSupport_projection P))
+    fun w he =>
+    Eq.mpr.{0}
+      (id.{0}
+        (congrFun'.{1, 1}
+          (congrArg.{1, 1} Eq.{1}
+            (Submodule.starProjection.congr_simp.{0, 0}
+              (LinearMap.ker.{0, 0, 0, 0} ↑(TGLV350.Regular.regularMinimalLock P))
+              (LinearMap.range.{0, 0, 0, 0} ↑↑(TGLV350.Regular.regularFiniteSupport P))
+              (TGLV350.Regular.regularMinimalLock_ker P)))
+          ↑(TGLV350.Regular.regularFiniteSupport P)))
+      (Eq.symm.{1} he)
+theorem TGLV350.Regular.regularMinimalLock_relative_gap : ∀ (P : TGLExt.SiteProfile)
+  (x : ↥(TGLV350.Regular.RegularHilbert (TGLExt.TowerHilbert P))),
+  Membership.mem.{0, 0}
+      (Submodule.orthogonal.{0, 0} (LinearMap.ker.{0, 0, 0, 0} ↑(TGLV350.Regular.regularMinimalLock P))) x →
+    Eq.{1} (norm.{0} ((TGLV350.Regular.regularMinimalLock P) x)) (norm.{0} x) :=
+fun P x hx =>
+  have hs :=
+    IsSelfAdjoint.star_eq.{0} (IsStarProjection.isSelfAdjoint.{0} (TGLV350.Regular.regularFiniteSupport_projection P));
+  id.{0}
+    (fun hx =>
+      id.{0}
+        (Eq.mpr.{0} (id.{0} (congrArg.{1, 1} (fun _a => Eq.{1} (norm.{0} (HSub.hSub.{0, 0, 0} x _a)) (norm.{0} x)) hx))
+          (Eq.mpr.{0} (id.{0} (congrArg.{1, 1} (fun _a => Eq.{1} (norm.{0} _a) (norm.{0} x)) (sub_zero.{0} x)))
+            (Eq.refl.{1} (norm.{0} x)))))
+    (Eq.mp.{0} (congrArg.{1, 1} (fun _a => Membership.mem.{0, 0} (LinearMap.ker.{0, 0, 0, 0} ↑_a) x) hs)
+      (Eq.mp.{0}
+        (congrArg.{1, 1} (fun _a => Membership.mem.{0, 0} _a x)
+          (ContinuousLinearMap.orthogonal_range.{0, 0, 0} ↑(TGLV350.Regular.regularFiniteSupport P)))
+        (Eq.mp.{0}
+          (congrArg.{1, 1} (fun _a => Membership.mem.{0, 0} (Submodule.orthogonal.{0, 0} _a) x)
+            (TGLV350.Regular.regularMinimalLock_ker P))
+          hx)))
+def TGLV350.Regular.regularMinimalLockGraph : (P : TGLExt.SiteProfile) →
+  LinearPMap.{0, 0, 0, 0} (RingHom.id.{0} ℂ) ↥(TGLV350.Regular.RegularHilbert (TGLExt.TowerHilbert P))
+    ↥(TGLV350.Regular.RegularHilbert (TGLExt.TowerHilbert P)) :=
+fun P => LinearMap.toPMap.{0, 0, 0, 0} (↑(TGLV350.Regular.regularMinimalLock P)) Top.top.{0}
+theorem TGLV350.Regular.regularMinimalLockGraph_selfadjoint : ∀ (P : TGLExt.SiteProfile),
+  IsSelfAdjoint.{0} (TGLV350.Regular.regularMinimalLockGraph P) :=
+fun P =>
+  id.{0}
+    (Eq.mpr.{0}
+      (id.{0}
+        (congrArg.{1, 1}
+          (fun _a => Eq.{1} _a (LinearMap.toPMap.{0, 0, 0, 0} (↑(TGLV350.Regular.regularMinimalLock P)) Top.top.{0}))
+          (ContinuousLinearMap.toPMap_adjoint_eq_adjoint_toPMap_of_dense.{0, 0, 0}
+            (TGLV350.Regular.regularMinimalLock P) (id.{0} dense_univ.{0}))))
+      (congrArg.{1, 1} (fun A => LinearMap.toPMap.{0, 0, 0, 0} (↑A) Top.top.{0})
+        (IsSelfAdjoint.star_eq.{0} (TGLV350.Regular.regularMinimalLock_selfadjoint P))))
+theorem TGLV350.Regular.regularMinimalLockGraph_closed : ∀ (P : TGLExt.SiteProfile),
+  LinearPMap.IsClosed.{0, 0, 0} (TGLV350.Regular.regularMinimalLockGraph P) :=
+fun P => IsSelfAdjoint.isClosed.{0, 0} (TGLV350.Regular.regularMinimalLockGraph_selfadjoint P)
+@[defeq] theorem TGLV350.Regular.regularMinimalLockGraph_domain : ∀ (P : TGLExt.SiteProfile),
+  Eq.{1} (LinearPMap.domain.{0, 0, 0, 0} (TGLV350.Regular.regularMinimalLockGraph P)) Top.top.{0} :=
+fun P => rfl.{1}
+theorem TGLV350.Regular.regularMinimalLockGraph_affiliated : ∀ (P : TGLExt.SiteProfile)
+  (B :
+    ContinuousLinearMap.{0, 0, 0, 0} (RingHom.id.{0} ℂ) ↥(TGLV350.Regular.RegularHilbert (TGLExt.TowerHilbert P))
+      ↥(TGLV350.Regular.RegularHilbert (TGLExt.TowerHilbert P))),
+  Membership.mem.{0, 0} (VonNeumannAlgebra.commutant.{0} (TGLV350.Regular.regularCoreAlgebra P)) B →
+    ∀ (x y : ↥(TGLV350.Regular.RegularHilbert (TGLExt.TowerHilbert P))),
+      Membership.mem.{0, 0} (LinearPMap.graph.{0, 0, 0} (TGLV350.Regular.regularMinimalLockGraph P))
+          (Prod.mk.{0, 0} x y) →
+        Membership.mem.{0, 0} (LinearPMap.graph.{0, 0, 0} (TGLV350.Regular.regularMinimalLockGraph P))
+          (Prod.mk.{0, 0} (B x) (B y)) :=
+fun P B hB x y hxy =>
+  have he :=
+    Exists.casesOn.{1} ((LinearPMap.mem_graph_iff.{0, 0, 0} (TGLV350.Regular.regularMinimalLockGraph P)).mp hxy)
+      fun z h =>
+      And.casesOn.{0} h fun hz hy =>
+        id.{0}
+          (fun hy => Eq.mp.{0} (congrArg.{1, 1} (fun _a => Eq.{1} ((TGLV350.Regular.regularMinimalLock P) _a) y) hz) hy)
+          hy;
+  have hc :=
+    VonNeumannAlgebra.mem_commutant_iff.{0}.mp hB (TGLV350.Regular.regularMinimalLock P)
+      (TGLV350.Regular.regularMinimalLock_mem P);
+  (LinearPMap.mem_graph_iff.{0, 0, 0} (TGLV350.Regular.regularMinimalLockGraph P)).mpr
+    (Exists.intro.{1} (Subtype.mk.{1} (B x) Submodule.mem_top.{0, 0})
+      ⟨rfl.{1},
+        id.{0}
+          (have h := congrArg.{1, 1} (fun A => A x) hc;
+          id.{0}
+            (fun h =>
+              Eq.mp.{0} (congrArg.{1, 1} (fun _a => Eq.{1} ((TGLV350.Regular.regularMinimalLock P) (B x)) (B _a)) he) h)
+            h)⟩)
+def TGLV350.Regular.positiveTraceReader : (P : TGLExt.SiteProfile) →
+  ↥(VonNeumannAlgebra.toStarSubalgebra.{0} (TGLV350.Regular.regularCoreAlgebra P)) → ENNReal :=
+fun P a =>
+  if h : LE.le.{0} 0 ↑a then
+    TGLV350.Regular.scalarInverseLimitWeight P
+      (Subtype.mk.{1} (↑a) (TGLV350.Regular.positiveTraceReader._proof_11 P a h))
+  else 0
+theorem TGLV350.Regular.positiveTraceReader_positive : ∀ (P : TGLExt.SiteProfile)
+  (a : TGLV350.Regular.PositiveCoreInput P),
+  Eq.{1} (TGLV350.Regular.positiveTraceReader P (Subtype.mk.{1} (↑a) (Subtype.property.{1} a).left))
+    (TGLV350.Regular.scalarInverseLimitWeight P a) :=
+fun P a =>
+  of_eq_true
+    (Eq.trans.{1}
+      (congrFun'.{1, 1}
+        (congrArg.{1, 1} Eq.{1}
+          ((fun x_0 x_1 x_2 x_3 => (fun x_0 x_1 x_2 x_3 => dif_pos.{1} (Subtype.property.{1} a).right) x_0 x_1 x_2 x_3)
+            (Classical.propDecidable (LE.le.{0} 0 ↑(Subtype.mk.{1} (↑a) (Subtype.property.{1} a).left))) ENNReal
+            (fun h =>
+              TGLV350.Regular.scalarInverseLimitWeight P
+                (Subtype.mk.{1} (↑a)
+                  (TGLV350.Regular.positiveTraceReader._proof_11 P (Subtype.mk.{1} (↑a) (Subtype.property.{1} a).left)
+                    h)))
+            fun h => 0))
+        (TGLV350.Regular.scalarInverseLimitWeight P a))
+      (eq_self.{1}
+        (TGLV350.Regular.scalarInverseLimitWeight P
+          (Subtype.mk.{1} (↑a)
+            (TGLV350.Regular.positiveTraceReader._proof_11 P (Subtype.mk.{1} (↑a) (Subtype.property.{1} a).left)
+              (Subtype.property.{1} a).right)))))
+def TGLV350.Regular.regularContinuousCorner : TGLExt.SiteProfile → TGL.ContinuousCorner.ContinuousCornerWitness :=
+fun P =>
+  { Core := ↥(VonNeumannAlgebra.toStarSubalgebra.{0} (TGLV350.Regular.regularCoreAlgebra P)),
+    instRing := NormedRing.toRing.{0},
+    instStar :=
+      StarSubalgebra.starRing.{0, 0} (VonNeumannAlgebra.toStarSubalgebra.{0} (TGLV350.Regular.regularCoreAlgebra P)),
+    P :=
+      Subtype.mk.{1} (↑(TGLV350.Regular.regularFiniteSupport P)) (TGLV350.Regular.regularContinuousCorner._proof_2 P),
+    Pplus :=
+      Subtype.mk.{1} (↑(↑(TGLV350.Regular.regularNormalizedFaces P)).1)
+        (TGLV350.Regular.regularContinuousCorner._proof_3 P),
+    Pminus :=
+      Subtype.mk.{1} (↑(↑(TGLV350.Regular.regularNormalizedFaces P)).2)
+        (TGLV350.Regular.regularContinuousCorner._proof_4 P),
+    trace := TGLV350.Regular.positiveTraceReader P, P_selfAdjoint := TGLV350.Regular.regularContinuousCorner._proof_5 P,
+    P_idempotent := TGLV350.Regular.regularContinuousCorner._proof_6 P,
+    Pplus_selfAdjoint := TGLV350.Regular.regularContinuousCorner._proof_7 P,
+    Pplus_idempotent := TGLV350.Regular.regularContinuousCorner._proof_8 P,
+    Pminus_selfAdjoint := TGLV350.Regular.regularContinuousCorner._proof_9 P,
+    Pminus_idempotent := TGLV350.Regular.regularContinuousCorner._proof_10 P,
+    split := TGLV350.Regular.regularContinuousCorner._proof_11 P,
+    orthogonal := TGLV350.Regular.regularContinuousCorner._proof_12 P,
+    trace_additive_on_split := TGLV350.Regular.regularContinuousCorner._proof_13 P,
+    trace_P_pos := TGLV350.Regular.regularContinuousCorner._proof_14 P,
+    trace_P_finite := TGLV350.Regular.regularContinuousCorner._proof_15 P,
+    equal_face_trace := TGLV350.Regular.regularContinuousCorner._proof_16 P }
+theorem TGLV350.Regular.regularContinuousCorner_readings : ∀ (P : TGLExt.SiteProfile),
+  Eq.{1} ((TGLV350.Regular.regularContinuousCorner P).normalizedTrace (TGLV350.Regular.regularContinuousCorner P).P) 1 ∧
+    Eq.{1}
+        ((TGLV350.Regular.regularContinuousCorner P).normalizedTrace (TGLV350.Regular.regularContinuousCorner P).Pplus)
+        (1 / 2) ∧
+      Eq.{1}
+        ((TGLV350.Regular.regularContinuousCorner P).normalizedTrace (TGLV350.Regular.regularContinuousCorner P).Pminus)
+        (1 / 2) :=
+fun P =>
+  ⟨TGL.ContinuousCorner.ContinuousCornerWitness.normalizedTrace_P_eq_one (TGLV350.Regular.regularContinuousCorner P),
+    TGL.ContinuousCorner.ContinuousCornerWitness.equalFaces_normalizedTrace_half
+      (TGLV350.Regular.regularContinuousCorner P)⟩
+theorem TGLV350.Regular.regularMinimalLock_breuer_kernel : ∀ (P : TGLExt.SiteProfile),
+  ∃ p,
+    Eq.{1} (↑p) (Submodule.starProjection.{0, 0} (LinearMap.ker.{0, 0, 0, 0} ↑(TGLV350.Regular.regularMinimalLock P))) ∧
+      Eq.{1} (TGLV350.Regular.scalarInverseLimitWeight P p) 1 ∧
+        LT.lt.{0} 0 (TGLV350.Regular.scalarInverseLimitWeight P p) ∧
+          LT.lt.{0} (TGLV350.Regular.scalarInverseLimitWeight P p) Top.top.{0} :=
+fun P =>
+  Exists.intro.{1} (TGLV350.Regular.regularFiniteSupport P)
+    ⟨Eq.symm.{1} (TGLV350.Regular.regularMinimalLock_spectral_zero P),
+      ⟨TGLV350.Regular.regularFiniteSupport_trace P,
+        ⟨Eq.mpr.{0} (id.{0} (congrArg.{1, 1} (fun _a => LT.lt.{0} 0 _a) (TGLV350.Regular.regularFiniteSupport_trace P)))
+            zero_lt_one.{0},
+          Eq.mpr.{0}
+            (id.{0}
+              (congrArg.{1, 1} (fun _a => LT.lt.{0} _a Top.top.{0}) (TGLV350.Regular.regularFiniteSupport_trace P)))
+            ENNReal.one_lt_top⟩⟩⟩
+theorem TGLV350.Regular.positiveTraceReader_not_cyclic : ∀ (P : TGLExt.SiteProfile),
+  ¬∀ (x y : ↥(VonNeumannAlgebra.toStarSubalgebra.{0} (TGLV350.Regular.regularCoreAlgebra P))),
+      Eq.{1} (TGLV350.Regular.positiveTraceReader P (HMul.hMul.{0, 0, 0} x y))
+        (TGLV350.Regular.positiveTraceReader P (HMul.hMul.{0, 0, 0} y x)) :=
+fun P =>
+  Exists.casesOn.{1} (TGLV350.Regular.regularCore_matrix_corner P) fun e h =>
+    Exists.casesOn.{1} h fun v h =>
+      And.casesOn.{0} h fun he right =>
+        And.casesOn.{0} right fun hene right =>
+          And.casesOn.{0} right fun hv hev =>
+            have hes := IsSelfAdjoint.star_eq.{0} (IsStarProjection.isSelfAdjoint.{0} he);
+            have hee := IsStarProjection.isIdempotentElem.{0} he;
+            have hvne := fun hz =>
+              hene
+                (Subtype.ext.{1}
+                  (id.{0}
+                    (Eq.mp.{0}
+                      (congrArg.{1, 1} (Eq.{1} ↑e)
+                        (Eq.trans.{1}
+                          (congr.{1, 1}
+                            (congrArg.{1, 1} HMul.hMul.{0, 0, 0}
+                              (Eq.trans.{1} (congrArg.{1, 1} star.{0} hz)
+                                (star_zero.{0}
+                                  (ContinuousLinearMap.{0, 0, 0, 0} (RingHom.id.{0} ℂ)
+                                    ↥(TGLV350.Regular.RegularHilbert (TGLExt.TowerHilbert P))
+                                    ↥(TGLV350.Regular.RegularHilbert (TGLExt.TowerHilbert P))))))
+                            hz)
+                          (zero_mul.{0} 0)))
+                      (Eq.symm.{1} hv))));
+            have hve :=
+              have hh :=
+                Trans.trans.{0, 0, 0, 1, 1, 1}
+                  (Eq.mpr.{0}
+                    (id.{0}
+                      (congrArg.{1, 1}
+                        (fun _a =>
+                          Eq.{1} (HMul.hMul.{0, 0, 0} _a (HSub.hSub.{0, 0, 0} (↑v) (HMul.hMul.{0, 0, 0} ↑v ↑e)))
+                            (HAdd.hAdd.{0, 0, 0}
+                              (HSub.hSub.{0, 0, 0}
+                                (HSub.hSub.{0, 0, 0} (HMul.hMul.{0, 0, 0} (star.{0} ↑v) ↑v)
+                                  (HMul.hMul.{0, 0, 0} (HMul.hMul.{0, 0, 0} (star.{0} ↑v) ↑v) ↑e))
+                                (HMul.hMul.{0, 0, 0} (↑e) (HMul.hMul.{0, 0, 0} (star.{0} ↑v) ↑v)))
+                              (HMul.hMul.{0, 0, 0} (HMul.hMul.{0, 0, 0} (↑e) (HMul.hMul.{0, 0, 0} (star.{0} ↑v) ↑v))
+                                ↑e)))
+                        (star_sub.{0} (↑v) (HMul.hMul.{0, 0, 0} ↑v ↑e))))
+                    (Eq.mpr.{0}
+                      (id.{0}
+                        (congrArg.{1, 1}
+                          (fun _a =>
+                            Eq.{1}
+                              (HMul.hMul.{0, 0, 0} (HSub.hSub.{0, 0, 0} (star.{0} ↑v) _a)
+                                (HSub.hSub.{0, 0, 0} (↑v) (HMul.hMul.{0, 0, 0} ↑v ↑e)))
+                              (HAdd.hAdd.{0, 0, 0}
+                                (HSub.hSub.{0, 0, 0}
+                                  (HSub.hSub.{0, 0, 0} (HMul.hMul.{0, 0, 0} (star.{0} ↑v) ↑v)
+                                    (HMul.hMul.{0, 0, 0} (HMul.hMul.{0, 0, 0} (star.{0} ↑v) ↑v) ↑e))
+                                  (HMul.hMul.{0, 0, 0} (↑e) (HMul.hMul.{0, 0, 0} (star.{0} ↑v) ↑v)))
+                                (HMul.hMul.{0, 0, 0} (HMul.hMul.{0, 0, 0} (↑e) (HMul.hMul.{0, 0, 0} (star.{0} ↑v) ↑v))
+                                  ↑e)))
+                          (star_mul.{0} ↑v ↑e)))
+                      (Eq.mpr.{0}
+                        (id.{0}
+                          (congrArg.{1, 1}
+                            (fun _a =>
+                              Eq.{1}
+                                (HMul.hMul.{0, 0, 0}
+                                  (HSub.hSub.{0, 0, 0} (star.{0} ↑v) (HMul.hMul.{0, 0, 0} _a (star.{0} ↑v)))
+                                  (HSub.hSub.{0, 0, 0} (↑v) (HMul.hMul.{0, 0, 0} ↑v ↑e)))
+                                (HAdd.hAdd.{0, 0, 0}
+                                  (HSub.hSub.{0, 0, 0}
+                                    (HSub.hSub.{0, 0, 0} (HMul.hMul.{0, 0, 0} (star.{0} ↑v) ↑v)
+                                      (HMul.hMul.{0, 0, 0} (HMul.hMul.{0, 0, 0} (star.{0} ↑v) ↑v) ↑e))
+                                    (HMul.hMul.{0, 0, 0} (↑e) (HMul.hMul.{0, 0, 0} (star.{0} ↑v) ↑v)))
+                                  (HMul.hMul.{0, 0, 0} (HMul.hMul.{0, 0, 0} (↑e) (HMul.hMul.{0, 0, 0} (star.{0} ↑v) ↑v))
+                                    ↑e)))
+                            hes))
+                        (Eq.mpr.{0}
+                          (id.{0}
+                            (congr.{1, 1}
+                              (congrArg.{1, 1} Eq.{1}
+                                (Eq.trans.{1}
+                                  (Eq.trans.{1}
+                                    (congr.{1, 1}
+                                      (congrArg.{1, 1} HMul.hMul.{0, 0, 0}
+                                        (sub_eq_add_neg.{0} (star.{0} ↑v) (HMul.hMul.{0, 0, 0} (↑e) (star.{0} ↑v))))
+                                      (sub_eq_add_neg.{0} (↑v) (HMul.hMul.{0, 0, 0} ↑v ↑e)))
+                                    (mul_add.{0}
+                                      (HAdd.hAdd.{0, 0, 0} (star.{0} ↑v)
+                                        (Neg.neg.{0} (HMul.hMul.{0, 0, 0} (↑e) (star.{0} ↑v))))
+                                      (↑v) (Neg.neg.{0} (HMul.hMul.{0, 0, 0} ↑v ↑e))))
+                                  (congr.{1, 1}
+                                    (congrArg.{1, 1} HAdd.hAdd.{0, 0, 0}
+                                      (Eq.trans.{1}
+                                        (add_mul.{0} (star.{0} ↑v)
+                                          (Neg.neg.{0} (HMul.hMul.{0, 0, 0} (↑e) (star.{0} ↑v))) ↑v)
+                                        (congrArg.{1, 1} (HAdd.hAdd.{0, 0, 0} (HMul.hMul.{0, 0, 0} (star.{0} ↑v) ↑v))
+                                          (Eq.trans.{1} (neg_mul.{0} (HMul.hMul.{0, 0, 0} (↑e) (star.{0} ↑v)) ↑v)
+                                            (congrArg.{1, 1} Neg.neg.{0} (mul_assoc.{0} (↑e) (star.{0} ↑v) ↑v))))))
+                                    (Eq.trans.{1}
+                                      (mul_neg.{0}
+                                        (HAdd.hAdd.{0, 0, 0} (star.{0} ↑v)
+                                          (Neg.neg.{0} (HMul.hMul.{0, 0, 0} (↑e) (star.{0} ↑v))))
+                                        (HMul.hMul.{0, 0, 0} ↑v ↑e))
+                                      (congrArg.{1, 1} Neg.neg.{0}
+                                        (Eq.trans.{1}
+                                          (add_mul.{0} (star.{0} ↑v)
+                                            (Neg.neg.{0} (HMul.hMul.{0, 0, 0} (↑e) (star.{0} ↑v)))
+                                            (HMul.hMul.{0, 0, 0} ↑v ↑e))
+                                          (congrArg.{1, 1}
+                                            (HAdd.hAdd.{0, 0, 0}
+                                              (HMul.hMul.{0, 0, 0} (star.{0} ↑v) (HMul.hMul.{0, 0, 0} ↑v ↑e)))
+                                            (Eq.trans.{1}
+                                              (neg_mul.{0} (HMul.hMul.{0, 0, 0} (↑e) (star.{0} ↑v))
+                                                (HMul.hMul.{0, 0, 0} ↑v ↑e))
+                                              (congrArg.{1, 1} Neg.neg.{0}
+                                                (mul_assoc.{0} (↑e) (star.{0} ↑v) (HMul.hMul.{0, 0, 0} ↑v ↑e)))))))))))
+                              (congr.{1, 1}
+                                (congrArg.{1, 1} HAdd.hAdd.{0, 0, 0}
+                                  (Eq.trans.{1}
+                                    (congrFun'.{1, 1}
+                                      (congrArg.{1, 1} HSub.hSub.{0, 0, 0}
+                                        (Eq.trans.{1}
+                                          (congrArg.{1, 1} (HSub.hSub.{0, 0, 0} (HMul.hMul.{0, 0, 0} (star.{0} ↑v) ↑v))
+                                            (mul_assoc.{0} (star.{0} ↑v) ↑v ↑e))
+                                          (sub_eq_add_neg.{0} (HMul.hMul.{0, 0, 0} (star.{0} ↑v) ↑v)
+                                            (HMul.hMul.{0, 0, 0} (star.{0} ↑v) (HMul.hMul.{0, 0, 0} ↑v ↑e)))))
+                                      (HMul.hMul.{0, 0, 0} (↑e) (HMul.hMul.{0, 0, 0} (star.{0} ↑v) ↑v)))
+                                    (sub_eq_add_neg.{0}
+                                      (HAdd.hAdd.{0, 0, 0} (HMul.hMul.{0, 0, 0} (star.{0} ↑v) ↑v)
+                                        (Neg.neg.{0} (HMul.hMul.{0, 0, 0} (star.{0} ↑v) (HMul.hMul.{0, 0, 0} ↑v ↑e))))
+                                      (HMul.hMul.{0, 0, 0} (↑e) (HMul.hMul.{0, 0, 0} (star.{0} ↑v) ↑v)))))
+                                (Eq.trans.{1} (mul_assoc.{0} (↑e) (HMul.hMul.{0, 0, 0} (star.{0} ↑v) ↑v) ↑e)
+                                  (congrArg.{1, 1} (HMul.hMul.{0, 0, 0} ↑e) (mul_assoc.{0} (star.{0} ↑v) ↑v ↑e))))))
+                          (TGLV350.Regular.positiveTraceReader_not_cyclic._abel_1_1 P e v)))))
+                  (Eq.mpr.{0}
+                    (id.{0}
+                      (congrArg.{1, 1}
+                        (fun _a =>
+                          Eq.{1}
+                            (HAdd.hAdd.{0, 0, 0}
+                              (HSub.hSub.{0, 0, 0} (HSub.hSub.{0, 0, 0} _a (HMul.hMul.{0, 0, 0} _a ↑e))
+                                (HMul.hMul.{0, 0, 0} (↑e) _a))
+                              (HMul.hMul.{0, 0, 0} (HMul.hMul.{0, 0, 0} (↑e) _a) ↑e))
+                            0)
+                        hv))
+                    (Eq.mpr.{0}
+                      (id.{0}
+                        (congrArg.{1, 1}
+                          (fun _a =>
+                            Eq.{1}
+                              (HAdd.hAdd.{0, 0, 0} (HSub.hSub.{0, 0, 0} (HSub.hSub.{0, 0, 0} (↑e) _a) _a)
+                                (HMul.hMul.{0, 0, 0} _a ↑e))
+                              0)
+                          hee))
+                      (Eq.mpr.{0}
+                        (id.{0}
+                          (congrFun'.{1, 1}
+                            (congrArg.{1, 1} Eq.{1}
+                              (congr.{1, 1}
+                                (congrArg.{1, 1} HAdd.hAdd.{0, 0, 0}
+                                  (Eq.trans.{1}
+                                    (congrFun'.{1, 1} (congrArg.{1, 1} HSub.hSub.{0, 0, 0} (sub_eq_add_neg.{0} ↑e ↑e))
+                                      ↑e)
+                                    (sub_eq_add_neg.{0} (HAdd.hAdd.{0, 0, 0} (↑e) (Neg.neg.{0} ↑e)) ↑e)))
+                                hee))
+                            0))
+                        (TGLV350.Regular.positiveTraceReader_not_cyclic._abel_1_2 P e))));
+              Eq.symm.{1}
+                (sub_eq_zero.{0}.mp
+                  ((CStarRing.star_mul_self_eq_zero_iff.{0} (HSub.hSub.{0, 0, 0} (↑v) (HMul.hMul.{0, 0, 0} ↑v ↑e))).mp
+                    hh));
+            have hvse :=
+              Eq.mp.{0}
+                (congr.{1, 1}
+                  (congrArg.{1, 1} Eq.{1}
+                    (Eq.trans.{1} (star_mul.{0} ↑e ↑v) (congrArg.{1, 1} (HMul.hMul.{0, 0, 0} (star.{0} ↑v)) hes)))
+                  (star_zero.{0}
+                    (ContinuousLinearMap.{0, 0, 0, 0} (RingHom.id.{0} ℂ)
+                      ↥(TGLV350.Regular.RegularHilbert (TGLExt.TowerHilbert P))
+                      ↥(TGLV350.Regular.RegularHilbert (TGLExt.TowerHilbert P)))))
+                (congrArg.{1, 1} star.{0} hev);
+            have hesv :=
+              Eq.mp.{0}
+                (congrFun'.{1, 1}
+                  (congrArg.{1, 1} Eq.{1}
+                    (Eq.trans.{1} (star_mul.{0} ↑v ↑e)
+                      (congrFun'.{1, 1} (congrArg.{1, 1} HMul.hMul.{0, 0, 0} hes) (star.{0} ↑v))))
+                  (star.{0} ↑v))
+                (congrArg.{1, 1} star.{0} hve);
+            have hbad := fun hp =>
+              have hs := IsSelfAdjoint.star_eq.{0} (LE.le.isSelfAdjoint.{0} hp);
+              have hvs :=
+                add_left_cancel.{0}
+                  (Eq.mp.{0}
+                    (congrArg.{1, 1}
+                      (fun _a => Eq.{1} (HAdd.hAdd.{0, 0, 0} (↑e) _a) (HAdd.hAdd.{0, 0, 0} (↑e) (star.{0} ↑v)))
+                      (star_star.{0} ↑v))
+                    (Eq.mp.{0}
+                      (congrArg.{1, 1}
+                        (fun _a =>
+                          Eq.{1} (HAdd.hAdd.{0, 0, 0} _a (star.{0} (star.{0} ↑v)))
+                            (HAdd.hAdd.{0, 0, 0} (↑e) (star.{0} ↑v)))
+                        hes)
+                      (Eq.mp.{0}
+                        (congrArg.{1, 1} (fun _a => Eq.{1} _a (HAdd.hAdd.{0, 0, 0} (↑e) (star.{0} ↑v)))
+                          (star_add.{0} (↑e) (star.{0} ↑v)))
+                        hs)));
+              hvne
+                (Trans.trans.{0, 0, 0, 1, 1, 1}
+                  (Eq.mpr.{0} (id.{0} (congrArg.{1, 1} (fun _a => Eq.{1} _a (HMul.hMul.{0, 0, 0} (↑e) _a)) hvs))
+                    (Eq.mpr.{0} (id.{0} (congrArg.{1, 1} (fun _a => Eq.{1} (star.{0} ↑v) _a) hesv))
+                      (Eq.refl.{1} (star.{0} ↑v))))
+                  hev);
+            let Y := Subtype.mk.{1} (↑e) (Subtype.property.{1} e).left;
+            let X := HAdd.hAdd.{0, 0, 0} Y (star.{0} v);
+            have hXY :=
+              Subtype.ext.{1}
+                (id.{0}
+                  (Eq.mpr.{0} (id.{0} (congrArg.{1, 1} (fun _a => Eq.{1} _a ↑e) (add_mul.{0} (↑e) (star.{0} ↑v) ↑e)))
+                    (Eq.mpr.{0}
+                      (id.{0}
+                        (congrArg.{1, 1}
+                          (fun _a => Eq.{1} (HAdd.hAdd.{0, 0, 0} _a (HMul.hMul.{0, 0, 0} (star.{0} ↑v) ↑e)) ↑e) hee))
+                      (Eq.mpr.{0} (id.{0} (congrArg.{1, 1} (fun _a => Eq.{1} (HAdd.hAdd.{0, 0, 0} (↑e) _a) ↑e) hvse))
+                        (Eq.mpr.{0} (id.{0} (congrArg.{1, 1} (fun _a => Eq.{1} _a ↑e) (add_zero.{0} ↑e)))
+                          (Eq.refl.{1} ↑e))))));
+            have hYX :=
+              id.{0}
+                (Eq.mpr.{0}
+                  (id.{0}
+                    (congrArg.{1, 1} (fun _a => Eq.{1} _a (HAdd.hAdd.{0, 0, 0} (↑e) (star.{0} ↑v)))
+                      (mul_add.{0} (↑e) (↑e) (star.{0} ↑v))))
+                  (Eq.mpr.{0}
+                    (id.{0}
+                      (congrArg.{1, 1}
+                        (fun _a =>
+                          Eq.{1} (HAdd.hAdd.{0, 0, 0} _a (HMul.hMul.{0, 0, 0} (↑e) (star.{0} ↑v)))
+                            (HAdd.hAdd.{0, 0, 0} (↑e) (star.{0} ↑v)))
+                        hee))
+                    (Eq.mpr.{0}
+                      (id.{0}
+                        (congrArg.{1, 1}
+                          (fun _a => Eq.{1} (HAdd.hAdd.{0, 0, 0} (↑e) _a) (HAdd.hAdd.{0, 0, 0} (↑e) (star.{0} ↑v)))
+                          hesv))
+                      (Eq.refl.{1} (HAdd.hAdd.{0, 0, 0} (↑e) (star.{0} ↑v))))));
+            fun hc =>
+            have hh := hc X Y;
+            have hy := TGLV350.Regular.positiveTraceReader_positive P e;
+            have hz :=
+              id.{0}
+                (Eq.mpr.{0}
+                  (id.{0}
+                    (congrArg.{1, 1} (fun _a => Eq.{1} _a 0)
+                      (dif_neg.{1} (Eq.mpr.{0} (id.{0} (congrArg.{1, 1} (fun _a => ¬LE.le.{0} 0 _a) hYX)) hbad))))
+                  (Eq.refl.{1} 0));
+            hene
+              ((TGLV350.Regular.scalarInverseLimitWeight_faithful P e).mp
+                (Eq.mp.{0} (congrArg.{1, 1} (fun _a => Eq.{1} (TGLV350.Regular.scalarInverseLimitWeight P e) _a) hz)
+                  (Eq.mp.{0}
+                    (congrArg.{1, 1}
+                      (fun _a => Eq.{1} _a (TGLV350.Regular.positiveTraceReader P (HMul.hMul.{0, 0, 0} Y X))) hy)
+                    (Eq.mp.{0}
+                      (congrArg.{1, 1}
+                        (fun _a =>
+                          Eq.{1} (TGLV350.Regular.positiveTraceReader P _a)
+                            (TGLV350.Regular.positiveTraceReader P (HMul.hMul.{0, 0, 0} Y X)))
+                        hXY)
+                      hh))))

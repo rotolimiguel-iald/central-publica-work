@@ -1,0 +1,69 @@
+FlowTimePropagation.lean:14:0: warning: automatically included section variable(s) unused in theorem `ChatgptAudit.Flow017.eventually_flow_time_box`:
+  [NormedSpace ℝ E]
+consider restructuring your `variable` declarations so that the variables are not in scope or explicitly omit them:
+  omit [NormedSpace ℝ E] in theorem ...
+
+Note: This linter can be disabled with `set_option linter.unusedSectionVars false`
+FlowTimePropagation.lean:75:4: error: Tactic `apply` failed: could not unify the conclusion of `Tendsto.eventually hargs`
+  ∀ᶠ (x : (E × ℝ) × ℝ) in 𝓝 ((q, T), T), ?m.955 (F.flow x.1, x.2 - x.1.2)
+with the goal
+  ∀ᶠ (z : (E × ℝ) × ℝ) in 𝓝 ((q, T), T),
+    (F.flow z.1, z.2 - z.1.2) ∈ Metric.ball y G.radius ×ˢ Ioo (-G.radius) G.radius ∧
+      G.flow (F.flow z.1, z.2 - z.1.2) ∈ S ∧ ContDiffAt ℝ (↑n) G.flow (F.flow z.1, z.2 - z.1.2)
+
+Note: The full type of `Tendsto.eventually hargs` is
+  (∀ᶠ (y : E × ℝ) in 𝓝 ((fun z => (F.flow z.1, z.2 - z.1.2)) ((q, T), T)), ?m.955 y) →
+    ∀ᶠ (x : (E × ℝ) × ℝ) in 𝓝 ((q, T), T), ?m.955 (F.flow x.1, x.2 - x.1.2)
+
+E : Type u_1
+inst✝² : NormedAddCommGroup E
+inst✝¹ : NormedSpace ℝ E
+inst✝ : CompleteSpace E
+f : E → E
+Q : Set E
+p : E
+F : LipschitzLocalFlow f Q p
+hQ : IsOpen[PseudoMetricSpace.toUniformSpace.toTopologicalSpace] Q
+hf : ContDiffOn ℝ ∞ f Q
+q : E
+hq : q ∈ Metric.ball p F.radius
+T : ℝ
+hT : T ∈ Ioo (-F.radius) F.radius
+n : ℕ
+y : E := F.flow (q, T)
+hy : y ∈ Q
+hfy : ContDiffAt ℝ 1 f y
+K : NNReal
+S : Set E
+hS : S ∈ 𝓝 y
+hL : LipschitzOnWith K f S
+G : LipschitzLocalFlow f Q y
+hG : ContDiffAt ℝ (↑n) G.flow (y, 0)
+hGball : y ∈ Metric.ball y G.radius
+hGzero : 0 ∈ Ioo (-G.radius) G.radius
+hFc : ContinuousAt F.flow (q, T)
+hGc : ContinuousAt G.flow (y, 0)
+hFD : Metric.ball p F.radius ×ˢ Ioo (-F.radius) F.radius ∈ 𝓝 (q, T)
+hGD : Metric.ball y G.radius ×ˢ Ioo (-G.radius) G.radius ∈ 𝓝 (y, 0)
+hFS : ∀ᶠ (z : E × ℝ) in 𝓝 (q, T), F.flow z ∈ S
+hGS : ∀ᶠ (z : E × ℝ) in 𝓝 (y, 0), G.flow z ∈ S
+hGgood :
+  ∀ᶠ (z : E × ℝ) in 𝓝 (y, 0),
+    z ∈ Metric.ball y G.radius ×ˢ Ioo (-G.radius) G.radius ∧ G.flow z ∈ S ∧ ContDiffAt ℝ (↑n) G.flow z
+htarget : ContinuousAt (fun z => (z.1.1, z.2)) ((q, T), T)
+hinit : ContinuousAt (fun z => F.flow z.1) ((q, T), T)
+hargs : ContinuousAt (fun z => (F.flow z.1, z.2 - z.1.2)) ((q, T), T)
+hFgood : ∀ᶠ (z : E × ℝ) in 𝓝 (q, T), z ∈ Metric.ball p F.radius ×ˢ Ioo (-F.radius) F.radius ∧ F.flow z ∈ S
+hFpull :
+  ∀ᶠ (x : (E × ℝ) × ℝ) in 𝓝 ((q, T), T),
+    (x.1.1, x.2) ∈ Metric.ball p F.radius ×ˢ Ioo (-F.radius) F.radius ∧ F.flow (x.1.1, x.2) ∈ S
+⊢ ∀ᶠ (z : (E × ℝ) × ℝ) in 𝓝 ((q, T), T),
+    (F.flow z.1, z.2 - z.1.2) ∈ Metric.ball y G.radius ×ˢ Ioo (-G.radius) G.radius ∧
+      G.flow (F.flow z.1, z.2 - z.1.2) ∈ S ∧ ContDiffAt ℝ (↑n) G.flow (F.flow z.1, z.2 - z.1.2)
+'ChatgptAudit.Flow017.flow_finite_regular_on_domain' depends on axioms: [propext, sorryAx, Classical.choice, Quot.sound]
+'ChatgptAudit.Flow017.flow_smooth_on_domain' depends on axioms: [propext, sorryAx, Classical.choice, Quot.sound]
+'ChatgptAudit.Flow017.eventually_flow_time_box' depends on axioms: [propext, Classical.choice, Quot.sound]
+'ChatgptAudit.Flow017.flow_finite_regular_nearby_transfer' depends on axioms: [propext,
+ sorryAx,
+ Classical.choice,
+ Quot.sound]

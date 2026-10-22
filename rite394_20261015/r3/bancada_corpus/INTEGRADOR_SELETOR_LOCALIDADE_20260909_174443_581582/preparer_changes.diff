@@ -1,0 +1,119 @@
+--- C:\IALD\Central de Patentes\Chatgpt\INTEGRADOR_LOCAL_GERAL_20260909_170426_647362\prepare_successor.py
++++ C:\IALD\Central de Patentes\Chatgpt\INTEGRADOR_SELETOR_LOCALIDADE_20260909_174443_581582\prepare_successor.py
+@@ -28,6 +28,56 @@
+     assert all(set(row["axioms"])<=TRIO for x in r["runs"] for row in x["axiom_rows"])
+     assert rec(Path(r["plan"]["path"]))==r["plan"]
+     return r
++def certified_provenance(path,seen=None):
++    """Resolve each cached module to a fresh PASS run through all recorded generations."""
++    seen=set() if seen is None else set(seen)
++    key=str(path.resolve()).casefold()
++    assert key not in seen, "Cyclic cache receipt lineage"
++    seen.add(key)
++    result=certified_result(path)
++    assert result.get("cached_boundary_unchanged",True)
++    plan=read(Path(result["plan"]["path"]));build=Path(plan["build"]).resolve()
++    pins=[rec(path),result["plan"]]
++    resolved={run["module"]:run for run in result["runs"]}
++    assert len(resolved)==len(result["runs"])
++    cached={item["module"]:item for item in result.get("cached_modules",[])}
++    assert len(cached)==len(result.get("cached_modules",[])) and not(set(cached)&set(resolved))
++    if cached:
++        parent_record=result["cached_build_receipt"]
++        parent_path=Path(parent_record["path"])
++        assert rec(parent_path)==parent_record
++        inherited,parent_pins=certified_provenance(parent_path,seen)
++        parent_plan=read(Path(read(parent_path)["plan"]["path"]))
++        parent_build=Path(parent_plan["build"]).resolve()
++        source_pins={str(Path(r["path"]).resolve()).casefold():r for r in plan["source_files"]}
++        parent_sources={str(Path(r["path"]).resolve()).casefold():r for r in parent_plan["source_files"]}
++        pins.extend(parent_pins)
++        for name,item in cached.items():
++            assert name in inherited and item["prior_run"]==inherited[name], (
++                "Inherited run differs from the recursively certified module: "+name)
++            assert item["source_bytes_identical"]
++            source=parent_build/"TGLExt"/(name+".lean")
++            current=build/"TGLExt"/(name+".lean")
++            assert rec(source)==item["source"]==parent_sources[str(source.resolve()).casefold()]
++            assert rec(current)==source_pins[str(current.resolve()).casefold()]
++            assert current.read_bytes()==source.read_bytes()
++            pins.extend([rec(source),rec(current)])
++            if "new_plan_source" in item:
++                recorded=item["new_plan_source"]
++                assert rec(Path(recorded["path"]))==recorded
++                assert Path(recorded["path"]).read_bytes()==current.read_bytes()
++                pins.append(recorded)
++            for artifact in item["artifacts"]:
++                src,dst=Path(artifact["source"]["path"]),Path(artifact["copy"]["path"])
++                assert src.resolve().parent==parent_build/"TGLExt" and dst.resolve().parent==build/"TGLExt"
++                assert src.name==dst.name and src.name in {
++                    name+s for s in [".olean",".ilean",".olean.server",".olean.private"]}
++                assert rec(src)==artifact["source"] and rec(dst)==artifact["copy"]
++                assert src.read_bytes()==dst.read_bytes()
++                pins.extend([artifact["source"],artifact["copy"]])
++            resolved[name]=inherited[name]
++    return resolved,pins
++
+ def embedded(path):
+     return find_table(ast.parse(path.read_bytes().decode("utf-8")))[1]
+ def main():
+@@ -47,27 +97,19 @@
+     assert nr["predecessor_build_result"]==rec(baseresultpath)
+     program=Path(nr["integrated_copy"]["path"]);assert rec(program)==nr["integrated_copy"]
+     old_embedded,all_embedded=embedded(baseprogram),embedded(program)
+-    oldmods,newmods=bi["modules"],nr["modules"]
+-    assert len(oldmods)==63 and len(newmods)==9
++    oldmods,newmods=bp["modules"],nr["modules"]
++    assert len(oldmods)==bp["counts"]["total_modules"]
++    assert len(newmods)==nr["declaration_counts"]["modules"]
+     oldnames={m["module"] for m in oldmods};newnames={m["module"] for m in newmods}
+-    assert len(oldnames)==63 and len(newnames)==9 and not(oldnames&newnames)
++    assert len(oldnames)==len(oldmods) and len(newnames)==len(newmods) and not(oldnames&newnames)
+     for k,v in old_embedded.items():
+         if k not in {"TGLExt.lean","TGL/Audit.lean"}:assert all_embedded[k]==v
+     assert set(all_embedded)==set(old_embedded)|{m["key"] for m in newmods}
+     cache_by_name={m["module"]:m for m in br.get("cached_modules",[])}
+     prior_runs={x["module"]:x for x in br["runs"]}
+     assert oldnames<=set(cache_by_name)|set(prior_runs)
+-    ancestry=[]
+-    if br.get("cached_modules"):
+-        ancestor_record=br["cached_build_receipt"];assert rec(Path(ancestor_record["path"]))==ancestor_record
+-        ar=certified_result(Path(ancestor_record["path"]))
+-        ancestry=[ancestor_record,ar["plan"]]
+-        ancestor_runs={x["module"]:x for x in ar["runs"]}
+-        for name,m in cache_by_name.items():
+-            assert name in ancestor_runs and m["prior_run"]==ancestor_runs[name]
+-            assert rec(Path(m["source"]["path"]))==m["source"]
+-            for artifact in m["artifacts"]:
+-                assert rec(Path(artifact["copy"]["path"]))==artifact["copy"]
++    resolved_runs,ancestry=certified_provenance(baseresultpath)
++    assert oldnames<=set(resolved_runs)
+     source_records={str(Path(r["path"]).resolve().relative_to(basebuild)):r for r in bp["source_files"]}
+     modules=oldmods+newmods
+     declarations=[d["name"] for m in modules for d in m["declarations"]]
+@@ -83,7 +125,7 @@
+             origin=Path(sr["path"]);assert rec(origin)==sr
+             assert origin.read_bytes()==text.encode("utf-8")
+             expected={d["name"] for d in m["declarations"]}
+-            run=prior_runs.get(m["module"],cache_by_name.get(m["module"],{}).get("prior_run"))
++            run=resolved_runs[m["module"]]
+             assert run and run["valid"] and run["exit_code"]==0
+             assert {r["name"] for r in run["axiom_rows"]}==expected
+         else:
+@@ -106,7 +148,7 @@
+     for m in oldmods:
+         name=m["module"];source=basebuild/m["key"];cache_boundary.append(rec(source))
+         entry={"module":name,"source":rec(source),"new_plan_source":rec(build/m["key"]),
+-            "source_bytes_identical":True,"prior_run":prior_runs.get(name,cache_by_name.get(name,{}).get("prior_run")),
++            "source_bytes_identical":True,"prior_run":resolved_runs[name],
+             "prior_origin":"previous fresh module" if name in prior_runs else "previous verified cache",
+             "artifact_historical_pin_available":name in cache_by_name,"artifacts":[]}
+         for suffix in [".olean",".ilean",".olean.server",".olean.private"]:
+@@ -168,6 +210,7 @@
+         "declaration_names":declarations,"cached_modules":cached,"cached_build_receipt":rec(baseresultpath),
+         "cached_build_plan":rec(baseplanpath),"cached_boundary_records":cache_boundary,"cached_boundary_unchanged":stable,
+         "counts":counts,"new_module_processes":len(newmods),"aggregate_processes":3,
++        "cache_ancestry_records":ancestry,
+         "scope_note":f"Incremental successor: {len(newmods)} new modules and three fresh root/audit processes; {len(oldmods)} modules reused with exact source equality and verified prior PASS provenance. All {len(declarations)} declarations are audited in the new dedicated audit. Cached/canonical transitive sources are not rebuilt. Artifact hashes are measured at reuse; historical cache pins are separately identified. No um.py execution or import.",
+         "scope":{"um_py_executed":False,"canonical_changes":False,"transitive_dependencies_rebuilt":False,"transitive_dependencies_all_hashed":False}}
+     path=build/"BUILD_PLAN.json";new(path,(json.dumps(plan,ensure_ascii=False,indent=2)+"\n").encode("utf-8"))

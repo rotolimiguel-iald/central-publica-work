@@ -1,0 +1,130 @@
+PrescribedCovariantJet.lean:21:2: warning: Used `tac1 <;> tac2` where `(tac1; tac2)` would suffice
+
+Note: This linter can be disabled with `set_option linter.unnecessarySeqFocus false`
+PrescribedCovariantJet.lean:29:6: error: Tactic `rewrite` failed: Did not find an occurrence of the pattern
+  fderiv ℝ (⇑(ContinuousLinearMap.proj a) ∘ V) p
+in the target expression
+  (fderiv ℝ (fun y => V y a) p) (Pi.single i 1) = L (Pi.single i 1) a
+
+V : VectorField4
+p : Coordinate4
+L : Coordinate4 →L[ℝ] Coordinate4
+hV : HasFDerivAt V L p
+i a : Fin 4
+hc : HasFDerivAt (⇑(ContinuousLinearMap.proj a) ∘ V) (ContinuousLinearMap.proj a ∘SL L) p
+⊢ (fderiv ℝ (fun y => V y a) p) (Pi.single i 1) = L (Pi.single i 1) a
+Try this:
+  [apply] ring_nf
+  
+  The `ring` tactic failed to close the goal. Use `ring_nf` to obtain a normal form.
+    
+  Note that `ring` works primarily in *commutative* rings. If you have a noncommutative ring, abelian group or module, consider using `noncomm_ring`, `abel` or `module` instead.
+PrescribedCovariantJet.lean:35:65: error: unsolved goals
+Gamma : ConnectionField4
+V : VectorField4
+p : Coordinate4
+hV : DifferentiableAt ℝ V p
+w : Coordinate4
+hw : w = ∑ i, w i • Pi.single i 1
+hf : (fderiv ℝ V p) w = ∑ i, w i • vectorPartial V p i
+a : Fin 4
+⊢ vectorPartial V p 0 a * w 0 + Gamma p 0 a 0 * V p 0 * w 0 + V p 0 * Gamma p 1 a 0 * w 1 +
+                                      V p 0 * Gamma p 2 a 0 * w 2 +
+                                    V p 0 * Gamma p 3 a 0 * w 3 +
+                                  Gamma p 0 a 1 * V p 1 * w 0 +
+                                V p 1 * Gamma p 1 a 1 * w 1 +
+                              V p 1 * Gamma p 2 a 1 * w 2 +
+                            V p 1 * Gamma p 3 a 1 * w 3 +
+                          Gamma p 0 a 2 * V p 2 * w 0 +
+                        V p 2 * Gamma p 1 a 2 * w 1 +
+                      V p 2 * Gamma p 2 a 2 * w 2 +
+                    V p 2 * Gamma p 3 a 2 * w 3 +
+                  Gamma p 0 a 3 * V p 3 * w 0 +
+                V p 3 * Gamma p 1 a 3 * w 1 +
+              V p 3 * Gamma p 2 a 3 * w 2 +
+            V p 3 * Gamma p 3 a 3 * w 3 +
+          vectorPartial V p 1 a * w 1 +
+        vectorPartial V p 2 a * w 2 +
+      vectorPartial V p 3 a * w 3 =
+    V p 0 * (w 0 • Gamma p 0 + w 1 • Gamma p 1 + w 2 • Gamma p 2 + w 3 • Gamma p 3) a 0 +
+                  V p 1 * (w 0 • Gamma p 0 + w 1 • Gamma p 1 + w 2 • Gamma p 2 + w 3 • Gamma p 3) a 1 +
+                V p 2 * (w 0 • Gamma p 0 + w 1 • Gamma p 1 + w 2 • Gamma p 2 + w 3 • Gamma p 3) a 2 +
+              V p 3 * (w 0 • Gamma p 0 + w 1 • Gamma p 1 + w 2 • Gamma p 2 + w 3 • Gamma p 3) a 3 +
+            (w 0 • vectorPartial V p 0) a +
+          (w 1 • vectorPartial V p 1) a +
+        (w 2 • vectorPartial V p 2) a +
+      (w 3 • vectorPartial V p 3) a
+PrescribedCovariantJet.lean:45:28: warning: This simp argument is unused:
+  Matrix.smul_apply
+
+Hint: Omit it from the simp argument list.
+  simp only [covariantVectorGradient, ̲covariantVectorDerivative, ̲connectionAlong, ̲Matrix.mulVec,
+      dotProduct, ̲Pi.add_apply,M̵a̵t̵r̵i̵x̵.̵ ̲smul_a̵p̵p̵l̵y̵,̵s̵m̵u̵l̵_̵eq_mul, ̲Fin.sum_univ_four]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+PrescribedCovariantJet.lean:45:46: warning: This simp argument is unused:
+  smul_eq_mul
+
+Hint: Omit it from the simp argument list.
+  simp only [covariantVectorGradient, ̲covariantVectorDerivative, ̲connectionAlong, ̲Matrix.mulVec,
+      dotProduct, ̲Pi.add_apply, ̲Matrix.smul_apply,s̵m̵u̵l̵_̵e̵q̵_̵m̵u̵l̵,̵ ̲Fin.sum_univ_four]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+PrescribedCovariantJet.lean:71:2: error: Type mismatch: After simplification, term
+  HasFDerivAt.const_add v
+    (HasFDerivAt.comp x (ContinuousLinearMap.hasFDerivAt (connectionInitialJet Gamma p v))
+      (HasFDerivAt.sub_const p (hasFDerivAt_id x)))
+ has type
+  @HasFDerivAt ℝ DenselyNormedField.toNontriviallyNormedField Coordinate4 Pi.normedAddCommGroup.toAddCommGroup
+    Pi.normedSpace.toModule PseudoMetricSpace.toUniformSpace.toTopologicalSpace Coordinate4
+    Pi.normedAddCommGroup.toAddCommGroup Pi.normedSpace.toModule PseudoMetricSpace.toUniformSpace.toTopologicalSpace
+    (fun x => v + (⇑(connectionInitialJet Gamma p v) ∘ fun x => id x - p) x) (connectionInitialJet Gamma p v) x
+but is expected to have type
+  @HasFDerivAt ℝ DenselyNormedField.toNontriviallyNormedField Coordinate4 Pi.addCommGroup
+    (Pi.Function.module (Fin 4) ℝ ℝ) Pi.topologicalSpace Coordinate4 Pi.addCommGroup (Pi.Function.module (Fin 4) ℝ ℝ)
+    Pi.topologicalSpace (affineInitialSeed Gamma p v) (connectionInitialJet Gamma p v) x
+PrescribedCovariantJet.lean:80:42: warning: This simp argument is unused:
+  Fin.sum_univ_four
+
+Hint: Omit it from the simp argument list.
+  simp [̵c̵o̵n̵n̵e̵c̵t̵i̵o̵n̵A̵l̵o̵n̵g̵,̵F̵i̵n̵.̵s̵u̵m̵_̵u̵n̵i̵v̵_̵f̵o̵u̵r̵,̵P̵i̵.̵s̵i̵n̵g̵l̵e̵_̵a̵p̵p̵l̵y̵]̵[̲c̲o̲n̲n̲e̲c̲t̲i̲o̲n̲A̲l̲o̲n̲g̲,̲ ̲P̲i̲.̲s̲i̲n̲g̲l̲e̲_̲a̲p̲p̲l̲y̲]̲
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+PrescribedCovariantJet.lean:102:6: error: Tactic `rewrite` failed: Did not find an occurrence of the pattern
+  coordinatePartial (fun y => tensorQuad (g y) (R y)) p i
+in the target expression
+  coordinatePartial (fun x => tensorPair (g x) (R x) (R x)) p i = 0
+
+U : Set Coordinate4
+hU : IsOpen U
+g : TensorField4
+Gamma : ConnectionField4
+hg : SmoothMatrixOn U g
+hm : MetricCompatibleOn U g Gamma
+p v : Coordinate4
+hp : p ∈ U
+hgs : (g p)ᵀ = g p
+R : Coordinate4 → Coordinate4 := affineInitialSeed Gamma p v
+hR : SmoothVectorOn U R
+hq : ContDiffOn ℝ ∞ (fun x => tensorPair (g x) (R x) (R x)) U
+i : Fin 4
+⊢ coordinatePartial (fun x => tensorPair (g x) (R x) (R x)) p i = 0
+'ChatgptAudit.Flow019.connection_initial_jet_apply' depends on axioms: [propext, Classical.choice, Quot.sound]
+'ChatgptAudit.Flow019.vector_partial_of_derivative' depends on axioms: [propext, sorryAx, Classical.choice, Quot.sound]
+'ChatgptAudit.Flow019.gradient_action_derivative' depends on axioms: [propext, sorryAx, Classical.choice, Quot.sound]
+'ChatgptAudit.Flow019.derivative_of_zero_covariant_gradient' depends on axioms: [propext,
+ sorryAx,
+ Classical.choice,
+ Quot.sound]
+'ChatgptAudit.Flow019.affine_seed_initial' depends on axioms: [propext, Classical.choice, Quot.sound]
+'ChatgptAudit.Flow019.affine_seed_smooth' depends on axioms: [propext, Classical.choice, Quot.sound]
+'ChatgptAudit.Flow019.affine_seed_derivative' depends on axioms: [propext, sorryAx, Classical.choice, Quot.sound]
+'ChatgptAudit.Flow019.affine_seed_covariant_derivative_zero' depends on axioms: [propext,
+ sorryAx,
+ Classical.choice,
+ Quot.sound]
+'ChatgptAudit.Flow019.affine_seed_gradient_zero' depends on axioms: [propext, sorryAx, Classical.choice, Quot.sound]
+'ChatgptAudit.Flow019.affine_seed_energy_derivative_zero' depends on axioms: [propext,
+ sorryAx,
+ Classical.choice,
+ Quot.sound]

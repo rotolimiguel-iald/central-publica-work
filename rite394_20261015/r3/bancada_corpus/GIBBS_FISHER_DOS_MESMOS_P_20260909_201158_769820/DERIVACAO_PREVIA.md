@@ -1,0 +1,7 @@
+# Derivação prévia: mesma família P para métrica e covetores de fonte
+
+[DERIVED — composição planejada] A folha anterior recebe P positivo, normalizado, suave, com diferencial injetivo e um relógio selecionado, e deriva g[P]. Nesta folha w_j=dP_j, portanto os covetores deixam de ser campos independentes. Suavidade e fechamento são derivados de P e da simetria das derivadas de segunda ordem. O protocolo Gibbs quadrático é construído com velocidades dP_j(v) e parâmetros constantes k_j>0, sem T de entrada. O registro extrai sua fonte da resposta; conservação segue sob Box_g[P] P_j=0. A condição de área o(t²), para telas da mesma g[P], permite aplicar o teorema de Einstein já compilado.
+
+[INPUT] Posto, relógio e lei assinada permanecem dados da etapa métrica. Os k_j são constantes de preparação. As equações de onda são novas condições sobre P; a condição de área também permanece explícita. Não se assume que todo P do tipo métrico as satisfaça. O exemplo plano dos quatro Bernoulli é um controle de incompatibilidade com fonte não nula e área gravitacional; o exemplo categórico curvo não paga por si onda nem área.
+
+[OPEN] Habitante conjunto compatível, seleção física do protocolo e sua lei de área. Não se identifica a curva afim P(x+tv) com os probes Gibbs quadráticos. Não se deriva Einstein variando P numa ação: g[P] também varia, e a ação de campos g e potenciais independentes não pode ser importada sem os termos de cadeia.

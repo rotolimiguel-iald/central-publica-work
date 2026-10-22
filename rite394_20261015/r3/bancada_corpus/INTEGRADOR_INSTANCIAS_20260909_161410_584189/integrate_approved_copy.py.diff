@@ -1,0 +1,78 @@
+--- original/integrate_approved_copy.py
++++ new/integrate_approved_copy.py
+@@ -33,6 +33,27 @@
+     line=node.end_lineno if end else node.lineno
+     col=node.end_col_offset if end else node.col_offset
+     return sum(map(len,lines[:line-1]))+col
++
++def lean_declarations(text):
++    """Read the reviewed one-namespace source convention, including named local instances."""
++    pattern=re.compile(r"(?m)^(?:noncomputable[ \t]+)?"
++        r"(abbrev|def|structure|theorem|local[ \t]+instance)[ \t]+"
++        r"([^\W\d]\w*'*)(?=[ \t\r\n:({\[])")
++    declarations=[(re.sub(r"[ \t]+"," ",m.group(1)),m.group(2))
++                  for m in pattern.finditer(text)]
++    names=[name for _,name in declarations]
++    assert len(names)==len(set(names)), "Duplicate declaration names"
++    # Reject anonymous/scoped/other instance syntax instead of silently omitting it.
++    instance_headers=re.findall(r"(?m)^[ \t]*(?:(?:local|scoped|noncomputable|"
++        r"private|protected)[ \t]+)*instance\b[^\r\n]*",text)
++    local_instances=[name for kind,name in declarations if kind=="local instance"]
++    assert len(instance_headers)==len(local_instances), (
++        "Every instance must be a named top-level 'local instance NAME'; explicit review required")
++    prints=re.findall(r"(?m)^#print axioms ([\w.']+)[ \t]*$",text)
++    assert len(prints)==len(set(prints)) and set(prints)==set(names), (
++        "Every declaration, including each local instance, requires exactly one #print axioms")
++    return declarations
++
+ def main():
+     assert len(sys.argv)==2, "Pass an approved frozen configuration JSON."
+     cfgpath=Path(sys.argv[1]).resolve()
+@@ -61,15 +82,23 @@
+         namespaces.add(ns[0])
+         for oldcontent in embedded.values():
+             assert not re.search(r"(?m)^namespace "+re.escape(ns[0])+r"\s*$",oldcontent),"Existing namespace collision"
+-        decls=re.findall(r"(?m)^(?:noncomputable\s+)?(abbrev|def|structure|theorem)\s+(\w+)",s)
+-        prints=re.findall(r"(?m)^#print axioms ([\w.]+)\s*$",s)
+-        assert set(prints)=={name for _,name in decls} and len(prints)==len(set(prints))
++        decls=lean_declarations(s)
+         assert not re.search(r"\b(?:sorry|admit|native_decide|unsafe|axiom)\b",s)
+         full=[{"kind":kind,"name":ns[0]+"."+name} for kind,name in decls]
+         assert not ({d["name"] for d in full}&all_names)
+         all_names.update(d["name"] for d in full)
+         modules.append({"module":module,"key":key,"namespace":ns[0],"source":record(p),
+                         "text":s,"declarations":full,"build_result":record(br)})
++    all_declaration_names=[d["name"] for m in modules for d in m["declarations"]]
++    local_instance_names=[d["name"] for m in modules for d in m["declarations"]
++                          if d["kind"]=="local instance"]
++    theorem_count=sum(d["kind"]=="theorem" for m in modules for d in m["declarations"])
++    declaration_counts={"modules":len(modules),"theorems":theorem_count,
++        "other_declarations":len(all_declaration_names)-theorem_count,
++        "local_instances":len(local_instance_names),"total":len(all_declaration_names)}
++    for key,value in cfg.get("measured_counts",{}).get("total",{}).items():
++        assert key in declaration_counts and declaration_counts[key]==value, (
++            "Configuration count mismatch: "+key)
+     local_names={m["module"] for m in modules}
+     replacements=[];dependencies={}
+     for m in modules:
+@@ -149,6 +178,11 @@
+         "sentinels_flags_and_gate_code_unchanged":True,"new_individual_json_flags_added":False,
+         "modules":[{k:v for k,v in m.items() if k!="text"} for m in modules],
+         "theorem_names":theorem_names,"transposed_module_order":ordered,
++        "all_declaration_names":all_declaration_names,
++        "local_instance_names":local_instance_names,"declaration_counts":declaration_counts,
++        "audit_policy":{"TGL/Audit.lean":"new theorems only",
++            "leaf_prints":"all declarations, including named local instances",
++            "NewModulesAudit.lean":"all declarations, including named local instances"},
+         "new_embedded_file_count":len(modules),"old_embedded_file_count":len(embedded),
+         "new_total_embedded_file_count":len(newembedded),
+         "scope_note":"A static working copy only. No execution of um.py, no seal and no physical confirmation. New theorems have Audit entries but no individual JSON flags were added."}
+@@ -156,5 +190,7 @@
+     for m in modules:assert record(Path(m["source"]["path"]))==m["source"]
+     new_file(folder/"INTEGRATION_RESULT.json",(json.dumps(summary,ensure_ascii=False,indent=2)+"\n").encode("utf-8"))
+     print(json.dumps({"folder":folder.as_posix(),"status":summary["status"],
+-                      "modules":len(modules),"theorems":len(theorem_names)},ensure_ascii=False))
++                      "modules":len(modules),"theorems":len(theorem_names),
++                      "declarations":len(all_declaration_names),
++                      "local_instances":len(local_instance_names)},ensure_ascii=False))
+ if __name__=="__main__":main()

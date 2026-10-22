@@ -1,0 +1,110 @@
+[
+  {
+    "line": 54,
+    "text": "def spatialProfile (x : Fin 4 → ℝ) : ℝ := Real.cosh (x 1)"
+  },
+  {
+    "line": 56,
+    "text": "theorem spatialProfile_eq (x : Fin 4 → ℝ) :\n    spatialProfile x = coshProfile 1 (x 1) := by"
+  },
+  {
+    "line": 61,
+    "text": "theorem spatialProfile_pos (x : Fin 4 → ℝ) : 0 < spatialProfile x :="
+  },
+  {
+    "line": 64,
+    "text": "theorem spatialProfile_smooth : ContDiff ℝ (⊤ : ℕ∞) spatialProfile :="
+  },
+  {
+    "line": 68,
+    "text": "def theCoshFrame : SmoothFrameData where\n  E := fun x => Matrix.diagonal (fun i => if i = 0 then spatialProfile x else 1)"
+  },
+  {
+    "line": 106,
+    "text": "theorem coshFrame_E_apply (x : Fin 4 → ℝ) :\n    theCoshFrame.E x\n      = Matrix.diagonal (fun i => if i = 0 then spatialProfile x else 1) := rfl"
+  },
+  {
+    "line": 111,
+    "text": "def theCoshSolderField (x : Fin 4 → ℝ) : Matrix (Fin 4) (Fin 4) ℝ :="
+  },
+  {
+    "line": 115,
+    "text": "theorem theCoshSolderField_eq (x : Fin 4 → ℝ) :\n    theCoshSolderField x\n      = Matrix.diagonal (fun i => if i = 0 then spatialProfile x ^ 2 else -1) := by"
+  },
+  {
+    "line": 126,
+    "text": "theorem theCoshSolderField_symm (x : Fin 4 → ℝ) :\n    (theCoshSolderField x)ᵀ = theCoshSolderField x :="
+  },
+  {
+    "line": 130,
+    "text": "theorem theCoshSolderField_det (x : Fin 4 → ℝ) :\n    (theCoshSolderField x).det = -(spatialProfile x ^ 2) := by"
+  },
+  {
+    "line": 139,
+    "text": "theorem theCoshSolderField_det_neg (x : Fin 4 → ℝ) :\n    (theCoshSolderField x).det < 0 := by"
+  },
+  {
+    "line": 145,
+    "text": "theorem theCoshSolderField_smooth (i j : Fin 4) :\n    ContDiff ℝ (⊤ : ℕ∞) (fun x => theCoshSolderField x i j) := by"
+  },
+  {
+    "line": 181,
+    "text": "theorem theCoshSolderField_nonconstant :\n    ∃ x y : Fin 4 → ℝ, theCoshSolderField x ≠ theCoshSolderField y := by"
+  },
+  {
+    "line": 194,
+    "text": "theorem coshFrame_nonconstant :\n    ∃ x y : Fin 4 → ℝ, theCoshFrame.E x ≠ theCoshFrame.E y := by"
+  },
+  {
+    "line": 203,
+    "text": "def theCoshSolderData : SolderFieldData where\n  frame := theCoshFrame"
+  },
+  {
+    "line": 214,
+    "text": "theorem theCoshSolder_reads (x : Fin 4 → ℝ) :\n    theCoshSolderData.g x\n      = Matrix.diagonal\n          (fun i => if i = 0 then (coshProfile 1 (x 1)) ^ 2 else -1) := by"
+  },
+  {
+    "line": 227,
+    "text": "def ansatzG33 (q : ℝ → ℝ) (s : ℝ) : ℝ := ansatzG22 q s"
+  },
+  {
+    "line": 230,
+    "text": "def ansatzNullContraction (q : ℝ → ℝ) (a b c d : ℝ) (s : ℝ) : ℝ :="
+  },
+  {
+    "line": 237,
+    "text": "theorem null_cone_ledger (q : ℝ → ℝ) (hqne : ∀ t, q t ≠ 0)\n    (a b c d : ℝ) (s : ℝ) :\n    ansatzNullContraction q a b c d s = (c ^ 2 + d ^ 2) * ansatzG22 q s := by"
+  },
+  {
+    "line": 246,
+    "text": "theorem radial_null_blind (q : ℝ → ℝ) (hqne : ∀ t, q t ≠ 0) (s : ℝ) :\n    ansatzNullContraction q (1 / q s) 1 0 0 s = 0 := by"
+  },
+  {
+    "line": 255,
+    "text": "theorem full_cone_clausius_iff_field_equation (q : ℝ → ℝ)\n    (hqne : ∀ t, q t ≠ 0) (T : ℝ → ℝ) :\n    (∀ a b c d s : ℝ, (q s) ^ 2 * a ^ 2 = b ^ 2 + c ^ 2 + d ^ 2 →\n        ansatzNullContraction q a b c d s = (c ^ 2 + d ^ 2) * T s)\n      ↔ (∀ s, ansatzG22 q s = T s) := by"
+  },
+  {
+    "line": 287,
+    "text": "structure EmergentEinsteinData where\n  solder : SolderFieldData\n  q : ℝ → ℝ\n  solder_reads : ∀ x, solder.g x\n    = Matrix.diagonal (fun i => if i = 0 then (q (x 1)) ^ 2 else -1)\n  q_ne : ∀ s, q s ≠ 0\n  q_diff : Differentiable ℝ q\n  q_dd : Differentiable ℝ (deriv q)\n  T : ℝ → ℝ\n  clausius_cone : ∀ a b c d s : ℝ,\n    (q s) ^ 2 * a ^ 2 = b ^ 2 + c ^ 2 + d ^ 2 →\n    ansatzNullContraction q a b c d s = (c ^ 2 + d ^ 2) * T s\n\n/-- [KERNEL] ★★★ A EQUAÇÃO EMERGE: em todo habitante do contrato, a"
+  },
+  {
+    "line": 303,
+    "text": "theorem emergent_field_equation (e : EmergentEinsteinData) (s : ℝ) :\n    ansatzG22 e.q s = e.T s :="
+  },
+  {
+    "line": 309,
+    "text": "def theEmergentEinstein : EmergentEinsteinData where\n  solder := theCoshSolderData"
+  },
+  {
+    "line": 324,
+    "text": "theorem emergent_recovers_solved (s : ℝ) :\n    ansatzG22 theEmergentEinstein.q s = 1 := by"
+  },
+  {
+    "line": 331,
+    "text": "theorem emergent_genuinely_curved :\n    ∃ s : ℝ, ansatzRiemann1001 theEmergentEinstein.q s ≠ 0 :="
+  },
+  {
+    "line": 340,
+    "text": "def qgStrongCertificate_einstein :\n    Σ' (e : EmergentEinsteinData),\n      (∀ s, ansatzG22 e.q s = e.T s)\n        ∧ (∃ s, ansatzRiemann1001 e.q s ≠ 0)\n        ∧ (∀ x, (e.solder.g x).det < 0)\n        ∧ (∃ x y : Fin 4 → ℝ, e.solder.g x ≠ e.solder.g y) :="
+  }
+]

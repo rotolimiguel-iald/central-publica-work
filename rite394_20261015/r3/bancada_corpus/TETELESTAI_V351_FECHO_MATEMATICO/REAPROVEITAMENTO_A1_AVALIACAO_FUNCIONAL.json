@@ -1,0 +1,129 @@
+{
+  "timestamp": "2026-09-14T09:16:20.798018-03:00",
+  "status": "FICHA_ANTES_DO_CODIGO",
+  "consumer": "A1(b), regular_scalar_weight_is_dual_weight; consumidor final RegularCoreTraceData via implementação modular/perturbação",
+  "exact_target": "Para A∈N+, m_A(ψ)=sup_n ofReal(Re ψ(D_n)) para ψ funcional contínuo na mesma M; zero, aditividade em funcionais positivos, homogeneidade NNReal, semicontinuidade inferior; m_A(ω_v)=q_A(testVector v). Para ψ com série vetorial quadrado-somável, m_A(ψ)=sum_k q_A(testVector v_k), independente da decomposição.",
+  "decision": "ADAPTAR aproximantes para avaliações funcionais. Não refazer Moreau, GNS, peso ou forma. Não batizar funcionais arbitrários como normais; a identificação com o cone predual inteiro permanece explícita.",
+  "providers": [
+    {
+      "file": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\kernel\\TGLExt\\V351RegularCoreTraceContract.lean",
+      "line": 43,
+      "sha256": "3694175f8ef5bcf5848d88bd8061abf8546480873964ebfdc19dd41ad05928f0",
+      "declaration": "structure RegularCoreTraceData",
+      "statement": "structure RegularCoreTraceData (P : SiteProfile) where",
+      "decision": "CONSUMIDOR"
+    },
+    {
+      "file": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\kernel\\TGLExt\\V351BaseMoreauApproximants.lean",
+      "line": 115,
+      "sha256": "45d47db69249a1873c8059b0a9e85f74c0af6920e31ce48b787a4c33e4fde49d",
+      "declaration": "theorem exists_monotone_base_dual_approximation",
+      "statement": "theorem exists_monotone_base_dual_approximation (P : SiteProfile) (A : PositiveCoreInput P) :\n    ∃ D : ℕ → TowerHilbert P →L[ℂ] TowerHilbert P,\n      (∀ n, D n ∈ theFactorObject P) ∧ (∀ n, 0 ≤ D n) ∧ Monotone D ∧\n      ∀ v : RegularHilbert (TowerHilbert P),\n        dualQuadraticIntegral A.val v =\n          ⨆ n : ℕ, ENNReal.ofReal (inner ℂ v (fibre (D n) v)).re := by",
+      "decision": "REUSAR sequência no mesmo M"
+    },
+    {
+      "file": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\kernel\\TGLExt\\V351ExtendedBaseDualWeight.lean",
+      "line": 39,
+      "sha256": "1ea9226e3fe1ee75bc66178f575f47c0207e80dca34a0113efd0c0f099b7cd87",
+      "declaration": "def baseDualWeight",
+      "statement": "def baseDualWeight (P : SiteProfile) (A : PositiveCoreInput P) :\n    AffiliatedPositiveForm (theFactorObject P) :=",
+      "decision": "REUSAR avaliação nos vetores"
+    },
+    {
+      "file": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\kernel\\TGLExt\\V350ScalarBoundedCuts.lean",
+      "line": 16,
+      "sha256": "4b5a3c3efbb85b30c4668d6cc564bb8e9a56d750489a03c55c4a9666c6709078",
+      "declaration": "def dualCutFunctional",
+      "statement": "def dualCutFunctional (R : ℝ) (v : RegularHilbert H) :\n    (RegularHilbert H →L[ℂ] RegularHilbert H) →L[ℂ] ℂ :=",
+      "decision": "ADAPTAR innerSL/apply para funcional vetorial na base; sem Haar/corte extra"
+    },
+    {
+      "file": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V350_KERNEL_20260911\\r\\tgl_kernel\\.lake\\packages\\mathlib\\Mathlib\\Data\\ENNReal\\Operations.lean",
+      "line": 686,
+      "sha256": "ef1b535b89d2f3ff0f710bec2a74a7943a09cfebe9ea4dbd7dc8d67b10873e46",
+      "declaration": "lemma iSup_add_iSup_of_monotone",
+      "statement": "lemma iSup_add_iSup_of_monotone {ι : Type*} [Preorder ι] [IsDirectedOrder ι] {f g : ι → ℝ≥0∞}\n    (hf : Monotone f) (hg : Monotone g) : iSup f + iSup g = ⨆ a, f a + g a :=",
+      "decision": "REUSAR"
+    },
+    {
+      "file": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V350_KERNEL_20260911\\r\\tgl_kernel\\.lake\\packages\\mathlib\\Mathlib\\Data\\ENNReal\\Inv.lean",
+      "line": 807,
+      "sha256": "261c1dfb4e4f5f56462686c82a762fb3c1f4f9d2e5af144c94f64bb7aefadb89",
+      "declaration": "lemma mul_iSup",
+      "statement": "lemma mul_iSup (a : ℝ≥0∞) (f : ι → ℝ≥0∞) : a * ⨆ i, f i = ⨆ i, a * f i := by",
+      "decision": "REUSAR"
+    },
+    {
+      "file": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V350_KERNEL_20260911\\r\\tgl_kernel\\.lake\\packages\\mathlib\\Mathlib\\Topology\\Semicontinuity\\Basic.lean",
+      "line": 695,
+      "sha256": "fabc798999439c166b97acc578b943d9a31e22e1a344ff8cafc7662ee1bba4ec",
+      "declaration": "theorem lowerSemicontinuous_iSup",
+      "statement": "theorem lowerSemicontinuous_iSup {f : ι → α → δ} (h : ∀ i, LowerSemicontinuous (f i)) :\n    LowerSemicontinuous fun x' => ⨆ i, f i x' :=",
+      "decision": "REUSAR"
+    },
+    {
+      "file": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V350_KERNEL_20260911\\r\\tgl_kernel\\.lake\\packages\\mathlib\\Mathlib\\MeasureTheory\\Integral\\Lebesgue\\Add.lean",
+      "line": 34,
+      "sha256": "e330b98eb9686290a3257802c38ad756150b110deb39fe32c66da46cf1211e4f",
+      "declaration": "theorem lintegral_iSup",
+      "statement": "theorem lintegral_iSup {f : ℕ → α → ℝ≥0∞} (hf : ∀ n, Measurable (f n)) (h_mono : Monotone f) :\n    ∫⁻ a, ⨆ n, f n a ∂μ = ⨆ n, ∫⁻ a, f n a ∂μ := by",
+      "decision": "REUSAR troca soma/sup pela medida de contagem"
+    },
+    {
+      "file": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V350_KERNEL_20260911\\r\\tgl_kernel\\.lake\\packages\\mathlib\\Mathlib\\Topology\\Algebra\\InfiniteSum\\ENNReal.lean",
+      "line": 564,
+      "sha256": "467564faec2b6c357565afaeebed87b6dbd3de21c225189f4041907c6cf2fe38",
+      "declaration": "theorem ENNReal.ofReal_tsum_of_nonneg",
+      "statement": "theorem ENNReal.ofReal_tsum_of_nonneg {f : α → ℝ} (hf_nonneg : ∀ n, 0 ≤ f n) (hf : Summable f) :\n    ENNReal.ofReal (∑' n, f n) = ∑' n, ENNReal.ofReal (f n) := by",
+      "decision": "REUSAR"
+    },
+    {
+      "file": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V350_KERNEL_20260911\\r\\tgl_kernel\\.lake\\packages\\mathlib\\Mathlib\\Analysis\\VonNeumannAlgebra\\Basic.lean",
+      "line": 45,
+      "sha256": "bd6c64fbead6d030dbcc311533319d9da1a35ca16b12956979cd523dfb763a86",
+      "declaration": "class WStarAlgebra",
+      "statement": "class WStarAlgebra (M : Type u) [CStarAlgebra M] : Prop where",
+      "decision": "NAO CASA: não identifica o predual concreto nem fornece decomposição normal"
+    }
+  ],
+  "searches": [
+    {
+      "command": [
+        "rg",
+        "-n",
+        "predual|Predual|NormalPositive|normalPositive|TraceClass|tsum.*inner",
+        "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\kernel",
+        "-g",
+        "*.lean"
+      ],
+      "lines": 8,
+      "sha256": "aacdcfb77032f4cd83f13294e2acb0a08d17713bf30569d1cc1a660612cbe6e9",
+      "output": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\search_A1_funcionais_kernel.txt"
+    },
+    {
+      "command": [
+        "rg",
+        "-n",
+        "predual|Predual|NormalPositive|normalPositive|TraceClass|traceClass",
+        "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V350_KERNEL_20260911\\r\\tgl_kernel\\.lake\\packages\\mathlib\\Mathlib\\Analysis",
+        "-g",
+        "*.lean"
+      ],
+      "lines": 7,
+      "sha256": "5e0480ceb3b3ec2804b09d1cfd7e4c4a55544eb5003516914c5164c5f517b9e4",
+      "output": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\search_A1_funcionais_mathlib.txt"
+    }
+  ],
+  "inherited_six_modalities": {
+    "REAPROVEITAMENTO_A1.json": "17013f19d849b5db20dd96e7bf61fb490ba5d2db8c758041a5c036acde3cd327",
+    "BUSCAS_A1.json": "d5b5ade4450c3df73ca9efcdda1ae005862f5f0debb39802cfb494e8beea7475",
+    "OUTRAS_BANCADAS_HASHES.json": "5b826d9f8cfe3a92e34a1e6d83476617c3d5c3138937039526b90444d1c1fca2",
+    "ADENDO_REAPROVEITAMENTO_A1.json": "c1e79521a1fd5f646064f5456813f565eee2561b15d37bebac1a7a4358da084e"
+  },
+  "literature": {
+    "url": "https://arxiv.org/pdf/2004.02383",
+    "sections": "1.3 e 8.1",
+    "status": "KNOWN; fonte relida, não axiom Lean"
+  },
+  "preflight_attempt": "Primeiro registro abortou antes de gravar arquivos: matcher de nome lintegral_iSup também encontrou sufixos. Corrigido delimitador, nenhum resultado ausente foi aceito."
+}

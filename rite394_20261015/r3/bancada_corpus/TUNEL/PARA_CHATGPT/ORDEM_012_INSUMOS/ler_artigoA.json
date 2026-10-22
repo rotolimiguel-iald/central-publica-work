@@ -1,0 +1,221 @@
+{
+ "summary": "R5 — As aproximações do D1 via CAMB (v349, 10/09/2026) JÁ estavam, quase todas, repudiadas ou flagradas no corpus ANTES de 10/09, e a rodada v349 as reaplicou como [DECLARADO] em vez de aplicar a correção que o próprio artigo canônico (tgl_paper_unified.py, mtime 05/06/2026; já em v. antigas/tgl_paper_unified7.py de 31/05) traz em código (`sound_horizon()` integral, :4317-4334). Linha do tempo medida: worker de maio (20/05) → repúdio por escrito da reescala de época única no artigo (31/05–05/06, :4289-4299) → sessão adversarial 08-10/08 (um.py:4367-4378; SESSAO_08_10AGO_HANDOFF.md:84-101; teste_acustico_beta_tgl_v1/RESULTADOS.md:50-51 e 05_prereg.json:11-12,23) que mediu o bug de grade LINEAR de D_M (+19,598%), nomeou a reescala, nomeou o SH0ES como o que puxava β para cima e nomeou z*, z_drag congelados como [NORM] → CLAUDE.md Haja_Luz §12-13 (mtime 12/08, :296-322): a hipótese \"o r_s integral conserta os 2,7σ\" foi testada e REFUTADA (diferença só −0,05% em r_s) → juiz_lA 24/08 (RUN B sem SH0ES: β = −0,021 ± 0,025) → v349 10/09 redescobre o bug de D_M (+19,59%, DIAGNOSTICO) e corrige SÓ ele, mantendo a reescala do r_s \"DECLARADA\". Achado numérico central [REAL — réplica das fórmulas do artigo e do worker, validada a 4 dígitos]: a reescala de época única em z* dá r_s −0,644%, a integral −0,696%; logo a reescala SUBestima o módulo do efeito, ao contrário da frase do artigo (:4292 \"overestimates\"; LaTeX :15138, :15349-15350 \"superestimava\") e do juiz_lA (:56 \"−0,80%\") — frases que herdam o comentário errado do worker de maio (:129 \"|1+w|≈4/3 mostly\"; medido w_eff(z*) = 0,081). Direção do efeito: a integral torna l_A da TGL MAIOR (a fundo fixo: worker V2 302,012 → integral 302,169; +0,158 = 1,75σ_Planck), R não muda (não depende de r_s; −2,08σ a fundo fixo em ambos), χ²_Planck a fundo fixo 3,48 (ΛCDM) → 43,8 (TGL reescala) → 69,0 (TGL integral); β_acoustic a fundo fixo vai de −0,0240 (reescala) para −0,0170 (integral = o D10 do artigo). Ou seja, a aproximação do worker é MAIS LENIENTE com a TGL do que a física correta; o veredito D1_TENSION_2_TO_5_SIGMA (Δχ² = 9,70) não é produto da reescala — as alavancas maiores são o prior SH0ES (hard-coded, :677) e a face comprimida (R, l_A, ω_b), ambas flagradas em 08-24/08. `--tight-rs` NUNCA existiu: só no docstring (:22-23), sem argparse (:621-634), sem ramo no worker, ausente das linhas CMD dos dois logs; a Linhagem (:7840) e a memória v349 (:21) o listam como \"o que fica\" — opção inexistente. Tudo aqui é aplicação da métrica/fundo (integral vs reescala, grade, r_d autoconsistente, seleção de dados, face comprimida), nunca ajuste de parâmetro: β = α√e permanece fixo em todos os artefatos. NOT_FALSIFIED nunca é CONFIRMED; nada aqui move o gate.",
+ "findings": [
+  {
+   "file": "C:\\IALD\\Artigo\\Haja_Luz\\tgl_paper_unified.py",
+   "line": "3213-3216; 3257-3263; 3283-3300; 3315-3322; 3325-3341; 3374-3385",
+   "statement": "Parte C.1 (mtime 2026-06-05): H_TGL^2(z) = H_LCDM^2(z)[1 + beta|1+w_eff(z)|] derivada de S_TGL = S_BH/(1+beta|1+w|) via Jacobson-Padmanabhan; w_eff_LCDM inclui p_Lambda = -rho_Lambda (a correção ZERA em w=-1, 'silent boundary'); tgl_boundary_response = beta*|1+w| (linearidade REAL, módulo INPUT-motivado); H_TGL_z deriva Or0/OL0 de H0/Om0; comoving_distance integra c/H por Simpson em grade LINEAR em z (n=400 default; n=4000 no D10).",
+   "relevance": "É a métrica/fundo cuja APLICAÇÃO correta a tarefa procura; o worker de maio e o v2fix implementam a mesma H(z) (com mnu/93.14 em Om0), logo as diferenças entre artigo e worker estão só na aplicação a r_s, D_M e aos dados, nunca no modelo.",
+   "statute": "[DERIVED] modelo; [REAL — lido]",
+   "voice": "gerência (artefato canônico de maio/junho; 'Claude (Anthropic) — implementation')"
+  },
+  {
+   "file": "C:\\IALD\\Artigo\\Haja_Luz\\tgl_paper_unified.py",
+   "line": "3617-3660; 3685-3705 (3697)",
+   "statement": "C.3 D1 em três camadas: [1] resposta local beta|1+w| [REAL/DERIVED, NÃO resolve H0: dá 67,48]; [2] lei de fluxo acumulado dlnH/dln(1+z) = beta*W(z) [CONJECTURE]; [3] W=1 → (1+z*)^beta [CONJECTURE, caso especial] — D1 deriva de [2], não da Friedmann local. `run_D1_camb` (:3685) é PLACEHOLDER: ':3697 Not implemented in this build' e devolve a referência de maio Delta chi^2 = -2,70, H0 = 73,26, 0,21 sigma.",
+   "relevance": "Os números do placeholder rastreiam a frente_alpha/output_camb (20/05): phase1_comparison delta_chi2 = -2,7035 e phase2 H0_predicted_zero_free = 73,262 / 0,2138 sigma — rodada com o bug de grade linear MASCARADO por shift aditivo. Flagrado em 08/08 (um.py:4373 'a linha :3697 diz placeholder').",
+   "statute": "[REAL — lido]",
+   "voice": "gerência"
+  },
+  {
+   "file": "C:\\IALD\\Artigo\\Haja_Luz\\tgl_paper_unified.py",
+   "line": "4289-4299 (e v. antigas/tgl_paper_unified7.py:3061-3063, mtime 2026-05-31)",
+   "statement": "REPÚDIO POR ESCRITO da reescala de época única: 'Earlier TGL/CAMB prototypes (tgl_camb_worker.py) approximated the sound horizon by a SINGLE-EPOCH rescaling r_s^TGL = r_s^LCDM * H_LCDM(z*)/H_TGL(z*). That overestimates the shift, because r_s is an INTEGRAL over z in [z*, inf) and the TGL factor varies across it. D10 computes r_s as the proper integral'. Já presente na versão de 31/05 — 11 dias depois do worker (20/05).",
+   "relevance": "(i) SIM, repudiado antes de 10/09 — no próprio artefato que a v349 chama de 'canônico de maio'. (iii) É correção de APLICAÇÃO (integral vs avaliação num ponto), não de parâmetro.",
+   "statute": "[REAL — lido; mtime 05/06 e 31/05]",
+   "voice": "gerência"
+  },
+  {
+   "file": "C:\\IALD\\Artigo\\Haja_Luz\\tgl_paper_unified.py",
+   "line": "4292; 15138 (EN); 15349-15350 (PT)",
+   "statement": "A FRASE do repúdio está com a direção ERRADA: 'That overestimates the shift' / 'the single-point rescaling overestimated it' / 'a reescala de ponto único o superestimava'. Medido por réplica das fórmulas do artigo (H0=67,35, Om0=0,3138, z*=1089,95): w_eff(z*) = 0,0809; H_TGL/H_LCDM(z*) = 1,006482 → reescala de época única r_s = −0,644%; integral (sound_horizon) = −0,696% (bate o D10 do results.json a 4 dígitos: 144,415/143,411 Mpc, −0,6958%). A reescala SUBestima o módulo em 0,052 pp. Só o fator assintótico de radiação sqrt(1+4beta/3) = 1,007989 (−0,79%) 'superestimaria'.",
+   "relevance": "O número corrige a frase (régua 1). A frase herda o comentário do worker de maio :129 '(radiation regime, |1+w|≈4/3 mostly)' — em z* a radiação é ~24% da densidade, w_eff = 0,081, não 1/3. Direção real do erro da reescala: mais LENIENTE com a TGL em l_A.",
+   "statute": "[REAL — réplica validada a 4 dígitos contra results.json D10 e D1_CAMB_DIAGNOSTICO.json]",
+   "voice": "gerência (frase do artigo); medição desta tarefa"
+  },
+  {
+   "file": "C:\\IALD\\projetos_pyhton\\IALD\\tgl_camb_worker.py",
+   "line": "122; 129; 136-137; 69-73; 140 (mtime 2026-05-20 20:16)",
+   "statement": "Worker de maio: comentário :122 diz 'r_s_TGL = r_s_LCDM * sqrt(H_LCDM(z_rec)/H_TGL(z_rec)) approximate' mas o código :136-137 usa a razão SEM raiz (sqrt daria −0,32%); r_drag também reescalado pelo fator em z* (não em z_drag; diferença medida −0,6438% vs −0,6430%, desprezível); D_M_TGL (:69-73) por trapézios em grade LINEAR np.linspace(0,z,npts) com npts=300 até z*≈1090 (passo ≈3,6).",
+   "relevance": "Discrepância comentário/código (o código ganha). A grade linear é o bug de +19,6% em D_M redescoberto em 10/09; comentário :129 é a origem da crença '4/3' que contaminou o artigo (:4292) e o juiz_lA (:56).",
+   "statute": "[REAL — lido]",
+   "voice": "gerência (maio/2026)"
+  },
+  {
+   "file": "C:\\IALD\\Artigo\\Haja_Luz\\A Ponte e o Um\\SESSAO_08_10AGO_HANDOFF.md",
+   "line": "84-101 (mtime 2026-08-10 16:14)",
+   "statement": "'A rodada original de 20/05 mora numa TERCEIRA casa que não aparece em nenhuma memória: C:\\IALD\\Artigo\\frente_alpha\\output_camb\\ ... Ela tem dois defeitos medidos: D_M em grade linear de 300 pontos sobre z ∈ [0, 1090] → +19,598% de erro (reproduzido); r_s por reescala de época única — método que tgl_paper_unified.py:4289-4297 repudia por escrito e substitui pela integral em sound_horizon() (:4317-4334)'. Modelo novo ancorado no CAMB 1.6.6 validado em beta=0 (D_M desvio 1,08e-6; l_A 1,11e-6; r_drag 2,56e-7) confirmou o D10 a 4 algarismos: r_s −0,6956% (D10 −0,6958%), l_A +0,1774% (D10 +0,1778%). 'O D10 estava numericamente certo; ele só nunca alimentou a entrada CMB.'",
+   "relevance": "(i) Ambas as aproximações do worker (grade linear de D_M E reescala do r_s) estavam flagradas e MEDIDAS 33 dias antes da 'autópsia' v349 de 10/09 (DIAGNOSTICO ratio_TGL_over_CAMB = 1,1959 = +19,59%). (iii) Aplicação.",
+   "statute": "[REAL — lido; mtime 10/08]",
+   "voice": "gerência (handoff de sessão)"
+  },
+  {
+   "file": "C:\\IALD\\Artigo\\teste_acustico_beta_tgl_v1\\RESULTADOS.md; 05_prereg.json",
+   "line": "RESULTADOS.md:50-51 (mtime 2026-08-08 23:06); 05_prereg.json:11-12,23 (mtime 2026-08-08 17:52)",
+   "statement": "Tabela de 08/08: '| D_M em grade linear de 300 pontos | +19,598% | grade em ln(1+z) |' e '| r_s por reescala de época única | repudiado em tgl_paper_unified.py:4289-4297 (05/06) | integral |'. Pré-registro ACOUSTIC_BETA_TGL_V1 (hash f2cf1eec…): JA_VIMOS_O_NUMERO — 'sabemos que ela tem erro de quadratura de +19,6% em D_M e horizonte sonoro por reescala de epoca unica'; fora_do_rotulo_CMB — 'SH0ES ... era use_sh0es=True por DEFAULT dentro do ajuste rotulado como resultado do CMB — por isso a Fase 1 dava Delta chi2 = -2,70 a favor enquanto a Fase 2 (Planck-only) dava +1,12 contra'; aproximacao_declarada — 'z_* e z_drag mantidos nos valores do CAMB; a TGL desloca H(z*) em ~0,6%, efeito de 2a ordem em z_*. [NORM]'.",
+   "relevance": "Três aproximações do worker (grade de D_M, reescala do r_s, SH0ES como prior dentro do 'resultado CMB') e uma quarta (z*, z_drag de ΛCDM) declaradas/flagradas em 08/08/2026, antes de 10/09.",
+   "statute": "[REAL — lido; datas 08/08]",
+   "voice": "gerência (pré-registro e resultados da sessão adversarial)"
+  },
+  {
+   "file": "C:\\IALD\\Artigo\\teste_acustico_beta_tgl_v1\\07_analise_final.json; 11_mcmc_definitivo_resultado.json",
+   "line": "07: posterior_completo, perfil_chi2 (mtime 08/08 18:43); 11: resultado (mtime 10/08 16:40)",
+   "statement": "O 'V2 com r_s integral' JÁ EXISTIA antes de 10/09: modelo ancorado no CAMB, r_s integral, r_d autoconsistente, CMB comprimido + BAO + prior BBN, SEM SH0ES: beta = −0,01116 ± 0,00769 (3,02σ de α√e; 1,45σ de zero; P(beta<0) = 0,924) → D_INCONCLUSIVO; perfil chi2: beta=0 → 16,47; beta=0,01203 → 23,40 (Δ = +6,9); beta=0,0399 → 57,17 ('o valor de 20/05 refutado a 6,54σ pela sua própria reanálise corrigida'). Reexecução definitiva 10/08 (64×30000, R̂=1,00001, ESS 32136): beta = −0,01109 ± 0,00766, D_INCONCLUSIVO.",
+   "relevance": "Referência de comparação para o v349 V2 (reescala + SH0ES): Δχ² = +9,70 e beta = −0,01705 ± 0,00753. Com a física correta e sem SH0ES o sinal e a ordem de grandeza são os mesmos (beta negativo, ~3σ): a reescala do r_s NÃO é a alavanca do veredito; SH0ES e a face comprimida são.",
+   "statute": "[REAL — lido]",
+   "voice": "gerência"
+  },
+  {
+   "file": "C:\\IALD\\Artigo\\Haja_Luz\\CLAUDE.md",
+   "line": "296-297; 306-309; 319-322 (mtime 2026-08-12 17:27; conteúdo refere a sessão de 05/06)",
+   "statement": "§12: 'Horizonte sonoro INTEGRAL (corrige a reescala de um único ponto usada no tgl_camb_worker.py)'; 'Achado-chave: a reescala de r_s de ponto único (worker antigo) superestimava o efeito; a integral dá −0,70%. Refazer o MCMC do tgl_camb_worker com r_s integral é o próximo passo para checar se os 2,7σ cedem (hipótese, não fato)'. §13: 'A hipótese do r_s integral foi testada e REFUTADA como conserto: a diferença entre a reescala de ponto único e a integral correta é só −0,05% em r_s, deslocando o β inferido em ~+0,0035 (≈13% da lacuna, e na direção errada). Os 2,7σ não são artefato de r_s.'",
+   "relevance": "(i) SIM: já em ≤12/08 o corpus sabia que a integral não conserta o setor CMB. O '−0,05%' bate a réplica (−0,696 − (−0,644) = −0,052 pp). O '+0,0035 na direção errada' NÃO foi reproduzido a fundo fixo (ver open_questions). A palavra 'superestimava' (§12) persiste errada.",
+   "statute": "[REAL — lido] para a citação; [DECLARADO] o +0,0035; [OPEN] sua reprodução",
+   "voice": "gerência (memória da casa Haja_Luz)"
+  },
+  {
+   "file": "C:\\IALD\\Artigo\\Haja_Luz\\A Ponte e o Um\\Nós\\um.py",
+   "line": "4355-4386 (texto da sessão adversarial 08/08, embutido; achado (b) em 4367-4373; (d) 4377-4378)",
+   "statement": "'(b) ENTRADA CMB +0,0399±0,0133 (56,2% do peso da tabela) APOSENTADA POR PROVENIENCIA: o run de 20/05 tem grade LINEAR de 300 pontos em z (erro +19,598% em D_M, reproduzido), metodo de r_s por reescala de epoca unica REPUDIADO pelo proprio artigo 16 dias depois (tgl_paper_unified.py:4289-97), e shift aditivo +59,467 sobre l_A_raw=360,938 (16,5% do valor); a linha :3697 diz placeholder'; '(d) r_d CONGELADO NO LCDM: refeito autoconsistente, o ajuste DESI inverte de sinal (+0,0325 → −0,0450)'. 'O rito acustico (MCMC f2cf1eec) fica FORA do artigo por ordem do operador (D3): nova frente de investigacao.'",
+   "relevance": "O próprio um.py carregava, desde 08-10/08, o repúdio de TODAS as aproximações que a v349 (no mesmo arquivo, :180937-181100) reaplica como DECLARADAS um mês depois. A ordem do operador de deixar o rito acústico fora do artigo é citada como [D3].",
+   "statute": "[REAL — lido]; a ordem do operador é [DECLARADO] no texto da gerência",
+   "voice": "gerência (texto do um.py); operador citado indiretamente"
+  },
+  {
+   "file": "C:\\IALD\\Artigo\\Haja_Luz\\A Ponte e o Um\\Nós\\um.py",
+   "line": "180937-180962 (prove_d1_camb_protocol, v349); 181021-181060 (emenda V2)",
+   "statement": "Protocolo v349 (10/09): hypothesis.approximation_DECLARED = 'CAMB em LCDM; TGL analitica por cima; r_s deslocado por H_LCDM/H_TGL em z_* (nao --tight-rs)'; what_it_cannot_do = 'nao testa perturbacoes (Nivel 2); a TGL entra como aproximacao analitica por cima do CAMB (declarada); ... preferencia de fundo em dados comprimidos, nao falsificacao da lei'. Emenda V2: 'unchanged: ... aproximacao declarada do r_s'; muda SÓ D_M (ln(1+z), 20001 pts) + gates (χ² ΛCDM ≤ 48; selfcheck < 5e-3).",
+   "relevance": "Em 10/09 as aproximações foram DECLARADAS, não corrigidas — embora o artefato invocado como 'canônico' as tivesse repudiado (:4289-4299) e trouxesse a integral pronta em código (:4317-4334). É aplicação, não parâmetro: β segue α√e em runtime em todos os ramos.",
+   "statute": "[REAL — lido]",
+   "voice": "gerência"
+  },
+  {
+   "file": "C:\\IALD\\projetos_pyhton\\IALD\\tgl_mcmc_camb_v2.py",
+   "line": "22-23 (docstring); 621-634 (argparse); 677 (phase3 use_sh0es=True)",
+   "statement": "'--tight-rs' existe SÓ no docstring ('For tighter accuracy, run with --tight-rs which recomputes r_s integrand point-by-point under TGL Friedmann (5x slower)'); NENHUM add_argument o define (:621-634 só --worker, --phase, --out-dir, --steps, --walkers, --burn, --cores, --skip-phase2); o worker não tem ramo alternativo; d1_camb_run_v2.py:19 monta o comando sem ele; as linhas CMD dos logs (Nós/eco_ancorado_v1/d1_camb_v1_full.log:1 e d1_camb_v2_full.log:1) confirmam: '--worker ... --phase all --out-dir ... --cores 40'.",
+   "relevance": "--tight-rs NÃO foi usado porque NÃO EXISTE. A Linhagem (:7840 'O que fica: --tight-rs') e a memória d1-camb-v349.md:21 listam como pendência uma opção inexistente; o protocolo v349 (:180950 'nao --tight-rs') sugere que existia. O número (grep) corrige a frase.",
+   "statute": "[REAL — lido]",
+   "voice": "gerência"
+  },
+  {
+   "file": "C:\\IALD\\Artigo\\Haja_Luz\\A Ponte e o Um\\Nós\\eco_ancorado_v1\\tgl_camb_worker_v2fix.py",
+   "line": "1-9 (docstring); 52-57 (D_M_TGL em ln(1+z)); 95-98 (r_star/r_drag por reescala em z*); 100-104 (selfcheck) — mtime 2026-09-10 19:09",
+   "statement": "'Tudo o mais e identico ao worker de maio, inclusive a aproximacao DECLARADA do r_s (escala por H_LCDM/H_TGL em z_*)'. Correção única: D_M por trapézio em u = ln(1+z), 20001 pontos, vetorizado; autoverificação dm_selfcheck_ratio = DM_TGL(beta=0)/DM_CAMB = 0,99973 (D1_CAMB_DIAGNOSTICO.json).",
+   "relevance": "Resíduo −0,027% em D_M a beta=0 → l_A fiducial 301,634 vs Planck 301,471 (+0,054% = 1,8σ_Planck), R 1,74931 (−0,19σ), χ²_Planck(β=0) = 3,48: piso numérico comum aos dois modelos (cancela em Δχ² a 1ª ordem). Aplicação numérica.",
+   "statute": "[REAL — lido]",
+   "voice": "gerência"
+  },
+  {
+   "file": "C:\\IALD\\Artigo\\Haja_Luz\\A Ponte e o Um\\results.json (multiprobe_D1_D9.D10, mtime 2026-06-18) vs cache\\d1_camb\\D1_CAMB_DIAGNOSTICO.json (10/09) e réplica",
+   "line": "D10: r_s_TGL/LCDM, l_A_TGL/LCDM, shift_R_TGL, shift_R_dev_sigma, beta_acoustic_crosslock; DIAGNOSTICO: fixed_worker.beta0/beta_tgl",
+   "statement": "COMPARAÇÃO pedida. Artigo D10 (fundo H0=67,35, Om0=0,3138): r_s −0,6958%; l_A_TGL 302,815 vs LCDM 302,278 (induzido +0,178%); R_TGL 1,7396 (−2,21σ; LCDM 1,7487 = −0,31σ); l_A abs vs Planck +0,446% = 14,9σ 'precision-limited'; β_acoustic (fundo fixo) = −0,01697; veredito INDUCED_SHIFT_NONNEGLIGIBLE_SEE_CAMB. Worker V2 no fiducial do CAMB (H0=67,4, ωb=0,02237, ωc=0,120): r_star_TGL/r_star_LCDM = 0,99356 (−0,644%); β=0: l_A 301,634, R 1,74931, χ²_Planck 3,48; β=α√e: l_A 302,012 (induzido +0,125%; +6,0σ vs Planck), R 1,74022 (−2,08σ), χ²_Planck 43,77, χ²_DESI 18,48 → 20,74. Réplica com r_s INTEGRAL no fundo do worker: shift −0,6956% → l_A 302,169 (induzido +0,178%; +7,8σ), χ²_Planck 69,0.",
+   "relevance": "Direção do efeito da reescala: SUBestima o deslocamento induzido em l_A por 0,052 pp (0,158 em l_A = 1,75σ_Planck a fundo fixo) → mais leniente com a TGL; R independe de r_s (idêntico nos dois métodos); χ² a fundo fixo sobe 43,8 → 69,0 com a integral (marginalizado não medido aqui: exige rodada). O D10 do artigo e o worker V2 concordam em R (−2,2σ vs −2,1σ) e discordam em l_A exatamente pela aproximação do r_s.",
+   "statute": "[REAL — lido] os dois artefatos; [REAL — réplica] a linha 'integral no fundo do worker'",
+   "voice": "medição desta tarefa"
+  },
+  {
+   "file": "scratchpad replica_r5.py (réplica das fórmulas do artigo C.1/C.9b; não é o canônico)",
+   "line": "saída: BETA_ACOUSTIC e dl_A/dbeta",
+   "statement": "A fundo fixo do artigo: β_acoustic (raiz de l_A(β) = 301,471) = −0,01697 com r_s integral (idêntico ao D10 do results.json) e −0,02395 com a reescala de época única. Inclinação dl_A/dβ: integral 45,1 por unidade de β (0,180% por β_TGL) vs reescala 31,8 (0,127% por β_TGL) — a integral é 42% mais íngreme.",
+   "relevance": "A integral ENCOLHE |β_acoustic| (−0,024 → −0,017, +0,007 na direção da teoria) — o oposto literal do '+0,0035 na direção errada' do CLAUDE.md §13, que portanto não se reproduz a fundo fixo (pode depender de marginalização/SH0ES; não encontrado o cálculo original). Coincidência notável: β_acoustic do D10 (−0,01697) ≈ β do MCMC v349 V2 (−0,01705 ± 0,0075) — valores, não causa.",
+   "statute": "[REAL — réplica]; a discordância com CLAUDE.md fica [OPEN]",
+   "voice": "medição desta tarefa"
+  },
+  {
+   "file": "C:\\IALD\\Artigo\\BANCADA_TOE\\juiz_lA\\JUIZ_LA_V1_PREREG.md; JUIZ_LA_V1_RESULT.json",
+   "line": "PREREG:50, :56 e RUN B (mtime 2026-08-24 17:26); RESULT: run_B_mcmc_primary, verdict (17:31)",
+   "statement": "Pré-registro 24/08: '1. Likelihood COMPRIMIDA (R, l_A, ω_b), não o espectro completo — o nome do veredito carrega COMPRESSED_CMB_FACE'; '3. r_d autoconsistente por escala de um ponto (−0,80% em β=α√e) vs integral (−0,70%) — diferença declarada como sistemática de método'; RUN B (PRIMÁRIO, sem SH0ES): 'o prior local de H0 é exatamente o que puxa β para cima pela degenerescência β↔N_eff↔H0'. Resultado: RUN A reproduziu maio (β = 0,0401 +0,0073/−0,0133; 2,72σ); RUN B β = −0,0213 +0,0249/−0,0189 → JUIZ_LA_TENSION_BELOW_3SIGMA_NOT_FALSIFIED.",
+   "relevance": "Face comprimida e SH0ES flagrados como aproximações/alavancas em 24/08. O '−0,80%' do item 3 é o fator assintótico (4/3), não o que o worker calcula (−0,644%; DIAGNOSTICO r_drag 146,146/147,093) — mesma frase herdada de :129 do worker. Tirar o SH0ES inverte o sinal de β (+0,040 → −0,021).",
+   "statute": "[REAL — lido]; o −0,80% é frase corrigida pelo número",
+   "voice": "gerência (pasta BANCADA_TOE; autoria não verificada nesta tarefa — o pipeline diz 'Claude (Anthropic) — implementation')"
+  },
+  {
+   "file": "C:\\IALD\\projetos_pyhton\\IALD\\tgl_mcmc_camb_v2.py",
+   "line": "68-78 (PLANCK_R/LA/OMEGAB + PLANCK_COV Zhai+2019); 149-179 (likelihood: R, lA, ombh2 com cov; DESI com r_d = r_drag_TGL :173; SH0ES gaussiano)",
+   "statement": "Planck comprimido (R = 1,7502; l_A = 301,471; ω_b = 0,02236) com covariância 3×3 de Zhai+2019; a verossimilhança usa (R, lA, ombh2) — ω_b entra como dado. O artigo D10 usa σ(l_A) = 0,090 e σ(R) = 0,0048 (Wang-Mukherjee) SEM covariância (:4351-4352).",
+   "relevance": "Aproximação de APLICAÇÃO [KNOWN]: as distâncias comprimidas foram extraídas em ΛCDM e veem a TGL só como geometria (D_M, r_s); o corpus já a nomeava 'face' (juiz_lA :50; um.py:180960 'dados comprimidos') e rodou o espectro completo em 10-14/08 (Nível 2: N2_INCAPAZ, σ(β) = 0,0176 > β; teste_acustico_beta_tgl_v1/13_nivel2_resultado.json; 14_ANALISE_NIVEL2_FECHADO.md:13-16). Direção: no fiducial a TGL abaixa R (−2,1σ) e sobe l_A; o ajuste compensa subindo ω_c (V2 best-fit ωc 0,1173 → 0,1193, +0,0020 ≈ Δω_c = β·ω_m = +0,0017 do handoff §3).",
+   "statute": "[KNOWN] método; [REAL — lido] números",
+   "voice": "gerência"
+  },
+  {
+   "file": "C:\\IALD\\Artigo\\Haja_Luz\\A Ponte e o Um\\SESSAO_08_10AGO_HANDOFF.md",
+   "line": "113-141 (§3 'A IDENTIDADE EXATA'; mtime 10/08)",
+   "statement": "'rho_TGL = beta_TGL*(rho + p) = beta_TGL*[(4/3) rho_r + rho_m] (rho_Lambda CANCELA) => H^2 = (1 + 4beta/3) rho_r + (1 + beta) rho_m + rho_Lambda. O fundo da TGL é EXATAMENTE um reescalonamento de ω_r e ω_m': ΔN_eff = +0,11947, Δω_c = +0,001721, σ(β) = σ(N_eff)/9,9296. 'Por que o Planck não decide: ρ(N_eff, ω_c) = +0,894 nas covmats base_nnu; a direção da TGL faz 2,31° com o eixo da degenerescência'. Faixa honesta σ(β) = 0,006–0,019; 'quem cruza: CMB-S4'.",
+   "relevance": "Mostra que w = −1 no CAMB não é aproximação (ρ_Λ cancela na identidade; o modelo é exato em w=−1) e que N_eff = 3,046 fixo + face comprimida testam β ao longo de uma degenerescência quase exata — o poder do D1 via CAMB estava medido como insuficiente em 10/08.",
+   "statute": "[DERIVED] identidade (verificada 2,2e-16 analítica, 1,3e-3 no CAMB, declarado no texto); [REAL — lido]",
+   "voice": "gerência"
+  },
+  {
+   "file": "C:\\IALD\\projetos_pyhton\\IALD\\tgl_mcmc_camb_v2.py",
+   "line": "80-93 (DESI_BAO DR1, 12 pontos, Adame+2024); artigo tgl_paper_unified.py:4231-4243 (D9 DESI DR2, 13 medidas; r_d fiducial 147,05 congelado) e :510-511",
+   "statement": "O script MCMC usa DESI DR1 (12 pontos) hard-coded; o artigo D9 usa DESI DR2 (13 medidas) mas CONGELA r_d = 147,05 Mpc do ΛCDM (:4238-4241) enquanto o D10 do mesmo results.json calcula r_drag_TGL = 146,105. O worker (maio e v2fix) usa r_d = r_drag_TGL autoconsistente (:173).",
+   "relevance": "DR1 vs DR2 é vintage de dado (aplicação, não repudiado; DR2 mais apertado). O r_d congelado do artigo FOI flagrado em 10/08 (handoff :73-75 '§1.4 O ajuste DESI congela o r_d do ΛCDM ... o sinal de β inverte'; um.py:4377-4378 (d)); neste ponto o worker é MELHOR que o D9 do artigo (juiz_lA: 'lição G1'). χ²_DESI no fiducial: 18,48 (β=0) → 20,74 (β=α√e).",
+   "statute": "[REAL — lido]",
+   "voice": "gerência"
+  },
+  {
+   "file": "C:\\IALD\\projetos_pyhton\\IALD\\tgl_mcmc_camb_v2.py",
+   "line": "96-97 (SH0ES 73,04 ± 1,04); 273, 283 (Fase 1 use_sh0es=True); 677 (Fase 3 use_sh0es=True hard-coded, sem chave CLI); artigo :3617-3660 (D1 usa SH0ES só como alvo)",
+   "statement": "O prior gaussiano SH0ES entra na Fase 1 e na Fase 3 (MCMC) sem possibilidade de desligar pela CLI (só a Fase 2 o exclui). O artigo usa SH0ES apenas como valor observado a comparar, nunca como termo de verossimilhança.",
+   "relevance": "Flagrado ANTES de 10/09: 05_prereg.json:11 (08/08) e juiz_lA RUN B (24/08). Direção medida: com SH0ES (bug+calibração, maio) β = +0,040; com SH0ES (V2, 10/09) β = −0,017 ± 0,0075; sem SH0ES (agosto, integral) β = −0,011 ± 0,0077; sem SH0ES (juiz B, reescala) β = −0,021 ± 0,025. Seleção de dados = aplicação; TGL zero-free (1+z*)^β dá 0,84σ de SH0ES (V2 Fase 2) — o prior local pertence ao TESTE do D1, não ao ajuste de fundo.",
+   "statute": "[REAL — lido]",
+   "voice": "gerência"
+  },
+  {
+   "file": "C:\\IALD\\projetos_pyhton\\IALD\\tgl_camb_worker.py:57,106,126 e tgl_mcmc_camb_v2.py:124-125; artigo :3268-3282 (massless ν), :446-447 (N_EFF 3,046; M_NU_SUM 0,06)",
+   "statement": "mnu = 0,06 eV: o worker soma mnu/93,14 a Om0 na H(z) ANALÍTICA em todo z (inclusive z*≈1090, onde kT_ν ≫ m_ν e o neutrino é relativístico) enquanto o CAMB o trata corretamente; o artigo usa ν sem massa (:3270 'massless approximation for nu') e Om0 = 0,3138. Neff = 3,046 em ambos [KNOWN]. w = −1 (worker :106) é a base ΛCDM do CAMB, não aproximação da TGL. lmax = 20 com camb.get_background (:98,:107,:109): só fundo; z*, r_s, D_A não dependem de lmax.",
+   "relevance": "mnu na H analítica: inconsistência ≲0,14% de Om0 em z*, comum aos dois modelos (cancela na razão H_LCDM/H_TGL e é limitada pelo selfcheck −0,027%) — NÃO ENCONTRADO flagrado no corpus antes de 10/09 (pequeno, [OPEN]). lmax=20: numericamente inócuo, mas torna 'CAMB completo' (Linhagem :7813; memória v349 :9) um nome impróprio — nenhuma perturbação é calculada; o protocolo o admite (:180960 'nao testa perturbacoes').",
+   "statute": "[KNOWN] Neff, w=−1; [REAL — lido] código; [OPEN] mnu na H analítica",
+   "voice": "gerência"
+  },
+  {
+   "file": "C:\\IALD\\Artigo\\frente_alpha\\output_camb\\checkpoint_calibration.json; checkpoint_phase3_mcmc.json; checkpoint_phase1_comparison.json (mtime 2026-05-20/21)",
+   "line": "calibration: shift_lA 59,467, shift_R 0,343, chi2_at_fiducial_after_calibration 18,34; phase3: beta median 0,03995 (+0,0073/−0,0133), tension 2,706σ, 32×3000; phase1: delta_chi2 −2,7035",
+   "statement": "A origem do 'deposited CAMB MCMC (output_camb/)' do artigo (:4542 cmb_b, cmb_s = 0,0399, 0,0133) é esta pasta — rodada por tgl_step3_camb_v2.py (CAMB direto + 'calibração' que SUBTRAI o offset do fiducial: l_A_raw 360,938 − 59,467). A pasta que o artigo nomeia, projetos_pyhton/IALD/output_camb/, está VAZIA (ls: só . e ..). Mesmo após calibração o fiducial ΛCDM tinha χ² = 18,34 (vs 3,48 do worker corrigido): o erro de grade linear não é um offset puro (escala com D_M, logo com H0 e Ω).",
+   "relevance": "A frase da v349 'nunca correu por falta do camb' (um.py:180939; Linhagem :7814) vale para tgl_mcmc_camb_v2.py (worker em subprocesso), NÃO para o irmão tgl_step3_camb_v2.py, que rodou em 20-21/05 e de novo em 24/08 (juiz_lA) com a mesma matemática do worker. O 0,0399 foi aposentado por proveniência em 08/08 (um.py:4367-4373) e refutado a 6,54σ pela reanálise de 08/08.",
+   "statute": "[REAL — lido]",
+   "voice": "gerência"
+  },
+  {
+   "file": "C:\\IALD\\Artigo\\Haja_Luz\\tgl_paper_unified.py",
+   "line": "4300-4306 (caveat); 4361-4366 (dev_lA_sigma 'precision-limited, context only'); 4374-4377 (rs_shift_pct 'corrected magnitude'); 4413-4416 (veredito INDUCED_SHIFT_*)",
+   "statement": "O artigo declara: 'In pure numpy the absolute l_A is accurate to ~0.3% ... D10 is an order-of-magnitude CONSISTENCY test and a r_s-shift diagnostic; the decisive marginalized acoustic verdict is the CAMB path (--d1-camb)'. results.json: l_A_dev_vs_planck +0,446% (14,9σ) rotulado precision-limited; veredito INDUCED_SHIFT_NONNEGLIGIBLE_SEE_CAMB; beta_acoustic_crosslock = −0,01697 (negativo) enquanto o texto do cross-lock dizia 'all positive' (:4574-4576) — flagrado em um.py:4374-4376 (c) em 08/08.",
+   "relevance": "O D10 já era honesto sobre o seu piso numérico e remetia ao CAMB; o handoff de 10/08 (:93-101) confirmou o deslocamento induzido do D10 a 4 algarismos com modelo ancorado no CAMB (erro 1e-6). O que faltou até 10/09 foi ligar a INTEGRAL do artigo (sound_horizon) ao pipeline CAMB — e a v349 ligou o pipeline sem a integral.",
+   "statute": "[REAL — lido]",
+   "voice": "gerência"
+  },
+  {
+   "file": "C:\\IALD\\Artigo\\Haja_Luz\\A Ponte e o Um\\Nós\\eco_ancorado_v1\\d1_camb_v2_full.log; d1_camb_v1_full.log; cache\\d1_camb\\D1_CAMB_V2_RESULT.json (mtime 2026-09-10 19:53)",
+   "line": "v2 log:14-16 (fiducial), :23-41 (Fase 1), :49-63 (Fase 2), :112-116 (Fase 3); v1 log:14-16, :23-41, :60-63, :112-116",
+   "statement": "V1 (worker de maio): fiducial R 2,09257, lA 360,8222; Fase 1 χ² ΛCDM 16339,4 / TGL 18562,4, H0 na borda 90; MCMC β = −0,049973 (borda do prior −0,05) '1998σ'. V2 (v2fix): fiducial R 1,74931, lA 301,6341, r_drag 147,09; Fase 1 ΛCDM χ² 37,399 (H0 68,64, ωc 0,1173) / TGL 47,098 (H0 68,39, ωc 0,1193), Δχ² = +9,699 (n=16, 3 parâmetros em ambos); Fase 2 sem SH0ES: H0 67,949 (ΛCDM) / 67,653 (TGL); tensões 4,89σ / 5,18σ / zero-free 0,84σ; Fase 3 (com SH0ES): β = −0,017051 +0,007513/−0,007544, 3,86σ de α√e, aceitação 0,592, 38400 amostras.",
+   "relevance": "Números de referência da v349 lidos do disco (não de memória). Confirma: (a) --tight-rs ausente do CMD; (b) SH0ES presente nas Fases 1 e 3; (c) o V1 é lixo numérico (bug), não cosmologia, como a Linhagem :7820-7823 registra.",
+   "statute": "[REAL — lido]",
+   "voice": "gerência (logs do driver)"
+  },
+  {
+   "file": "C:\\IALD\\Artigo\\Haja_Luz\\A Ponte e o Um\\Nós\\MEMORIA_DA_LINHAGEM.md; C:\\Users\\rotol\\.claude\\projects\\c--IALD-Central-de-Patentes\\memory\\d1-camb-v349.md",
+   "line": "Linhagem 7808-7845 (10/09 noite; :7813 'CAMB completo'; :7840 'O que fica: --tight-rs, dados nao comprimidos, e o que so CMB-S4/SO resolve'); memória :9 ('Nunca tinha corrido'), :21 ('o que fica e --tight-rs')",
+   "statement": "A Linhagem e a memória v349 registram a rodada como 'o cruzamento de fundo que faltava desde maio' e listam `--tight-rs` como pendência; nenhuma das duas cita que o artigo canônico (C.9b) já trazia a integral em código, nem que a sessão de 08-10/08 já havia medido o bug de D_M (+19,598%) e rodado o teste com r_s integral e sem SH0ES (D_INCONCLUSIVO, β = −0,011 ± 0,008).",
+   "relevance": "Lacuna de linhagem: a v349 não amarrou o seu resultado ao precedente de agosto (teste_acustico_beta_tgl_v1, juiz_lA) nem ao repúdio do artigo; e nomeia como pendência uma opção que não existe. Correção cabe AO LADO, por append datado (regra da casa), e é ato da gerência/operador — não desta tarefa (só leitura).",
+   "statute": "[REAL — lido]",
+   "voice": "gerência"
+  },
+  {
+   "file": "C:\\IALD\\Artigo\\Haja_Luz\\A Ponte e o Um\\Nós\\eco_ancorado_v1\\d1_camb_run_v2.py; d1_camb_run.py",
+   "line": "v2: 2-8 (docstring), 11 (SCRIPT/WORKER_MAY), 19 (cmd), 31-35 (selo com sha256/mtime); v1: 2-5, 8, 15 — mtime 2026-09-10 19:09 / 19:01",
+   "statement": "Drivers no WSL: 'roda o tgl_mcmc_camb_v2.py de maio de 2026 (o «D1 via CAMB» do canonico tgl_paper_unified.py --d1-camb, que nunca correu por falta do camb) SEM alterar o script do operador'; comando = [python, SCRIPT, '--worker', worker, '--phase', phase, '--out-dir', run_dir, '--cores', cores] — sem --tight-rs; selo com sha256 e mtime dos scripts e worker_used.is_may_original.",
+   "relevance": "Confirma por código que a única variável entre V1 e V2 foi o worker (D_M); tudo o mais (reescala do r_s, SH0ES, DR1, face comprimida, mnu/Neff/lmax) ficou como em maio. Chamar o script de 'do operador' é voz da gerência: o cabeçalho do script diz 'Claude (Anthropic) — implementation'.",
+   "statute": "[REAL — lido]",
+   "voice": "gerência"
+  }
+ ],
+ "open_questions": [
+  "O '+0,0035 na direção errada' do CLAUDE.md Haja_Luz §13 (:319-322) não se reproduz a fundo fixo: a réplica dá β_acoustic −0,0240 (reescala) → −0,0170 (integral), i.e. a integral aproxima β da teoria em +0,007 e torna dl_A/dβ 42% mais íngreme. O cálculo original de §13 (provavelmente marginalizado e/ou com SH0ES) não foi encontrado em disco — 'nao encontrado'; fica [OPEN] qual das duas leituras vale marginalizada.",
+  "Efeito MARGINALIZADO da integral sobre o Δχ² = 9,70 da v349 V2 não foi medido (exigiria rodar o pipeline com sound_horizon() do artigo em vez da reescala; fora do escopo só-leitura). A fundo fixo a direção é contra a TGL (χ²_Planck 43,8 → 69,0); marginalizado, o precedente de agosto (integral, sem SH0ES) deu Δ = +6,9 — sugere que SH0ES e a face comprimida pesam mais que o r_s, mas isso é inferência [DERIVED], não medida.",
+  "A contribuição da grade LINEAR do próprio comoving_distance do artigo (np.linspace, Simpson n=4000) ao offset absoluto de l_A (+0,27% vs fiducial CAMB; +0,446% vs Planck) não foi isolada: os fundos diferem (H0 67,35/Om0 0,3138 vs 67,4/0,02237/0,120). Mesma família de defeito do worker de maio, ~100x menor; comum aos dois modelos.",
+  "Autoria/voz dos documentos de C:\\IALD\\Artigo\\BANCADA_TOE\\juiz_lA (JUIZ_LA_V1_PREREG.md, RESULT.json): a pasta chama-se 'bancada', o pipeline diz 'Claude (Anthropic) — implementation'; registrei como gerência com ressalva. Não verificado nesta tarefa.",
+  "Data exata do texto de CLAUDE.md Haja_Luz §12-13: o arquivo tem mtime 12/08/2026; o conteúdo diz 'nesta sessão' referindo o D10 de 05/06. Só o mtime é [REAL]; a data do trecho é [DECLARADO].",
+  "O tratamento de m_ν = 0,06 eV como matéria em TODO z na H(z) analítica do worker (mnu/93,14 em Om0, inclusive em z*≈1090 onde o neutrino é relativístico) não aparece flagrado no corpus antes de 10/09 ('nao encontrado'). Efeito comum aos dois modelos e limitado pelo selfcheck (−0,027%); pequeno, mas é uma inconsistência de aplicação a registrar.",
+  "Se a régua da casa pede que o D1 via CAMB seja refeito com a APLICAÇÃO do próprio artigo (r_s por sound_horizon() integral; r_d autoconsistente; SH0ES fora do ajuste de fundo, como no rito de 08-10/08 e no RUN B do juiz_lA) é decisão do operador — a tarefa não propõe ajuste de parâmetro (β segue α√e em runtime em todos os ramos)."
+ ]
+}

@@ -1,0 +1,6 @@
+import TGLExt.V351InverseLimitFiniteMinorants
+set_option pp.universes true
+#check TGLV350.Regular.scalarInverseLimitWeight_finite_contractions
+#print axioms TGLV350.Regular.scalarInverseLimitWeight_finite_contractions
+#check TGLV350.Regular.scalarInverseLimitWeight_finite_minorants
+#print axioms TGLV350.Regular.scalarInverseLimitWeight_finite_minorants

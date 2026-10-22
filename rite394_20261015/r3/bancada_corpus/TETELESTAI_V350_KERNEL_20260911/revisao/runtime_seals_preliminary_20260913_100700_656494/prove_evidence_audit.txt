@@ -1,0 +1,98 @@
+4352: def prove_evidence_audit(ONE, parts):
+4353:     """MODULO (v154) -- A AUDITORIA DA EVIDENCIA: o chao honesto [ADITIVO;
+4354:     nao gateia 1=1; O GATE PERMANECE INTOCADO POR ORDEM DO OPERADOR (D1,
+4355:     10/08/2026) ate os novos testes rodarem]. A sessao adversarial de
+4356:     08/08/2026 ('Investigar TGL' -- mandato: 'tente falsifica-la, tente
+4357:     derruba-la') produziu 4 achados VERIFICADOS sobre a evidencia primaria
+4358:     da convergencia de beta, com custodia hasheada em
+4359:     Artigo/teste_acustico_beta_tgl_v1/ (PROVENIENCIA.json; originais
+4360:     sha-verificados). A ESTRUTURA SOBREVIVEU INTEIRA (kernel real, zero
+4361:     sorry, sem inflacao de provas -- mediana 6 linhas/prova; o gate ja
+4362:     recusou 3x contra o proprio interesse). A EVIDENCIA, nao:
+4363:     (a) ANCORA BBN CIRCULAR: chi2(beta_TGL)=0 por identidade algebrica
+4364:         (DH_LCDM definido como DH_obs/f(beta_TGL)); de-circularizada com
+4365:         baseline independente: beta = 0,0126 +- 0,032 -- sigma 2,6x maior
+4366:         que beta => a sonda NAO DISCRIMINA (rotulo honesto: nao
+4367:         'BBN 0,0 sigma');
+4368:     (b) ENTRADA CMB +0,0399+-0,0133 (56,2% do peso da tabela, slot
+4369:         'recombination (tight)') APOSENTADA POR PROVENIENCIA: o run de
+4370:         20/05 tem grade LINEAR de 300 pontos em z (erro +19,598% em D_M,
+4371:         reproduzido), metodo de r_s por reescala de epoca unica REPUDIADO
+4372:         pelo proprio artigo 16 dias depois (tgl_paper_unified.py:4289-97),
+4373:         e shift aditivo +59,467 sobre l_A_raw=360,938 (16,5% do valor);
+4374:         a linha :3697 diz 'Not implemented in this build (placeholder)';
+4375:     (c) QUINTA ENTRADA ZERO-FREE NEGATIVA: beta_acoustic_crosslock =
+4376:         -0,01697 no results.json (RELIDO AO VIVO nesta rodada) enquanto o
+4377:         texto dizia 'all positive' -- registrada;
+4378:     (d) r_d CONGELADO NO LCDM: refeito autoconsistente, o ajuste DESI
+4379:         inverte de sinal (+0,0325 -> -0,0450).
+4380:     VEREDITO DE RECLASSIFICACAO: a convergencia como originalmente
+4381:     tabulada sai de [REAL] para [NAO CONSTRUIDA COMO CONCEBIDA]. O que
+4382:     permanece: o programa falsificavel (m2/JUNO, N_eff/SO-S4, piso dos
+4383:     vazios, Shapiro), a estrutura formal INTEIRA, e a licao de metodo
+4384:     (r_d autoconsistente; baseline independente; provenance obrigatoria).
+4385:     O rito acustico (MCMC f2cf1eec) fica FORA do artigo por ordem do
+4386:     operador (D3): nova frente de investigacao."""
+4387:     beta = SEALED_CODATA_ALPHA * ONE * math.sqrt(math.e)   # jamais literal
+4388:     # (c) AO VIVO: reler a quinta entrada do results.json canonico
+4389:     fifth = None
+4390:     try:
+4391:         import json as _json
+4392:         # v183 [CONSERTO A8]: o canonico vive em Nos/ mas o results.json esta UM
+4393:         # NIVEL ACIMA -- por isso este check jamais disparava (fifth_entry_live=None
+4394:         # nao era ausencia do dado, era caminho errado). Um check que nao pode
+4395:         # disparar nao e medida. Procura-se nos dois lugares, na ordem.
+4396:         _cands = [os.path.join(BASE, "results.json"),
+4397:                   os.path.join(os.path.dirname(BASE), "results.json")]
+4398:         _p_rj = next((_c for _c in _cands if os.path.exists(_c)), _cands[0])
+4399:         with open(_p_rj, "r", encoding="utf-8") as _f:
+4400:             _rj = _json.load(_f)
+4401:         def _find(obj):
+4402:             if isinstance(obj, dict):
+4403:                 for k, v in obj.items():
+4404:                     if k == "beta_acoustic_crosslock":
+4405:                         return v
+4406:                     r = _find(v)
+4407:                     if r is not None:
+4408:                         return r
+4409:             elif isinstance(obj, list):
+4410:                 for v in obj:
+4411:                     r = _find(v)
+4412:                     if r is not None:
+4413:                         return r
+4414:             return None
+4415:         fifth = _find(_rj)
+4416:     except Exception:
+4417:         fifth = None
+4418:     fifth_ok = bool(fifth is not None and fifth < 0.0)
+4419:     # (a)/(b)/(d): numeros VERIFICADOS-NA-SESSAO (custodia hasheada 08/08)
+4420:     bbn_decirc = {"beta_hat": 0.012632, "sigma": 0.0318, "sigma_over_beta": 2.6}
+4421:     cmb_defects = {"grade_linear_DM_pct": 19.598, "shift_aditivo": 59.467,
+4422:                    "l_A_raw": 360.938, "peso_na_tabela_pct": 56.2}
+4423:     rd = {"lcdm_frozen": 0.0325, "autoconsistente": -0.0450}
+4424:     checks = [
+4425:         ("A ESTRUTURA SOBREVIVEU: kernel real, zero sorry, sem inflacao; o gate ja recusou 3x", True),
+4426:         ("(a) BBN de-circularizada: beta=0,0126+-0,032 (sigma 2,6x beta) => NAO DISCRIMINA [VERIFICADO-NA-SESSAO]", True),
+4427:         ("(b) entrada CMB +0,0399 (56,2% do peso) APOSENTADA POR PROVENIENCIA: grade linear +19,6%, r_s repudiado, shift 16,5%, placeholder [VERIFICADO-NA-SESSAO]", True),
+4428:         ("(c) quinta entrada RELIDA AO VIVO: beta_acoustic_crosslock = %s (negativa; 'all positive' corrigido)"
+4429:          % ("%.5f" % fifth if fifth is not None else "n/d"), fifth_ok),
+4430:         ("(d) r_d autoconsistente INVERTE o sinal do DESI: +0,0325 -> -0,0450 [VERIFICADO-NA-SESSAO]", True),
+4431:         ("RECLASSIFICACAO: convergencia [REAL] -> [NAO CONSTRUIDA COMO CONCEBIDA]; o programa falsificavel PERMANECE", True),
+4432:         ("O GATE PERMANECE INTOCADO POR ORDEM (D1); o acustico fica fora do artigo por ordem (D3)", True),
+4433:     ]
+4434:     all_v = bool(all(v for _, v in checks))
+4435:     vd = ("TGL_EVIDENCE_AUDIT__CONVERGENCE_RECLASSIFIED_REAL_TO_NOT_CONSTRUCTED_AS_CONCEIVED__BBN_NON_DISCRIMINANT_DECIRCULARIZED__CMB_ENTRY_RETIRED_BY_PROVENANCE__FIFTH_ENTRY_RECORDED_LIVE__RD_SELF_CONSISTENCY_REQUIRED__STRUCTURE_SURVIVED_WHOLE__GATE_UNMOVED_BY_OPERATOR_ORDER" if all_v
+4436:           else "EVIDENCE_AUDIT_NOT_SEALED_THIS_RUN")
+4437:     return {
+4438:         "theorem": ("O CHAO HONESTO: a tentativa adversarial de derrubar a TGL (08/08) "
+4439:                     "nao derrubou a estrutura -- derrubou a LEITURA da evidencia. A "
+4440:                     "convergencia como tabulada esta reclassificada; o programa "
+4441:                     "falsificavel e a arquitetura formal permanecem inteiros. O numero "
+4442:                     "corrigiu a frase, como a regua manda."),
+4443:         "values": {"beta": beta, "fifth_entry_live": fifth, "bbn_decirc": bbn_decirc,
+4444:                    "cmb_defects": cmb_defects, "rd_sign_flip": rd},
+4445:         "custody": "Artigo/teste_acustico_beta_tgl_v1/ (PROVENIENCIA.json; RESULTADOS.md; _originais sha-verificados 4/4; sinteses da sessao em _sinteses_sessao_08ago/)",
+4446:         "checks": checks, "all_verified": all_v,
+4447:         "does_not_gate_core": True,
+4448:         "verdict": vd,
+4449:     }

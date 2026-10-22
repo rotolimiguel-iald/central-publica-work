@@ -1,0 +1,200 @@
+import SummablePauliInteraction
+import TGLExt.ChainLocality
+
+set_option autoImplicit false
+set_option maxHeartbeats 1200000
+
+namespace ChatgptAudit.InteractionWitness
+open TGLExt ChatgptAudit ChatgptAudit.Observable035
+  ChatgptAudit.SummableInteraction
+noncomputable section
+
+def interactionProbe (P : SiteProfile) (j : ℕ) : InteractionOperator P :=
+  sitePauliY P j * sitePauliX P (j+1)
+
+theorem interaction_probe_mem_factor (P : SiteProfile) (j : ℕ) :
+    interactionProbe P j ∈ theFactorObject P :=
+  mul_mem (site_pauli_y_mem_factor P j) (site_pauli_x_mem_factor P (j+1))
+
+theorem bond_times_probe (P : SiteProfile) (j : ℕ) :
+    pauliBond P j * interactionProbe P j = Complex.I • sitePauliZ P j := by
+  have hc := (site_pauli_xy_commute P (Nat.ne_of_gt (Nat.lt_succ_self j))).eq
+  unfold pauliBond interactionProbe
+  calc
+    sitePauliX P j * sitePauliX P (j+1) * (sitePauliY P j * sitePauliX P (j+1)) =
+        sitePauliX P j * (sitePauliX P (j+1) * sitePauliY P j) * sitePauliX P (j+1) := by noncomm_ring
+    _ = sitePauliX P j * (sitePauliY P j * sitePauliX P (j+1)) * sitePauliX P (j+1) := by rw [hc]
+    _ = (sitePauliX P j * sitePauliY P j) *
+        (sitePauliX P (j+1) * sitePauliX P (j+1)) := by noncomm_ring
+    _ = Complex.I • sitePauliZ P j := by rw [site_pauli_xy, site_pauli_x_square, mul_one]
+
+theorem probe_times_bond (P : SiteProfile) (j : ℕ) :
+    interactionProbe P j * pauliBond P j = (-Complex.I) • sitePauliZ P j := by
+  have hc := (site_pauli_xx_commute P (Nat.ne_of_gt (Nat.lt_succ_self j))).eq
+  unfold pauliBond interactionProbe
+  calc
+    sitePauliY P j * sitePauliX P (j+1) * (sitePauliX P j * sitePauliX P (j+1)) =
+        sitePauliY P j * (sitePauliX P (j+1) * sitePauliX P j) * sitePauliX P (j+1) := by noncomm_ring
+    _ = sitePauliY P j * (sitePauliX P j * sitePauliX P (j+1)) * sitePauliX P (j+1) := by rw [hc]
+    _ = (sitePauliY P j * sitePauliX P j) *
+        (sitePauliX P (j+1) * sitePauliX P (j+1)) := by noncomm_ring
+    _ = (-Complex.I) • sitePauliZ P j := by rw [site_pauli_yx, site_pauli_x_square, mul_one]
+
+theorem bond_not_in_centralizer (P : SiteProfile) (j : ℕ) (hp : P.w j ≠ 1/2) :
+    pauliBond P j ∉ omegaCentralizer P := by
+  intro h
+  have he := h.2 (interactionProbe P j) (interaction_probe_mem_factor P j)
+  rw [bond_times_probe, probe_times_bond, ChatgptAudit.Density033.omega_state_smul,
+    ChatgptAudit.Density033.omega_state_smul, site_pauli_z_state] at he
+  have him := congrArg Complex.im he
+  norm_num [Complex.mul_im] at him
+  apply hp
+  linarith
+
+theorem first_prefix_is_one_bond (P : SiteProfile) (c : ℕ → ℝ) (hc : c 0=1) :
+    interactionPrefix P c 1 = pauliBond P 0 := by
+  simp [interactionPrefix, interactionTerm, hc]
+
+theorem first_prefix_not_in_centralizer (P : SiteProfile) (c : ℕ → ℝ)
+    (hc : c 0=1) (hp : P.w 0≠1/2) :
+    interactionPrefix P c 1 ∉ omegaCentralizer P := by
+  rw [first_prefix_is_one_bond P c hc]
+  exact bond_not_in_centralizer P 0 hp
+
+theorem interaction_pauli_xz :
+    pauliXMatrix * pauliZMatrix = (-Complex.I) • pauliYMatrix := by
+  ext i j
+  fin_cases i <;> fin_cases j <;>
+    norm_num [pauliXMatrix,pauliYMatrix,pauliZMatrix,Matrix.mul_apply,
+      Fin.sum_univ_two,Matrix.smul_apply]
+
+theorem interaction_pauli_zx :
+    pauliZMatrix * pauliXMatrix = Complex.I • pauliYMatrix := by
+  ext i j
+  fin_cases i <;> fin_cases j <;>
+    norm_num [pauliXMatrix,pauliYMatrix,pauliZMatrix,Matrix.mul_apply,
+      Fin.sum_univ_two,Matrix.smul_apply]
+
+theorem interaction_site_xz (P : SiteProfile) (j : ℕ) :
+    sitePauliX P j * sitePauliZ P j = (-Complex.I) • sitePauliY P j := by
+  change siteOperator P j pauliXMatrix * siteOperator P j pauliZMatrix = _
+  rw [← siteOperator_mul, interaction_pauli_xz, site_operator_smul]
+  rfl
+
+theorem interaction_site_zx (P : SiteProfile) (j : ℕ) :
+    sitePauliZ P j * sitePauliX P j = Complex.I • sitePauliY P j := by
+  change siteOperator P j pauliZMatrix * siteOperator P j pauliXMatrix = _
+  rw [← siteOperator_mul, interaction_pauli_zx, site_operator_smul]
+  rfl
+
+theorem bond_times_left_z (P : SiteProfile) (j : ℕ) :
+    pauliBond P j * sitePauliZ P j = (-Complex.I) • interactionProbe P j := by
+  have hc : sitePauliX P (j+1) * sitePauliZ P j =
+      sitePauliZ P j * sitePauliX P (j+1) :=
+    siteOperators_commute (Nat.ne_of_gt (Nat.lt_succ_self j)) _ _
+  unfold pauliBond interactionProbe
+  rw [mul_assoc, hc, ← mul_assoc, interaction_site_xz, smul_mul_assoc]
+
+theorem left_z_times_bond (P : SiteProfile) (j : ℕ) :
+    sitePauliZ P j * pauliBond P j = Complex.I • interactionProbe P j := by
+  unfold pauliBond interactionProbe
+  rw [← mul_assoc, interaction_site_zx, smul_mul_assoc]
+
+theorem bond_left_commutator (P : SiteProfile) (j : ℕ) :
+    pauliBond P j * sitePauliZ P j - sitePauliZ P j * pauliBond P j =
+      (-2*Complex.I) • interactionProbe P j := by
+  rw [bond_times_left_z, left_z_times_bond, ← sub_smul]
+  congr 1
+  ring
+
+theorem probe_times_right_z (P : SiteProfile) (j : ℕ) :
+    interactionProbe P j * sitePauliZ P (j+1) =
+      (-Complex.I) • (sitePauliY P j * sitePauliY P (j+1)) := by
+  unfold interactionProbe
+  rw [mul_assoc, interaction_site_xz, mul_smul_comm]
+
+theorem right_z_times_probe (P : SiteProfile) (j : ℕ) :
+    sitePauliZ P (j+1) * interactionProbe P j =
+      Complex.I • (sitePauliY P j * sitePauliY P (j+1)) := by
+  have hc : sitePauliZ P (j+1) * sitePauliY P j =
+      sitePauliY P j * sitePauliZ P (j+1) :=
+    siteOperators_commute (Nat.ne_of_gt (Nat.lt_succ_self j)) _ _
+  unfold interactionProbe
+  rw [← mul_assoc, hc, mul_assoc, interaction_site_zx, mul_smul_comm]
+
+theorem probe_right_commutator (P : SiteProfile) (j : ℕ) :
+    interactionProbe P j * sitePauliZ P (j+1) -
+      sitePauliZ P (j+1) * interactionProbe P j =
+      (-2*Complex.I) • (sitePauliY P j * sitePauliY P (j+1)) := by
+  rw [probe_times_right_z, right_z_times_probe, ← sub_smul]
+  congr 1
+  ring
+
+theorem bond_double_commutator (P : SiteProfile) (j : ℕ) :
+    (pauliBond P j * sitePauliZ P j - sitePauliZ P j * pauliBond P j) *
+        sitePauliZ P (j+1) -
+      sitePauliZ P (j+1) *
+        (pauliBond P j * sitePauliZ P j - sitePauliZ P j * pauliBond P j) =
+      (-4 : ℂ) • (sitePauliY P j * sitePauliY P (j+1)) := by
+  rw [bond_left_commutator, smul_mul_assoc, mul_smul_comm,
+    ← smul_sub, probe_right_commutator, smul_smul]
+  congr 1
+  norm_num
+  ring
+
+theorem tower_operator_one_ne_zero (P : SiteProfile) :
+    (1 : InteractionOperator P)≠0 := by
+  intro h
+  have he := congrArg (fun A : InteractionOperator P => A (hOmega P)) h
+  change hOmega P = 0 at he
+  have hn := hOmega_norm (P := P)
+  rw [he, norm_zero] at hn
+  norm_num at hn
+
+theorem two_site_yy_square (P : SiteProfile) (j : ℕ) :
+    (sitePauliY P j * sitePauliY P (j+1)) *
+      (sitePauliY P j * sitePauliY P (j+1)) = 1 := by
+  have hc := (site_pauli_yy_commute P (Nat.ne_of_lt (Nat.lt_succ_self j))).eq
+  calc
+    (sitePauliY P j * sitePauliY P (j+1)) * (sitePauliY P j * sitePauliY P (j+1)) =
+      sitePauliY P j * (sitePauliY P (j+1) * sitePauliY P j) * sitePauliY P (j+1) := by noncomm_ring
+    _ = sitePauliY P j * (sitePauliY P j * sitePauliY P (j+1)) * sitePauliY P (j+1) := by rw [← hc]
+    _ = (sitePauliY P j * sitePauliY P j) * (sitePauliY P (j+1) * sitePauliY P (j+1)) := by noncomm_ring
+    _ = 1 := by rw [site_pauli_y_square, site_pauli_y_square, one_mul]
+
+theorem bond_double_commutator_ne_zero (P : SiteProfile) (j : ℕ) :
+    (pauliBond P j * sitePauliZ P j - sitePauliZ P j * pauliBond P j) *
+        sitePauliZ P (j+1) -
+      sitePauliZ P (j+1) *
+        (pauliBond P j * sitePauliZ P j - sitePauliZ P j * pauliBond P j) ≠ 0 := by
+  rw [bond_double_commutator]
+  intro h
+  have hy : sitePauliY P j * sitePauliY P (j+1)=0 :=
+    (smul_eq_zero.mp h).resolve_left (by norm_num)
+  have hs := two_site_yy_square P j
+  rw [hy, zero_mul] at hs
+  exact tower_operator_one_ne_zero P hs.symm
+
+#print axioms interactionProbe
+#print axioms interaction_probe_mem_factor
+#print axioms bond_times_probe
+#print axioms probe_times_bond
+#print axioms bond_not_in_centralizer
+#print axioms first_prefix_is_one_bond
+#print axioms first_prefix_not_in_centralizer
+#print axioms interaction_pauli_xz
+#print axioms interaction_pauli_zx
+#print axioms interaction_site_xz
+#print axioms interaction_site_zx
+#print axioms bond_times_left_z
+#print axioms left_z_times_bond
+#print axioms bond_left_commutator
+#print axioms probe_times_right_z
+#print axioms right_z_times_probe
+#print axioms probe_right_commutator
+#print axioms bond_double_commutator
+#print axioms tower_operator_one_ne_zero
+#print axioms two_site_yy_square
+#print axioms bond_double_commutator_ne_zero
+end
+end ChatgptAudit.InteractionWitness

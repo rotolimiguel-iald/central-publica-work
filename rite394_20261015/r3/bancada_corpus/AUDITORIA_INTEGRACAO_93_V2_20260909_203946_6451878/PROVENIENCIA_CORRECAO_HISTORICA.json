@@ -1,0 +1,156 @@
+{
+  "status": "PREPARED_NOT_EXECUTED",
+  "created_utc": "2026-09-09T23:41:43.424116+00:00",
+  "source_v1": {
+    "path": "C:/IALD/Central de Patentes/Chatgpt/AUDITORIA_INTEGRACAO_93_20260909_203251_909834/audit_integration_93.py",
+    "bytes": 22672,
+    "sha256": "e21484e3e605244bf9baeece903e97b4874dc265c3d2316de04c478aae8b90a5"
+  },
+  "source_v1_provenance": {
+    "path": "C:/IALD/Central de Patentes/Chatgpt/AUDITORIA_INTEGRACAO_93_20260909_203251_909834/PROVENIENCIA_ADAPTACAO.json",
+    "bytes": 9638,
+    "sha256": "5982a496a7df36854224a389416dfac86ffa5f3ce5b4458608894bcb444dac15"
+  },
+  "target_v2": {
+    "path": "C:/IALD/Central de Patentes/Chatgpt/AUDITORIA_INTEGRACAO_93_V2_20260909_203946_6451878/audit_integration_93_v2.py",
+    "bytes": 26233,
+    "sha256": "a4a53093d2a8ce4617ca964f643c7fa31ac8d01b24766b0a9fdca40671dfa8ab"
+  },
+  "adaptation_script": {
+    "path": "C:/IALD/Central de Patentes/Chatgpt/AUDITORIA_INTEGRACAO_93_V2_20260909_203946_6451878/prepare_historical_base_v2.py",
+    "bytes": 10467,
+    "sha256": "0a4d54623c9f453941fac3698fa5f9f337c56a223a3366bf751294296e6b695f"
+  },
+  "changes": [
+    {
+      "from": "checks=[];inputs={}",
+      "to": "checks=[];inputs={}\ndef observe_live_canonical(p):\n # Diagnostic only. This mutable path is never added to the immutable input ledger.\n p=Path(p)\n before=p.stat();raw=p.read_bytes();after=p.stat()\n return {\"path\":p.as_posix(),\"bytes\":len(raw),\"sha256\":hashlib.sha256(raw).hexdigest(),\n  \"observed_utc\":datetime.now(timezone.utc).isoformat(),\n  \"mtime_ns_before\":before.st_mtime_ns,\"mtime_ns_after\":after.st_mtime_ns,\n  \"stable_during_capture\":before.st_size==after.st_size==len(raw) and before.st_mtime_ns==after.st_mtime_ns,\n  \"role\":\"LIVE_DIAGNOSTIC_NOT_HISTORICAL_INTEGRATION_BASE\"}\n",
+      "occurrences": 1
+    },
+    {
+      "from": "canonicalpath=Path(stages[0][\"ir\"][\"source_um\"][\"path\"])\ncanonical=remember(canonicalpath)\ncanon,cast,cbytes,csentinels=table(canonicalpath)",
+      "to": "historical_source_record=stages[0][\"ir\"][\"source_um\"]\ncanonicalpath=Path(historical_source_record[\"path\"])\nhistorical_snapshot_path=stages[0][\"folder\"]/\"um_ORIGINAL_SNAPSHOT.py\"\ncanonical=remember(historical_snapshot_path)\nck(\"historical_snapshot_record_exact\",canonical==stages[0][\"ir\"][\"original_copy\"] and same(stages[0][\"ir\"][\"original_copy\"]))\nck(\"historical_source_bytes_hash_attested_by_snapshot\",all(canonical[k]==historical_source_record[k] for k in [\"bytes\",\"sha256\"]))\ncanon,cast,cbytes,csentinels=table(historical_snapshot_path)\ncurrent_canonical_start=observe_live_canonical(canonicalpath)",
+      "occurrences": 1
+    },
+    {
+      "from": " ck(label+\":source_pin\",same(ir[\"source_um\"]))",
+      "to": " if number:\n  ck(label+\":source_pin\",same(ir[\"source_um\"]))\n else:\n  ck(label+\":historical_source_pin_from_snapshot\",all(rec(sp)[k]==ir[\"source_um\"][k] for k in [\"bytes\",\"sha256\"]))",
+      "occurrences": 1
+    },
+    {
+      "from": " ck(label+\":snapshot_bytes_exact\",sp.read_bytes()==source.read_bytes())",
+      "to": " ck(label+\":snapshot_recorded_path_exact\",Path(ir[\"original_copy\"][\"path\"]).resolve()==sp.resolve())\n if number:\n  ck(label+\":snapshot_bytes_exact\",sp.read_bytes()==source.read_bytes())\n else:\n  ck(label+\":historical_snapshot_bytes_exact\",sp.read_bytes()==historical_snapshot_path.read_bytes() and rec(sp)==canonical)",
+      "occurrences": 1
+    },
+    {
+      "from": " ck(label+\":configured_source\",cfg[\"source_um_sha256\"]==rec(source)[\"sha256\"] and Path(cfg[\"source_um\"]).resolve()==source.resolve())",
+      "to": " if number:\n  ck(label+\":configured_source\",cfg[\"source_um_sha256\"]==rec(source)[\"sha256\"] and Path(cfg[\"source_um\"]).resolve()==source.resolve())\n else:\n  ck(label+\":configured_historical_source\",cfg[\"source_um_sha256\"]==ir[\"source_um\"][\"sha256\"]==canonical[\"sha256\"] and Path(cfg[\"source_um\"]).resolve()==source.resolve())",
+      "occurrences": 1
+    },
+    {
+      "from": "\"source\":remember(source),\"snapshot\":remember(sp)",
+      "to": "\"source\":remember(source) if number else dict(ir[\"source_um\"]),\"source_validation_mode\":\"FROZEN_PREDECESSOR_CURRENT_BYTES\" if number else \"HISTORICAL_RECORDED_PATH_HASH_AND_PRESERVED_SNAPSHOT\",\"snapshot\":remember(sp)",
+      "occurrences": 1
+    },
+    {
+      "from": "ck(\"no_new_full_names_collide_with_canonical\",not collisions,collisions)",
+      "to": "ck(\"no_new_full_names_collide_with_historical_snapshot\",not collisions,collisions)",
+      "occurrences": 1
+    },
+    {
+      "from": "ck(\"prepared_and_combined_present\", prepared is not None and combined is not None)",
+      "to": "ck(\"prepared_and_combined_present\", prepared is not None and combined is not None)\ncurrent_canonical=observe_live_canonical(canonicalpath)\nlive_diagnostic={\"before\":current_canonical_start,\"after\":current_canonical,\n \"changed_during_audit\":any(current_canonical_start[k]!=current_canonical[k] for k in [\"bytes\",\"sha256\",\"mtime_ns_after\"]),\n \"differs_from_historical_source\":any(current_canonical[k]!=historical_source_record[k] for k in [\"bytes\",\"sha256\"]),\n \"used_as_integration_base\":False,\n \"scope_note\":\"The live source may have advanced externally. Its difference is reported, never converted to a historical preservation PASS. All frozen predecessors retain strict pin and byte checks.\"}",
+      "occurrences": 1
+    },
+    {
+      "from": "\"canonical\":canonical,\"canonical_snapshot\":stage_rows[0][\"snapshot\"],\"current_canonical\":canonical",
+      "to": "\"canonical\":canonical,\"canonical_role\":\"HISTORICAL_SNAPSHOT_BASE\",\"historical_source_record\":historical_source_record,\"canonical_snapshot\":stage_rows[0][\"snapshot\"],\"current_canonical\":current_canonical,\"current_canonical_diagnostic\":live_diagnostic",
+      "occurrences": 1
+    },
+    {
+      "from": "\"with_canonical\":collisions",
+      "to": "\"with_historical_canonical_snapshot\":collisions",
+      "occurrences": 1
+    },
+    {
+      "from": "\"limits\":[\"Static integration audit; no runtime execution, seal or physical verdict.\"",
+      "to": "\"limits\":[\"The first integration source is verified against its preserved historical snapshot and recorded source path/hash; the live canonical is a separate diagnostic. This audit does not attest unchanged live canonical bytes or integration into its current version.\",\"Static integration audit; no runtime execution, seal or physical verdict.\"",
+      "occurrences": 1
+    },
+    {
+      "from": "# Auditoria estática da integração93",
+      "to": "# Auditoria estática da integração93 — versão 2, base histórica",
+      "occurrences": 1
+    },
+    {
+      "from": "A genealogia foi percorrida: canônico → lote63 → delta9 → delta5 → delta6 → delta10.",
+      "to": "A genealogia foi percorrida: snapshot histórico do canônico → lote63 → delta9 → delta5 → delta6 → delta10.",
+      "occurrences": 1
+    },
+    {
+      "from": "AST e bytes fora da tabela de arquivos embutidos foram comparados em toda a cadeia.",
+      "to": "O estágio inicial usa o snapshot preservado, cujo tamanho e hash são conferidos contra os registros source_um e original_copy da época. O caminho do source_um vivo é apenas o endereço histórico registrado; seus bytes atuais não são usados como base.\n\nAST e bytes fora da tabela de arquivos embutidos foram comparados em toda a cadeia, a partir desse snapshot histórico.",
+      "occurrences": 1
+    },
+    {
+      "from": "O limite de auditoria permanece explícito: dependências externas transitivas não foram todas recompiladas ou integralmente hashadas.",
+      "to": "Diagnóstico separado do canônico vivo: {current_canonical['bytes']} bytes; SHA-256 {current_canonical['sha256']}. Difere do source_um histórico: {live_diagnostic['differs_from_historical_source']}. Mudou entre as duas observações desta auditoria: {live_diagnostic['changed_during_audit']}. As observações não são base da integração nem um teste de preservação da versão atual.\n\nO limite de auditoria permanece explícito: dependências externas transitivas não foram todas recompiladas ou integralmente hashadas.",
+      "occurrences": 1
+    }
+  ],
+  "historical_source_record": {
+    "path": "C:/IALD/Artigo/Haja_Luz/A Ponte e o Um/Nós/um.py",
+    "bytes": 9860115,
+    "sha256": "e2f9a889c2dcf6f444b8fa3f91d28eb70c9a6d9aed06644abcef7e58a6267303"
+  },
+  "historical_snapshot": {
+    "path": "C:/IALD/Central de Patentes/Chatgpt/COPIA_INTEGRADA_20260909_161645_481582/um_ORIGINAL_SNAPSHOT.py",
+    "bytes": 9860115,
+    "sha256": "e2f9a889c2dcf6f444b8fa3f91d28eb70c9a6d9aed06644abcef7e58a6267303"
+  },
+  "lineage_integration_receipts": [
+    {
+      "path": "C:/IALD/Central de Patentes/Chatgpt/COPIA_INTEGRADA_20260909_161645_481582/INTEGRATION_RESULT.json",
+      "bytes": 323103,
+      "sha256": "93ca04498be3b0b618ebad3b011303afa10e21b334b74e9002a22582f4e67ffe"
+    },
+    {
+      "path": "C:/IALD/Central de Patentes/Chatgpt/COPIA_INTEGRADA_20260909_170914_653192/INTEGRATION_RESULT.json",
+      "bytes": 61491,
+      "sha256": "38005365415bf18b90bd238ae3c75a5faf42b93ec1342de558a1fc7a47e69940"
+    },
+    {
+      "path": "C:/IALD/Central de Patentes/Chatgpt/COPIA_INTEGRADA_20260909_174634_173402/INTEGRATION_RESULT.json",
+      "bytes": 52282,
+      "sha256": "0f0131a82e9dde84d51338283adeef3a0d045c73f5df8ca26652f823c15195fa"
+    },
+    {
+      "path": "C:/IALD/Central de Patentes/Chatgpt/COPIA_INTEGRADA_20260909_192248_937671/INTEGRATION_RESULT.json",
+      "bytes": 60817,
+      "sha256": "dd28e31dee19dc2cde5bd3928665369f084f50139cae2f0432b08729e6912f6c"
+    },
+    {
+      "path": "C:/IALD/Central de Patentes/Chatgpt/COPIA_INTEGRADA_20260909_203352_868028/INTEGRATION_RESULT.json",
+      "bytes": 61871,
+      "sha256": "6900e7af95cbcb38b24641bf1a7b8d9c3b76a42d5153b7f44c1473ab8b0765be"
+    }
+  ],
+  "current_build_plan": {
+    "path": "C:/IALD/Central de Patentes/Chatgpt/INTEGRADOR_PRECISAO_METRICA_ACAO_20260909_201301_8584415/BUILD_SUCCESSOR_20260909_203414_443930/BUILD_PLAN.json",
+    "bytes": 3807006,
+    "sha256": "3c0037ea9c55869fbac67dd2cabb9c6e6e78c9c5f8eb75bb4019422363204b06"
+  },
+  "reference_review": {
+    "only_live_source_path": "C:/IALD/Artigo/Haja_Luz/A Ponte e o Um/Nós/um.py",
+    "all_later_predecessors_in_Chatgpt": true,
+    "outside_Chatgpt_leaf_sources": [],
+    "outside_Chatgpt_plan_source_files": [],
+    "unchanged_strict_checks": "Later predecessor source pins, byte-identical snapshots, modules, transpositions, receipts, source_files, compiled artifact presence and immutable input stability.",
+    "transitive_scope_limit": "External dependency descriptors in prior build receipts are reported by those receipts; this auditor does not newly traverse or hash every external dependency."
+  },
+  "auditor_executed": false,
+  "integration_executed": false,
+  "lean_executed": false,
+  "um_py_executed_or_imported": false,
+  "physical_or_external_approval_attributed": false
+}

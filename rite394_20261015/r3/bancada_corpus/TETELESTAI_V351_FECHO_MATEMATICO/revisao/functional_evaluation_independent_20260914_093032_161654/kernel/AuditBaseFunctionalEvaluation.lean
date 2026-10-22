@@ -1,0 +1,44 @@
+import TGLExt.V351BaseFunctionalEvaluation
+set_option pp.universes true
+#check TGLV351.baseDualApproximant
+#print axioms TGLV351.baseDualApproximant
+#check TGLV351.baseDualApproximant_properties
+#print axioms TGLV351.baseDualApproximant_properties
+#check TGLV351.baseDualEvaluation
+#print axioms TGLV351.baseDualEvaluation
+#check TGLV351.baseVectorFunctional
+#print axioms TGLV351.baseVectorFunctional
+#check TGLV351.baseVectorFunctional_apply
+#print axioms TGLV351.baseVectorFunctional_apply
+#check TGLV351.baseVectorFunctional_positive
+#print axioms TGLV351.baseVectorFunctional_positive
+#check TGLV351.baseDualEvaluation_vector
+#print axioms TGLV351.baseDualEvaluation_vector
+#check TGLV351.baseDualEvaluation_vacuum
+#print axioms TGLV351.baseDualEvaluation_vacuum
+#check TGLV351.baseDualEvaluation_zero
+#print axioms TGLV351.baseDualEvaluation_zero
+#check TGLV351.baseDualEvaluation_sequence_monotone
+#print axioms TGLV351.baseDualEvaluation_sequence_monotone
+#check TGLV351.baseDualEvaluation_add
+#print axioms TGLV351.baseDualEvaluation_add
+#check TGLV351.baseDualEvaluation_scale
+#print axioms TGLV351.baseDualEvaluation_scale
+#check TGLV351.baseDualEvaluation_lowerSemicontinuous
+#print axioms TGLV351.baseDualEvaluation_lowerSemicontinuous
+#check TGLV351.ennreal_tsum_iSup_monotone
+#print axioms TGLV351.ennreal_tsum_iSup_monotone
+#check TGLV351.baseDualEvaluation_eq_vector_series
+#print axioms TGLV351.baseDualEvaluation_eq_vector_series
+#check TGLV351.baseDualEvaluation_series_independent
+#print axioms TGLV351.baseDualEvaluation_series_independent
+#check TGLV351.baseFunctional_hasSum_positive_evaluation
+#print axioms TGLV351.baseFunctional_hasSum_positive_evaluation
+#check TGLV351.baseDualEvaluation_eq_hasSum_series
+#print axioms TGLV351.baseDualEvaluation_eq_hasSum_series
+#check TGLV351.baseFunctional_hasSum_square_norm
+#print axioms TGLV351.baseFunctional_hasSum_square_norm
+#check TGLV351.baseVectorFunctional_norm_le
+#print axioms TGLV351.baseVectorFunctional_norm_le
+#check TGLV351.exists_base_series_functional
+#print axioms TGLV351.exists_base_series_functional

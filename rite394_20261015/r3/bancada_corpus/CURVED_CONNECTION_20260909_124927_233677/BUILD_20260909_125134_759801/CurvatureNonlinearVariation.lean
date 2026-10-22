@@ -1,0 +1,213 @@
+import TGLExt.VectorCurvatureCommutator
+import TGLExt.MetricCurvatureSymmetries
+
+set_option autoImplicit false
+set_option maxHeartbeats 5000000
+namespace ChatgptAudit.CurvedConnection
+open Matrix Filter Topology Set
+open scoped ContDiff
+noncomputable section
+
+def affineConnection (Gamma C : ConnectionField4) (t : ℝ) : ConnectionField4 :=
+  fun x i => Gamma x i + t • C x i
+
+def curvatureVariation (Gamma C : ConnectionField4) (x : Coordinate4)
+    (i j : Fin 4) : Tensor4 :=
+  connectionFirstJet C x i j - connectionFirstJet C x j i +
+    Gamma x i * C x j + C x i * Gamma x j -
+    Gamma x j * C x i - C x j * Gamma x i
+
+def curvatureQuadratic (C : ConnectionField4) (x : Coordinate4)
+    (i j : Fin 4) : Tensor4 := C x i * C x j - C x j * C x i
+
+def ricciVariation (Gamma C : ConnectionField4) (x : Coordinate4) : Tensor4 :=
+  fun b j => ∑ a, curvatureVariation Gamma C x a j a b
+
+def ricciQuadratic (C : ConnectionField4) (x : Coordinate4) : Tensor4 :=
+  fun b j => ∑ a, curvatureQuadratic C x a j a b
+
+def connectionGaugeDirection (Gamma : ConnectionField4) (B : TensorField4) :
+    ConnectionField4 := fun x i => mixedCovariantDerivative Gamma B x i
+
+theorem affine_connection_smooth (U : Set Coordinate4) (Gamma C : ConnectionField4)
+    (hG : SmoothConnectionOn U Gamma) (hC : SmoothConnectionOn U C) (t : ℝ) :
+    SmoothConnectionOn U (affineConnection Gamma C t) := by
+  intro i a b
+  exact (hG i a b).add ((hC i a b).const_smul t)
+
+theorem affine_connection_first_jet (U : Set Coordinate4) (hU : IsOpen U)
+    (Gamma C : ConnectionField4) (hG : SmoothConnectionOn U Gamma)
+    (hC : SmoothConnectionOn U C) (x : Coordinate4) (hx : x∈U)
+    (t : ℝ) (i j : Fin 4) :
+    connectionFirstJet (affineConnection Gamma C t) x i j =
+      connectionFirstJet Gamma x i j + t • connectionFirstJet C x i j := by
+  have hGi := smooth_matrix_differentiableAt U hU _ (hG j) x hx
+  have hCi := smooth_matrix_differentiableAt U hU _ (hC j) x hx
+  change tensorFieldJet (fun y => Gamma y j + t • C y j) x i = _
+  rw [tensorFieldJet_add _ _ x hGi (fun a b => (hCi a b).const_smul t),
+    tensorFieldJet_const_smul t _ x hCi]
+  rfl
+
+theorem curvature_exact_expansion (U : Set Coordinate4) (hU : IsOpen U)
+    (Gamma C : ConnectionField4) (hG : SmoothConnectionOn U Gamma)
+    (hC : SmoothConnectionOn U C) (x : Coordinate4) (hx : x∈U)
+    (t : ℝ) (i j : Fin 4) :
+    coordinateCurvature (affineConnection Gamma C t) x i j =
+      coordinateCurvature Gamma x i j +
+        t • curvatureVariation Gamma C x i j + t^2 • curvatureQuadratic C x i j := by
+  unfold coordinateCurvature connectionCurvatureJet
+  rw [affine_connection_first_jet U hU Gamma C hG hC x hx t i j,
+    affine_connection_first_jet U hU Gamma C hG hC x hx t j i]
+  simp only [affineConnection,curvatureVariation,curvatureQuadratic,
+    add_mul,mul_add,smul_mul,mul_smul,smul_smul]
+  module
+
+theorem curvature_exact_remainder (U : Set Coordinate4) (hU : IsOpen U)
+    (Gamma C : ConnectionField4) (hG : SmoothConnectionOn U Gamma)
+    (hC : SmoothConnectionOn U C) (x : Coordinate4) (hx : x∈U)
+    (t : ℝ) (i j : Fin 4) :
+    coordinateCurvature (affineConnection Gamma C t) x i j -
+      coordinateCurvature Gamma x i j - t • curvatureVariation Gamma C x i j =
+        t^2 • curvatureQuadratic C x i j := by
+  rw [curvature_exact_expansion U hU Gamma C hG hC x hx t i j]
+  abel
+
+theorem curvature_parameter_derivative (U : Set Coordinate4) (hU : IsOpen U)
+    (Gamma C : ConnectionField4) (hG : SmoothConnectionOn U Gamma)
+    (hC : SmoothConnectionOn U C) (x : Coordinate4) (hx : x∈U)
+    (t : ℝ) (i j a b : Fin 4) :
+    HasDerivAt (fun s => coordinateCurvature (affineConnection Gamma C s) x i j a b)
+      (curvatureVariation Gamma C x i j a b +
+        2*t*curvatureQuadratic C x i j a b) t := by
+  have he : (fun s => coordinateCurvature (affineConnection Gamma C s) x i j a b) =
+      (fun s => coordinateCurvature Gamma x i j a b +
+        s*curvatureVariation Gamma C x i j a b + s^2*curvatureQuadratic C x i j a b) := by
+    funext s
+    rw [curvature_exact_expansion U hU Gamma C hG hC x hx s i j]
+    rfl
+  rw [he]
+  convert ((hasDerivAt_const t (coordinateCurvature Gamma x i j a b)).add
+    ((hasDerivAt_id t).mul_const (curvatureVariation Gamma C x i j a b))).add
+      (((hasDerivAt_id t).pow 2).mul_const (curvatureQuadratic C x i j a b)) using 1 <;> ring
+
+theorem curvature_first_variation (U : Set Coordinate4) (hU : IsOpen U)
+    (Gamma C : ConnectionField4) (hG : SmoothConnectionOn U Gamma)
+    (hC : SmoothConnectionOn U C) (x : Coordinate4) (hx : x∈U)
+    (i j a b : Fin 4) :
+    HasDerivAt (fun s => coordinateCurvature (affineConnection Gamma C s) x i j a b)
+      (curvatureVariation Gamma C x i j a b) 0 := by
+  simpa using curvature_parameter_derivative U hU Gamma C hG hC x hx 0 i j a b
+
+theorem ricci_exact_expansion (U : Set Coordinate4) (hU : IsOpen U)
+    (Gamma C : ConnectionField4) (hG : SmoothConnectionOn U Gamma)
+    (hC : SmoothConnectionOn U C) (x : Coordinate4) (hx : x∈U) (t : ℝ) :
+    coordinateRicci (affineConnection Gamma C t) x =
+      coordinateRicci Gamma x + t • ricciVariation Gamma C x + t^2 • ricciQuadratic C x := by
+  ext b j
+  simp only [coordinateRicci,curvature_exact_expansion U hU Gamma C hG hC x hx,
+    Matrix.add_apply,Matrix.smul_apply,smul_eq_mul,Finset.sum_add_distrib,
+    Finset.mul_sum,ricciVariation,ricciQuadratic]
+
+theorem ricci_first_variation (U : Set Coordinate4) (hU : IsOpen U)
+    (Gamma C : ConnectionField4) (hG : SmoothConnectionOn U Gamma)
+    (hC : SmoothConnectionOn U C) (x : Coordinate4) (hx : x∈U) (b j : Fin 4) :
+    HasDerivAt (fun t => coordinateRicci (affineConnection Gamma C t) x b j)
+      (ricciVariation Gamma C x b j) 0 := by
+  simpa only [coordinateRicci,ricciVariation] using
+    HasDerivAt.sum (u := Finset.univ)
+      (fun a _ => curvature_first_variation U hU Gamma C hG hC x hx a j a b)
+
+theorem gauge_direction_smooth (U : Set Coordinate4) (hU : IsOpen U)
+    (Gamma : ConnectionField4) (B : TensorField4)
+    (hG : SmoothConnectionOn U Gamma) (hB : SmoothMatrixOn U B) :
+    SmoothConnectionOn U (connectionGaugeDirection Gamma B) := by
+  intro i
+  exact SmoothMatrixOn.sub U _ _
+    (SmoothMatrixOn.add U _ _ (tensorFieldJet_smooth U hU B hB i)
+      (SmoothMatrixOn.mul U _ _ (hG i) hB))
+    (SmoothMatrixOn.mul U _ _ hB (hG i))
+
+theorem gauge_direction_first_jet (U : Set Coordinate4) (hU : IsOpen U)
+    (Gamma : ConnectionField4) (B : TensorField4)
+    (hG : SmoothConnectionOn U Gamma) (hB : SmoothMatrixOn U B)
+    (x : Coordinate4) (hx : x∈U) (i j : Fin 4) :
+    connectionFirstJet (connectionGaugeDirection Gamma B) x i j =
+      tensorFieldJet (fun y => tensorFieldJet B y j) x i +
+        connectionFirstJet Gamma x i j * B x + Gamma x j * tensorFieldJet B x i -
+        tensorFieldJet B x i * Gamma x j - B x * connectionFirstJet Gamma x i j := by
+  have hdiff (A : TensorField4) (hA : SmoothMatrixOn U A) :=
+    smooth_matrix_differentiableAt U hU A hA x hx
+  change tensorFieldJet (fun y => tensorFieldJet B y j + Gamma y j * B y - B y * Gamma y j) x i = _
+  rw [tensorFieldJet_sub _ _ x
+      (hdiff _ (SmoothMatrixOn.add U _ _ (tensorFieldJet_smooth U hU B hB j)
+        (SmoothMatrixOn.mul U _ _ (hG j) hB)))
+      (hdiff _ (SmoothMatrixOn.mul U _ _ hB (hG j))),
+    tensorFieldJet_add _ _ x (hdiff _ (tensorFieldJet_smooth U hU B hB j))
+      (hdiff _ (SmoothMatrixOn.mul U _ _ (hG j) hB)),
+    tensorFieldJet_mul _ _ x (hdiff _ (hG j)) (hdiff _ hB) i,
+    tensorFieldJet_mul _ _ x (hdiff _ hB) (hdiff _ (hG j)) i]
+  simp only [Pi.sub_apply,Pi.add_apply,connectionFirstJet]
+  abel
+
+theorem curvature_gauge_variation (U : Set Coordinate4) (hU : IsOpen U)
+    (Gamma : ConnectionField4) (B : TensorField4)
+    (hG : SmoothConnectionOn U Gamma) (hB : SmoothMatrixOn U B)
+    (x : Coordinate4) (hx : x∈U) (i j : Fin 4) :
+    curvatureVariation Gamma (connectionGaugeDirection Gamma B) x i j =
+      coordinateCurvature Gamma x i j * B x - B x * coordinateCurvature Gamma x i j := by
+  unfold curvatureVariation
+  rw [gauge_direction_first_jet U hU Gamma B hG hB x hx i j,
+    gauge_direction_first_jet U hU Gamma B hG hB x hx j i,
+    tensorFieldJet_commute U hU B hB x hx i j]
+  simp only [connectionGaugeDirection,mixedCovariantDerivative,coordinateCurvature,connectionCurvatureJet]
+  noncomm_ring
+
+theorem curvature_gauge_derivative (U : Set Coordinate4) (hU : IsOpen U)
+    (Gamma : ConnectionField4) (B : TensorField4)
+    (hG : SmoothConnectionOn U Gamma) (hB : SmoothMatrixOn U B)
+    (x : Coordinate4) (hx : x∈U) (i j a b : Fin 4) :
+    HasDerivAt
+      (fun t => coordinateCurvature (affineConnection Gamma (connectionGaugeDirection Gamma B) t) x i j a b)
+      ((coordinateCurvature Gamma x i j * B x - B x * coordinateCurvature Gamma x i j) a b) 0 := by
+  rw [← curvature_gauge_variation U hU Gamma B hG hB x hx i j]
+  exact curvature_first_variation U hU Gamma _ hG (gauge_direction_smooth U hU Gamma B hG hB) x hx i j a b
+
+theorem curvature_gauge_trace_zero (U : Set Coordinate4) (hU : IsOpen U)
+    (Gamma : ConnectionField4) (B : TensorField4)
+    (hG : SmoothConnectionOn U Gamma) (hB : SmoothMatrixOn U B)
+    (x : Coordinate4) (hx : x∈U) (i j : Fin 4) :
+    Matrix.trace (curvatureVariation Gamma (connectionGaugeDirection Gamma B) x i j) = 0 := by
+  rw [curvature_gauge_variation U hU Gamma B hG hB x hx i j,Matrix.trace_sub,
+    Matrix.trace_mul_comm]
+  ring
+
+theorem flat_curvature_gauge_variation_zero (U : Set Coordinate4) (hU : IsOpen U)
+    (Gamma : ConnectionField4) (B : TensorField4)
+    (hG : SmoothConnectionOn U Gamma) (hB : SmoothMatrixOn U B)
+    (x : Coordinate4) (hx : x∈U) (i j : Fin 4)
+    (hflat : coordinateCurvature Gamma x i j = 0) :
+    curvatureVariation Gamma (connectionGaugeDirection Gamma B) x i j = 0 := by
+  rw [curvature_gauge_variation U hU Gamma B hG hB x hx i j,hflat,zero_mul,mul_zero,sub_self]
+
+#print axioms affineConnection
+#print axioms curvatureVariation
+#print axioms curvatureQuadratic
+#print axioms ricciVariation
+#print axioms ricciQuadratic
+#print axioms connectionGaugeDirection
+#print axioms affine_connection_smooth
+#print axioms affine_connection_first_jet
+#print axioms curvature_exact_expansion
+#print axioms curvature_exact_remainder
+#print axioms curvature_parameter_derivative
+#print axioms curvature_first_variation
+#print axioms ricci_exact_expansion
+#print axioms ricci_first_variation
+#print axioms gauge_direction_smooth
+#print axioms gauge_direction_first_jet
+#print axioms curvature_gauge_variation
+#print axioms curvature_gauge_derivative
+#print axioms curvature_gauge_trace_zero
+#print axioms flat_curvature_gauge_variation_zero
+end
+end ChatgptAudit.CurvedConnection

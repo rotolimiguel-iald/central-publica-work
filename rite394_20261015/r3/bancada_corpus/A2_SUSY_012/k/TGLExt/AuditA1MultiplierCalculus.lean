@@ -1,0 +1,12 @@
+import TGLExt.V351ScalarMultiplierCalculus
+set_option pp.universes true
+#check TGLV350.Regular.compactScalarField
+#print axioms TGLV350.Regular.compactScalarField
+#check TGLV350.Regular.compactScalarRepresentation
+#print axioms TGLV350.Regular.compactScalarRepresentation
+#check TGLV350.Regular.compactScalarRepresentation_ae
+#print axioms TGLV350.Regular.compactScalarRepresentation_ae
+#check TGLV350.Regular.compactScalarRepresentation_coordinate
+#print axioms TGLV350.Regular.compactScalarRepresentation_coordinate
+#check TGLV350.Regular.realScalarMultiplier_cfc_ae
+#print axioms TGLV350.Regular.realScalarMultiplier_cfc_ae

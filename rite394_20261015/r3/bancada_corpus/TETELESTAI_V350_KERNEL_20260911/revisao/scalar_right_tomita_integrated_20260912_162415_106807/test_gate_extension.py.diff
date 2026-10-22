@@ -1,0 +1,52 @@
+--- test_gate_extension.py.bak_20260912_162015_931377
++++ test_gate_extension.py
+@@ -45,7 +45,9 @@
+ axioms = {}
+ audit_record = compiled['records'][-1]
+ assert audit_record['source'].endswith('Audit.lean')
+-blob = Path(audit_record['stdout']).read_text(encoding='utf-8')
++audit_raw = Path(audit_record['stdout']).read_bytes()
++audit_stream_sha256 = hashlib.sha256(audit_raw).hexdigest()
++blob = audit_raw.decode('utf-8')
+ for name, body in re.findall(r"'([\w.']+)' depends on axioms: \[([^\]]*)\]", blob, re.S):
+     axioms[name] = [a.strip() for a in body.replace('\n', ' ').split(',') if a.strip()]
+ for name in re.findall(r"'([\w.']+)' does not depend on any axioms", blob):
+@@ -63,6 +65,12 @@
+            'changed_source_hashes_verified': True, 'audit_returncode': 0,
+            'all_verified': True, 'axiom_report': axioms,
+            'verification_mode': compiled['mode'],
++           'audit_stdout_sha256': audit_stream_sha256,
++           'audit_capture_sha256_full': audit_stream_sha256,
++           'audit_stdout_path': audit_record['stdout'],
++           'audit_hash_scope': 'CURRENT_INCREMENTAL_AUDIT_RAW_STDOUT_BYTES',
++           'historical_v350_audit_metadata': {key: baseline.get(key) for key in
++               ('audit_stdout_sha256', 'audit_capture_sha256_full')},
+            'full_monolithic_runtime_run': False})
+ finalize = namespace['finalize_v350_modular_frontier']
+ proofs = namespace['verify_v350_modular_provenance']
+@@ -77,6 +85,12 @@
+     checks.append({'name': name, 'passed': True})
+ 
+ 
++check('current_audit_hashes_match_current_raw_stream',
++      kf['audit_stdout_sha256'] == kf['audit_capture_sha256_full'] ==
++      hashlib.sha256(Path(kf['audit_stdout_path']).read_bytes()).hexdigest())
++check('historical_v350_audit_hashes_preserved_as_history',
++      kf['historical_v350_audit_metadata'] == {key: baseline.get(key) for key in
++          ('audit_stdout_sha256', 'audit_capture_sha256_full')})
+ check('real_compiled_exact_type_bridges', all(proofs(kf).values()))
+ check('v350_baseline_does_not_inherit_new_proofs', not any(proofs(baseline).values()))
+ check('empty_inputs_fail_closed', not any(proofs({}).values()))
+@@ -436,6 +450,12 @@
+     'homogeneous_right_same_GNS_adjoint_pairing': (
+         'homogeneousRightAmbient_preserves_GNS', 'homogeneousRightGNS_intertwines',
+         'homogeneousRightGNS_adjoint', 'matrixUnit_scalarWeight_pairing'),
++    'right_preserves_same_closed_Tomita_domain': (
++        'homogeneousRightGraphMap_preserves_closed_graph', 'scalarRight_mem_closedTomitaDomain',
++        'scalarClosedTomita_right_intertwines', 'matrixUnit_closedTomita_right_intertwines'),
++    'left_preserves_same_maximal_Tomita_adjoint_domain': (
++        'scalarRightTomitaAdjoint_pairing', 'scalarRightTomitaAdjoint_maximal',
++        'scalarTomitaAdjoint_left_intertwines', 'matrixUnit_TomitaAdjoint_left_intertwines'),
+ }.items():
+     check(stage + '_does_not_discharge_KMS_trace_or_physical_frontier',
+           all('TGLV350.Regular.' + name in axioms for name in names)

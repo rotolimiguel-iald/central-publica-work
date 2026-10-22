@@ -1,0 +1,1 @@
+Extensão da rota S modular: identidade óptica exata e composição do operador de transição sobre Smat e operatorOrbit já existentes. Resultados ainda a compilar. Não fecha anomalias quânticas, espalhamento assintótico, completude de modos ou controle UV. Originais somente leitura; todas as execuções nesta pasta nova.

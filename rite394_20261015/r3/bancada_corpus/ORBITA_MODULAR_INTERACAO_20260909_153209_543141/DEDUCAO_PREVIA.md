@@ -1,0 +1,7 @@
+[REAL — leitura de fonte] O cociclo v322 é a exponencial de likelihoodGenerator no perfil thirdThermalReference. LikelihoodCocycle.lean:98 prova que ele é fixo pela conjugação modular; a identidade torcida (104) usa explicitamente essa fixidez. SummableLikelihoodGenerator.lean:138 prova o mesmo para o gerador. O Atlas, adendo v322, linhas 11932–11935, preserva a limitação à família comutante. Isso não fornece, por instanciação direta, um cociclo para o novo potencial XX exterior ao centralizador.
+
+[DERIVED — alvo] Construir a família t↦α_t(V) usando exatamente modularConjugation canônica. Cada operador local tem órbita contínua em norma porque α_t(towerPi a)=towerPi(flowLevel t a), flowLevel é contínua e towerPiLinear é contínua no domínio finito-dimensional. Produtos e somas finitas preservam a continuidade; a conjugação é isométrica. Assim a cauda ℓ¹ de V aproxima a órbita uniformemente para todo t, e a órbita limite é contínua em norma.
+
+[INPUT] SiteProfile fiel e SummableCouplingData com certificado efetivo de Σ|c_j|<∞. Nenhuma somabilidade é inferida de um tsum totalizado. A ação conserva fator e adjunto por suas propriedades canônicas já provadas. A futura ODE pode receber i·α_t(V), contínuo, limitado e anti-auto-adjunto.
+
+[OPEN] A família de coeficientes não é o cociclo resolvido nem constrói o estado perturbado. A convergência de cutoffs em norma não é UV relativista. Os termos XX comutam entre si, mas isso não os coloca no centralizador do perfil não tracial.

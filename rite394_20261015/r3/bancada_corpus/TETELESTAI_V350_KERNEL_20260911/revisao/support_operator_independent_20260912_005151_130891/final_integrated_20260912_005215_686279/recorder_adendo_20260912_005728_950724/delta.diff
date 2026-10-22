@@ -1,0 +1,55 @@
+--- snapshot_inicial
++++ adendo_final
+@@ -103,6 +103,19 @@
+               'gpf_H2_smooth_modular_four_frame_discharged',
+               'gpf_H3_local_horizon_equilibrium_discharged')
+ assert all(evidence[flag] is False for flag in open_flags)
++pending_source = ROOT / 'kernel/TGLV350/DualEnergyOnResolvent.lean'
++pending_logs = [json.loads(p.read_bytes()) for p in
++                sorted((ROOT / 'logs').glob('DualEnergyOnResolvent_*.json'), reverse=True)]
++pending_log = next(r for r in pending_logs if r['sha256'] == digest(pending_source)
++                   and r['returncode'] == 0 and r['source_unchanged_during_compile'])
++assert digest(ROOT / 'build/TGLV350/DualEnergyOnResolvent.olean') == pending_log['output_sha256']
++assert 'TGLExt/V350DualEnergyOnResolvent.lean' not in integration['added_kernel_files']
++checkpoint_path = ROOT / 'next_energy_checkpoint.json'
++checkpoint = {'source': str(pending_source), 'compile': pending_log,
++              'integrated': False, 'independent_review': False,
++              'stage': 'LOCAL_COMPILE_ONLY__NEXT_ENERGY_IDENTITY',
++              'remaining': 'Connect energy to T, prove complete square-root form/domain equality.'}
++write_atomic(checkpoint_path, json.dumps(checkpoint, ensure_ascii=False, indent=2).encode())
+ report_path = ROOT / 'RELATORIO_SUPORTE_E_OPERADOR_DUAL.md'
+ rows = '\n'.join(f"| {name} | `{digest(ROOT / 'kernel/TGLExt' / ('V350' + name + '.lean'))}` |"
+                  for name in MODULES)
+@@ -147,7 +160,11 @@
+ espectral da parte infinita. A construção de T e a minimalidade não são, por
+ si, a prova dessa identificação completa. Nenhuma nova medida espectral foi
+ construída aqui. A próxima ligação possível é identificar q_A em Ran R com
+-Re⟨x,Tx⟩ e provar a extensão aos domínios da forma; isso não está quitado.
++Re⟨x,Tx⟩ e provar a extensão aos domínios da forma; isso não está quitado nesta
++entrega integrada. Em desenvolvimento separado, `DualEnergyOnResolvent.lean`
++compilou a identidade q_A(Rv).toReal=Re⟨Rv,v−Rv⟩. Esse arquivo não está
++embutido no um.py, não recebeu a revisão independente desta etapa e não entra
++nas contagens abaixo. [Checkpoint de desenvolvimento](<{checkpoint_path.as_posix()}>).
+ 
+ [OPEN] Depois: valores no cone ampliado da base/pontos fixos; domínio e
+ semifinitude do peso operadorial; estado modular da base; gerador afiliado,
+@@ -216,6 +233,11 @@
+ Adendo à rota variacional: as etapas 1–3 antes DERIVED agora têm os teoremas
+ compilados descritos acima. A etapa 4, representação completa da forma,
+ permanece OPEN. O registro anterior é histórico e foi preservado.
++
++[REAL — compilação local, fora da integração e da revisão desta etapa]
++`DualEnergyOnResolvent.lean` já compilou a identidade de energia em Ran R;
++integração, revisão e ligação aos domínios completos continuam pendentes.
++[Checkpoint do próximo trabalho](<{checkpoint_path.as_posix()}>).
+ '''
+ surfaces = [ROOT / name for name in (
+     'MEMORIA_CENTRAL.md', 'REGISTRO_DAS_CONVERSAS.md', 'MEMORIA_DA_LINHAGEM.md',
+@@ -235,6 +257,7 @@
+     'surface_sha256': {str(p): digest(p) for p in surfaces},
+     'integrated_records': len(build['records']), 'controls': tests['passed'],
+     'audit_declarations': tests['axiom_report_entries'], 'full_runtime': False,
++    'unintegrated_development_checkpoint_sha256': digest(checkpoint_path),
+     'full_goal_complete': False,
+ }
+ write_atomic(ROOT / 'support_operator_custody.json', json.dumps(custody, ensure_ascii=False, indent=2).encode())

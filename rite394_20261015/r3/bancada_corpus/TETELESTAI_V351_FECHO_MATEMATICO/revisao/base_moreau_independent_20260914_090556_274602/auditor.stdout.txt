@@ -1,0 +1,41 @@
+TGLV351.dualResolvent_minimum_energy_value {H : Type} [NormedAddCommGroup.{0} H] [InnerProductSpace.{0, 0} ℂ H]
+  [CompleteSpace.{0} H]
+  (A R :
+    ContinuousLinearMap.{0, 0, 0, 0} (RingHom.id.{0} ℂ) ↥(TGLV350.Regular.RegularHilbert H)
+      ↥(TGLV350.Regular.RegularHilbert H))
+  (hA : LE.le.{0} 0 A)
+  (hlim :
+    ∀ (v : ↥(TGLV350.Regular.RegularHilbert H)),
+      Filter.Tendsto.{0, 0} (fun n => (TGLV350.Regular.dualCutResolvent n A) v) Filter.atTop.{0} (nhds.{0} (R v)))
+  (v : ↥(TGLV350.Regular.RegularHilbert H)) :
+  Eq.{1} (TGLV350.Regular.dualEnergy A v (R v)) (ENNReal.ofReal (inner.{0, 0} ℂ v ((HSub.hSub.{0, 0, 0} 1 R) v)).re)
+'TGLV351.dualResolvent_minimum_energy_value' depends on axioms: [propext, Classical.choice.{u}, Quot.sound.{u}]
+TGLV351.exists_base_moreau_approximant (P : TGLExt.SiteProfile) (A : TGLV350.Regular.PositiveCoreInput P) (c : ℝ)
+  (hc : LT.lt.{0} 0 c) :
+  ∃ D,
+    Membership.mem.{0, 0} (TGLExt.theFactorObject P) D ∧
+      LE.le.{0} 0 D ∧
+        LE.le.{0} D (HSMul.hSMul.{0, 0, 0} (↑c) 1) ∧
+          ∀ (v : ↥(TGLV350.Regular.RegularHilbert (TGLExt.TowerHilbert P))),
+            ∃ w,
+              Eq.{1} (ENNReal.ofReal (inner.{0, 0} ℂ v ((TGLV350.Regular.fibre D) v)).re)
+                  (HAdd.hAdd.{0, 0, 0}
+                    (ENNReal.ofReal
+                      (HMul.hMul.{0, 0, 0} c (HPow.hPow.{0, 0, 0} (norm.{0} (HSub.hSub.{0, 0, 0} w v)) 2)))
+                    (TGLV350.Regular.dualQuadraticIntegral (↑A) w)) ∧
+                ∀ (z : ↥(TGLV350.Regular.RegularHilbert (TGLExt.TowerHilbert P))),
+                  LE.le.{0} (ENNReal.ofReal (inner.{0, 0} ℂ v ((TGLV350.Regular.fibre D) v)).re)
+                    (HAdd.hAdd.{0, 0, 0}
+                      (ENNReal.ofReal
+                        (HMul.hMul.{0, 0, 0} c (HPow.hPow.{0, 0, 0} (norm.{0} (HSub.hSub.{0, 0, 0} z v)) 2)))
+                      (TGLV350.Regular.dualQuadraticIntegral (↑A) z))
+'TGLV351.exists_base_moreau_approximant' depends on axioms: [propext, Classical.choice.{u}, Quot.sound.{u}]
+TGLV351.exists_monotone_base_dual_approximation (P : TGLExt.SiteProfile) (A : TGLV350.Regular.PositiveCoreInput P) :
+  ∃ D,
+    (∀ (n : ℕ), Membership.mem.{0, 0} (TGLExt.theFactorObject P) (D n)) ∧
+      (∀ (n : ℕ), LE.le.{0} 0 (D n)) ∧
+        Monotone.{0, 0} D ∧
+          ∀ (v : ↥(TGLV350.Regular.RegularHilbert (TGLExt.TowerHilbert P))),
+            Eq.{1} (TGLV350.Regular.dualQuadraticIntegral (↑A) v)
+              (⨆ n, ENNReal.ofReal (inner.{0, 0} ℂ v ((TGLV350.Regular.fibre (D n)) v)).re)
+'TGLV351.exists_monotone_base_dual_approximation' depends on axioms: [propext, Classical.choice.{u}, Quot.sound.{u}]

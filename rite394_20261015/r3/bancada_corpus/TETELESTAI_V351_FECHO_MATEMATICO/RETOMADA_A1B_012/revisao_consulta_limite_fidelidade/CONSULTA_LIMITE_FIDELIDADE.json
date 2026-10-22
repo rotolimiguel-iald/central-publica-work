@@ -1,0 +1,325 @@
+{
+  "timestamp": "2026-09-14T22:39:34.941992-03:00",
+  "status": "CONSULTA_DERIVED__CANDIDATE_DEV_NOT_INSPECTED",
+  "notation": {
+    "delta_n": "1/(n+1)",
+    "S_epsilon": "existing hilbertPositiveSqrt(regularInverseGeneratorCutoff P epsilon)",
+    "W_epsilon": "nu(star S_epsilon * X * S_epsilon)",
+    "tau": "sup_n W_delta_n"
+  },
+  "recommended_faithfulness": "use only n=0, B1=R, sandwich multiply to RXR=0, R injective and dense",
+  "dual_scaling_sign": "tau(theta_s X) = ENNReal.ofReal(exp(-s)) * tau(X)",
+  "proposed_targets": [
+    {
+      "name": "inverseLimitWeight_faithful",
+      "statement": "tau(X)=0 iff X=0"
+    },
+    {
+      "name": "regularInverseCutoffSqrt_dual",
+      "statement": "theta_s S_epsilon = sqrt(exp(s)) smul S_(epsilon exp(s)); epsilon>0"
+    },
+    {
+      "name": "inverseCutoffWeight_dual",
+      "statement": "W_epsilon(theta_s X)=ofReal(exp(-s))*W_(epsilon exp(-s))(X); epsilon>0"
+    },
+    {
+      "name": "inverseLimitWeight_scaled_sequence",
+      "statement": "sup_n W_(r/(n+1))(X)=tau(X); r>0"
+    },
+    {
+      "name": "inverseLimitWeight_dual",
+      "statement": "tau(theta_s X)=ofReal(exp(-s))*tau(X)"
+    }
+  ],
+  "supplier_records": [
+    {
+      "source": {
+        "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\v\\TGLExt\\V350ScalarDualWeightFaithfulness.lean",
+        "bytes": 3967,
+        "sha256": "3ff3e31e49de71f035a425202ef1796be18da2b46bdb60a7f6c34b8a2e73f61c"
+      },
+      "excerpts": [
+        {
+          "start": 54,
+          "end": 57,
+          "text": "theorem dualQuadraticIntegral_vacuum_faithful (P : SiteProfile)\n    (A : RegularHilbert (TowerHilbert P) →L[ℂ] RegularHilbert (TowerHilbert P))\n    (hm : A ∈ regularCoreAlgebra P) (hA : 0 ≤ A) :\n    dualQuadraticIntegral A (regularVacuum P) = 0 ↔ A = 0 := by"
+        }
+      ]
+    },
+    {
+      "source": {
+        "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\v\\TGLExt\\V350ScalarDualWeight.lean",
+        "bytes": 4685,
+        "sha256": "e20dc5262ec98b62c8a6797fd07492e584a03fefefd0dd87b1666484dd72bc53"
+      },
+      "excerpts": [
+        {
+          "start": 15,
+          "end": 16,
+          "text": "def scalarDualWeight (P : SiteProfile) (A : PositiveCoreInput P) : ℝ≥0∞ :=\n  dualQuadraticIntegral A.val (regularVacuum P)"
+        },
+        {
+          "start": 36,
+          "end": 42,
+          "text": "theorem scalarDualWeight_faithful (P : SiteProfile) (A : PositiveCoreInput P) :\n    scalarDualWeight P A = 0 ↔ A = PositiveCoreInput.zero P := by\n  constructor\n  · intro hz\n    exact Subtype.ext ((dualQuadraticIntegral_vacuum_faithful P A.val A.property.1 A.property.2).mp hz)\n  · rintro rfl\n    exact scalarDualWeight_zero P"
+        }
+      ]
+    },
+    {
+      "source": {
+        "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\v\\TGLExt\\V351InverseGeneratorCutoff.lean",
+        "bytes": 7014,
+        "sha256": "f615a4a8b80a4bf970c719aa9d44fd2d917eb52f01fa1c925cfcab8151adc227"
+      },
+      "excerpts": [
+        {
+          "start": 13,
+          "end": 29,
+          "text": "def regularInverseGeneratorCutoff (P : SiteProfile) (ε : ℝ) :\n    RegularHilbert (TowerHilbert P) →L[ℂ] RegularHilbert (TowerHilbert P) :=\n  (ε⁻¹ : ℂ) • dualAmbient (Real.log ε) (regularSpectralResolvent P)\n\ntheorem regularInverseGeneratorCutoff_mem (P : SiteProfile) (ε : ℝ) :\n    regularInverseGeneratorCutoff P ε ∈ regularCoreAlgebra P := by\n  have hm : dualAmbient (Real.log ε) (regularSpectralResolvent P) ∈ regularCoreAlgebra P :=\n    (regularDualAction P (Real.log ε)\n      ⟨regularSpectralResolvent P,regularSpectralResolvent_mem P⟩).property\n  exact (regularCoreAlgebra P).toStarSubalgebra.smul_mem hm _\n\ntheorem regularInverseGeneratorCutoff_nonneg (P : SiteProfile) (ε : ℝ) (hε : 0 < ε) :\n    0 ≤ regularInverseGeneratorCutoff P ε := by\n  apply (ContinuousLinearMap.nonneg_iff_isPositive _).mpr\n  apply ((ContinuousLinearMap.nonneg_iff_isPositive _).mp\n    (dualAmbient_nonneg (Real.log ε) _ (regularSpectralResolvent_nonneg P))).smul_of_nonneg\n  exact_mod_cast inv_nonneg.mpr hε.le"
+        },
+        {
+          "start": 43,
+          "end": 46,
+          "text": "theorem regularInverseGeneratorCutoff_one (P : SiteProfile) :\n    regularInverseGeneratorCutoff P 1 = regularSpectralResolvent P := by\n  simp only [regularInverseGeneratorCutoff, Complex.ofReal_one, inv_one, Real.log_one,\n    dualAmbient_zero, one_smul]"
+        },
+        {
+          "start": 81,
+          "end": 95,
+          "text": "theorem regularInverseGeneratorCutoff_dual (P : SiteProfile) (ε : ℝ) (hε : 0 < ε)\n    (s : ℝ) :\n    dualAmbient s (regularInverseGeneratorCutoff P ε) =\n      (Real.exp s : ℂ) • regularInverseGeneratorCutoff P (ε*Real.exp s) := by\n  unfold regularInverseGeneratorCutoff\n  rw [map_smul]\n  have ht : dualAmbient s (dualAmbient (Real.log ε) (regularSpectralResolvent P)) =\n      dualAmbient (Real.log ε+s) (regularSpectralResolvent P) := by\n    rw [dualAmbient_add]\n    rfl\n  rw [ht,Real.log_mul hε.ne' (Real.exp_ne_zero s),Real.log_exp,smul_smul]\n  have he : (Real.exp s : ℂ) * ((ε*Real.exp s)⁻¹ : ℂ) = (ε⁻¹ : ℂ) := by\n    push_cast\n    field_simp\n  rw [Complex.ofReal_mul,he]"
+        },
+        {
+          "start": 99,
+          "end": 102,
+          "text": "theorem regularInverseGeneratorCutoff_graph_iff (P : SiteProfile) (ε : ℝ) (hε : 0 < ε)\n    (x y : RegularHilbert (TowerHilbert P)) :\n    (x,y) ∈ (regularPositiveGenerator P).graph ↔\n      regularInverseGeneratorCutoff P ε (y+(ε : ℂ) • x) = x := by"
+        }
+      ]
+    },
+    {
+      "source": {
+        "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\v\\TGLExt\\V351RegularPositiveGraph.lean",
+        "bytes": 8384,
+        "sha256": "d56ea107302802ee76d65a3c32c69be9fe41cddb4901a65486ab7f1bfb345390"
+      },
+      "excerpts": [
+        {
+          "start": 84,
+          "end": 87,
+          "text": "theorem regularSpectralResolvent_nonneg (P : SiteProfile) :\n    0 ≤ regularSpectralResolvent P := by\n  exact map_nonneg (regularSpectralCoordinates P).conjStarAlgEquiv\n    (realScalarMultiplier_nonneg _ _ _ _)"
+        },
+        {
+          "start": 98,
+          "end": 102,
+          "text": "theorem regularSpectralResolvent_injective (P : SiteProfile) :\n    Function.Injective (regularSpectralResolvent P) :=\n  (regularSpectralCoordinates P).injective.comp\n    ((realScalarMultiplier_injective _ _ _ _ (fun _ => Real.sigmoid_pos _)).comp\n      (regularSpectralCoordinates P).symm.injective)"
+        }
+      ]
+    },
+    {
+      "source": {
+        "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\v\\TGLExt\\BoundedGraphOperator.lean",
+        "bytes": 11526,
+        "sha256": "4d70d27d25f31fed13b73a7ae60601478718e41bbc38c24c38117b0cc26dc84f"
+      },
+      "excerpts": [
+        {
+          "start": 117,
+          "end": 128,
+          "text": "/-- Density uses A*=A and injectivity, not a bounded inverse of A. -/\ntheorem bounded_graph_domain_dense [CompleteSpace E] (A B : E →L[ℂ] E) (hAi : Function.Injective A)\n    (hA : IsSelfAdjoint A) :\n    Dense ((boundedGraphOperator A B hAi).domain : Set E) := by\n  have hsa : A.adjoint = A := hA.star_eq\n  have hk : A.ker = ⊥ := LinearMap.ker_eq_bot.mpr hAi\n  have hc : A.range.topologicalClosure = ⊤ := by\n    rw [Submodule.topologicalClosure_eq_top_iff, A.orthogonal_range, hsa, hk]\n  intro x\n  change x ∈ (A.range.topologicalClosure : Set E)\n  rw [hc]\n  trivial"
+        }
+      ]
+    },
+    {
+      "source": {
+        "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\v\\TGLExt\\V351ResolventImaginaryPowers.lean",
+        "bytes": 4883,
+        "sha256": "0cfc297376410ff6bd259eeaf921a9d6e6ca47829b5d389c6b5c30bf4c5accf5"
+      },
+      "excerpts": [
+        {
+          "start": 19,
+          "end": 23,
+          "text": "include hT h1 hi hj in\ntheorem resolventDampingOperator_denseRange : DenseRange (resolventDampingOperator T) :=\n  ChatgptAudit.Continuous049.bounded_graph_domain_dense (resolventDampingOperator T) 0\n    (resolventDampingOperator_injective T hi hj)\n    (IsSelfAdjoint.of_nonneg (resolventDampingOperator_nonneg T hT h1))"
+        }
+      ]
+    },
+    {
+      "source": {
+        "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\v\\TGLExt\\V350DualWeightForm.lean",
+        "bytes": 6890,
+        "sha256": "3a233c43934c915774c68c23f0fca752d1c9dfc95679178c714394fe666a24b4"
+      },
+      "excerpts": [
+        {
+          "start": 87,
+          "end": 95,
+          "text": "theorem dualQuadraticIntegral_dual_invariant (r : ℝ)\n    (A : RegularHilbert H →L[ℂ] RegularHilbert H) (v : RegularHilbert H) :\n    dualQuadraticIntegral (dualAmbient r A) v = dualQuadraticIntegral A v := by\n  have heq : dualQuadraticIntegrand (dualAmbient r A) v =\n      fun s => dualQuadraticIntegrand A v (r+s) := by\n    funext s\n    simp only [dualQuadraticIntegrand, dualAmbient_add, StarAlgEquiv.trans_apply]\n  unfold dualQuadraticIntegral\n  rw [heq, lintegral_add_left_eq_self]"
+        }
+      ]
+    },
+    {
+      "source": {
+        "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\v\\TGLExt\\V350RegularDualAction.lean",
+        "bytes": 7130,
+        "sha256": "e7c3628d969c0dae2a971c156200acb88f6bf4286a9c648a2ad3da08c468040c"
+      },
+      "excerpts": [
+        {
+          "start": 18,
+          "end": 24,
+          "text": "def dualAmbient (s : ℝ) :\n    (RegularHilbert H →L[ℂ] RegularHilbert H) ≃⋆ₐ[ℂ]\n      (RegularHilbert H →L[ℂ] RegularHilbert H) :=\n  Unitary.conjStarAlgAut ℂ _ (dualImplementer s)\n\ntheorem dualAmbient_apply (s : ℝ) (A : RegularHilbert H →L[ℂ] RegularHilbert H) :\n    dualAmbient s A = characterMultiplier s * A * star (characterMultiplier (H := H) s) := rfl"
+        },
+        {
+          "start": 42,
+          "end": 48,
+          "text": "theorem dualAmbient_symm (s : ℝ) :\n    (dualAmbient (H := H) s).symm = dualAmbient (-s) := by\n  apply StarAlgEquiv.ext\n  intro A\n  change star (characterMultiplier (H := H) s) * A * characterMultiplier s =\n    characterMultiplier (-s) * A * star (characterMultiplier (H := H) (-s))\n  rw [characterMultiplier_star, characterMultiplier_star, neg_neg]"
+        },
+        {
+          "start": 76,
+          "end": 86,
+          "text": "def regularDualAction (P : SiteProfile) (s : ℝ) :\n    (regularCoreAlgebra P).toStarSubalgebra ≃⋆ₐ[ℂ] (regularCoreAlgebra P).toStarSubalgebra :=\n  generatedAutomorphism (dualAmbient s) (regularGenerators P)\n    (dualAmbient_preserves_generators P s) (by\n      rw [dualAmbient_symm]\n      exact dualAmbient_preserves_generators P (-s))\n\ntheorem regularDualAction_apply (P : SiteProfile) (s : ℝ)\n    (A : (regularCoreAlgebra P).toStarSubalgebra) :\n    ((regularDualAction P s A) : RegularHilbert (TowerHilbert P) →L[ℂ]\n      RegularHilbert (TowerHilbert P)) = dualAmbient s A := rfl"
+        }
+      ]
+    },
+    {
+      "source": {
+        "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\v\\TGLExt\\V350DualWeightCuts.lean",
+        "bytes": 3976,
+        "sha256": "cad8c916c67f1329afbac42658d13e8930e065e8f6a69152d4c9caf93cedd91b"
+      },
+      "excerpts": [
+        {
+          "start": 40,
+          "end": 44,
+          "text": "theorem dualAmbient_nonneg (s : ℝ)\n    (A : RegularHilbert H →L[ℂ] RegularHilbert H) (hA : 0 ≤ A) :\n    0 ≤ dualAmbient s A := by\n  have h := OrderHomClass.monotone (dualAmbient (H := H) s) hA\n  simpa only [map_zero] using h"
+        }
+      ]
+    },
+    {
+      "source": {
+        "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\v\\TGLExt\\V350DualQuadraticLaws.lean",
+        "bytes": 6962,
+        "sha256": "7085d5ad460720e87ea5e1e3cc8bcbf5b55193be77b2ba283988fbf03120c1f3"
+      },
+      "excerpts": [
+        {
+          "start": 61,
+          "end": 66,
+          "text": "theorem dualQuadraticIntegral_smul_operator (r : ℝ) (hr : 0 ≤ r)\n    (A : RegularHilbert H →L[ℂ] RegularHilbert H) (v : RegularHilbert H) :\n    dualQuadraticIntegral (r • A) v = ENNReal.ofReal r * dualQuadraticIntegral A v := by\n  simp only [dualQuadraticIntegral, dualQuadraticIntegrand_smul_operator r hr,\n    lintegral_const_mul _ (dualQuadraticIntegrand_measurable A v)]\n  ac_rfl"
+        }
+      ]
+    },
+    {
+      "source": {
+        "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\v\\TGLExt\\V351RegulatorWeightOrder.lean",
+        "bytes": 5182,
+        "sha256": "b908f79a4d20ca8f456eb245e2a605a6cc6e611667e1c8a8d6cb1cee2ee4f838"
+      },
+      "excerpts": [
+        {
+          "start": 66,
+          "end": 90,
+          "text": "theorem scalarWeight_inverseCutoff_antitone (P : SiteProfile)\n    (ε η : ℝ) (hε : 0 < ε) (hη : 0 < η) (hεη : ε ≤ η)\n    (X : PositiveCoreInput P) :\n    dualQuadraticIntegral\n      (star (hilbertPositiveSqrt (regularInverseGeneratorCutoff P η)) * X.val *\n        hilbertPositiveSqrt (regularInverseGeneratorCutoff P η)) (regularVacuum P) ≤\n    dualQuadraticIntegral\n      (star (hilbertPositiveSqrt (regularInverseGeneratorCutoff P ε)) * X.val *\n        hilbertPositiveSqrt (regularInverseGeneratorCutoff P ε)) (regularVacuum P) := by\n  obtain ⟨hmε,hrε⟩ := regularInverseGeneratorCutoff_sqrt_right P ε hε\n  obtain ⟨hmη,hrη⟩ := regularInverseGeneratorCutoff_sqrt_right P η hη\n  let b : (regularCoreAlgebra P).toStarSubalgebra :=\n    ⟨hilbertPositiveSqrt (regularInverseGeneratorCutoff P η),hmη⟩\n  let c : (regularCoreAlgebra P).toStarSubalgebra :=\n    ⟨hilbertPositiveSqrt (regularInverseGeneratorCutoff P ε),hmε⟩\n  have ho : b*star b ≤ c*star c := by\n    change hilbertPositiveSqrt (regularInverseGeneratorCutoff P η) *\n        star (hilbertPositiveSqrt (regularInverseGeneratorCutoff P η)) ≤\n      hilbertPositiveSqrt (regularInverseGeneratorCutoff P ε) *\n        star (hilbertPositiveSqrt (regularInverseGeneratorCutoff P ε))\n    rw [hilbertPositiveSqrt_mul_star _ (regularInverseGeneratorCutoff_nonneg P η hη),\n      hilbertPositiveSqrt_mul_star _ (regularInverseGeneratorCutoff_nonneg P ε hε)]\n    exact regularInverseGeneratorCutoff_antitone P ε η hε hη hεη\n  exact scalarWeight_right_perturbed_mono_all_positive P b c hrη hrε ho\n    (fun δ => regularInverseCutoffSqrt_commutes_average P η hη δ)"
+        }
+      ]
+    },
+    {
+      "source": {
+        "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\v\\TGLExt\\V351InverseCutoffCFC.lean",
+        "bytes": 7577,
+        "sha256": "cbdf10aea749a552b0f47afb3ef59560ed47d6f46cf7dd8064dc963a092c3490"
+      },
+      "excerpts": [
+        {
+          "start": 125,
+          "end": 135,
+          "text": "theorem regularInverseGeneratorCutoff_sqrt_right (P : SiteProfile) (ε : ℝ) (hε : 0 < ε) :\n    ∃ h : hilbertPositiveSqrt (regularInverseGeneratorCutoff P ε) ∈ regularCoreAlgebra P,\n      (⟨hilbertPositiveSqrt (regularInverseGeneratorCutoff P ε),h⟩ :\n        (regularCoreAlgebra P).toStarSubalgebra) ∈ scalarPolarRightAlgebra P :=\n  scalarRightAction_sqrt P\n    ⟨regularInverseGeneratorCutoff P ε,regularInverseGeneratorCutoff_mem P ε⟩\n    (regularInverseGeneratorCutoff_right P ε hε) (regularInverseGeneratorCutoff_nonneg P ε hε)\n\n#print axioms inverseCutoffFunction\n#print axioms inverseCutoffFunction_continuous\n#print axioms inverseCutoffFunction_sigmoid"
+        }
+      ]
+    },
+    {
+      "source": {
+        "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\v\\.lake\\packages\\mathlib\\Mathlib\\Analysis\\SpecialFunctions\\ContinuousFunctionalCalculus\\Rpow\\Basic.lean",
+        "bytes": 37448,
+        "sha256": "ef03c823cc3798b288a7f00a2902b1fae092f1181bd44cb8b41ef133db389d5f"
+      },
+      "excerpts": [
+        {
+          "start": 265,
+          "end": 266,
+          "text": "lemma sqrt_mul_sqrt_self (a : A) (ha : 0 ≤ a := by cfc_tac) : sqrt a * sqrt a = a := by\n  rw [← nnrpow_two _, nnrpow_sqrt_two _]"
+        },
+        {
+          "start": 283,
+          "end": 296,
+          "text": "lemma sqrt_unique {a b : A} (h : b * b = a) (hb : 0 ≤ b := by cfc_tac) :\n    sqrt a = b :=\n  h ▸ sqrt_mul_self b\n\nlemma sqrt_eq_iff (a b : A) (ha : 0 ≤ a := by cfc_tac) (hb : 0 ≤ b := by cfc_tac) :\n    sqrt a = b ↔ b * b = a :=\n  ⟨(mul_self_eq ·), (sqrt_unique ·)⟩\n\nlemma sqrt_eq_zero_iff (a : A) (ha : 0 ≤ a := by cfc_tac) : sqrt a = 0 ↔ a = 0 := by\n  rw [sqrt_eq_iff a _, mul_zero, eq_comm]\n\nlemma mul_self_eq_mul_self_iff (a b : A) (ha : 0 ≤ a := by cfc_tac) (hb : 0 ≤ b := by cfc_tac) :\n    a * a = b * b ↔ a = b :=\n  ⟨fun h => sqrt_mul_self a ▸ sqrt_unique h.symm, fun h => h ▸ rfl⟩"
+        }
+      ]
+    },
+    {
+      "source": {
+        "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\v\\.lake\\packages\\mathlib\\Mathlib\\Algebra\\Order\\Archimedean\\Basic.lean",
+        "bytes": 23037,
+        "sha256": "e2b942510a5b1f8853dc1cb14e5d40d286a0b0dd3cc8434ad0dfbd5f81c25518"
+      },
+      "excerpts": [
+        {
+          "start": 211,
+          "end": 218,
+          "text": "variable [Semifield K] [LinearOrder K] [IsStrictOrderedRing K] [Archimedean K] {x y ε : K}\n\nlemma exists_nat_one_div_lt (hε : 0 < ε) : ∃ n : ℕ, 1 / (n + 1 : K) < ε := by\n  obtain ⟨n, hn⟩ := exists_nat_gt (1 / ε)\n  use n\n  rw [div_lt_iff₀, ← div_lt_iff₀' hε]\n  · apply hn.trans\n    simp [zero_lt_one]"
+        }
+      ]
+    },
+    {
+      "source": {
+        "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\v\\.lake\\packages\\mathlib\\Mathlib\\Data\\ENNReal\\Inv.lean",
+        "bytes": 44868,
+        "sha256": "261c1dfb4e4f5f56462686c82a762fb3c1f4f9d2e5af144c94f64bb7aefadb89"
+      },
+      "excerpts": [
+        {
+          "start": 805,
+          "end": 819,
+          "text": "variable {ι κ : Sort*} {f g : ι → ℝ≥0∞} {s : Set ℝ≥0∞} {a : ℝ≥0∞}\n\nlemma mul_iSup (a : ℝ≥0∞) (f : ι → ℝ≥0∞) : a * ⨆ i, f i = ⨆ i, a * f i := by\n  by_cases hf : ∀ i, f i = 0\n  · simp [hf]\n  obtain rfl | ha₀ := eq_or_ne a 0\n  · simp\n  obtain rfl | ha := eq_or_ne a ∞\n  · obtain ⟨i, hi⟩ := not_forall.1 hf\n    simpa [iSup_eq_zero.not.2 hf, eq_comm (a := ⊤)]\n      using le_iSup_of_le (f := fun i => ⊤ * f i) i (top_mul hi).ge\n  · exact (mulLeftOrderIso _ <| isUnit_iff.2 ⟨ha₀, ha⟩).map_iSup _\n\nlemma iSup_mul (f : ι → ℝ≥0∞) (a : ℝ≥0∞) : (⨆ i, f i) * a = ⨆ i, f i * a := by\n  simp [mul_comm, mul_iSup]"
+        }
+      ]
+    },
+    {
+      "source": {
+        "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\v\\.lake\\packages\\mathlib\\Mathlib\\Analysis\\CStarAlgebra\\ContinuousFunctionalCalculus\\Unique.lean",
+        "bytes": 20811,
+        "sha256": "d7103470f12927eb549967928bc1a6bc6e81ba8727997eee113239772ba2e6c1"
+      },
+      "excerpts": [
+        {
+          "start": 450,
+          "end": 464,
+          "text": "variable {F R S A B : Type*} {p : A → Prop} {q : B → Prop}\n  [CommSemiring R] [StarRing R] [MetricSpace R] [IsTopologicalSemiring R] [ContinuousStar R]\n  [Ring A] [StarRing A] [TopologicalSpace A] [Algebra R A]\n  [Ring B] [StarRing B] [TopologicalSpace B] [Algebra R B]\n  [CommSemiring S] [Algebra R S] [Algebra S A] [Algebra S B] [IsScalarTower R S A]\n  [IsScalarTower R S B] [ContinuousFunctionalCalculus R A p] [ContinuousFunctionalCalculus R B q]\n  [ContinuousMap.UniqueHom R B] [FunLike F A B] [AlgHomClass F S A B]\n  [StarHomClass F A B]\n\ninclude S in\n/-- Star algebra homomorphisms commute with the continuous functional calculus. -/\nlemma StarAlgHomClass.map_cfc (φ : F) (f : R → R) (a : A)\n    (hf : ContinuousOn f (spectrum R a) := by cfc_cont_tac)\n    (hφ : Continuous φ := by fun_prop) (ha : p a := by cfc_tac) (hφa : q (φ a) := by cfc_tac) :\n    φ (cfc f a) = cfc f (φ a) := by"
+        }
+      ]
+    }
+  ],
+  "prior_compilations_read_only": [
+    {
+      "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\revisao_ordem_todos_positivos\\compilation.json",
+      "bytes": 1969214,
+      "sha256": "7745819031950aeef64e2597386f489dba9f352c1421704bfefe66d1af4bb72b"
+    },
+    {
+      "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\revisao_ordem_reguladores\\compilation.json",
+      "bytes": 1968169,
+      "sha256": "94d8f48a968dc984c5263b0ada838f4cc0e80d4d967fdea88a4296b120e1c099"
+    }
+  ],
+  "report": {
+    "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\revisao_consulta_limite_fidelidade\\CONSULTA_LIMITE_FIDELIDADE.md",
+    "bytes": 6611,
+    "sha256": "451538ae1f8e155b4bb114d33e6446594ea414e3c9f1ba11b91038b1afc4eb81"
+  },
+  "new_lean_theorems": 0,
+  "compilation_executed": false,
+  "candidate_dev_read": false,
+  "author_source_modified": false,
+  "memory_modified": false,
+  "search_exhaustive": false,
+  "trace_open": true,
+  "limit_weight_semifiniteness_open": true
+}

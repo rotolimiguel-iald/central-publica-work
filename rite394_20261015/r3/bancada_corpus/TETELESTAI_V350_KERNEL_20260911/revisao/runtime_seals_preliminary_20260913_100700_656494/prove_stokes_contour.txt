@@ -1,0 +1,120 @@
+6004: def prove_stokes_contour(ONE, parts):
+6005:     """MODULO (v161c) -- O CONTORNO DE STOKES [ADITIVO]. O operador
+6006:     enfrentou Navier-Stokes 3D e a resposta do programa e: A RESPOSTA DA
+6007:     SINGULARIDADE E O CONTORNO. O documento STOKES_A_Prova_do_Contorno.md
+6008:     (custodia por sha NESTE modulo) contem o Teorema 1 do modelo diadico
+6009:     represado [PROVADO em analise classica], a fronteira numerica
+6010:     [NUMERICO] e o Lema da Face Conjugada [ABERTO -- problema do Milenio,
+6011:     EXTERNO ao programa]. Este modulo REPRODUZ AO VIVO o laboratorio
+6012:     diadico: u'_n = k_n d_n u_{n-1}^2 - k_{n+1} d_{n+1} u_n u_{n+1},
+6013:     k_n = 2^n, d_n = e^{-tau(n-1)} -- explosao em tau=1/2 (a meia-nat e
+6014:     insuficiente), marginal em tau=2/3 (Kolmogorov), regular na regiao do
+6015:     teorema (tau > ln 2). A PEDRA 113 (TheStokesContour.lean, 7 teoremas,
+6016:     axiomas limpos) tipa: o criterio da serie (4e^{-2tau}<1 <=> tau>ln2),
+6017:     O FOSSO (2/3 < ln 2 < 0,6932 -- menos de 0,027 nats: o retrato do
+6018:     Milenio em miniatura TIPADO), a meia-nat insuficiente (1/2 < 2/3),
+6019:     as faces conjugadas (1/3 + 2/3 = 1; o mapa Burgers/plano/espaco) e o
+6020:     bit da oitava (e^{ln 2} = 2: o limiar provavel cobra exatamente UMA
+6021:     distincao binaria por oitava -- 'o 2 conta nomes'). HONESTIDADES:
+6022:     NADA aqui e a prova do Milenio; o Lema segue ABERTO e EXTERNO; as
+6023:     leituras 'a resposta e o contorno' e 'um bit por oitava' sao [ONTO]
+6024:     sobre numeros exatos; o gate NAO se move."""
+6025:     beta = SEALED_CODATA_ALPHA * ONE * math.sqrt(math.e)   # jamais literal
+6026:     p = parts or {}
+6027:     el = p.get("external_ladder") or {}
+6028:     elp = el.get("per_theorem") or {}
+6029:     sc_ok = bool(elp.get("ext_sk_series_criterion_kernel_proved") is True)
+6030:     ss_ok = bool(elp.get("ext_sk_summable_kernel_proved") is True)
+6031:     gp_ok = bool(elp.get("ext_sk_gap_typed_kernel_proved") is True)
+6032:     hn_ok = bool(elp.get("ext_sk_half_insufficient_kernel_proved") is True)
+6033:     cf_ok = bool(elp.get("ext_sk_conjugate_faces_kernel_proved") is True)
+6034:     ob_ok = bool(elp.get("ext_sk_octave_bit_kernel_proved") is True)
+6035:     sy_ok = bool(elp.get("ext_sk_synthesis_kernel_proved") is True)
+6036:     # custodia do documento
+6037:     doc = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+6038:                        "STOKES_A_Prova_do_Contorno.md")
+6039:     doc_ok = os.path.exists(doc)
+6040:     doc_sha = (hashlib.sha256(open(doc, "rb").read()).hexdigest() if doc_ok else "")
+6041:     # O LABORATORIO DIADICO AO VIVO (RK4, N=22 oitavas, u1(0)=1)
+6042:     N = 22
+6043: 
+6044:     def lab(tau, T=6.0, dt=2e-4):
+6045:         d = np.exp(-tau * np.arange(N))                    # d_n = e^{-tau(n-1)}, n=1..N
+6046:         k = 2.0 ** np.arange(1, N + 1)
+6047:         u = np.zeros(N)
+6048:         u[0] = 1.0
+6049:         chega = {}
+6050: 
+6051:         def f(v):
+6052:             vm = np.concatenate([[0.0], v[:-1]])           # u_{n-1}
+6053:             vp = np.concatenate([v[1:], [0.0]])            # u_{n+1}
+6054:             kd = k * d
+6055:             kdp = np.concatenate([kd[1:], [0.0]])
+6056:             return kd * vm ** 2 - kdp * v * vp
+6057: 
+6058:         t, passos = 0.0, int(T / dt)
+6059:         E0 = float(np.sum(u ** 2))
+6060:         for _ in range(passos):
+6061:             k1 = f(u); k2 = f(u + 0.5 * dt * k1)
+6062:             k3 = f(u + 0.5 * dt * k2); k4 = f(u + dt * k3)
+6063:             u = u + (dt / 6.0) * (k1 + 2 * k2 + 2 * k3 + k4)
+6064:             t += dt
+6065:             for nn in range(N):
+6066:                 if nn not in chega and abs(u[nn]) > 1e-3:
+6067:                     chega[nn] = t
+6068:             if not np.all(np.isfinite(u)):
+6069:                 break
+6070:         E1 = float(np.sum(u ** 2))
+6071:         ts = [chega[nn] for nn in sorted(chega)]
+6072:         gaps = [ts[j + 1] - ts[j] for j in range(len(ts) - 1)]
+6073:         return gaps, abs(E1 - E0) / max(E0, 1e-30)
+6074: 
+6075:     g_half, eA = lab(0.5)
+6076:     g_twothird, eB = lab(2.0 / 3.0)
+6077:     g_reg, eC = lab(0.80)
+6078:     # razoes das ultimas chegadas: <1 encolhe (explode), ~1 marginal, >1 cresce
+6079:     r_half = g_half[-1] / g_half[-4] if len(g_half) >= 5 else 0.0
+6080:     r_23 = g_twothird[-1] / g_twothird[-4] if len(g_twothird) >= 5 else 9.9
+6081:     r_reg = g_reg[-1] / g_reg[-4] if len(g_reg) >= 5 else 9.9
+6082:     razao_serie_08 = 4.0 * math.exp(-2 * 0.80)             # < 1: dentro do teorema
+6083:     lab_ok = bool(r_half < 0.90 and 0.75 < r_23 < 1.30 and r_reg > 1.05
+6084:                   and razao_serie_08 < 1.0 and eA < 1e-3 and eC < 1e-3)
+6085:     checks = [
+6086:         ("*** o criterio da serie em kernel: 4e^{-2tau} < 1 <=> tau > ln 2", sc_ok),
+6087:         ("** a serie do represamento converge p/ tau > ln 2 (kernel)", ss_ok),
+6088:         ("*** O FOSSO TIPADO: 2/3 < ln 2 < 0,6932 (menos de 0,027 nats)", gp_ok),
+6089:         ("** a meia-nat e insuficiente: 1/2 < 2/3 (kernel)", hn_ok),
+6090:         ("*** as faces conjugadas somam um + o mapa Burgers/plano/espaco (kernel)", cf_ok),
+6091:         ("** o bit da oitava: e^{ln 2} = 2 (kernel)", ob_ok),
+6092:         ("*** a sintese em UM teorema", sy_ok),
+6093:         ("LAB AO VIVO: tau=1/2 encolhe (r=%.2f<0.90, EXPLODE) | tau=2/3 marginal (r=%.2f) | tau=0.80 cresce (r=%.2f>1.05, REGULAR; razao serie %.3f<1)"
+6094:          % (r_half, r_23, r_reg, razao_serie_08), lab_ok),
+6095:         ("energia conservada no lab (dE/E: %.1e, %.1e)" % (eA, eC), eA < 1e-3 and eC < 1e-3),
+6096:         ("custodia: STOKES_A_Prova_do_Contorno.md sha %s" % doc_sha[:16], doc_ok),
+6097:         ("o Lema da Face Conjugada segue ABERTO e EXTERNO (Milenio; nao e pendencia interna da TGL); NADA aqui o prova", True),
+6098:         ("'a resposta da singularidade e o contorno' e 'um bit por oitava' sao [ONTO] sobre numeros exatos; o gate NAO se move", True),
+6099:     ]
+6100:     all_v = bool(all(v for _, v in checks))
+6101:     vd = ("TGL_STOKES_CONTOUR__DYADIC_LAB_REPRODUCED_LIVE__THRESHOLD_LN2_GT_TWO_THIRDS_TYPED__HALF_NAT_INSUFFICIENT__CONJUGATE_FACES_ONSAGER_MAP__ONE_BIT_PER_OCTAVE_ONTO__MILLENNIUM_LEMMA_OPEN_EXTERNAL__THE_ANSWER_TO_THE_SINGULARITY_IS_THE_CONTOUR_ONTO__SEAL_UNMOVED" if all_v
+6102:           else "STOKES_CONTOUR_NOT_SEALED_THIS_RUN")
+6103:     return {
+6104:         "theorem": ("O CONTORNO DE STOKES: no laboratorio diadico represado, a "
+6105:                     "singularidade morre quando cada oitava paga o seu pedagio -- a "
+6106:                     "meia-nat cobre 3/4 do turnover e nao basta; o limiar provavel e "
+6107:                     "ln 2 (um bit por oitava) e o marginal e 2/3 (a face conjugada da "
+6108:                     "queda de Kolmogorov, 1/3 + 2/3 = 1). O fosso entre eles, menor "
+6109:                     "que 0,027 nats, e o retrato do Milenio. A resposta da "
+6110:                     "singularidade e o contorno."),
+6111:         "doc_sha256": doc_sha,
+6112:         "values": {"beta": beta, "razoes": {"meia_nat": r_half, "dois_tercos": r_23,
+6113:                                             "regular_080": r_reg},
+6114:                    "razao_serie_080": razao_serie_08,
+6115:                    "conservacao": {"meia_nat": eA, "regular": eC},
+6116:                    "ln2": math.log(2.0), "fosso": math.log(2.0) - 2.0 / 3.0},
+6117:         "checks": checks, "all_verified": all_v,
+6118:         "statuses": {"o_que_e": "o enfrentamento de Navier-Stokes 3D absorvido: lab diadico vivo + pedra 113 + documento em custodia",
+6119:                      "honestidade": "NAO e a prova do Milenio; o Lema da Face Conjugada e ABERTO e EXTERNO; o gate NAO se move",
+6120:                      "o_veredito": vd},
+6121:         "does_not_gate_core": True,
+6122:         "verdict": vd,
+6123:     }

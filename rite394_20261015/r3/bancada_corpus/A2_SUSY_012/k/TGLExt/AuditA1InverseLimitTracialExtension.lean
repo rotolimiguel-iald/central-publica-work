@@ -1,0 +1,9 @@
+import TGLExt.V351InverseLimitTracialExtension
+#check TGLV350.Regular.scalarInverseLimitWeight_square_le_of_strong
+#print axioms TGLV350.Regular.scalarInverseLimitWeight_square_le_of_strong
+#check TGLV350.Regular.scalarInverseLimitWeight_right_average_le
+#print axioms TGLV350.Regular.scalarInverseLimitWeight_right_average_le
+#check TGLV350.Regular.scalarInverseLimitWeight_sandwich_le
+#print axioms TGLV350.Regular.scalarInverseLimitWeight_sandwich_le
+#check TGLV350.Regular.scalarInverseLimitWeight_tracial_iff_core
+#print axioms TGLV350.Regular.scalarInverseLimitWeight_tracial_iff_core

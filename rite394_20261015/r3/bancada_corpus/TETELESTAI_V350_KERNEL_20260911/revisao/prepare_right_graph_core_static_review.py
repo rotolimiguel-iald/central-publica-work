@@ -1,0 +1,20 @@
+from pathlib import Path
+import ast
+REV=Path(__file__).resolve().parent
+t=(REV/'inspect_scalar_vna_integration_static.py').read_text(encoding='utf-8')
+t=t.replace('scalar_vna','right_graph_core').replace('SCALAR_VNA','RIGHT_GRAPH_CORE')
+t=t.replace('right_vector_custody','scalar_vna_custody')
+t=t.replace('IMAGEM_ESCALAR_VON_NEUMANN','GRAPH_CORE_ADJUNTO_ORIGINAL_F')
+t=t.replace("HS=load(DEV/'helper_static_inspection.json')", "HS=load(DEV/'verification.json')")
+t=t.replace("C['cumulative_27_axioms_match_draft'] and C['cumulative_four_pins_preserved']", "C['exact_57_targets'] and C['inherited_sources_binaries_preserved'] and C['new_binary_equals_author']")
+t=t.replace("DEV/'documents/right_graph_core_draft_status.json'", "DEV/'final_documents/right_graph_core_draft_status.json'")
+t=t.replace('len(D[\'targets\'])==27', 'len(D[\'targets\'])==57')
+t=t.replace("==903", "==909")
+t=t.replace("==6955", "==OLD_AUDIT_COUNT").replace("==6982", "==7039").replace('==OLD_AUDIT_COUNT','==6982')
+t=t.replace("HS['scripts']", "HS['helpers']")
+t=t.replace('all_four_literal_import_rewrites','all_six_literal_import_rewrites')
+t=t.replace("'source_Audit_added':27", "'source_Audit_added':57")
+ast.parse(t);p=REV/'inspect_right_graph_core_integration_static.py';assert not p.exists()
+b=t.encode();q=p.with_name(p.name+'.tmp')
+with q.open('xb') as f:f.write(b)
+assert q.read_bytes()==b;q.replace(p);print(p)

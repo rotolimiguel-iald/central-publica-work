@@ -1,0 +1,1255 @@
+{
+  "status": "CONSULTATION_COMPLETED__TRACIALITY_OPEN",
+  "created_at": "2026-09-15T00:00:09.472583-03:00",
+  "root": "C:/IALD/Central de Patentes/Chatgpt/TETELESTAI_V351_FECHO_MATEMATICO/RETOMADA_A1B_012",
+  "new_lean_declarations": 0,
+  "compilations_executed": 0,
+  "author_files_modified": false,
+  "memories_modified": false,
+  "preserved_previous_reviews": true,
+  "search_exhaustive": false,
+  "conclusions": [
+    {
+      "status": "REAL_SOURCE",
+      "text": "regularAverage is one-sided; self-adjointness not available in general"
+    },
+    {
+      "status": "DERIVED_OPEN_LEAN",
+      "text": "average membership in polar right algebra -> simultaneous S/F fixed vectors Lambda(e*e) -> resolvent half-eigenvectors -> actual U fixed -> U=pi(lambda) R(-t) by totality"
+    },
+    {
+      "status": "OPEN",
+      "text": "membership via bounded strong-star Riemann sums; norm closure alone insufficient"
+    },
+    {
+      "status": "DERIVED_OPEN_LEAN",
+      "text": "finite coordinate p=2pi xi+log(w_j); nu density rho/(2pi), h=rho exp(-p), tau density exp(p) Tr/(2pi)"
+    },
+    {
+      "status": "OPEN",
+      "text": "finite spectral evaluation and controlled finite-level extension not found ready-made among selected sources"
+    },
+    {
+      "status": "OPEN",
+      "text": "half-power compatibility Q and trace remain separate from implementer equality"
+    }
+  ],
+  "new_author_delta27": "announced frozen; not read or accepted as part of this consultation",
+  "web_reference": {
+    "url": "https://arxiv.org/abs/2004.02383",
+    "scope": "bibliographic metadata only; no external theorem imported"
+  },
+  "sources": [
+    {
+      "file": "ExpectationProjection",
+      "source": {
+        "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\k\\TGLExt\\ExpectationProjection.lean",
+        "sha256": "211c301670b9f1358a718060ed128916a9f2ae25a60a939cb10d75748e463e90",
+        "bytes": 4336
+      },
+      "scope": "local source read; earlier acceptance inherited; no new build/axiom audit",
+      "declarations": [
+        {
+          "name": "expectation_flow_commutes",
+          "line": 65,
+          "source_block": "theorem expectation_flow_commutes (t : ℝ) (N : ℕ)\n    (x : TowerHilbert P →L[ℂ] TowerHilbert P) :\n    modularConjugation P t (towerExpectation P N x) =\n      towerExpectation P N (modularConjugation P t x) := by\n  apply factor_eq_of_omega\n    ((modularConjugation_preserves_factor P t _).mp (expectation_mem_factor _ _))\n    (expectation_mem_factor _ _)\n  rw [expectation_omega]\n  change modularFlow P t (towerExpectation P N x (modularFlow P (-t) (hOmega P))) =\n    levelProject P N (modularFlow P t (x (modularFlow P (-t) (hOmega P))))\n  rw [modularFlow_fixes_omega, expectation_omega, project_flow_commutes]"
+        },
+        {
+          "name": "project_flow_commutes",
+          "line": 58,
+          "source_block": "theorem project_flow_commutes (t : ℝ) (N : ℕ) (x : TowerHilbert P) :\n    levelProject P N (modularFlow P t x) = modularFlow P t (levelProject P N x) := by\n  apply level_inner_ext (levelProject_mem _ _) (flow_preserves_level _ (levelProject_mem _ _))\n  intro b hb\n  rw [levelProject_inner hb, flow_inner_transport, flow_inner_transport,\n    levelProject_inner (flow_preserves_level _ hb)]"
+        }
+      ]
+    },
+    {
+      "file": "ModularFlowSpectrum",
+      "source": {
+        "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\k\\TGLExt\\ModularFlowSpectrum.lean",
+        "sha256": "49eaf5a1556de26c4c5ba45a5ced7b5a4b454cce8446158aeb10b9bd12109606",
+        "bytes": 5892
+      },
+      "scope": "local source read; earlier acceptance inherited; no new build/axiom audit",
+      "declarations": [
+        {
+          "name": "flowLevel_single",
+          "line": 49,
+          "source_block": "theorem flowLevel_single (t : ℝ) (N : ℕ) (i j : chainIdx N) :\n    flowLevel P t N (Matrix.single i j 1) =\n      modularPhase t (Real.log (localEigenvalue P N i j)) • Matrix.single i j 1 := by\n  ext k l\n  by_cases h : i = k ∧ j = l\n  · obtain ⟨rfl,rfl⟩ := h\n    simp [flowLevel, localEigenvalue, Real.log_div (ne_of_gt (towerW_pos P N i))\n      (ne_of_gt (towerW_pos P N j))]\n  · simp [flowLevel, h]"
+        }
+      ]
+    },
+    {
+      "file": "TheFactorObject",
+      "source": {
+        "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\k\\TGLExt\\TheFactorObject.lean",
+        "sha256": "570ba4fd7b8edba4b7d01e8a3a134a5def93d945c29092b26df126a868b5692a",
+        "bytes": 5915
+      },
+      "scope": "local source read; earlier acceptance inherited; no new build/axiom audit",
+      "declarations": [
+        {
+          "name": "omegaState_pi",
+          "line": 109,
+          "source_block": "theorem omegaState_pi {N : ℕ} (x : Matrix (chainIdx N) (chainIdx N) ℂ) :\n    omegaState P (towerPi P x) = tState P N x := by\n  unfold omegaState\n  rw [towerPi_omega]\n  unfold hOmega\n  rw [Completion.inner_coe]\n  rw [show towerOmega P = tof P 0 1 from rfl]\n  rw [show (inner ℂ (tof P 0 1) (tof P N x) : ℂ)\n      = innerPre P (tof P 0 1) (tof P N x) from rfl]\n  rw [innerPre_tof_at (Nat.zero_le N) (le_refl N), tPush_one, tPush_self]\n  unfold tInner\n  rw [conjTranspose_one, one_mul]\n\n/-- [KERNEL] ★★★ A SÍNTESE DA PEDRA 86: o objeto existe (VonNeumannAlgebra),\n    a torre vive nele, Ω é cíclico para ele, e o estado coerente é o estado\n    vetorial de Ω — \"o fator como objeto\", o resíduo do v130 realizado. -/"
+        }
+      ]
+    },
+    {
+      "file": "TowerDefinite",
+      "source": {
+        "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\k\\TGLExt\\TowerDefinite.lean",
+        "sha256": "9f63ebf0cee01833e7fdccb3c356c0faaddded504216c8e21c218c2320d8d9fd",
+        "bytes": 30445
+      },
+      "scope": "local source read; earlier acceptance inherited; no new build/axiom audit",
+      "declarations": [
+        {
+          "name": "tState",
+          "line": 102,
+          "source_block": "def tState (P : SiteProfile) (N : ℕ)\n    (a : Matrix (chainIdx N) (chainIdx N) ℂ) : ℂ :=\n  ∑ k, ((towerW P N k : ℝ) : ℂ) * a k k\n\n/-- o produto GNS do andar: ⟨a,b⟩ = φ(a†b). -/"
+        }
+      ]
+    },
+    {
+      "file": "TowerExpectation",
+      "source": {
+        "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\k\\TGLExt\\TowerExpectation.lean",
+        "sha256": "1ce1986087c3ab8dce79f21ed0782b7cf55ae78aeb67e671bc9b089cdfcd2507",
+        "bytes": 5550
+      },
+      "scope": "local source read; earlier acceptance inherited; no new build/axiom audit",
+      "declarations": [
+        {
+          "name": "expectation_preserves_state",
+          "line": 90,
+          "source_block": "theorem expectation_preserves_state (N : ℕ) (x : TowerHilbert P →L[ℂ] TowerHilbert P) :\n    omegaState P (towerExpectation P N x) = omegaState P x := by\n  unfold omegaState\n  rw [expectation_omega]\n  exact levelProject_inner (omega_mem_level N) _"
+        }
+      ]
+    },
+    {
+      "file": "V350ContractionAdjointLimit",
+      "source": {
+        "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\k\\TGLExt\\V350ContractionAdjointLimit.lean",
+        "sha256": "75c191ec2110441b6554ca7beddfc7806f3e3aac6e879e8461f7632cfa78eaa5",
+        "bytes": 3036
+      },
+      "scope": "local source read; earlier acceptance inherited; no new build/axiom audit",
+      "declarations": [
+        {
+          "name": "regularAverage_star_tendsto_identity",
+          "line": 51,
+          "source_block": "theorem regularAverage_star_tendsto_identity (P : TGLExt.SiteProfile)\n    (v : RegularHilbert (TGLExt.TowerHilbert P)) :\n    Tendsto (fun h : ℝ => star (regularAverage P h) v) (𝓝[≠] 0) (𝓝 v) :=\n  contraction_adjoint_tendsto_identity _ _ (regularAverage_norm_le_one P)\n    (regularAverage_tendsto_identity P) v"
+        }
+      ]
+    },
+    {
+      "file": "V350DualSemifiniteIdeal",
+      "source": {
+        "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\k\\TGLExt\\V350DualSemifiniteIdeal.lean",
+        "sha256": "63c88763eaa1c837ed0a28057d044a7627e57f993f4fcc4c7bddf44dcea07cbe",
+        "bytes": 6938
+      },
+      "scope": "local source read; earlier acceptance inherited; no new build/axiom audit",
+      "declarations": [
+        {
+          "name": "regularAverage_hasFiniteDualSquare",
+          "line": 108,
+          "source_block": "theorem regularAverage_hasFiniteDualSquare (P : TGLExt.SiteProfile)\n    (h : ℝ) (hh : 0 < h) : HasFiniteDualSquare (regularAverage P h) := by\n  let C : ℝ≥0 := ⟨h⁻¹, (inv_pos.mpr hh).le⟩\n  have hC : ENNReal.ofReal h⁻¹ = (C : ℝ≥0∞) := ENNReal.ofReal_coe_nnreal (p := C)\n  refine ⟨C, fun v => ?_⟩\n  rw [regularAverage_dualQuadraticIntegral P h hh v,\n    ENNReal.ofReal_mul (inv_pos.mpr hh).le]\n  rw [hC]\n\n/-- Every core operator is approached strongly, from h>0, by elements of the\nfinite-square left ideal. This is the density part of semifiniteness for the\nconstructed fixed-algebra form-valued weight; identifying that algebra with\nthe original base algebra and constructing the scalar trace remain separate. -/"
+        }
+      ]
+    },
+    {
+      "file": "V350DualWeightForm",
+      "source": {
+        "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\k\\TGLExt\\V350DualWeightForm.lean",
+        "sha256": "3a233c43934c915774c68c23f0fca752d1c9dfc95679178c714394fe666a24b4",
+        "bytes": 6890
+      },
+      "scope": "local source read; earlier acceptance inherited; no new build/axiom audit",
+      "declarations": [
+        {
+          "name": "dualHaarFactor",
+          "line": 17,
+          "source_block": "def dualHaarFactor : ℝ := (2 * Real.pi)⁻¹"
+        },
+        {
+          "name": "dualQuadraticIntegral",
+          "line": 62,
+          "source_block": "def dualQuadraticIntegral (A : RegularHilbert H →L[ℂ] RegularHilbert H)\n    (v : RegularHilbert H) : ℝ≥0∞ :=\n  ENNReal.ofReal dualHaarFactor * ∫⁻ s : ℝ, dualQuadraticIntegrand A v s"
+        }
+      ]
+    },
+    {
+      "file": "V350FiniteDualStarCore",
+      "source": {
+        "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\k\\TGLExt\\V350FiniteDualStarCore.lean",
+        "sha256": "017fd7d4c1efd3c0ddfba91b3a6464fdbc194dce8e4ee0a6ad4580a0a6ac98ce",
+        "bytes": 6548
+      },
+      "scope": "local source read; earlier acceptance inherited; no new build/axiom audit",
+      "declarations": [
+        {
+          "name": "regularSandwich_mem_finiteDualStarCore",
+          "line": 63,
+          "source_block": "theorem regularSandwich_mem_finiteDualStarCore (P : SiteProfile)\n    (A : (regularCoreAlgebra P).toStarSubalgebra) (h : ℝ) (hh : 0 < h) :\n    regularSandwich P A h ∈ finiteDualStarCore P := by\n  have hf (B : (regularCoreAlgebra P).toStarSubalgebra) :\n      HasFiniteDualSquare (regularSandwich P B h).val :=\n    HasFiniteDualSquare.left_mul _ _ (regularAverage_hasFiniteDualSquare P h hh)\n  refine ⟨hf A,?_⟩\n  change HasFiniteDualSquare (star (regularSandwich P A h)).val\n  rw [regularSandwich_star]\n  exact hf (star A)"
+        }
+      ]
+    },
+    {
+      "file": "V350LevelExpectationStrongLimit",
+      "source": {
+        "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\k\\TGLExt\\V350LevelExpectationStrongLimit.lean",
+        "sha256": "c5030991cc5894f56885c612b0fbcd1502de9c0f0d68e6740fd50227054eb165",
+        "bytes": 2953
+      },
+      "scope": "local source read; earlier acceptance inherited; no new build/axiom audit",
+      "declarations": [
+        {
+          "name": "levelExpectation_strong_tendsto",
+          "line": 16,
+          "source_block": "theorem levelExpectation_strong_tendsto (P : SiteProfile)\n    (A : TowerHilbert P →L[ℂ] TowerHilbert P) (hA : A ∈ theFactorObject P)\n    (v : TowerHilbert P) :\n    Tendsto (fun N => towerExpectation P N A v) atTop (𝓝 (A v)) := by\n  apply ChatgptAudit.Expectation047.bounded_omega_tendsto P atTop\n    (fun N => towerExpectation P N A) A (4 * ‖A‖) (by positivity)\n    (fun N => expectation_mem_factor N A) hA\n    (fun N => levelExpectation_uniform_norm_bound P N A hA)\n  simpa only [expectation_omega] using levelProject_tendsto (A (hOmega P))"
+        },
+        {
+          "name": "represented_levelExpectation_strong_tendsto",
+          "line": 44,
+          "source_block": "theorem represented_levelExpectation_strong_tendsto (P : SiteProfile)\n    (A : (theFactorObject P).toStarSubalgebra) (v : ScalarGNSHilbert P) :\n    Tendsto (fun N => scalarGNSRepresentation P (levelCoreApproximation P N A) v) atTop\n      (𝓝 (scalarGNSRepresentation P (regularCoreEmbedding P A) v)) :=\n  scalarGNSRepresentation_tendsto_of_uniformly_bounded P\n    (fun N => levelCoreApproximation P N A) (regularCoreEmbedding P A) (4 * ‖A.val‖)\n    (fun N => levelCoreApproximation_uniform_bound P N A)\n    (levelCoreApproximation_strong_tendsto P A) v"
+        }
+      ]
+    },
+    {
+      "file": "V350RegularApproximation",
+      "source": {
+        "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\k\\TGLExt\\V350RegularApproximation.lean",
+        "sha256": "d8e7830989e0ba3d71f0e8495f54414cedc12a9eac16b1bc0501f15342b8bb44",
+        "bytes": 5911
+      },
+      "scope": "local source read; earlier acceptance inherited; no new build/axiom audit",
+      "declarations": [
+        {
+          "name": "regularAverage",
+          "line": 36,
+          "source_block": "def regularAverage (P : TGLExt.SiteProfile) (h : ℝ) :\n    RegularHilbert (TGLExt.TowerHilbert P) →L[ℂ]\n      RegularHilbert (TGLExt.TowerHilbert P) :=\n  (h⁻¹ : ℝ) • StrongIntegral.operatorIntegral (regularIntegralFamily P) 0 h"
+        },
+        {
+          "name": "regularAverage_tendsto_identity",
+          "line": 68,
+          "source_block": "theorem regularAverage_tendsto_identity (P : TGLExt.SiteProfile)\n    (v : RegularHilbert (TGLExt.TowerHilbert P)) :\n    Tendsto (fun h : ℝ => regularAverage P h v) (𝓝[≠] 0) (𝓝 v) := by\n  have hc := regular_strongly_continuous P v\n  have hd := intervalIntegral.integral_hasDerivAt_right\n    (hc.intervalIntegrable 0 0) hc.stronglyMeasurable.stronglyMeasurableAtFilter hc.continuousAt\n  have ht := hd.tendsto_slope_zero\n  simpa only [zero_add, intervalIntegral.integral_same, sub_zero,\n    regular_zero, one_apply_eq_self, regularAverage_apply] using ht"
+        }
+      ]
+    },
+    {
+      "file": "V350RegularTowerRepresentation",
+      "source": {
+        "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\k\\TGLExt\\V350RegularTowerRepresentation.lean",
+        "sha256": "21638dcca0d86b6a62050dee85212ee74cf07d783e43bdf6fecd28a04fb5b41f",
+        "bytes": 4548
+      },
+      "scope": "local source read; earlier acceptance inherited; no new build/axiom audit",
+      "declarations": [
+        {
+          "name": "regularUnitary",
+          "line": 16,
+          "source_block": "def regularUnitary (P : SiteProfile) (t : ℝ) :\n    RegularHilbert (TowerHilbert P) →L[ℂ] RegularHilbert (TowerHilbert P) :=\n  fibre (modularFlowCLM P t) * shift t"
+        }
+      ]
+    },
+    {
+      "file": "V350ScalarDualWeightFaithfulness",
+      "source": {
+        "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\k\\TGLExt\\V350ScalarDualWeightFaithfulness.lean",
+        "sha256": "3ff3e31e49de71f035a425202ef1796be18da2b46bdb60a7f6c34b8a2e73f61c",
+        "bytes": 3967
+      },
+      "scope": "local source read; earlier acceptance inherited; no new build/axiom audit",
+      "declarations": [
+        {
+          "name": "regularVacuum",
+          "line": 15,
+          "source_block": "def regularVacuum (P : SiteProfile) : RegularHilbert (TowerHilbert P) :=\n  testVector (hOmega P)"
+        }
+      ]
+    },
+    {
+      "file": "V350ScalarGNSStrongContinuity",
+      "source": {
+        "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\k\\TGLExt\\V350ScalarGNSStrongContinuity.lean",
+        "sha256": "a01a6e42e191d7bc7ce2a37e529fead8d04463b62d19f081fd640f249e2b3938",
+        "bytes": 1161
+      },
+      "scope": "local source read; earlier acceptance inherited; no new build/axiom audit",
+      "declarations": [
+        {
+          "name": "scalarGNSRepresentation_tendsto_of_uniformly_bounded",
+          "line": 16,
+          "source_block": "theorem scalarGNSRepresentation_tendsto_of_uniformly_bounded (P : SiteProfile)\n    {ι : Type*} {l : Filter ι}\n    (T : ι → (regularCoreAlgebra P).toStarSubalgebra)\n    (B : (regularCoreAlgebra P).toStarSubalgebra) (C : ℝ)\n    (hbound : ∀ i, ‖(T i).val‖ ≤ C)\n    (hT : ∀ v, Tendsto (fun i => (T i).val v) l (𝓝 (B.val v)))\n    (v : ScalarGNSHilbert P) :\n    Tendsto (fun i => scalarGNSRepresentation P (T i) v) l\n      (𝓝 (scalarGNSRepresentation P B v)) := by\n  apply tendsto_subtype_rng.mpr\n  exact dualOrbit_tendsto_of_uniformly_bounded\n    (fun i => (T i).val) B.val C hbound hT v.val"
+        }
+      ]
+    },
+    {
+      "file": "V350ScalarRegularPolarCommutation",
+      "source": {
+        "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\k\\TGLExt\\V350ScalarRegularPolarCommutation.lean",
+        "sha256": "1c238b53abf26177ed621f2daf98383b9e14a6e0d97cc85ac98cc995ee4dfb70",
+        "bytes": 3596
+      },
+      "scope": "local source read; earlier acceptance inherited; no new build/axiom audit",
+      "declarations": [
+        {
+          "name": "regularRightGNS_commutes_left",
+          "line": 13,
+          "source_block": "theorem regularRightGNS_commutes_left (P : SiteProfile) (t : ℝ)\n    (B : (regularCoreAlgebra P).toStarSubalgebra) :\n    Commute (regularRightGNS P t) (scalarGNSRepresentation P B) := by\n  apply ContinuousLinearMap.ext\n  intro z\n  change regularRightGNS P t (scalarGNSRepresentation P B z) =\n    scalarGNSRepresentation P B (regularRightGNS P t z)\n  refine (scalarWeightGNSEmbedding_denseRange P).induction ?_\n    (isClosed_eq ((regularRightGNS P t).continuous.comp (scalarGNSRepresentation P B).continuous)\n      ((scalarGNSRepresentation P B).continuous.comp (regularRightGNS P t).continuous)) z\n  rintro _ ⟨a,rfl⟩\n  have hp : scalarRegularRightProduct P t (scalarWeightLeftProduct P B a) =\n      scalarWeightLeftProduct P B (scalarRegularRightProduct P t a) := by\n    apply Subtype.ext\n    exact mul_assoc B a.val (regularRightCoreElement P t)\n  calc\n    _ = regularRightGNS P t (scalarWeightGNSEmbedding P (scalarWeightLeftProduct P B a)) :=\n      congrArg (regularRightGNS P t) (scalarWeightGNSAction_intertwines P B a)\n    _ = scalarWeightGNSEmbedding P (scalarRegularRightProduct P t (scalarWeightLeftProduct P B a)) :=\n      regularRightGNS_intertwines P t (scalarWeightLeftProduct P B a)\n    _ = scalarWeightGNSEmbedding P (scalarWeightLeftProduct P B (scalarRegularRightProduct P t a)) :=\n      congrArg (scalarWeightGNSEmbedding P) hp\n    _ = scalarGNSRepresentation P B (scalarWeightGNSEmbedding P (scalarRegularRightProduct P t a)) :=\n      (scalarWeightGNSAction_intertwines P B (scalarRegularRightProduct P t a)).symm\n    _ = _ := congrArg (scalarGNSRepresentation P B) (regularRightGNS_intertwines P t a).symm"
+        },
+        {
+          "name": "scalarTomitaPolar_regular_generator",
+          "line": 50,
+          "source_block": "theorem scalarTomitaPolar_regular_generator (P : SiteProfile) (t : ℝ) :\n    antiunitaryConjugate (scalarTomitaPolarFactor P)\n      (scalarGNSRepresentation P (regularRightCoreElement P t)) =\n        regularRightGNS P (-t) := by\n  have h := scalarTomitaPolar_conjugate_regular_left P (-t)\n  simpa only [regularRightCoreElement_star,neg_neg] using h"
+        }
+      ]
+    },
+    {
+      "file": "V350ScalarRightAdjointPair",
+      "source": {
+        "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\k\\TGLExt\\V350ScalarRightAdjointPair.lean",
+        "sha256": "6db80e5fe729f47c9f8d5b9764a24ec5c14ddc8a845d38f8606b5a3abc974a7b",
+        "bytes": 7937
+      },
+      "scope": "local source read; earlier acceptance inherited; no new build/axiom audit",
+      "declarations": [
+        {
+          "name": "ScalarRightAdjointPair",
+          "line": 17,
+          "source_block": "structure ScalarRightAdjointPair (P : SiteProfile)\n    (R : ScalarGNSHilbert P →L[ℂ] ScalarGNSHilbert P) where\n  vector : ScalarGNSHilbert P\n  adjointVector : ScalarGNSHilbert P\n  right : ∀ a : scalarWeightLeftIdeal P,\n    R (scalarWeightGNSEmbedding P a) = scalarGNSRepresentation P a.val vector\n  adjoint : ∀ a : scalarWeightLeftIdeal P,\n    star R (scalarWeightGNSEmbedding P a) = scalarGNSRepresentation P a.val adjointVector"
+        },
+        {
+          "name": "scalarRightAdjointPair_maximal",
+          "line": 128,
+          "source_block": "theorem scalarRightAdjointPair_maximal {P : SiteProfile}\n    {R : ScalarGNSHilbert P →L[ℂ] ScalarGNSHilbert P} (d : ScalarRightAdjointPair P R) :\n    ∃ hv : d.vector ∈ scalarTomitaAdjointDomain P,\n      scalarTomitaAdjoint P ⟨d.vector,hv⟩ = d.adjointVector :=\n  scalarTomitaAdjoint_maximal P (scalarRightAdjointPair_closed_pairing d)"
+        }
+      ]
+    },
+    {
+      "file": "V350ScalarTomitaResolvent",
+      "source": {
+        "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\k\\TGLExt\\V350ScalarTomitaResolvent.lean",
+        "sha256": "50e9437f0a572187103933b7b4847b82599da0a687e439a3b7ab48735e2c3127",
+        "bytes": 2501
+      },
+      "scope": "local source read; earlier acceptance inherited; no new build/axiom audit",
+      "declarations": [
+        {
+          "name": "scalarTomitaResolvent_inverse",
+          "line": 24,
+          "source_block": "theorem scalarTomitaResolvent_inverse (x : (scalarTomitaSquare P).domain) :\n    scalarTomitaResolvent P ((x : ScalarGNSHilbert P)+scalarTomitaSquare P x)=\n      (x : ScalarGNSHilbert P) :=\n  partialPositiveResolvent_inverse _ _ _ x"
+        }
+      ]
+    },
+    {
+      "file": "V350ScalarTomitaSquare",
+      "source": {
+        "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\k\\TGLExt\\V350ScalarTomitaSquare.lean",
+        "sha256": "ca781e13f5857fcb348fd2cc1e68a2fb3397ae352b168e9ba9a6425517634a2a",
+        "bytes": 4810
+      },
+      "scope": "local source read; earlier acceptance inherited; no new build/axiom audit",
+      "declarations": [
+        {
+          "name": "scalarTomitaSquare_domain_iff",
+          "line": 40,
+          "source_block": "theorem scalarTomitaSquare_domain_iff (x : ScalarGNSHilbert P) :\n    x ∈ (scalarTomitaSquare P).domain ↔\n      ∃ hx : x ∈ scalarClosedTomitaDomain P,\n        scalarClosedTomita P ⟨x,hx⟩ ∈ scalarTomitaAdjointDomain P := Iff.rfl"
+        }
+      ]
+    },
+    {
+      "file": "V350ScalarWeightAction",
+      "source": {
+        "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\k\\TGLExt\\V350ScalarWeightAction.lean",
+        "sha256": "7875ce91559689c1e951f28d3a1d005dc17aae2af1db677242a27d38e40dfb5c",
+        "bytes": 2907
+      },
+      "scope": "local source read; earlier acceptance inherited; no new build/axiom audit",
+      "declarations": [
+        {
+          "name": "scalarWeightGNSAction_intertwines",
+          "line": 38,
+          "source_block": "theorem scalarWeightGNSAction_intertwines (P : SiteProfile)\n    (B : (regularCoreAlgebra P).toStarSubalgebra) (A : scalarWeightLeftIdeal P) :\n    scalarGNSRepresentation P B (scalarWeightGNSEmbedding P A) =\n      scalarWeightGNSEmbedding P (scalarWeightLeftProduct P B A) :=\n  Subtype.ext (scalarWeightOrbit_left_intertwines P B A)"
+        },
+        {
+          "name": "scalarWeightGNSEmbedding_denseRange",
+          "line": 54,
+          "source_block": "theorem scalarWeightGNSEmbedding_denseRange (P : SiteProfile) :\n    DenseRange (scalarWeightGNSEmbedding P) := by\n  apply (scalarGNSEmbedding_denseRange P).mono\n  rintro _ ⟨A,rfl⟩\n  exact ⟨Submodule.inclusion (finiteDualLeftIdeal_le_scalarWeight P) A,\n    scalarWeightGNSEmbedding_uniform P A⟩"
+        }
+      ]
+    },
+    {
+      "file": "V350ScalarWeightDomain",
+      "source": {
+        "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\k\\TGLExt\\V350ScalarWeightDomain.lean",
+        "sha256": "e83ada9b5abbf2c179c28b03d3c020be83861681ba3ae450999c1c64ea8e2f0f",
+        "bytes": 3081
+      },
+      "scope": "local source read; earlier acceptance inherited; no new build/axiom audit",
+      "declarations": [
+        {
+          "name": "finiteDualLeftIdeal_le_scalarWeight",
+          "line": 50,
+          "source_block": "theorem finiteDualLeftIdeal_le_scalarWeight (P : SiteProfile) :\n    finiteDualLeftIdeal P ≤ scalarWeightLeftIdeal P :=\n  fun A hA => HasFiniteDualSquare.scalar_finite P A.val hA"
+        }
+      ]
+    },
+    {
+      "file": "V350ScalarWeightTomitaIdentification",
+      "source": {
+        "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\k\\TGLExt\\V350ScalarWeightTomitaIdentification.lean",
+        "sha256": "d4b3043d6d76a9934d9778a0b1b7e604c26e8ffb2c1e3a7755964496ad520822",
+        "bytes": 4199
+      },
+      "scope": "local source read; earlier acceptance inherited; no new build/axiom audit",
+      "declarations": [
+        {
+          "name": "scalarClosedTomita_extends_weight_star",
+          "line": 71,
+          "source_block": "theorem scalarClosedTomita_extends_weight_star (P : SiteProfile)\n    (A : scalarWeightStarCore P) :\n    scalarClosedTomita P ⟨scalarWeightStarEmbedding P A,\n      scalarWeightStar_mem_closedTomitaDomain P A⟩ = scalarWeightStarEmbedding P (star A) :=\n  scalarTomitaGraph_closure_single_valued P (scalarWeightStarEmbedding P A) _ _\n    (scalarClosedTomita_graph ⟨scalarWeightStarEmbedding P A,\n      scalarWeightStar_mem_closedTomitaDomain P A⟩)\n    (scalarWeightTomitaGraph_subset_closure_original P ⟨A,rfl⟩)"
+        }
+      ]
+    },
+    {
+      "file": "V350StrongOperatorIntegral",
+      "source": {
+        "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\k\\TGLExt\\V350StrongOperatorIntegral.lean",
+        "sha256": "7ee0e23dc3319a72734ce420f540251f59a27561fa61221d6ab5f98b2989dfa7",
+        "bytes": 6942
+      },
+      "scope": "local source read; earlier acceptance inherited; no new build/axiom audit",
+      "declarations": [
+        {
+          "name": "operatorIntegral_apply",
+          "line": 51,
+          "source_block": "theorem operatorIntegral_apply (F : Family (H := H)) (a b : ℝ) (v : H) :\n    operatorIntegral F a b v = ∫ t in a..b, F.op t v := rfl"
+        },
+        {
+          "name": "operatorIntegral_commutes",
+          "line": 59,
+          "source_block": "theorem operatorIntegral_commutes (F : Family (H := H)) (a b : ℝ)\n    (B : H →L[ℂ] H) (hcomm : ∀ t, B * F.op t = F.op t * B) :\n    B * operatorIntegral F a b = operatorIntegral F a b * B := by\n  ext v\n  change B (∫ t in a..b, F.op t v) = ∫ t in a..b, F.op t (B v)\n  rw [← B.intervalIntegral_comp_comm ((F.continuous_apply v).intervalIntegrable a b)]\n  apply intervalIntegral.integral_congr\n  intro t _\n  exact congrArg (fun T : H →L[ℂ] H => T v) (hcomm t)\n\n/-- The integral belongs to the same concrete von Neumann algebra as its integrands. -/"
+        },
+        {
+          "name": "operatorIntegral_norm_le",
+          "line": 54,
+          "source_block": "theorem operatorIntegral_norm_le (F : Family (H := H)) (a b : ℝ) :\n    ‖operatorIntegral F a b‖ ≤ F.bound * |b-a| :=\n  ContinuousLinearMap.opNorm_le_bound _ (mul_nonneg F.bound_nonneg (abs_nonneg _))\n    (vectorIntegral_bound F a b)"
+        }
+      ]
+    },
+    {
+      "file": "V351FourierTranslation",
+      "source": {
+        "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\k\\TGLExt\\V351FourierTranslation.lean",
+        "sha256": "a0fe8f689855aebeefcc6d1d1a7ece3314bf5dcd65d74017569597dd7df1a9b2",
+        "bytes": 2929
+      },
+      "scope": "local source read; earlier acceptance inherited; no new build/axiom audit",
+      "declarations": [
+        {
+          "name": "fourier_shift",
+          "line": 47,
+          "source_block": "theorem fourier_shift (t : ℝ) (f : RegularHilbert H) :\n    Lp.fourierTransformₗᵢ ℝ H (shift t f) =\n      characterMultiplier (2 * Real.pi * t) (Lp.fourierTransformₗᵢ ℝ H f) := by\n  let p : RegularHilbert H → Prop := fun g =>\n    Lp.fourierTransformₗᵢ ℝ H (shift t g) =\n      characterMultiplier (2 * Real.pi * t) (Lp.fourierTransformₗᵢ ℝ H g)\n  apply DenseRange.induction_on (p := p)\n    (SchwartzMap.denseRange_toLpCLM (E := ℝ) (F := H) (p := 2) ENNReal.ofNat_ne_top) f\n  · exact isClosed_eq\n      ((Lp.fourierTransformₗᵢ ℝ H).continuous.comp (shift t).continuous)\n      ((characterMultiplier (2 * Real.pi * t)).continuous.comp\n        (Lp.fourierTransformₗᵢ ℝ H).continuous)\n  intro g\n  exact fourier_shift_schwartz t g"
+        }
+      ]
+    },
+    {
+      "file": "V351RegularFlowAbsorption",
+      "source": {
+        "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\k\\TGLExt\\V351RegularFlowAbsorption.lean",
+        "sha256": "4760792d98c8d625e9109bd7d0b2a97713bd236dcb7d6db1a4f07251cdc0c9f9",
+        "bytes": 4006
+      },
+      "scope": "local source read; earlier acceptance inherited; no new build/axiom audit",
+      "declarations": [
+        {
+          "name": "regularFlowAbsorptionUnitary",
+          "line": 51,
+          "source_block": "def regularFlowAbsorptionUnitary (P : SiteProfile) :\n    unitary (RegularHilbert (TowerHilbert P) →L[ℂ] RegularHilbert (TowerHilbert P)) :=\n  ⟨operatorFieldLift (regularFlowField P 1), by\n    rw [Unitary.mem_iff]\n    constructor <;> simp only [regularFlowField_lift_star, regularFlowField_lift_mul,\n      neg_add_cancel, add_neg_cancel, regularFlowField_lift_zero]⟩\n\n/-- The whole regular unitary group is conjugate to the actual L² translation\ngroup. This consumes the existing operator-field lift and the same tower flow. -/"
+        }
+      ]
+    },
+    {
+      "file": "V351RegularSpectralGraph",
+      "source": {
+        "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\k\\TGLExt\\V351RegularSpectralGraph.lean",
+        "sha256": "2a859d88def186591e98f2a0594bc95ae0a9c6eb74c17ea1124ce5844be1b642",
+        "bytes": 4127
+      },
+      "scope": "local source read; earlier acceptance inherited; no new build/axiom audit",
+      "declarations": [
+        {
+          "name": "regularPositiveGenerator_graph_iff",
+          "line": 40,
+          "source_block": "theorem regularPositiveGenerator_graph_iff (P : SiteProfile)\n    (x y : RegularHilbert (TowerHilbert P)) :\n    (x,y) ∈ (regularPositiveGenerator P).graph ↔\n      ∀ᵐ ξ ∂volume, ((regularSpectralCoordinates P).symm y) ξ =\n        (Real.exp (-(2*Real.pi*ξ)) : ℂ) •\n          ((regularSpectralCoordinates P).symm x) ξ := by\n  let V := regularSpectralCoordinates P\n  let R := regularSpectralResolvent P\n  let g : ℝ → ℝ := fun ξ => Real.sigmoid (2*Real.pi*ξ)\n  have hg : Continuous g := by fun_prop\n  have h0 : ∀ ξ, 0 ≤ g ξ := fun ξ => Real.sigmoid_nonneg _\n  have h1 : ∀ ξ, g ξ ≤ 1 := fun ξ => Real.sigmoid_le_one _\n  let M := realScalarMultiplier (H := TowerHilbert P) g hg h0 h1\n  have hx : V.symm (R x) = M (V.symm x) := regularSpectralResolvent_coordinate P x\n  have hy : V.symm (R y) = M (V.symm y) := regularSpectralResolvent_coordinate P y\n  change (x,y) ∈ (resolventGraphOperator R (regularSpectralResolvent_injective P)).graph ↔ _\n  rw [resolvent_graph_equation]\n  constructor\n  · intro h\n    have hc := congrArg V.symm h\n    change V.symm (x-R x) = V.symm (R y) at hc\n    rw [map_sub, hx, hy] at hc\n    have he := Lp.ext_iff.mp hc\n    filter_upwards [he,\n      Lp.coeFn_sub (V.symm x) (M (V.symm x)),\n      realScalarMultiplier_ae g hg h0 h1 (V.symm x),\n      realScalarMultiplier_ae g hg h0 h1 (V.symm y)] with ξ he hs hmx hmy\n    have hp : ((1-g ξ : ℝ) : ℂ) • (V.symm x) ξ = (g ξ : ℂ) • (V.symm y) ξ := by\n      rw [hs, Pi.sub_apply, hmx, hmy] at he\n      simpa only [Pi.sub_apply, Complex.ofReal_sub, Complex.ofReal_one,\n        sub_smul, one_smul] using he\n    exact (sigmoid_resolvent_equation_iff (2*Real.pi*ξ) _ _).mp hp\n  · intro h\n    apply V.symm.injective\n    change V.symm (x-R x) = V.symm (R y)\n    rw [map_sub, hx, hy]\n    apply Lp.ext\n    filter_upwards [h,\n      Lp.coeFn_sub (V.symm x) (M (V.symm x)),\n      realScalarMultiplier_ae g hg h0 h1 (V.symm x),\n      realScalarMultiplier_ae g hg h0 h1 (V.symm y)] with ξ he hs hmx hmy\n    rw [hs, Pi.sub_apply, hmx, hmy]\n    have hp := (sigmoid_resolvent_equation_iff (2*Real.pi*ξ)\n      ((V.symm x) ξ) ((V.symm y) ξ)).mpr he\n    simpa only [Pi.sub_apply, Complex.ofReal_sub, Complex.ofReal_one,\n      sub_smul, one_smul] using hp"
+        }
+      ]
+    },
+    {
+      "file": "V351ResolventImaginaryIntertwining",
+      "source": {
+        "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\k\\TGLExt\\V351ResolventImaginaryIntertwining.lean",
+        "sha256": "789f68095379e02a203191b258c359787c12b24c1282f34d39835dc5347c76d5",
+        "bytes": 4499
+      },
+      "scope": "local source read; earlier acceptance inherited; no new build/axiom audit",
+      "declarations": [
+        {
+          "name": "complex_cfc_selfadjoint_intertwines",
+          "line": 15,
+          "source_block": "theorem complex_cfc_selfadjoint_intertwines (A B R : H →L[ℂ] H)\n    (hA : IsSelfAdjoint A) (hB : IsSelfAdjoint B) (h : A*R=R*B)\n    (f : ℂ → ℂ) (hf : Continuous f) : cfc f A * R = R * cfc f B := by\n  let s : Set ℂ := spectrum ℂ A ∪ spectrum ℂ B\n  have hs : IsCompact s := (spectrum.isCompact A).union (spectrum.isCompact B)\n  haveI : CompactSpace s := isCompact_iff_compactSpace.mp hs\n  have ha : spectrum ℂ A ⊆ s := Set.subset_union_left\n  have hb : spectrum ℂ B ⊆ s := Set.subset_union_right\n  have he (g : C(s,ℂ)) :\n      cfcHomSuperset hA.isStarNormal ha g * R = R * cfcHomSuperset hB.isStarNormal hb g := by\n    induction g using ContinuousMap.induction_on_of_compact with\n    | const r =>\n      change cfcHomSuperset hA.isStarNormal ha (algebraMap ℂ C(s,ℂ) r) * R =\n        R * cfcHomSuperset hB.isStarNormal hb (algebraMap ℂ C(s,ℂ) r)\n      rw [AlgHomClass.commutes,AlgHomClass.commutes]\n      exact Algebra.commutes r R\n    | id => simpa only [cfcHomSuperset_id] using h\n    | star_id =>\n      simpa only [map_star,cfcHomSuperset_id,hA.star_eq,hB.star_eq] using h\n    | add g k hg hk => simp only [map_add,add_mul,mul_add,hg,hk]\n    | mul g k hg hk =>\n      simp only [map_mul]\n      calc\n        _ = cfcHomSuperset hA.isStarNormal ha g * (cfcHomSuperset hA.isStarNormal ha k * R) := mul_assoc _ _ _\n        _ = cfcHomSuperset hA.isStarNormal ha g * (R * cfcHomSuperset hB.isStarNormal hb k) := by rw [hk]\n        _ = (cfcHomSuperset hA.isStarNormal ha g * R) * cfcHomSuperset hB.isStarNormal hb k := (mul_assoc _ _ _).symm\n        _ = _ := by rw [hg,mul_assoc]\n    | frequently g hg =>\n      exact (isClosed_eq ((cfcHomSuperset_continuous hA.isStarNormal ha).mul continuous_const)\n        (continuous_const.mul (cfcHomSuperset_continuous hB.isStarNormal hb))).mem_of_frequently_of_tendsto\n          hg tendsto_id\n  have hh := he ⟨fun x : s => f x,hf.comp continuous_subtype_val⟩\n  rw [cfcHomSuperset_apply,cfcHomSuperset_apply] at hh\n  rw [cfc_apply f A hA.isStarNormal hf.continuousOn,cfc_apply f B hB.isStarNormal hf.continuousOn]\n  convert hh using 2 <;> congr 1"
+        }
+      ]
+    },
+    {
+      "file": "V351ScalarImaginaryCoreAction",
+      "source": {
+        "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\k\\TGLExt\\V351ScalarImaginaryCoreAction.lean",
+        "sha256": "db4109dceeab1e948d7d5e664e8d76b347c719b00e62031761aaf5e924862a83",
+        "bytes": 8464
+      },
+      "scope": "local source read; earlier acceptance inherited; no new build/axiom audit",
+      "declarations": [
+        {
+          "name": "scalarTomitaImaginaryPower_core_conjugation",
+          "line": 47,
+          "source_block": "theorem scalarTomitaImaginaryPower_core_conjugation (P : SiteProfile) (t : ℝ)\n    (A : (regularCoreAlgebra P).toStarSubalgebra) (x : ScalarGNSHilbert P) :\n    scalarTomitaImaginaryPower P t (scalarGNSRepresentation P A x) =\n      scalarGNSRepresentation P\n        (regularRightCoreElement P t * A * star (regularRightCoreElement P t))\n          (scalarTomitaImaginaryPower P t x) := by\n  let U : ScalarGNSHilbert P →L[ℂ] ScalarGNSHilbert P :=\n    (scalarTomitaImaginaryPower P t).toLinearIsometry.toContinuousLinearMap\n  let V : ScalarGNSHilbert P →L[ℂ] ScalarGNSHilbert P :=\n    scalarGNSRepresentation P (regularRightCoreElement P t)\n  let D : ScalarGNSHilbert P →L[ℂ] ScalarGNSHilbert P := star V * U\n  have hunit : star (regularRightCoreElement P t) * regularRightCoreElement P t = 1 :=\n    Subtype.ext (regular_unitary P t).1\n  have hunit' : regularRightCoreElement P t * star (regularRightCoreElement P t) = 1 :=\n    Subtype.ext (regular_unitary P t).2\n  have hVV : star V * V = 1 := by\n    have h := congrArg (scalarGNSRepresentation P) hunit\n    simpa only [map_mul, map_star, map_one] using h\n  have hVV' : V * star V = 1 := by\n    have h := congrArg (scalarGNSRepresentation P) hunit'\n    simpa only [map_mul, map_star, map_one] using h\n  have hmatrix (N : ℕ) (i j : chainIdx N) :\n      Commute D (scalarGNSRepresentation P (localBaseCore P N (Matrix.single i j 1))) := by\n    let B := scalarGNSRepresentation P (localBaseCore P N (Matrix.single i j 1))\n    let c := modularPhase t (Real.log (localEigenvalue P N i j))\n    have hU : U * B = (c • B) * U := by\n      apply ContinuousLinearMap.ext\n      intro z\n      exact matrixUnit_imaginaryPower_base_scaling P N i j t z\n    have hV : V * B * star V = c • B := by\n      have h := congrArg (scalarGNSRepresentation P)\n        (matrixUnit_regular_core_conjugation P N i j t)\n      simpa only [map_mul, map_star, map_smul] using h\n    change (star V * U) * B = B * (star V * U)\n    calc\n      (star V * U) * B = star V * (U * B) := mul_assoc _ _ _\n      _ = star V * ((c • B) * U) := by rw [hU]\n      _ = star V * ((V * B * star V) * U) := by rw [hV]\n      _ = B * (star V * U) := by simp only [← mul_assoc, hVV, one_mul]\n  have hlevel (N : ℕ) (a : Matrix (chainIdx N) (chainIdx N) ℂ) :\n      Commute D (scalarGNSRepresentation P (localBaseCore P N a)) := by\n    induction a using Matrix.induction_on' with\n    | h_zero => simp only [map_zero]; exact Commute.zero_right D\n    | h_add a b ha hb =>\n        simp only [map_add]\n        exact ha.add_right hb\n    | h_std_basis i j c =>\n        have he : Matrix.single i j c = c • Matrix.single i j (1 : ℂ) := by\n          simp only [Matrix.smul_single, smul_eq_mul, mul_one]\n        rw [he, map_smul, map_smul]\n        apply ContinuousLinearMap.ext\n        intro z\n        have hz := congrArg (fun F : ScalarGNSHilbert P →L[ℂ] ScalarGNSHilbert P => F z)\n          (hmatrix N i j).eq\n        change D (c • scalarGNSRepresentation P\n            (localBaseCore P N (Matrix.single i j 1)) z) =\n          c • scalarGNSRepresentation P (localBaseCore P N (Matrix.single i j 1)) (D z)\n        rw [map_smul]\n        exact congrArg (fun v : ScalarGNSHilbert P => c • v) hz\n  have hbase (B : (theFactorObject P).toStarSubalgebra) :\n      Commute D (scalarGNSRepresentation P (regularCoreEmbedding P B)) := by\n    apply Commute.symm\n    apply commute_of_strong_tendsto (l := (atTop : Filter ℕ))\n      (fun N => scalarGNSRepresentation P (levelCoreApproximation P N B))\n    · exact represented_levelExpectation_strong_tendsto P B\n    · intro N\n      exact (hlevel N (expectationMatrix P N B.val)).symm\n  have hregular (s : ℝ) :\n      Commute D (scalarGNSRepresentation P (regularRightCoreElement P s)) := by\n    have hU : Commute U (scalarGNSRepresentation P (regularRightCoreElement P s)) := by\n      apply ContinuousLinearMap.ext\n      intro z\n      change scalarTomitaImaginaryPower P t\n          (scalarGNSRepresentation P (regularRightCoreElement P s) z) =\n        scalarGNSRepresentation P (regularRightCoreElement P s)\n          (scalarTomitaImaginaryPower P t z)\n      have hz := scalarTomitaImaginaryPower_regular_left_commutes P (-s) t z\n      simpa only [regularRightCoreElement_star, neg_neg] using hz\n    have hcore : Commute (star (regularRightCoreElement P t)) (regularRightCoreElement P s) := by\n      apply Subtype.ext\n      change star (regularUnitary P t) * regularUnitary P s =\n        regularUnitary P s * star (regularUnitary P t)\n      rw [regular_star, regular_mul, regular_mul, add_comm]\n    have hV : Commute (star V) (scalarGNSRepresentation P (regularRightCoreElement P s)) := by\n      dsimp only [V]\n      rw [← map_star]\n      exact hcore.map (scalarGNSRepresentation P)\n    exact hV.mul_left hU\n  have hwhole : ∀ B : (regularCoreAlgebra P).toStarSubalgebra,\n      Commute D (scalarGNSRepresentation P B) := by\n    apply scalarGNS_commutation_from_generators\n    intro B hB\n    change B.val ∈ regularGenerators P at hB\n    rcases hB with ⟨C, hC, he⟩ | ⟨s, he⟩\n    · have e : B = regularCoreEmbedding P ⟨C, hC⟩ := Subtype.ext he.symm\n      rw [e]\n      exact hbase ⟨C, hC⟩\n    · have e : B = regularRightCoreElement P s := Subtype.ext he.symm\n      rw [e]\n      exact hregular s\n  have hop : U * scalarGNSRepresentation P A =\n      (V * scalarGNSRepresentation P A * star V) * U := by\n    have hc := (hwhole A).eq\n    change (star V * U) * scalarGNSRepresentation P A =\n      scalarGNSRepresentation P A * (star V * U) at hc\n    calc\n      U * scalarGNSRepresentation P A =\n          V * ((star V * U) * scalarGNSRepresentation P A) := by\n            simp only [← mul_assoc, hVV', one_mul]\n      _ = V * (scalarGNSRepresentation P A * (star V * U)) := by rw [hc]\n      _ = (V * scalarGNSRepresentation P A * star V) * U := by simp only [mul_assoc]\n  have hx := congrArg (fun F : ScalarGNSHilbert P →L[ℂ] ScalarGNSHilbert P => F x) hop\n  change U (scalarGNSRepresentation P A x) =\n    scalarGNSRepresentation P\n      (regularRightCoreElement P t * A * star (regularRightCoreElement P t)) (U x)\n  rw [map_mul, map_mul, map_star]\n  exact hx"
+        }
+      ]
+    },
+    {
+      "file": "V351ScalarRightActionAlgebra",
+      "source": {
+        "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\k\\TGLExt\\V351ScalarRightActionAlgebra.lean",
+        "sha256": "68b1b9b84ba21c9c17de246fb69c8c48908e9ca313558b513322d119f66d98af",
+        "bytes": 10251
+      },
+      "scope": "local source read; earlier acceptance inherited; no new build/axiom audit",
+      "declarations": [
+        {
+          "name": "scalarPolarRightAlgebra",
+          "line": 94,
+          "source_block": "def scalarPolarRightAlgebra (P : SiteProfile) :\n    StarSubalgebra ℂ (regularCoreAlgebra P).toStarSubalgebra where\n  carrier := {b | ScalarPolarRight P b ∧ ScalarPolarRight P (star b)}\n  zero_mem' := by simpa only [Set.mem_setOf_eq,star_zero] using And.intro (scalarPolarRight_zero P) (scalarPolarRight_zero P)\n  one_mem' := by simpa only [Set.mem_setOf_eq,star_one] using And.intro (scalarPolarRight_one P) (scalarPolarRight_one P)\n  add_mem' := by\n    intro b c hb hc\n    exact ⟨scalarPolarRight_add P b c hb.1 hc.1,\n      by simpa only [star_add] using scalarPolarRight_add P (star b) (star c) hb.2 hc.2⟩\n  mul_mem' := by\n    intro b c hb hc\n    exact ⟨scalarPolarRight_mul P b c hb.1 hc.1,\n      by simpa only [star_mul] using scalarPolarRight_mul P (star c) (star b) hc.2 hb.2⟩\n  algebraMap_mem' c := by\n    have h := scalarPolarRight_smul P 1 (scalarPolarRight_one P) c\n    have hs := scalarPolarRight_smul P 1 (scalarPolarRight_one P) (star c)\n    simpa only [Set.mem_setOf_eq,Algebra.algebraMap_eq_smul_one,star_smul,star_one] using And.intro h hs\n  star_mem' := by\n    intro b hb\n    exact ⟨hb.2,by simpa only [star_star] using hb.1⟩\n\n/-- Closedness uses bounded cut identities, not a false finite-minorant\ncharacterization of the nontracial weight. -/"
+        },
+        {
+          "name": "scalarPolarRightAlgebra_regular_mem",
+          "line": 164,
+          "source_block": "theorem scalarPolarRightAlgebra_regular_mem (P : SiteProfile) (t : ℝ) :\n    regularRightCoreElement P t ∈ scalarPolarRightAlgebra P := by\n  have h (s : ℝ) : ScalarPolarRight P (regularRightCoreElement P s) := by\n    intro A\n    exact ⟨(scalarRegularRightProduct P s A).property,scalarRightAction_regular P s A⟩\n  exact ⟨h t,by simpa only [regularRightCoreElement_star] using h (-t)⟩\n\n/-- Consume the ambient CFC, using a norm-closed image of the actual\nright-identity algebra. No CFC or completeness of the core subtype is assumed. -/"
+        }
+      ]
+    },
+    {
+      "file": "V351ScalarRightActionLimits",
+      "source": {
+        "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\k\\TGLExt\\V351ScalarRightActionLimits.lean",
+        "sha256": "ab55b5a1e05d6f8317bc61e0a303b960dc7e9888999e03cbb1c63287e4b37b9d",
+        "bytes": 3511
+      },
+      "scope": "local source read; earlier acceptance inherited; no new build/axiom audit",
+      "declarations": [
+        {
+          "name": "scalarRightAction_closed_of_bounded_strongStar",
+          "line": 26,
+          "source_block": "theorem scalarRightAction_closed_of_bounded_strongStar (P : SiteProfile)\n    {ι : Type*} {l : Filter ι} [NeBot l]\n    (b : ι → (regularCoreAlgebra P).toStarSubalgebra)\n    (B : (regularCoreAlgebra P).toStarSubalgebra) (C : ℝ)\n    (hbound : ∀ i, ‖(b i).val‖ ≤ C)\n    (hstrong : ∀ x, Tendsto (fun i => (b i).val x) l (𝓝 (B.val x)))\n    (hadjoint : ∀ x, Tendsto (fun i => (star (b i)).val x) l (𝓝 ((star B).val x)))\n    (A : scalarWeightLeftIdeal P)\n    (hact : ∀ i, ∃ hi : A.val * b i ∈ scalarWeightLeftIdeal P,\n      scalarWeightGNSEmbedding P ⟨A.val*b i,hi⟩ =\n        antiunitaryConjugate (scalarTomitaPolarFactor P)\n          (scalarGNSRepresentation P (star (b i))) (scalarWeightGNSEmbedding P A)) :\n    ∃ hAB : A.val * B ∈ scalarWeightLeftIdeal P,\n      scalarWeightGNSEmbedding P ⟨A.val*B,hAB⟩ =\n        antiunitaryConjugate (scalarTomitaPolarFactor P)\n          (scalarGNSRepresentation P (star B)) (scalarWeightGNSEmbedding P A) := by\n  let T (i : ι) : scalarWeightLeftIdeal P := ⟨A.val*b i,(hact i).choose⟩\n  have hnorm (i : ι) : ‖(star (b i)).val‖ ≤ C := by\n    change ‖star (b i).val‖ ≤ C\n    simpa only [norm_star] using hbound i\n  have hp := scalarGNSRepresentation_tendsto_of_uniformly_bounded P\n    (fun i => star (b i)) (star B) C hnorm hadjoint\n      ((scalarTomitaPolarFactor P).symm (scalarWeightGNSEmbedding P A))\n  have hj := (scalarTomitaPolarFactor P).continuous.continuousAt.tendsto.comp hp\n  have hgns : Tendsto (fun i => scalarWeightGNSEmbedding P (T i)) l\n      (𝓝 (antiunitaryConjugate (scalarTomitaPolarFactor P)\n        (scalarGNSRepresentation P (star B)) (scalarWeightGNSEmbedding P A))) := by\n    have hi (i : ι) : scalarWeightGNSEmbedding P (T i) =\n        antiunitaryConjugate (scalarTomitaPolarFactor P)\n          (scalarGNSRepresentation P (star (b i))) (scalarWeightGNSEmbedding P A) :=\n      (hact i).choose_spec\n    simp only [Function.comp_def] at hj\n    simpa only [hi,antiunitaryConjugate_apply] using hj\n  apply scalarWeightGNSEmbedding_closed_of_bounded_strong P T (A.val*B) _\n    (‖A.val.val‖*C) _ _ hgns\n  · intro i\n    exact (norm_mul_le A.val.val (b i).val).trans\n      (mul_le_mul_of_nonneg_left (hbound i) (norm_nonneg A.val.val))\n  · intro x\n    exact A.val.val.continuous.continuousAt.tendsto.comp (hstrong x)"
+        }
+      ]
+    },
+    {
+      "file": "V351ScalarTomitaImaginaryPowers",
+      "source": {
+        "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\k\\TGLExt\\V351ScalarTomitaImaginaryPowers.lean",
+        "sha256": "b8871f05b5b9605a8b193a8ed25346d79eac72d025d3ad95c8f9c884f28b4e52",
+        "bytes": 3586
+      },
+      "scope": "local source read; earlier acceptance inherited; no new build/axiom audit",
+      "declarations": [
+        {
+          "name": "scalarTomitaImaginaryPower_damping",
+          "line": 29,
+          "source_block": "theorem scalarTomitaImaginaryPower_damping (t : ℝ) (x : ScalarGNSHilbert P) :\n    scalarTomitaImaginaryPower P t (resolventDampingOperator (scalarTomitaResolvent P) x)=\n      resolventPhaseOperator (scalarTomitaResolvent P) t x :=\n  resolventImaginaryPower_damping _ _ _ _ _ t x\n\n/-- The dense-range identity uniquely specifies this operator among bounded maps. -/"
+        },
+        {
+          "name": "scalarTomitaImaginaryPower_unique",
+          "line": 35,
+          "source_block": "theorem scalarTomitaImaginaryPower_unique (t : ℝ)\n    (U : ScalarGNSHilbert P →L[ℂ] ScalarGNSHilbert P)\n    (hU : ∀ x, U (resolventDampingOperator (scalarTomitaResolvent P) x)=\n      resolventPhaseOperator (scalarTomitaResolvent P) t x) (x : ScalarGNSHilbert P) :\n    U x=scalarTomitaImaginaryPower P t x := by\n  refine (resolventDampingOperator_denseRange (scalarTomitaResolvent P)\n    (scalarTomitaResolvent_nonneg P) (scalarTomitaResolvent_le_one P)\n    (scalarTomitaResolvent_injective P) (scalarTomitaResolvent_complement_injective P)).induction ?_\n    (isClosed_eq (by fun_prop) (by fun_prop)) x\n  rintro _ ⟨y,rfl⟩\n  rw [hU,scalarTomitaImaginaryPower_damping]"
+        }
+      ]
+    },
+    {
+      "file": "RightMult",
+      "source": {
+        "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\k\\TGLExt\\RightMult.lean",
+        "sha256": "29b5e130da72914ae0fd955eefd4ced00b4b6e26ea88e7ec0e338c561637ca13",
+        "bytes": 25443
+      },
+      "scope": "local source read; earlier acceptance inherited; no new build/axiom audit",
+      "declarations": [
+        {
+          "name": "rhoMat",
+          "line": 50,
+          "source_block": "def rhoMat (P : SiteProfile) (N : ℕ) :\n    Matrix (chainIdx N) (chainIdx N) ℂ :=\n  Matrix.diagonal (fun k => ((towerW P N k : ℝ) : ℂ))\n\n/-- a inversa diagonal. -/"
+        },
+        {
+          "name": "rhoMatInv",
+          "line": 55,
+          "source_block": "def rhoMatInv (P : SiteProfile) (N : ℕ) :\n    Matrix (chainIdx N) (chainIdx N) ℂ :=\n  Matrix.diagonal (fun k => (((towerW P N k)⁻¹ : ℝ) : ℂ))"
+        },
+        {
+          "name": "rhoMat_mul_inv",
+          "line": 59,
+          "source_block": "theorem rhoMat_mul_inv (P : SiteProfile) (N : ℕ) :\n    rhoMat P N * rhoMatInv P N = 1 := by\n  unfold rhoMat rhoMatInv\n  rw [Matrix.diagonal_mul_diagonal, ← Matrix.diagonal_one]\n  congr 1\n  funext k\n  rw [← Complex.ofReal_mul, mul_inv_cancel₀ (ne_of_gt (towerW_pos P N k))]\n  norm_num"
+        },
+        {
+          "name": "rhoMatInv_mul",
+          "line": 68,
+          "source_block": "theorem rhoMatInv_mul (P : SiteProfile) (N : ℕ) :\n    rhoMatInv P N * rhoMat P N = 1 := by\n  unfold rhoMat rhoMatInv\n  rw [Matrix.diagonal_mul_diagonal, ← Matrix.diagonal_one]\n  congr 1\n  funext k\n  rw [← Complex.ofReal_mul, inv_mul_cancel₀ (ne_of_gt (towerW_pos P N k))]\n  norm_num"
+        },
+        {
+          "name": "rhoMat_conjT",
+          "line": 77,
+          "source_block": "theorem rhoMat_conjT (P : SiteProfile) (N : ℕ) :\n    (rhoMat P N)ᴴ = rhoMat P N := by\n  unfold rhoMat\n  rw [Matrix.diagonal_conjTranspose]\n  congr 1\n  funext k\n  simp [Complex.conj_ofReal]"
+        },
+        {
+          "name": "rhoMatInv_conjT",
+          "line": 85,
+          "source_block": "theorem rhoMatInv_conjT (P : SiteProfile) (N : ℕ) :\n    (rhoMatInv P N)ᴴ = rhoMatInv P N := by\n  unfold rhoMatInv\n  rw [Matrix.diagonal_conjTranspose]\n  congr 1\n  funext k\n  simp [Complex.conj_ofReal]\n\n/-- a torção modular de y: ρ·y†·ρ⁻¹ (o adjunto KMS da direita). -/"
+        },
+        {
+          "name": "modTwist",
+          "line": 94,
+          "source_block": "def modTwist (P : SiteProfile) {N : ℕ}\n    (y : Matrix (chainIdx N) (chainIdx N) ℂ) :\n    Matrix (chainIdx N) (chainIdx N) ℂ :=\n  rhoMat P N * yᴴ * rhoMatInv P N"
+        },
+        {
+          "name": "modTwist_apply",
+          "line": 99,
+          "source_block": "theorem modTwist_apply (P : SiteProfile) {N : ℕ}\n    (y : Matrix (chainIdx N) (chainIdx N) ℂ) (j k : chainIdx N) :\n    modTwist P y j k\n      = ((towerW P N j : ℝ) : ℂ) * star (y k j)\n          * (((towerW P N k)⁻¹ : ℝ) : ℂ) := by\n  unfold modTwist rhoMat rhoMatInv\n  rw [Matrix.mul_diagonal, Matrix.diagonal_mul, Matrix.conjTranspose_apply]\n  try ring\n\n/-- desfazer a torção: ρ·(modTwist y)†·ρ⁻¹ = y. -/"
+        },
+        {
+          "name": "rho_conj_modTwist_star",
+          "line": 109,
+          "source_block": "theorem rho_conj_modTwist_star (P : SiteProfile) {N : ℕ}\n    (y : Matrix (chainIdx N) (chainIdx N) ℂ) :\n    rhoMat P N * (modTwist P y)ᴴ * rhoMatInv P N = y := by\n  unfold modTwist\n  rw [Matrix.conjTranspose_mul, Matrix.conjTranspose_mul,\n    rhoMat_conjT, rhoMatInv_conjT, Matrix.conjTranspose_conjTranspose]\n  calc rhoMat P N * (rhoMatInv P N * (y * rhoMat P N)) * rhoMatInv P N\n      = (rhoMat P N * rhoMatInv P N) * y * (rhoMat P N * rhoMatInv P N) := by\n        noncomm_ring\n    _ = y := by rw [rhoMat_mul_inv]; simp\n\n/-- [KERNEL] ★★ A LEI KMS DO PERFIL: φ(a·b) = φ(b·ρaρ⁻¹) — computação\n    direta de pesos; a estrutura de equilíbrio do estado, explícita. -/"
+        },
+        {
+          "name": "tState_kms",
+          "line": 122,
+          "source_block": "theorem tState_kms (P : SiteProfile) (N : ℕ)\n    (a b : Matrix (chainIdx N) (chainIdx N) ℂ) :\n    tState P N (a * b)\n      = tState P N (b * (rhoMat P N * a * rhoMatInv P N)) := by\n  unfold tState\n  have hL : ∀ k : chainIdx N,\n      ((towerW P N k : ℝ) : ℂ) * (a * b) k k\n        = ∑ j, ((towerW P N k : ℝ) : ℂ) * a k j * b j k := by\n    intro k\n    rw [Matrix.mul_apply, Finset.mul_sum]\n    exact Finset.sum_congr rfl fun j _ => by ring\n  have hR : ∀ j : chainIdx N,\n      ((towerW P N j : ℝ) : ℂ)\n          * (b * (rhoMat P N * a * rhoMatInv P N)) j j\n        = ∑ k, ((towerW P N k : ℝ) : ℂ) * a k j * b j k := by\n    intro j\n    rw [Matrix.mul_apply, Finset.mul_sum]\n    refine Finset.sum_congr rfl fun k _ => ?_\n    have hmid : (rhoMat P N * a * rhoMatInv P N) k j\n        = ((towerW P N k : ℝ) : ℂ) * a k j * (((towerW P N j)⁻¹ : ℝ) : ℂ) := by\n      unfold rhoMat rhoMatInv\n      rw [Matrix.mul_diagonal, Matrix.diagonal_mul]\n      try ring\n    rw [hmid]\n    have hinv : ((towerW P N j : ℝ) : ℂ) * (((towerW P N j)⁻¹ : ℝ) : ℂ) = 1 := by\n      rw [← Complex.ofReal_mul, mul_inv_cancel₀ (ne_of_gt (towerW_pos P N j))]\n      norm_num\n    calc ((towerW P N j : ℝ) : ℂ)\n          * (b j k * (((towerW P N k : ℝ) : ℂ) * a k j\n              * (((towerW P N j)⁻¹ : ℝ) : ℂ)))\n        = (((towerW P N j : ℝ) : ℂ) * (((towerW P N j)⁻¹ : ℝ) : ℂ))\n            * (((towerW P N k : ℝ) : ℂ) * a k j * b j k) := by ring\n      _ = ((towerW P N k : ℝ) : ℂ) * a k j * b j k := by rw [hinv, one_mul]\n  rw [Finset.sum_congr rfl (fun k _ => hL k),\n    Finset.sum_congr rfl (fun j _ => hR j)]\n  exact Finset.sum_comm\n\n/-! ## B — a multiplicação à direita no colimite -/\n\n/-- a multiplicação à direita por y (andar N) no colimite. -/"
+        },
+        {
+          "name": "rmulPre",
+          "line": 162,
+          "source_block": "def rmulPre (P : SiteProfile) {N : ℕ}\n    (y : Matrix (chainIdx N) (chainIdx N) ℂ) :\n    TowerPre P → TowerPre P :=\n  Quotient.map\n    (fun q => ⟨N ⊔ q.1, tPush le_sup_right q.2 * tPush le_sup_left y⟩)\n    (by\n      rintro q q' hq\n      have hK : (N ⊔ q.1) ≤ (N ⊔ q.1) ⊔ (N ⊔ q'.1) := le_sup_left\n      have hK' : (N ⊔ q'.1) ≤ (N ⊔ q.1) ⊔ (N ⊔ q'.1) := le_sup_right\n      have eq := (towerEqv_iff (x := q) (y := q')\n        (K := (N ⊔ q.1) ⊔ (N ⊔ q'.1))\n        (le_sup_right.trans hK) (le_sup_right.trans hK')).mp hq\n      refine (towerEqv_iff hK hK').mpr ?_\n      show tPush hK (tPush le_sup_right q.2 * tPush le_sup_left y)\n        = tPush hK' (tPush le_sup_right q'.2 * tPush le_sup_left y)\n      rw [tPush_mul, tPush_mul, tPush_trans, tPush_trans, tPush_trans,\n        tPush_trans, eq])"
+        },
+        {
+          "name": "rmulPre_tof_at",
+          "line": 180,
+          "source_block": "theorem rmulPre_tof_at {N M K : ℕ} (hN : N ≤ K) (hM : M ≤ K)\n    (y : Matrix (chainIdx N) (chainIdx N) ℂ)\n    (b : Matrix (chainIdx M) (chainIdx M) ℂ) :\n    rmulPre P y (tof P M b) = tof P K (tPush hM b * tPush hN y) := by\n  show tof P (N ⊔ M) (tPush le_sup_right b * tPush le_sup_left y)\n    = tof P K (tPush hM b * tPush hN y)\n  have hs : N ⊔ M ≤ (N ⊔ M) ⊔ K := le_sup_left\n  have hk : K ≤ (N ⊔ M) ⊔ K := le_sup_right\n  rw [tof_eq_iff hs hk]\n  rw [tPush_mul, tPush_mul, tPush_trans, tPush_trans, tPush_trans, tPush_trans]\n\n/-- direita comuta com esquerda no pré-nível (associatividade da torre). -/"
+        },
+        {
+          "name": "rmulPre_comm_lmulPre",
+          "line": 192,
+          "source_block": "theorem rmulPre_comm_lmulPre {N M : ℕ}\n    (x : Matrix (chainIdx N) (chainIdx N) ℂ)\n    (y : Matrix (chainIdx M) (chainIdx M) ℂ) (v : TowerPre P) :\n    rmulPre P y (lmulPre P x v) = lmulPre P x (rmulPre P y v) := by\n  obtain ⟨B, b, rfl⟩ := exists_tof v\n  have hN : N ≤ N ⊔ M ⊔ B := le_sup_left.trans le_sup_left\n  have hM : M ≤ N ⊔ M ⊔ B := le_sup_right.trans le_sup_left\n  have hB : B ≤ N ⊔ M ⊔ B := le_sup_right\n  have hK : N ⊔ M ⊔ B ≤ N ⊔ M ⊔ B := le_rfl\n  rw [lmulPre_tof_at hN hB, rmulPre_tof_at hM hK,\n    rmulPre_tof_at hM hB, lmulPre_tof_at hN hK,\n    tPush_self, tPush_self, mul_assoc]\n\n/-! ## C — o bound uniforme da direita -/\n\n/-- o menor peso do andar N (positivo; finito não-vazio). -/"
+        },
+        {
+          "name": "wminP",
+          "line": 208,
+          "source_block": "def wminP (P : SiteProfile) (N : ℕ) : ℝ :=\n  Finset.univ.inf' Finset.univ_nonempty (towerW P N)"
+        },
+        {
+          "name": "wminP_pos",
+          "line": 211,
+          "source_block": "theorem wminP_pos (P : SiteProfile) (N : ℕ) : 0 < wminP P N := by\n  obtain ⟨k, _, hk⟩ :=\n    Finset.exists_mem_eq_inf' Finset.univ_nonempty (towerW P N)\n  rw [wminP, hk]\n  exact towerW_pos P N k"
+        },
+        {
+          "name": "wminP_le",
+          "line": 217,
+          "source_block": "theorem wminP_le (P : SiteProfile) (N : ℕ) (k : chainIdx N) :\n    wminP P N ≤ towerW P N k := by\n  unfold wminP\n  exact Finset.inf'_le _ (Finset.mem_univ k)"
+        },
+        {
+          "name": "towerW_le_one",
+          "line": 222,
+          "source_block": "theorem towerW_le_one (P : SiteProfile) (N : ℕ) (k : chainIdx N) :\n    towerW P N k ≤ 1 := by\n  have h := towerW_sum P N\n  have hle : towerW P N k ≤ ∑ i, towerW P N i :=\n    Finset.single_le_sum (fun i _ => le_of_lt (towerW_pos P N i))\n      (Finset.mem_univ k)\n  linarith\n\n/-- [KERNEL] ★ o bound no andar de origem: ‖b·y‖²_φ ≤ (F(y)/wmin)·‖b‖²_φ. -/"
+        },
+        {
+          "name": "rmul_bound_base",
+          "line": 231,
+          "source_block": "theorem rmul_bound_base (P : SiteProfile) (N : ℕ)\n    (y b : Matrix (chainIdx N) (chainIdx N) ℂ) :\n    (tInner P N (b * y) (b * y)).re\n      ≤ (frobSq y / wminP P N) * (tInner P N b b).re := by\n  have hw0 := wminP_pos P N\n  rw [tInner_self_eq, tInner_self_eq, Complex.ofReal_re, Complex.ofReal_re]\n  set B : ℝ := ∑ l, ∑ j, Complex.normSq (b j l) with hB\n  -- passo 1: CS por entrada + w_k ≤ 1\n  have h1 : (∑ k, towerW P N k * ∑ j, Complex.normSq ((b * y) j k))\n      ≤ ∑ k, (∑ l, Complex.normSq (y l k)) * B := by\n    apply Finset.sum_le_sum\n    intro k _\n    have hjk : (∑ j, Complex.normSq ((b * y) j k))\n        ≤ ∑ j, (∑ l, Complex.normSq (b j l))\n            * (∑ l, Complex.normSq (y l k)) := by\n      apply Finset.sum_le_sum\n      intro j _\n      rw [show (b * y) j k = ∑ l, b j l * y l k from Matrix.mul_apply]\n      exact normSq_sum_mul_le _ _\n    have hk1 : towerW P N k ≤ 1 := towerW_le_one P N k\n    have hknn : 0 ≤ towerW P N k := le_of_lt (towerW_pos P N k)\n    have hnn2 : 0 ≤ (∑ l, Complex.normSq (y l k))\n        * ∑ j, ∑ l, Complex.normSq (b j l) := by\n      apply mul_nonneg\n      · exact Finset.sum_nonneg (fun l _ => Complex.normSq_nonneg _)\n      · apply Finset.sum_nonneg\n        intro j _\n        exact Finset.sum_nonneg (fun l _ => Complex.normSq_nonneg _)\n    calc towerW P N k * ∑ j, Complex.normSq ((b * y) j k)\n        ≤ towerW P N k * ∑ j, (∑ l, Complex.normSq (b j l))\n            * (∑ l, Complex.normSq (y l k)) :=\n          mul_le_mul_of_nonneg_left hjk hknn\n      _ = towerW P N k * ((∑ l, Complex.normSq (y l k))\n            * ∑ j, ∑ l, Complex.normSq (b j l)) := by\n          rw [← Finset.sum_mul]\n          ring\n      _ ≤ 1 * ((∑ l, Complex.normSq (y l k))\n            * ∑ j, ∑ l, Complex.normSq (b j l)) :=\n          mul_le_mul_of_nonneg_right hk1 hnn2\n      _ = (∑ l, Complex.normSq (y l k)) * B := by\n          rw [one_mul, hB, Finset.sum_comm]\n  -- passo 2: Σ_k c_k = frobSq y\n  have h2 : (∑ k, (∑ l, Complex.normSq (y l k)) * B) = frobSq y * B := by\n    rw [← Finset.sum_mul]\n    congr 1\n    rw [frobSq, Finset.sum_comm]\n  -- passo 3: B ≤ (1/wmin)·‖b‖²_φ\n  have h3 : B ≤ (1 / wminP P N)\n      * ∑ l, towerW P N l * ∑ j, Complex.normSq (b j l) := by\n    rw [hB, Finset.mul_sum]\n    apply Finset.sum_le_sum\n    intro l _\n    have hnn : 0 ≤ ∑ j, Complex.normSq (b j l) :=\n      Finset.sum_nonneg (fun j _ => Complex.normSq_nonneg _)\n    have hww : 1 ≤ (1 / wminP P N) * towerW P N l := by\n      rw [div_mul_eq_mul_div, one_mul, le_div_iff₀ hw0]\n      simpa using wminP_le P N l\n    calc (∑ j, Complex.normSq (b j l))\n        = 1 * ∑ j, Complex.normSq (b j l) := (one_mul _).symm\n      _ ≤ ((1 / wminP P N) * towerW P N l) * ∑ j, Complex.normSq (b j l) :=\n          mul_le_mul_of_nonneg_right hww hnn\n      _ = (1 / wminP P N)\n            * (towerW P N l * ∑ j, Complex.normSq (b j l)) := by ring\n  -- fecho\n  have hFnn : 0 ≤ frobSq y := frobSq_nonneg y\n  calc (∑ k, towerW P N k * ∑ j, Complex.normSq ((b * y) j k))\n      ≤ frobSq y * B := le_trans h1 (le_of_eq h2)\n    _ ≤ frobSq y * ((1 / wminP P N)\n          * ∑ l, towerW P N l * ∑ j, Complex.normSq (b j l)) :=\n        mul_le_mul_of_nonneg_left h3 hFnn\n    _ = (frobSq y / wminP P N)\n          * ∑ l, towerW P N l * ∑ j, Complex.normSq (b j l) := by\n        ring\n\n/-- [KERNEL] ★ o fatiamento espelhado: a fatia da ação DIREITA de y⊗1 é a\n    ação direita de y na fatia. -/"
+        },
+        {
+          "name": "cSlice_mul_towerStep",
+          "line": 307,
+          "source_block": "theorem cSlice_mul_towerStep {M : ℕ} (t s : Fin 2)\n    (y : Matrix (chainIdx M) (chainIdx M) ℂ)\n    (c : Matrix (chainIdx (M + 1)) (chainIdx (M + 1)) ℂ) :\n    cSlice t s (c * towerStep y) = cSlice t s c * y := by\n  ext j k\n  rw [cSlice_apply, Matrix.mul_apply, Matrix.mul_apply]\n  rw [Fintype.sum_prod_type]\n  refine Finset.sum_congr rfl fun i _ => ?_\n  have hstep : ∀ u : Fin 2, towerStep y (i, u) (k, s)\n      = y i k * (if u = s then 1 else 0) := by\n    intro u\n    unfold towerStep\n    rw [kroneckerMap_apply, Matrix.one_apply]\n  have hterm : ∀ u : Fin 2, c (j, t) (i, u) * towerStep y (i, u) (k, s)\n      = if u = s then c (j, t) (i, u) * y i k else 0 := by\n    intro u\n    rw [hstep u]\n    by_cases hu : u = s\n    · rw [if_pos hu, if_pos hu, mul_one]\n    · rw [if_neg hu, if_neg hu, mul_zero, mul_zero]\n  rw [Finset.sum_congr rfl (fun u _ => hterm u),\n    Finset.sum_ite_eq' Finset.univ s (fun u => c (j, t) (i, u) * y i k),\n    if_pos (Finset.mem_univ s), cSlice_apply]\n\n/-- [KERNEL] ★★ O BOUND UNIFORME da direita: a constante do andar de ORIGEM\n    não cresce ao subir (indução de fatiamento espelhada). -/"
+        },
+        {
+          "name": "rmul_bound_push",
+          "line": 333,
+          "source_block": "theorem rmul_bound_push (P : SiteProfile) {N : ℕ}\n    (y : Matrix (chainIdx N) (chainIdx N) ℂ) :\n    ∀ {M : ℕ} (h : N ≤ M) (c : Matrix (chainIdx M) (chainIdx M) ℂ),\n      (tInner P M (c * tPush h y) (c * tPush h y)).re\n        ≤ (frobSq y / wminP P N) * (tInner P M c c).re := by\n  intro M h\n  induction M, h using Nat.le_induction with\n  | base =>\n      intro c\n      rw [tPush_self]\n      exact rmul_bound_base P N y c\n  | succ M hM ih =>\n      intro c\n      rw [tPush_succ hM (hM.trans (Nat.le_succ M))]\n      rw [tInner_self_slice P (c * towerStep (tPush hM y)),\n        tInner_self_slice P c]\n      rw [Finset.mul_sum]\n      apply Finset.sum_le_sum\n      intro s _\n      rw [Finset.mul_sum]\n      apply Finset.sum_le_sum\n      intro t _\n      rw [cSlice_mul_towerStep]\n      have hσ : 0 ≤ siteW (P.w (M + 1)) s :=\n        le_of_lt (siteW_pos (P.pos (M + 1)) (P.lt_one (M + 1)) s)\n      calc siteW (P.w (M + 1)) s\n            * (tInner P M (cSlice t s c * tPush hM y)\n                (cSlice t s c * tPush hM y)).re\n          ≤ siteW (P.w (M + 1)) s * ((frobSq y / wminP P N)\n              * (tInner P M (cSlice t s c) (cSlice t s c)).re) :=\n            mul_le_mul_of_nonneg_left (ih (cSlice t s c)) hσ\n        _ = (frobSq y / wminP P N) * (siteW (P.w (M + 1)) s\n              * (tInner P M (cSlice t s c) (cSlice t s c)).re) := by ring\n\n/-! ## D — a direita como operador de B(H_φ) -/\n\n/-- a direita é LINEAR no colimite. -/"
+        },
+        {
+          "name": "rmulLin",
+          "line": 370,
+          "source_block": "def rmulLin (P : SiteProfile) {N : ℕ}\n    (y : Matrix (chainIdx N) (chainIdx N) ℂ) :\n    TowerPre P →ₗ[ℂ] TowerPre P where\n  toFun := rmulPre P y\n  map_add' := by\n    intro v w\n    obtain ⟨A, a, rfl⟩ := exists_tof v\n    obtain ⟨B, b, rfl⟩ := exists_tof w\n    have hA : A ≤ A ⊔ B := le_sup_left\n    have hB : B ≤ A ⊔ B := le_sup_right\n    have hN : N ≤ N ⊔ (A ⊔ B) := le_sup_left\n    have hAB : A ⊔ B ≤ N ⊔ (A ⊔ B) := le_sup_right\n    rw [tof_add_at hA hB, rmulPre_tof_at hN hAB,\n      rmulPre_tof_at hN (hA.trans hAB), rmulPre_tof_at hN (hB.trans hAB),\n      tof_add_at (le_refl (N ⊔ (A ⊔ B))) (le_refl (N ⊔ (A ⊔ B))),\n      tPush_self, tPush_self, tPush_add, add_mul, tPush_trans, tPush_trans]\n  map_smul' := by\n    intro cc v\n    obtain ⟨A, a, rfl⟩ := exists_tof v\n    have hN : N ≤ N ⊔ A := le_sup_left\n    have hA : A ≤ N ⊔ A := le_sup_right\n    rw [RingHom.id_apply, tof_smul, rmulPre_tof_at hN hA,\n      rmulPre_tof_at hN hA, tof_smul, tPush_smul, smul_mul_assoc]\n\n/-- [KERNEL] ★★ A CONTINUIDADE da direita no colimite inteiro. -/"
+        },
+        {
+          "name": "rmulPre_norm_le",
+          "line": 395,
+          "source_block": "theorem rmulPre_norm_le {N : ℕ} (y : Matrix (chainIdx N) (chainIdx N) ℂ)\n    (v : TowerPre P) :\n    ‖rmulPre P y v‖ ≤ Real.sqrt (frobSq y / wminP P N) * ‖v‖ := by\n  obtain ⟨M, b, rfl⟩ := exists_tof v\n  have hN : N ≤ N ⊔ M := le_sup_left\n  have hM : M ≤ N ⊔ M := le_sup_right\n  set K := N ⊔ M\n  set b' := tPush hM b with hb'\n  have hv : tof P M b = tof P K b' := (tof_tPush hM b).symm\n  rw [hv, rmulPre_tof_at hN (le_refl K), tPush_self]\n  have hsq : ‖tof P K (b' * tPush hN y)‖ ^ 2\n      ≤ (frobSq y / wminP P N) * ‖tof P K b'‖ ^ 2 := by\n    rw [norm_tof_sq, norm_tof_sq]\n    exact rmul_bound_push P y hN b'\n  have h1 : ‖tof P K (b' * tPush hN y)‖\n      = Real.sqrt (‖tof P K (b' * tPush hN y)‖ ^ 2) :=\n    (Real.sqrt_sq (norm_nonneg _)).symm\n  rw [h1]\n  have hCnn : (0 : ℝ) ≤ frobSq y / wminP P N :=\n    div_nonneg (frobSq_nonneg y) (le_of_lt (wminP_pos P N))\n  calc Real.sqrt (‖tof P K (b' * tPush hN y)‖ ^ 2)\n      ≤ Real.sqrt ((frobSq y / wminP P N) * ‖tof P K b'‖ ^ 2) :=\n        Real.sqrt_le_sqrt hsq\n    _ = Real.sqrt (frobSq y / wminP P N) * Real.sqrt (‖tof P K b'‖ ^ 2) :=\n        Real.sqrt_mul hCnn _\n    _ = Real.sqrt (frobSq y / wminP P N) * ‖tof P K b'‖ := by\n        rw [Real.sqrt_sq (norm_nonneg _)]\n\n/-- a direita como operador CONTÍNUO no pré-Hilbert. -/"
+        },
+        {
+          "name": "rmulCLM",
+          "line": 424,
+          "source_block": "def rmulCLM (P : SiteProfile) {N : ℕ}\n    (y : Matrix (chainIdx N) (chainIdx N) ℂ) :\n    TowerPre P →L[ℂ] TowerPre P :=\n  LinearMap.mkContinuous (rmulLin P y)\n    (Real.sqrt (frobSq y / wminP P N)) (fun v => rmulPre_norm_le y v)\n\n/-- ★★ r(y): a direita em B(H_φ), por extensão ao completamento. -/"
+        },
+        {
+          "name": "rTowerPi",
+          "line": 431,
+          "source_block": "def rTowerPi (P : SiteProfile) {N : ℕ}\n    (y : Matrix (chainIdx N) (chainIdx N) ℂ) :\n    TowerHilbert P →L[ℂ] TowerHilbert P :=\n  (rmulCLM P y).completion"
+        },
+        {
+          "name": "rTowerPi_coe",
+          "line": 436,
+          "source_block": "theorem rTowerPi_coe {N : ℕ} (y : Matrix (chainIdx N) (chainIdx N) ℂ)\n    (v : TowerPre P) :\n    rTowerPi P y (v : TowerHilbert P)\n      = ((rmulPre P y v : TowerPre P) : TowerHilbert P) :=\n  ContinuousLinearMap.completion_apply_coe _ _\n\n/-- [KERNEL] ★ r(y)Ω = [y]: a órbita direita do Nome é a torre. -/"
+        },
+        {
+          "name": "rTowerPi_omega",
+          "line": 443,
+          "source_block": "theorem rTowerPi_omega (N : ℕ) (y : Matrix (chainIdx N) (chainIdx N) ℂ) :\n    rTowerPi P y (hOmega P) = ((tof P N y : TowerPre P) : TowerHilbert P) := by\n  unfold hOmega\n  rw [show towerOmega P = tof P 0 1 from rfl, rTowerPi_coe]\n  congr 1\n  rw [rmulPre_tof_at (le_refl N) (Nat.zero_le N), tPush_self, tPush_one,\n    one_mul]\n\n/-- [KERNEL] ★★ direita comuta com esquerda em B(H_φ). -/"
+        },
+        {
+          "name": "towerPi_comm_rTowerPi",
+          "line": 452,
+          "source_block": "theorem towerPi_comm_rTowerPi {N M : ℕ}\n    (x : Matrix (chainIdx N) (chainIdx N) ℂ)\n    (y : Matrix (chainIdx M) (chainIdx M) ℂ) :\n    towerPi P x * rTowerPi P y = rTowerPi P y * towerPi P x := by\n  ext c\n  rw [ContinuousLinearMap.mul_apply, ContinuousLinearMap.mul_apply]\n  induction c using Completion.induction_on with\n  | hp => apply isClosed_eq <;> fun_prop\n  | ih c =>\n      rw [rTowerPi_coe, towerPi_coe, towerPi_coe, rTowerPi_coe,\n        rmulPre_comm_lmulPre]\n\n/-- o empurrão comuta com a torção modular. -/"
+        },
+        {
+          "name": "tPush_modTwist",
+          "line": 465,
+          "source_block": "theorem tPush_modTwist (P : SiteProfile) {N M : ℕ} (h : N ≤ M)\n    (y : Matrix (chainIdx N) (chainIdx N) ℂ) :\n    tPush h (modTwist P y) = modTwist P (tPush h y) := by\n  induction M, h using Nat.le_induction with\n  | base => rw [tPush_self, tPush_self]\n  | succ M hM ih =>\n      rw [tPush_succ hM (hM.trans (Nat.le_succ M)),\n        tPush_succ hM (hM.trans (Nat.le_succ M)), ih]\n      ext jk kl\n      obtain ⟨j, u⟩ := jk\n      obtain ⟨k, v⟩ := kl\n      have hL : towerStep (modTwist P (tPush hM y)) (j, u) (k, v)\n          = modTwist P (tPush hM y) j k\n            * (1 : Matrix (Fin 2) (Fin 2) ℂ) u v := by\n        unfold towerStep\n        rw [kroneckerMap_apply]\n      have hS : towerStep (tPush hM y) (k, v) (j, u)\n          = tPush hM y k j * (1 : Matrix (Fin 2) (Fin 2) ℂ) v u := by\n        unfold towerStep\n        rw [kroneckerMap_apply]\n      rw [hL, modTwist_apply, modTwist_apply, hS]\n      rw [show towerW P (M + 1) (j, u)\n          = towerW P M j * siteW (P.w (M + 1)) u from rfl,\n        show towerW P (M + 1) (k, v)\n          = towerW P M k * siteW (P.w (M + 1)) v from rfl]\n      by_cases huv : u = v\n      · subst huv\n        simp only [Matrix.one_apply_eq, mul_one]\n        have hs0 : ((siteW (P.w (M + 1)) u : ℝ) : ℂ) ≠ 0 :=\n          Complex.ofReal_ne_zero.mpr\n            (ne_of_gt (siteW_pos (P.pos (M + 1)) (P.lt_one (M + 1)) u))\n        have hk0 : ((towerW P M k : ℝ) : ℂ) ≠ 0 :=\n          Complex.ofReal_ne_zero.mpr (ne_of_gt (towerW_pos P M k))\n        push_cast [mul_inv]\n        field_simp\n        try ring\n      · have h1 : (1 : Matrix (Fin 2) (Fin 2) ℂ) u v = 0 := by\n          rw [Matrix.one_apply, if_neg huv]\n        have h2 : (1 : Matrix (Fin 2) (Fin 2) ℂ) v u = 0 := by\n          rw [Matrix.one_apply, if_neg (fun h' => huv h'.symm)]\n        rw [h1, h2, mul_zero, mul_zero, star_zero, mul_zero, zero_mul]\n\n/-- [KERNEL] ★★ O ADJUNTO MODULAR: adjoint(r_y) = r_{ρy†ρ⁻¹} — via KMS. -/"
+        },
+        {
+          "name": "rTowerPi_star",
+          "line": 508,
+          "source_block": "theorem rTowerPi_star (N : ℕ) (y : Matrix (chainIdx N) (chainIdx N) ℂ) :\n    rTowerPi P (modTwist P y)\n      = ContinuousLinearMap.adjoint (rTowerPi P y) := by\n  refine ((ContinuousLinearMap.eq_adjoint_iff _ _).mpr ?_)\n  intro u v\n  induction u, v using Completion.induction_on₂ with\n  | hp => apply isClosed_eq <;> fun_prop\n  | ih u v =>\n      rw [rTowerPi_coe, rTowerPi_coe, Completion.inner_coe,\n        Completion.inner_coe]\n      obtain ⟨A, a, rfl⟩ := exists_tof u\n      obtain ⟨B, b, rfl⟩ := exists_tof v\n      have hN : N ≤ N ⊔ A ⊔ B := le_sup_left.trans le_sup_left\n      have hA : A ≤ N ⊔ A ⊔ B := le_sup_right.trans le_sup_left\n      have hB : B ≤ N ⊔ A ⊔ B := le_sup_right\n      show innerPre P (rmulPre P (modTwist P y) (tof P A a)) (tof P B b)\n        = innerPre P (tof P A a) (rmulPre P y (tof P B b))\n      rw [rmulPre_tof_at hN hA, rmulPre_tof_at hN hB,\n        innerPre_tof_at (le_refl (N ⊔ A ⊔ B)) hB, tPush_self,\n        innerPre_tof_at hA (le_refl (N ⊔ A ⊔ B)), tPush_self,\n        tPush_modTwist]\n      unfold tInner\n      rw [Matrix.conjTranspose_mul]\n      have hassoc1 : (modTwist P (tPush hN y))ᴴ * (tPush hA a)ᴴ * tPush hB b\n          = (modTwist P (tPush hN y))ᴴ * ((tPush hA a)ᴴ * tPush hB b) := by\n        noncomm_ring\n      rw [hassoc1,\n        tState_kms P (N ⊔ A ⊔ B) ((modTwist P (tPush hN y))ᴴ)\n          ((tPush hA a)ᴴ * tPush hB b),\n        rho_conj_modTwist_star P (tPush hN y)]\n      congr 1\n      noncomm_ring\n\n/-- [KERNEL] ★★★ r(y) ∈ π(torre)′: comuta com toda esquerda e sua estrela\n    é OUTRA direita (o adjunto modular) — o comutante é habitado. -/"
+        },
+        {
+          "name": "rTowerPi_mem_commutant",
+          "line": 543,
+          "source_block": "theorem rTowerPi_mem_commutant {N : ℕ}\n    (y : Matrix (chainIdx N) (chainIdx N) ℂ) :\n    rTowerPi P y ∈ StarSubalgebra.centralizer ℂ (towerImage P) := by\n  rw [StarSubalgebra.mem_centralizer_iff]\n  rintro T ⟨M, x, rfl⟩\n  constructor\n  · exact towerPi_comm_rTowerPi x y\n  · rw [ContinuousLinearMap.star_eq_adjoint, ← towerPi_star]\n    exact towerPi_comm_rTowerPi xᴴ y\n\n/-- [KERNEL] ★★ TODO elemento do fator comuta com toda direita (M_TGL é o\n    duplo centralizador; a direita vive no primeiro). -/"
+        },
+        {
+          "name": "factor_comm_rTowerPi",
+          "line": 555,
+          "source_block": "theorem factor_comm_rTowerPi {A : TowerHilbert P →L[ℂ] TowerHilbert P}\n    (hA : A ∈ theFactorObject P) {N : ℕ}\n    (y : Matrix (chainIdx N) (chainIdx N) ℂ) :\n    A * rTowerPi P y = rTowerPi P y * A := by\n  have hA' : A ∈ StarSubalgebra.centralizer ℂ\n      ((StarSubalgebra.centralizer ℂ (towerImage P) :\n        StarSubalgebra ℂ (TowerHilbert P →L[ℂ] TowerHilbert P)) :\n          Set (TowerHilbert P →L[ℂ] TowerHilbert P)) := hA\n  rw [StarSubalgebra.mem_centralizer_iff] at hA'\n  have h := hA' (rTowerPi P y)\n    (SetLike.mem_coe.mpr (rTowerPi_mem_commutant y))\n  exact h.1.symm\n\n/-- [KERNEL] ★★★ O SEPARADOR: A ∈ M_TGL e AΩ = 0 ⟹ A = 0 — o vetor do\n    Nome é cíclico (pedra 86) E separador para o fator: Reeh–Schlieder. -/"
+        },
+        {
+          "name": "factor_omega_separating",
+          "line": 570,
+          "source_block": "theorem factor_omega_separating\n    {A : TowerHilbert P →L[ℂ] TowerHilbert P}\n    (hA : A ∈ theFactorObject P) (h0 : A (hOmega P) = 0) : A = 0 := by\n  have hker : ∀ (N : ℕ) (a : Matrix (chainIdx N) (chainIdx N) ℂ),\n      A ((tof P N a : TowerPre P) : TowerHilbert P) = 0 := by\n    intro N a\n    have hc := factor_comm_rTowerPi hA a\n    have h1 : A (rTowerPi P a (hOmega P))\n        = rTowerPi P a (A (hOmega P)) := by\n      have h2 := congrArg (fun T : TowerHilbert P →L[ℂ] TowerHilbert P =>\n        T (hOmega P)) hc\n      simpa [ContinuousLinearMap.mul_apply] using h2\n    rw [rTowerPi_omega] at h1\n    rw [h1, h0, map_zero]\n  ext c\n  rw [ContinuousLinearMap.zero_apply]\n  induction c using Completion.induction_on with\n  | hp => apply isClosed_eq <;> fun_prop\n  | ih v =>\n      obtain ⟨N, a, rfl⟩ := exists_tof v\n      exact hker N a\n\nend\n\nend TGLExt"
+        }
+      ]
+    },
+    {
+      "file": "ExpectationBimodule",
+      "source": {
+        "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\k\\TGLExt\\ExpectationBimodule.lean",
+        "sha256": "59df6a514db887ac09c1c2211198bcd31bb088da2df90a0240a9580fc67e18fe",
+        "bytes": 4771
+      },
+      "scope": "local source read; earlier acceptance inherited; no new build/axiom audit",
+      "declarations": [
+        {
+          "name": "left_preserves_level",
+          "line": 21,
+          "source_block": "theorem left_preserves_level {N : ℕ} (a : Matrix (chainIdx N) (chainIdx N) ℂ)\n    {v : TowerHilbert P} (hv : v ∈ levelSpace P N) :\n    towerPi P a v ∈ levelSpace P N := by\n  obtain ⟨b,rfl⟩ := hv\n  refine ⟨a*b, ?_⟩\n  change _ = towerPi P a ((tof P N b : TowerPre P) : TowerHilbert P)\n  rw [towerPi_coe, lmulPre_tof_at (le_refl N) (le_refl N), tPush_self, tPush_self]\n  rfl"
+        },
+        {
+          "name": "right_preserves_level",
+          "line": 30,
+          "source_block": "theorem right_preserves_level {N : ℕ} (a : Matrix (chainIdx N) (chainIdx N) ℂ)\n    {v : TowerHilbert P} (hv : v ∈ levelSpace P N) :\n    rTowerPi P a v ∈ levelSpace P N := by\n  obtain ⟨b,rfl⟩ := hv\n  refine ⟨b*a, ?_⟩\n  change _ = rTowerPi P a ((tof P N b : TowerPre P) : TowerHilbert P)\n  rw [rTowerPi_coe, rmulPre_tof_at (le_refl N) (le_refl N), tPush_self, tPush_self]\n  rfl"
+        },
+        {
+          "name": "project_commutes_reducing",
+          "line": 39,
+          "source_block": "theorem project_commutes_reducing (N : ℕ)\n    (T : TowerHilbert P →L[ℂ] TowerHilbert P)\n    (hT : ∀ v ∈ levelSpace P N, T v ∈ levelSpace P N)\n    (hstar : ∀ v ∈ levelSpace P N, T.adjoint v ∈ levelSpace P N)\n    (x : TowerHilbert P) : levelProject P N (T x) = T (levelProject P N x) := by\n  apply level_inner_ext (levelProject_mem _ _) (hT _ (levelProject_mem _ _))\n  intro b hb\n  rw [levelProject_inner hb, ← ContinuousLinearMap.adjoint_inner_left,\n    ← ContinuousLinearMap.adjoint_inner_left, levelProject_inner (hstar b hb)]"
+        },
+        {
+          "name": "project_left",
+          "line": 49,
+          "source_block": "theorem project_left (N : ℕ) (a : Matrix (chainIdx N) (chainIdx N) ℂ)\n    (x : TowerHilbert P) : levelProject P N (towerPi P a x) =\n      towerPi P a (levelProject P N x) := by\n  apply project_commutes_reducing\n  · exact fun v hv => left_preserves_level a hv\n  · intro v hv\n    rw [← towerPi_star]\n    exact left_preserves_level _ hv"
+        },
+        {
+          "name": "project_right",
+          "line": 58,
+          "source_block": "theorem project_right (N : ℕ) (a : Matrix (chainIdx N) (chainIdx N) ℂ)\n    (x : TowerHilbert P) : levelProject P N (rTowerPi P a x) =\n      rTowerPi P a (levelProject P N x) := by\n  apply project_commutes_reducing\n  · exact fun v hv => right_preserves_level a hv\n  · intro v hv\n    rw [← rTowerPi_star]\n    exact right_preserves_level _ hv"
+        },
+        {
+          "name": "factor_right_apply",
+          "line": 67,
+          "source_block": "theorem factor_right_apply {x : TowerHilbert P →L[ℂ] TowerHilbert P}\n    (hx : x ∈ theFactorObject P) {N : ℕ}\n    (b : Matrix (chainIdx N) (chainIdx N) ℂ) (v : TowerHilbert P) :\n    x (rTowerPi P b v) = rTowerPi P b (x v) :=\n  congrArg (fun T : TowerHilbert P →L[ℂ] TowerHilbert P => T v) (factor_comm_rTowerPi hx b)"
+        },
+        {
+          "name": "expectation_compression",
+          "line": 73,
+          "source_block": "theorem expectation_compression (N : ℕ) (x : TowerHilbert P →L[ℂ] TowerHilbert P)\n    (hx : x ∈ theFactorObject P) {v : TowerHilbert P} (hv : v ∈ levelSpace P N) :\n    towerExpectation P N x v = levelProject P N (x v) := by\n  obtain ⟨b,rfl⟩ := hv\n  change towerExpectation P N x ((tof P N b : TowerPre P) : TowerHilbert P) =\n    levelProject P N (x ((tof P N b : TowerPre P) : TowerHilbert P))\n  rw [← rTowerPi_omega, factor_right_apply (expectation_mem_factor _ _),\n    factor_right_apply hx, project_right, expectation_omega]"
+        },
+        {
+          "name": "expectation_bimodular",
+          "line": 82,
+          "source_block": "theorem expectation_bimodular (N : ℕ)\n    (a b : Matrix (chainIdx N) (chainIdx N) ℂ)\n    (x : TowerHilbert P →L[ℂ] TowerHilbert P) (hx : x ∈ theFactorObject P) :\n    towerExpectation P N (towerPi P a * x * towerPi P b) =\n      towerPi P a * towerExpectation P N x * towerPi P b := by\n  apply factor_eq_of_omega (expectation_mem_factor _ _)\n    ((theFactorObject P).mul_mem\n      ((theFactorObject P).mul_mem (towerPi_mem_factor _) (expectation_mem_factor _ _))\n      (towerPi_mem_factor _))\n  rw [expectation_omega]\n  change levelProject P N (towerPi P a (x (towerPi P b (hOmega P)))) =\n    towerPi P a (towerExpectation P N x (towerPi P b (hOmega P)))\n  rw [project_left, expectation_compression N x hx (left_preserves_level b (omega_mem_level N))]"
+        }
+      ]
+    },
+    {
+      "file": "V351RegularPositiveGraph",
+      "source": {
+        "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\k\\TGLExt\\V351RegularPositiveGraph.lean",
+        "sha256": "d56ea107302802ee76d65a3c32c69be9fe41cddb4901a65486ab7f1bfb345390",
+        "bytes": 8384
+      },
+      "scope": "local source read; earlier acceptance inherited; no new build/axiom audit",
+      "declarations": [
+        {
+          "name": "realScalarMultiplier_nonneg",
+          "line": 17,
+          "source_block": "theorem realScalarMultiplier_nonneg (g : ℝ → ℝ) (hg : Continuous g)\n    (h0 : ∀ s, 0 ≤ g s) (h1 : ∀ s, g s ≤ 1) :\n    0 ≤ realScalarMultiplier (H := H) g hg h0 h1 := by\n  apply (ContinuousLinearMap.nonneg_iff_isPositive _).mpr\n  apply ContinuousLinearMap.isPositive_def'.mpr\n  constructor\n  · change star (operatorFieldLift (realScalarField (H := H) g hg h0 h1)) =\n      operatorFieldLift (realScalarField (H := H) g hg h0 h1)\n    symm\n    apply operatorFieldLift_star\n    intro x\n    change (g x : ℂ) • (1 : H →L[ℂ] H) =\n      star ((g x : ℂ) • (1 : H →L[ℂ] H))\n    simp\n  · intro f\n    change 0 ≤ (inner ℂ (realScalarMultiplier g hg h0 h1 f) f).re\n    rw [L2.inner_def]\n    change 0 ≤ RCLike.re (∫ x : ℝ,\n      inner ℂ ((realScalarMultiplier g hg h0 h1 f) x) (f x))\n    rw [← integral_re (L2.integrable_inner (𝕜 := ℂ) (realScalarMultiplier g hg h0 h1 f) f)]\n    apply integral_nonneg_of_ae\n    filter_upwards [realScalarMultiplier_ae g hg h0 h1 f] with x hx\n    rw [hx]\n    rw [inner_smul_left]\n    have hc : (starRingEnd ℂ) (g x : ℂ) = (g x : ℂ) := by simp\n    rw [hc]\n    change 0 ≤ ((g x : ℂ) * inner ℂ (f x) (f x)).re\n    rw [Complex.mul_re, Complex.ofReal_re, Complex.ofReal_im, zero_mul, sub_zero]\n    change 0 ≤ g x * RCLike.re (inner ℂ (f x) (f x))\n    rw [inner_self_eq_norm_sq]\n    exact mul_nonneg (h0 x) (sq_nonneg ‖f x‖)"
+        },
+        {
+          "name": "realScalarMultiplier_complement",
+          "line": 49,
+          "source_block": "theorem realScalarMultiplier_complement (g : ℝ → ℝ) (hg : Continuous g)\n    (h0 : ∀ s, 0 ≤ g s) (h1 : ∀ s, g s ≤ 1) :\n    1 - realScalarMultiplier (H := H) g hg h0 h1 =\n      realScalarMultiplier (fun x => 1-g x) (continuous_const.sub hg)\n        (fun x => sub_nonneg.mpr (h1 x)) (fun x => sub_le_self 1 (h0 x)) := by\n  ext1 f\n  apply Lp.ext\n  filter_upwards [realScalarMultiplier_ae g hg h0 h1 f,\n    realScalarMultiplier_ae (fun x => 1-g x) (continuous_const.sub hg)\n      (fun x => sub_nonneg.mpr (h1 x)) (fun x => sub_le_self 1 (h0 x)) f,\n    Lp.coeFn_sub f (realScalarMultiplier g hg h0 h1 f)] with x h2 h3 h4\n  change (f-realScalarMultiplier g hg h0 h1 f) x = _\n  rw [h4, h3]\n  simp only [Pi.sub_apply, h2, Complex.ofReal_sub, Complex.ofReal_one, sub_smul, one_smul]"
+        },
+        {
+          "name": "realScalarMultiplier_le_one",
+          "line": 64,
+          "source_block": "theorem realScalarMultiplier_le_one (g : ℝ → ℝ) (hg : Continuous g)\n    (h0 : ∀ s, 0 ≤ g s) (h1 : ∀ s, g s ≤ 1) :\n    realScalarMultiplier (H := H) g hg h0 h1 ≤ 1 := by\n  apply sub_nonneg.mp\n  rw [realScalarMultiplier_complement]\n  exact realScalarMultiplier_nonneg _ _ _ _\n\n/-- From the spectral L² coordinate to the original regular representation. -/"
+        },
+        {
+          "name": "regularSpectralCoordinates",
+          "line": 72,
+          "source_block": "def regularSpectralCoordinates (P : SiteProfile) :\n    RegularHilbert (TowerHilbert P) ≃ₗᵢ[ℂ] RegularHilbert (TowerHilbert P) :=\n  (Lp.fourierTransformₗᵢ ℝ (TowerHilbert P)).symm.trans\n    (Unitary.linearIsometryEquiv (regularFlowAbsorptionUnitary P))\n\n/-- The candidate (1+h)^{-1}, with the spectral function already in mathlib. -/"
+        },
+        {
+          "name": "regularSpectralResolvent",
+          "line": 78,
+          "source_block": "def regularSpectralResolvent (P : SiteProfile) :\n    RegularHilbert (TowerHilbert P) →L[ℂ] RegularHilbert (TowerHilbert P) :=\n  (regularSpectralCoordinates P).conjStarAlgEquiv\n    (realScalarMultiplier (fun x => Real.sigmoid (2*Real.pi*x)) (by fun_prop)\n      (fun x => Real.sigmoid_nonneg _) (fun x => Real.sigmoid_le_one _))"
+        },
+        {
+          "name": "regularSpectralResolvent_nonneg",
+          "line": 84,
+          "source_block": "theorem regularSpectralResolvent_nonneg (P : SiteProfile) :\n    0 ≤ regularSpectralResolvent P := by\n  exact map_nonneg (regularSpectralCoordinates P).conjStarAlgEquiv\n    (realScalarMultiplier_nonneg _ _ _ _)"
+        },
+        {
+          "name": "regularSpectralResolvent_le_one",
+          "line": 89,
+          "source_block": "theorem regularSpectralResolvent_le_one (P : SiteProfile) :\n    regularSpectralResolvent P ≤ 1 := by\n  apply sub_nonneg.mp\n  have h := map_nonneg (regularSpectralCoordinates P).conjStarAlgEquiv\n    (sub_nonneg.mpr (realScalarMultiplier_le_one\n      (H := TowerHilbert P) (fun x => Real.sigmoid (2*Real.pi*x)) (by fun_prop)\n      (fun x => Real.sigmoid_nonneg _) (fun x => Real.sigmoid_le_one _)))\n  simpa only [map_sub, map_one, regularSpectralResolvent] using h"
+        },
+        {
+          "name": "regularSpectralResolvent_injective",
+          "line": 98,
+          "source_block": "theorem regularSpectralResolvent_injective (P : SiteProfile) :\n    Function.Injective (regularSpectralResolvent P) :=\n  (regularSpectralCoordinates P).injective.comp\n    ((realScalarMultiplier_injective _ _ _ _ (fun _ => Real.sigmoid_pos _)).comp\n      (regularSpectralCoordinates P).symm.injective)"
+        },
+        {
+          "name": "regularSpectralResolvent_complement_injective",
+          "line": 104,
+          "source_block": "theorem regularSpectralResolvent_complement_injective (P : SiteProfile) :\n    Function.Injective (1-regularSpectralResolvent P :\n      RegularHilbert (TowerHilbert P) →L[ℂ] RegularHilbert (TowerHilbert P)) := by\n  let g : ℝ → ℝ := fun x => Real.sigmoid (2*Real.pi*x)\n  have hg : Continuous g := by fun_prop\n  have h0 : ∀ x, 0 ≤ g x := fun x => Real.sigmoid_nonneg _\n  have h1 : ∀ x, g x ≤ 1 := fun x => Real.sigmoid_le_one _\n  change Function.Injective (1 - (regularSpectralCoordinates P).conjStarAlgEquiv\n    (realScalarMultiplier g hg h0 h1) : _ →L[ℂ] _)\n  rw [← map_one (regularSpectralCoordinates P).conjStarAlgEquiv,\n    ← map_sub, realScalarMultiplier_complement]\n  exact (regularSpectralCoordinates P).injective.comp\n    ((realScalarMultiplier_injective _ _ _ _\n      (fun x => sub_pos.mpr (Real.sigmoid_lt_one _))).comp\n      (regularSpectralCoordinates P).symm.injective)\n\n/-- A positive graph on the same regular Hilbert space. Its imaginary powers,\naffiliation and dual scaling are subsequent obligations, not fields assumed here. -/"
+        },
+        {
+          "name": "regularPositiveGenerator",
+          "line": 122,
+          "source_block": "def regularPositiveGenerator (P : SiteProfile) :\n    RegularHilbert (TowerHilbert P) →ₗ.[ℂ] RegularHilbert (TowerHilbert P) :=\n  resolventGraphOperator (regularSpectralResolvent P) (regularSpectralResolvent_injective P)"
+        },
+        {
+          "name": "regularPositiveGenerator_closed",
+          "line": 126,
+          "source_block": "theorem regularPositiveGenerator_closed (P : SiteProfile) :\n    (regularPositiveGenerator P).IsClosed :=\n  resolvent_graph_closed _ _"
+        },
+        {
+          "name": "regularPositiveGenerator_domain_dense",
+          "line": 130,
+          "source_block": "theorem regularPositiveGenerator_domain_dense (P : SiteProfile) :\n    Dense ((regularPositiveGenerator P).domain : Set (RegularHilbert (TowerHilbert P))) :=\n  resolvent_graph_domain_dense _ _ (IsSelfAdjoint.of_nonneg (regularSpectralResolvent_nonneg P))"
+        },
+        {
+          "name": "regularPositiveGenerator_selfadjoint",
+          "line": 134,
+          "source_block": "theorem regularPositiveGenerator_selfadjoint (P : SiteProfile) :\n    IsSelfAdjoint (regularPositiveGenerator P) :=\n  resolvent_graph_selfadjoint _ _ (IsSelfAdjoint.of_nonneg (regularSpectralResolvent_nonneg P))"
+        },
+        {
+          "name": "regularPositiveGenerator_positive",
+          "line": 138,
+          "source_block": "theorem regularPositiveGenerator_positive (P : SiteProfile)\n    (x : (regularPositiveGenerator P).domain) :\n    0 ≤ (inner ℂ (x : RegularHilbert (TowerHilbert P)) (regularPositiveGenerator P x)).re :=\n  resolvent_graph_positive _ _ (regularSpectralResolvent_nonneg P)\n    (regularSpectralResolvent_le_one P) x"
+        },
+        {
+          "name": "regularPositiveGenerator_zero_kernel",
+          "line": 144,
+          "source_block": "theorem regularPositiveGenerator_zero_kernel (P : SiteProfile)\n    (x : (regularPositiveGenerator P).domain) (hx : regularPositiveGenerator P x = 0) :\n    (x : RegularHilbert (TowerHilbert P)) = 0 := by\n  let R := regularSpectralResolvent P\n  let hi := regularSpectralResolvent_injective P\n  have h : (1-R) (Continuous049.boundedGraphParameter R hi x) = (1-R) 0 := by\n    change regularPositiveGenerator P x = (1-R) 0\n    rw [hx, map_zero]\n  have hz := regularSpectralResolvent_complement_injective P h\n  have he := Continuous049.bounded_graph_parameter_apply R hi x\n  rw [hz, map_zero] at he\n  exact he.symm"
+        }
+      ]
+    },
+    {
+      "file": "V351InverseLimitWeight",
+      "source": {
+        "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\k\\TGLExt\\V351InverseLimitWeight.lean",
+        "sha256": "cfdced33d3cafdd2782f4d7e8ca77974e0ddee22f19803dfbd36275787c28f1e",
+        "bytes": 6740
+      },
+      "scope": "local source read; earlier acceptance inherited; no new build/axiom audit",
+      "declarations": [
+        {
+          "name": "scalarInverseCutoffWeight",
+          "line": 15,
+          "source_block": "def scalarInverseCutoffWeight (P : SiteProfile) (ε : ℝ) (X : PositiveCoreInput P) : ℝ≥0∞ :=\n  dualQuadraticIntegral\n    (star (hilbertPositiveSqrt (regularInverseGeneratorCutoff P ε)) * X.val *\n      hilbertPositiveSqrt (regularInverseGeneratorCutoff P ε)) (regularVacuum P)"
+        },
+        {
+          "name": "scalarInverseCutoffWeight_zero",
+          "line": 20,
+          "source_block": "theorem scalarInverseCutoffWeight_zero (P : SiteProfile) (ε : ℝ) :\n    scalarInverseCutoffWeight P ε (PositiveCoreInput.zero P) = 0 := by\n  simp only [scalarInverseCutoffWeight,PositiveCoreInput.zero,mul_zero,zero_mul,\n    dualQuadraticIntegral_zero]"
+        },
+        {
+          "name": "scalarInverseCutoffWeight_add",
+          "line": 25,
+          "source_block": "theorem scalarInverseCutoffWeight_add (P : SiteProfile) (ε : ℝ)\n    (X Y : PositiveCoreInput P) :\n    scalarInverseCutoffWeight P ε (X.add Y) =\n      scalarInverseCutoffWeight P ε X + scalarInverseCutoffWeight P ε Y := by\n  simp only [scalarInverseCutoffWeight,PositiveCoreInput.add,mul_add,add_mul]\n  exact dualQuadraticIntegral_add _ _\n    (star_left_conjugate_nonneg X.property.2 _) (star_left_conjugate_nonneg Y.property.2 _) _"
+        },
+        {
+          "name": "scalarInverseCutoffWeight_scale",
+          "line": 33,
+          "source_block": "theorem scalarInverseCutoffWeight_scale (P : SiteProfile) (ε : ℝ)\n    (r : ℝ≥0) (X : PositiveCoreInput P) :\n    scalarInverseCutoffWeight P ε (X.scale r) =\n      (r : ℝ≥0∞) * scalarInverseCutoffWeight P ε X := by\n  simp only [scalarInverseCutoffWeight,PositiveCoreInput.scale,mul_smul_comm,smul_mul_assoc]\n  simpa using dualQuadraticIntegral_smul_operator (r : ℝ) r.property _ (regularVacuum P)"
+        },
+        {
+          "name": "scalarInverseCutoffWeight_mono",
+          "line": 40,
+          "source_block": "theorem scalarInverseCutoffWeight_mono (P : SiteProfile) (ε : ℝ)\n    (X Y : PositiveCoreInput P) (hXY : X ≤ Y) :\n    scalarInverseCutoffWeight P ε X ≤ scalarInverseCutoffWeight P ε Y :=\n  dualQuadraticIntegral_mono _ _\n    (star_left_conjugate_le_conjugate (show X.val ≤ Y.val from hXY) _) _\n\n/-- Normality is transported through actual strong limits. No invertibility\nof the bounded conjugator or finite integral value is assumed. -/"
+        },
+        {
+          "name": "scalarInverseCutoffWeight_normal",
+          "line": 48,
+          "source_block": "theorem scalarInverseCutoffWeight_normal (P : SiteProfile) (ε : ℝ)\n    {ι : Type*} [Preorder ι] [IsDirectedOrder ι] [Nonempty ι]\n    (A : ι → (regularCoreAlgebra P).toStarSubalgebra)\n    (S : (regularCoreAlgebra P).toStarSubalgebra)\n    (hpos : ∀ i, 0 ≤ A i) (hmono : Monotone A) (hS : IsLUB (Set.range A) S) :\n    scalarInverseCutoffWeight P ε\n      ⟨S.val,S.property,positive_internal_isLUB_nonneg P A S hpos hS⟩ =\n      ⨆ i, scalarInverseCutoffWeight P ε ⟨(A i).val,(A i).property,hpos i⟩ := by\n  have hbnd (i : ι) : ‖(A i).val‖ ≤ ‖S.val‖ :=\n    CStarAlgebra.norm_le_norm_of_nonneg_of_le (hpos i) (hS.1 (Set.mem_range_self i))\n  obtain ⟨D,_,_,hlim,_,hD⟩ := vonNeumann_exists_positive_isLUB (regularCoreAlgebra P)\n    A hpos hmono ‖S.val‖ (norm_nonneg _) hbnd\n  have hDS : D = S := hD.unique hS\n  subst D\n  let b := hilbertPositiveSqrt (regularInverseGeneratorCutoff P ε)\n  apply dualQuadraticIntegral_of_monotone_strong_limit\n    (fun i => star b*(A i).val*b) (star b*S.val*b)\n  · exact fun i => star_left_conjugate_nonneg (show 0 ≤ (A i).val from hpos i) b\n  · exact fun i j hij => star_left_conjugate_le_conjugate\n      (show (A i).val ≤ (A j).val from hmono hij) b\n  · intro v\n    exact ((star b).continuous.tendsto (S.val (b v))).comp (hlim (b v))"
+        },
+        {
+          "name": "scalarInverseCutoffWeight_antitone",
+          "line": 71,
+          "source_block": "theorem scalarInverseCutoffWeight_antitone (P : SiteProfile)\n    (ε η : ℝ) (hε : 0 < ε) (hη : 0 < η) (hεη : ε ≤ η) (X : PositiveCoreInput P) :\n    scalarInverseCutoffWeight P η X ≤ scalarInverseCutoffWeight P ε X :=\n  scalarWeight_inverseCutoff_antitone P ε η hε hη hεη X"
+        },
+        {
+          "name": "scalarInverseCutoffWeight_sequence_mono",
+          "line": 76,
+          "source_block": "theorem scalarInverseCutoffWeight_sequence_mono (P : SiteProfile) (X : PositiveCoreInput P) :\n    Monotone (fun n : ℕ => scalarInverseCutoffWeight P (1/((n : ℝ)+1)) X) := by\n  intro n m hnm\n  apply scalarInverseCutoffWeight_antitone P\n    (1/((m : ℝ)+1)) (1/((n : ℝ)+1)) (by positivity) (by positivity)\n  apply one_div_le_one_div_of_le (by positivity : 0 < (n : ℝ)+1)\n  have h : (n : ℝ) ≤ (m : ℝ) := by exact_mod_cast hnm\n  linarith only [h]\n\n/-- Candidate inverse-generator perturbation, as a monotone supremum of\nthe actual cutoff weights. This definition alone does not assert a trace. -/"
+        },
+        {
+          "name": "scalarInverseLimitWeight",
+          "line": 87,
+          "source_block": "def scalarInverseLimitWeight (P : SiteProfile) (X : PositiveCoreInput P) : ℝ≥0∞ :=\n  ⨆ n : ℕ, scalarInverseCutoffWeight P (1/((n : ℝ)+1)) X"
+        },
+        {
+          "name": "scalarInverseLimitWeight_zero",
+          "line": 90,
+          "source_block": "theorem scalarInverseLimitWeight_zero (P : SiteProfile) :\n    scalarInverseLimitWeight P (PositiveCoreInput.zero P) = 0 := by\n  simp only [scalarInverseLimitWeight,scalarInverseCutoffWeight_zero,ciSup_const]"
+        },
+        {
+          "name": "scalarInverseCutoffWeight_le_limit",
+          "line": 94,
+          "source_block": "theorem scalarInverseCutoffWeight_le_limit (P : SiteProfile) (n : ℕ) (X : PositiveCoreInput P) :\n    scalarInverseCutoffWeight P (1/((n : ℝ)+1)) X ≤ scalarInverseLimitWeight P X :=\n  le_iSup (fun m : ℕ => scalarInverseCutoffWeight P (1/((m : ℝ)+1)) X) n"
+        },
+        {
+          "name": "scalarInverseLimitWeight_add",
+          "line": 98,
+          "source_block": "theorem scalarInverseLimitWeight_add (P : SiteProfile) (X Y : PositiveCoreInput P) :\n    scalarInverseLimitWeight P (X.add Y) = scalarInverseLimitWeight P X + scalarInverseLimitWeight P Y := by\n  simp only [scalarInverseLimitWeight,scalarInverseCutoffWeight_add]\n  exact (ENNReal.iSup_add_iSup_of_monotone (scalarInverseCutoffWeight_sequence_mono P X)\n    (scalarInverseCutoffWeight_sequence_mono P Y)).symm"
+        },
+        {
+          "name": "scalarInverseLimitWeight_scale",
+          "line": 104,
+          "source_block": "theorem scalarInverseLimitWeight_scale (P : SiteProfile) (r : ℝ≥0) (X : PositiveCoreInput P) :\n    scalarInverseLimitWeight P (X.scale r) = (r : ℝ≥0∞) * scalarInverseLimitWeight P X := by\n  simp only [scalarInverseLimitWeight,scalarInverseCutoffWeight_scale]\n  exact (ENNReal.mul_iSup _ _).symm"
+        },
+        {
+          "name": "scalarInverseLimitWeight_mono",
+          "line": 109,
+          "source_block": "theorem scalarInverseLimitWeight_mono (P : SiteProfile) (X Y : PositiveCoreInput P) (hXY : X ≤ Y) :\n    scalarInverseLimitWeight P X ≤ scalarInverseLimitWeight P Y := by\n  apply iSup_le\n  intro n\n  exact le_iSup_of_le n (scalarInverseCutoffWeight_mono P _ X Y hXY)"
+        },
+        {
+          "name": "scalarInverseLimitWeight_normal",
+          "line": 115,
+          "source_block": "theorem scalarInverseLimitWeight_normal (P : SiteProfile)\n    {ι : Type*} [Preorder ι] [IsDirectedOrder ι] [Nonempty ι]\n    (A : ι → (regularCoreAlgebra P).toStarSubalgebra)\n    (S : (regularCoreAlgebra P).toStarSubalgebra)\n    (hpos : ∀ i, 0 ≤ A i) (hmono : Monotone A) (hS : IsLUB (Set.range A) S) :\n    scalarInverseLimitWeight P\n      ⟨S.val,S.property,positive_internal_isLUB_nonneg P A S hpos hS⟩ =\n      ⨆ i, scalarInverseLimitWeight P ⟨(A i).val,(A i).property,hpos i⟩ := by\n  simp only [scalarInverseLimitWeight,scalarInverseCutoffWeight_normal P _ A S hpos hmono hS]\n  exact iSup_comm\n\nend\nend TGLV350.Regular"
+        }
+      ]
+    },
+    {
+      "file": "V350ScalarWeightCompletion",
+      "source": {
+        "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\k\\TGLExt\\V350ScalarWeightCompletion.lean",
+        "sha256": "b8a87c9b03f233e8e0a04a92aaa7c6cd4499fb8421746902f2b0b90feb883d7c",
+        "bytes": 5505
+      },
+      "scope": "local source read; earlier acceptance inherited; no new build/axiom audit",
+      "declarations": [
+        {
+          "name": "scalarWeightOrbit_rightRegularization_tendsto",
+          "line": 16,
+          "source_block": "theorem scalarWeightOrbit_rightRegularization_tendsto (P : SiteProfile)\n    (A : scalarWeightLeftIdeal P) :\n    Tendsto (fun h : ℝ => scalarWeightOrbit P (scalarWeightRightRegularization P A h))\n      (𝓝[≠] 0) (𝓝 (scalarWeightOrbit P A)) := by\n  let f := fun s : ℝ => dualAmbient s A.val.val (regularVacuum P)\n  let g := fun h s : ℝ => dualAmbient s (A.val.val * regularAverage P h) (regularVacuum P)\n  have hm := scalarWeightOrbit_memLp P A.val.val A.property\n  have hb (h s : ℝ) : ‖g h s - f s‖ ^ 2 ≤ 4 * ‖f s‖ ^ 2 := by\n    have hnorm : ‖g h s‖ ≤ ‖f s‖ := scalarOrbit_right_average_norm_le P A.val s h\n    have hd : ‖g h s - f s‖ ≤ 2 * ‖f s‖ :=\n      (norm_sub_le _ _).trans (by linarith)\n    calc\n      _ ≤ (2 * ‖f s‖)^2 := pow_le_pow_left₀ (norm_nonneg _) hd 2\n      _ = _ := by ring\n  have hI : Tendsto (fun h : ℝ => ∫ s : ℝ, ‖g h s-f s‖ ^ 2)\n      (𝓝[≠] 0) (𝓝 (∫ _s : ℝ, (0 : ℝ))) := by\n    apply tendsto_integral_filter_of_dominated_convergence (fun s : ℝ => 4 * ‖f s‖ ^ 2)\n    · exact Eventually.of_forall fun h =>\n        (((dualAmbient_strongly_continuous (A.val.val * regularAverage P h) (regularVacuum P)).sub\n          (dualAmbient_strongly_continuous A.val.val (regularVacuum P))).norm.pow 2).aestronglyMeasurable\n    · exact Eventually.of_forall fun h => Eventually.of_forall fun s => by\n        simpa only [Real.norm_eq_abs,abs_of_nonneg (sq_nonneg (‖g h s-f s‖))] using hb h s\n    · exact ((memLp_two_iff_integrable_sq_norm hm.1).mp hm).const_mul 4\n    · exact Eventually.of_forall fun s => by\n        have ht := ((scalarOrbit_right_average_tendsto P A.val s).sub\n          (tendsto_const_nhds (x := f s))).norm.pow 2\n        simpa only [f,g,sub_self,norm_zero,zero_pow (by norm_num : (2 : ℕ) ≠ 0)] using ht\n  have he (h : ℝ) :\n      ‖scalarWeightOrbit P (scalarWeightRightRegularization P A h)-scalarWeightOrbit P A‖^2 =\n        dualHaarFactor * ∫ s : ℝ, ‖g h s-f s‖^2 := by\n    change ‖scalarWeightLinear P (scalarWeightRightRegularization P A h)-scalarWeightLinear P A‖^2 = _\n    rw [← map_sub]\n    change ‖scalarWeightOrbit P (scalarWeightRightRegularization P A h-A)‖^2 = _\n    rw [scalarWeightOrbit_norm_sq_real]\n    congr 1\n    apply integral_congr_ae\n    exact Eventually.of_forall fun s => by\n      change ‖dualAmbient s (A.val.val * regularAverage P h-A.val.val) (regularVacuum P)‖^2 = _\n      rw [map_sub]\n      rfl\n  have hs : Tendsto (fun h : ℝ =>\n      ‖scalarWeightOrbit P (scalarWeightRightRegularization P A h)-scalarWeightOrbit P A‖^2)\n      (𝓝[≠] 0) (𝓝 (0 : ℝ)) := by\n    simpa only [he,integral_zero,mul_zero] using hI.const_mul dualHaarFactor\n  have hn := Real.continuous_sqrt.continuousAt.tendsto.comp hs\n  apply tendsto_iff_dist_tendsto_zero.mpr\n  simpa only [Function.comp_def,Real.sqrt_sq_eq_abs,abs_norm,Real.sqrt_zero,dist_eq_norm] using hn"
+        },
+        {
+          "name": "scalarWeightOrbit_mem_original_GNS",
+          "line": 64,
+          "source_block": "theorem scalarWeightOrbit_mem_original_GNS (P : SiteProfile) (A : scalarWeightLeftIdeal P) :\n    scalarWeightOrbit P A ∈ scalarGNSSubspace P := by\n  change scalarWeightOrbit P A ∈ closure (Set.range (scalarGNSLinear P))\n  have ht : Tendsto (fun h : ℝ => scalarWeightOrbit P (scalarWeightRightRegularization P A h))\n      (𝓝[>] (0 : ℝ)) (𝓝 (scalarWeightOrbit P A)) :=\n    (scalarWeightOrbit_rightRegularization_tendsto P A).mono_left\n      (nhdsWithin_mono (0 : ℝ) (by intro h hh; exact ne_of_gt hh))\n  apply isClosed_closure.mem_of_tendsto ht\n  filter_upwards [self_mem_nhdsWithin] with h hh\n  let a : finiteDualLeftIdeal P := ⟨(scalarWeightRightRegularization P A h).val,\n    scalarWeightRightRegularization_uniform P A h hh⟩\n  apply subset_closure\n  refine ⟨a,?_⟩\n  exact (scalarWeightOrbit_uniform P a).symm"
+        },
+        {
+          "name": "scalarWeight_completion_eq",
+          "line": 79,
+          "source_block": "theorem scalarWeight_completion_eq (P : SiteProfile) :\n    (scalarWeightLinear P).range.topologicalClosure = scalarGNSSubspace P := by\n  apply le_antisymm\n  · apply Submodule.topologicalClosure_minimal\n    · rintro _ ⟨A,rfl⟩\n      exact scalarWeightOrbit_mem_original_GNS P A\n    · exact Submodule.isClosed_topologicalClosure _\n  · apply Submodule.topologicalClosure_mono\n    rintro _ ⟨A,rfl⟩\n    exact ⟨Submodule.inclusion (finiteDualLeftIdeal_le_scalarWeight P) A,scalarWeightOrbit_uniform P A⟩"
+        },
+        {
+          "name": "scalarWeightGNSEmbedding",
+          "line": 90,
+          "source_block": "def scalarWeightGNSEmbedding (P : SiteProfile) : scalarWeightLeftIdeal P →ₗ[ℂ] ScalarGNSHilbert P :=\n  (scalarWeightLinear P).codRestrict (scalarGNSSubspace P) (scalarWeightOrbit_mem_original_GNS P)"
+        },
+        {
+          "name": "scalarWeightGNSEmbedding_uniform",
+          "line": 93,
+          "source_block": "theorem scalarWeightGNSEmbedding_uniform (P : SiteProfile) (A : finiteDualLeftIdeal P) :\n    scalarWeightGNSEmbedding P (Submodule.inclusion (finiteDualLeftIdeal_le_scalarWeight P) A) =\n      scalarGNSEmbedding P A := Subtype.ext (scalarWeightOrbit_uniform P A)"
+        }
+      ]
+    },
+    {
+      "file": "V350ScalarHomogeneousRightOrbit",
+      "source": {
+        "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\k\\TGLExt\\V350ScalarHomogeneousRightOrbit.lean",
+        "sha256": "dea570f1f1d43c026874d322b44fbf7e9c30856c2fac17e252319d799085c730",
+        "bytes": 3780
+      },
+      "scope": "local source read; earlier acceptance inherited; no new build/axiom audit",
+      "declarations": [
+        {
+          "name": "hasFiniteScalarSquare_iff_memLp",
+          "line": 14,
+          "source_block": "theorem hasFiniteScalarSquare_iff_memLp (P : SiteProfile)\n    (A : RegularHilbert (TowerHilbert P) →L[ℂ] RegularHilbert (TowerHilbert P)) :\n    HasFiniteScalarSquare P A ↔ MemLp (fun s : ℝ => dualAmbient s A (regularVacuum P)) 2 := by\n  constructor\n  · exact scalarWeightOrbit_memLp P A\n  · intro hm\n    have hi := hm.2\n    rw [eLpNorm_lt_top_iff_lintegral_rpow_enorm_lt_top (by norm_num) (by norm_num)] at hi\n    have he (s : ℝ) : ENNReal.ofReal (‖dualAmbient s A (regularVacuum P)‖ ^ 2) =\n        (‖dualAmbient s A (regularVacuum P)‖₊ : ℝ≥0∞) ^ 2 := by\n      rw [ENNReal.ofReal_pow (norm_nonneg _),ofReal_norm,enorm_eq_nnnorm]\n    simp only [HasFiniteScalarSquare,dualQuadraticIntegral,dualQuadraticIntegrand_star_mul,he]\n    apply ENNReal.mul_lt_top ENNReal.ofReal_lt_top\n    simpa only [ENNReal.toReal_ofNat,ENNReal.rpow_two,enorm_eq_nnnorm,pow_two] using hi\n\n/-- The right multiplier is a shift on the dual variable together with a\nbase commutant operator. This is not a constant right action on coefficients. -/"
+        },
+        {
+          "name": "scalarOrbit_right_homogeneous",
+          "line": 31,
+          "source_block": "theorem scalarOrbit_right_homogeneous (P : SiteProfile)\n    (D Y : TowerHilbert P →L[ℂ] TowerHilbert P) (c : ℝ)\n    (hD : D ∈ (theFactorObject P).commutant)\n    (he : ∀ t : ℝ, modularConjugation P t D = modularPhase t c • D)\n    (hv : Y (hOmega P) = D (hOmega P))\n    (A : (regularCoreAlgebra P).toStarSubalgebra) (s : ℝ) :\n    dualAmbient s (A.val * fibre Y) (regularVacuum P) =\n      fibre D (dualAmbient (s-c) A.val (regularVacuum P)) := by\n  have hΩ : fibre Y (regularVacuum P) = fibre D (regularVacuum P) := by\n    change fibre Y (testVector (hOmega P)) = fibre D (testVector (hOmega P))\n    rw [fibre_testVector,fibre_testVector,hv]\n  rw [map_mul,dualAmbient_fibre]\n  change dualAmbient s A.val (fibre Y (regularVacuum P)) = _\n  rw [hΩ]\n  exact congrArg (fun T : RegularHilbert (TowerHilbert P) →L[ℂ] _ => T (regularVacuum P))\n    (homogeneous_commutant_dual_intertwines P D c hD he A s)"
+        },
+        {
+          "name": "scalarWeight_right_homogeneous_finite",
+          "line": 48,
+          "source_block": "theorem scalarWeight_right_homogeneous_finite (P : SiteProfile)\n    (D Y : TowerHilbert P →L[ℂ] TowerHilbert P) (c : ℝ)\n    (hD : D ∈ (theFactorObject P).commutant)\n    (he : ∀ t : ℝ, modularConjugation P t D = modularPhase t c • D)\n    (hv : Y (hOmega P) = D (hOmega P)) (A : scalarWeightLeftIdeal P) :\n    HasFiniteScalarSquare P (A.val.val * fibre Y) := by\n  apply (hasFiniteScalarSquare_iff_memLp P _).mpr\n  have hm := (scalarWeightOrbit_memLp P A.val.val A.property).comp_measurePreserving\n    (measurePreserving_sub_right volume c)\n  have ht := (fibre D).lipschitz.comp_memLp (map_zero (fibre D)) hm\n  convert ht using 1\n  funext s\n  exact scalarOrbit_right_homogeneous P D Y c hD he hv A.val s"
+        },
+        {
+          "name": "scalarOrbit_right_matrixUnit",
+          "line": 62,
+          "source_block": "theorem scalarOrbit_right_matrixUnit (P : SiteProfile) (N : ℕ) (i j : chainIdx N)\n    (A : (regularCoreAlgebra P).toStarSubalgebra) (s : ℝ) :\n    dualAmbient s (A.val * fibre (towerPi P (Matrix.single i j 1))) (regularVacuum P) =\n      fibre (rTowerPi P (Matrix.single i j 1))\n        (dualAmbient (s-Real.log (localEigenvalue P N i j)) A.val (regularVacuum P)) := by\n  apply scalarOrbit_right_homogeneous P _ _ _ (rTowerPi_mem_baseCommutant _)\n    (fun t => rTowerPi_matrixUnit_homogeneous t N i j)\n  rw [towerPi_omega,rTowerPi_omega]"
+        }
+      ]
+    },
+    {
+      "file": "V350RegularGeneratedAlgebra",
+      "source": {
+        "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\k\\TGLExt\\V350RegularGeneratedAlgebra.lean",
+        "sha256": "252b0fa3d5e37c42827efccfc26a555db80ac5c20a6f94269060ce2b3dcb5f71",
+        "bytes": 3939
+      },
+      "scope": "local source read; earlier acceptance inherited; no new build/axiom audit",
+      "declarations": [
+        {
+          "name": "generatedAlgebra",
+          "line": 14,
+          "source_block": "def generatedAlgebra (S : Set (H →L[ℂ] H)) : VonNeumannAlgebra H where\n  toStarSubalgebra := StarSubalgebra.centralizer ℂ\n    ((StarSubalgebra.centralizer ℂ S) : Set (H →L[ℂ] H))\n  centralizer_centralizer' := by simp"
+        },
+        {
+          "name": "generator_mem",
+          "line": 19,
+          "source_block": "theorem generator_mem {S : Set (H →L[ℂ] H)} {A : H →L[ℂ] H} (hA : A ∈ S) :\n    A ∈ generatedAlgebra S := by\n  change A ∈ StarSubalgebra.centralizer ℂ\n    ((StarSubalgebra.centralizer ℂ S) : Set (H →L[ℂ] H))\n  rw [StarSubalgebra.mem_centralizer_iff]\n  intro B hB\n  rw [SetLike.mem_coe, StarSubalgebra.mem_centralizer_iff] at hB\n  have h := hB A hA\n  refine ⟨h.1.symm, ?_⟩\n  have hs := congrArg star h.2\n  rw [star_mul, star_mul, star_star] at hs\n  exact hs"
+        },
+        {
+          "name": "generated_minimal",
+          "line": 32,
+          "source_block": "theorem generated_minimal (S : Set (H →L[ℂ] H)) (N : VonNeumannAlgebra H)\n    (hN : S ⊆ (N : Set (H →L[ℂ] H))) : generatedAlgebra S ≤ N := by\n  have hfirst := StarSubalgebra.centralizer_le ℂ S (N : Set (H →L[ℂ] H)) hN\n  have hsecond := StarSubalgebra.centralizer_le ℂ\n    ((StarSubalgebra.centralizer ℂ (N : Set (H →L[ℂ] H))) : Set (H →L[ℂ] H))\n    ((StarSubalgebra.centralizer ℂ S) : Set (H →L[ℂ] H)) hfirst\n  intro A hA\n  have h := hsecond hA\n  simpa only [← SetLike.mem_coe, StarSubalgebra.coe_centralizer_centralizer,\n    StarMemClass.star_coe_eq, Set.union_self, VonNeumannAlgebra.centralizer_centralizer] using h"
+        },
+        {
+          "name": "regularGenerators",
+          "line": 43,
+          "source_block": "def regularGenerators (P : SiteProfile) :\n    Set (RegularHilbert (TowerHilbert P) →L[ℂ] RegularHilbert (TowerHilbert P)) :=\n  (fibre '' (theFactorObject P : Set (TowerHilbert P →L[ℂ] TowerHilbert P))) ∪\n    Set.range (regularUnitary P)\n\n/-- The algebra generated by the faithful amplified tower and its continuous regular unitaries.\nNo trace, semifiniteness, or Three-Locks corner is asserted by this definition. -/"
+        },
+        {
+          "name": "regularCoreAlgebra",
+          "line": 50,
+          "source_block": "def regularCoreAlgebra (P : SiteProfile) : VonNeumannAlgebra (RegularHilbert (TowerHilbert P)) :=\n  generatedAlgebra (regularGenerators P)"
+        },
+        {
+          "name": "amplified_factor_mem",
+          "line": 53,
+          "source_block": "theorem amplified_factor_mem (P : SiteProfile) (A : TowerHilbert P →L[ℂ] TowerHilbert P)\n    (hA : A ∈ theFactorObject P) : fibre A ∈ regularCoreAlgebra P :=\n  generator_mem (Or.inl ⟨A, hA, rfl⟩)"
+        },
+        {
+          "name": "regularUnitary_mem",
+          "line": 57,
+          "source_block": "theorem regularUnitary_mem (P : SiteProfile) (t : ℝ) :\n    regularUnitary P t ∈ regularCoreAlgebra P :=\n  generator_mem (Or.inr ⟨t, rfl⟩)"
+        },
+        {
+          "name": "factorAmplification",
+          "line": 61,
+          "source_block": "def factorAmplification (P : SiteProfile) :\n    (theFactorObject P).toStarSubalgebra →⋆ₐ[ℂ]\n      (RegularHilbert (TowerHilbert P) →L[ℂ] RegularHilbert (TowerHilbert P)) :=\n  fibreRepresentation.comp (theFactorObject P).toStarSubalgebra.subtype"
+        },
+        {
+          "name": "regularCoreEmbedding",
+          "line": 66,
+          "source_block": "def regularCoreEmbedding (P : SiteProfile) :\n    (theFactorObject P).toStarSubalgebra →⋆ₐ[ℂ] (regularCoreAlgebra P).toStarSubalgebra :=\n  (factorAmplification P).codRestrict (regularCoreAlgebra P).toStarSubalgebra\n    (fun A => amplified_factor_mem P A A.property)"
+        },
+        {
+          "name": "regularCoreEmbedding_injective",
+          "line": 71,
+          "source_block": "theorem regularCoreEmbedding_injective (P : SiteProfile) :\n    Function.Injective (regularCoreEmbedding P) := by\n  intro A B h\n  apply Subtype.ext\n  apply fibre_injective\n  exact congrArg Subtype.val h"
+        },
+        {
+          "name": "regularCore_minimal",
+          "line": 78,
+          "source_block": "theorem regularCore_minimal (P : SiteProfile)\n    (N : VonNeumannAlgebra (RegularHilbert (TowerHilbert P)))\n    (hM : ∀ A ∈ theFactorObject P, fibre A ∈ N)\n    (hU : ∀ t : ℝ, regularUnitary P t ∈ N) : regularCoreAlgebra P ≤ N := by\n  apply generated_minimal\n  intro A hA\n  rcases hA with ⟨B, hB, rfl⟩ | ⟨t, rfl⟩\n  · exact hM B hB\n  · exact hU t"
+        }
+      ]
+    },
+    {
+      "file": "V350ScalarModularInvariance",
+      "source": {
+        "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\k\\TGLExt\\V350ScalarModularInvariance.lean",
+        "sha256": "a9379d3f1ce24ce3151cfc20e38ee531c606a368d7615740367925cd63988987",
+        "bytes": 3398
+      },
+      "scope": "local source read; earlier acceptance inherited; no new build/axiom audit",
+      "declarations": [
+        {
+          "name": "regular_conjugation_eq_fibre_modular",
+          "line": 15,
+          "source_block": "theorem regular_conjugation_eq_fibre_modular (P : SiteProfile) (t : ℝ)\n    (A : RegularHilbert (TowerHilbert P) →L[ℂ] RegularHilbert (TowerHilbert P))\n    (hA : A ∈ regularCoreAlgebra P) :\n    star (regularUnitary P t) * A * regularUnitary P t =\n      star (fibre (modularFlowCLM P t)) * A * fibre (modularFlowCLM P t) := by\n  have hs : shift (-t) * A = A * shift (-t) :=\n    ((VonNeumannAlgebra.mem_commutant_iff.mp (shift_mem_regularCommutant P (-t))) A hA).symm\n  rw [regular_star]\n  unfold regularUnitary\n  rw [← fibre_star, modularFlowCLM_star]\n  calc\n    _ = fibre (modularFlowCLM P (-t)) * (shift (-t) * A) *\n        (fibre (modularFlowCLM P t) * shift t) := by simp only [mul_assoc]\n    _ = fibre (modularFlowCLM P (-t)) * A *\n        (shift (-t) * fibre (modularFlowCLM P t)) * shift t := by\n      rw [hs]\n      simp only [mul_assoc]\n    _ = (fibre (modularFlowCLM P (-t)) * A * fibre (modularFlowCLM P t)) *\n        (shift (-t) * shift t) := by\n      rw [shift_commutes_fibre]\n      simp only [mul_assoc]\n    _ = _ := by rw [shift_mul, neg_add_cancel, shift_zero, mul_one]"
+        },
+        {
+          "name": "fibre_modular_fixes_regularVacuum",
+          "line": 38,
+          "source_block": "theorem fibre_modular_fixes_regularVacuum (P : SiteProfile) (t : ℝ) :\n    fibre (modularFlowCLM P t) (regularVacuum P) = regularVacuum P := by\n  change fibre (modularFlowCLM P t) (testVector (hOmega P)) = testVector (hOmega P)\n  rw [fibre_testVector, modularFlowCLM_apply, modularFlow_fixes_omega]"
+        },
+        {
+          "name": "dualQuadraticIntegral_regular_conjugate_vacuum",
+          "line": 43,
+          "source_block": "theorem dualQuadraticIntegral_regular_conjugate_vacuum (P : SiteProfile) (t : ℝ)\n    (A : RegularHilbert (TowerHilbert P) →L[ℂ] RegularHilbert (TowerHilbert P))\n    (hA : A ∈ regularCoreAlgebra P) :\n    dualQuadraticIntegral (star (regularUnitary P t) * A * regularUnitary P t) (regularVacuum P) =\n      dualQuadraticIntegral A (regularVacuum P) := by\n  rw [regular_conjugation_eq_fibre_modular P t A hA, dualQuadraticIntegral_bimodule,\n    fibre_modular_fixes_regularVacuum]"
+        },
+        {
+          "name": "PositiveCoreInput.regularConjugate",
+          "line": 51,
+          "source_block": "def PositiveCoreInput.regularConjugate {P : SiteProfile} (A : PositiveCoreInput P) (t : ℝ) :\n    PositiveCoreInput P :=\n  ⟨star (regularUnitary P t) * A.val * regularUnitary P t,\n    (regularCoreAlgebra P).mul_mem\n      ((regularCoreAlgebra P).mul_mem\n        ((regularCoreAlgebra P).toStarSubalgebra.star_mem' (regularUnitary_mem P t)) A.property.1)\n      (regularUnitary_mem P t),\n    star_left_conjugate_nonneg A.property.2 _⟩\n\n/-- Invariance is proved for the candidate modular group. It does not\nidentify that group with the weight's modular group without KMS/domain data. -/"
+        },
+        {
+          "name": "scalarDualWeight_regular_invariant",
+          "line": 62,
+          "source_block": "theorem scalarDualWeight_regular_invariant (P : SiteProfile) (A : PositiveCoreInput P) (t : ℝ) :\n    scalarDualWeight P (A.regularConjugate t) = scalarDualWeight P A :=\n  dualQuadraticIntegral_regular_conjugate_vacuum P t A.val A.property.1"
+        }
+      ]
+    },
+    {
+      "file": "V350L2OperatorLift",
+      "source": {
+        "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\k\\TGLExt\\V350L2OperatorLift.lean",
+        "sha256": "bbdf07f64bc1abdfb50fed8420911c868a11cc6c8036b6f06167f021a1db7465",
+        "bytes": 4131
+      },
+      "scope": "local source read; earlier acceptance inherited; no new build/axiom audit",
+      "declarations": [
+        {
+          "name": "RegularHilbert",
+          "line": 12,
+          "source_block": "abbrev RegularHilbert (H : Type) [NormedAddCommGroup H] :=\n  Lp H 2 (volume : Measure ℝ)\n\n/-- Constant-fibre representation on the actual Lebesgue L² space. -/"
+        },
+        {
+          "name": "fibre",
+          "line": 16,
+          "source_block": "def fibre (T : H →L[ℂ] H) : RegularHilbert H →L[ℂ] RegularHilbert H :=\n  T.compLpL 2 volume"
+        },
+        {
+          "name": "fibre_ae",
+          "line": 19,
+          "source_block": "theorem fibre_ae (T : H →L[ℂ] H) (f : RegularHilbert H) :\n    fibre T f =ᵐ[volume] fun x : ℝ => T (f x) := T.coeFn_compLpL f"
+        },
+        {
+          "name": "fibre_one",
+          "line": 22,
+          "source_block": "theorem fibre_one : fibre (1 : H →L[ℂ] H) = 1 := by\n  ext1 f\n  apply Lp.ext\n  filter_upwards [fibre_ae (1 : H →L[ℂ] H) f] with x hx\n  exact hx"
+        },
+        {
+          "name": "fibre_mul",
+          "line": 28,
+          "source_block": "theorem fibre_mul (T S : H →L[ℂ] H) : fibre (T*S) = fibre T * fibre S := by\n  ext1 f\n  apply Lp.ext\n  filter_upwards [fibre_ae (T*S) f, fibre_ae T (fibre S f), fibre_ae S f] with x h1 h2 h3\n  change (fibre (T*S) f) x = (fibre T (fibre S f)) x\n  rw [h1, h2, h3]\n  rfl"
+        },
+        {
+          "name": "fibre_add",
+          "line": 36,
+          "source_block": "theorem fibre_add (T S : H →L[ℂ] H) : fibre (T+S) = fibre T + fibre S :=\n  ContinuousLinearMap.add_compLpL T S"
+        },
+        {
+          "name": "fibre_smul",
+          "line": 39,
+          "source_block": "theorem fibre_smul (c : ℂ) (T : H →L[ℂ] H) : fibre (c • T) = c • fibre T :=\n  ContinuousLinearMap.smul_compLpL c T"
+        },
+        {
+          "name": "fibre_star",
+          "line": 42,
+          "source_block": "theorem fibre_star (T : H →L[ℂ] H) : fibre (star T) = star (fibre T) := by\n  ext1 f\n  apply ext_inner_left ℂ\n  intro g\n  simp only [ContinuousLinearMap.star_eq_adjoint]\n  rw [ContinuousLinearMap.adjoint_inner_right]\n  rw [L2.inner_def, L2.inner_def]\n  apply integral_congr_ae\n  filter_upwards [fibre_ae (T.adjoint) f, fibre_ae T g] with x hf hg\n  rw [hf, hg, ContinuousLinearMap.adjoint_inner_right]"
+        },
+        {
+          "name": "fibreRepresentation",
+          "line": 53,
+          "source_block": "def fibreRepresentation : (H →L[ℂ] H) →⋆ₐ[ℂ] (RegularHilbert H →L[ℂ] RegularHilbert H) where\n  toFun := fibre\n  map_one' := fibre_one\n  map_mul' := fibre_mul\n  map_zero' := by\n    apply ContinuousLinearMap.ext\n    intro f\n    apply Lp.ext\n    filter_upwards [fibre_ae (0 : H →L[ℂ] H) f, Lp.coeFn_zero H 2 volume] with x hx hz\n    simpa only [zero_apply, Pi.zero_apply, hz] using hx\n  map_add' := fibre_add\n  commutes' c := by\n    change fibre (c • (1 : H →L[ℂ] H)) = c • (1 : RegularHilbert H →L[ℂ] RegularHilbert H)\n    rw [fibre_smul, fibre_one]\n  map_star' := fibre_star\n\n/-- A finite-measure test vector, not a nonintegrable constant function on ℝ. -/"
+        },
+        {
+          "name": "testVector",
+          "line": 70,
+          "source_block": "def testVector (v : H) : RegularHilbert H :=\n  indicatorConstLp 2 (measurableSet_Ioc (a := (0 : ℝ)) (b := 1)) (by simp) v"
+        },
+        {
+          "name": "testVector_norm",
+          "line": 73,
+          "source_block": "theorem testVector_norm (v : H) : ‖testVector v‖ = ‖v‖ := by\n  change ‖indicatorConstLp 2 (measurableSet_Ioc (a := (0 : ℝ)) (b := 1)) _ v‖ = ‖v‖\n  rw [norm_indicatorConstLp (by norm_num) (by norm_num)]\n  simp [measureReal_def]"
+        },
+        {
+          "name": "testVector_sub",
+          "line": 78,
+          "source_block": "theorem testVector_sub (v w : H) : testVector (v-w) = testVector v - testVector w :=\n  indicatorConstLp_sub.symm"
+        },
+        {
+          "name": "testVector_injective",
+          "line": 81,
+          "source_block": "theorem testVector_injective : Function.Injective (testVector : H → RegularHilbert H) := by\n  intro v w h\n  have hz : ‖v-w‖ = 0 := by\n    rw [← testVector_norm, testVector_sub, h, sub_self, norm_zero]\n  exact sub_eq_zero.mp (norm_eq_zero.mp hz)"
+        },
+        {
+          "name": "fibre_testVector",
+          "line": 87,
+          "source_block": "theorem fibre_testVector (T : H →L[ℂ] H) (v : H) :\n    fibre T (testVector v) = testVector (T v) := by\n  apply Lp.ext\n  filter_upwards [fibre_ae T (testVector v),\n    indicatorConstLp_coeFn (p := (2 : ENNReal)) (hs := measurableSet_Ioc (a := (0 : ℝ)) (b := 1))\n      (hμs := by simp) (c := v),\n    indicatorConstLp_coeFn (p := (2 : ENNReal)) (hs := measurableSet_Ioc (a := (0 : ℝ)) (b := 1))\n      (hμs := by simp) (c := T v)] with x h1 h2 h3\n  rw [h1, show testVector v x = _ from h2, show testVector (T v) x = _ from h3]\n  by_cases hx : x ∈ Set.Ioc (0 : ℝ) 1\n  · simp only [Set.indicator_of_mem hx]\n  · simp only [Set.indicator_of_notMem hx, map_zero]"
+        },
+        {
+          "name": "fibre_injective",
+          "line": 100,
+          "source_block": "theorem fibre_injective : Function.Injective (fibre : (H →L[ℂ] H) → _) := by\n  intro T S h\n  ext v\n  apply testVector_injective\n  rw [← fibre_testVector, ← fibre_testVector, h]"
+        }
+      ]
+    }
+  ],
+  "read_limitations": [
+    "Selected providers and searches only; no exhaustive acervo scan.",
+    "Guessed V350ScalarWeightFullGNS/V350ScalarWeightGNSAction filenames absent; actual V350ScalarWeightAction located.",
+    "No source presence is represented as a new compilation."
+  ],
+  "path_serialization_correction": {
+    "timestamp": "2026-09-15T00:09:53.995790-03:00",
+    "status": "PATH_SERIALIZATION_CORRECTED__SOURCE_BYTES_UNCHANGED",
+    "evidence": {
+      "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\revisao_consulta_rota_tracial_2\\CORRECAO_CAMINHOS_CONSULTA_ROTA_TRACIAL_2.json",
+      "bytes": 22930,
+      "sha256": "958015398906b9caec8096279e9a8df0dbc8fd909a0e28eba588f7dc8ccecea3"
+    },
+    "original_json": {
+      "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\revisao_consulta_rota_tracial_2\\CONSULTA_ROTA_TRACIAL_2.json",
+      "bytes": 127067,
+      "sha256": "440b690c32f366adf39ffb9c0905867434ea1af348bc47cc4f936e1c7a277c14"
+    },
+    "original_md": {
+      "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\revisao_consulta_rota_tracial_2\\CONSULTA_ROTA_TRACIAL_2.md",
+      "bytes": 18354,
+      "sha256": "880ad0b95cd215249ea220c12367225965b12c3c48ed25df3c18c8f82e615bb5"
+    },
+    "source_pins_remeasured": 39,
+    "bytes_and_hashes_unchanged": true,
+    "scope": "Only active pin path serialization changes to str(Path); mathematical content and original source blocks preserved."
+  }
+}

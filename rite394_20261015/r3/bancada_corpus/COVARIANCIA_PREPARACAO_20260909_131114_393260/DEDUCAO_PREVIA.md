@@ -1,0 +1,3 @@
+# Covariância da preparação conjunta
+[DERIVED antes de compilar] Direções se relacionam por d=E d'; covetores por w'=Eᵀw; g'=EᵀgE e gi'=DgiDᵀ para D=E⁻¹. Cada frequência w'(d') é w(d), portanto o estado conjunto, o fluxo, as amplitudes e toda a curva temporal são iguais nos dados correspondentes. A fonte se transforma por congruência.
+Este é transporte da família microscópica escolhida. Recalcular covetores pela polarização em cada carta é outra construção; não será identificada com esse transporte. Os teoremas são pontuais de mudança de base e composição de transportes; não fornecem por si difeomorfismos entre cartas, condições globais do fibrado, nem transformação das derivadas da conexão.

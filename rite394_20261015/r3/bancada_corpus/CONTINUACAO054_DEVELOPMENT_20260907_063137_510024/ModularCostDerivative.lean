@@ -1,0 +1,306 @@
+import TowerModularCost
+import Mathlib.Analysis.Calculus.LHopital
+
+set_option autoImplicit false
+set_option maxHeartbeats 3600000
+
+namespace ChatgptAudit.Cost054
+open TGLExt Matrix Filter Topology Set
+open ChatgptAudit ChatgptAudit.Observable035 ChatgptAudit.Angular034
+  ChatgptAudit.Covariant053 ChatgptAudit.Cocycle030
+noncomputable section
+
+/-- The real expectation is a continuous real-linear functional. -/
+def omegaRealContinuous (P : SiteProfile) :
+    (TowerHilbert P →L[ℂ] TowerHilbert P) →L[ℝ] ℝ :=
+  Complex.reCLM.comp ((omegaContinuous P).restrictScalars ℝ)
+
+theorem omega_real_continuous_apply (P : SiteProfile)
+    (B : TowerHilbert P →L[ℂ] TowerHilbert P) :
+    omegaRealContinuous P B = (omegaState P B).re := rfl
+
+theorem bounded_phase_negative_generator (P : SiteProfile)
+    (A : TowerHilbert P →L[ℂ] TowerHilbert P) (t : ℝ) :
+    boundedPhase P (-A) t = boundedPhase P A (-t) := by
+  simp only [boundedPhase, Complex.ofReal_neg, neg_mul, neg_smul, smul_neg]
+
+theorem negative_phase_derivative (P : SiteProfile)
+    (A : TowerHilbert P →L[ℂ] TowerHilbert P) (t : ℝ) :
+    HasDerivAt (fun s : ℝ => boundedPhase P A (-s))
+      (-(boundedPhase P A (-t) * (Complex.I • A))) t := by
+  have h := bounded_phase_derivative P (-A) t
+  change HasDerivAt (fun s : ℝ => boundedPhase P (-A) s) _ t at h
+  simpa only [bounded_phase_negative_generator, smul_neg, mul_neg] using h
+
+/-- Product-rule velocity; no derivative is taken as a definition of the cost. -/
+def unitaryConjugationVelocity (P : SiteProfile)
+    (A B : TowerHilbert P →L[ℂ] TowerHilbert P) (t : ℝ) :
+    TowerHilbert P →L[ℂ] TowerHilbert P :=
+  -(boundedPhase P A (-t) * (Complex.I • A) * B * boundedPhase P A t) +
+    boundedPhase P A (-t) * B * boundedPhase P A t * (Complex.I • A)
+
+theorem unitary_conjugation_has_derivative (P : SiteProfile)
+    (A B : TowerHilbert P →L[ℂ] TowerHilbert P) (hA : IsSelfAdjoint A) (t : ℝ) :
+    HasDerivAt (unitaryConjugation P A B) (unitaryConjugationVelocity P A B t) t := by
+  have h := ((negative_phase_derivative P A t).mul_const B).mul
+    (bounded_phase_derivative P A t)
+  have hf : (fun s : ℝ => boundedPhase P A (-s) * B * boundedPhase P A s) =
+      unitaryConjugation P A B := by
+    funext s
+    simp only [unitaryConjugation, bounded_phase_star P A hA]
+  rw [hf] at h
+  simpa only [unitaryConjugationVelocity, neg_mul, mul_assoc] using h
+
+/-- Minus the double commutator [A,[A,B]]. -/
+def doubleModularCommutator (P : SiteProfile)
+    (A B : TowerHilbert P →L[ℂ] TowerHilbert P) :
+    TowerHilbert P →L[ℂ] TowerHilbert P :=
+  -(A * A * B) + A * B * A + A * B * A - B * (A * A)
+
+theorem unitary_velocity_derivative_zero (P : SiteProfile)
+    (A B : TowerHilbert P →L[ℂ] TowerHilbert P) :
+    HasDerivAt (unitaryConjugationVelocity P A B) (doubleModularCommutator P A B) 0 := by
+  let C := Complex.I • A
+  have hn := negative_phase_derivative P A 0
+  have hp := bounded_phase_derivative P A 0
+  have hleft := (((hn.mul_const C).mul_const B).mul hp).neg
+  have hright := ((hn.mul_const B).mul hp).mul_const C
+  have h := hleft.add hright
+  change HasDerivAt (unitaryConjugationVelocity P A B) _ 0 at h
+  convert h using 1
+  simp only [C, neg_zero, bounded_phase_zero, one_mul, mul_one,
+    neg_mul, mul_neg, neg_neg, smul_mul_assoc, mul_smul_comm,
+    smul_smul, Complex.I_mul_I, neg_one_smul, doubleModularCommutator]
+  noncomm_ring
+
+def unitaryEnergy (P : SiteProfile)
+    (A B : TowerHilbert P →L[ℂ] TowerHilbert P) (t : ℝ) : ℝ :=
+  (omegaState P (unitaryConjugation P A B t)).re
+
+def unitaryEnergyVelocity (P : SiteProfile)
+    (A B : TowerHilbert P →L[ℂ] TowerHilbert P) (t : ℝ) : ℝ :=
+  (omegaState P (unitaryConjugationVelocity P A B t)).re
+
+theorem unitary_energy_derivative (P : SiteProfile)
+    (A B : TowerHilbert P →L[ℂ] TowerHilbert P) (hA : IsSelfAdjoint A) (t : ℝ) :
+    HasDerivAt (unitaryEnergy P A B) (unitaryEnergyVelocity P A B t) t := by
+  have h := (omegaRealContinuous P).hasFDerivAt.comp_hasDerivAt t
+    (unitary_conjugation_has_derivative P A B hA t)
+  simpa only [Function.comp_def, omega_real_continuous_apply,
+    unitaryEnergy, unitaryEnergyVelocity] using h
+
+theorem unitary_energy_velocity_zero (P : SiteProfile)
+    (A B : TowerHilbert P →L[ℂ] TowerHilbert P) :
+    unitaryEnergyVelocity P A B 0 = (Complex.I * omegaState P (B*A-A*B)).re := by
+  have h : unitaryConjugationVelocity P A B 0 = Complex.I • (B*A-A*B) := by
+    simp only [unitaryConjugationVelocity, neg_zero, bounded_phase_zero, one_mul, mul_one,
+      smul_mul_assoc, mul_smul_comm, smul_sub]
+    module
+  rw [unitaryEnergyVelocity, h, omega_state_smul]
+
+theorem unitary_energy_velocity_derivative (P : SiteProfile)
+    (A B : TowerHilbert P →L[ℂ] TowerHilbert P) :
+    HasDerivAt (unitaryEnergyVelocity P A B)
+      (omegaState P (doubleModularCommutator P A B)).re 0 := by
+  have h := (omegaRealContinuous P).hasFDerivAt.comp_hasDerivAt 0
+    (unitary_velocity_derivative_zero P A B)
+  simpa only [Function.comp_def, omega_real_continuous_apply, unitaryEnergyVelocity] using h
+
+theorem unitary_energy_second_derivative (P : SiteProfile)
+    (A B : TowerHilbert P →L[ℂ] TowerHilbert P) (hA : IsSelfAdjoint A) :
+    HasDerivAt (deriv (unitaryEnergy P A B))
+      (omegaState P (doubleModularCommutator P A B)).re 0 := by
+  have he : deriv (unitaryEnergy P A B) = unitaryEnergyVelocity P A B := by
+    funext t
+    exact (unitary_energy_derivative P A B hA t).deriv
+  rw [he]
+  exact unitary_energy_velocity_derivative P A B
+
+/-- Second-order response from actual derivatives, with the factor one half explicit. -/
+theorem quadratic_response_from_velocity (f v : ℝ → ℝ) (c : ℝ)
+    (hf : ∀ t, HasDerivAt f (v t) t) (hv : HasDerivAt v c 0) (hv0 : v 0=0) :
+    Tendsto (fun t => (f t-f 0)/t^2) (𝓝[≠] 0) (𝓝 (c/2)) := by
+  have hvs : Tendsto (fun t => v t/t) (𝓝[≠] 0) (𝓝 c) := by
+    simpa only [zero_add, hv0, sub_zero, smul_eq_mul, div_eq_mul_inv, mul_comm]
+      using hv.tendsto_slope_zero
+  have hderiv : ∀ᶠ t in 𝓝[≠] (0:ℝ), HasDerivAt (fun s => f s-f 0) (v t) t :=
+    Filter.Eventually.of_forall (fun t => (hf t).sub_const (f 0))
+  have hg : ∀ᶠ t in 𝓝[≠] (0:ℝ),
+      HasDerivAt (fun s : ℝ => s^2) (2*t) t :=
+    Filter.Eventually.of_forall (fun t => by
+      simpa only [id_eq, pow_one] using (hasDerivAt_id t).pow 2)
+  have hgn : ∀ᶠ t in 𝓝[≠] (0:ℝ), 2*t≠0 := by
+    filter_upwards [self_mem_nhdsWithin] with t ht
+    exact mul_ne_zero (by norm_num) ht
+  have hfzero : Tendsto (fun t => f t-f 0) (𝓝[≠] 0) (𝓝 0) := by
+    simpa only [sub_self] using ((hf 0).continuousAt.sub_const (f 0)).tendsto.mono_left
+      nhdsWithin_le_nhds
+  have hgzero : Tendsto (fun t : ℝ => t^2) (𝓝[≠] 0) (𝓝 0) := by
+    simpa using ((continuousAt_id : ContinuousAt (fun t : ℝ => t) 0).pow 2).tendsto.mono_left
+      nhdsWithin_le_nhds
+  have hratio : Tendsto (fun t => v t/(2*t)) (𝓝[≠] 0) (𝓝 (c/2)) := by
+    simpa only [mul_comm (2:ℝ), div_mul_eq_div_div] using hvs.div_const (2:ℝ)
+  exact HasDerivAt.lhopital_zero_nhdsNE hderiv hg hgn hfzero hgzero hratio
+
+def localModularMatrix (P : SiteProfile) (N : ℕ) :
+    Matrix (chainIdx N) (chainIdx N) ℂ :=
+  Matrix.diagonal (fun i => ((-Real.log (towerW P N i) : ℝ) : ℂ))
+
+def localModularObservable (P : SiteProfile) (N : ℕ) :
+    TowerHilbert P →L[ℂ] TowerHilbert P :=
+  towerPi P (localModularMatrix P N)
+
+def finiteModularEnergy (P : SiteProfile) (N : ℕ)
+    (a : Matrix (chainIdx N) (chainIdx N) ℂ) : ℝ → ℝ :=
+  unitaryEnergy P (towerPi P a) (localModularObservable P N)
+
+theorem local_modular_matrix_hermitian (P : SiteProfile) (N : ℕ) :
+    (localModularMatrix P N).IsHermitian := by
+  ext i j
+  by_cases h : i=j
+  · subst j
+    simp [localModularMatrix]
+  · simp [localModularMatrix, Matrix.diagonal, h, Ne.symm h]
+
+theorem local_modular_commutator_state (P : SiteProfile) (N : ℕ)
+    (a : Matrix (chainIdx N) (chainIdx N) ℂ) :
+    omegaState P (localModularObservable P N * towerPi P a -
+      towerPi P a * localModularObservable P N)=0 := by
+  have hm : towerPi P (localModularMatrix P N*a-a*localModularMatrix P N) =
+      localModularObservable P N*towerPi P a-towerPi P a*localModularObservable P N := by
+    change (towerPiAlgHom P N) (_-_) = _
+    simp only [map_sub, map_mul]
+    rfl
+  rw [← hm, omegaState_pi]
+  simp [tState, localModularMatrix, Matrix.sub_apply, Matrix.diagonal_mul,
+    Matrix.mul_diagonal, mul_comm]
+
+theorem finite_modular_energy_first_zero (P : SiteProfile) (N : ℕ)
+    (a : Matrix (chainIdx N) (chainIdx N) ℂ) (ha : a.IsHermitian) :
+    HasDerivAt (finiteModularEnergy P N a) 0 0 := by
+  have h := unitary_energy_derivative P (towerPi P a) (localModularObservable P N)
+    (tower_local_selfadjoint P N a ha) 0
+  simpa only [unitary_energy_velocity_zero, local_modular_commutator_state,
+    mul_zero, Complex.zero_re, finiteModularEnergy] using h
+
+theorem local_modular_double_coefficient (P : SiteProfile) (N : ℕ)
+    (a : Matrix (chainIdx N) (chainIdx N) ℂ) (ha : a.IsHermitian) :
+    (omegaState P (doubleModularCommutator P (towerPi P a)
+      (localModularObservable P N))).re = 2 * localModularCost P N a := by
+  let k := localModularMatrix P N
+  have hm : towerPi P (-(a*a*k)+a*k*a+a*k*a-k*(a*a)) =
+      doubleModularCommutator P (towerPi P a) (localModularObservable P N) := by
+    change (towerPiAlgHom P N) (-(a*a*k)+a*k*a+a*k*a-k*(a*a)) = _
+    simp only [map_sub, map_add, map_neg, map_mul]
+    rfl
+  rw [← hm, omegaState_pi]
+  have hd (i : chainIdx N) :
+      (-(a*a*k)+a*k*a+a*k*a-k*(a*a)) i i =
+        ∑ j, ((2*(Real.log (towerW P N i)-Real.log (towerW P N j)) : ℝ) : ℂ) *
+          (Complex.normSq (a i j) : ℂ) := by
+    simp only [Matrix.sub_apply, Matrix.add_apply, Matrix.neg_apply,
+      k, localModularMatrix, Matrix.mul_diagonal, Matrix.diagonal_mul, Matrix.mul_apply]
+    simp only [Finset.sum_add_distrib, Finset.sum_sub_distrib, Finset.mul_sum,
+      Finset.sum_mul, ← Finset.sum_neg_distrib]
+    apply Finset.sum_congr rfl
+    intro j _
+    have hji : a j i = star (a i j) := (congrFun (congrFun ha j) i).symm
+    rw [hji]
+    simp only [Complex.star_def, Complex.normSq_apply, Complex.ofReal_add,
+      Complex.ofReal_sub, Complex.ofReal_mul, Complex.ofReal_pow, Complex.ofReal_ofNat,
+      Complex.ofReal_neg]
+    apply Complex.ext <;> simp [Complex.mul_re, Complex.mul_im] <;> ring
+  rw [local_modular_cost_symmetric P N a ha]
+  have hn (i j : chainIdx N) : Complex.normSq (a j i)=Complex.normSq (a i j) := by
+    simpa only [Complex.star_def, Complex.normSq_conj] using
+      congrArg Complex.normSq (congrFun (congrFun ha i) j)
+  have hswap :
+      (∑ i, ∑ j, towerW P N j *
+        (Real.log (towerW P N i)-Real.log (towerW P N j))*Complex.normSq (a i j)) =
+      -(∑ i, ∑ j, towerW P N i *
+        (Real.log (towerW P N i)-Real.log (towerW P N j))*Complex.normSq (a i j)) := by
+    rw [Finset.sum_comm]
+    simp only [← Finset.sum_neg_distrib]
+    apply Finset.sum_congr rfl
+    intro i _
+    apply Finset.sum_congr rfl
+    intro j _
+    rw [hn]
+    ring
+  simp only [tState, hd, Complex.sum_re, Complex.mul_re, Complex.ofReal_re,
+    Complex.ofReal_im, zero_mul, sub_zero, Finset.mul_sum]
+  have he :
+      (∑ i, ∑ j, (towerW P N i-towerW P N j) *
+        (Real.log (towerW P N i)-Real.log (towerW P N j))*Complex.normSq (a i j)) =
+      2 * ∑ i, ∑ j, towerW P N i *
+        (Real.log (towerW P N i)-Real.log (towerW P N j))*Complex.normSq (a i j) := by
+    simp only [sub_mul, Finset.sum_sub_distrib]
+    rw [hswap]
+    ring
+  rw [he]
+  simp only [← Finset.mul_sum]
+  congr 1
+  apply Finset.sum_congr rfl
+  intro i _
+  apply Finset.sum_congr rfl
+  intro j _
+  ring
+
+theorem finite_modular_energy_second (P : SiteProfile) (N : ℕ)
+    (a : Matrix (chainIdx N) (chainIdx N) ℂ) (ha : a.IsHermitian) :
+    HasDerivAt (deriv (finiteModularEnergy P N a)) (2*localModularCost P N a) 0 := by
+  simpa only [finiteModularEnergy, local_modular_double_coefficient P N a ha] using
+    unitary_energy_second_derivative P (towerPi P a) (localModularObservable P N)
+      (tower_local_selfadjoint P N a ha)
+
+theorem finite_modular_energy_quadratic_limit (P : SiteProfile) (N : ℕ)
+    (a : Matrix (chainIdx N) (chainIdx N) ℂ) (ha : a.IsHermitian) :
+    Tendsto (fun t => (finiteModularEnergy P N a t-finiteModularEnergy P N a 0)/t^2)
+      (𝓝[≠] 0) (𝓝 (localModularCost P N a)) := by
+  have hv := unitary_energy_velocity_derivative P (towerPi P a) (localModularObservable P N)
+  rw [local_modular_double_coefficient P N a ha] at hv
+  have hv0 : unitaryEnergyVelocity P (towerPi P a) (localModularObservable P N) 0=0 := by
+    rw [unitary_energy_velocity_zero, local_modular_commutator_state, mul_zero, Complex.zero_re]
+  have h := quadratic_response_from_velocity _ _ _
+    (unitary_energy_derivative P (towerPi P a) (localModularObservable P N)
+      (tower_local_selfadjoint P N a ha)) hv hv0
+  have he : 2*localModularCost P N a/2=localModularCost P N a := by ring
+  rw [he] at h
+  exact h
+
+/-- The extended global cost equals half the actual local energy second derivative. -/
+theorem global_cost_is_modular_response (P : SiteProfile) (N : ℕ)
+    (a : Matrix (chainIdx N) (chainIdx N) ℂ) (ha : a.IsHermitian) :
+    towerModularCost P (towerPi P a (hOmega P)) =
+      ENNReal.ofReal (deriv (deriv (finiteModularEnergy P N a)) 0/2) := by
+  rw [(finite_modular_energy_second P N a ha).deriv, tower_local_cost_formula P N a ha]
+  congr 1
+  ring
+
+#print axioms omegaRealContinuous
+#print axioms omega_real_continuous_apply
+#print axioms bounded_phase_negative_generator
+#print axioms negative_phase_derivative
+#print axioms unitaryConjugationVelocity
+#print axioms unitary_conjugation_has_derivative
+#print axioms doubleModularCommutator
+#print axioms unitary_velocity_derivative_zero
+#print axioms unitaryEnergy
+#print axioms unitaryEnergyVelocity
+#print axioms unitary_energy_derivative
+#print axioms unitary_energy_velocity_zero
+#print axioms unitary_energy_velocity_derivative
+#print axioms unitary_energy_second_derivative
+#print axioms quadratic_response_from_velocity
+#print axioms localModularMatrix
+#print axioms localModularObservable
+#print axioms finiteModularEnergy
+#print axioms local_modular_matrix_hermitian
+#print axioms local_modular_commutator_state
+#print axioms finite_modular_energy_first_zero
+#print axioms local_modular_double_coefficient
+#print axioms finite_modular_energy_second
+#print axioms finite_modular_energy_quadratic_limit
+#print axioms global_cost_is_modular_response
+end
+end ChatgptAudit.Cost054

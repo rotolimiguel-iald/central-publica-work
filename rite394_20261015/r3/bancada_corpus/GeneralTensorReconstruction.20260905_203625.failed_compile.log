@@ -1,0 +1,43 @@
+GeneralTensorReconstruction.lean:43:13: error: Tactic `rewrite` failed: Did not find an occurrence of the pattern
+  frameScalar D A x
+in the target expression
+  (fun x => frameScalar D A x • frameMetricField E x) x = c • frameMetricField E x
+
+U : Set Coordinate4
+hU : IsOpen U
+hconn : IsPreconnected U
+E D A : TensorField4
+hED : ∀ x ∈ U, E x * D x = 1
+hDE : ∀ x ∈ U, D x * E x = 1
+hE : ∀ (i j : Fin 4), DifferentiableOn ℝ (fun x => E x i j) U
+hD : ∀ (i j : Fin 4), DifferentiableOn ℝ (fun x => D x i j) U
+hA : ∀ (i j : Fin 4), DifferentiableOn ℝ (fun x => A x i j) U
+hs : ∀ x ∈ U, (A x)ᵀ = A x
+hn : ∀ x ∈ U, ∀ (v : SpacetimeVector), tensorQuad (frameMetricField E x) v = 0 → tensorQuad (A x) v = 0
+hd :
+  ∀ x ∈ U,
+    ∀ (j : Fin 4),
+      tensorFieldDivergence (inverseFrameMetricField D)
+          (leviCivitaField (frameMetricField E) (inverseFrameMetricField D)) A x j =
+        0
+heq : Set.EqOn A (fun x => frameScalar D A x • frameMetricField E x) U
+hdiv :
+  ∀ x ∈ U,
+    ∀ (j : Fin 4),
+      tensorFieldDivergence (inverseFrameMetricField D)
+          (leviCivitaField (frameMetricField E) (inverseFrameMetricField D))
+          (fun x => frameScalar D A x • frameMetricField E x) x j =
+        0
+c : ℝ
+hc : ∀ x ∈ U, frameScalar D A x = c
+x : Coordinate4
+hx : x ∈ U
+⊢ (fun x => frameScalar D A x • frameMetricField E x) x = c • frameMetricField E x
+'ChatgptAudit.conserved_null_tensor_is_constant_metric_multiple' depends on axioms: [propext,
+ sorryAx,
+ Classical.choice,
+ Quot.sound]
+'ChatgptAudit.conserved_null_balance_has_constant_term' depends on axioms: [propext,
+ sorryAx,
+ Classical.choice,
+ Quot.sound]

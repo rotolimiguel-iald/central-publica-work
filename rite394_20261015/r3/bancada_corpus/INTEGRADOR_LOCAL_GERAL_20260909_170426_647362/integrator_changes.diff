@@ -1,0 +1,30 @@
+--- C:\IALD\Central de Patentes\Chatgpt\INTEGRADOR_INSTANCIAS_20260909_161410_584189\integrate_approved_copy.py
++++ C:\IALD\Central de Patentes\Chatgpt\INTEGRADOR_LOCAL_GERAL_20260909_170426_647362\integrate_approved_copy.py
+@@ -100,12 +100,15 @@
+         assert key in declaration_counts and declaration_counts[key]==value, (
+             "Configuration count mismatch: "+key)
+     local_names={m["module"] for m in modules}
++    existing_local_names={Path(key).stem for key in embedded
++                          if key.startswith("TGLExt/") and key.endswith(".lean")}
++    rewrite_names=local_names | existing_local_names
+     replacements=[];dependencies={}
+     for m in modules:
+         original=m["text"];changes=[]
+         def fix(match):
+             name=match.group(1)
+-            if name in local_names:
++            if name in rewrite_names:
+                 changes.append({"from":name,"to":"TGLExt."+name})
+                 return "import TGLExt."+name
+             return match.group(0)
+@@ -177,6 +180,10 @@
+         "existing_sources_unchanged_except_root_and_audit":True,
+         "sentinels_flags_and_gate_code_unchanged":True,"new_individual_json_flags_added":False,
+         "modules":[{k:v for k,v in m.items() if k!="text"} for m in modules],
++        "integration_basis":"The frozen predecessor um.py copy; source_um is this explicit predecessor.",
++        "predecessor_integration_result":cfg.get("predecessor_integration_result"),
++        "predecessor_build_result":cfg.get("predecessor_build_result"),
++        "existing_import_targets_recognized":sorted(existing_local_names),
+         "theorem_names":theorem_names,"transposed_module_order":ordered,
+         "all_declaration_names":all_declaration_names,
+         "local_instance_names":local_instance_names,"declaration_counts":declaration_counts,

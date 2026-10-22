@@ -1,0 +1,38 @@
+[
+  {
+    "line": 57,
+    "text": "def vnRatio (M : VonNeumannAlgebra FH) (Om : FH) (r : ℝ) : Prop :="
+  },
+  {
+    "line": 64,
+    "text": "def vnRealizedLog (M : VonNeumannAlgebra FH) (Om : FH) : Set ℝ :="
+  },
+  {
+    "line": 73,
+    "text": "theorem finiteDim_normal_trace_exists\n    (hfd : FiniteDimensional ℂ FH) (hpos : 0 < Module.finrank ℂ FH)\n    (M : VonNeumannAlgebra FH) :\n    ∃ τ : (FH →L[ℂ] FH) → ℂ,\n      (∀ A B, τ (A + B) = τ A + τ B) ∧\n      (∀ (c : ℂ) A, τ (c • A) = c * τ A) ∧\n      τ 1 = 1 ∧\n      (∀ A B, τ (A * B) = τ (B * A)) ∧\n      SeqWOTContinuous M τ := by"
+  },
+  {
+    "line": 147,
+    "text": "structure FullWitnessDataV3 extends FullWitnessData where\n  FH : Type\n  [instNACG : NormedAddCommGroup FH]\n  [instIPS : InnerProductSpace ℂ FH]\n  [instCS : CompleteSpace FH]\n  factor : VonNeumannAlgebra FH\n  Om : FH\n  om_unit : ‖Om‖ = 1\n  om_cyclic : Dense ((fun T : FH →L[ℂ] FH => T Om) ''\n    (factor : Set (FH →L[ℂ] FH)))\n  om_normal : SeqWOTContinuous factor\n    (fun T : FH →L[ℂ] FH => (inner ℂ Om (T Om) : ℂ))\n  state_not_tracial : ∃ A B : FH →L[ℂ] FH, A ∈ factor ∧ B ∈ factor\n    ∧ (inner ℂ Om ((A * B) Om) : ℂ) ≠ inner ℂ Om ((B * A) Om)\n  ratio_log_dense : Dense\n    ((AddSubgroup.closure (vnRealizedLog factor Om) : AddSubgroup ℝ) : Set ℝ)\n  no_normal_tracial : ∀ τ : (FH →L[ℂ] FH) → ℂ,\n    (∀ A B, τ (A + B) = τ A + τ B) →\n    (∀ (c : ℂ) A, τ (c • A) = c * τ A) →\n    τ 1 = 1 →\n    (∀ A B, A ∈ factor → B ∈ factor → τ (A * B) = τ (B * A)) →\n    SeqWOTContinuous factor τ → False\n\nattribute [instance] FullWitnessDataV3.instNACG FullWitnessDataV3.instIPS\n  FullWitnessDataV3.instCS\n\n/-- [KERNEL] ★ a ponte de tipos: toda testemunha V3 reduz à completa —"
+  },
+  {
+    "line": 175,
+    "text": "def fullFromWitnessV3 (w : FullWitnessDataV3) : FullWitnessData :="
+  },
+  {
+    "line": 184,
+    "text": "theorem finiteDim_cannot_feed_witnessV3 (w : FullWitnessDataV3) :\n    ¬ FiniteDimensional ℂ w.FH := by"
+  },
+  {
+    "line": 207,
+    "text": "def theWitnessV3 : FullWitnessDataV3 where\n  toFullWitnessData := theFusedWitness"
+  },
+  {
+    "line": 234,
+    "text": "theorem witnessV3_infinite : ¬ FiniteDimensional ℂ (theWitnessV3.FH) :="
+  },
+  {
+    "line": 240,
+    "text": "theorem witnessV3_synthesis :\n    (¬ FiniteDimensional ℂ (theWitnessV3.FH))\n    ∧ theWitnessV3.factor = theFactorObject mixProfile\n    ∧ theWitnessV3.Om = hOmega mixProfile :="
+  }
+]

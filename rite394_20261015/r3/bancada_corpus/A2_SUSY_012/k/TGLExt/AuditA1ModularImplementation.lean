@@ -1,0 +1,3 @@
+import TGLExt.V351ModularImplementation
+#check TGLV350.Regular.scalarTomitaImaginaryPower_eq_regular_implementation
+#print axioms TGLV350.Regular.scalarTomitaImaginaryPower_eq_regular_implementation

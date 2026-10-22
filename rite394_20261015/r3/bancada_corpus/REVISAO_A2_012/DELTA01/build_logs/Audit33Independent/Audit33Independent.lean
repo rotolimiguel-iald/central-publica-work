@@ -1,0 +1,68 @@
+import TGLExt.V354TraceReaderWall
+set_option pp.universes true
+#check TGLV350.Regular.regularTrace_finite_positive_below
+#print axioms TGLV350.Regular.regularTrace_finite_positive_below
+#check TGLV350.Regular.kernel_projection_mem_vonNeumann
+#print axioms TGLV350.Regular.kernel_projection_mem_vonNeumann
+#check TGLV350.Regular.positive_operator_has_threshold_projection
+#print axioms TGLV350.Regular.positive_operator_has_threshold_projection
+#check TGLV350.Regular.scalarTrace_finite_subprojection_exists
+#print axioms TGLV350.Regular.scalarTrace_finite_subprojection_exists
+#check TGLV350.Regular.regularCore_matrix_corner
+#print axioms TGLV350.Regular.regularCore_matrix_corner
+#check TGLV350.Regular.scalarTrace_finite_equal_split
+#print axioms TGLV350.Regular.scalarTrace_finite_equal_split
+#check TGLV350.Regular.scalarTrace_finite_split_support
+#print axioms TGLV350.Regular.scalarTrace_finite_split_support
+#check TGLV350.Regular.scalarTrace_dual_calibration
+#print axioms TGLV350.Regular.scalarTrace_dual_calibration
+#check TGLV350.Regular.scalarTrace_normalized_split_exists
+#print axioms TGLV350.Regular.scalarTrace_normalized_split_exists
+#check TGLV350.Regular.regularNormalizedFaces
+#print axioms TGLV350.Regular.regularNormalizedFaces
+#check TGLV350.Regular.regularFiniteSupport
+#print axioms TGLV350.Regular.regularFiniteSupport
+#check TGLV350.Regular.regularFiniteSupport_projection
+#print axioms TGLV350.Regular.regularFiniteSupport_projection
+#check TGLV350.Regular.regularFiniteSupport_trace
+#print axioms TGLV350.Regular.regularFiniteSupport_trace
+#check TGLV350.Regular.regularFiniteSupport_ne_zero
+#print axioms TGLV350.Regular.regularFiniteSupport_ne_zero
+#check TGLV350.Regular.regularMinimalLock
+#print axioms TGLV350.Regular.regularMinimalLock
+#check TGLV350.Regular.regularMinimalLock_mem
+#print axioms TGLV350.Regular.regularMinimalLock_mem
+#check TGLV350.Regular.regularMinimalLock_selfadjoint
+#print axioms TGLV350.Regular.regularMinimalLock_selfadjoint
+#check TGLV350.Regular.regularMinimalLock_annihilation
+#print axioms TGLV350.Regular.regularMinimalLock_annihilation
+#check TGLV350.Regular.regularMinimalLock_maximal
+#print axioms TGLV350.Regular.regularMinimalLock_maximal
+#check TGLV350.Regular.regularMinimalLock_ker
+#print axioms TGLV350.Regular.regularMinimalLock_ker
+#check TGLV350.Regular.regularMinimalLock_spectral_zero
+#print axioms TGLV350.Regular.regularMinimalLock_spectral_zero
+#check TGLV350.Regular.regularMinimalLock_relative_gap
+#print axioms TGLV350.Regular.regularMinimalLock_relative_gap
+#check TGLV350.Regular.regularMinimalLockGraph
+#print axioms TGLV350.Regular.regularMinimalLockGraph
+#check TGLV350.Regular.regularMinimalLockGraph_selfadjoint
+#print axioms TGLV350.Regular.regularMinimalLockGraph_selfadjoint
+#check TGLV350.Regular.regularMinimalLockGraph_closed
+#print axioms TGLV350.Regular.regularMinimalLockGraph_closed
+#check TGLV350.Regular.regularMinimalLockGraph_domain
+#print axioms TGLV350.Regular.regularMinimalLockGraph_domain
+#check TGLV350.Regular.regularMinimalLockGraph_affiliated
+#print axioms TGLV350.Regular.regularMinimalLockGraph_affiliated
+#check TGLV350.Regular.positiveTraceReader
+#print axioms TGLV350.Regular.positiveTraceReader
+#check TGLV350.Regular.positiveTraceReader_positive
+#print axioms TGLV350.Regular.positiveTraceReader_positive
+#check TGLV350.Regular.regularContinuousCorner
+#print axioms TGLV350.Regular.regularContinuousCorner
+#check TGLV350.Regular.regularContinuousCorner_readings
+#print axioms TGLV350.Regular.regularContinuousCorner_readings
+#check TGLV350.Regular.regularMinimalLock_breuer_kernel
+#print axioms TGLV350.Regular.regularMinimalLock_breuer_kernel
+#check TGLV350.Regular.positiveTraceReader_not_cyclic
+#print axioms TGLV350.Regular.positiveTraceReader_not_cyclic

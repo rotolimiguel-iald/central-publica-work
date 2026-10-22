@@ -1,0 +1,4 @@
+# Dedução prévia — propagação da derivada do cociclo
+[DERIVED — a verificar] A identidade torcida u(t+r)=u(t) alpha_t(u(r)) escreve o incremento temporal em torno de t como produto por operador constante e aplicação linear contínua canônica alpha_t. Da derivada u'(0)=d, a regra da cadeia dá derivada em r=0 igual a u(t) alpha_t(d). Transladando r=x−t, segue u'(t)=u(t) alpha_t(d).
+Para d=iV, linearidade complexa dá u'(t)=u(t) i alpha_t(V), com o gerador à DIREITA. Não é necessária convergência de derivadas dos cortes em vizinhanças.
+A aplicação linear real é construída a partir do mesmo modularConjugation existente, usando seu teorema canônico de continuidade; nenhum novo fluxo é definido. Esta folha recebe a identidade de cociclo e a derivada em zero como hipóteses de aplicação; o módulo de limite e o lema de erro linear são responsáveis por produzi-las na composição concreta.

@@ -1,0 +1,38 @@
+[DERIVED sob hipóteses explícitas] Demonstrações anteriores à implementação da ordem 005 — 05/09/2026.
+
+## A. A massa, do campo à conta
+
+1. [INPUT] β=ALPHA_FINE_CODATA_2018×√e em runtime. O valor de α é medido e fixado externamente. Zero parâmetros ajustados ao GA não significa zero insumos medidos.
+2. [DERIVED, limite newtoniano esférico] ∇²Φ=4πGρ implica M(<r)=r²Φ′(r)/G, por integração e Gauss. O 4π da área cancela o 4π de Poisson. Portanto Gauss, sozinho, NÃO seleciona um coeficiente residual 1/(4π) na massa.
+3. [CONJECTURE/INPUT de contorno físico] Para obter M=(c²/4πG)β R_named, é preciso demonstrar/assumir R_named Φ′(R_named)/c²=β/(4π). Positividade de JS e Δ ou a identidade de reflexão |R|²=β não implicam essa normalização do gradiente gravitacional. São objetos diferentes. A condição explicita a ponte de fonte requerida, sem afirmar inexistência de qualquer prova futura.
+4. [DERIVED] Se w_in+w_out=1 e w_in=w_out, então w_max=1/2. [CONJECTURE de realização] Que a bacia física e sua borda escolhida realizem essas hipóteses exige identificação própria; a simetria de dois pesos não localiza sozinha a borda no catálogo.
+5. [INPUT/CONJECTURE de perfil] Uma leitura radial linear w(r)=w_max r/R_struct, com limiar w(R_named)=β, dá R_named=(β/w_max)R_struct. A conclusão é algébrica, mas a leitura radial linear e o limiar são hipóteses que precisam corresponder ao objeto físico. Para w(r)=w_max(r/R_struct)^p, p>0, o resultado é R_named=(β/w_max)^(1/p)R_struct; a auto-conjugação permanece e o raio muda. Portanto só a auto-conjugação não força a lei radial linear.
+6. [DERIVED condicional] Substituindo w_max=1/2 e a ponte de fonte, M=2β²(c²/4πG)R_struct. O fator 2β² vem de β×(β/(1/2)), não de uma nova medida.
+7. [DERIVED dimensional] [β]=1, [c²]=L²T⁻², [G]=L³M⁻¹T⁻², [c²/G]=ML⁻¹; multiplicar por R dá massa. Consistência dimensional não fixa o coeficiente nem valida a fonte.
+8. [INPUT histórico] O fonte sela R_struct=57 Mpc, atribuído a ~40 h⁻¹ Mpc e h=0,7. 40/0,7=57,142857…; 57 é arredondamento (~0,25%). Não há σ_R no bloco selado. A janela [10¹⁵,10¹⁷] M☉ agrega objetos diferentes (núcleo Norma, bacia GA, Laniakea); não é um intervalo de confiança de uma única massa.
+9. [DERIVED] M/R_struct=β²c²/(2πG), logo a velocidade característica newtoniana √(GM/R_struct)=βc/√(2π) independe de R. A aplicação universal força uma densidade média proporcional a R⁻². Isso não presume que bacias não virializadas tenham uma órbita circular medida; é a consequência dinâmica da forma tomada literalmente.
+
+O defeito numérico da v98 é a extrapolação dessa lei às seis âncoras da sua tabela, não uma multiplicação errada no GA. O log contemporâneo run_v98_stdout.txt:626–635 registra exatamente o diagnóstico; o §178 de CLAUDE.md e o rito corrente o preservam. Não se inventarão erros experimentais para converter os fatores da tabela em significâncias.
+
+## B. Estatística proposta, sem contar a mesma evidência duas vezes
+
+[INPUT estatístico] Para domínios quantitativos admissíveis, suponha estimativas x_i do MESMO β, aproximadamente gaussianas, com covariância C conhecida, definida positiva e independente do parâmetro. Defina W=C⁻¹, u=(1,…,1), s=uᵀWu>0 e β_hat=uᵀWx/s. A transformação dos observáveis originais em x_i exige uma lei de leitura e erros justificados; não basta renomear qualquer número como β.
+
+[DERIVED] Q(b)=(x−bu)ᵀW(x−bu)=Q(β_hat)+s(b−β_hat)². A fixa b=β₀; B ajusta um b real comum. Logo ganho de ajuste G=Q_A−Q_B=s(β_hat−β₀)²≥0. B contém A; sua máxima verossimilhança nunca é pior.
+
+Escolha: AIC como comparação preditiva auxiliar, com covariância conhecida: AIC_A=Q_A+constante, AIC_B=Q_B+2+constante. Δ=AIC_B−AIC_A=2−G. A ganha se G<2; B ganha se G>2; empate em 2. A vantagem máxima de A sobre B é 2, mesmo se todos os centros coincidirem exatamente com β₀. Quatro domínios não geram automaticamente evidência decisiva de Occam. AIC não é probabilidade posterior, fator de Bayes, confirmação nem regra de falsificação. Aqui a penalização tem interpretação exata de otimismo no modelo gaussiano linear com C conhecida; não se usa AICc de regressão com variância estimada. BIC exigiria uma definição defensável de tamanho amostral e aproximação assintótica, problemática com quatro resumos heterogêneos.
+
+Fonte primária do critério: H. Akaike (1974), A New Look at the Statistical Model Identification, DOI [10.1109/TAC.1974.1100705](https://doi.org/10.1109/TAC.1974.1100705). A decomposição quadrática e os limites acima são demonstrados aqui, sem atribuir a AIC força confirmatória.
+
+[DERIVED, falsificação bilateral separada] Sob A e as hipóteses gaussianas, Q_A~χ²_n. Comparar Q_A ao quantil superior com probabilidade de cauda α_joint=erfc(5/√2), equivalente à probabilidade bilateral de 5σ normal. Q_A é quadrático e detecta desvios em ambos os sentidos, inclusive heterogeneidade com média correta. Não usar apenas G: ele deixa passar resíduos opostos que se cancelam na média. Rejeição exige gates de proveniência, correlações, sistemáticas e congelamento prospectivo verdes. Poder mínimo de 90% será exigido para emitir NOT_FALSIFIED, para alternativas pré-especificadas; uma rejeição válida não é anulada por baixo poder. Ausência de rejeição com baixo poder é INCONCLUSIVE.
+
+[DERIVED, interpretação limitada] O modelo B não é automaticamente ΛCDM com H₀ livre: é a mesma família das quatro leis de leitura, substituindo β₀ por uma constante comum ajustável. Para comparar com um modelo físico concorrente que altera só H₀, faltam suas previsões e parâmetros para neutrino, GA e piso. Essa comparação não pode ser improvisada após ver os resíduos.
+
+## Elegibilidade inicial, antes de qualquer combinação
+
+- Neutrino: usar UMA determinação autônoma. JUNO e um ajuste global pós-JUNO não devem ser multiplicados como duas observações independentes sem decompor os dados do ajuste. O próprio fonte rotula ambos independentes e a regra textual pede duas determinações, mas o veredito é disparado só pela tensão global: registrar a divergência para a gerência. A identificação m₂=√Δm²₂₁ pressupõe m₁=0; a escala 1 eV é [NORM] declarada, não derivada. Ambos são parte do modelo testado.
+- Coma: o primário é distância por fluxo, não massa inversa. D(b)=D₀exp[−b log(1+z★)]. Um estimador é x=log(D₀/D_obs)/log(1+z★); sua gaussianidade e covariância exigem propagação completa. H₀ base, Ω_m, z★ e calibração de distâncias não têm todas as barras no rito. O resultado selado lido tem comparison=null: não há residual primário disponível nessa rodada. A distância FP inversa usada como controle não pode substituí-lo.
+- GA: M=K b² R dá x=√(M/(KR)) somente se a lei de fonte for admitida e massa/raio corresponderem à mesma região. Falta σ e covariância M–R. Um intervalo largo entre diferentes objetos não é uma verossimilhança gaussiana; excluir da soma atual, sem retirar seu veto operacional ratificado.
+- Piso: ρ/ρ̄≥β não é ρ/ρ̄=β. Estimativas de densidade dos núcleos não são estimativas de β. A afirmação qualitativa de não nulidade não discrimina β₀ de um b livre que também permite não nulidade. O registro de SNR≈6,2 do perfil tem gate B-mode reprovado e Fisher de piso zero; manter como registro de sinal bruto, sem promover a medida limpa de β. Réplicas VAST e surveys distintos compartilham cosmologia, algoritmo e possíveis volumes; não multiplicar seus p-valores sem análise de dependência.
+
+As circularidades BBN/CMB/r_d documentadas em prove_evidence_audit impedem reintroduzir a antiga tabela de convergência como quatro medições novas. Não serão consultados dados observacionais externos. Com os resumos presentes, o teste quantitativo de QUATRO domínios é INCONCLUSIVE por inelegibilidade, independentemente da preferência do operador pela política de veto.

@@ -1,0 +1,3 @@
+# Cobertura por oito covetores
+[DERIVED antes da compilação] Para A simétrico, p_i=(row_i(A)+e_i)/2, m_i=(row_i(A)−e_i)/2. A soma p_i⊗p_i−m_i⊗m_i é A. Em quatro dimensões a completação R_g(A)=A−tr_g(A)g/2 é involutiva. Portanto aplicar a decomposição a R_g(T) reproduz T por quatro fontes covetoriais positivas e quatro negativas.
+As expressões são suaves, sem raízes de coeficientes variáveis. Isso é representação de uma fonte fornecida, não produção física de T ou demonstração das equações de conservação de cada setor. A soma total pode conservar-se por identidade com T conservado. Se exigir energia não negativa por setor, esta cobertura assinada não cumpre automaticamente essa condição. A calibração por duas respostas unitárias canônicas será tratada separadamente.

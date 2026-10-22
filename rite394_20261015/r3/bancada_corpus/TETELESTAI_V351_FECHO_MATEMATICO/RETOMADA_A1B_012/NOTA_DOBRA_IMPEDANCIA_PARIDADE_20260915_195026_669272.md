@@ -1,0 +1,25 @@
+# Dobra de 90 graus, impedância comum e dephasing
+
+[INPUT — 15/09/2026] O operador contesta reduzir a passagem da TGL a K→−K: inclui impedância do vácuo compartilhada, dobra de 90 graus e projeção no setor oposto. O texto recebido propõe R²=−I, {P,R}=0, P=Pi_+−Pi_− e T=Pi_− R C_min Pi_+, concluindo dephasing como expressão posterior dessa geometria. O registro preserva a interpretação de dobra como mudança de direção, sem assumir duplicação de módulo.
+
+[DERIVED — correção de alcance] A identidade [−K,[−K,rho]]=[K,[K,rho]] permanece exata. Ela não classifica sozinha uma operação composta que também muda projetores, estado, ambiente ou representação. Esta limitação não demonstra, por sua vez, a igualdade entre transporte projetado e dephasing.
+
+[REAL — fontes lidas em cópia, sem nova compilação] TheAngleIsTheProjection.lean define G=genK=[[0,1],[-1,0]], projPlus=(I−iG)/2, projMinus=(I+iG)/2 e angFamily(theta)=cos(theta)I+sin(theta)G. the_angle_is_the_projection:123 dá a decomposição espectral; at_the_right_angle_the_family_is_the_generator dá angFamily(pi/2)=G. G aqui é o gerador angular, não identificado com o gerador modular autoadjunto de outros módulos.
+
+[DERIVED — distinção dos projetores] Para os projetores espectrais dessa fonte, R=G=i(Pi_+−Pi_−). Logo R Pi_+=i Pi_+, R Pi_−=−i Pi_−, [P,R]=0, {P,R}=2iI e Pi_− R Pi_+=0. Não há troca dos subespaços espectrais: há fases opostas. A anticomutação do texto recebido não vale se os Pi forem esses projetores.
+
+Para projetores de eixos C_+=diag(1,0), C_−=diag(0,1), o mesmo R satisfaz {C_+−C_−,R}=0 e C_− R C_+=R C_+ não nulo. A direção é trocada. Esses C não são projPlus/projMinus. Portanto o transporte proposto é matematicamente possível, mas não se pode ligar as duas famílias pelo nome P_±.
+
+[REAL — fontes relacionadas] ModularHorizontalRotation.lean, na mesma cópia, constrói o tempo do quarto de volta no plano de Pauli X,Y do primeiro sítio para gap modular não nulo. HorizontalAreaSelection.lean:131 prova que uma forma real simétrica invariante sob essa volta é c vezes a forma euclidiana; a calibração relativa de traço 1 é hipótese separada. Nenhum desses enunciados lidos identifica c com a impedância eletromagnética do vácuo ou conclui uma taxa de dephasing. O Atlas registra a Lei de Miguel como DECLARADO 2025 e remete a documentos históricos; não foi promovida essa remissão a prova verificada. Leitura pontual do um.py original foi negada pelo sistema operacional, sem tentativa de executar/importar ou mudar permissões; conclusões sobre arquivos restringem-se à cópia lida.
+
+[DERIVED — transporte e dissipação] Suponha Pi_± complementares, R unitário e {P,R}=0. Então V=Pi_− R Pi_+ satisfaz V†V=Pi_+. Para estados suportados na origem, V rho V† preserva traço, espectro não nulo e pureza: é transporte isométrico entre setores. O produto inclui ambas as projeções e a dobra; ainda assim não força perda exponencial de coerência. Se C_min=beta Pi_+, a amplitude beta V acrescenta um peso de seleção beta²; após normalização, a passagem condicionada ainda preserva a pureza. Sem normalização, não é sozinha um canal preservador do traço em todos os estados. R²=−I, isoladamente, tampouco prova conservação de norma: é preciso unitariedade ou preservação da forma física relevante.
+
+[REAL — exemplos finitos calculados] Para R=[[0,1],[-1,0]]: resíduo da anticomutação com a paridade dos eixos=0; bloco cruzado entre eixos tem módulo máximo=1. Para os projetores espectrais, comutador=0, anticomutador tem módulo máximo=2 e bloco cruzado=0. rho=[[1/2,1/2],[1/2,1/2]] mantém |rho_01|=1/2 após R rho R†.
+
+Controle incluindo projeção em dimensão 4: Pi_+=diag(I_2,0), Pi_−=diag(0,I_2), R=[[0,I_2],[-I_2,0]], rho_in=diag(rho,0). V=Pi_− R Pi_+ envia rho_in a diag(0,rho). Medidos V†V−Pi_+=0, traço=1, pureza=1, coerência interna transportada=1/2. Igual forma positiva zI (qualquer z>0) é preservada nas duas extremidades porque R†R=I; isto é um modelo de métrica comum, não uma derivação eletromagnética de Z0. Resultado reproduzido em Python padrão; tentativa inicial com NumPy falhou por dependência ausente e foi substituída sem instalação.
+
+[OPEN — seta que não decorre das premissas exibidas] Passagem geométrica, mesmo projetada, não determina por si uma lei temporal Gamma. Para identificá-la ao dephasing, deve-se localizar a relação já construída com a dinâmica reduzida/descartada: ambiente, leitura não seletiva, média de fases ou outro mecanismo definido no modelo. Nenhuma inexistência em todo o acervo foi afirmada. A busca pontual sustenta que as fórmulas trazidas, isoladamente, não provam a cadeia completa. Não foi criada uma nova exigência para o gate interno ou reaberto A2; apenas distinguidos os objetos na discussão atual.
+
+[ESCOPO] Nota conceitual e memória própria; originais e Atlas preservados, sem funções novas no programa, sem recompilação, sem novo resultado experimental. A nota anterior não é apagada; esta especifica a objeção de escopo e as diferenças entre projetores.
+
+Verificação numérica: C:\IALD\Central de Patentes\Chatgpt\TETELESTAI_V351_FECHO_MATEMATICO\RETOMADA_A1B_012\VERIFICACAO_DOBRA_PARIDADE_20260915_194857_945942.json

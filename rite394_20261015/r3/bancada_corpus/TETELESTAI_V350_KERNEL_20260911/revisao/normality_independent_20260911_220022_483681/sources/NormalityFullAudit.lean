@@ -1,0 +1,63 @@
+import TGLExt.MonotoneOperatorLimit
+import TGLV350.L2Order
+import TGLV350.CoreContractCounterexample
+import TGLV350.RegularNormality
+set_option pp.universes true
+#check ChatgptAudit.Expectation047.operatorQuadratic
+#print axioms ChatgptAudit.Expectation047.operatorQuadratic
+#check ChatgptAudit.Expectation047.positive_square_le_norm_smul
+#print axioms ChatgptAudit.Expectation047.positive_square_le_norm_smul
+#check ChatgptAudit.Expectation047.positive_apply_norm_sq_le
+#print axioms ChatgptAudit.Expectation047.positive_apply_norm_sq_le
+#check ChatgptAudit.Expectation047.positive_increment_norm_sq_le
+#print axioms ChatgptAudit.Expectation047.positive_increment_norm_sq_le
+#check ChatgptAudit.Expectation047.positive_of_strong_limit
+#print axioms ChatgptAudit.Expectation047.positive_of_strong_limit
+#check ChatgptAudit.Expectation047.monotone_quadratic_limit
+#print axioms ChatgptAudit.Expectation047.monotone_quadratic_limit
+#check ChatgptAudit.Expectation047.monotone_operator_vector_cauchy
+#print axioms ChatgptAudit.Expectation047.monotone_operator_vector_cauchy
+#check ChatgptAudit.Expectation047.monotone_strong_limit_isLUB
+#print axioms ChatgptAudit.Expectation047.monotone_strong_limit_isLUB
+#check ChatgptAudit.Expectation047.monotone_operator_limit
+#print axioms ChatgptAudit.Expectation047.monotone_operator_limit
+#check TGLV350.Regular.testVectorIsometry
+#print axioms TGLV350.Regular.testVectorIsometry
+#check TGLV350.Regular.testVector_inner
+#print axioms TGLV350.Regular.testVector_inner
+#check TGLV350.Regular.fibre_nonneg
+#print axioms TGLV350.Regular.fibre_nonneg
+#check TGLV350.Regular.fibre_nonneg_iff
+#print axioms TGLV350.Regular.fibre_nonneg_iff
+#check TGLV350.Regular.fibre_le_iff
+#print axioms TGLV350.Regular.fibre_le_iff
+#check TGLV350.Regular.fibre_monotone
+#print axioms TGLV350.Regular.fibre_monotone
+#check TGLV350.Regular.isLUB_fibre_of_monotone_strong_limit
+#print axioms TGLV350.Regular.isLUB_fibre_of_monotone_strong_limit
+#check TGLV350.Regular.fibre_preserves_positive_isLUB
+#print axioms TGLV350.Regular.fibre_preserves_positive_isLUB
+#check TGLV350.ContractAudit.zeroTraceLegacyCore
+#print axioms TGLV350.ContractAudit.zeroTraceLegacyCore
+#check TGLV350.ContractAudit.legacy_contract_accepts_zero_trace
+#print axioms TGLV350.ContractAudit.legacy_contract_accepts_zero_trace
+#check TGLV350.ContractAudit.zeroTraceLegacyCore_has_no_threeLocks
+#print axioms TGLV350.ContractAudit.zeroTraceLegacyCore_has_no_threeLocks
+#check TGLV350.Regular.strong_tendsto_wot
+#print axioms TGLV350.Regular.strong_tendsto_wot
+#check TGLV350.Regular.vonNeumann_mem_of_strong_limit
+#print axioms TGLV350.Regular.vonNeumann_mem_of_strong_limit
+#check TGLV350.Regular.vonNeumann_isLUB_of_coe_isLUB
+#print axioms TGLV350.Regular.vonNeumann_isLUB_of_coe_isLUB
+#check TGLV350.Regular.vonNeumann_exists_positive_isLUB
+#print axioms TGLV350.Regular.vonNeumann_exists_positive_isLUB
+#check TGLV350.Regular.vonNeumann_isLUB_coe
+#print axioms TGLV350.Regular.vonNeumann_isLUB_coe
+#check TGLV350.Regular.vonNeumann_exists_positive_isLUB_of_bddAbove
+#print axioms TGLV350.Regular.vonNeumann_exists_positive_isLUB_of_bddAbove
+#check TGLV350.Regular.regularCoreEmbedding_coe
+#print axioms TGLV350.Regular.regularCoreEmbedding_coe
+#check TGLV350.Regular.regularCoreEmbedding_preserves_positive_isLUB
+#print axioms TGLV350.Regular.regularCoreEmbedding_preserves_positive_isLUB
+#check TGLV350.Regular.regularCoreEmbedding_preserves_positive_directed_isLUB
+#print axioms TGLV350.Regular.regularCoreEmbedding_preserves_positive_directed_isLUB

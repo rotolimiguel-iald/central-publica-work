@@ -1,0 +1,336 @@
+{
+  "timestamp": "2026-09-14T16:33:39.655896-03:00",
+  "status": "FICHA_ANTES_DO_CODIGO_B3",
+  "target": "SectorFluid (iota : Type) [Fintype iota] (I : Set Real) (H : Real -> Real):\n rho : iota -> Real -> Real; w : iota -> Real (constant in time);\n rho_nonneg : forall i t in I, 0 <= rho i t;\n H_nx : forall i t in I, HasDerivAt (rho i) (-3*H t*(1+w i)*rho i t) t.\nc : TGLExt.TGLCoupling from B1, with the same c.beta in every factor.\nrhoT_i=(1+c.beta*(1+w_i))*rho_i; pT_i=w_i*rhoT_i.\nThe rescaled HasDerivAt equation follows from H_nx by constant multiplication.\nrhoTot=sum rho_i; pTot=sum w_i*rho_i; enthalpy=sum(rho_i+w_i*rho_i).\nrhoTtot=rhoTot+c.beta*enthalpy, and corrected total continuity holds.\nwEff(t)=pTot(t)/rhoTot(t).\nFor rhoTot(t)>0 and enthalpy(t)>=0: rhoTot(t)*abs(1+wEff(t))=enthalpy(t).\nApply B2 to the actual FLRW stress of rhoTtot,pTtot on open preconnected U,\nwith smooth positive a, time coordinates in I, H=flrwHubble a and explicit H_null.\nConservation is proved from H_nx, not assumed separately.\nAt eta=1/(4*G), G>0, B2 yields exists Lambda and\n H^2=(8*pi*G/3)*rhoTot*(1+c.beta*abs(1+wEff))-Lambda/3.\nThe zero-constant specialization must have a named H_zero_cosmological:\n general Einstein equation with its Lambda and explicit Lambda=0.\nNo step silently discards the integration constant; no hypothesis is the desired Friedmann equation.\nThree-sector corollary applies the existing closure_identity and hubble_form.",
+  "decision": "NOVO: tipagem SectorFluid e ponte entre conservação escalar setorial e FLRW já provado em B2. REUSAR soma/derivada Mathlib, TGLCoupling B1, toda geometria B2 e identidades de RhoPlusPClosure. Não refazer a camada Einstein.",
+  "providers": [
+    {
+      "name": "lambda_drops_out",
+      "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V353_A_PASSAGEM_DA_ACAO_A_METRICA\\kernel\\TGLExt\\RhoPlusPClosure.lean",
+      "line": 47,
+      "sha256": "cd80fbbe00300454d20f8a92bc09fe9e68d79fb73522934e59d77e7b04fe7be6",
+      "statement": "theorem lambda_drops_out (ρΛ : ℝ) : ρΛ + (-ρΛ) = 0",
+      "decision": "REUSAR diretamente"
+    },
+    {
+      "name": "closure_identity",
+      "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V353_A_PASSAGEM_DA_ACAO_A_METRICA\\kernel\\TGLExt\\RhoPlusPClosure.lean",
+      "line": 52,
+      "sha256": "cd80fbbe00300454d20f8a92bc09fe9e68d79fb73522934e59d77e7b04fe7be6",
+      "statement": "theorem closure_identity (β ρr ρm ρΛ : ℝ) :\n    β * ((ρr + ρr / 3) + (ρm + 0) + (ρΛ + (-ρΛ)))\n      = β * ((4 / 3) * ρr + ρm)",
+      "decision": "REUSAR diretamente"
+    },
+    {
+      "name": "hubble_form",
+      "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V353_A_PASSAGEM_DA_ACAO_A_METRICA\\kernel\\TGLExt\\RhoPlusPClosure.lean",
+      "line": 58,
+      "sha256": "cd80fbbe00300454d20f8a92bc09fe9e68d79fb73522934e59d77e7b04fe7be6",
+      "statement": "theorem hubble_form (β ρr ρm ρΛ : ℝ) :\n    (ρr + ρm + ρΛ) + β * ((4 / 3) * ρr + ρm)\n      = (1 + 4 * β / 3) * ρr + (1 + β) * ρm + ρΛ",
+      "decision": "REUSAR diretamente"
+    },
+    {
+      "name": "TGLCoupling",
+      "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V353_A_PASSAGEM_DA_ACAO_A_METRICA\\kernel\\TGLExt\\TheSameBetaReadsThreeFaces.lean",
+      "line": 22,
+      "sha256": "2efd8b379f210111e0383d9c40e5fc72835f41cd94aad2dd70d645d66f400c16",
+      "statement": "structure TGLCoupling",
+      "decision": "REUSAR diretamente"
+    },
+    {
+      "name": "the_same_beta_reads_three_faces",
+      "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V353_A_PASSAGEM_DA_ACAO_A_METRICA\\kernel\\TGLExt\\TheSameBetaReadsThreeFaces.lean",
+      "line": 76,
+      "sha256": "2efd8b379f210111e0383d9c40e5fc72835f41cd94aad2dd70d645d66f400c16",
+      "statement": "theorem the_same_beta_reads_three_faces (c : TGLCoupling) (ρr ρm ρΛ : ℝ) :\n    Complex.normSq ((Smat (thetaMiguel c.beta)).mulVec e1 1) = c.beta\n    ∧ (0 < c.alpha ∧ c.alpha < 1\n      ∧ c.beta = c.alpha * Real.exp (1 / 2)\n      ∧ c.beta = c.alpha * Real.sqrt (Real.exp 1))\n    ∧ (c.beta * ((ρr + ρr / 3) + (ρm + 0) + (ρΛ + (-ρΛ)))\n        = c.beta * ((4 / 3) * ρr + ρm))\n    ∧ ((ρr + ρm + ρΛ) + c.beta * ((4 / 3) * ρr + ρm)\n        = (1 + 4 * c.beta / 3) * ρr + (1 + c.beta) * ρm + ρΛ)\n    ∧ (∀ t g : ℝ, 0 < t → 0 < g → Real.exp (-(t * c.beta * g)) < 1)\n    ∧ (∀ b : ℝ, (∀ t : ℝ, Real.exp (-(t * b)) = Real.exp (-(t * c.beta)))\n        → b = c.beta)",
+      "decision": "REUSAR diretamente"
+    },
+    {
+      "name": "flrwStress",
+      "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V353_A_PASSAGEM_DA_ACAO_A_METRICA\\kernel\\TGLExt\\FLRWFieldEquations.lean",
+      "line": 68,
+      "sha256": "5db1052c8fad79e2858715de70b7f2aef9691825d26e1c5f208a951c6299f6c8",
+      "statement": "def flrwStress (a rho pressure : ℝ → ℝ) : TensorField4",
+      "decision": "REUSAR diretamente"
+    },
+    {
+      "name": "flrw_stress_divergence",
+      "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V353_A_PASSAGEM_DA_ACAO_A_METRICA\\kernel\\TGLExt\\FLRWFieldEquations.lean",
+      "line": 109,
+      "sha256": "5db1052c8fad79e2858715de70b7f2aef9691825d26e1c5f208a951c6299f6c8",
+      "statement": "theorem flrw_stress_divergence (a rho pressure : ℝ → ℝ) (x : Coordinate4)\n    (hz : a (x 0) ≠ 0) (ha : DifferentiableAt ℝ a (x 0))\n    (hr : DifferentiableAt ℝ rho (x 0)) (hp : DifferentiableAt ℝ pressure (x 0)) :\n    tensorFieldDivergence (metricInverse (flrwMetric a))\n      (leviCivitaField (flrwMetric a) (metricInverse (flrwMetric a)))\n      (flrwStress a rho pressure) x =\n      ![deriv rho (x 0)+3*flrwHubble a (x 0)*(rho (x 0)+pressure (x 0)),0,0,0]",
+      "decision": "REUSAR diretamente"
+    },
+    {
+      "name": "flrw_friedmann_first",
+      "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V353_A_PASSAGEM_DA_ACAO_A_METRICA\\kernel\\TGLExt\\FLRWFieldEquations.lean",
+      "line": 135,
+      "sha256": "5db1052c8fad79e2858715de70b7f2aef9691825d26e1c5f208a951c6299f6c8",
+      "statement": "theorem flrw_friedmann_first (U : Set Coordinate4) (hU : IsOpen U)\n    (a rho pressure : ℝ → ℝ) (ha : ∀ y∈U, ContDiffAt ℝ ∞ a (y 0))\n    (hpos : ∀ y∈U, 0 < a (y 0)) (x : Coordinate4) (hx : x∈U)\n    (coupling cosmological : ℝ)\n    (hE : geometricEinsteinTensor (flrwMetric a) (metricInverse (flrwMetric a))\n      (leviCivitaField (flrwMetric a) (metricInverse (flrwMetric a))) x +\n      cosmological • flrwMetric a x = coupling • flrwStress a rho pressure x) :\n    (flrwHubble a (x 0))^2 = coupling/3*rho (x 0)-cosmological/3",
+      "decision": "REUSAR diretamente"
+    },
+    {
+      "name": "flrw_friedmann_from_general_metric",
+      "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V353_A_PASSAGEM_DA_ACAO_A_METRICA\\kernel\\TGLExt\\FLRWFieldEquations.lean",
+      "line": 192,
+      "sha256": "5db1052c8fad79e2858715de70b7f2aef9691825d26e1c5f208a951c6299f6c8",
+      "statement": "theorem flrw_friedmann_from_general_metric\n    (U : Set Coordinate4) (hU : IsOpen U) (hconn : IsPreconnected U)\n    (a rho pressure : ℝ → ℝ) (eta : ℝ)\n    (ha : ∀ y∈U, ContDiffAt ℝ ∞ a (y 0)) (hpos : ∀ y∈U, 0 < a (y 0))\n    (hr : ∀ y∈U, DifferentiableAt ℝ rho (y 0))\n    (hp : ∀ y∈U, DifferentiableAt ℝ pressure (y 0))\n    (H_null : ∀ x∈U, ∀ v, tensorQuad (flrwMetric a x) v = 0 →\n      tensorQuad (coordinateRicci (leviCivitaField (flrwMetric a) (metricInverse (flrwMetric a))) x-\n        (2*Real.pi/eta) • flrwStress a rho pressure x) v = 0)\n    (H_conservation : ∀ x∈U, ∀ j, tensorFieldDivergence (metricInverse (flrwMetric a))\n      (leviCivitaField (flrwMetric a) (metricInverse (flrwMetric a)))\n      (flrwStress a rho pressure) x j = 0) :\n    ∃ cosmological : ℝ, ∀ x∈U,\n      (flrwHubble a (x 0))^2 = (2*Real.pi/eta)/3*rho (x 0)-cosmological/3 ∧\n      deriv (flrwHubble a) (x 0) = -(2*Real.pi/eta)/2*(rho (x 0)+pressure (x 0)) ∧\n      deriv rho (x 0)+3*flrwHubble a (x 0)*(rho (x 0)+pressure (x 0)) = 0",
+      "decision": "REUSAR diretamente"
+    },
+    {
+      "name": "flrw_newton_coefficient",
+      "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V353_A_PASSAGEM_DA_ACAO_A_METRICA\\kernel\\TGLExt\\FLRWFieldEquations.lean",
+      "line": 222,
+      "sha256": "5db1052c8fad79e2858715de70b7f2aef9691825d26e1c5f208a951c6299f6c8",
+      "statement": "theorem flrw_newton_coefficient (G : ℝ) (hG : 0 < G) :\n    (2*Real.pi/(1/(4*G)))/3 = 8*Real.pi*G/3",
+      "decision": "REUSAR diretamente"
+    },
+    {
+      "name": "finite_covector_stress_conserved",
+      "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V353_A_PASSAGEM_DA_ACAO_A_METRICA\\kernel\\TGLExt\\FiniteCoherentSources.lean",
+      "line": 154,
+      "sha256": "4b71fe49ae505d3017a3c2d05395de95f6c64f9630ea27c56de8ed024d94416b",
+      "statement": "theorem finite_covector_stress_conserved (U : Set Coordinate4) (hU : IsOpen U)\n    (g gInv : TensorField4) (Gamma : ConnectionField4) (w : J → CovectorField4)\n    (weight coupling : J → ℝ) (hg : SmoothMatrixOn U g) (hgi : SmoothMatrixOn U gInv)\n    (hw : ∀ q, SmoothVectorOn U (w q))\n    (hm : MetricCompatibleOn U g Gamma) (hs : ∀ x ∈ U, (g x)ᵀ = g x)\n    (hl : ∀ x ∈ U, gInv x * g x = 1) (hr : ∀ x ∈ U, g x * gInv x = 1)\n    (ht : ∀ x ∈ U, ∀ i j k, Gamma x i k j = Gamma x j k i)\n    (hclosed : ∀ q, ClosedCovectorOn U (w q))\n    (hwave : ∀ q, CovectorWaveOn U gInv Gamma (w q)) :\n    ∀ x ∈ U, ∀ j, tensorFieldDivergence gInv Gamma\n      (finiteCovectorStressField g gInv w weight coupling) x j = 0",
+      "decision": "TIPO DIFERENTE: fonte covetorial/fluxo total, não a lei escalar com w constante"
+    },
+    {
+      "name": "general_source_heat_matching",
+      "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V353_A_PASSAGEM_DA_ACAO_A_METRICA\\kernel\\TGLExt\\GeneralSourceEinsteinBridge.lean",
+      "line": 43,
+      "sha256": "d4055e0f95d6ed7b83456bbd837a3c77e354f191a248c7f1b65933fb0f4853e9",
+      "statement": "theorem general_source_heat_matching\n    {U : Set Coordinate4} {g : TensorField4} {Gamma : ConnectionField4}\n    {x direction : Coordinate4}\n    (P : EquilibriumScreenData U g Gamma x direction) (T : TensorField4) (rate : ℝ)\n    (hU : IsOpen U) (hg : SmoothMatrixOn U g)\n    (hTd : ∀ i j, DifferentiableOn ℝ (fun y => T y i j) U)\n    (hLor : LorentzByCongruence (g x)) (hTs : (T x)ᵀ = T x)\n    (hn : tensorQuad (g x) direction = 0) :\n    Tendsto (fun t => microscopicHeatError (calibrationSourceCurve g T x direction) rate\n      (constructedHeat P T rate hU hg hTd) t / t^2) (𝓝[<] 0) (𝓝 0)",
+      "decision": "TIPO DIFERENTE: fonte covetorial/fluxo total, não a lei escalar com w constante"
+    },
+    {
+      "name": "HasDerivAt.fun_sum",
+      "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V353_A_PASSAGEM_DA_ACAO_A_METRICA\\kernel\\.lake\\packages\\mathlib\\Mathlib\\Analysis\\Calculus\\Deriv\\Add.lean",
+      "line": 218,
+      "sha256": "0921f2e9832bcfe3bb5147964ed2eb8663da64eb8497a69f7b83d2e37ac6cf55",
+      "statement": "theorem HasDerivAt.fun_sum (h : ∀ i ∈ u, HasDerivAt (A i) (A' i) x) :\n    HasDerivAt (fun y ↦ ∑ i ∈ u, A i y) (∑ i ∈ u, A' i) x",
+      "decision": "REUSAR, especializando escalares reais e soma finita"
+    },
+    {
+      "name": "HasDerivAt.const_mul",
+      "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V353_A_PASSAGEM_DA_ACAO_A_METRICA\\kernel\\.lake\\packages\\mathlib\\Mathlib\\Analysis\\Calculus\\Deriv\\Mul.lean",
+      "line": 357,
+      "sha256": "883a9a5747481fc83c88e6f7de8816a22915f3a328ec66c754d5264232cadbf1",
+      "statement": "theorem HasDerivAt.const_mul (c : 𝔸) (hd : HasDerivAt d d' x) :\n    HasDerivAt (fun y => c * d y) (c * d') x",
+      "decision": "REUSAR, especializando escalares reais e soma finita"
+    }
+  ],
+  "consumers": [
+    {
+      "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V353_A_PASSAGEM_DA_ACAO_A_METRICA\\um.py",
+      "line": 4571,
+      "text": "def prove_rho_plus_p_closure(ONE, parts):",
+      "sha256": "c1c761809efcde52ea8c6c4f7f0e7598c1d8e636e6858f1780dd622ef62a1d40"
+    },
+    {
+      "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V353_A_PASSAGEM_DA_ACAO_A_METRICA\\um.py",
+      "line": 133716,
+      "text": "\"ext_rp_hubble_form_kernel_proved\": \"TGLExt.hubble_form\",",
+      "sha256": "c1c761809efcde52ea8c6c4f7f0e7598c1d8e636e6858f1780dd622ef62a1d40"
+    },
+    {
+      "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V353_A_PASSAGEM_DA_ACAO_A_METRICA\\um.py",
+      "line": 180955,
+      "text": "def prove_d1_camb_protocol(ONE):",
+      "sha256": "c1c761809efcde52ea8c6c4f7f0e7598c1d8e636e6858f1780dd622ef62a1d40"
+    },
+    {
+      "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V353_A_PASSAGEM_DA_ACAO_A_METRICA\\um.py",
+      "line": 180969,
+      "text": "\"hypothesis\": {\"background\": \"H^2 = (8 pi G/3) rho_tot [1 + beta |1 + w_eff(z)|]\", \"beta_theory\": \"alpha sqrt(e) em runtime\", \"approximation_DECLARED\": \"CAMB em LCDM; TGL analitica por cima; r_s deslocado por H_LCDM/H_TGL em z_* (nao --tight-rs)\"},",
+      "sha256": "c1c761809efcde52ea8c6c4f7f0e7598c1d8e636e6858f1780dd622ef62a1d40"
+    }
+  ],
+  "proposed_consumers": [
+    "ext_tgl_friedmann_from_sector_closure_kernel_proved",
+    "ext_sector_rescaling_preserves_continuity_kernel_proved",
+    "ext_sector_effective_equation_of_state_kernel_proved"
+  ],
+  "searches": [
+    {
+      "timestamp": "2026-09-14T16:24:29.305884-03:00",
+      "searches": [
+        {
+          "label": "01_kernel",
+          "command": [
+            "rg",
+            "-n",
+            "SectorFluid|sector.*(conserv|closure)|non.?interact|non.?exchang|H_nx|w_eff|wEff|closure_identity",
+            "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V353_A_PASSAGEM_DA_ACAO_A_METRICA\\kernel",
+            "-g",
+            "*.lean",
+            "-g",
+            "!**/.lake/**"
+          ],
+          "returncode": 0,
+          "stdout_bytes": 1874,
+          "stderr_bytes": 0
+        },
+        {
+          "label": "02_notes",
+          "command": [
+            "rg",
+            "-n",
+            "SectorFluid|sector.*(conserv|closure)|non.?interact|non.?exchang|H_nx|w_eff|wEff|closure_identity",
+            "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V350_KERNEL_20260911",
+            "-g",
+            "*.md",
+            "-g",
+            "!*.bak*",
+            "-g",
+            "!**/r/**",
+            "-g",
+            "!**/revisao/**"
+          ],
+          "returncode": 1,
+          "stdout_bytes": 0,
+          "stderr_bytes": 0
+        },
+        {
+          "label": "03_deliveries",
+          "command": [
+            "rg",
+            "-n",
+            "SectorFluid|sector.*(conserv|closure)|non.?interact|non.?exchang|H_nx|w_eff|wEff|closure_identity",
+            "C:\\IALD\\Central de Patentes\\Chatgpt\\TUNEL\\DO_CHATGPT",
+            "-g",
+            "*.md"
+          ],
+          "returncode": 0,
+          "stdout_bytes": 3095,
+          "stderr_bytes": 0
+        },
+        {
+          "label": "03_workbenches",
+          "command": [
+            "rg",
+            "-l",
+            "SectorFluid|sector.*(conserv|closure)|non.?interact|non.?exchang|H_nx|w_eff|wEff|closure_identity",
+            "C:\\IALD\\Central de Patentes\\Chatgpt",
+            "-g",
+            "*.lean",
+            "-g",
+            "!**/.lake/**",
+            "-g",
+            "!**/attempts/**",
+            "-g",
+            "!**/revisao/**",
+            "-g",
+            "!**/DEPENDENCIAS_CE*/**",
+            "-g",
+            "!*.bak*"
+          ],
+          "returncode": 0,
+          "stdout_bytes": 50957,
+          "stderr_bytes": 0
+        },
+        {
+          "label": "04_tree",
+          "command": [
+            "rg",
+            "-n",
+            "SectorFluid|sector.*(conserv|closure)|non.?interact|non.?exchang|H_nx|w_eff|wEff|closure_identity|Einstein|Clausius",
+            "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V353_A_PASSAGEM_DA_ACAO_A_METRICA\\inputs\\A_PROVA_DA_QG_TGL_arvore.md"
+          ],
+          "returncode": 0,
+          "stdout_bytes": 7177,
+          "stderr_bytes": 0
+        },
+        {
+          "label": "05_toe",
+          "command": [
+            "rg",
+            "-n",
+            "SectorFluid|sector.*(conserv|closure)|non.?interact|non.?exchang|H_nx|w_eff|wEff|closure_identity",
+            "C:\\IALD\\Artigo\\BANCADA_TOE\\kernel_bancada",
+            "-g",
+            "*.lean",
+            "-g",
+            "!**/.lake/**"
+          ],
+          "returncode": 2,
+          "stdout_bytes": 0,
+          "stderr_bytes": 144
+        },
+        {
+          "label": "06_acervo",
+          "command": [
+            "C:\\Python314\\python.exe",
+            "-X",
+            "utf8",
+            "-B",
+            "C:\\IALD\\INDICE_DO_ACERVO\\buscar.py",
+            "H_nx|w_eff|rho.plus.p",
+            "--max",
+            "25",
+            "--ctx",
+            "140"
+          ],
+          "returncode": 2,
+          "stdout_bytes": 0,
+          "stderr_bytes": 112
+        }
+      ]
+    },
+    {
+      "timestamp": "2026-09-14T16:26:29.471908-03:00",
+      "searches": [
+        {
+          "label": "05_toe",
+          "command": [
+            "rg",
+            "-n",
+            "SectorFluid|sector.*(conserv|closure)|non.?interact|non.?exchang|H_nx|w_eff|wEff|closure_identity",
+            "C:\\IALD\\Artigo\\BANCADA_TOE\\kernel_bancada",
+            "-g",
+            "*.lean",
+            "-g",
+            "!**/.lake/**"
+          ],
+          "returncode": 1,
+          "stdout_bytes": 0,
+          "stderr_bytes": 0
+        },
+        {
+          "label": "06_acervo",
+          "command": [
+            "C:\\Python314\\python.exe",
+            "-X",
+            "utf8",
+            "-B",
+            "C:\\IALD\\INDICE_DO_ACERVO\\buscar.py",
+            "H_nx|w_eff|rho.plus.p",
+            "--max",
+            "25",
+            "--ctx",
+            "140"
+          ],
+          "returncode": 0,
+          "stdout_bytes": 10595,
+          "stderr_bytes": 0
+        }
+      ]
+    }
+  ],
+  "workbench_groups": {
+    "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V353_A_PASSAGEM_DA_ACAO_A_METRICA\\BUSCAS_B3_GRUPOS.json",
+    "sha256": "f7fb3a713b3d1f904d4cb2289ae3d1b7378ff9bf485d8cdb5105422d4f5b0111",
+    "distinct_bytes": 24,
+    "files": 413
+  },
+  "search_limits": [
+    "As duas leituras inicialmente negadas foram refeitas com acesso autorizado; erro de acesso não foi contado como ausência.",
+    "A busca no índice do acervo retornou 25 recortes históricos e corte explícito. Não prova ausência exaustiva; resultados empíricos ali mencionados não foram revalidados nem utilizados.",
+    "Fornecedores covetoriais tratam outro tipo de fonte e não satisfazem H_nx por homonímia."
+  ],
+  "constraints": [
+    "B2 está compilado e auditado pelo autor; revisão independente em curso. Sua fonte permanece congelada.",
+    "Λ existencial não é zero por definição; o enunciado geral a conserva e o corolário zero exige hipótese nomeada.",
+    "ρ>0 e entalpia>=0 entram exatamente no uso de w_eff/valor absoluto; nenhuma divisão por zero é ocultada.",
+    "Não supor que a rescalagem seja não negativa sem hipótese adicional sobre o fator.",
+    "Não-troca setorial e w_i constante são hipóteses [INPUT]; TGL-S/TGL-L e Lema 3 continuam abertos.",
+    "As entradas propostas e a V3/D1 são consumidor da gerência; este trabalho não edita runtime nem gate."
+  ]
+}

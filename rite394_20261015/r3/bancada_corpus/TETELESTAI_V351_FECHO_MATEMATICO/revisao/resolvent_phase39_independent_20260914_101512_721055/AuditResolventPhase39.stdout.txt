@@ -1,0 +1,249 @@
+TGLV350.Regular.resolventDamping : ℝ → ℝ
+'TGLV350.Regular.resolventDamping' depends on axioms: [propext, Classical.choice.{u}, Quot.sound.{u}]
+TGLV350.Regular.resolventPhaseFunction : ℝ → ℝ → ℂ
+'TGLV350.Regular.resolventPhaseFunction' depends on axioms: [propext, Classical.choice.{u}, Quot.sound.{u}]
+TGLV350.Regular.resolventPhaseFunction_norm : ∀ (t x : ℝ),
+  Eq.{1} (norm.{0} (TGLV350.Regular.resolventPhaseFunction t x)) (norm.{0} (TGLV350.Regular.resolventDamping x))
+'TGLV350.Regular.resolventPhaseFunction_norm' depends on axioms: [propext, Classical.choice.{u}, Quot.sound.{u}]
+TGLV350.Regular.resolventPhaseFunction_zero_time : ∀ (x : ℝ),
+  Eq.{1} (TGLV350.Regular.resolventPhaseFunction 0 x) ↑(TGLV350.Regular.resolventDamping x)
+'TGLV350.Regular.resolventPhaseFunction_zero_time' depends on axioms: [propext, Classical.choice.{u}, Quot.sound.{u}]
+TGLV350.Regular.resolventPhaseFunction_add : ∀ (s t x : ℝ),
+  Eq.{1} (HMul.hMul.{0, 0, 0} (TGLV350.Regular.resolventPhaseFunction s x) (TGLV350.Regular.resolventPhaseFunction t x))
+    (HMul.hMul.{0, 0, 0} (↑(TGLV350.Regular.resolventDamping x))
+      (TGLV350.Regular.resolventPhaseFunction (HAdd.hAdd.{0, 0, 0} s t) x))
+'TGLV350.Regular.resolventPhaseFunction_add' depends on axioms: [propext, Classical.choice.{u}, Quot.sound.{u}]
+TGLV350.Regular.resolventPhaseFunction_star : ∀ (t x : ℝ),
+  Eq.{1} (star.{0} (TGLV350.Regular.resolventPhaseFunction t x))
+    (TGLV350.Regular.resolventPhaseFunction (Neg.neg.{0} t) x)
+'TGLV350.Regular.resolventPhaseFunction_star' depends on axioms: [propext, Classical.choice.{u}, Quot.sound.{u}]
+TGLV350.Regular.resolventPhaseFunction_gram : ∀ (t x : ℝ),
+  Eq.{1}
+    (HMul.hMul.{0, 0, 0} (star.{0} (TGLV350.Regular.resolventPhaseFunction t x))
+      (TGLV350.Regular.resolventPhaseFunction t x))
+    ↑(HPow.hPow.{0, 0, 0} (TGLV350.Regular.resolventDamping x) 2)
+'TGLV350.Regular.resolventPhaseFunction_gram' depends on axioms: [propext, Classical.choice.{u}, Quot.sound.{u}]
+TGLV350.Regular.resolventPhaseFunction_joint_continuous : Continuous.{0, 0} fun p =>
+  TGLV350.Regular.resolventPhaseFunction p.1 p.2
+'TGLV350.Regular.resolventPhaseFunction_joint_continuous' depends on axioms: [propext,
+ Classical.choice.{u},
+ Quot.sound.{u}]
+TGLV350.Regular.resolventPhaseFunction_continuous : ∀ (t : ℝ),
+  Continuous.{0, 0} (TGLV350.Regular.resolventPhaseFunction t)
+'TGLV350.Regular.resolventPhaseFunction_continuous' depends on axioms: [propext, Classical.choice.{u}, Quot.sound.{u}]
+@TGLV350.Regular.resolventDampingOperator : {H : Type} →
+  [inst : NormedAddCommGroup.{0} H] →
+    [inst_1 : InnerProductSpace.{0, 0} ℂ H] →
+      ContinuousLinearMap.{0, 0, 0, 0} (RingHom.id.{0} ℂ) H H → ContinuousLinearMap.{0, 0, 0, 0} (RingHom.id.{0} ℂ) H H
+'TGLV350.Regular.resolventDampingOperator' depends on axioms: [propext, Classical.choice.{u}, Quot.sound.{u}]
+@TGLV350.Regular.resolventPhaseOperator : {H : Type} →
+  [inst : NormedAddCommGroup.{0} H] →
+    [inst_1 : InnerProductSpace.{0, 0} ℂ H] →
+      [CompleteSpace.{0} H] →
+        ContinuousLinearMap.{0, 0, 0, 0} (RingHom.id.{0} ℂ) H H →
+          ℝ → ContinuousLinearMap.{0, 0, 0, 0} (RingHom.id.{0} ℂ) H H
+'TGLV350.Regular.resolventPhaseOperator' depends on axioms: [propext, Classical.choice.{u}, Quot.sound.{u}]
+@TGLV350.Regular.resolventDampingOperator_cfc : ∀ {H : Type} [inst : NormedAddCommGroup.{0} H]
+  [inst_1 : InnerProductSpace.{0, 0} ℂ H] [inst_2 : CompleteSpace.{0} H]
+  (T : ContinuousLinearMap.{0, 0, 0, 0} (RingHom.id.{0} ℂ) H H),
+  IsSelfAdjoint.{0} T →
+    Eq.{1} (cfc.{0, 0} (fun z => ↑(TGLV350.Regular.resolventDamping z.re)) T)
+      (TGLV350.Regular.resolventDampingOperator T)
+'TGLV350.Regular.resolventDampingOperator_cfc' depends on axioms: [propext, Classical.choice.{u}, Quot.sound.{u}]
+@TGLV350.Regular.resolventDampingOperator_nonneg : ∀ {H : Type} [inst : NormedAddCommGroup.{0} H]
+  [inst_1 : InnerProductSpace.{0, 0} ℂ H] [CompleteSpace.{0} H]
+  (T : ContinuousLinearMap.{0, 0, 0, 0} (RingHom.id.{0} ℂ) H H),
+  LE.le.{0} 0 T → LE.le.{0} T 1 → LE.le.{0} 0 (TGLV350.Regular.resolventDampingOperator T)
+'TGLV350.Regular.resolventDampingOperator_nonneg' depends on axioms: [propext, Classical.choice.{u}, Quot.sound.{u}]
+@TGLV350.Regular.resolventPhaseOperator_zero : ∀ {H : Type} [inst : NormedAddCommGroup.{0} H]
+  [inst_1 : InnerProductSpace.{0, 0} ℂ H] [inst_2 : CompleteSpace.{0} H]
+  (T : ContinuousLinearMap.{0, 0, 0, 0} (RingHom.id.{0} ℂ) H H),
+  IsSelfAdjoint.{0} T → Eq.{1} (TGLV350.Regular.resolventPhaseOperator T 0) (TGLV350.Regular.resolventDampingOperator T)
+'TGLV350.Regular.resolventPhaseOperator_zero' depends on axioms: [propext, Classical.choice.{u}, Quot.sound.{u}]
+@TGLV350.Regular.resolventPhaseOperator_star : ∀ {H : Type} [inst : NormedAddCommGroup.{0} H]
+  [inst_1 : InnerProductSpace.{0, 0} ℂ H] [inst_2 : CompleteSpace.{0} H]
+  (T : ContinuousLinearMap.{0, 0, 0, 0} (RingHom.id.{0} ℂ) H H) (t : ℝ),
+  Eq.{1} (star.{0} (TGLV350.Regular.resolventPhaseOperator T t))
+    (TGLV350.Regular.resolventPhaseOperator T (Neg.neg.{0} t))
+'TGLV350.Regular.resolventPhaseOperator_star' depends on axioms: [propext, Classical.choice.{u}, Quot.sound.{u}]
+@TGLV350.Regular.resolventPhaseOperator_mul : ∀ {H : Type} [inst : NormedAddCommGroup.{0} H]
+  [inst_1 : InnerProductSpace.{0, 0} ℂ H] [inst_2 : CompleteSpace.{0} H]
+  (T : ContinuousLinearMap.{0, 0, 0, 0} (RingHom.id.{0} ℂ) H H),
+  IsSelfAdjoint.{0} T →
+    ∀ (s t : ℝ),
+      Eq.{1}
+        (HMul.hMul.{0, 0, 0} (TGLV350.Regular.resolventPhaseOperator T s) (TGLV350.Regular.resolventPhaseOperator T t))
+        (HMul.hMul.{0, 0, 0} (TGLV350.Regular.resolventDampingOperator T)
+          (TGLV350.Regular.resolventPhaseOperator T (HAdd.hAdd.{0, 0, 0} s t)))
+'TGLV350.Regular.resolventPhaseOperator_mul' depends on axioms: [propext, Classical.choice.{u}, Quot.sound.{u}]
+@TGLV350.Regular.resolventPhaseOperator_gram : ∀ {H : Type} [inst : NormedAddCommGroup.{0} H]
+  [inst_1 : InnerProductSpace.{0, 0} ℂ H] [inst_2 : CompleteSpace.{0} H]
+  (T : ContinuousLinearMap.{0, 0, 0, 0} (RingHom.id.{0} ℂ) H H),
+  IsSelfAdjoint.{0} T →
+    ∀ (t : ℝ),
+      Eq.{1}
+        (HMul.hMul.{0, 0, 0} (star.{0} (TGLV350.Regular.resolventPhaseOperator T t))
+          (TGLV350.Regular.resolventPhaseOperator T t))
+        (HMul.hMul.{0, 0, 0} (TGLV350.Regular.resolventDampingOperator T) (TGLV350.Regular.resolventDampingOperator T))
+'TGLV350.Regular.resolventPhaseOperator_gram' depends on axioms: [propext, Classical.choice.{u}, Quot.sound.{u}]
+@TGLV350.Regular.resolventPhaseOperator_modulus : ∀ {H : Type} [inst : NormedAddCommGroup.{0} H]
+  [inst_1 : InnerProductSpace.{0, 0} ℂ H] [inst_2 : CompleteSpace.{0} H]
+  (T : ContinuousLinearMap.{0, 0, 0, 0} (RingHom.id.{0} ℂ) H H),
+  LE.le.{0} 0 T →
+    LE.le.{0} T 1 →
+      ∀ (t : ℝ),
+        Eq.{1} (TGLV350.Regular.boundedMapModulus (TGLV350.Regular.resolventPhaseOperator T t))
+          (TGLV350.Regular.resolventDampingOperator T)
+'TGLV350.Regular.resolventPhaseOperator_modulus' depends on axioms: [propext, Classical.choice.{u}, Quot.sound.{u}]
+@TGLV350.Regular.resolventPhaseOperator_norm : ∀ {H : Type} [inst : NormedAddCommGroup.{0} H]
+  [inst_1 : InnerProductSpace.{0, 0} ℂ H] [inst_2 : CompleteSpace.{0} H]
+  (T : ContinuousLinearMap.{0, 0, 0, 0} (RingHom.id.{0} ℂ) H H),
+  LE.le.{0} 0 T →
+    LE.le.{0} T 1 →
+      ∀ (t : ℝ) (x : H),
+        Eq.{1} (norm.{0} ((TGLV350.Regular.resolventPhaseOperator T t) x))
+          (norm.{0} ((TGLV350.Regular.resolventDampingOperator T) x))
+'TGLV350.Regular.resolventPhaseOperator_norm' depends on axioms: [propext, Classical.choice.{u}, Quot.sound.{u}]
+@TGLV350.Regular.resolventDampingOperator_injective : ∀ {H : Type} [inst : NormedAddCommGroup.{0} H]
+  [inst_1 : InnerProductSpace.{0, 0} ℂ H] [CompleteSpace.{0} H]
+  (T : ContinuousLinearMap.{0, 0, 0, 0} (RingHom.id.{0} ℂ) H H),
+  Function.Injective.{1, 1} ⇑T →
+    Function.Injective.{1, 1} ⇑(HSub.hSub.{0, 0, 0} 1 T) →
+      Function.Injective.{1, 1} ⇑(TGLV350.Regular.resolventDampingOperator T)
+'TGLV350.Regular.resolventDampingOperator_injective' depends on axioms: [propext, Classical.choice.{u}, Quot.sound.{u}]
+@TGLV350.Regular.resolventDampingOperator_denseRange : ∀ {H : Type} [inst : NormedAddCommGroup.{0} H]
+  [inst_1 : InnerProductSpace.{0, 0} ℂ H] [CompleteSpace.{0} H]
+  (T : ContinuousLinearMap.{0, 0, 0, 0} (RingHom.id.{0} ℂ) H H),
+  LE.le.{0} 0 T →
+    LE.le.{0} T 1 →
+      Function.Injective.{1, 1} ⇑T →
+        Function.Injective.{1, 1} ⇑(HSub.hSub.{0, 0, 0} 1 T) →
+          DenseRange.{0, 0} ⇑(TGLV350.Regular.resolventDampingOperator T)
+'TGLV350.Regular.resolventDampingOperator_denseRange' depends on axioms: [propext, Classical.choice.{u}, Quot.sound.{u}]
+@TGLV350.Regular.resolventPhaseOperator_denseRange : ∀ {H : Type} [inst : NormedAddCommGroup.{0} H]
+  [inst_1 : InnerProductSpace.{0, 0} ℂ H] [inst_2 : CompleteSpace.{0} H]
+  (T : ContinuousLinearMap.{0, 0, 0, 0} (RingHom.id.{0} ℂ) H H),
+  LE.le.{0} 0 T →
+    LE.le.{0} T 1 →
+      Function.Injective.{1, 1} ⇑T →
+        Function.Injective.{1, 1} ⇑(HSub.hSub.{0, 0, 0} 1 T) →
+          ∀ (t : ℝ), DenseRange.{0, 0} ⇑(TGLV350.Regular.resolventPhaseOperator T t)
+'TGLV350.Regular.resolventPhaseOperator_denseRange' depends on axioms: [propext, Classical.choice.{u}, Quot.sound.{u}]
+@TGLV350.Regular.resolventImaginaryPower : {H : Type} →
+  [inst : NormedAddCommGroup.{0} H] →
+    [inst_1 : InnerProductSpace.{0, 0} ℂ H] →
+      [CompleteSpace.{0} H] →
+        (T : ContinuousLinearMap.{0, 0, 0, 0} (RingHom.id.{0} ℂ) H H) →
+          LE.le.{0} 0 T →
+            LE.le.{0} T 1 →
+              Function.Injective.{1, 1} ⇑T →
+                Function.Injective.{1, 1} ⇑(HSub.hSub.{0, 0, 0} 1 T) →
+                  ℝ → LinearIsometryEquiv.{0, 0, 0, 0} (RingHom.id.{0} ℂ) H H
+'TGLV350.Regular.resolventImaginaryPower' depends on axioms: [propext, Classical.choice.{u}, Quot.sound.{u}]
+@TGLV350.Regular.resolventImaginaryPower_damping : ∀ {H : Type} [inst : NormedAddCommGroup.{0} H]
+  [inst_1 : InnerProductSpace.{0, 0} ℂ H] [inst_2 : CompleteSpace.{0} H]
+  (T : ContinuousLinearMap.{0, 0, 0, 0} (RingHom.id.{0} ℂ) H H) (hT : LE.le.{0} 0 T) (h1 : LE.le.{0} T 1)
+  (hi : Function.Injective.{1, 1} ⇑T) (hj : Function.Injective.{1, 1} ⇑(HSub.hSub.{0, 0, 0} 1 T)) (t : ℝ) (x : H),
+  Eq.{1} ((TGLV350.Regular.resolventImaginaryPower T hT h1 hi hj t) ((TGLV350.Regular.resolventDampingOperator T) x))
+    ((TGLV350.Regular.resolventPhaseOperator T t) x)
+'TGLV350.Regular.resolventImaginaryPower_damping' depends on axioms: [propext, Classical.choice.{u}, Quot.sound.{u}]
+@TGLV350.Regular.resolventImaginaryPower_zero : ∀ {H : Type} [inst : NormedAddCommGroup.{0} H]
+  [inst_1 : InnerProductSpace.{0, 0} ℂ H] [inst_2 : CompleteSpace.{0} H]
+  (T : ContinuousLinearMap.{0, 0, 0, 0} (RingHom.id.{0} ℂ) H H) (hT : LE.le.{0} 0 T) (h1 : LE.le.{0} T 1)
+  (hi : Function.Injective.{1, 1} ⇑T) (hj : Function.Injective.{1, 1} ⇑(HSub.hSub.{0, 0, 0} 1 T)) (x : H),
+  Eq.{1} ((TGLV350.Regular.resolventImaginaryPower T hT h1 hi hj 0) x) x
+'TGLV350.Regular.resolventImaginaryPower_zero' depends on axioms: [propext, Classical.choice.{u}, Quot.sound.{u}]
+@TGLV350.Regular.resolventPhaseOperator_commutes_damping : ∀ {H : Type} [inst : NormedAddCommGroup.{0} H]
+  [inst_1 : InnerProductSpace.{0, 0} ℂ H] [inst_2 : CompleteSpace.{0} H]
+  (T : ContinuousLinearMap.{0, 0, 0, 0} (RingHom.id.{0} ℂ) H H),
+  LE.le.{0} 0 T →
+    ∀ (t : ℝ), Commute.{0} (TGLV350.Regular.resolventPhaseOperator T t) (TGLV350.Regular.resolventDampingOperator T)
+'TGLV350.Regular.resolventPhaseOperator_commutes_damping' depends on axioms: [propext,
+ Classical.choice.{u},
+ Quot.sound.{u}]
+@TGLV350.Regular.resolventImaginaryPower_commutes_damping : ∀ {H : Type} [inst : NormedAddCommGroup.{0} H]
+  [inst_1 : InnerProductSpace.{0, 0} ℂ H] [inst_2 : CompleteSpace.{0} H]
+  (T : ContinuousLinearMap.{0, 0, 0, 0} (RingHom.id.{0} ℂ) H H) (hT : LE.le.{0} 0 T) (h1 : LE.le.{0} T 1)
+  (hi : Function.Injective.{1, 1} ⇑T) (hj : Function.Injective.{1, 1} ⇑(HSub.hSub.{0, 0, 0} 1 T)) (t : ℝ) (x : H),
+  Eq.{1} ((TGLV350.Regular.resolventImaginaryPower T hT h1 hi hj t) ((TGLV350.Regular.resolventDampingOperator T) x))
+    ((TGLV350.Regular.resolventDampingOperator T) ((TGLV350.Regular.resolventImaginaryPower T hT h1 hi hj t) x))
+'TGLV350.Regular.resolventImaginaryPower_commutes_damping' depends on axioms: [propext,
+ Classical.choice.{u},
+ Quot.sound.{u}]
+@TGLV350.Regular.resolventImaginaryPower_add : ∀ {H : Type} [inst : NormedAddCommGroup.{0} H]
+  [inst_1 : InnerProductSpace.{0, 0} ℂ H] [inst_2 : CompleteSpace.{0} H]
+  (T : ContinuousLinearMap.{0, 0, 0, 0} (RingHom.id.{0} ℂ) H H) (hT : LE.le.{0} 0 T) (h1 : LE.le.{0} T 1)
+  (hi : Function.Injective.{1, 1} ⇑T) (hj : Function.Injective.{1, 1} ⇑(HSub.hSub.{0, 0, 0} 1 T)) (s t : ℝ) (x : H),
+  Eq.{1}
+    ((TGLV350.Regular.resolventImaginaryPower T hT h1 hi hj s)
+      ((TGLV350.Regular.resolventImaginaryPower T hT h1 hi hj t) x))
+    ((TGLV350.Regular.resolventImaginaryPower T hT h1 hi hj (HAdd.hAdd.{0, 0, 0} s t)) x)
+'TGLV350.Regular.resolventImaginaryPower_add' depends on axioms: [propext, Classical.choice.{u}, Quot.sound.{u}]
+@TGLV350.Regular.resolventPhaseOperator_continuous : ∀ {H : Type} [inst : NormedAddCommGroup.{0} H]
+  [inst_1 : InnerProductSpace.{0, 0} ℂ H] [inst_2 : CompleteSpace.{0} H]
+  (T : ContinuousLinearMap.{0, 0, 0, 0} (RingHom.id.{0} ℂ) H H),
+  IsSelfAdjoint.{0} T → Continuous.{0, 0} (TGLV350.Regular.resolventPhaseOperator T)
+'TGLV350.Regular.resolventPhaseOperator_continuous' depends on axioms: [propext, Classical.choice.{u}, Quot.sound.{u}]
+@TGLV350.Regular.resolventImaginaryPower_joint_continuous : ∀ {H : Type} [inst : NormedAddCommGroup.{0} H]
+  [inst_1 : InnerProductSpace.{0, 0} ℂ H] [inst_2 : CompleteSpace.{0} H]
+  (T : ContinuousLinearMap.{0, 0, 0, 0} (RingHom.id.{0} ℂ) H H) (hT : LE.le.{0} 0 T) (h1 : LE.le.{0} T 1)
+  (hi : Function.Injective.{1, 1} ⇑T) (hj : Function.Injective.{1, 1} ⇑(HSub.hSub.{0, 0, 0} 1 T)),
+  Continuous.{0, 0} fun p => (TGLV350.Regular.resolventImaginaryPower T hT h1 hi hj p.2) p.1
+'TGLV350.Regular.resolventImaginaryPower_joint_continuous' depends on axioms: [propext,
+ Classical.choice.{u},
+ Quot.sound.{u}]
+@TGLV350.Regular.resolventImaginaryPower_strongly_continuous : ∀ {H : Type} [inst : NormedAddCommGroup.{0} H]
+  [inst_1 : InnerProductSpace.{0, 0} ℂ H] [inst_2 : CompleteSpace.{0} H]
+  (T : ContinuousLinearMap.{0, 0, 0, 0} (RingHom.id.{0} ℂ) H H) (hT : LE.le.{0} 0 T) (h1 : LE.le.{0} T 1)
+  (hi : Function.Injective.{1, 1} ⇑T) (hj : Function.Injective.{1, 1} ⇑(HSub.hSub.{0, 0, 0} 1 T)) (x : H),
+  Continuous.{0, 0} fun t => (TGLV350.Regular.resolventImaginaryPower T hT h1 hi hj t) x
+'TGLV350.Regular.resolventImaginaryPower_strongly_continuous' depends on axioms: [propext,
+ Classical.choice.{u},
+ Quot.sound.{u}]
+TGLV350.Regular.scalarTomitaResolvent_complement_injective : ∀ (P : TGLExt.SiteProfile),
+  Function.Injective.{1, 1} ⇑(HSub.hSub.{0, 0, 0} 1 (TGLV350.Regular.scalarTomitaResolvent P))
+'TGLV350.Regular.scalarTomitaResolvent_complement_injective' depends on axioms: [propext,
+ Classical.choice.{u},
+ Quot.sound.{u}]
+TGLV350.Regular.scalarTomitaImaginaryPower : (P : TGLExt.SiteProfile) →
+  ℝ →
+    LinearIsometryEquiv.{0, 0, 0, 0} (RingHom.id.{0} ℂ) ↥(TGLV350.Regular.ScalarGNSHilbert P)
+      ↥(TGLV350.Regular.ScalarGNSHilbert P)
+'TGLV350.Regular.scalarTomitaImaginaryPower' depends on axioms: [propext, Classical.choice.{u}, Quot.sound.{u}]
+TGLV350.Regular.scalarTomitaImaginaryPower_damping : ∀ (P : TGLExt.SiteProfile) (t : ℝ)
+  (x : ↥(TGLV350.Regular.ScalarGNSHilbert P)),
+  Eq.{1}
+    ((TGLV350.Regular.scalarTomitaImaginaryPower P t)
+      ((TGLV350.Regular.resolventDampingOperator (TGLV350.Regular.scalarTomitaResolvent P)) x))
+    ((TGLV350.Regular.resolventPhaseOperator (TGLV350.Regular.scalarTomitaResolvent P) t) x)
+'TGLV350.Regular.scalarTomitaImaginaryPower_damping' depends on axioms: [propext, Classical.choice.{u}, Quot.sound.{u}]
+TGLV350.Regular.scalarTomitaImaginaryPower_unique : ∀ (P : TGLExt.SiteProfile) (t : ℝ)
+  (U :
+    ContinuousLinearMap.{0, 0, 0, 0} (RingHom.id.{0} ℂ) ↥(TGLV350.Regular.ScalarGNSHilbert P)
+      ↥(TGLV350.Regular.ScalarGNSHilbert P)),
+  (∀ (x : ↥(TGLV350.Regular.ScalarGNSHilbert P)),
+      Eq.{1} (U ((TGLV350.Regular.resolventDampingOperator (TGLV350.Regular.scalarTomitaResolvent P)) x))
+        ((TGLV350.Regular.resolventPhaseOperator (TGLV350.Regular.scalarTomitaResolvent P) t) x)) →
+    ∀ (x : ↥(TGLV350.Regular.ScalarGNSHilbert P)), Eq.{1} (U x) ((TGLV350.Regular.scalarTomitaImaginaryPower P t) x)
+'TGLV350.Regular.scalarTomitaImaginaryPower_unique' depends on axioms: [propext, Classical.choice.{u}, Quot.sound.{u}]
+TGLV350.Regular.scalarTomitaImaginaryPower_zero : ∀ (P : TGLExt.SiteProfile)
+  (x : ↥(TGLV350.Regular.ScalarGNSHilbert P)), Eq.{1} ((TGLV350.Regular.scalarTomitaImaginaryPower P 0) x) x
+'TGLV350.Regular.scalarTomitaImaginaryPower_zero' depends on axioms: [propext, Classical.choice.{u}, Quot.sound.{u}]
+TGLV350.Regular.scalarTomitaImaginaryPower_add : ∀ (P : TGLExt.SiteProfile) (s t : ℝ)
+  (x : ↥(TGLV350.Regular.ScalarGNSHilbert P)),
+  Eq.{1} ((TGLV350.Regular.scalarTomitaImaginaryPower P s) ((TGLV350.Regular.scalarTomitaImaginaryPower P t) x))
+    ((TGLV350.Regular.scalarTomitaImaginaryPower P (HAdd.hAdd.{0, 0, 0} s t)) x)
+'TGLV350.Regular.scalarTomitaImaginaryPower_add' depends on axioms: [propext, Classical.choice.{u}, Quot.sound.{u}]
+TGLV350.Regular.scalarTomitaImaginaryPower_strongly_continuous : ∀ (P : TGLExt.SiteProfile)
+  (x : ↥(TGLV350.Regular.ScalarGNSHilbert P)),
+  Continuous.{0, 0} fun t => (TGLV350.Regular.scalarTomitaImaginaryPower P t) x
+'TGLV350.Regular.scalarTomitaImaginaryPower_strongly_continuous' depends on axioms: [propext,
+ Classical.choice.{u},
+ Quot.sound.{u}]
+TGLV350.Regular.scalarTomitaImaginaryPower_inverse : ∀ (P : TGLExt.SiteProfile) (t : ℝ)
+  (x : ↥(TGLV350.Regular.ScalarGNSHilbert P)),
+  Eq.{1}
+    ((TGLV350.Regular.scalarTomitaImaginaryPower P (Neg.neg.{0} t))
+      ((TGLV350.Regular.scalarTomitaImaginaryPower P t) x))
+    x
+'TGLV350.Regular.scalarTomitaImaginaryPower_inverse' depends on axioms: [propext, Classical.choice.{u}, Quot.sound.{u}]

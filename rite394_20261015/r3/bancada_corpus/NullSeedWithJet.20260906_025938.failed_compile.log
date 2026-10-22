@@ -1,0 +1,81 @@
+NullSeedWithJet.lean:17:4: error: Type mismatch: After simplification, term
+  h
+ has type
+  @Eq ℝ (tensorPair g (fun a => F.frame a 1) fun a => F.frame a 1)
+    (!![0, -1, 0, 0; -1, 0, 0, 0; 0, 0, (-1) 0 0, (-1) 0 1; 0, 0, (-1) 1 0, (-1) 1 1] 1 1)
+but is expected to have type
+  @Eq ℝ (tensorQuad g n) 0
+NullSeedWithJet.lean:49:8: error: Tactic `rewrite` failed: Did not find an occurrence of the pattern
+  affineInitialSeed ?Gamma ?p ?v ?p
+in the target expression
+  nullCorrection (g p) (R p) (n p) = v
+
+U : Set Coordinate4
+hU : IsOpen U
+g : TensorField4
+Gamma : ConnectionField4
+hg : SmoothMatrixOn U g
+hm : MetricCompatibleOn U g Gamma
+hgs : ∀ x ∈ U, (g x)ᵀ = g x
+n : VectorField4
+hns : SmoothVectorOn U n
+hnn : ∀ x ∈ U, tensorQuad (g x) (n x) = 0
+p v : Coordinate4
+hp : p ∈ U
+hnv : tensorQuad (g p) v = 0
+hpair : tensorPair (g p) v (n p) ≠ 0
+R : Coordinate4 → Coordinate4 := affineInitialSeed Gamma p v
+D : Set Coordinate4 := interior {x | x ∈ U ∧ tensorPair (g x) (R x) (n x) ≠ 0}
+W : Coordinate4 → Coordinate4 := fun x => nullCorrection (g x) (R x) (n x)
+hR : SmoothVectorOn U R
+hb : ContDiffOn ℝ ∞ (fun x => tensorPair (g x) (R x) (n x)) U
+hbp : tensorPair (g p) (R p) (n p) ≠ 0
+hbc : ContinuousAt (fun x => tensorPair (g x) (R x) (n x)) p
+hpD : p ∈ D
+hDU : D ⊆ U
+⊢ nullCorrection (g p) (R p) (n p) = v
+NullSeedWithJet.lean:66:85: error: unsolved goals
+U : Set Coordinate4
+hU : IsOpen U
+g : TensorField4
+Gamma : ConnectionField4
+hg : SmoothMatrixOn U g
+hm : MetricCompatibleOn U g Gamma
+hgs : ∀ x ∈ U, (g x)ᵀ = g x
+n : VectorField4
+hns : SmoothVectorOn U n
+hnn : ∀ x ∈ U, tensorQuad (g x) (n x) = 0
+p v : Coordinate4
+hp : p ∈ U
+hnv : tensorQuad (g p) v = 0
+hpair : tensorPair (g p) v (n p) ≠ 0
+R : Coordinate4 → Coordinate4 := affineInitialSeed Gamma p v
+D : Set Coordinate4 := interior {x | x ∈ U ∧ tensorPair (g x) (R x) (n x) ≠ 0}
+W : Coordinate4 → Coordinate4 := fun x => nullCorrection (g x) (R x) (n x)
+hR : SmoothVectorOn U R
+hb : ContDiffOn ℝ ∞ (fun x => tensorPair (g x) (R x) (n x)) U
+hbp : tensorPair (g p) (R p) (n p) ≠ 0
+hbc : ContinuousAt (fun x => tensorPair (g x) (R x) (n x)) p
+hpD : p ∈ D
+hDU : D ⊆ U
+hWp : W p = v
+hDW : HasFDerivAt W (connectionInitialJet Gamma p v) p
+a i : Fin 4
+⊢ ((connectionInitialJet Gamma p v) (Pi.single i 1) + Gamma p i *ᵥ v) a =
+    ((connectionInitialJet Gamma p v) (Pi.single i 1) + Gamma p i *ᵥ R p) a
+NullSeedWithJet.lean:71:12: warning: This simp argument is unused:
+  affine_seed_initial
+
+Hint: Omit it from the simp argument list.
+  simp only [covariantVectorGradient, ̲covariantVectorDerivative,
+          vector_partial_of_derivative W p _ hDW,
+          vector_partial_of_derivative R p _ (affine_seed_derivative Gamma p v p),
+  ̵  ̵ ̵ ̵ ̵ ̵ ̵ ̵hWp,̵a̵f̵f̵i̵n̵e̵_̵s̵e̵e̵d̵_̵i̵n̵i̵t̵i̵a̵l̵]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+'ChatgptAudit.Flow019.null_companion_of_frame' depends on axioms: [propext, sorryAx, Classical.choice, Quot.sound]
+'ChatgptAudit.Flow019.null_seed_with_companion' depends on axioms: [propext, sorryAx, Classical.choice, Quot.sound]
+'ChatgptAudit.Flow019.local_null_seed_with_zero_covariant_jet' depends on axioms: [propext,
+ sorryAx,
+ Classical.choice,
+ Quot.sound]

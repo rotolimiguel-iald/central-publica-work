@@ -1,0 +1,31 @@
+--- custodied/test_gate_extension.py
++++ current/test_gate_extension.py
+@@ -387,6 +387,28 @@
+           "gpf_H1_internal_susy_relative_gap_discharged",
+           "gpf_H2_smooth_modular_four_frame_discharged",
+           "gpf_H3_local_horizon_equilibrium_discharged")))
++for stage, names in {
++    'cyclic_cut_GNS': ('scalarCutRepresentation', 'scalarCutCyclicVector_functional',
++                       'scalarGNSCutCyclicMap_denseRange', 'scalarGNSCutCyclicMap_joint_zero'),
++    'Gaussian_closability': ('scalarGaussianGNSMap_injective', 'mem_dualOrbitVonNeumann_iff',
++                             'scalarTomitaGraph_closure_vertical',
++                             'scalarTomitaGraph_closure_single_valued'),
++    'closed_Tomita_and_standard_subspace': ('scalarClosedTomita_graph_eq',
++                                           'scalarClosedTomita_domain_dense',
++                                           'scalarClosedTomita_involutive',
++                                           'scalarTomitaStandardSubspace'),
++}.items():
++    check(stage + '_does_not_discharge_KMS_trace_or_physical_frontier',
++          all('TGLV350.Regular.' + name in axioms for name in names)
++          and all(kf.get(flag) is False for flag in (
++              'qgf_continuous_modular_realization_constructed',
++              'qgf_unconditional_continuous_corner_proved', 'qgf_full_TGL_witness_constructed',
++              'gpf_H1_internal_susy_relative_gap_discharged',
++              'gpf_H2_smooth_modular_four_frame_discharged',
++              'gpf_H3_local_horizon_equilibrium_discharged'))
++          and frontier(kf)['legacy_gate_changed'] is False
++          and frontier(kf)['full_plan_complete'] is False)
++
+ report = {'checks': checks, 'passed': len(checks), 'axiom_report_entries': len(axioms),
+           'verification_mode': compiled['mode'], 'full_monolithic_runtime_run': False,
+           'working_um_sha256': hashlib.sha256((ROOT / 'um.py').read_bytes()).hexdigest(),

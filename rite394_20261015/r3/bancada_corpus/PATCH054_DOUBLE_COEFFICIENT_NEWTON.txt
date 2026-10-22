@@ -1,0 +1,92 @@
+theorem local_modular_double_coefficient (P : SiteProfile) (N : ℕ)
+    (a : Matrix (chainIdx N) (chainIdx N) ℂ) (ha : a.IsHermitian) :
+    (omegaState P (doubleModularCommutator P (towerPi P a)
+      (localModularObservable P N))).re = 2 * localModularCost P N a := by
+  let k := localModularMatrix P N
+  have hm : towerPi P (-(a*a*k)+a*k*a+a*k*a-k*(a*a)) =
+      doubleModularCommutator P (towerPi P a) (localModularObservable P N) := by
+    change (towerPiAlgHom P N) (-(a*a*k)+a*k*a+a*k*a-k*(a*a)) = _
+    simp only [map_sub, map_add, map_neg, map_mul]
+    rfl
+  rw [← hm, omegaState_pi]
+  have hright (b : Matrix (chainIdx N) (chainIdx N) ℂ) (i j : chainIdx N) :
+      (b*k) i j = b i j * ((-Real.log (towerW P N j) : ℝ) : ℂ) := by
+    change (b * Matrix.diagonal (fun j =>
+      ((-Real.log (towerW P N j) : ℝ) : ℂ))) i j = _
+    exact Matrix.mul_diagonal _ _ _ _
+  have hleft (b : Matrix (chainIdx N) (chainIdx N) ℂ) (i j : chainIdx N) :
+      (k*b) i j = ((-Real.log (towerW P N i) : ℝ) : ℂ) * b i j := by
+    change (Matrix.diagonal (fun i =>
+      ((-Real.log (towerW P N i) : ℝ) : ℂ)) * b) i j = _
+    exact Matrix.diagonal_mul _ _ _ _
+  have hmiddle (i : chainIdx N) :
+      (a*k*a) i i = ∑ j,
+        (a i j * ((-Real.log (towerW P N j) : ℝ) : ℂ)) * a j i := by
+    rw [Matrix.mul_apply]
+    apply Finset.sum_congr rfl
+    intro j _
+    rw [hright]
+  have hd (i : chainIdx N) :
+      (-(a*a*k)+a*k*a+a*k*a-k*(a*a)) i i =
+        ∑ j, ((2*(Real.log (towerW P N i)-Real.log (towerW P N j)) : ℝ) : ℂ) *
+          (Complex.normSq (a i j) : ℂ) := by
+    simp only [Matrix.sub_apply, Matrix.add_apply, Matrix.neg_apply]
+    rw [hright, hleft]
+    simp only [hmiddle]
+    simp only [Matrix.mul_apply]
+    rw [Finset.sum_mul, Finset.mul_sum]
+    rw [← Finset.sum_neg_distrib, ← Finset.sum_add_distrib,
+      ← Finset.sum_add_distrib, ← Finset.sum_sub_distrib]
+    apply Finset.sum_congr rfl
+    intro j _
+    have hji : a j i = star (a i j) := by
+      simpa only [Matrix.conjTranspose_apply] using
+        (congrFun (congrFun ha j) i).symm
+    have hprod : a i j * a j i = (Complex.normSq (a i j) : ℂ) := by
+      rw [hji, Complex.star_def, Complex.mul_conj]
+    calc
+      _ = ((2*(Real.log (towerW P N i)-Real.log (towerW P N j)) : ℝ) : ℂ) *
+          (a i j * a j i) := by
+        push_cast
+        ring
+      _ = _ := by rw [hprod]
+  have hn (i j : chainIdx N) : Complex.normSq (a j i)=Complex.normSq (a i j) := by
+    simpa only [Matrix.conjTranspose_apply, Complex.star_def, Complex.normSq_conj] using
+      congrArg Complex.normSq (congrFun (congrFun ha i) j)
+  have hswap :
+      (∑ i, ∑ j, towerW P N j *
+        (Real.log (towerW P N i)-Real.log (towerW P N j))*Complex.normSq (a i j)) =
+      -(∑ i, ∑ j, towerW P N i *
+        (Real.log (towerW P N i)-Real.log (towerW P N j))*Complex.normSq (a i j)) := by
+    rw [Finset.sum_comm]
+    simp only [← Finset.sum_neg_distrib]
+    apply Finset.sum_congr rfl
+    intro i _
+    apply Finset.sum_congr rfl
+    intro j _
+    rw [hn]
+    ring
+  have he :
+      (∑ i, ∑ j, (towerW P N i-towerW P N j) *
+        (Real.log (towerW P N i)-Real.log (towerW P N j))*Complex.normSq (a i j)) =
+      2 * ∑ i, ∑ j, towerW P N i *
+        (Real.log (towerW P N i)-Real.log (towerW P N j))*Complex.normSq (a i j) := by
+    simp only [sub_mul, Finset.sum_sub_distrib]
+    rw [hswap]
+    ring
+  have hre (f : chainIdx N → ℂ) : (∑ i, f i).re = ∑ i, (f i).re :=
+    map_sum Complex.reAddGroupHom f Finset.univ
+  have htrace :
+      (tState P N (-(a*a*k)+a*k*a+a*k*a-k*(a*a))).re =
+      2 * ∑ i, ∑ j, towerW P N i *
+        (Real.log (towerW P N i)-Real.log (towerW P N j))*Complex.normSq (a i j) := by
+    simp only [tState, hd, Finset.mul_sum]
+    simp only [hre]
+    apply Finset.sum_congr rfl
+    intro i _
+    apply Finset.sum_congr rfl
+    intro j _
+    rw [← Complex.ofReal_mul, ← Complex.ofReal_mul, Complex.ofReal_re]
+    ring
+  rw [htrace, local_modular_cost_symmetric P N a ha, he]
+  ring

@@ -1,0 +1,44 @@
+--- C:\IALD\Central de Patentes\Chatgpt\ADAPTADOR_INCREMENTAL_20260909_162620_395030\run_incremental.py
++++ C:\IALD\Central de Patentes\Chatgpt\INTEGRADOR_LOCAL_GERAL_20260909_170426_647362\run_successor.py
+@@ -18,12 +18,12 @@
+ def run(planpath):
+     plan=json.loads(planpath.read_text(encoding="utf-8"));build=Path(plan["build"]).resolve()
+     assert build.is_relative_to(BASE) and plan["status"]=="PREPARED_NOT_EXECUTED"
+-    assert len(plan["cached_modules"])==45 and len(plan["runs"])==21
++    assert len(plan["cached_modules"])==plan["counts"]["cached_modules"] and len(plan["runs"])==plan["counts"]["new_processes"]
+     assert plan["cached_boundary_unchanged"]
+     assert [r["module"] for r in plan["runs"][-3:]]==[
+         "FullTGLExtRoot","FullTGLAudit","NewModulesAudit"]
+     cached_names={m["module"] for m in plan["cached_modules"]}
+-    assert len(cached_names)==45 and not (cached_names & {r["module"] for r in plan["runs"]})
++    assert len(cached_names)==plan["counts"]["cached_modules"] and not (cached_names & {r["module"] for r in plan["runs"]})
+     for item in plan["runs"]:
+         for flag in ["-o","-i"]:
+             target=Path(item["command"][item["command"].index(flag)+1]).resolve()
+@@ -58,10 +58,11 @@
+             sentinels_ok=None
+             good=returncode==0 and len(rows)==len(expected) and observed==expected
+             good=good and not pattern.sub("",text).strip()
+-        good=good and all(set(r["axioms"])<=TRIO for r in rows)
++        warning_lines=sum("warning:" in line for line in text.splitlines())
++        good=good and warning_lines==0 and all(set(r["axioms"])<=TRIO for r in rows)
+         results.append({"module":item["module"],"exit_code":returncode,"valid":good,
+                         "missing_axiom_terms":missing,"sentinels_ok":sentinels_ok,
+-                        "warning_lines":sum("warning:" in line for line in text.splitlines()),
++                        "warning_lines":warning_lines,
+                         "axiom_rows":rows})
+         print(json.dumps({"module":item["module"],"exit_code":returncode,"valid":good,"rows":len(rows)}),flush=True)
+         valid=valid and good
+@@ -76,9 +77,10 @@
+              "cached_build_receipt":plan["cached_build_receipt"],
+              "cached_build_plan":plan["cached_build_plan"],
+              "cached_boundary_unchanged":cached_stable,
+-             "new_module_processes":18,"aggregate_processes":3,
++             "new_module_processes":plan["new_module_processes"],"aggregate_processes":3,
++             "counts":plan["counts"],
+              "um_py_executed":False,"canonical_changes":False,"transitive_dependencies_all_hashed":False,
+-             "scope_note":"Incremental scope: 18 new transposed modules plus the copied TGLExt root, full TGL/Audit and dedicated 1098-declaration audit are compiled in 21 processes. The 45 previous modules are reused from the recorded PASS 48-process build after exact source-byte and dependency-pin comparison; their artifact hashes were measured at reuse and preserved by copying. Cached modules and canonical transitive sources are not rebuilt. Current canonical dependency pins and all copied/cache input records are checked before and after execution. um.py is never executed or imported."}
++             "scope_note":plan["scope_note"]}
+     new(build/"TRANSPOSED_RESULT.json",(json.dumps(outcome,ensure_ascii=False,indent=2)+"\n").encode("utf-8"))
+     print(json.dumps({"status":outcome["status"],"result":str(build/"TRANSPOSED_RESULT.json")}))
+     return 0 if valid else 1

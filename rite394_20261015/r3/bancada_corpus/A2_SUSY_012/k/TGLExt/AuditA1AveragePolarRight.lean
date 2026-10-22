@@ -1,0 +1,5 @@
+import TGLExt.V351AveragePolarRight
+#check TGLV350.Regular.regularAverage_polar_approximants
+#print axioms TGLV350.Regular.regularAverage_polar_approximants
+#check TGLV350.Regular.regularAverage_mem_scalarPolarRightAlgebra
+#print axioms TGLV350.Regular.regularAverage_mem_scalarPolarRightAlgebra

@@ -1,0 +1,466 @@
+{
+  "timestamp": "2026-09-14T10:25:42.384542-03:00",
+  "status": "FICHA_ANTES_DO_CODIGO",
+  "previous_goal_turn": "PROGRESS_39_DECLARATIONS_DELIVERED_REVALIDATED",
+  "consumer": {
+    "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\LACUNAS_A1.md",
+    "sha256": "cf0ef3264d91c8033a399851407ca8b5f08deef63b850a2fcf62b2fc56ab581c",
+    "name": "regular_dual_weight_modular_implementation",
+    "line": 25
+  },
+  "exact_target": "For positive injective contraction T with injective I-T, r>0, Q=T[rI+(1-r)T]^-1 and bounded R satisfying TR=RQ, prove U_t(T) R=exp(i t log r) R U_t(T). Specialize to scalarTomitaResolvent P and homogeneousRightGNS(matrixUnitRightData P N i j), r=localEigenvalue P N i j; also commute with the existing regular right group.",
+  "decision": "ADAPTAR real_cfc_intertwines to complex continuous functions; REUSAR exact resolvent scaling and newly verified imaginary group; NOVO rational phase scaling on spectrum and dense cancellation. No new operator called modular by invariance alone.",
+  "providers": [
+    {
+      "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\kernel\\TGLExt\\V350PositiveRootIntertwining.lean",
+      "sha256": "f357246ac96d1d98fc1376238be4ca039f425d2782dd23d909ac5cdd3d1afaa5",
+      "section_variables": [
+        "variable {H : Type} [NormedAddCommGroup H] [InnerProductSpace ℂ H] [CompleteSpace H]"
+      ],
+      "declarations": [
+        {
+          "name": "real_cfc_intertwines",
+          "line": 15,
+          "statement": "theorem real_cfc_intertwines (A B U : H →L[ℂ] H)\n    (hA : IsSelfAdjoint A) (hB : IsSelfAdjoint B) (h : A*U=U*B)\n    (f : ℝ → ℝ) (hf : Continuous f) : cfc f A * U = U * cfc f B"
+        },
+        {
+          "name": "positive_sqrt_intertwines",
+          "line": 50,
+          "statement": "theorem positive_sqrt_intertwines (A B U : H →L[ℂ] H)\n    (hA : 0 ≤ A) (hB : 0 ≤ B) (h : A*U=U*B) :\n    CFC.sqrt A * U = U * CFC.sqrt B"
+        },
+        {
+          "name": "positive_square_intertwines_roots",
+          "line": 58,
+          "statement": "theorem positive_square_intertwines_roots (A B U : H →L[ℂ] H)\n    (hA : 0 ≤ A) (hB : 0 ≤ B) (h : (A*A)*U=U*(B*B)) : A*U=U*B"
+        }
+      ],
+      "decision": "REUSAR"
+    },
+    {
+      "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\kernel\\TGLExt\\V350ScaledPositiveResolvent.lean",
+      "sha256": "8fc4147c74eaac76104af66349555ba23115cb8a0d40ea63dc27a2bc546c584c",
+      "section_variables": [
+        "variable {H : Type} [NormedAddCommGroup H] [InnerProductSpace ℂ H] [CompleteSpace H]"
+      ],
+      "declarations": [
+        {
+          "name": "scaledResolventDenominator",
+          "line": 12,
+          "statement": "def scaledResolventDenominator (T : H →L[ℂ] H) (r : ℝ) : H →L[ℂ] H"
+        },
+        {
+          "name": "scaledResolventDenominator_sub",
+          "line": 15,
+          "statement": "theorem scaledResolventDenominator_sub (T : H →L[ℂ] H) (r : ℝ) :\n    scaledResolventDenominator T r - T = r • (1-T)"
+        },
+        {
+          "name": "scaledResolventDenominator_alt",
+          "line": 21,
+          "statement": "theorem scaledResolventDenominator_alt (T : H →L[ℂ] H) (r : ℝ) :\n    scaledResolventDenominator T r = 1 + (r-1) • (1-T)"
+        },
+        {
+          "name": "scaledResolventDenominator_positive",
+          "line": 27,
+          "statement": "theorem scaledResolventDenominator_positive (T : H →L[ℂ] H)\n    (hT : 0 ≤ T) (h1 : T ≤ 1) (r : ℝ) (hr : 0 < r) :\n    IsStrictlyPositive (scaledResolventDenominator T r)"
+        },
+        {
+          "name": "scaledResolventDenominator_commutes",
+          "line": 42,
+          "statement": "theorem scaledResolventDenominator_commutes (T : H →L[ℂ] H) (r : ℝ) :\n    Commute T (scaledResolventDenominator T r)"
+        },
+        {
+          "name": "ring_inverse_commutes_of_unit",
+          "line": 47,
+          "statement": "theorem ring_inverse_commutes_of_unit (T D : H →L[ℂ] H)\n    (h : Commute T D) (hd : IsUnit D) : Commute T (Ring.inverse D)"
+        },
+        {
+          "name": "scaledPositiveResolvent",
+          "line": 57,
+          "statement": "def scaledPositiveResolvent (T : H →L[ℂ] H) (r : ℝ) : H →L[ℂ] H"
+        },
+        {
+          "name": "scaledPositiveResolvent_nonneg",
+          "line": 60,
+          "statement": "theorem scaledPositiveResolvent_nonneg (T : H →L[ℂ] H)\n    (hT : 0 ≤ T) (h1 : T ≤ 1) (r : ℝ) (hr : 0 < r) :\n    0 ≤ scaledPositiveResolvent T r"
+        },
+        {
+          "name": "scaledPositiveResolvent_complement",
+          "line": 67,
+          "statement": "theorem scaledPositiveResolvent_complement (T : H →L[ℂ] H)\n    (hT : 0 ≤ T) (h1 : T ≤ 1) (r : ℝ) (hr : 0 < r) :\n    1-scaledPositiveResolvent T r =\n      r • ((1-T) * Ring.inverse (scaledResolventDenominator T r))"
+        },
+        {
+          "name": "scaledPositiveResolvent_le_one",
+          "line": 78,
+          "statement": "theorem scaledPositiveResolvent_le_one (T : H →L[ℂ] H)\n    (hT : 0 ≤ T) (h1 : T ≤ 1) (r : ℝ) (hr : 0 < r) :\n    scaledPositiveResolvent T r ≤ 1"
+        }
+      ],
+      "decision": "REUSAR"
+    },
+    {
+      "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\kernel\\TGLExt\\V350MatrixUnitResolventScaling.lean",
+      "sha256": "f6b1271a8612a0695581ffc52afb45277ed0468bf941b42fcc8c8c3086877911",
+      "section_variables": [],
+      "declarations": [
+        {
+          "name": "matrixUnit_resolvent_denominator_identity",
+          "line": 15,
+          "statement": "theorem matrixUnit_resolvent_denominator_identity (P : SiteProfile) (N : ℕ)\n    (i j : chainIdx N) :\n    scalarTomitaResolvent P * homogeneousRightGNS (matrixUnitRightData P N i j) *\n      scaledResolventDenominator (scalarTomitaResolvent P) (localEigenvalue P N i j) =\n    homogeneousRightGNS (matrixUnitRightData P N i j) * scalarTomitaResolvent P"
+        },
+        {
+          "name": "matrixUnit_resolvent_right_scaling",
+          "line": 41,
+          "statement": "theorem matrixUnit_resolvent_right_scaling (P : SiteProfile) (N : ℕ)\n    (i j : chainIdx N) :\n    scalarTomitaResolvent P * homogeneousRightGNS (matrixUnitRightData P N i j) =\n      homogeneousRightGNS (matrixUnitRightData P N i j) *\n        scaledPositiveResolvent (scalarTomitaResolvent P) (localEigenvalue P N i j)"
+        }
+      ],
+      "decision": "REUSAR"
+    },
+    {
+      "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\kernel\\TGLExt\\V350ScalarRegularRightPolar.lean",
+      "sha256": "cab5601b5e0a1e1ef950638a2025c814488c3f5baa083c14d85028a1ca9d95c9",
+      "section_variables": [],
+      "declarations": [
+        {
+          "name": "scalarTomitaResolvent_regular_right_commutes",
+          "line": 14,
+          "statement": "theorem scalarTomitaResolvent_regular_right_commutes (P : SiteProfile) (t : ℝ) :\n    Commute (scalarTomitaResolvent P) (regularRightGNS P t)"
+        },
+        {
+          "name": "scalarTomitaPositiveRoot_regular_right_graph",
+          "line": 31,
+          "statement": "theorem scalarTomitaPositiveRoot_regular_right_graph (P : SiteProfile) (t : ℝ)\n    (x : (scalarTomitaPositiveRoot P).domain) :\n    (regularRightGNS P t (x : ScalarGNSHilbert P),\n      regularRightGNS P t (scalarTomitaPositiveRoot P x)) ∈ (scalarTomitaPositiveRoot P).graph"
+        },
+        {
+          "name": "scalarRegularRight_mem_rootDomain",
+          "line": 40,
+          "statement": "theorem scalarRegularRight_mem_rootDomain (P : SiteProfile) (t : ℝ)\n    (x : (scalarTomitaPositiveRoot P).domain) :\n    regularRightGNS P t (x : ScalarGNSHilbert P) ∈ (scalarTomitaPositiveRoot P).domain"
+        },
+        {
+          "name": "scalarRegularRightRootInput",
+          "line": 49,
+          "statement": "def scalarRegularRightRootInput (P : SiteProfile) (t : ℝ)\n    (x : (scalarTomitaPositiveRoot P).domain) : (scalarTomitaPositiveRoot P).domain"
+        },
+        {
+          "name": "scalarTomitaPositiveRoot_regular_right_commutes",
+          "line": 53,
+          "statement": "theorem scalarTomitaPositiveRoot_regular_right_commutes (P : SiteProfile) (t : ℝ)\n    (x : (scalarTomitaPositiveRoot P).domain) :\n    scalarTomitaPositiveRoot P (scalarRegularRightRootInput P t x) =\n      regularRightGNS P t (scalarTomitaPositiveRoot P x)"
+        },
+        {
+          "name": "scalarRegularRight_rootDomain_iff",
+          "line": 63,
+          "statement": "theorem scalarRegularRight_rootDomain_iff (P : SiteProfile) (t : ℝ)\n    (x : ScalarGNSHilbert P) :\n    regularRightGNS P t x ∈ (scalarTomitaPositiveRoot P).domain ↔\n      x ∈ (scalarTomitaPositiveRoot P).domain"
+        },
+        {
+          "name": "scalarTomitaPolarFactor_regular_right",
+          "line": 78,
+          "statement": "theorem scalarTomitaPolarFactor_regular_right (P : SiteProfile) (t : ℝ)\n    (z : ScalarGNSHilbert P) :\n    scalarTomitaPolarFactor P (regularRightGNS P t z) =\n      scalarGNSRepresentation P (star (regularRightCoreElement P t))\n        (scalarTomitaPolarFactor P z)"
+        },
+        {
+          "name": "scalarTomitaPolar_conjugate_regular_right",
+          "line": 105,
+          "statement": "theorem scalarTomitaPolar_conjugate_regular_right (P : SiteProfile) (t : ℝ) :\n    antiunitaryConjugate (scalarTomitaPolarFactor P) (regularRightGNS P t) =\n      scalarGNSRepresentation P (star (regularRightCoreElement P t))"
+        },
+        {
+          "name": "scalarTomitaPolarFactor_regular_left",
+          "line": 113,
+          "statement": "theorem scalarTomitaPolarFactor_regular_left (P : SiteProfile) (t : ℝ)\n    (z : ScalarGNSHilbert P) :\n    scalarTomitaPolarFactor P\n      (scalarGNSRepresentation P (star (regularRightCoreElement P t)) z) =\n        regularRightGNS P t (scalarTomitaPolarFactor P z)"
+        }
+      ],
+      "decision": "REUSAR"
+    },
+    {
+      "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\kernel\\TGLExt\\V350ScalarGNSGeneratorTransport.lean",
+      "sha256": "ed7ce8c1e5693f28277f3de7d7fcb0c3a43359d0fe02903a7922280bfcb858af",
+      "section_variables": [
+        "variable {H : Type} [NormedAddCommGroup H] [InnerProductSpace ℂ H] [CompleteSpace H]"
+      ],
+      "declarations": [
+        {
+          "name": "dualOrbit_generated_mem",
+          "line": 15,
+          "statement": "theorem dualOrbit_generated_mem\n    (S : Set (RegularHilbert H →L[ℂ] RegularHilbert H))\n    (A : RegularHilbert H →L[ℂ] RegularHilbert H) (hA : A ∈ generatedAlgebra S) :\n    dualOrbitRepresentation A ∈ generatedAlgebra ((dualOrbitRepresentation (H"
+        },
+        {
+          "name": "regularGenerators_star",
+          "line": 29,
+          "statement": "theorem regularGenerators_star (P : SiteProfile)\n    (A : RegularHilbert (TowerHilbert P) →L[ℂ] RegularHilbert (TowerHilbert P))\n    (hA : A ∈ regularGenerators P) : star A ∈ regularGenerators P"
+        },
+        {
+          "name": "scalarCoreGenerators",
+          "line": 38,
+          "statement": "def scalarCoreGenerators (P : SiteProfile) : Set (regularCoreAlgebra P).toStarSubalgebra"
+        },
+        {
+          "name": "dualOrbit_core_commutation_from_generators",
+          "line": 43,
+          "statement": "theorem dualOrbit_core_commutation_from_generators (P : SiteProfile)\n    (T : RegularHilbert (RegularHilbert (TowerHilbert P)) →L[ℂ]\n      RegularHilbert (RegularHilbert (TowerHilbert P)))\n    (hT : ∀ A ∈ scalarCoreGenerators P, Commute T (dualOrbitRepresentation A.val)) :\n    ∀ A : (regularCoreAlgebra P).toStarSubalgebra,\n      Commute T (dualOrbitRepresentation A.val)"
+        },
+        {
+          "name": "scalarGNS_commutation_from_generators",
+          "line": 68,
+          "statement": "theorem scalarGNS_commutation_from_generators (P : SiteProfile)\n    (T : ScalarGNSHilbert P →L[ℂ] ScalarGNSHilbert P)\n    (hT : ∀ A ∈ scalarCoreGenerators P, Commute T (scalarGNSRepresentation P A)) :\n    ∀ A : (regularCoreAlgebra P).toStarSubalgebra,\n      Commute T (scalarGNSRepresentation P A)"
+        }
+      ],
+      "decision": "REUSAR"
+    },
+    {
+      "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\kernel\\TGLExt\\V351ResolventPhaseFunctions.lean",
+      "sha256": "8eb2f7fb43b753d739c276b9e98655529860084586e311d94c8984cde361aea5",
+      "section_variables": [],
+      "declarations": [
+        {
+          "name": "resolventDamping",
+          "line": 14,
+          "statement": "def resolventDamping (x : ℝ) : ℝ"
+        },
+        {
+          "name": "resolventPhaseFunction",
+          "line": 17,
+          "statement": "def resolventPhaseFunction (t x : ℝ) : ℂ"
+        },
+        {
+          "name": "resolventPhaseFunction_norm",
+          "line": 20,
+          "statement": "theorem resolventPhaseFunction_norm (t x : ℝ) :\n    ‖resolventPhaseFunction t x‖ = ‖resolventDamping x‖"
+        },
+        {
+          "name": "resolventPhaseFunction_zero_time",
+          "line": 24,
+          "statement": "theorem resolventPhaseFunction_zero_time (x : ℝ) :\n    resolventPhaseFunction 0 x = (resolventDamping x : ℂ)"
+        },
+        {
+          "name": "resolventPhaseFunction_add",
+          "line": 28,
+          "statement": "theorem resolventPhaseFunction_add (s t x : ℝ) :\n    resolventPhaseFunction s x * resolventPhaseFunction t x =\n      (resolventDamping x : ℂ) * resolventPhaseFunction (s+t) x"
+        },
+        {
+          "name": "resolventPhaseFunction_star",
+          "line": 34,
+          "statement": "theorem resolventPhaseFunction_star (t x : ℝ) :\n    star (resolventPhaseFunction t x) = resolventPhaseFunction (-t) x"
+        },
+        {
+          "name": "resolventPhaseFunction_gram",
+          "line": 44,
+          "statement": "theorem resolventPhaseFunction_gram (t x : ℝ) :\n    star (resolventPhaseFunction t x) * resolventPhaseFunction t x =\n      ((resolventDamping x)^2 : ℝ)"
+        },
+        {
+          "name": "resolventPhaseFunction_joint_continuous",
+          "line": 51,
+          "statement": "theorem resolventPhaseFunction_joint_continuous :\n    Continuous (fun p : ℝ × ℝ => resolventPhaseFunction p.1 p.2)"
+        },
+        {
+          "name": "resolventPhaseFunction_continuous",
+          "line": 79,
+          "statement": "theorem resolventPhaseFunction_continuous (t : ℝ) : Continuous (resolventPhaseFunction t)"
+        }
+      ],
+      "decision": "REUSAR"
+    },
+    {
+      "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\kernel\\TGLExt\\V351ResolventPhaseCalculus.lean",
+      "sha256": "cd207e3a21c50f65fe3b199e201b2b148a0d98fc2e3a3cf7e40a80e61ba4f818",
+      "section_variables": [
+        "variable {H : Type} [NormedAddCommGroup H] [InnerProductSpace ℂ H] [CompleteSpace H]"
+      ],
+      "declarations": [
+        {
+          "name": "resolventDampingOperator",
+          "line": 13,
+          "statement": "def resolventDampingOperator (T : H →L[ℂ] H) : H →L[ℂ] H"
+        },
+        {
+          "name": "resolventPhaseOperator",
+          "line": 15,
+          "statement": "def resolventPhaseOperator (T : H →L[ℂ] H) (t : ℝ) : H →L[ℂ] H"
+        },
+        {
+          "name": "resolventDampingOperator_cfc",
+          "line": 18,
+          "statement": "theorem resolventDampingOperator_cfc (T : H →L[ℂ] H) (hT : IsSelfAdjoint T) :\n    cfc (fun z : ℂ => (resolventDamping z.re : ℂ)) T = resolventDampingOperator T"
+        },
+        {
+          "name": "resolventDampingOperator_nonneg",
+          "line": 26,
+          "statement": "theorem resolventDampingOperator_nonneg (T : H →L[ℂ] H) (hT : 0 ≤ T) (h1 : T ≤ 1) :\n    0 ≤ resolventDampingOperator T"
+        },
+        {
+          "name": "resolventPhaseOperator_zero",
+          "line": 31,
+          "statement": "theorem resolventPhaseOperator_zero (T : H →L[ℂ] H) (hT : IsSelfAdjoint T) :\n    resolventPhaseOperator T 0 = resolventDampingOperator T"
+        },
+        {
+          "name": "resolventPhaseOperator_star",
+          "line": 37,
+          "statement": "theorem resolventPhaseOperator_star (T : H →L[ℂ] H) (t : ℝ) :\n    star (resolventPhaseOperator T t) = resolventPhaseOperator T (-t)"
+        },
+        {
+          "name": "resolventPhaseOperator_mul",
+          "line": 43,
+          "statement": "theorem resolventPhaseOperator_mul (T : H →L[ℂ] H) (hT : IsSelfAdjoint T) (s t : ℝ) :\n    resolventPhaseOperator T s * resolventPhaseOperator T t =\n      resolventDampingOperator T * resolventPhaseOperator T (s+t)"
+        },
+        {
+          "name": "resolventPhaseOperator_gram",
+          "line": 54,
+          "statement": "theorem resolventPhaseOperator_gram (T : H →L[ℂ] H) (hT : IsSelfAdjoint T) (t : ℝ) :\n    star (resolventPhaseOperator T t) * resolventPhaseOperator T t =\n      resolventDampingOperator T * resolventDampingOperator T"
+        },
+        {
+          "name": "resolventPhaseOperator_modulus",
+          "line": 60,
+          "statement": "theorem resolventPhaseOperator_modulus (T : H →L[ℂ] H) (hT : 0 ≤ T) (h1 : T ≤ 1) (t : ℝ) :\n    boundedMapModulus (resolventPhaseOperator T t) = resolventDampingOperator T"
+        },
+        {
+          "name": "resolventPhaseOperator_norm",
+          "line": 67,
+          "statement": "theorem resolventPhaseOperator_norm (T : H →L[ℂ] H) (hT : 0 ≤ T) (h1 : T ≤ 1)\n    (t : ℝ) (x : H) : ‖resolventPhaseOperator T t x‖ = ‖resolventDampingOperator T x‖"
+        }
+      ],
+      "decision": "REUSAR"
+    },
+    {
+      "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\kernel\\TGLExt\\V351ResolventImaginaryPowers.lean",
+      "sha256": "0cfc297376410ff6bd259eeaf921a9d6e6ca47829b5d389c6b5c30bf4c5accf5",
+      "section_variables": [
+        "variable {H : Type} [NormedAddCommGroup H] [InnerProductSpace ℂ H] [CompleteSpace H]",
+        "variable (T : H →L[ℂ] H) (hT : 0 ≤ T) (h1 : T ≤ 1)",
+        "variable (hi : Function.Injective T) (hj : Function.Injective (1-T : H →L[ℂ] H))"
+      ],
+      "declarations": [
+        {
+          "name": "resolventDampingOperator_injective",
+          "line": 16,
+          "statement": "theorem resolventDampingOperator_injective : Function.Injective (resolventDampingOperator T)"
+        },
+        {
+          "name": "resolventDampingOperator_denseRange",
+          "line": 20,
+          "statement": "theorem resolventDampingOperator_denseRange : DenseRange (resolventDampingOperator T)"
+        },
+        {
+          "name": "resolventPhaseOperator_denseRange",
+          "line": 26,
+          "statement": "theorem resolventPhaseOperator_denseRange (t : ℝ) : DenseRange (resolventPhaseOperator T t)"
+        },
+        {
+          "name": "resolventImaginaryPower",
+          "line": 38,
+          "statement": "def resolventImaginaryPower (t : ℝ) : H ≃ₗᵢ[ℂ] H"
+        },
+        {
+          "name": "resolventImaginaryPower_damping",
+          "line": 45,
+          "statement": "theorem resolventImaginaryPower_damping (t : ℝ) (x : H) :\n    resolventImaginaryPower T hT h1 hi hj t (resolventDampingOperator T x)=\n      resolventPhaseOperator T t x"
+        },
+        {
+          "name": "resolventImaginaryPower_zero",
+          "line": 50,
+          "statement": "theorem resolventImaginaryPower_zero (x : H) :\n    resolventImaginaryPower T hT h1 hi hj 0 x = x"
+        },
+        {
+          "name": "resolventPhaseOperator_commutes_damping",
+          "line": 58,
+          "statement": "theorem resolventPhaseOperator_commutes_damping (t : ℝ) :\n    Commute (resolventPhaseOperator T t) (resolventDampingOperator T)"
+        },
+        {
+          "name": "resolventImaginaryPower_commutes_damping",
+          "line": 64,
+          "statement": "theorem resolventImaginaryPower_commutes_damping (t : ℝ) (x : H) :\n    resolventImaginaryPower T hT h1 hi hj t (resolventDampingOperator T x) =\n      resolventDampingOperator T (resolventImaginaryPower T hT h1 hi hj t x)"
+        },
+        {
+          "name": "resolventImaginaryPower_add",
+          "line": 74,
+          "statement": "theorem resolventImaginaryPower_add (s t : ℝ) (x : H) :\n    resolventImaginaryPower T hT h1 hi hj s\n        (resolventImaginaryPower T hT h1 hi hj t x) =\n      resolventImaginaryPower T hT h1 hi hj (s+t) x"
+        }
+      ],
+      "decision": "REUSAR"
+    },
+    {
+      "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\kernel\\TGLExt\\V351ScalarTomitaImaginaryPowers.lean",
+      "sha256": "b8871f05b5b9605a8b193a8ed25346d79eac72d025d3ad95c8f9c884f28b4e52",
+      "section_variables": [
+        "variable (P : SiteProfile)"
+      ],
+      "declarations": [
+        {
+          "name": "scalarTomitaResolvent_complement_injective",
+          "line": 13,
+          "statement": "theorem scalarTomitaResolvent_complement_injective :\n    Function.Injective (1-scalarTomitaResolvent P : ScalarGNSHilbert P →L[ℂ] ScalarGNSHilbert P)"
+        },
+        {
+          "name": "scalarTomitaImaginaryPower",
+          "line": 24,
+          "statement": "def scalarTomitaImaginaryPower (t : ℝ) : ScalarGNSHilbert P ≃ₗᵢ[ℂ] ScalarGNSHilbert P"
+        },
+        {
+          "name": "scalarTomitaImaginaryPower_damping",
+          "line": 29,
+          "statement": "theorem scalarTomitaImaginaryPower_damping (t : ℝ) (x : ScalarGNSHilbert P) :\n    scalarTomitaImaginaryPower P t (resolventDampingOperator (scalarTomitaResolvent P) x)=\n      resolventPhaseOperator (scalarTomitaResolvent P) t x"
+        },
+        {
+          "name": "scalarTomitaImaginaryPower_unique",
+          "line": 35,
+          "statement": "theorem scalarTomitaImaginaryPower_unique (t : ℝ)\n    (U : ScalarGNSHilbert P →L[ℂ] ScalarGNSHilbert P)\n    (hU : ∀ x, U (resolventDampingOperator (scalarTomitaResolvent P) x)=\n      resolventPhaseOperator (scalarTomitaResolvent P) t x) (x : ScalarGNSHilbert P) :\n    U x=scalarTomitaImaginaryPower P t x"
+        },
+        {
+          "name": "scalarTomitaImaginaryPower_zero",
+          "line": 47,
+          "statement": "theorem scalarTomitaImaginaryPower_zero (x : ScalarGNSHilbert P) :\n    scalarTomitaImaginaryPower P 0 x=x"
+        },
+        {
+          "name": "scalarTomitaImaginaryPower_add",
+          "line": 51,
+          "statement": "theorem scalarTomitaImaginaryPower_add (s t : ℝ) (x : ScalarGNSHilbert P) :\n    scalarTomitaImaginaryPower P s (scalarTomitaImaginaryPower P t x)=\n      scalarTomitaImaginaryPower P (s+t) x"
+        },
+        {
+          "name": "scalarTomitaImaginaryPower_strongly_continuous",
+          "line": 56,
+          "statement": "theorem scalarTomitaImaginaryPower_strongly_continuous (x : ScalarGNSHilbert P) :\n    Continuous (fun t : ℝ => scalarTomitaImaginaryPower P t x)"
+        },
+        {
+          "name": "scalarTomitaImaginaryPower_inverse",
+          "line": 60,
+          "statement": "theorem scalarTomitaImaginaryPower_inverse (t : ℝ) (x : ScalarGNSHilbert P) :\n    scalarTomitaImaginaryPower P (-t) (scalarTomitaImaginaryPower P t x)=x"
+        }
+      ],
+      "decision": "REUSAR"
+    }
+  ],
+  "searches": [
+    {
+      "command": [
+        "rg",
+        "-n",
+        "scaledPositiveResolvent.*cfc|cfc.*scaledPositiveResolvent|imaginaryPower.*scal|imaginary.*intertwin",
+        "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\kernel\\TGLExt",
+        "-g",
+        "*.lean"
+      ],
+      "returncode": 1,
+      "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\BUSCA_A1_ESCALA_IMAGINARIA_0.txt",
+      "sha256": "5f41e5c8f0ceb429a4f3259276c7a0c413ceab25e0ac4521833296b234b865c7"
+    },
+    {
+      "command": [
+        "rg",
+        "-n",
+        "^theorem.*cfc_intertwines|^theorem.*resolvent.*scaling|^theorem.*ImaginaryPower",
+        "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\kernel\\TGLExt",
+        "-g",
+        "*.lean"
+      ],
+      "returncode": 0,
+      "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\BUSCA_A1_ESCALA_IMAGINARIA_1.txt",
+      "sha256": "19853c5b0b513a90e06f0daf6ea5221e07d4602c08106e082e093c69a2c7add0"
+    }
+  ],
+  "prior_manifest": {
+    "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\MANIFESTO_A1_POTENCIAS_IMAGINARIAS.json",
+    "sha256": "84aff22a3cabaa147519e7d23fa3fe0cac63551c2e0725cafd5e680e758a0794",
+    "verified_files": 150
+  },
+  "inherited_six_modalities": {
+    "REAPROVEITAMENTO_A1.json": "17013f19d849b5db20dd96e7bf61fb490ba5d2db8c758041a5c036acde3cd327",
+    "BUSCAS_A1.json": "d5b5ade4450c3df73ca9efcdda1ae005862f5f0debb39802cfb494e8beea7475",
+    "OUTRAS_BANCADAS_HASHES.json": "5b826d9f8cfe3a92e34a1e6d83476617c3d5c3138937039526b90444d1c1fca2",
+    "ADENDO_REAPROVEITAMENTO_A1.json": "c1e79521a1fd5f646064f5456813f565eee2561b15d37bebac1a7a4358da084e"
+  },
+  "expected_open_after": "Identification on all generators and whole algebra, positive h, inverse-generator trace. A1(b) remains open until actual contract inhabitant or typed impossibility."
+}

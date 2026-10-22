@@ -1,0 +1,120 @@
+{
+  "timestamp": "2026-09-14T16:27:36.801398-03:00",
+  "scope": "READ_ONLY_B2_SEMANTIC_REVIEW__BUILD_PENDING",
+  "snapshot": {
+    "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V353_A_PASSAGEM_DA_ACAO_A_METRICA\\revisao_b2\\b2_final_20260914_162338_684119\\snapshot.json",
+    "bytes": 81907,
+    "sha256": "891398acd7c415e1787aa12ff99b415063f469ac13b81626750d9c2397e9860e"
+  },
+  "P0": [],
+  "P1": [],
+  "P2": [],
+  "findings": [],
+  "reviews": [
+    {
+      "target": "flrw_metric_inverse",
+      "note": "Explicit inverse identified with metricInverse by the existing uniqueness theorem; same metric throughout.",
+      "statement": {
+        "name": "ChatgptAudit.FLRW.flrw_metric_inverse",
+        "kind": "theorem",
+        "module": "TGLExt.FLRWGeometry",
+        "line": 47,
+        "statement": "theorem flrw_metric_inverse (a : ℝ → ℝ) (x : Coordinate4)\n    (ha : a (x 0) ≠ 0) : metricInverse (flrwMetric a) x = flrwInverse a x"
+      }
+    },
+    {
+      "target": "flrw_ricci",
+      "note": "Connection equality on open U is transported to its derivative using tensorFieldJet_congr_on. hJ in the generic evaluated-connection lemma is discharged, not assumed in flrw_ricci.",
+      "statement": {
+        "name": "ChatgptAudit.FLRW.flrw_ricci",
+        "kind": "theorem",
+        "module": "TGLExt.FLRWGeometry",
+        "line": 145,
+        "statement": "theorem flrw_ricci (U : Set Coordinate4) (hU : IsOpen U) (a : ℝ → ℝ)\n    (ha : ∀ y∈U, ContDiffAt ℝ ∞ a (y 0)) (hpos : ∀ y∈U, 0 < a (y 0))\n    (x : Coordinate4) (hx : x∈U) :\n    coordinateRicci (leviCivitaField (flrwMetric a) (metricInverse (flrwMetric a))) x =\n      Matrix.diagonal ![-3*deriv (deriv a) (x 0)/a (x 0),\n        a (x 0)*deriv (deriv a) (x 0)+2*(deriv a (x 0))^2,\n        a (x 0)*deriv (deriv a) (x 0)+2*(deriv a (x 0))^2,\n        a (x 0)*deriv (deriv a) (x 0)+2*(deriv a (x 0))^2]"
+      }
+    },
+    {
+      "target": "flrw_einstein_tensor",
+      "note": "Whole diagonal tensor identity supplies off-diagonal zero too; no Ricci/Einstein component input fields.",
+      "statement": {
+        "name": "ChatgptAudit.FLRW.flrw_einstein_tensor",
+        "kind": "theorem",
+        "module": "TGLExt.FLRWFieldEquations",
+        "line": 13,
+        "statement": "theorem flrw_einstein_tensor (U : Set Coordinate4) (hU : IsOpen U) (a : ℝ → ℝ)\n    (ha : ∀ y∈U, ContDiffAt ℝ ∞ a (y 0)) (hpos : ∀ y∈U, 0 < a (y 0))\n    (x : Coordinate4) (hx : x∈U) :\n    geometricEinsteinTensor (flrwMetric a) (metricInverse (flrwMetric a))\n      (leviCivitaField (flrwMetric a) (metricInverse (flrwMetric a))) x =\n      Matrix.diagonal ![3*(flrwHubble a (x 0))^2,\n        -(2*a (x 0)*deriv (deriv a) (x 0)+(deriv a (x 0))^2),\n        -(2*a (x 0)*deriv (deriv a) (x 0)+(deriv a (x 0))^2),\n        -(2*a (x 0)*deriv (deriv a) (x 0)+(deriv a (x 0))^2)]"
+      }
+    },
+    {
+      "target": "flrw_null_ricci",
+      "note": "Uses actual tensorQuad nullity for the same (+---) metric. Zero null vector is permitted and satisfies the identity.",
+      "statement": {
+        "name": "ChatgptAudit.FLRW.flrw_null_ricci",
+        "kind": "theorem",
+        "module": "TGLExt.FLRWFieldEquations",
+        "line": 47,
+        "statement": "theorem flrw_null_ricci (U : Set Coordinate4) (hU : IsOpen U) (a : ℝ → ℝ)\n    (ha : ∀ y∈U, ContDiffAt ℝ ∞ a (y 0)) (hpos : ∀ y∈U, 0 < a (y 0))\n    (x : Coordinate4) (hx : x∈U) (k : SpacetimeVector)\n    (hk : tensorQuad (flrwMetric a x) k = 0) :\n    tensorQuad (coordinateRicci\n      (leviCivitaField (flrwMetric a) (metricInverse (flrwMetric a))) x) k =\n      2*((flrwHubble a (x 0))^2-deriv (deriv a) (x 0)/a (x 0))*(k 0)^2"
+      }
+    },
+    {
+      "target": "flrw_stress_divergence",
+      "note": "Computes all four covector components. flrw_continuity consumes the temporal zero component, without asserting conservation unconditionally.",
+      "statement": {
+        "name": "ChatgptAudit.FLRW.flrw_stress_divergence",
+        "kind": "theorem",
+        "module": "TGLExt.FLRWFieldEquations",
+        "line": 109,
+        "statement": "theorem flrw_stress_divergence (a rho pressure : ℝ → ℝ) (x : Coordinate4)\n    (hz : a (x 0) ≠ 0) (ha : DifferentiableAt ℝ a (x 0))\n    (hr : DifferentiableAt ℝ rho (x 0)) (hp : DifferentiableAt ℝ pressure (x 0)) :\n    tensorFieldDivergence (metricInverse (flrwMetric a))\n      (leviCivitaField (flrwMetric a) (metricInverse (flrwMetric a)))\n      (flrwStress a rho pressure) x =\n      ![deriv rho (x 0)+3*flrwHubble a (x 0)*(rho (x 0)+pressure (x 0)),0,0,0]"
+      }
+    },
+    {
+      "target": "flrw_friedmann_first",
+      "note": "Explicit hE is a local tensor-equation hypothesis; Lambda sign is negative in H squared for G+Lambda*g=coupling*T.",
+      "statement": {
+        "name": "ChatgptAudit.FLRW.flrw_friedmann_first",
+        "kind": "theorem",
+        "module": "TGLExt.FLRWFieldEquations",
+        "line": 135,
+        "statement": "theorem flrw_friedmann_first (U : Set Coordinate4) (hU : IsOpen U)\n    (a rho pressure : ℝ → ℝ) (ha : ∀ y∈U, ContDiffAt ℝ ∞ a (y 0))\n    (hpos : ∀ y∈U, 0 < a (y 0)) (x : Coordinate4) (hx : x∈U)\n    (coupling cosmological : ℝ)\n    (hE : geometricEinsteinTensor (flrwMetric a) (metricInverse (flrwMetric a))\n      (leviCivitaField (flrwMetric a) (metricInverse (flrwMetric a))) x +\n      cosmological • flrwMetric a x = coupling • flrwStress a rho pressure x) :\n    (flrwHubble a (x 0))^2 = coupling/3*rho (x 0)-cosmological/3"
+      }
+    },
+    {
+      "target": "flrw_friedmann_second",
+      "note": "Uses actual derivative of H=a prime/a, proves H prime=-coupling*(rho+p)/2; no division by H, so H=0 is not excluded.",
+      "statement": {
+        "name": "ChatgptAudit.FLRW.flrw_friedmann_second",
+        "kind": "theorem",
+        "module": "TGLExt.FLRWFieldEquations",
+        "line": 167,
+        "statement": "theorem flrw_friedmann_second (U : Set Coordinate4) (hU : IsOpen U)\n    (a rho pressure : ℝ → ℝ) (ha : ∀ y∈U, ContDiffAt ℝ ∞ a (y 0))\n    (hpos : ∀ y∈U, 0 < a (y 0)) (x : Coordinate4) (hx : x∈U)\n    (coupling cosmological : ℝ)\n    (hE : geometricEinsteinTensor (flrwMetric a) (metricInverse (flrwMetric a))\n      (leviCivitaField (flrwMetric a) (metricInverse (flrwMetric a))) x +\n      cosmological • flrwMetric a x = coupling • flrwStress a rho pressure x) :\n    deriv (flrwHubble a) (x 0) = -coupling/2*(rho (x 0)+pressure (x 0))"
+      }
+    },
+    {
+      "target": "flrw_friedmann_from_general_metric",
+      "note": "Uses metric_only_einstein_equation with concrete Lorentz, smoothness, stress differentiability and symmetry proofs. H_null and H_conservation are named inputs. Lambda is one constant over preconnected U.",
+      "statement": {
+        "name": "ChatgptAudit.FLRW.flrw_friedmann_from_general_metric",
+        "kind": "theorem",
+        "module": "TGLExt.FLRWFieldEquations",
+        "line": 192,
+        "statement": "theorem flrw_friedmann_from_general_metric\n    (U : Set Coordinate4) (hU : IsOpen U) (hconn : IsPreconnected U)\n    (a rho pressure : ℝ → ℝ) (eta : ℝ)\n    (ha : ∀ y∈U, ContDiffAt ℝ ∞ a (y 0)) (hpos : ∀ y∈U, 0 < a (y 0))\n    (hr : ∀ y∈U, DifferentiableAt ℝ rho (y 0))\n    (hp : ∀ y∈U, DifferentiableAt ℝ pressure (y 0))\n    (H_null : ∀ x∈U, ∀ v, tensorQuad (flrwMetric a x) v = 0 →\n      tensorQuad (coordinateRicci (leviCivitaField (flrwMetric a) (metricInverse (flrwMetric a))) x-\n        (2*Real.pi/eta) • flrwStress a rho pressure x) v = 0)\n    (H_conservation : ∀ x∈U, ∀ j, tensorFieldDivergence (metricInverse (flrwMetric a))\n      (leviCivitaField (flrwMetric a) (metricInverse (flrwMetric a)))\n      (flrwStress a rho pressure) x j = 0) :\n    ∃ cosmological : ℝ, ∀ x∈U,\n      (flrwHubble a (x 0))^2 = (2*Real.pi/eta)/3*rho (x 0)-cosmological/3 ∧\n      deriv (flrwHubble a) (x 0) = -(2*Real.pi/eta)/2*(rho (x 0)+pressure (x 0)) ∧\n      deriv rho (x 0)+3*flrwHubble a (x 0)*(rho (x 0)+pressure (x 0)) = 0"
+      }
+    },
+    {
+      "target": "flrw_newton_coefficient",
+      "note": "Consumes einstein_coefficient_from_clausius via congrArg inverse. Positive G and area calibration remain INPUT; no numerical value of G or beta.",
+      "statement": {
+        "name": "ChatgptAudit.FLRW.flrw_newton_coefficient",
+        "kind": "theorem",
+        "module": "TGLExt.FLRWFieldEquations",
+        "line": 222,
+        "statement": "theorem flrw_newton_coefficient (G : ℝ) (hG : 0 < G) :\n    (2*Real.pi/(1/(4*G)))/3 = 8*Real.pi*G/3"
+      }
+    }
+  ],
+  "limits": [
+    "B2 accepts conditional geometry/field equations only, not natural realization or B3-B6.",
+    "Eta is arbitrary real in the algebraic theorem (Lean total division includes eta=0). Physical Newton specialization has positive G; no derivation of calibration is claimed.",
+    "No global regularity outside U; conclusions evaluated at x in U; empty U would be vacuous as expected for local conditional theorems.",
+    "No additional tests or modules constructed."
+  ]
+}

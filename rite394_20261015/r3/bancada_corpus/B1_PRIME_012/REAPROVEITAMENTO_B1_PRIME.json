@@ -1,0 +1,282 @@
+{
+  "status": "OPEN_PRE_CODE_AUTHOR_WORK",
+  "created_utc": "2026-09-15T15:13:31.806595+00:00",
+  "scope": "B1 prime ORDEM012 adendo 001 §§4/5.2",
+  "new_root": "C:\\IALD\\Central de Patentes\\Chatgpt\\B1_PRIME_012",
+  "proposed_consumer": {
+    "flag": "ext_pb_same_beta_four_faces_kernel_proved",
+    "theorem": "TGLExt.the_same_beta_reads_four_faces",
+    "installed": false,
+    "anchor": {
+      "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V353_A_PASSAGEM_DA_ACAO_A_METRICA\\um.py",
+      "sha256": "c1c761809efcde52ea8c6c4f7f0e7598c1d8e636e6858f1780dd622ef62a1d40",
+      "bytes": 12864360,
+      "decision": "CONSUMIDOR_EXISTENTE_NA_COPIA",
+      "type_matches_exactly": false,
+      "role": "Mapa _LEAN_THEOREM_FLAGS e leitura efetiva do relatorio de axiomas; copia historica da bancada, nao arquivo canonico atual.",
+      "read_sections": [
+        {
+          "first": 128077,
+          "last": 128082,
+          "text": "128077: _LEAN_THEOREM_FLAGS = {\n128078:     \"half_nat_kernel_proved\": \"TGL.HalfNat.halfNat_of_selfConjugate\",\n128079:     \"area_scale_kernel_proved\": \"TGL.AreaScale.newtonPlanck_equivalence\",\n128080:     \"finite_three_locks_kernel_proved\": \"TGL.FiniteThreeLocks.ker_H3L_eq_threeLocks\",\n128081:     \"finite_corner_projection_kernel_proved\": \"TGL.FiniteThreeLocks.PF_isProjection\",\n128082:     \"finite_corner_trace_kernel_proved\": \"TGL.FiniteThreeLocks.normalizedCornerTrace_PF\","
+        },
+        {
+          "first": 133714,
+          "last": 133718,
+          "text": "133714:     \"ext_rp_lambda_drops_kernel_proved\": \"TGLExt.lambda_drops_out\",\n133715:     \"ext_rp_closure_identity_kernel_proved\": \"TGLExt.closure_identity\",\n133716:     \"ext_rp_hubble_form_kernel_proved\": \"TGLExt.hubble_form\",\n133717:     \"ext_rp_w_bounds_kernel_proved\": \"TGLExt.w_bounds\",\n133718:     \"ext_rp_background_kernel_proved\": \"TGLExt.the_background_closure\","
+        },
+        {
+          "first": 134484,
+          "last": 134489,
+          "text": "134484:     for flag, thm in _LEAN_THEOREM_FLAGS.items():\n134485:         ax = axioms.get(thm)\n134486:         res[flag] = bool(res[\"lake_build_ok\"] and ax is not None\n134487:                          and \"sorryAx\" not in ax and \"Lean.trustCompiler\" not in ax\n134488:                          and not any(a.startswith(\"TGL.\") or a.startswith(\"TGLExt.\") for a in ax))\n134489:     # v99: leituras do certificado de fechamento (nomes futuros; ausencia => False)"
+        }
+      ]
+    }
+  },
+  "target_type": "ActionCouplingData (X : Type u): boxOperator : (X -> Complex) ->_l[Real] (X -> Complex); mass : Real; xi : Real; scalarCurvature : X -> Real; K_boundary : (X -> Complex) ->_l[Real] (X -> Complex).\nfieldOperator D Psi := D.boxOperator Psi - D.mass^2 smul Psi - D.xi smul (fun x => D.scalarCurvature x smul Psi x).\nmodularSource D c Psi := c.beta smul D.K_boundary Psi.\nEOM D c Psi : Prop := fieldOperator D Psi = modularSource D c Psi.\nthe_same_beta_reads_four_faces (c:TGLCoupling) (D:ActionCouplingData X) (Psi:X->Complex) (hEOM:D.EOM c Psi) (rho_r rho_m rho_L:Real): todas as seis clausulas exatas de the_same_beta_reads_three_faces c rho_r rho_m rho_L, seguidas da EOM expandida com o MESMO c.beta.\nControles: coeficiente adulterado, sinal trocado, xi confundido com beta, termo conforme omitido, K trocado, ausencia de hEOM, unicidade sem fonte nao nula. Provar paredes semanticas e testar termos adulterados sintaticamente validos.",
+  "decision": "NOVO somente contrato de operadores, EOM tipada, extensao de B1 e paredes; REUSAR B1 sem reprovar.",
+  "sources": [
+    {
+      "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V353_A_PASSAGEM_DA_ACAO_A_METRICA\\kernel\\TGLExt\\TheSameBetaReadsThreeFaces.lean",
+      "sha256": "2efd8b379f210111e0383d9c40e5fc72835f41cd94aad2dd70d645d66f400c16",
+      "bytes": 3838,
+      "decision": "REUSAR",
+      "type_matches_exactly": true,
+      "role": "TGLCoupling, dominio beta e todas as clausulas do teorema anterior: consumo direto no alvo.",
+      "read_sections": [
+        {
+          "first": 22,
+          "last": 95,
+          "text": "22: structure TGLCoupling where\n23:   beta : ℝ\n24:   beta_pos : 0 < beta\n25:   beta_lt_one : beta < 1\n26: \n27: namespace TGLCoupling\n28: \n29: noncomputable section\n30: \n31: /-- The cost-normalized reading; no independent alpha parameter is introduced. -/\n32: def alpha (c : TGLCoupling) : ℝ := c.beta / Real.exp (1 / 2)\n33: \n34: theorem alpha_pos (c : TGLCoupling) : 0 < c.alpha :=\n35:   div_pos c.beta_pos (Real.exp_pos _)\n36: \n37: theorem alpha_lt_one (c : TGLCoupling) : c.alpha < 1 := by\n38:   unfold alpha\n39:   apply (div_lt_one (Real.exp_pos _)).mpr\n40:   exact c.beta_lt_one.trans the_minimal_volume_exceeds_one\n41: \n42: theorem beta_eq_alpha_exp (c : TGLCoupling) :\n43:     c.beta = c.alpha * Real.exp (1 / 2) := by\n44:   exact (div_mul_cancel₀ c.beta (Real.exp_ne_zero _)).symm\n45: \n46: theorem beta_eq_alpha_radical (c : TGLCoupling) :\n47:     c.beta = c.alpha * Real.sqrt (Real.exp 1) := by\n48:   rw [boundary_extracts_the_radical.1]\n49:   exact c.beta_eq_alpha_exp\n50: \n51: /-- The existing reflected amplitude, squared, reads precisely the same beta. -/\n52: theorem reflection_weight (c : TGLCoupling) :\n53:     Complex.normSq ((Smat (thetaMiguel c.beta)).mulVec e1 1) = c.beta := by\n54:   have h := (the_pruning_threshold_is_the_reflection_amplitude\n55:     c.beta_pos.le c.beta_lt_one.le).1\n56:   rwa [Real.sq_sqrt c.beta_pos.le] at h\n57: \n58: /-- The same cost variable appears in the reflected weight without a new axiom. -/\n59: theorem reflection_cost (c : TGLCoupling) :\n60:     Complex.normSq ((Smat (thetaMiguel c.beta)).mulVec e1 1) =\n61:       c.alpha * Real.sqrt (Real.exp 1) :=\n62:   c.reflection_weight.trans c.beta_eq_alpha_radical\n63: \n64: /-- Negative control: dropping the geometric cost changes the reflected weight. -/\n65: theorem reflection_rejects_bare_alpha (c : TGLCoupling) :\n66:     Complex.normSq ((Smat (thetaMiguel c.beta)).mulVec e1 1) ≠ c.alpha := by\n67:   rw [c.reflection_weight, c.beta_eq_alpha_exp]\n68:   have h := mul_lt_mul_of_pos_left the_minimal_volume_exceeds_one c.alpha_pos\n69:   simpa only [mul_one] using ne_of_gt h\n70: \n71: end\n72: end TGLCoupling\n73: \n74: /-- All clauses use the same projection c.beta. The background clauses are\n75:     algebraic identities, not an imported or assumed Friedmann equation. -/\n76: theorem the_same_beta_reads_three_faces (c : TGLCoupling) (ρr ρm ρΛ : ℝ) :\n77:     Complex.normSq ((Smat (thetaMiguel c.beta)).mulVec e1 1) = c.beta\n78:     ∧ (0 < c.alpha ∧ c.alpha < 1\n79:       ∧ c.beta = c.alpha * Real.exp (1 / 2)\n80:       ∧ c.beta = c.alpha * Real.sqrt (Real.exp 1))\n81:     ∧ (c.beta * ((ρr + ρr / 3) + (ρm + 0) + (ρΛ + (-ρΛ)))\n82:         = c.beta * ((4 / 3) * ρr + ρm))\n83:     ∧ ((ρr + ρm + ρΛ) + c.beta * ((4 / 3) * ρr + ρm)\n84:         = (1 + 4 * c.beta / 3) * ρr + (1 + c.beta) * ρm + ρΛ)\n85:     ∧ (∀ t g : ℝ, 0 < t → 0 < g → Real.exp (-(t * c.beta * g)) < 1)\n86:     ∧ (∀ b : ℝ, (∀ t : ℝ, Real.exp (-(t * b)) = Real.exp (-(t * c.beta)))\n87:         → b = c.beta) := by\n88:   exact ⟨c.reflection_weight,\n89:     ⟨c.alpha_pos, c.alpha_lt_one, c.beta_eq_alpha_exp, c.beta_eq_alpha_radical⟩,\n90:     closure_identity c.beta ρr ρm ρΛ,\n91:     hubble_form c.beta ρr ρm ρΛ,\n92:     fun _ _ ht hg => leakage_strictly_loses ht c.beta_pos hg,\n93:     fun _ h => leakage_rate_unique h⟩\n94: \n95: end TGLExt"
+        }
+      ]
+    },
+    {
+      "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V353_A_PASSAGEM_DA_ACAO_A_METRICA\\kernel\\TGLExt\\TheVerbalCoupling.lean",
+      "sha256": "912bf222f07256b14e9e725b9c799e45ea5b6f2c3c5244859dc016445922b507",
+      "bytes": 11431,
+      "decision": "REUSAR",
+      "type_matches_exactly": false,
+      "role": "Consumo transitivo por B1; fornece amplitude com 0<=beta<=1. Nao fornece EOM.",
+      "read_sections": [
+        {
+          "first": 126,
+          "last": 165,
+          "text": "126: def thetaMiguel (β : ℝ) : ℝ := Real.arcsin (Real.sqrt β)\n127: \n128: /-- **A FUNÇÃO DE ACOPLAMENTO VERBAL** da patente: `f(θ) = tanh((θ − θ_M)/Δθ)`. -/\n129: def fVerbal (θ θM Δ : ℝ) : ℝ := Real.tanh ((θ - θM) / Δ)\n130: \n131: /-- **O PISO DE HILBERT VERBAL**: o sinal mínimo exigido de cada frase, `β · S_max`. -/\n132: def verbFloor (β Smax : ℝ) : ℝ := β * Smax\n133: \n134: /-! ## B — o limiar de poda É a amplitude de reflexão -/\n135: \n136: /-- [KERNEL] `sin(θ_Miguel β) = √β`. ⚠ **Elementar** — `Real.sin_arcsin` sobre\n137:     `0 ≤ √β ≤ 1`. Está aqui só para servir à identificação seguinte, e o seu estatuto\n138:     modesto fica dito. -/\n139: theorem sin_thetaMiguel {β : ℝ} (h0 : 0 ≤ β) (h1 : β ≤ 1) :\n140:     Real.sin (thetaMiguel β) = Real.sqrt β := by\n141:   unfold thetaMiguel\n142:   apply Real.sin_arcsin\n143:   · linarith [Real.sqrt_nonneg β]\n144:   · calc Real.sqrt β ≤ Real.sqrt 1 := Real.sqrt_le_sqrt h1\n145:     _ = 1 := Real.sqrt_one\n146: \n147: /-- [KERNEL] ★★★★★ **O LIMIAR DE PODA VERBAL É A AMPLITUDE DE REFLEXÃO DA FRONTEIRA.**\n148: \n149:     Num enunciado só: em `θ = θ_Miguel`, a amplitude de reflexão da matriz-S vale `√β` — o\n150:     mesmo número que a patente usa como limiar de poda (`g_ratio < √β ⟹ L_poda elimina`) —\n151:     e ela fecha com a transmissão em 1.\n152: \n153:     **Um só ângulo governa os dois domínios.** O que a patente chama de *vácuo verbal* é o\n154:     que reflete menos que a amplitude da fronteira. -/\n155: theorem the_pruning_threshold_is_the_reflection_amplitude {β : ℝ}\n156:     (h0 : 0 ≤ β) (h1 : β ≤ 1) :\n157:     Complex.normSq (Smat (thetaMiguel β) |>.mulVec e1 <| 1)\n158:         = Real.sqrt β ^ 2\n159:     ∧ Complex.normSq (Smat (thetaMiguel β) |>.mulVec e1 <| 1)\n160:         + Complex.normSq (Smat (thetaMiguel β) |>.mulVec e1 <| 0) = 1 := by\n161:   refine ⟨?_, normSq_reflection_add_transmission _⟩\n162:   rw [normSq_reflection, sin_thetaMiguel h0 h1]\n163: \n164: /-! ## C — o acoplamento separa, e é aí que ele vale -/\n165: "
+        }
+      ]
+    },
+    {
+      "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V353_A_PASSAGEM_DA_ACAO_A_METRICA\\kernel\\TGLExt\\NoFullWitness.lean",
+      "sha256": "fde4ca999c40e6892d1958bee15a066786adb1363b8e3514f41eeb8b8909a654",
+      "bytes": 7250,
+      "decision": "REUSAR",
+      "type_matches_exactly": false,
+      "role": "Consumo transitivo por B1; t,beta,gap positivos e igualdade do semigrupo completo. Nao fornece operador de campo.",
+      "read_sections": [
+        {
+          "first": 66,
+          "last": 97,
+          "text": "66: theorem leakage_strictly_loses {t β g : ℝ} (ht : 0 < t) (hβ : 0 < β)\n67:     (hg : 0 < g) : Real.exp (-(t * β * g)) < 1 := by\n68:   have hneg : -(t * β * g) < 0 := by\n69:     have := mul_pos (mul_pos ht hβ) hg\n70:     linarith\n71:   have h := Real.exp_lt_exp.mpr hneg\n72:   rwa [Real.exp_zero] at h\n73: \n74: /-- [KERNEL] ★ O FECHAMENTO PLENO EXIGE O PLANO: `e^{−tβg} = 1 ⟺ tβg = 0`\n75:     — só na ausência total de contraste (ou de tempo, ou de β) o transporte\n76:     fecha; a física observada (β > 0, gap > 0) mantém a passagem aberta. -/\n77: theorem full_closure_iff_flat (t β g : ℝ) :\n78:     Real.exp (-(t * β * g)) = 1 ↔ t * β * g = 0 := by\n79:   constructor\n80:   · intro h\n81:     have h0 : Real.exp (-(t * β * g)) = Real.exp 0 := by\n82:       rw [h, Real.exp_zero]\n83:     have hinj := Real.exp_injective h0\n84:     linarith\n85:   · intro h\n86:     rw [h, neg_zero, Real.exp_zero]\n87: \n88: /-- [KERNEL] ★ O TEOREMA DO full_witness = False: β > 0 e contraste > 0\n89:     PROÍBEM a testemunha estática plena — o transporte dissipativo não fixa\n90:     tudo (\"a testemunha não é full porque o Verbo continua\"). -/\n91: theorem beta_forbids_full_static_witness {β g : ℝ} (hβ : 0 < β) (hg : 0 < g) :\n92:     ¬ FullStaticWitness (fun t (x : ℝ) => Real.exp (-(t * β * g)) * x) := by\n93:   intro hfull\n94:   have h1 := hfull 1 1\n95:   simp only [mul_one] at h1\n96:   have hlt := leakage_strictly_loses one_pos hβ hg\n97:   rw [h1] at hlt"
+        },
+        {
+          "first": 135,
+          "last": 142,
+          "text": "135: theorem leakage_rate_unique {b₁ b₂ : ℝ}\n136:     (h : ∀ t : ℝ, Real.exp (-(t * b₁)) = Real.exp (-(t * b₂))) : b₁ = b₂ := by\n137:   have h1 := Real.exp_injective (h 1)\n138:   simp only [one_mul] at h1\n139:   linarith\n140: \n141: /-- [KERNEL] ★ A COMBINAÇÃO CANÔNICA: a testemunha canônica NÃO é plena\n142:     (β > 0 proíbe o fechamento) E é Meia-Nat de fronteira (as duas faces"
+        }
+      ]
+    },
+    {
+      "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V353_A_PASSAGEM_DA_ACAO_A_METRICA\\kernel\\TGLExt\\RhoPlusPClosure.lean",
+      "sha256": "cd80fbbe00300454d20f8a92bc09fe9e68d79fb73522934e59d77e7b04fe7be6",
+      "bytes": 4561,
+      "decision": "REUSAR",
+      "type_matches_exactly": false,
+      "role": "Consumo transitivo por B1; identidades algebricas para densidades livres, nao EOM ou Friedmann.",
+      "read_sections": [
+        {
+          "first": 47,
+          "last": 62,
+          "text": "47: theorem lambda_drops_out (ρΛ : ℝ) : ρΛ + (-ρΛ) = 0 := by ring\n48: \n49: /-- [KERNEL] ★★★ A IDENTIDADE DO FECHAMENTO: com p_r = ρ_r/3, p_m = 0 e\n50:     p_Λ = −ρ_Λ, a soma β·Σ(ρ_i+p_i) fecha EXATA em β[(4/3)ρ_r + ρ_m] —\n51:     ρ_Λ cancela, para quaisquer densidades. -/\n52: theorem closure_identity (β ρr ρm ρΛ : ℝ) :\n53:     β * ((ρr + ρr / 3) + (ρm + 0) + (ρΛ + (-ρΛ)))\n54:       = β * ((4 / 3) * ρr + ρm) := by ring\n55: \n56: /-- [KERNEL] ★★ A FORMA DO FUNDO: somar ρ_TGL ao total reescalona\n57:     radiação e matéria e deixa Λ intacta — o ponto no plano (N_eff, ω_c). -/\n58: theorem hubble_form (β ρr ρm ρΛ : ℝ) :\n59:     (ρr + ρm + ρΛ) + β * ((4 / 3) * ρr + ρm)\n60:       = (1 + 4 * β / 3) * ρr + (1 + β) * ρm + ρΛ := by ring\n61: \n62: /-- [KERNEL] a equação de estado efetiva (face algébrica): w_T ∈ [0, 1/3],"
+        },
+        {
+          "first": 90,
+          "last": 100,
+          "text": "90: theorem the_background_closure (β ρr ρm ρΛ : ℝ) :\n91:     (ρΛ + (-ρΛ) = 0)\n92:     ∧ (β * ((ρr + ρr / 3) + (ρm + 0) + (ρΛ + (-ρΛ)))\n93:         = β * ((4 / 3) * ρr + ρm))\n94:     ∧ ((ρr + ρm + ρΛ) + β * ((4 / 3) * ρr + ρm)\n95:         = (1 + 4 * β / 3) * ρr + (1 + β) * ρm + ρΛ) :=\n96:   ⟨lambda_drops_out ρΛ, closure_identity β ρr ρm ρΛ, hubble_form β ρr ρm ρΛ⟩\n97: \n98: end\n99: \n100: end TGLExt"
+        }
+      ]
+    },
+    {
+      "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V353_A_PASSAGEM_DA_ACAO_A_METRICA\\kernel\\TGLExt\\TheImportedEquilibrium.lean",
+      "sha256": "6ce0e9c29fd9267078783b2f28dcd82d935ba784ebbcc6f2270de5f1f9e2eda0",
+      "bytes": 6817,
+      "decision": "EXAMINADO_NAO_REUSAR",
+      "type_matches_exactly": false,
+      "role": "EquilibriumInput.flow:A->A e kms algebrico. towerEquilibriumInput tem matriz de andar finito; nenhum gerador diferencial de seções. H->C exige H. Nao criar instancia inerte so por nome.",
+      "read_sections": [
+        {
+          "first": 73,
+          "last": 93,
+          "text": "73: structure EquilibriumInput (A : Type) [Mul A] [One A] where\n74:   flow : A → A\n75:   state : A → ℂ\n76:   fixes_unit : flow 1 = 1\n77:   kms : ∀ a b : A, state (a * b) = state (b * flow a)\n78: \n79: /-! ## B — a ponte: a torre concreta fornece a entrada -/\n80: \n81: /-- [KERNEL] ★★★ A TORRE FORNECE A ENTRADA: o fluxo modular de Tomita e o\n82:     estado-produto do andar N formam um `EquilibriumInput`. Nada é\n83:     postulado — as duas leis são os teoremas `towerFlow_id` e\n84:     `tower_kms`, já em kernel. -/\n85: def towerEquilibriumInput (l : ℝ) (hl : 0 < l) (N : ℕ) :\n86:     EquilibriumInput (Matrix (chainIdx N) (chainIdx N) ℂ) where\n87:   flow := towerFlow l N\n88:   state := chainState l N\n89:   fixes_unit := towerFlow_id l hl N\n90:   kms := tower_kms l hl N\n91: \n92: /-- [KERNEL] ★★★ A PONTE, INCONDICIONAL: em TODO andar da torre e para\n93:     todo parâmetro positivo, a entrada existe e satisfaz as duas leis. É"
+        },
+        {
+          "first": 120,
+          "last": 153,
+          "text": "120:     implicação verdadeira cujo consequente é falso. Casar a FORMA da\n121:     entrada não descarrega a hipótese; é preciso ter a hipótese. -/\n122: theorem the_import_alone_concludes_nothing :\n123:     ∃ H C : Prop, (H → C) ∧ ¬ C :=\n124:   ⟨False, False, fun h => h, fun h => h⟩\n125: \n126: /-- [KERNEL] A QUITAÇÃO POR IMPORTAÇÃO É MODUS PONENS: quem tem a hipótese\n127:     disponível colhe o consequente sem pagar de novo o que já foi provado.\n128:     Esta é a regra do operador, exata: não se paga duas vezes. -/\n129: theorem discharge_by_import {H C : Prop} (h : H) (imported : H → C) : C :=\n130:   imported h\n131: \n132: /-- [KERNEL] ★★★★ O TRIO É UM PAR: dado o teorema mestre (H1∧H2∧H3 ⟹ P,\n133:     já em kernel) e a implicação IMPORTADA (H2 → H3, de Jacobson 1995 com\n134:     Bisognano–Wichmann, Unruh e Bekenstein–Hawking), a exigência\n135:     reduz-se a H1∧H2 ⟹ P.\n136: \n137:     O LUGAR (o horizonte de Rindler local, o boost) é a H2 quem dá; a\n138:     TERMODINÂMICA sobre esse lugar já foi dada. Logo a dívida de kernel\n139:     não é de três hipóteses nomeadas: é de DUAS. -/\n140: theorem the_trio_is_a_pair {H1 H2 H3 P : Prop}\n141:     (master : H1 ∧ H2 ∧ H3 → P) (imported : H2 → H3) :\n142:     H1 ∧ H2 → P := by\n143:   rintro ⟨h1, h2⟩\n144:   exact master ⟨h1, h2, imported h2⟩\n145: \n146: /-- [KERNEL] [HONESTIDADE] e a redução NÃO é gratuita: se a H2 não estiver\n147:     disponível, o par não conclui — a mesma régua que vale para a dívida\n148:     vale para a citação. -/\n149: theorem the_pair_still_needs_its_hypotheses :\n150:     ∃ H1 H2 P : Prop, (H1 ∧ H2 → P) ∧ ¬ P :=\n151:   ⟨False, False, False, fun h => h.1, fun h => h⟩\n152: \n153: end"
+        }
+      ]
+    },
+    {
+      "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V353_A_PASSAGEM_DA_ACAO_A_METRICA\\kernel\\TGLExt\\TowerModular.lean",
+      "sha256": "e3697a4f628eb1ae5211f004ac17d5867ccf60e705bb955d868229b118ee5550",
+      "bytes": 6315,
+      "decision": "EXAMINADO_NAO_REUSAR",
+      "type_matches_exactly": false,
+      "role": "towerFlow = conjugacao rho*a*rho_inv, sem parametro temporal no tipo. Nao igualar a K_boundary.",
+      "read_sections": [
+        {
+          "first": 97,
+          "last": 118,
+          "text": "97: \n98: /-- o fluxo modular de Tomita na torre: σ_N(a) = ρ_N · a · ρ_N⁻¹. -/\n99: def towerFlow (l : ℝ) (N : ℕ)\n100:     (a : Matrix (chainIdx N) (chainIdx N) ℂ) :\n101:     Matrix (chainIdx N) (chainIdx N) ℂ :=\n102:   chainDensity l N * a * chainDensityInv l N\n103: \n104: /-- [KERNEL] σ_N(1) = 1: o fluxo fixa a unidade. -/\n105: theorem towerFlow_id (l : ℝ) (hl : 0 < l) (N : ℕ) :\n106:     towerFlow l N 1 = 1 := by\n107:   unfold towerFlow\n108:   rw [mul_one, chainDensity_mul_inv l hl N]\n109: \n110: /-- [KERNEL] ★★★ A CONDIÇÃO KMS NA TORRE: φ_N(ab) = φ_N(b·σ_N(a)) em TODO\n111:     andar — a lei do estado de equilíbrio do fator SEM traço; o fluxo\n112:     modular é a estrutura que substitui o traço morto (v129). -/\n113: theorem tower_kms (l : ℝ) (hl : 0 < l) (N : ℕ)\n114:     (a b : Matrix (chainIdx N) (chainIdx N) ℂ) :\n115:     chainState l N (a * b) = chainState l N (b * towerFlow l N a) := by\n116:   unfold chainState towerFlow\n117:   have h1 : trace (chainDensity l N * (a * b))\n118:       = trace (b * (chainDensity l N * a)) := by"
+        }
+      ]
+    },
+    {
+      "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V353_A_PASSAGEM_DA_ACAO_A_METRICA\\kernel\\TGLExt\\TheDammingByExpansion.lean",
+      "sha256": "f139c3e660a93d79aafc1a629bec7347f4e63fc5310c470aa427cc76a8559025",
+      "bytes": 6058,
+      "decision": "EXAMINADO_NAO_REUSAR",
+      "type_matches_exactly": false,
+      "role": "the_form_does_not_fix_the_value recebe L,m,c nao nulos; alphaIdentity nao e TGLCoupling.alpha. Limite conceitual, sem ponte formal inventada.",
+      "read_sections": [
+        {
+          "first": 61,
+          "last": 116,
+          "text": "61: noncomputable section\n62: \n63: /-- **O REQUISITO CENTRÍPETO**: a força que uma trajetória fechada exige, m·v²/r. -/\n64: def centripetalRequirement (m v r : ℝ) : ℝ := m * v ^ 2 / r\n65: \n66: /-- **A IDENTIDADE DE ALFA** da cadeia do operador: α := L/(m·c·r). -/\n67: def alphaIdentity (L m c r : ℝ) : ℝ := L / (m * c * r)\n68: \n69: /-- [KERNEL] o requisito lido no momento angular: v = L/(m·r) ⟹ F_c = L²/(m·r³). -/\n70: theorem centripetal_from_angular {m L r : ℝ} (hm : m ≠ 0) (hr : r ≠ 0) :\n71:     centripetalRequirement m (L / (m * r)) r = L ^ 2 / (m * r ^ 3) := by\n72:   unfold centripetalRequirement\n73:   field_simp\n74: \n75: /-- [KERNEL] ★★★ **O REPRESAMENTO PAGA O REQUISITO.** Se o acoplamento equilibra a\n76:     trajetória (e₂/r² = m·v²/r) e o momento angular é L = m·v·r, então\n77:     e₂/(L·c) = v/c: o acoplamento em unidades de L·c É a velocidade da órbita em\n78:     unidades de luz. A órbita fechada é luz represada; α é o nome da razão. -/\n79: theorem the_damming_pays_the_requirement {e2 m v r c L : ℝ}\n80:     (hm : m ≠ 0) (hv : v ≠ 0) (hr : r ≠ 0) (hc : c ≠ 0)\n81:     (hL : L = m * v * r)\n82:     (hbal : e2 / r ^ 2 = centripetalRequirement m v r) :\n83:     e2 / (L * c) = v / c := by\n84:   unfold centripetalRequirement at hbal\n85:   have he2 : e2 = m * v ^ 2 * r := by\n86:     have h := congrArg (fun x : ℝ => x * r ^ 2) hbal\n87:     rw [div_mul_cancel₀ _ (pow_ne_zero 2 hr)] at h\n88:     rw [h]\n89:     field_simp\n90:   subst hL\n91:   rw [he2]\n92:   field_simp\n93: \n94: /-- [KERNEL] ★★ **AS TRÊS FACES DA IDENTIDADE**: L/(m·c·r) = (L/(m·r))/c = (L/(m·c))/r —\n95:     o acoplamento, a velocidade em unidades de luz, e o comprimento de onda reduzido\n96:     sobre o raio. Um objeto, três leituras, igualdade por álgebra. -/\n97: theorem the_three_faces {L m c r : ℝ} (hm : m ≠ 0) (hc : c ≠ 0) (hr : r ≠ 0) :\n98:     alphaIdentity L m c r = (L / (m * r)) / c\n99:       ∧ alphaIdentity L m c r = (L / (m * c)) / r := by\n100:   unfold alphaIdentity\n101:   constructor\n102:   · field_simp\n103:   · field_simp\n104: \n105: /-- [KERNEL] ★★★★★ **A FORMA NÃO FIXA O VALOR.** Para todo a ≠ 0 existe r ≠ 0 que\n106:     realiza a identidade com valor a: a forma tem liberdade de UM parâmetro, e só a\n107:     MEDIÇÃO a fecha. É o teorema que separa esta derivação da numerologia — e o que\n108:     faz da distinção do operador (\"a diferença não está na derivação, mas na\n109:     medição\") um par de teoremas em vez de uma frase. -/\n110: theorem the_form_does_not_fix_the_value {L m c : ℝ}\n111:     (hL : L ≠ 0) (hm : m ≠ 0) (hc : c ≠ 0) :\n112:     ∀ a : ℝ, a ≠ 0 → ∃ r : ℝ, r ≠ 0 ∧ alphaIdentity L m c r = a := by\n113:   intro a ha\n114:   refine ⟨L / (m * c * a), ?_, ?_⟩\n115:   · exact div_ne_zero hL (mul_ne_zero (mul_ne_zero hm hc) ha)\n116:   · unfold alphaIdentity"
+        }
+      ]
+    },
+    {
+      "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V353_A_PASSAGEM_DA_ACAO_A_METRICA\\kernel\\TGLExt\\FLRWFieldEquations.lean",
+      "sha256": "5db1052c8fad79e2858715de70b7f2aef9691825d26e1c5f208a951c6299f6c8",
+      "bytes": 12687,
+      "decision": "EXAMINADO_NAO_REUSAR",
+      "type_matches_exactly": false,
+      "role": "B2: metric_only_einstein_equation consumido; U aberto/preconexo, a suave positivo, H_null e H_conservation. Equacao metrica, nao EOM Psi.",
+      "read_sections": [
+        {
+          "first": 167,
+          "last": 218,
+          "text": "167: theorem flrw_friedmann_second (U : Set Coordinate4) (hU : IsOpen U)\n168:     (a rho pressure : ℝ → ℝ) (ha : ∀ y∈U, ContDiffAt ℝ ∞ a (y 0))\n169:     (hpos : ∀ y∈U, 0 < a (y 0)) (x : Coordinate4) (hx : x∈U)\n170:     (coupling cosmological : ℝ)\n171:     (hE : geometricEinsteinTensor (flrwMetric a) (metricInverse (flrwMetric a))\n172:       (leviCivitaField (flrwMetric a) (metricInverse (flrwMetric a))) x +\n173:       cosmological • flrwMetric a x = coupling • flrwStress a rho pressure x) :\n174:     deriv (flrwHubble a) (x 0) = -coupling/2*(rho (x 0)+pressure (x 0)) := by\n175:   have hz := (hpos x hx).ne'\n176:   have hda : DifferentiableAt ℝ a (x 0) := (ha x hx).differentiableAt (by simp)\n177:   have hdda : DifferentiableAt ℝ (deriv a) (x 0) :=\n178:     ((ha x hx).derivWithin (m := ∞) (by simp)).differentiableAt (by simp)\n179:   have hh : HasDerivAt (flrwHubble a)\n180:       ((deriv (deriv a) (x 0)*a (x 0)-(deriv a (x 0))^2)/(a (x 0))^2) (x 0) := by\n181:     simpa [flrwHubble, pow_two] using! hdda.hasDerivAt.div hda.hasDerivAt hz\n182:   have h00 := flrw_friedmann_first U hU a rho pressure ha hpos x hx coupling cosmological hE\n183:   have hacc := flrw_acceleration U hU a rho pressure ha hpos x hx coupling cosmological hE\n184:   rw [hh.deriv]\n185:   calc\n186:     _ = deriv (deriv a) (x 0)/a (x 0)-(flrwHubble a (x 0))^2 := by\n187:       unfold flrwHubble; field_simp\n188:     _ = _ := by linarith\n189: \n190: /-- Instantiates the existing general Einstein theorem, then reads the FLRW equations.\n191: The null balance and covariant conservation remain explicit hypotheses. -/\n192: theorem flrw_friedmann_from_general_metric\n193:     (U : Set Coordinate4) (hU : IsOpen U) (hconn : IsPreconnected U)\n194:     (a rho pressure : ℝ → ℝ) (eta : ℝ)\n195:     (ha : ∀ y∈U, ContDiffAt ℝ ∞ a (y 0)) (hpos : ∀ y∈U, 0 < a (y 0))\n196:     (hr : ∀ y∈U, DifferentiableAt ℝ rho (y 0))\n197:     (hp : ∀ y∈U, DifferentiableAt ℝ pressure (y 0))\n198:     (H_null : ∀ x∈U, ∀ v, tensorQuad (flrwMetric a x) v = 0 →\n199:       tensorQuad (coordinateRicci (leviCivitaField (flrwMetric a) (metricInverse (flrwMetric a))) x-\n200:         (2*Real.pi/eta) • flrwStress a rho pressure x) v = 0)\n201:     (H_conservation : ∀ x∈U, ∀ j, tensorFieldDivergence (metricInverse (flrwMetric a))\n202:       (leviCivitaField (flrwMetric a) (metricInverse (flrwMetric a)))\n203:       (flrwStress a rho pressure) x j = 0) :\n204:     ∃ cosmological : ℝ, ∀ x∈U,\n205:       (flrwHubble a (x 0))^2 = (2*Real.pi/eta)/3*rho (x 0)-cosmological/3 ∧\n206:       deriv (flrwHubble a) (x 0) = -(2*Real.pi/eta)/2*(rho (x 0)+pressure (x 0)) ∧\n207:       deriv rho (x 0)+3*flrwHubble a (x 0)*(rho (x 0)+pressure (x 0)) = 0 := by\n208:   have hda : ∀ y∈U, DifferentiableAt ℝ a (y 0) :=\n209:     fun y hy => (ha y hy).differentiableAt (by simp)\n210:   obtain ⟨cosmological,hE⟩ := metric_only_einstein_equation U hU hconn\n211:     (flrwMetric a) (flrwStress a rho pressure) (2*Real.pi/eta)\n212:     (fun y hy => flrw_metric_lorentz a y (hpos y hy).ne') (flrw_metric_smooth U a ha)\n213:     (flrw_stress_differentiable U a rho pressure hda hr hp)\n214:     (fun x _ => flrw_stress_symmetric a rho pressure x) H_null H_conservation\n215:   refine ⟨cosmological, fun x hx => ⟨?_,?_,?_⟩⟩\n216:   · exact flrw_friedmann_first U hU a rho pressure ha hpos x hx _ _ (hE x hx)\n217:   · exact flrw_friedmann_second U hU a rho pressure ha hpos x hx _ _ (hE x hx)\n218:   · exact flrw_continuity a rho pressure x (hpos x hx).ne' (hda x hx)"
+        }
+      ]
+    },
+    {
+      "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V353_A_PASSAGEM_DA_ACAO_A_METRICA\\kernel\\TGLExt\\SectorFluidClosure.lean",
+      "sha256": "2cf4ae9ae038c5e4a5bcf9099db27cda667020f7f8693498c9ebc1684fba2dc3",
+      "bytes": 5398,
+      "decision": "EXAMINADO_NAO_REUSAR",
+      "type_matches_exactly": false,
+      "role": "B3: rho_i, w_i constantes, H_nx setorial explicita; continuidade nao produz K_boundary.",
+      "read_sections": [
+        {
+          "first": 20,
+          "last": 61,
+          "text": "20: structure SectorFluid (ι : Type*) [Fintype ι] (I : Set ℝ) (H : ℝ → ℝ) where\n21:   rho : ι → ℝ → ℝ\n22:   w : ι → ℝ\n23:   rho_nonneg : ∀ i t, t ∈ I → 0 ≤ rho i t\n24:   H_nx : ∀ i t, t ∈ I → HasDerivAt (rho i) (-3*H t*(1+w i)*rho i t) t\n25: \n26: namespace SectorFluid\n27: \n28: noncomputable section\n29: \n30: variable {ι : Type*} [Fintype ι] {I : Set ℝ} {H : ℝ → ℝ}\n31: \n32: def totalRho (F : SectorFluid ι I H) (t : ℝ) : ℝ := ∑ i, F.rho i t\n33: def totalPressure (F : SectorFluid ι I H) (t : ℝ) : ℝ := ∑ i, F.w i*F.rho i t\n34: def enthalpy (F : SectorFluid ι I H) (t : ℝ) : ℝ := ∑ i, (1+F.w i)*F.rho i t\n35: def wEff (F : SectorFluid ι I H) (t : ℝ) : ℝ := F.totalPressure t/F.totalRho t\n36: def correctedRho (F : SectorFluid ι I H) (c : TGLCoupling) (i : ι) (t : ℝ) : ℝ :=\n37:   (1+c.beta*(1+F.w i))*F.rho i t\n38: def correctedTotalRho (F : SectorFluid ι I H) (c : TGLCoupling) (t : ℝ) : ℝ :=\n39:   ∑ i, F.correctedRho c i t\n40: def correctedTotalPressure (F : SectorFluid ι I H) (c : TGLCoupling) (t : ℝ) : ℝ :=\n41:   ∑ i, F.w i*F.correctedRho c i t\n42: \n43: theorem enthalpy_eq (F : SectorFluid ι I H) (t : ℝ) :\n44:     F.enthalpy t = F.totalRho t+F.totalPressure t := by\n45:   simp [enthalpy, totalRho, totalPressure, add_mul, Finset.sum_add_distrib]\n46: \n47: /-- Constant rescaling of the supplied non-exchange law, with the same w. -/\n48: theorem sector_rescaling_preserves_continuity (F : SectorFluid ι I H)\n49:     (c : TGLCoupling) (i : ι) (t : ℝ) (ht : t∈I) :\n50:     HasDerivAt (F.correctedRho c i)\n51:       (-3*H t*(1+F.w i)*F.correctedRho c i t) t := by\n52:   convert! (F.H_nx i t ht).const_mul (1+c.beta*(1+F.w i)) using 1\n53:   dsimp [correctedRho]\n54:   ring\n55: \n56: theorem corrected_closure (F : SectorFluid ι I H) (c : TGLCoupling) (t : ℝ) :\n57:     F.correctedTotalRho c t = F.totalRho t+c.beta*F.enthalpy t := by\n58:   unfold correctedTotalRho totalRho enthalpy\n59:   simp only [Finset.mul_sum, ← Finset.sum_add_distrib]\n60:   apply Finset.sum_congr rfl\n61:   intro i _"
+        }
+      ]
+    },
+    {
+      "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V353_A_PASSAGEM_DA_ACAO_A_METRICA\\kernel\\TGLExt\\SectorFriedmann.lean",
+      "sha256": "7c115dd6a8d71333d8811a6efbf7d46d4363e25d18b23f8c7e678e951c0b9dfa",
+      "bytes": 4397,
+      "decision": "EXAMINADO_NAO_REUSAR",
+      "type_matches_exactly": false,
+      "role": "B3: G>0, H_null corrigido, totalRho>0, entalpia>=0; Lambda existencial; nao fornece EOM.",
+      "read_sections": [
+        {
+          "first": 36,
+          "last": 77,
+          "text": "36: /-- G is an area calibration; beta is the single datum of B1. -/\n37: theorem tgl_friedmann_from_sector_closure\n38:     (U : Set Coordinate4) (hU : IsOpen U) (hconn : IsPreconnected U)\n39:     (I : Set ℝ) (a : ℝ → ℝ) (F : SectorFluid ι I (flrwHubble a))\n40:     (c : TGLCoupling) (G : ℝ) (hG : 0 < G)\n41:     (ha : ∀ x∈U, ContDiffAt ℝ ∞ a (x 0)) (hpos : ∀ x∈U, 0 < a (x 0))\n42:     (hI : ∀ x∈U, x 0∈I)\n43:     (hr : ∀ x∈U, 0 < F.totalRho (x 0))\n44:     (he : ∀ x∈U, 0 ≤ F.enthalpy (x 0))\n45:     (H_null : ∀ x∈U, ∀ v, tensorQuad (flrwMetric a x) v = 0 →\n46:       tensorQuad (coordinateRicci (leviCivitaField (flrwMetric a) (metricInverse (flrwMetric a))) x-\n47:         (2*Real.pi/(1/(4*G))) •\n48:           flrwStress a (F.correctedTotalRho c) (F.correctedTotalPressure c) x) v = 0) :\n49:     ∃ cosmological : ℝ, ∀ x∈U,\n50:       (flrwHubble a (x 0))^2 = (8*Real.pi*G/3)*\n51:         F.totalRho (x 0)*(1+c.beta*|1+F.wEff (x 0)|)-cosmological/3 ∧\n52:       deriv (flrwHubble a) (x 0) = -4*Real.pi*G*\n53:         (F.correctedTotalRho c (x 0)+F.correctedTotalPressure c (x 0)) ∧\n54:       deriv (F.correctedTotalRho c) (x 0)+3*flrwHubble a (x 0)*\n55:         (F.correctedTotalRho c (x 0)+F.correctedTotalPressure c (x 0)) = 0 := by\n56:   have hc := flrw_newton_coefficient G hG\n57:   obtain ⟨cosmological, hF⟩ := flrw_friedmann_from_general_metric U hU hconn a\n58:     (F.correctedTotalRho c) (F.correctedTotalPressure c) (1/(4*G)) ha hpos\n59:     (fun x hx => (F.corrected_rho_deriv c (x 0) (hI x hx)).differentiableAt)\n60:     (fun x hx => F.corrected_pressure_differentiable c (x 0) (hI x hx))\n61:     H_null (fun x hx j => congrFun (sector_covariant_conservation I a F c x\n62:       (hI x hx) (hpos x hx).ne' ((ha x hx).differentiableAt (by simp))) j)\n63:   refine ⟨cosmological, fun x hx => ⟨?_,?_,(hF x hx).2.2⟩⟩\n64:   · rw [(hF x hx).1, hc, F.multiplicative_closure c (x 0) (hr x hx) (he x hx)]\n65:     ring\n66:   · rw [(hF x hx).2.1]\n67:     have hk : -(2*Real.pi/(1/(4*G)))/2 = -4*Real.pi*G := by linarith\n68:     rw [hk]\n69: \n70: /-- Specialization at an explicitly zero integration constant, using the full\n71:     metric equation rather than assuming the desired scalar Friedmann law. -/\n72: theorem tgl_friedmann_zero_cosmological\n73:     (U : Set Coordinate4) (hU : IsOpen U) (I : Set ℝ) (a : ℝ → ℝ)\n74:     (F : SectorFluid ι I (flrwHubble a)) (c : TGLCoupling) (G cosmological : ℝ)\n75:     (hG : 0 < G) (ha : ∀ y∈U, ContDiffAt ℝ ∞ a (y 0))\n76:     (hpos : ∀ y∈U, 0 < a (y 0)) (x : Coordinate4) (hx : x∈U)\n77:     (hr : 0 < F.totalRho (x 0)) (he : 0 ≤ F.enthalpy (x 0))"
+        }
+      ]
+    },
+    {
+      "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V353_A_PASSAGEM_DA_ACAO_A_METRICA\\kernel\\TGLExt\\ThermodynamicFriedmann.lean",
+      "sha256": "aa6b1c852034c4ca8b71872446ada2ec1d121dca213471eb6fa17eda147bc3a3",
+      "bytes": 6095,
+      "decision": "EXAMINADO_NAO_REUSAR",
+      "type_matches_exactly": false,
+      "role": "B4: HubbleHorizonInput com H,G,Phi positivos, derivada e fluxo com raio. Nao fornece operador de campo nem realiza H3.",
+      "read_sections": [
+        {
+          "first": 20,
+          "last": 67,
+          "text": "20: def hubbleArea (H : ℝ → ℝ) (t : ℝ) : ℝ := 4*Real.pi/(H t)^2\n21: def entropyFactor (c : TGLCoupling) (w : ℝ) : ℝ := 1+c.beta*|1+w|\n22: \n23: theorem entropy_factor_pos (c : TGLCoupling) (w : ℝ) : 0 < entropyFactor c w := by\n24:   unfold entropyFactor\n25:   have hb := mul_nonneg c.beta_pos.le (abs_nonneg (1+w))\n26:   linarith\n27: \n28: theorem hubble_area_derivative (H : ℝ → ℝ) (t : ℝ)\n29:     (hh : DifferentiableAt ℝ H t) (hz : H t ≠ 0) :\n30:     HasDerivAt (hubbleArea H) (-8*Real.pi*deriv H t/(H t)^3) t := by\n31:   convert! (hasDerivAt_const t (4*Real.pi)).div (hh.hasDerivAt.pow 2) (pow_ne_zero _ hz) using 1\n32:   simp only [Pi.pow_apply]\n33:   field_simp\n34:   ring\n35: \n36: /-- Imported physical prescriptions, with the modified differential law named.\n37:     The definitions of A, T and r_A are displayed directly in the fields. -/\n38: structure HubbleHorizonInput (H : ℝ → ℝ) (t G Phi enthalpy : ℝ) where\n39:   H_pos : 0 < H t\n40:   G_pos : 0 < G\n41:   Phi_pos : 0 < Phi\n42:   H_diff : DifferentiableAt ℝ H t\n43:   entropyRate : ℝ\n44:   heatRate : ℝ\n45:   differential_entropy : entropyRate = deriv (hubbleArea H) t/(4*G*Phi)\n46:   enthalpy_flux : heatRate = hubbleArea H t*enthalpy*H t*(H t)⁻¹\n47:   clausius : heatRate = (H t/(2*Real.pi))*entropyRate\n48: \n49: /-- The old coefficient provider is consumed with the modified area differential. -/\n50: theorem modified_clausius_coefficient (H dA G Phi : ℝ) (hg : G ≠ 0) :\n51:     (H/(2*Real.pi))*(dA/(4*G*Phi)) = H*(dA/Phi)/(8*Real.pi*G) := by\n52:   convert einstein_coefficient_from_clausius H (dA/Phi) G hg using 1\n53:   congr 1\n54:   ring\n55: \n56: theorem tgl_second_friedmann_from_clausius (H : ℝ → ℝ) (t G Phi enthalpy : ℝ)\n57:     (D : HubbleHorizonInput H t G Phi enthalpy) :\n58:     deriv H t = -4*Real.pi*G*Phi*enthalpy := by\n59:   have hh := D.H_pos.ne'\n60:   have hg := D.G_pos.ne'\n61:   have hp := D.Phi_pos.ne'\n62:   have hc := D.clausius\n63:   rw [D.enthalpy_flux, D.differential_entropy,\n64:     modified_clausius_coefficient _ _ _ _ hg,\n65:     (hubble_area_derivative H t D.H_diff hh).deriv] at hc\n66:   dsimp [hubbleArea] at hc\n67:   field_simp at hc"
+        }
+      ]
+    },
+    {
+      "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V353_A_PASSAGEM_DA_ACAO_A_METRICA\\kernel\\TGLExt\\SectorRouteComparison.lean",
+      "sha256": "b6295c52d8a3f7718eabded61f3b95a81f4e0de6fe39bf0455687f926715d2a4",
+      "bytes": 8459,
+      "decision": "EXAMINADO_NAO_REUSAR",
+      "type_matches_exactly": false,
+      "role": "B4: diferenca beta*variancia; fator unico exige entalpia !=0. Nao escolhe rota nem produz EOM.",
+      "read_sections": [
+        {
+          "first": 91,
+          "last": 115,
+          "text": "91: theorem the_two_routes_differ (F : SectorFluid ι I H) (c : TGLCoupling)\n92:     (t : ℝ) (ht : t∈I) (hr : 0 < F.totalRho t) (he : 0 ≤ F.enthalpy t) :\n93:     (F.correctedTotalRho c t+F.correctedTotalPressure c t)-\n94:       entropyFactor c (F.wEff t)*F.enthalpy t = c.beta*F.sectorVariance t ∧\n95:     0 ≤ c.beta*F.sectorVariance t := by\n96:   have hw : |1+F.wEff t| = F.enthalpy t/F.totalRho t := by\n97:     apply (eq_div_iff hr.ne').mpr\n98:     nlinarith [F.effective_enthalpy t hr he]\n99:   constructor\n100:   · rw [F.corrected_enthalpy]\n101:     unfold entropyFactor SectorFluid.sectorVariance\n102:     rw [hw]\n103:     ring\n104:   · exact mul_nonneg c.beta_pos.le (F.sector_variance_nonneg t ht hr.ne')\n105: \n106: theorem the_two_routes_equal_iff (F : SectorFluid ι I H) (c : TGLCoupling)\n107:     (t : ℝ) (ht : t∈I) (hr : 0 < F.totalRho t) (he : 0 ≤ F.enthalpy t) :\n108:     F.correctedTotalRho c t+F.correctedTotalPressure c t =\n109:       entropyFactor c (F.wEff t)*F.enthalpy t ↔\n110:       ∃ commonW : ℝ, ∀ i, 0 < F.rho i t → F.w i = commonW := by\n111:   rw [← F.sector_variance_zero_iff t ht hr.ne']\n112:   have h := (the_two_routes_differ F c t ht hr he).1\n113:   constructor\n114:   · intro hz\n115:     have hm : c.beta*F.sectorVariance t = 0 := by rw [hz] at h; linarith"
+        },
+        {
+          "first": 129,
+          "last": 140,
+          "text": "129: theorem the_entropy_factor_that_reproduces_the_sector_closure\n130:     (F : SectorFluid ι I H) (c : TGLCoupling) (t : ℝ)\n131:     (he : F.enthalpy t ≠ 0) (factor : ℝ) :\n132:     factor*F.enthalpy t = F.correctedTotalRho c t+F.correctedTotalPressure c t ↔\n133:       factor = F.fluxFactor c t := by\n134:   rw [F.corrected_enthalpy]\n135:   unfold SectorFluid.fluxFactor\n136:   field_simp\n137: \n138: /-- The factor identity is consumed by the actual Clausius-to-Hdot theorem. -/\n139: theorem sector_clausius_matches_closed_rate (F : SectorFluid ι I H)\n140:     (c : TGLCoupling) (t G : ℝ) (he : F.enthalpy t ≠ 0)"
+        }
+      ]
+    }
+  ],
+  "orders": [
+    {
+      "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TUNEL\\PARA_CHATGPT\\ORDEM_012_a_passagem_da_acao_a_metrica.md",
+      "bytes": 29534,
+      "sha256": "a9cb2a7b812afc435f019d1af9089740ff38b22db76473126a5dfce454c7325e"
+    },
+    {
+      "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TUNEL\\PARA_CHATGPT\\ORDEM_012_RECIBO_E_ADENDO_001_quarta_face_e_sequencia.md",
+      "bytes": 37599,
+      "sha256": "679cdc94d90f4fea72dacfefb8a4ebf55a3ca87510d333b7c1b9c6c05c21f4e9"
+    },
+    {
+      "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TUNEL\\PARA_CHATGPT\\ORDEM_011_fecho_matematico_da_realizacao_concreta.md",
+      "bytes": 19503,
+      "sha256": "2457c9b136025aeb24a3f9131e001d53fdcdbc8cdfa4f377da01c31f7c5304d0"
+    }
+  ],
+  "searches": [
+    {
+      "patterns": [
+        "ActionCouplingData",
+        "the_same_beta_reads_four_faces",
+        "K_boundary",
+        "boxOperator"
+      ],
+      "root": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V353_A_PASSAGEM_DA_ACAO_A_METRICA\\kernel\\TGLExt",
+      "returncode": 1,
+      "stdout": "",
+      "stderr": ""
+    }
+  ],
+  "limits": [
+    "EOM e INPUT nomeado: nao se deriva variacao de funcional de acao, nem existencia/regularidade de solucao fisica.",
+    "K_boundary sera operador linear real importado sobre secoes X->Complex. Nao se afirma ser gerador Stone/Tomita, autoadjunto, afiliado ou nao limitado.",
+    "xi e variavel independente: nao identificada com beta nem fixada em 1/6. Independencia de papel nao e prova de desigualdade numerica xi != beta.",
+    "boxOperator e dado linear, nao construcao do dAlembertiano de uma metrica. scalarCurvature:X->Real e dado, nao computacao de Ricci.",
+    "Unicidade de coeficiente so quando K_boundary(Psi) != 0. Campo nulo satisfaz a equacao linear; nao e certificado de realizacao. Exibir modelo algebrico nao nulo e parede sem premissa EOM.",
+    "B1 preservado: alpha e leitura beta/exp(1/2), nao CODATA; fundo e algebra; vazamento exige gap positivo.",
+    "Fontes canonicas de outra casa retornaram Acesso negado. Artigo A original nao foi lido: forma EOM provem do adendo efetivamente lido [INPUT/DECLARADO]. Nao certificar estado v354 pelo indice.",
+    "Revisao desta bancada e autoral; exame independente e aceite final reservados ao operador. Sem edicao de um.py, D1, gate, B3, A2, Atlas, memorias preexistentes ou tunel."
+  ],
+  "build_plan": "Copiar projeto e caches por bytes para raiz nova. Lake build com Lean4.31; sem hardlinks/junctions externos; fontes locais de dependencia TGL/TGLExt recompiladas; caches Mathlib/pacotes copiados, nao reconstruidos. Auditoria #print axioms com nomes completos e verificacao calculada de subconjunto de propext/Classical.choice/Quot.sound; controles por lake env lean com diagnostico semantico. Cada tentativa preservada."
+}

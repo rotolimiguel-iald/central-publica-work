@@ -1,0 +1,20 @@
+from pathlib import Path
+import ast
+REV=Path(__file__).resolve().parent
+t=(REV/'run_right_fixed_graph_review.py').read_text(encoding='utf-8')
+t=t.replace("'right_fixed_graph_independent_'", "'right_projection_pair_independent_'")
+t=t.replace("Path((REV/'right_graph_blocks_latest_run.txt').read_text().strip())]", "Path((REV/'right_graph_blocks_latest_run.txt').read_text().strip()),Path((REV/'right_fixed_graph_latest_run.txt').read_text().strip())]")
+t=t.replace("spec=[('FixedVectorGraphCore','20260913_014340_002699',9)]", "spec=[('ScalarRightProjectionPair','20260913_014137_777731',6)]")
+t=t.replace("prior=Path((REV/'right_graph_blocks_latest_run.txt').read_text().strip())", "prior=Path((REV/'right_fixed_graph_latest_run.txt').read_text().strip())")
+t=t.replace("prior_c['exact_39_targets']", "prior_c['exact_48_targets']")
+t=t.replace("len(prior_m['declarations'])==39", "len(prior_m['declarations'])==48").replace('len(inherited_sources)==3','len(inherited_sources)==4')
+t=t.replace('assert len(targets)==len(set(targets))==48','assert len(targets)==len(set(targets))==54')
+t=t.replace("'TGLV350.HilbertProjectionBlocks']:visit(n)", "'TGLV350.HilbertProjectionBlocks','TGLV350.FixedVectorGraphCore']:visit(n)")
+t=t.replace("'PARTIAL_FOUR_ACCEPTED_MODULES_9_NEW_48_CUMULATIVE_TARGETS'", "'PARTIAL_FIVE_ACCEPTED_MODULES_6_NEW_54_CUMULATIVE_TARGETS'")
+t=t.replace("'right_fixed_graph_latest_run.txt',str(RUN).encode()", "'right_projection_pair_latest_run.txt',str(RUN).encode()")
+t=t.replace("import TGLV350.HilbertProjectionBlocks\\n'+''.join", "import TGLV350.HilbertProjectionBlocks\\nimport TGLV350.FixedVectorGraphCore\\n'+''.join")
+t=t.replace('RightFixedGraphAudit','RightProjectionPairAudit').replace("'exact_48_targets':len(records)", "'exact_54_targets':len(records)")
+ast.parse(t);out=REV/'run_right_projection_pair_review.py';assert not out.exists()
+raw=t.encode();tmp=out.with_name(out.name+'.tmp')
+with tmp.open('xb') as f:f.write(raw)
+assert tmp.read_bytes()==raw;tmp.replace(out);print(out)

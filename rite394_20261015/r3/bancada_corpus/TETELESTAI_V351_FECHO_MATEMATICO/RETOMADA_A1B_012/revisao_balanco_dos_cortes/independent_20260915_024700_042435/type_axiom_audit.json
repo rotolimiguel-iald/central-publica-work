@@ -1,0 +1,131 @@
+{
+  "types": {
+    "TGLV350.Regular.scalarTomitaResolvent_double_cut_balance": "TGLV350.Regular.scalarTomitaResolvent_double_cut_balance (P : TGLExt.SiteProfile) (ε η : ℝ) (hε : LT.lt.{0} 0 ε)\n  (hη : LT.lt.{0} 0 η) :\n  have π := TGLV350.Regular.scalarGNSRepresentation P;\n  have J := TGLV350.Regular.scalarTomitaPolarFactor P;\n  have C := π (Subtype.mk.{1} (TGLV350.Regular.regularInverseGeneratorCutoff P ε) ⋯);\n  have D :=\n    TGLV350.Regular.antiunitaryConjugate J (π (Subtype.mk.{1} (TGLV350.Regular.regularInverseGeneratorCutoff P η) ⋯));\n  Commute.{0} (TGLV350.Regular.scalarTomitaResolvent P) C ∧\n    Commute.{0} (TGLV350.Regular.scalarTomitaResolvent P) D ∧\n      Eq.{1}\n        (HMul.hMul.{0, 0, 0} (HMul.hMul.{0, 0, 0} (HSub.hSub.{0, 0, 0} 1 (TGLV350.Regular.scalarTomitaResolvent P)) C)\n          (TGLV350.Regular.antiunitaryConjugate J (π (TGLV350.Regular.regularDomainCut P η))))\n        (HMul.hMul.{0, 0, 0}\n          (HMul.hMul.{0, 0, 0} (TGLV350.Regular.scalarTomitaResolvent P) (π (TGLV350.Regular.regularDomainCut P ε))) D)"
+  },
+  "source_types": {
+    "damped_phase_scalar_balance": "private theorem damped_phase_scalar_balance (r a b : ℝ)\n    (hr : r ∈ Set.Icc 0 1) (ha : a ∈ Set.Icc 0 1) (hb : b ∈ Set.Icc 0 1)\n    (hphase : ∀ t : ℝ,\n      resolventPhaseFunction t r * (resolventDamping a : ℂ) * (resolventDamping b : ℂ) =\n      (resolventDamping r : ℂ) * resolventPhaseFunction t a * resolventPhaseFunction (-t) b) :\n    (resolventDamping r * resolventDamping a * resolventDamping b) *\n      ((1-r)*a*(1-b)-r*(1-a)*b) = 0",
+    "damped_phase_commutative_balance": "private theorem damped_phase_commutative_balance {C : Type*} [CommCStarAlgebra C]\n    [ContinuousFunctionalCalculus ℂ C IsStarNormal]\n    [PartialOrder C] [StarOrderedRing C] (T A B : C)\n    (hT : T ∈ Set.Icc 0 1) (hA : A ∈ Set.Icc 0 1) (hB : B ∈ Set.Icc 0 1)\n    (hphase : ∀ t : ℝ,\n      cfc (fun z : ℂ => resolventPhaseFunction t z.re) T * (A*(1-A)) * (B*(1-B)) =\n      (T*(1-T)) * cfc (fun z : ℂ => resolventPhaseFunction t z.re) A *\n        cfc (fun z : ℂ => resolventPhaseFunction (-t) z.re) B) :\n    ((T*(1-T))*(A*(1-A))*(B*(1-B))) * ((1-T)*A*(1-B)-T*(1-A)*B) = 0",
+    "damped_phase_operator_balance": "private theorem damped_phase_operator_balance {H : Type} [NormedAddCommGroup H]\n    [InnerProductSpace ℂ H] [CompleteSpace H] (T A B : H →L[ℂ] H)\n    (hT : T ∈ Set.Icc 0 1) (hA : A ∈ Set.Icc 0 1) (hB : B ∈ Set.Icc 0 1)\n    (hTA : Commute T A) (hTB : Commute T B) (hAB : Commute A B)\n    (hiT : Function.Injective T) (hjT : Function.Injective (1-T : H →L[ℂ] H))\n    (hiA : Function.Injective A) (hjA : Function.Injective (1-A : H →L[ℂ] H))\n    (hiB : Function.Injective B) (hjB : Function.Injective (1-B : H →L[ℂ] H))\n    (hphase : ∀ t : ℝ,\n      resolventPhaseOperator T t * resolventDampingOperator A * resolventDampingOperator B =\n      resolventDampingOperator T * resolventPhaseOperator A t * resolventPhaseOperator B (-t)) :\n    (1-T)*A*(1-B) = T*(1-A)*B",
+    "scalar_representation_vector_injective": "private theorem scalar_representation_vector_injective (P : SiteProfile)\n    (a : (regularCoreAlgebra P).toStarSubalgebra) (ha : Function.Injective a.val) :\n    Function.Injective (scalarGNSRepresentation P a)",
+    "closed_representation_cfc": "private theorem closed_representation_cfc {H K : Type} [NormedAddCommGroup H]\n    [InnerProductSpace ℂ H] [CompleteSpace H] [NormedAddCommGroup K]\n    [InnerProductSpace ℂ K] [CompleteSpace K]\n    (N : StarSubalgebra ℂ (H →L[ℂ] H)) [IsClosed (N : Set (H →L[ℂ] H))]\n    (π : N →⋆ₐ[ℂ] (K →L[ℂ] K)) (a : N) (ha : IsSelfAdjoint a.val)\n    (f : ℂ → ℂ) (hf : Continuous f) :\n    ∃ hm : cfc f a.val ∈ N, π ⟨cfc f a.val,hm⟩ = cfc f (π a) ∧\n      ∀ T : K →L[ℂ] K, Commute T (π a) → Commute T (π ⟨cfc f a.val,hm⟩)",
+    "scalar_resolvent_commutes_represented_regular": "private theorem scalar_resolvent_commutes_represented_regular (P : SiteProfile) :\n    Commute (scalarTomitaResolvent P)\n      (scalarGNSRepresentation P ⟨regularSpectralResolvent P,regularSpectralResolvent_mem P⟩)",
+    "scalar_represented_regular_damped_phase": "private theorem scalar_represented_regular_damped_phase (P : SiteProfile) (t : ℝ) :\n    scalarGNSRepresentation P (regularRightCoreElement P t) *\n        resolventDampingOperator\n          (scalarGNSRepresentation P ⟨regularSpectralResolvent P,regularSpectralResolvent_mem P⟩) =\n      resolventPhaseOperator\n        (scalarGNSRepresentation P ⟨regularSpectralResolvent P,regularSpectralResolvent_mem P⟩) t",
+    "scalar_original_resolvent_balance": "private theorem scalar_original_resolvent_balance (P : SiteProfile) :\n    let T := scalarTomitaResolvent P\n    let A := scalarGNSRepresentation P\n      ⟨regularSpectralResolvent P,regularSpectralResolvent_mem P⟩\n    let B := antiunitaryConjugate (scalarTomitaPolarFactor P) A\n    Commute T A ∧ Commute T B ∧ Function.Injective A ∧ Function.Injective B ∧\n      (1-T)*A*(1-B) = T*(1-A)*B",
+    "cut_balance_after_multiplication": "private theorem cut_balance_after_multiplication {R : Type*} [Ring R]\n    (T A B C D p q : R)\n    (hbase : (1-T)*A*(1-B) = T*(1-A)*B)\n    (hTA : Commute T A) (hTB : Commute T B)\n    (hBC : Commute B C) (hBp : Commute B p)\n    (hAp : A*p = (1-A)*C) (hBq : B*q = (1-B)*D) :\n    (A*B)*((1-T)*C*q) = (A*B)*(T*p*D)",
+    "scalarTomitaResolvent_double_cut_balance": "theorem scalarTomitaResolvent_double_cut_balance (P : SiteProfile)\n    (ε η : ℝ) (hε : 0 < ε) (hη : 0 < η) :\n    let π := scalarGNSRepresentation P\n    let J := scalarTomitaPolarFactor P\n    let C := π ⟨regularInverseGeneratorCutoff P ε,regularInverseGeneratorCutoff_mem P ε⟩\n    let D := antiunitaryConjugate J\n      (π ⟨regularInverseGeneratorCutoff P η,regularInverseGeneratorCutoff_mem P η⟩)\n    Commute (scalarTomitaResolvent P) C ∧ Commute (scalarTomitaResolvent P) D ∧\n      (1-scalarTomitaResolvent P)*C*antiunitaryConjugate J (π (regularDomainCut P η)) =\n        scalarTomitaResolvent P * π (regularDomainCut P ε) * D"
+  },
+  "axioms": {
+    "TGLV350.Regular.scalarTomitaResolvent_double_cut_balance": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ]
+  },
+  "private_axioms": {
+    "_private.TGLExt.V351ModularCutBalance.0.TGLV350.Regular.cut_balance_after_multiplication": [
+      "propext"
+    ],
+    "_private.TGLExt.V351ModularCutBalance.0.TGLV350.Regular.scalar_original_resolvent_balance": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "_private.TGLExt.V351ModularCutBalance.0.TGLV350.Regular.scalar_represented_regular_damped_phase": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "_private.TGLExt.V351ModularCutBalance.0.TGLV350.Regular.damped_phase_scalar_balance": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "_private.TGLExt.V351ModularCutBalance.0.TGLV350.Regular.damped_phase_commutative_balance": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "_private.TGLExt.V351ModularCutBalance.0.TGLV350.Regular.damped_phase_operator_balance": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "_private.TGLExt.V351ModularCutBalance.0.TGLV350.Regular.scalar_representation_vector_injective": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "_private.TGLExt.V351ModularCutBalance.0.TGLV350.Regular.closed_representation_cfc": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "_private.TGLExt.V351ModularCutBalance.0.TGLV350.Regular.scalar_resolvent_commutes_represented_regular": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ]
+  },
+  "all_axioms": {
+    "TGLV350.Regular.scalarTomitaResolvent_double_cut_balance": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "_private.TGLExt.V351ModularCutBalance.0.TGLV350.Regular.cut_balance_after_multiplication": [
+      "propext"
+    ],
+    "_private.TGLExt.V351ModularCutBalance.0.TGLV350.Regular.scalar_original_resolvent_balance": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "_private.TGLExt.V351ModularCutBalance.0.TGLV350.Regular.scalar_represented_regular_damped_phase": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "_private.TGLExt.V351ModularCutBalance.0.TGLV350.Regular.damped_phase_scalar_balance": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "_private.TGLExt.V351ModularCutBalance.0.TGLV350.Regular.damped_phase_commutative_balance": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "_private.TGLExt.V351ModularCutBalance.0.TGLV350.Regular.damped_phase_operator_balance": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "_private.TGLExt.V351ModularCutBalance.0.TGLV350.Regular.scalar_representation_vector_injective": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "_private.TGLExt.V351ModularCutBalance.0.TGLV350.Regular.closed_representation_cfc": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "_private.TGLExt.V351ModularCutBalance.0.TGLV350.Regular.scalar_resolvent_commutes_represented_regular": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ]
+  },
+  "trace": {
+    "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\v\\.lake\\build\\lib\\lean\\TGLExt\\ReviewA1Balanco_dos_cortes.trace",
+    "bytes": 4965,
+    "sha256": "a4e34126aedc15d4f9db07445c160e1b97d098c14d4470713d12bcb2e548af6e"
+  },
+  "target_trace": {
+    "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\v\\.lake\\build\\lib\\lean\\TGLExt\\V351ModularCutBalance.trace",
+    "bytes": 7237,
+    "sha256": "4024473506dd4f141362d3caabba49d25da3094488ac72964797e4e8477dedd5"
+  },
+  "exact_target_count": 1,
+  "private_helpers_audited_transitively": true
+}

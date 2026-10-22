@@ -1,0 +1,23 @@
+# Falhas e limites — entrega autoral A2 SUSY 012
+
+[REAL] Quatro módulos candidatos compilaram no Lean 4.31.0. A auditoria efetiva imprime somente propext, Classical.choice e Quot.sound para as 29 declarações novas nomeadas e cinco fornecedores. Os três controles adulterados retornam rc1 por incompatibilidade de tipos; sua falsidade específica também está provada em sondas rc0/trio. Comandos, hashes e logs constam nos JSONs desta pasta.
+
+[REAL] O reticulado representa todas as projeções ortogonais em regularCoreAlgebra P, por subespaços fechados invariantes sob o comutante. operator_mem, operator_ofOperator e operator_le_iff fornecem pertinência, representação e identificação da ordem. A API construída tem Lattice e BoundedOrder, com supremo binário; não acrescenta uma instância CompleteLattice nem teorema sobre supremos arbitrários.
+
+[REAL] O traço é exatamente scalarInverseLimitWeight P aplicado à mesma projeção positiva. A subaditividade vem de u=boundedPolar((1-Q)P), com u em N, u* u <= P e u u* = (P join Q)-Q, e da tracialidade quadrática de A1. Não recebe subaditividade, Kaplansky ou existência de polar como premissa. O nome legado SemifiniteTraceData pede tau, monotonicidade e fidelidade; esta entrega não atribui ao nome uma nova prova de normalidade ou aproximação semifinita.
+
+[REAL] O representante é D=regularMinimalLock P=1-PF e D0=1. ker=gapD=diff=PF; gapD0=bottom. As projeções de núcleo e a diferença 1-D são identificadas concretamente; o gap normativo no complemento do núcleo vem de A2. Não se acrescentou uma API de janelas espectrais de Borel. tauA1(PF)=1 é a normalização já provada em A2.
+
+[OPEN] Não há identificação de Hamiltoniano microscópico, H1 físico resolvido ou confirmação da natureza. A flag gpf_H1_internal_susy_relative_gap_discharged é apenas proposta para exame neste alcance matemático; não foi editada. O acesso de busca ao um.py canônico foi recusado pelo sistema (erro 5); a implementação corrente dessa flag não foi inspecionada. A proposta se ancora no contrato e na instrução do operador.
+
+[INPUT] A bancada principal informou sucesso da compatibilidade positiva e da montagem de regularLegacyCore, além da correção de instância em ThreeLocks e do fornecedor witnessV3_infinite na mesma Torre. Essas fontes não foram copiadas/importadas para esta ponte nem auditadas aqui. O total trace e ThreeLocks ficam fora deste pacote.
+
+[REAL] A cópia A1 contém os bytes e hashes descritos em COPIA_A1.json. Seis objetos A2 e CoreSupport foram reutilizados com recibos; não foi repetido o trabalho PF/split/gap nem um rebuild completo da base. PRESERVACAO_FONTES.json remede as fontes TGL/TGLExt A1 copiadas e as oito fontes A2, sem alegar medição de toda raiz externa. As cópias próprias são arquivos independentes, sem hardlinks. Backups locais foram mantidos por bytes. Atlas, memórias externas, túnel, A2 e canônico não receberam escrita desta tarefa.
+
+[REAL] As tentativas anteriores não foram apagadas. Houve builds prematuros com cópia ainda incompleta (imports Mathlib/Aesop ausentes), falta local do objeto CoreSupport e erros de elaboração Lean em nomes, coerções, reescritas dependentes e álgebra não comutativa. A sonda positiva SUSY teve uma tentativa com nome bot_sup inexistente; corrigida para bot_sup_eq. TENTATIVAS.json separa esses erros dos controles deliberados. Algumas saídas rc1 imprimem sorryAx por declarações com erros: não são objetos aceitos, nem fonte com sorry, nem evidência positiva.
+
+[REAL] Permanecem avisos de aliases deprecated (mul_apply/zero_apply) e um aviso de ext em sonda. Não são erros de compilação. Os módulos novos usam o orçamento padrão de heartbeats; não se alega mínimo empírico. O build do polar precedeu a instrumentação de hashes temporais dos imports; seu receipt mede fonte estável, sem afirmar imports_unchanged naquela tentativa. O restante final registra a estabilidade dos imports diretos.
+
+[REAL] Falhas auxiliares de consulta/empacotamento: buscas amplas tiveram saídas truncadas e caminhos presumidos inexistentes; uma busca por arquivos atravessou pastas sem acesso. Não se declara ausência exaustiva de fornecedores. Houve erro de aspas numa tentativa de gerar finalize.py antes de qualquer execução desse script, seguido de arquivo não encontrado; houve também UnicodeEncodeError ao imprimir a ficha em cp1252, sem alterar a ficha. A versão corrigida do empacotamento foi executada após esses erros. Nenhum desses erros é apresentado como controle semântico.
+
+[OPEN] Revisão independente e aceite da gerência pendentes. Os snapshots POLAR_SNAPSHOT_001/002 são recibos históricos imutáveis; a situação final de controles está em CONTROLES.json. Esta entrega é autoral, não aceite final nem atualização de gate.

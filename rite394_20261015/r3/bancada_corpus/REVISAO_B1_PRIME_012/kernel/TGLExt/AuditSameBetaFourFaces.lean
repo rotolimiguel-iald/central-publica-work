@@ -1,0 +1,61 @@
+import TGLExt.ActionCouplingControls
+
+set_option pp.universes true
+set_option pp.proofs true
+
+#check TGLExt.ActionCouplingData
+#print axioms TGLExt.ActionCouplingData
+#check TGLExt.the_same_beta_reads_four_faces
+#print axioms TGLExt.the_same_beta_reads_four_faces
+#check TGLExt.ActionCouplingData.curvatureTerm
+#print axioms TGLExt.ActionCouplingData.curvatureTerm
+#check TGLExt.ActionCouplingData.fieldOperator
+#print axioms TGLExt.ActionCouplingData.fieldOperator
+#check TGLExt.ActionCouplingData.modularSource
+#print axioms TGLExt.ActionCouplingData.modularSource
+#check TGLExt.ActionCouplingData.EOM
+#print axioms TGLExt.ActionCouplingData.EOM
+#check TGLExt.ActionCouplingData.eom_at
+#print axioms TGLExt.ActionCouplingData.eom_at
+#check TGLExt.ActionCouplingData.modular_source_ignores_xi
+#print axioms TGLExt.ActionCouplingData.modular_source_ignores_xi
+#check TGLExt.ActionCouplingData.modular_coefficient_unique
+#print axioms TGLExt.ActionCouplingData.modular_coefficient_unique
+#check TGLExt.ActionCouplingData.eom_rejects_changed_coefficient
+#print axioms TGLExt.ActionCouplingData.eom_rejects_changed_coefficient
+#check TGLExt.ActionCouplingData.eom_rejects_changed_generator
+#print axioms TGLExt.ActionCouplingData.eom_rejects_changed_generator
+#check TGLExt.ActionCouplingData.eom_rejects_missing_curvature
+#print axioms TGLExt.ActionCouplingData.eom_rejects_missing_curvature
+#check TGLExt.ActionCouplingData.zero_source_hides_coefficient
+#print axioms TGLExt.ActionCouplingData.zero_source_hides_coefficient
+#check TGLExt.ActionCouplingControls.scalarModel
+#print axioms TGLExt.ActionCouplingControls.scalarModel
+#check TGLExt.ActionCouplingControls.unitSection
+#print axioms TGLExt.ActionCouplingControls.unitSection
+#check TGLExt.ActionCouplingControls.unitSection_ne_zero
+#print axioms TGLExt.ActionCouplingControls.unitSection_ne_zero
+#check TGLExt.ActionCouplingControls.scalar_model_field
+#print axioms TGLExt.ActionCouplingControls.scalar_model_field
+#check TGLExt.ActionCouplingControls.scalar_model_eom
+#print axioms TGLExt.ActionCouplingControls.scalar_model_eom
+#check TGLExt.ActionCouplingControls.nonzero_model_for_every_xi
+#print axioms TGLExt.ActionCouplingControls.nonzero_model_for_every_xi
+#check TGLExt.ActionCouplingControls.scalar_model_rejects_wrong_gain
+#print axioms TGLExt.ActionCouplingControls.scalar_model_rejects_wrong_gain
+#check TGLExt.ActionCouplingControls.data_alone_does_not_supply_eom
+#print axioms TGLExt.ActionCouplingControls.data_alone_does_not_supply_eom
+#check TGLExt.ActionCouplingControls.reject_sign_flip
+#print axioms TGLExt.ActionCouplingControls.reject_sign_flip
+#check TGLExt.ActionCouplingControls.reject_xi_as_beta
+#print axioms TGLExt.ActionCouplingControls.reject_xi_as_beta
+#check TGLExt.ActionCouplingControls.reject_bare_alpha
+#print axioms TGLExt.ActionCouplingControls.reject_bare_alpha
+#check TGLExt.ActionCouplingControls.xi_is_not_selected
+#print axioms TGLExt.ActionCouplingControls.xi_is_not_selected
+#check TGLExt.ActionCouplingControls.zero_source_not_unique
+#print axioms TGLExt.ActionCouplingControls.zero_source_not_unique
+#check TGLExt.the_same_beta_reads_three_faces
+#print axioms TGLExt.the_same_beta_reads_three_faces
+
+#print TGLExt.the_same_beta_reads_four_faces

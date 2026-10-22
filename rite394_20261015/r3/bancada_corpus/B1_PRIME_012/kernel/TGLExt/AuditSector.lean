@@ -1,0 +1,23 @@
+import TGLExt.SectorFriedmann
+#print axioms ChatgptAudit.FLRW.SectorFluid
+#print axioms ChatgptAudit.FLRW.SectorFluid.totalRho
+#print axioms ChatgptAudit.FLRW.SectorFluid.totalPressure
+#print axioms ChatgptAudit.FLRW.SectorFluid.enthalpy
+#print axioms ChatgptAudit.FLRW.SectorFluid.wEff
+#print axioms ChatgptAudit.FLRW.SectorFluid.correctedRho
+#print axioms ChatgptAudit.FLRW.SectorFluid.correctedTotalRho
+#print axioms ChatgptAudit.FLRW.SectorFluid.correctedTotalPressure
+#print axioms ChatgptAudit.FLRW.SectorFluid.enthalpy_eq
+#print axioms ChatgptAudit.FLRW.SectorFluid.sector_rescaling_preserves_continuity
+#print axioms ChatgptAudit.FLRW.SectorFluid.corrected_closure
+#print axioms ChatgptAudit.FLRW.SectorFluid.weighted_continuity
+#print axioms ChatgptAudit.FLRW.SectorFluid.total_continuity
+#print axioms ChatgptAudit.FLRW.SectorFluid.corrected_rho_deriv
+#print axioms ChatgptAudit.FLRW.SectorFluid.corrected_pressure_differentiable
+#print axioms ChatgptAudit.FLRW.SectorFluid.corrected_continuity
+#print axioms ChatgptAudit.FLRW.SectorFluid.effective_enthalpy
+#print axioms ChatgptAudit.FLRW.SectorFluid.multiplicative_closure
+#print axioms ChatgptAudit.FLRW.SectorFluid.three_sector_closure
+#print axioms ChatgptAudit.FLRW.sector_covariant_conservation
+#print axioms ChatgptAudit.FLRW.tgl_friedmann_from_sector_closure
+#print axioms ChatgptAudit.FLRW.tgl_friedmann_zero_cosmological

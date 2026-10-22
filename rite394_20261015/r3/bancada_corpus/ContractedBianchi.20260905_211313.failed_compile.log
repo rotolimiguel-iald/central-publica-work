@@ -1,0 +1,103 @@
+ContractedBianchi.lean:67:2: error: linarith failed to find a contradiction
+case h1
+gInv : Matrix (Fin 4) (Fin 4) ℝ
+Q : Fin 4 → Fin 4 → Fin 4 → Fin 4 → Fin 4 → ℝ
+hfirst : ∀ (k a b i j : Fin 4), Q k a b i j = -Q k b a i j
+hlast : ∀ (k a b i j : Fin 4), Q k a b i j = -Q k a b j i
+hcyclic : ∀ (a b i j k : Fin 4), Q i a b j k + Q j a b k i + Q k a b i j = 0
+j : Fin 4
+ht : ∑ i, ∑ k, ∑ a, ∑ c, gInv i k * gInv a c * Q a c k j i = ∑ i, ∑ k, ∑ a, ∑ c, gInv i k * gInv a c * Q i c k a j
+hn : ∑ i, ∑ k, ∑ a, ∑ c, gInv i k * gInv a c * Q j c k i a = -∑ i, ∑ k, ∑ a, ∑ c, gInv i k * gInv a c * Q j c k a i
+hz :
+  ∑ x, ∑ x_1, ∑ x_2, ∑ x_3, gInv x x_1 * gInv x_2 x_3 * Q x x_3 x_1 x_2 j +
+        ∑ i, ∑ k, ∑ a, ∑ c, gInv i k * gInv a c * Q i c k a j +
+      -∑ i, ∑ k, ∑ a, ∑ c, gInv i k * gInv a c * Q j c k a i =
+    0
+a✝ :
+  ∑ x, ∑ x_1, ∑ x_2, ∑ x_3, 2 * gInv x x_1 * gInv x_2 x_3 * Q x x_3 x_1 x_2 j <
+    ∑ x, ∑ x_1, ∑ x_2, ∑ x_3, gInv x x_1 * gInv x_2 x_3 * Q j x_3 x_1 x_2 x
+⊢ False
+failed
+ContractedBianchi.lean:116:12: error: Tactic `rewrite` failed: Did not find an occurrence of the pattern
+  ∑ a, ∑ l, Gamma x k l j * coordinateCurvature Gamma x a l a b
+in the target expression
+  ∑ x_1, tensorFieldJet (fun y => coordinateCurvature Gamma y x_1 j) x k x_1 b +
+            ∑ a, ∑ l, Gamma x k l a * coordinateCurvature Gamma x l j a b -
+          ∑ l, Gamma x k l b * ∑ a, coordinateCurvature Gamma x a j a l -
+        ∑ x_1, (∑ l, Gamma x k l x_1 • coordinateCurvature Gamma x l j) x_1 b -
+      ∑ x_1, (∑ l, Gamma x k l j • coordinateCurvature Gamma x x_1 l) x_1 b =
+    ∑ x_1, tensorFieldJet (fun y => coordinateCurvature Gamma y x_1 j) x k x_1 b -
+        ∑ x_1, Gamma x k x_1 b * ∑ a, coordinateCurvature Gamma x a j a x_1 -
+      ∑ x_1, (∑ a, coordinateCurvature Gamma x a x_1 a b) * Gamma x k x_1 j
+
+U : Set Coordinate4
+hU : IsOpen U
+Gamma : ConnectionField4
+hG : SmoothConnectionOn U Gamma
+x : Coordinate4
+hx : x ∈ U
+k b j : Fin 4
+hs :
+  ∑ a, ∑ l, Gamma x k a l * coordinateCurvature Gamma x a j l b =
+    ∑ a, ∑ l, Gamma x k l a * coordinateCurvature Gamma x l j a b
+hB :
+  ∑ a, ∑ l, coordinateCurvature Gamma x a j a l * Gamma x k l b =
+    ∑ l, Gamma x k l b * ∑ a, coordinateCurvature Gamma x a j a l
+hC :
+  ∑ a, ∑ l, Gamma x k l j * coordinateCurvature Gamma x a l a b =
+    ∑ l, (∑ a, coordinateCurvature Gamma x a l a b) * Gamma x k l j
+⊢ ∑ x_1, tensorFieldJet (fun y => coordinateCurvature Gamma y x_1 j) x k x_1 b +
+            ∑ a, ∑ l, Gamma x k l a * coordinateCurvature Gamma x l j a b -
+          ∑ l, Gamma x k l b * ∑ a, coordinateCurvature Gamma x a j a l -
+        ∑ x_1, (∑ l, Gamma x k l x_1 • coordinateCurvature Gamma x l j) x_1 b -
+      ∑ x_1, (∑ l, Gamma x k l j • coordinateCurvature Gamma x x_1 l) x_1 b =
+    ∑ x_1, tensorFieldJet (fun y => coordinateCurvature Gamma y x_1 j) x k x_1 b -
+        ∑ x_1, Gamma x k x_1 b * ∑ a, coordinateCurvature Gamma x a j a x_1 -
+      ∑ x_1, (∑ a, coordinateCurvature Gamma x a x_1 a b) * Gamma x k x_1 j
+
+Note: The target expression is not type-correct under the `instances` transparency level, which may have triggered the failure. This is usually caused by unfolding of semireducible definitions in prior tactic steps. Use `set_option linter.tacticCheckInstances true` to investigate the source of the issue.
+Full error:
+  function expected
+    tensorFieldJet (fun y => coordinateCurvature Gamma y x j) x✝ k x
+ContractedBianchi.lean:113:55: warning: This simp argument is unused:
+  Finset.sum_apply
+
+Hint: Omit it from the simp argument list.
+  simp only [̵c̵o̵v̵a̵r̵i̵a̵n̵t̵C̵u̵r̵v̵a̵t̵u̵r̵e̵D̵e̵r̵i̵v̵a̵t̵i̵v̵e̵,̵e̵x̵t̵e̵r̵i̵o̵r̵C̵o̵v̵a̵r̵i̵a̵n̵t̵C̵u̵r̵v̵a̵t̵u̵r̵e̵D̵e̵r̵i̵v̵a̵t̵i̵v̵e̵,̵
+  ̵ ̵ ̵ ̵ ̵M̵a̵t̵r̵i̵x̵.̵s̵u̵b̵_̵a̵p̵p̵l̵y̵,̵M̵a̵t̵r̵i̵x̵.̵a̵d̵d̵_̵a̵p̵p̵l̵y̵,̵M̵a̵t̵r̵i̵x̵.̵m̵u̵l̵_̵a̵p̵p̵l̵y̵,̵F̵i̵n̵s̵e̵t̵.̵s̵u̵m̵_̵a̵p̵p̵l̵y̵,̵M̵a̵t̵r̵i̵x̵.̵s̵m̵u̵l̵_̵a̵p̵p̵l̵y̵,̵s̵m̵u̵l̵_̵e̵q̵_̵m̵u̵l̵,̵
+  ̵ ̵ ̵ ̵ ̵F̵i̵n̵s̵e̵t̵.̵s̵u̵m̵_̵a̵d̵d̵_̵d̵i̵s̵t̵r̵i̵b̵,̵F̵i̵n̵s̵e̵t̵.̵s̵u̵m̵_̵s̵u̵b̵_̵d̵i̵s̵t̵r̵i̵b̵,̵c̵o̵v̵a̵r̵i̵a̵n̵t̵T̵e̵n̵s̵o̵r̵J̵e̵t̵,̵[̲c̲o̲v̲a̲r̲i̲a̲n̲t̲C̲u̲r̲v̲a̲t̲u̲r̲e̲D̲e̲r̲i̲v̲a̲t̲i̲v̲e̲,̲ ̲e̲x̲t̲e̲r̲i̲o̲r̲C̲o̲v̲a̲r̲i̲a̲n̲t̲C̲u̲r̲v̲a̲t̲u̲r̲e̲D̲e̲r̲i̲v̲a̲t̲i̲v̲e̲,̲ ̲M̲a̲t̲r̲i̲x̲.̲s̲u̲b̲_̲a̲p̲p̲l̲y̲,̲
+  ̲ ̲ ̲ ̲ ̲M̲a̲t̲r̲i̲x̲.̲a̲d̲d̲_̲a̲p̲p̲l̲y̲,̲ ̲M̲a̲t̲r̲i̲x̲.̲m̲u̲l̲_̲a̲p̲p̲l̲y̲,̲ ̲M̲a̲t̲r̲i̲x̲.̲s̲m̲u̲l̲_̲a̲p̲p̲l̲y̲,̲ ̲s̲m̲u̲l̲_̲e̲q̲_̲m̲u̲l̲,̲ ̲F̲i̲n̲s̲e̲t̲.̲s̲u̲m̲_̲a̲d̲d̲_̲d̲i̲s̲t̲r̲i̲b̲,̲
+  ̲ ̲ ̲ ̲ ̲F̲i̲n̲s̲e̲t̲.̲s̲u̲m̲_̲s̲u̲b̲_̲d̲i̲s̲t̲r̲i̲b̲,̲ ̲c̲o̲v̲a̲r̲i̲a̲n̲t̲T̲e̲n̲s̲o̲r̲J̲e̲t̲,̲ ricci_derivative_trace U hU Gamma hG x h̵x̵,̵M̵a̵t̵r̵i̵x̵.̵t̵r̵a̵n̵s̵p̵o̵s̵e̵_̵a̵p̵p̵l̵y̵,̵c̵o̵o̵r̵d̵i̵n̵a̵t̵e̵R̵i̵c̵c̵i̵]̵h̲x̲,̲
+  ̲ ̲ ̲ ̲ ̲M̲a̲t̲r̲i̲x̲.̲t̲r̲a̲n̲s̲p̲o̲s̲e̲_̲a̲p̲p̲l̲y̲,̲ ̲c̲o̲o̲r̲d̲i̲n̲a̲t̲e̲R̲i̲c̲c̲i̲]̲
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+ContractedBianchi.lean:113:72: warning: This simp argument is unused:
+  Matrix.smul_apply
+
+Hint: Omit it from the simp argument list.
+  simp only [̵c̵o̵v̵a̵r̵i̵a̵n̵t̵C̵u̵r̵v̵a̵t̵u̵r̵e̵D̵e̵r̵i̵v̵a̵t̵i̵v̵e̵,̵e̵x̵t̵e̵r̵i̵o̵r̵C̵o̵v̵a̵r̵i̵a̵n̵t̵C̵u̵r̵v̵a̵t̵u̵r̵e̵D̵e̵r̵i̵v̵a̵t̵i̵v̵e̵,̵
+  ̵ ̵ ̵ ̵ ̵M̵a̵t̵r̵i̵x̵.̵s̵u̵b̵_̵a̵p̵p̵l̵y̵,̵M̵a̵t̵r̵i̵x̵.̵a̵d̵d̵_̵a̵p̵p̵l̵y̵,̵M̵a̵t̵r̵i̵x̵.̵m̵u̵l̵_̵a̵p̵p̵l̵y̵,̵F̵i̵n̵s̵e̵t̵.̵s̵u̵m̵_̵a̵p̵p̵l̵y̵,̵M̵a̵t̵r̵i̵x̵.̵s̵m̵u̵l̵_̵a̵p̵p̵l̵y̵,̵s̵m̵u̵l̵_̵e̵q̵_̵m̵u̵l̵,̵
+  ̵ ̵ ̵ ̵ ̵F̵i̵n̵s̵e̵t̵.̵s̵u̵m̵_̵a̵d̵d̵_̵d̵i̵s̵t̵r̵i̵b̵,̵F̵i̵n̵s̵e̵t̵.̵s̵u̵m̵_̵s̵u̵b̵_̵d̵i̵s̵t̵r̵i̵b̵,̵c̵o̵v̵a̵r̵i̵a̵n̵t̵T̵e̵n̵s̵o̵r̵J̵e̵t̵,̵[̲c̲o̲v̲a̲r̲i̲a̲n̲t̲C̲u̲r̲v̲a̲t̲u̲r̲e̲D̲e̲r̲i̲v̲a̲t̲i̲v̲e̲,̲ ̲e̲x̲t̲e̲r̲i̲o̲r̲C̲o̲v̲a̲r̲i̲a̲n̲t̲C̲u̲r̲v̲a̲t̲u̲r̲e̲D̲e̲r̲i̲v̲a̲t̲i̲v̲e̲,̲ ̲M̲a̲t̲r̲i̲x̲.̲s̲u̲b̲_̲a̲p̲p̲l̲y̲,̲
+  ̲ ̲ ̲ ̲ ̲M̲a̲t̲r̲i̲x̲.̲a̲d̲d̲_̲a̲p̲p̲l̲y̲,̲ ̲M̲a̲t̲r̲i̲x̲.̲m̲u̲l̲_̲a̲p̲p̲l̲y̲,̲ ̲F̲i̲n̲s̲e̲t̲.̲s̲u̲m̲_̲a̲p̲p̲l̲y̲,̲ ̲s̲m̲u̲l̲_̲e̲q̲_̲m̲u̲l̲,̲ ̲F̲i̲n̲s̲e̲t̲.̲s̲u̲m̲_̲a̲d̲d̲_̲d̲i̲s̲t̲r̲i̲b̲,̲
+  ̲ ̲ ̲ ̲ ̲F̲i̲n̲s̲e̲t̲.̲s̲u̲m̲_̲s̲u̲b̲_̲d̲i̲s̲t̲r̲i̲b̲,̲ ̲c̲o̲v̲a̲r̲i̲a̲n̲t̲T̲e̲n̲s̲o̲r̲J̲e̲t̲,̲ ricci_derivative_trace U hU Gamma hG x h̵x̵,̵M̵a̵t̵r̵i̵x̵.̵t̵r̵a̵n̵s̵p̵o̵s̵e̵_̵a̵p̵p̵l̵y̵,̵c̵o̵o̵r̵d̵i̵n̵a̵t̵e̵R̵i̵c̵c̵i̵]̵h̲x̲,̲
+  ̲ ̲ ̲ ̲ ̲M̲a̲t̲r̲i̲x̲.̲t̲r̲a̲n̲s̲p̲o̲s̲e̲_̲a̲p̲p̲l̲y̲,̲ ̲c̲o̲o̲r̲d̲i̲n̲a̲t̲e̲R̲i̲c̲c̲i̲]̲
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+ContractedBianchi.lean:113:90: warning: This simp argument is unused:
+  smul_eq_mul
+
+Hint: Omit it from the simp argument list.
+  simp only [̵c̵o̵v̵a̵r̵i̵a̵n̵t̵C̵u̵r̵v̵a̵t̵u̵r̵e̵D̵e̵r̵i̵v̵a̵t̵i̵v̵e̵,̵e̵x̵t̵e̵r̵i̵o̵r̵C̵o̵v̵a̵r̵i̵a̵n̵t̵C̵u̵r̵v̵a̵t̵u̵r̵e̵D̵e̵r̵i̵v̵a̵t̵i̵v̵e̵,̵
+  ̵ ̵ ̵ ̵ ̵M̵a̵t̵r̵i̵x̵.̵s̵u̵b̵_̵a̵p̵p̵l̵y̵,̵M̵a̵t̵r̵i̵x̵.̵a̵d̵d̵_̵a̵p̵p̵l̵y̵,̵M̵a̵t̵r̵i̵x̵.̵m̵u̵l̵_̵a̵p̵p̵l̵y̵,̵F̵i̵n̵s̵e̵t̵.̵s̵u̵m̵_̵a̵p̵p̵l̵y̵,̵M̵a̵t̵r̵i̵x̵.̵s̵m̵u̵l̵_̵a̵p̵p̵l̵y̵,̵s̵m̵u̵l̵_̵e̵q̵_̵m̵u̵l̵,̵
+  ̵ ̵ ̵ ̵ ̵F̵i̵n̵s̵e̵t̵.̵s̵u̵m̵_̵a̵d̵d̵_̵d̵i̵s̵t̵r̵i̵b̵,̵F̵i̵n̵s̵e̵t̵.̵s̵u̵m̵_̵s̵u̵b̵_̵d̵i̵s̵t̵r̵i̵b̵,̵c̵o̵v̵a̵r̵i̵a̵n̵t̵T̵e̵n̵s̵o̵r̵J̵e̵t̵,̵[̲c̲o̲v̲a̲r̲i̲a̲n̲t̲C̲u̲r̲v̲a̲t̲u̲r̲e̲D̲e̲r̲i̲v̲a̲t̲i̲v̲e̲,̲ ̲e̲x̲t̲e̲r̲i̲o̲r̲C̲o̲v̲a̲r̲i̲a̲n̲t̲C̲u̲r̲v̲a̲t̲u̲r̲e̲D̲e̲r̲i̲v̲a̲t̲i̲v̲e̲,̲ ̲M̲a̲t̲r̲i̲x̲.̲s̲u̲b̲_̲a̲p̲p̲l̲y̲,̲
+  ̲ ̲ ̲ ̲ ̲M̲a̲t̲r̲i̲x̲.̲a̲d̲d̲_̲a̲p̲p̲l̲y̲,̲ ̲M̲a̲t̲r̲i̲x̲.̲m̲u̲l̲_̲a̲p̲p̲l̲y̲,̲ ̲F̲i̲n̲s̲e̲t̲.̲s̲u̲m̲_̲a̲p̲p̲l̲y̲,̲ ̲M̲a̲t̲r̲i̲x̲.̲s̲m̲u̲l̲_̲a̲p̲p̲l̲y̲,̲ ̲F̲i̲n̲s̲e̲t̲.̲s̲u̲m̲_̲a̲d̲d̲_̲d̲i̲s̲t̲r̲i̲b̲,̲
+  ̲ ̲ ̲ ̲ ̲F̲i̲n̲s̲e̲t̲.̲s̲u̲m̲_̲s̲u̲b̲_̲d̲i̲s̲t̲r̲i̲b̲,̲ ̲c̲o̲v̲a̲r̲i̲a̲n̲t̲T̲e̲n̲s̲o̲r̲J̲e̲t̲,̲ ricci_derivative_trace U hU Gamma hG x h̵x̵,̵M̵a̵t̵r̵i̵x̵.̵t̵r̵a̵n̵s̵p̵o̵s̵e̵_̵a̵p̵p̵l̵y̵,̵c̵o̵o̵r̵d̵i̵n̵a̵t̵e̵R̵i̵c̵c̵i̵]̵h̲x̲,̲
+  ̲ ̲ ̲ ̲ ̲M̲a̲t̲r̲i̲x̲.̲t̲r̲a̲n̲s̲p̲o̲s̲e̲_̲a̲p̲p̲l̲y̲,̲ ̲c̲o̲o̲r̲d̲i̲n̲a̲t̲e̲R̲i̲c̲c̲i̲]̲
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+'ChatgptAudit.sum_four_exchange_pairs' depends on axioms: [propext, Classical.choice, Quot.sound]
+'ChatgptAudit.contracted_bianchi_algebra' depends on axioms: [propext, sorryAx, Classical.choice, Quot.sound]
+'ChatgptAudit.coordinate_ricci_smooth' depends on axioms: [propext, Classical.choice, Quot.sound]
+'ChatgptAudit.ricci_derivative_trace' depends on axioms: [propext, Classical.choice, Quot.sound]
+'ChatgptAudit.covariant_ricci_contraction' depends on axioms: [propext, sorryAx, Classical.choice, Quot.sound]
+'ChatgptAudit.lower_covariant_ricci_contraction' depends on axioms: [propext, sorryAx, Classical.choice, Quot.sound]

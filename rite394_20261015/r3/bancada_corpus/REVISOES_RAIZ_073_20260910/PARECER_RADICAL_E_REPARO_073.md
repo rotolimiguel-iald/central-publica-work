@@ -1,0 +1,13 @@
+# Parecer da raiz — radical, saturação e reparo073
+
+10/09/2026. [DERIVED — revisão escrita independente do autor das duas notas] [REAL — leitura e pins]. Li integralmente a nota principal e o adendo de reparo. Não identifiquei erro material na sequência exata, no bloco finito ou na distinção de domínios. Não houve cálculo CAS, Lean ou execução de um.py.
+
+A Ward fixa B(kx,u)=ell G(x,cu), deixando livres os blocos C e D_c. Depois do radical, o critério de fechamento é cu em N_G; isso não coincide necessariamente com cu=0. O mapa da cohomologia em N_G/cN_E é sobrejetivo pelo levantamento r, e seu kernel é H/J, com J=p(N_E intersec ker c). As duas saturações S1/S2 dão exatamente a identificação canônica com H/N_A. A demonstração mantém imagem em vez de pressupor uma inversa do operador de covariância em todo o dual.
+
+No plano de dimensão dois, G+=(1/2)[[1,i],[-i,1]] é hermitiana, projetora e anula y=(1,i). A matriz B com bloco D_c=-t I, t>0, conserva a diferença i Omega_E e as Ward. As equações do radical são Gz=0 e ell Gx=tz; a decomposição ortogonal imagem/kernel de G força z=0. Logo ry permanece no quociente, torna-se fechado e tem norma -2t. A interpretação da fonte é correta: refuta a implicação universal a partir dos contratos068, não mede como negativo um kernel específico de068 nem refuta a existência de uma boa escolha.
+
+O encaixe por um plano simplético de dados suaves acrescenta apenas kernels suaves aos pares. A correção T(cu,cv) preserva a Ward porque ck=0, e preserva o estado físico porque c=0 em seus dados fechados. Assim o contraexemplo representa uma liberdade real do antecedente. O adendo também repara o próprio bloco por D_c=0, obtendo N_E=kN_G mais rN_G e, com física adicionada, também N_A.
+
+O critério global C=D_c=0 satisfaz ambas as saturações; sua condição Hadamard exige a construção microlocal separada. A nota não afirma que zerar esses blocos em um split arbitrário seja uma correção suave. A invariância de S2 frente a mudanças somente de D_c está correta: sua equação é C* N_A contida na imagem de G. A inversa de ocupações suavizantes não foi tratada como um operador contínuo automaticamente.
+
+A segunda quantização algébrica usa o quociente determinado por W, em vez de substituí-lo por outra covariância. A extensão da homotopia aos slots contrai os fatores auxiliares, mas esse domínio de tensores simples não inclui por si todo vetor criado por campos Wick locais. A insuficiência é explicitada, e a composição Fock073 é a prova separada que trata os tensores nucleares completados. Não há mudança das contagens físicas, da ação ambiente ou dos falsificadores neste parecer.

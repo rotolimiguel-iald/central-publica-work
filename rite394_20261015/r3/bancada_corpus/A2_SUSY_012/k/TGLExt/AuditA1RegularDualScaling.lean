@@ -1,0 +1,16 @@
+import TGLExt.V351RegularGeneratorDualScaling
+set_option pp.universes true
+#check TGLV350.Regular.fourierInv_shift_schwartz
+#print axioms TGLV350.Regular.fourierInv_shift_schwartz
+#check TGLV350.Regular.fourierInv_shift
+#print axioms TGLV350.Regular.fourierInv_shift
+#check TGLV350.Regular.fourier_characterMultiplier
+#print axioms TGLV350.Regular.fourier_characterMultiplier
+#check TGLV350.Regular.operatorFieldLift_commutes_character
+#print axioms TGLV350.Regular.operatorFieldLift_commutes_character
+#check TGLV350.Regular.regularSpectralCoordinates_dual
+#print axioms TGLV350.Regular.regularSpectralCoordinates_dual
+#check TGLV350.Regular.regularPositiveGenerator_dual_graph
+#print axioms TGLV350.Regular.regularPositiveGenerator_dual_graph
+#check TGLV350.Regular.regularPositiveGenerator_dual_scaling
+#print axioms TGLV350.Regular.regularPositiveGenerator_dual_scaling

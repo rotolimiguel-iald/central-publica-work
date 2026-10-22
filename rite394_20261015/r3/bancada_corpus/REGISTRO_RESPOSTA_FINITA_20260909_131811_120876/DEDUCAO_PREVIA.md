@@ -1,0 +1,3 @@
+# Registro finito de resposta quadrática
+[DERIVED antes de compilar] Uma forma quadrática simétrica em4D é determinada pelas respostas em e0,e1,e2,e3 e e_i+e_j para i<j (dez números). A diagonal é q(e_i); os termos fora da diagonal são [q(e_i+e_j)−q(e_i)−q(e_j)]/2. O módulo prova os dois roundtrips.
+Esse registro é de coeficientes de resposta, não de probabilidades de um único evento inicial. Aplicação microscópica requer a lei q(d)=dᵀAd, que a preparação conjunta pode fornecer. As dez direções não são exigidas nulas; usar apenas respostas de horizonte muda o problema e deixa múltiplos de g invisíveis. Esta prova é exata e não estabelece a precisão de uma estimação experimental desses coeficientes.

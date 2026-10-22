@@ -1,0 +1,3 @@
+import TGLExt.V351ModularCutBalance
+#check TGLV350.Regular.scalarTomitaResolvent_double_cut_balance
+#print axioms TGLV350.Regular.scalarTomitaResolvent_double_cut_balance

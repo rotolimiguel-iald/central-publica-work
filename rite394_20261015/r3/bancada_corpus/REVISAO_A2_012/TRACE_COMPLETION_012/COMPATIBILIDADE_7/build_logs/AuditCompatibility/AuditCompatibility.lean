@@ -1,0 +1,74 @@
+import TGLExt.V354PositiveShiftCompatibility
+set_option pp.universes true
+#check TGLV354.TraceCompletion.ShiftRelated
+#print axioms TGLV354.TraceCompletion.ShiftRelated
+#check TGLV354.TraceCompletion.ShiftRelated.refl
+#print axioms TGLV354.TraceCompletion.ShiftRelated.refl
+#check TGLV354.TraceCompletion.ShiftRelated.symm
+#print axioms TGLV354.TraceCompletion.ShiftRelated.symm
+#check TGLV354.TraceCompletion.ShiftRelated.trans
+#print axioms TGLV354.TraceCompletion.ShiftRelated.trans
+#check TGLV354.TraceCompletion.ShiftRelated.cyclic
+#print axioms TGLV354.TraceCompletion.ShiftRelated.cyclic
+#check TGLV354.TraceCompletion.ShiftRelated.map
+#print axioms TGLV354.TraceCompletion.ShiftRelated.map
+#check TGLV354.TraceCompletion.ShiftRelated.star_transport
+#print axioms TGLV354.TraceCompletion.ShiftRelated.star_transport
+#check TGLV354.TraceCompletion.cyclicTraceCandidate
+#print axioms TGLV354.TraceCompletion.cyclicTraceCandidate
+#check TGLV354.TraceCompletion.positiveTrace_le_cyclicTraceCandidate
+#print axioms TGLV354.TraceCompletion.positiveTrace_le_cyclicTraceCandidate
+#check TGLV354.TraceCompletion.cyclicTraceCandidate_related
+#print axioms TGLV354.TraceCompletion.cyclicTraceCandidate_related
+#check TGLV354.TraceCompletion.cyclicTraceCandidate_cyclic
+#print axioms TGLV354.TraceCompletion.cyclicTraceCandidate_cyclic
+#check TGLV354.TraceCompletion.cyclicTraceCandidate_star
+#print axioms TGLV354.TraceCompletion.cyclicTraceCandidate_star
+#check TGLV354.TraceCompletion.cyclicTraceCandidate_dual
+#print axioms TGLV354.TraceCompletion.cyclicTraceCandidate_dual
+#check TGLV354.TraceCompletion.cyclicTraceCandidate_zero
+#print axioms TGLV354.TraceCompletion.cyclicTraceCandidate_zero
+#check TGLV354.TraceCompletion.cyclicTraceCandidate_positive_faithful
+#print axioms TGLV354.TraceCompletion.cyclicTraceCandidate_positive_faithful
+#check TGLV354.TraceCompletion.cyclicTraceCandidate_positive_of_compatibility
+#print axioms TGLV354.TraceCompletion.cyclicTraceCandidate_positive_of_compatibility
+#check TGLV354.boundedAbsolute_norm
+#print axioms TGLV354.boundedAbsolute_norm
+#check TGLV354.boundedPolar
+#print axioms TGLV354.boundedPolar
+#check TGLV354.boundedPolar_mul_absolute
+#print axioms TGLV354.boundedPolar_mul_absolute
+#check TGLV354.boundedAbsolute_range
+#print axioms TGLV354.boundedAbsolute_range
+#check TGLV354.boundedPolar_norm
+#print axioms TGLV354.boundedPolar_norm
+#check TGLV354.boundedPolar_apply_eq_zero_iff
+#print axioms TGLV354.boundedPolar_apply_eq_zero_iff
+#check TGLV354.boundedPolar_star_mul
+#print axioms TGLV354.boundedPolar_star_mul
+#check TGLV354.boundedPolar_initial_support
+#print axioms TGLV354.boundedPolar_initial_support
+#check TGLV354.boundedPolar_mul_star
+#print axioms TGLV354.boundedPolar_mul_star
+#check TGLV354.boundedPolar_commutes
+#print axioms TGLV354.boundedPolar_commutes
+#check TGLV354.boundedPolar_mem
+#print axioms TGLV354.boundedPolar_mem
+#check TGLV354.TraceCompletion.selfAdjoint_pow_ker
+#print axioms TGLV354.TraceCompletion.selfAdjoint_pow_ker
+#check TGLV354.TraceCompletion.selfAdjoint_pow_closedRange
+#print axioms TGLV354.TraceCompletion.selfAdjoint_pow_closedRange
+#check TGLV354.TraceCompletion.selfAdjoint_factor_supports
+#print axioms TGLV354.TraceCompletion.selfAdjoint_factor_supports
+#check TGLV354.TraceCompletion.boundedPolar_intertwines
+#print axioms TGLV354.TraceCompletion.boundedPolar_intertwines
+#check TGLV354.TraceCompletion.boundedPolar_transports_shift_factors
+#print axioms TGLV354.TraceCompletion.boundedPolar_transports_shift_factors
+#check TGLV354.TraceCompletion.scalarTrace_transport_of_support
+#print axioms TGLV354.TraceCompletion.scalarTrace_transport_of_support
+#check TGLV354.TraceCompletion.positiveShift_trace_compatible
+#print axioms TGLV354.TraceCompletion.positiveShift_trace_compatible
+#check TGLV354.TraceCompletion.cyclicTraceCandidate_positive
+#print axioms TGLV354.TraceCompletion.cyclicTraceCandidate_positive
+#print TGLV354.TraceCompletion.positiveShift_trace_compatible
+#print TGLV354.TraceCompletion.cyclicTraceCandidate_positive

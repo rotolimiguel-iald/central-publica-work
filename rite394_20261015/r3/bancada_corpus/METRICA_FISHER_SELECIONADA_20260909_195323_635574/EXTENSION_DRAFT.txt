@@ -1,0 +1,149 @@
+theorem reflected_inverse_right (F : Tensor4) (hF : F.PosDef)
+    (c : Coordinate4) (hc : c≠0) : reflectedMetric F c * reflectedInverse F c = 1 := by
+  let a : ℝ := tensorQuad F⁻¹ c
+  let k : ℝ := 2/a
+  let v : Coordinate4 := F⁻¹ *ᵥ c
+  have ha : a≠0 := ne_of_gt (clock_norm_positive F hF c hc)
+  have hFi : F*F⁻¹=1 := Matrix.mul_nonsing_inv F (isUnit_iff_ne_zero.mpr (ne_of_gt hF.det_pos))
+  have hFv : F*ᵥv=c := by dsimp [v]; rw [Matrix.mulVec_mulVec,hFi,Matrix.one_mulVec]
+  have hsym : (F⁻¹)ᵀ=F⁻¹ := by
+    simpa only [Matrix.IsHermitian, Matrix.conjTranspose_eq_transpose_of_trivial] using hF.inv.isHermitian
+  have hcv : c ᵥ*F⁻¹=v := by rw [←Matrix.mulVec_transpose,hsym]; rfl
+  have hdot : c ⬝ᵥ v=a := rfl
+  change (k • vecMulVec c c-F)*(k • vecMulVec v v-F⁻¹)=1
+  rw [sub_mul,mul_sub,mul_sub,Matrix.smul_mul,Matrix.mul_smul,
+    Matrix.vecMulVec_mul_vecMulVec,Matrix.smul_vecMulVec,hdot,
+    Matrix.smul_mul,Matrix.vecMulVec_mul,hcv,Matrix.mul_smul,Matrix.mul_vecMulVec,hFv,hFi]
+  ext i j
+  simp only [Matrix.sub_apply,Matrix.smul_apply,smul_eq_mul,smul_smul,Matrix.vecMulVec_apply]
+  dsimp [k]
+  field_simp
+  ring
+
+theorem reflected_inverse_eq (F : Tensor4) (hF : F.PosDef)
+    (c : Coordinate4) (hc : c≠0) : reflectedInverse F c=(reflectedMetric F c)⁻¹ := by
+  have hm := reflected_metric_lorentz F hF c hc
+  have hl : (reflectedMetric F c)⁻¹*reflectedMetric F c=1 :=
+    Matrix.nonsing_inv_mul _ (isUnit_iff_ne_zero.mpr
+      (ne_of_lt (lorentz_metric_det_negative _ hm)))
+  calc reflectedInverse F c = 1*reflectedInverse F c := (one_mul _).symm
+       _ = ((reflectedMetric F c)⁻¹*reflectedMetric F c)*reflectedInverse F c := by rw [hl]
+       _ = (reflectedMetric F c)⁻¹ := by rw [mul_assoc,reflected_inverse_right F hF c hc,mul_one]
+
+theorem reflected_inverse_left (F : Tensor4) (hF : F.PosDef)
+    (c : Coordinate4) (hc : c≠0) : reflectedInverse F c*reflectedMetric F c=1 := by
+  rw [reflected_inverse_eq F hF c hc]
+  exact Matrix.nonsing_inv_mul _ (isUnit_iff_ne_zero.mpr
+    (ne_of_lt (lorentz_metric_det_negative _ (reflected_metric_lorentz F hF c hc))))
+
+theorem smooth_positive_inverse (U : Set Coordinate4) (F : TensorField4)
+    (hF : SmoothMatrixOn U F) (hp : ∀ x∈U, (F x).PosDef) :
+    SmoothMatrixOn U (fun x => (F x)⁻¹) := by
+  have hd := (smooth_metric_determinant U F hF).inv
+    (fun x hx => ne_of_gt (hp x hx).det_pos)
+  have ha := smooth_metric_adjugate U F hF
+  intro i j
+  simpa only [Matrix.inv_def,Ring.inverse_eq_inv',Matrix.smul_apply,smul_eq_mul] using hd.mul (ha i j)
+
+theorem smooth_clock_square (U : Set Coordinate4) (F : TensorField4) (c : CovectorField4)
+    (hF : SmoothMatrixOn U F) (hc : SmoothVectorOn U c) :
+    ContDiffOn ℝ ∞ (fun x => tensorQuad (F x) (c x)) U := by
+  change ContDiffOn ℝ ∞ (fun x => ∑ i, c x i * (∑ j, F x i j*c x j)) U
+  apply ContDiffOn.sum
+  intro i _
+  apply (hc i).mul
+  apply ContDiffOn.sum
+  intro j _
+  exact (hF i j).mul (hc j)
+
+theorem reflected_metric_smooth (U : Set Coordinate4) (F : TensorField4) (c : CovectorField4)
+    (hF : SmoothMatrixOn U F) (hc : SmoothVectorOn U c)
+    (hp : ∀ x∈U, (F x).PosDef) (hn : ∀ x∈U, c x≠0) :
+    SmoothMatrixOn U (fun x => reflectedMetric (F x) (c x)) := by
+  have hi := smooth_positive_inverse U F hF hp
+  have ha := smooth_clock_square U (fun x => (F x)⁻¹) c hi hc
+  have hk : ContDiffOn ℝ ∞ (fun x => 2/tensorQuad (F x)⁻¹ (c x)) U :=
+    contDiffOn_const.div ha (fun x hx => ne_of_gt (clock_norm_positive _ (hp x hx) _ (hn x hx)))
+  intro i j
+  exact (hk.mul ((hc i).mul (hc j))).sub (hF i j)
+
+/-- Probability observations and their rank/clock certificates. No metric is stored. -/
+structure SelectedProbabilityData (ι : Type) [Fintype ι] (U : Set Coordinate4) where
+  probabilities : Coordinate4 → ι → ℝ
+  normalized : ∀ x, ∑ i, probabilities x i=1
+  positive : ∀ x∈U, ∀ i, 0<probabilities x i
+  smooth : ∀ i, ContDiffOn ℝ ∞ (fun x => probabilities x i) U
+  differential_injective : ∀ x∈U, Function.Injective (directionalVariation probabilities x)
+  selected : ι
+  clock_nonzero : ∀ x∈U, probabilityDifferential probabilities x selected≠0
+
+variable {ι : Type} [Fintype ι] {U : Set Coordinate4}
+
+def selectedFisher (P : SelectedProbabilityData ι U) : TensorField4 :=
+  fisherTensorField P.probabilities
+
+def selectedClock (P : SelectedProbabilityData ι U) : CovectorField4 :=
+  fun x => probabilityDifferential P.probabilities x P.selected
+
+def selectedMetric (P : SelectedProbabilityData ι U) : TensorField4 :=
+  fun x => reflectedMetric (selectedFisher P x) (selectedClock P x)
+
+theorem selected_fisher_positive (P : SelectedProbabilityData ι U) (x : Coordinate4) (hx : x∈U) :
+    (selectedFisher P x).PosDef := by
+  apply Matrix.PosDef.of_dotProduct_mulVec_pos
+  · simpa only [Matrix.IsHermitian,Matrix.conjTranspose_eq_transpose_of_trivial] using
+      fisher_field_symmetric P.probabilities x
+  · intro v hv
+    change 0<tensorQuad (fisherTensorField P.probabilities x) v
+    apply (fisher_tensor_positive_iff _ _ (P.positive x hx) v).2
+    intro hz
+    apply hv
+    apply P.differential_injective x hx
+    change directionalVariation P.probabilities x v=directionalVariation P.probabilities x 0
+    rw [hz]
+    simp [directionalVariation,covectorRead,dotProduct]
+
+theorem selected_metric_lorentz (P : SelectedProbabilityData ι U) (x : Coordinate4) (hx : x∈U) :
+    LorentzByCongruence (selectedMetric P x) :=
+  reflected_metric_lorentz _ (selected_fisher_positive P x hx) _ (P.clock_nonzero x hx)
+
+theorem selected_clock_smooth (P : SelectedProbabilityData ι U) (hU : IsOpen U) :
+    SmoothVectorOn U (selectedClock P) := by
+  intro i
+  exact coordinatePartial_smooth U hU _ (P.smooth P.selected) i
+
+theorem selected_metric_smooth (P : SelectedProbabilityData ι U) (hU : IsOpen U) :
+    SmoothMatrixOn U (selectedMetric P) :=
+  reflected_metric_smooth U (selectedFisher P) (selectedClock P)
+    (fisher_field_smooth U hU P.probabilities P.smooth P.positive)
+    (selected_clock_smooth P hU) (selected_fisher_positive P) P.clock_nonzero
+
+theorem selected_metric_inverse (P : SelectedProbabilityData ι U) (x : Coordinate4) (hx : x∈U) :
+    (selectedMetric P x)⁻¹=reflectedInverse (selectedFisher P x) (selectedClock P x) :=
+  (reflected_inverse_eq _ (selected_fisher_positive P x hx) _ (P.clock_nonzero x hx)).symm
+
+theorem selected_metric_inverse_smooth (P : SelectedProbabilityData ι U) (hU : IsOpen U) :
+    SmoothMatrixOn U (metricInverse (selectedMetric P)) :=
+  constructed_metric_inverse_smooth U (selectedMetric P) (selected_metric_smooth P hU)
+    (selected_metric_lorentz P)
+
+/-- The existing codec is only an output adapter for the metric already derived from P. -/
+def selectedLorentzRecord (P : SelectedProbabilityData ι U) (hU : IsOpen U) :
+    LorentzProbabilityRecord U :=
+  encodeLorentzRecord U (selectedMetric P) (selected_metric_smooth P hU) (selected_metric_lorentz P)
+
+theorem selected_record_decodes_derived_metric (P : SelectedProbabilityData ι U) (hU : IsOpen U) :
+    decodeRecord (selectedLorentzRecord P hU).data=selectedMetric P :=
+  decode_encoded_record U (selectedMetric P) (selected_metric_smooth P hU)
+
+/-- The same observations have a normalized actual diagonal curve along each coordinate line. -/
+theorem selected_probability_curve_fisher (P : SelectedProbabilityData ι U) (hU : IsOpen U)
+    (x v : Coordinate4) (hx : x∈U) :
+    diagonalFisher (P.probabilities x)
+      ((probabilityFieldCurve U hU P.probabilities P.smooth P.normalized x v hx).tangent 0) =
+      tensorQuad (selectedFisher P x) v :=
+  probability_field_curve_fisher U hU P.probabilities P.smooth P.normalized x v hx
+
+theorem zero_clock_control (F : Tensor4) : reflectedMetric F 0 = -F := by
+  simp [reflectedMetric]
+

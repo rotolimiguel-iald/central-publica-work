@@ -1,0 +1,10 @@
+import TGLExt.V351InverseLimitScaling
+set_option pp.universes true
+#check TGLV350.Regular.regularInverseCutoffSqrt_dual
+#print axioms TGLV350.Regular.regularInverseCutoffSqrt_dual
+#check TGLV350.Regular.scalarInverseCutoffWeight_dual
+#print axioms TGLV350.Regular.scalarInverseCutoffWeight_dual
+#check TGLV350.Regular.scalarInverseLimitWeight_scaled_sequence
+#print axioms TGLV350.Regular.scalarInverseLimitWeight_scaled_sequence
+#check TGLV350.Regular.scalarInverseLimitWeight_dual
+#print axioms TGLV350.Regular.scalarInverseLimitWeight_dual

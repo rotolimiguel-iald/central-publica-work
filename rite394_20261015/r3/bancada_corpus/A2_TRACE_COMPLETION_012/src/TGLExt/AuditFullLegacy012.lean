@@ -1,0 +1,84 @@
+import TGLExt.V354RegularLegacyWitness
+
+set_option pp.universes true
+
+#print TGLV354.TraceCompletion.ShiftRelated
+#print axioms TGLV354.TraceCompletion.ShiftRelated
+#print TGLV354.TraceCompletion.ShiftRelated.refl
+#print axioms TGLV354.TraceCompletion.ShiftRelated.refl
+#print TGLV354.TraceCompletion.ShiftRelated.symm
+#print axioms TGLV354.TraceCompletion.ShiftRelated.symm
+#print TGLV354.TraceCompletion.ShiftRelated.trans
+#print axioms TGLV354.TraceCompletion.ShiftRelated.trans
+#print TGLV354.TraceCompletion.ShiftRelated.cyclic
+#print axioms TGLV354.TraceCompletion.ShiftRelated.cyclic
+#print TGLV354.TraceCompletion.ShiftRelated.map
+#print axioms TGLV354.TraceCompletion.ShiftRelated.map
+#print TGLV354.TraceCompletion.ShiftRelated.star_transport
+#print axioms TGLV354.TraceCompletion.ShiftRelated.star_transport
+#print TGLV354.TraceCompletion.cyclicTraceCandidate
+#print axioms TGLV354.TraceCompletion.cyclicTraceCandidate
+#print TGLV354.TraceCompletion.positiveTrace_le_cyclicTraceCandidate
+#print axioms TGLV354.TraceCompletion.positiveTrace_le_cyclicTraceCandidate
+#print TGLV354.TraceCompletion.cyclicTraceCandidate_related
+#print axioms TGLV354.TraceCompletion.cyclicTraceCandidate_related
+#print TGLV354.TraceCompletion.cyclicTraceCandidate_cyclic
+#print axioms TGLV354.TraceCompletion.cyclicTraceCandidate_cyclic
+#print TGLV354.TraceCompletion.cyclicTraceCandidate_star
+#print axioms TGLV354.TraceCompletion.cyclicTraceCandidate_star
+#print TGLV354.TraceCompletion.cyclicTraceCandidate_dual
+#print axioms TGLV354.TraceCompletion.cyclicTraceCandidate_dual
+#print TGLV354.TraceCompletion.cyclicTraceCandidate_zero
+#print axioms TGLV354.TraceCompletion.cyclicTraceCandidate_zero
+#print TGLV354.TraceCompletion.cyclicTraceCandidate_positive_faithful
+#print axioms TGLV354.TraceCompletion.cyclicTraceCandidate_positive_faithful
+#print TGLV354.TraceCompletion.cyclicTraceCandidate_positive_of_compatibility
+#print axioms TGLV354.TraceCompletion.cyclicTraceCandidate_positive_of_compatibility
+#print TGLV354.TraceCompletion.selfAdjoint_pow_ker
+#print axioms TGLV354.TraceCompletion.selfAdjoint_pow_ker
+#print TGLV354.TraceCompletion.selfAdjoint_pow_closedRange
+#print axioms TGLV354.TraceCompletion.selfAdjoint_pow_closedRange
+#print TGLV354.TraceCompletion.selfAdjoint_factor_supports
+#print axioms TGLV354.TraceCompletion.selfAdjoint_factor_supports
+#print TGLV354.TraceCompletion.scalarTrace_transport_of_support
+#print axioms TGLV354.TraceCompletion.scalarTrace_transport_of_support
+#print TGLV354.boundedAbsolute_norm
+#print axioms TGLV354.boundedAbsolute_norm
+#print TGLV354.boundedAbsolute_range
+#print axioms TGLV354.boundedAbsolute_range
+#print TGLV354.boundedPolar
+#print axioms TGLV354.boundedPolar
+#print TGLV354.boundedPolar_mul_absolute
+#print axioms TGLV354.boundedPolar_mul_absolute
+#print TGLV354.boundedPolar_norm
+#print axioms TGLV354.boundedPolar_norm
+#print TGLV354.boundedPolar_apply_eq_zero_iff
+#print axioms TGLV354.boundedPolar_apply_eq_zero_iff
+#print TGLV354.boundedPolar_star_mul
+#print axioms TGLV354.boundedPolar_star_mul
+#print TGLV354.boundedPolar_initial_support
+#print axioms TGLV354.boundedPolar_initial_support
+#print TGLV354.boundedPolar_mul_star
+#print axioms TGLV354.boundedPolar_mul_star
+#print TGLV354.boundedPolar_commutes
+#print axioms TGLV354.boundedPolar_commutes
+#print TGLV354.boundedPolar_mem
+#print axioms TGLV354.boundedPolar_mem
+#print TGLV354.TraceCompletion.boundedPolar_intertwines
+#print axioms TGLV354.TraceCompletion.boundedPolar_intertwines
+#print TGLV354.TraceCompletion.boundedPolar_transports_shift_factors
+#print axioms TGLV354.TraceCompletion.boundedPolar_transports_shift_factors
+#print TGLV354.TraceCompletion.positiveShift_trace_compatible
+#print axioms TGLV354.TraceCompletion.positiveShift_trace_compatible
+#print TGLV354.TraceCompletion.cyclicTraceCandidate_positive
+#print axioms TGLV354.TraceCompletion.cyclicTraceCandidate_positive
+#print TGLV354.TraceCompletion.regularLegacyCore
+#print axioms TGLV354.TraceCompletion.regularLegacyCore
+#print TGLV354.TraceCompletion.regularLegacyThreeLocks
+#print axioms TGLV354.TraceCompletion.regularLegacyThreeLocks
+#print TGLV354.TraceCompletion.regularLegacyThreeLocks_concrete
+#print axioms TGLV354.TraceCompletion.regularLegacyThreeLocks_concrete
+#print TGLV354.TraceCompletion.regularModularRealization
+#print axioms TGLV354.TraceCompletion.regularModularRealization
+#print TGLV354.TraceCompletion.regularFullWitness
+#print axioms TGLV354.TraceCompletion.regularFullWitness

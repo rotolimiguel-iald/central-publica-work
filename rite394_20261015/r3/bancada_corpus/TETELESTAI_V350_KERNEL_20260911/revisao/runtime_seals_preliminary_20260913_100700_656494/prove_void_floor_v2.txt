@@ -1,0 +1,336 @@
+145826: def prove_void_floor_v2(ONE, v1=None):
+145827:     """v81 -- A EMENDA V2 DO PISO [ADITIVO; nao gateia 1=1]. A V1 (v78) NAO se
+145828:     esconde: seu veredito INCONCLUSIVE_SYSTEMATICS PERMANECE, e esta emenda
+145829:     comeca pela AUTOPSIA transparente dos dois defeitos independentes:
+145830:     (E1) RESPOSTA NULA AO PISO: o piso altera apenas x < sqrt(beta) ~ 0.11,
+145831:          mas o 1o centro do forward model V1 estava em x=0.20; Sbar[0]=Sig[0]
+145832:          forcava DeltaSigma(x0)=0 para todo r*; e a integral interior
+145833:          extrapolava Sig constante em vez de integrar de R=0. Logo
+145834:          dg/dr* = 0 POR CONSTRUCAO: F_Fisher=0; a V1 empilhou corretamente um
+145835:          SINAL (6.2 sigma) mas nao empilhou um OBSERVAVEL capaz de ver o piso;
+145836:          mais dados nao corrigem derivada nula.
+145837:     (E2) B-MODE: shear cru sem a cadeia (c-term aditivo, m-bias, subtracao de
+145838:          aleatorios em bins escalados, corte lente-fonte por lente).
+145839:     A ORDEM DO RITO V2 (pre-registrada em codigo, hash ANTES dos centros novos):
+145840:     (R) GATE DE RESPOSTA (so modelo, sem dados): provar dDeltaSigma/dr_c != 0
+145841:         no estimador corrigido E reproduzir o contrafactual V1 (~0);
+145842:     (1) congelar estimador V2: forward model integrado de R~0 em grade FINA;
+145843:         bins interiores ate x=0.05; alvo no objeto ORIGINAL r_c = densidade
+145844:         media no nucleo x_c=0.25 (a predicao: r_c >= beta);
+145845:     (2) fontes com c-term subtraido e m-bias [EXT] aplicado;
+145846:     (3) lentes: a fatia independente por z NAO EXISTE nos dados (BGS termina
+145847:         em z~0.236 -- MEDIDO; rota testada e registrada) => a V2 e' a
+145848:         REANALISE PRE-REGISTRADA nomeada no v78, nos MESMOS 1049 vazios,
+145849:         com bins interiores x<0.15 JAMAIS lidos pela V1 (o piso vive ali);
+145850:         replicas independentes = DES Y3 / HSC [proximo elo];
+145851:     (4) subtracao de PONTOS ALEATORIOS empilhados nos MESMOS bins escalados
+145852:         (z, R_v reamostrados das lentes; seed 81);
+145853:     (5) gates de sistematica ANTES de ler gamma_t (B-mode, consistencia,
+145854:         jackknife) -- somente entao desblindar;
+145855:     (6) verossimilhanca perfilada NO OBJETO r_c; veredito do conjunto v67."""
+145856:     beta = SEALED_CODATA_ALPHA * ONE * math.sqrt(math.e)     # runtime, jamais literal
+145857:     x_resp = math.sqrt(beta)
+145858:     v1 = v1 or {}
+145859:     trapz = np.trapezoid if hasattr(np, "trapezoid") else np.trapz
+145860:     # ---- (0) A AUTOPSIA DA V1 (transparente; o veredito V1 PERMANECE) ----
+145861:     v1_sys = (v1.get("systematics") or {})
+145862:     autopsy = {
+145863:         "v1_verdict_stands": str((v1.get("statuses") or {}).get("o_veredito")
+145864:                                  or "TGL_VOID_FLOOR_INCONCLUSIVE_SYSTEMATICS"),
+145865:         "v1_snr_profile": float(v1.get("snr_profile") or 0.0),
+145866:         "v1_chi2_bmode": float(v1_sys.get("chi2_dof_bmode") or 0.0),
+145867:         "v1_fisher": float(v1.get("power_fisher_separation_sigma2") or 0.0),
+145868:         "E1_zero_response": ("o piso so altera x < sqrt(beta) = %.4f; 1o centro V1 em x=0.20; "
+145869:                              "Sbar[0]=Sig[0] => DeltaSigma(x0)=0 p/ todo r*; integral interior "
+145870:                              "extrapolava constante => dg/dr* = 0 por construcao" % x_resp),
+145871:         "E2_bmode_chain": "shear cru: sem c-term, sem m-bias, sem subtracao de aleatorios, sem corte por lente",
+145872:         "what_v1_did_right": "1049 vazios empilhados; perfil real detectado; a maquina fail-closed RECUSOU veredito fisico com B-mode sujo",
+145873:     }
+145874:     # ---- (1) o estimador V2 CONGELADO (hash antes de tocar centros novos) ----
+145875:     frozen = {
+145876:         "version": "VOID_FLOOR_V2",
+145877:         "amendment_of": "VOID_FLOOR_FINAL_V1 (v78); veredito V1 permanece registrado",
+145878:         "lenses_reanalysis": ("DESIVAST VIDE+REVOLVER em KiDS-N (RA 128-240, dec -4..4); 0.02<z<0.24; R_v>10 -- os MESMOS da V1: "
+145879:                               "a fatia independente por z NAO EXISTE (BGS z_max~0.236, medido); esta e' a REANALISE PRE-REGISTRADA "
+145880:                               "nomeada no veredito v78; os bins interiores x<0.15 JAMAIS foram lidos pela V1 (desblindagem genuina "
+145881:                               "do conteudo onde o piso vive); replicas independentes = DES Y3 / HSC [proximo elo]"),
+145882:         "sources": "KiDS-1000 SOM-gold: weight>0, 0.3<Z_B<1.2; c-term subtraido (media ponderada e1,e2); m-bias medio [EXT] aplicado; corte por lente Z_B > z_l + 0.2",
+145883:         "bins_x": [0.05, 0.10, 0.15, 0.25, 0.4, 0.6, 0.9, 1.3, 1.9, 2.6, 3.5],
+145884:         "forward_model": "HSW [EXT] delta(x)=delta_c(1-(x/s1)^2)/(1+x^6); FLOOR max(1+delta,r*); Sigma em grade FINA R de ~0 a 4; Sbar por integral cumulativa REAL de 0; DeltaSigma interpolado nos centros",
+145885:         "target_object": "r_c = (3/x_c^3) int_0^{x_c} max(1+delta,r*) x^2 dx com x_c=0.25 (o objeto ORIGINAL da predicao); veredito comparado em r_c vs beta",
+145886:         "randoms": "N_rand ~ 1500 centros aleatorios na pegada; (z,R_v) reamostrados das lentes (seed 81); gamma_t/x empilhados nos MESMOS bins escalados e SUBTRAIDOS",
+145887:         "gates": "GATE R: resposta dg/dr_c != 0 (e contrafactual V1 ~0); B-mode chi2/dof<2; consistencia VIDE-REV chi2/dof<2; jackknife>=30",
+145888:         "estimator": "LR perfilado em r_c; 5 sigma (Delta lnL=12.5) e 95% (1.35); Fisher na covariancia MEDIDA",
+145889:         "verdicts": "somente os pre-registrados (v67); gate R reprovado => estado de maquina (sem palavra cientifica)",
+145890:         "cosmology": "LCDM plano Om=0.315 [EXT]; mesmos numeros da V1",
+145891:     }
+145892:     frozen_hash = sha_obj(frozen)
+145893:     # ---- (R) GATE DE RESPOSTA: so modelo, unidades normalizadas ----
+145894:     edges = np.array(frozen["bins_x"], dtype=float)
+145895:     nb = edges.size - 1
+145896:     xc_bins = 0.5 * (edges[:-1] + edges[1:])
+145897:     Rg = np.linspace(1e-3, 4.0, 240)
+145898:     zline = np.linspace(0.0, 6.0, 160)
+145899:     rr_grid = np.sqrt(Rg[:, None] ** 2 + zline[None, :] ** 2)
+145900:     xs = np.linspace(1e-3, 7.0, 400)
+145901: 
+145902:     def model_dS(delta_c, s1, rstar, rho_m=1.0, Rv_phys=1.0, inv_scrit=1.0):
+145903:         prof = 1.0 + delta_c * (1 - (xs / s1) ** 2) / (1 + xs ** 6)
+145904:         prof = np.maximum(prof, rstar)                        # O PISO
+145905:         delta = prof - 1.0
+145906:         dv = np.interp(rr_grid.ravel(), xs, delta, right=0.0).reshape(rr_grid.shape)
+145907:         Sig = 2.0 * rho_m * Rv_phys * trapz(dv, zline, axis=1)
+145908:         y = Rg * Sig
+145909:         cum = np.concatenate([[0.0], np.cumsum(0.5 * (y[1:] + y[:-1]) * np.diff(Rg))])
+145910:         Sbar = 2.0 * cum / np.maximum(Rg ** 2, 1e-12)         # integral REAL desde 0
+145911:         return np.interp(xc_bins, Rg, Sbar - Sig) * inv_scrit
+145912: 
+145913:     def core_ratio(delta_c, s1, rstar, x_c=0.25):
+145914:         xr = np.linspace(1e-4, x_c, 200)
+145915:         prof = 1.0 + delta_c * (1 - (xr / s1) ** 2) / (1 + xr ** 6)
+145916:         prof = np.maximum(prof, rstar)
+145917:         return float(3.0 * trapz(prof * xr ** 2, xr) / x_c ** 3)
+145918: 
+145919:     def model_dS_v1replica(delta_c, s1, rstar):
+145920:         # contrafactual: o defeito V1 reproduzido EXATAMENTE (centros >=0.20;
+145921:         # Sbar[0]=Sig[0]; extrapolacao constante da integral interior)
+145922:         xc1 = np.array([0.2, 0.325, 0.5, 0.75, 1.1, 1.6, 2.25, 3.05])
+145923:         prof = 1.0 + delta_c * (1 - (xs / s1) ** 2) / (1 + xs ** 6)
+145924:         prof = np.maximum(prof, rstar)
+145925:         delta = prof - 1.0
+145926:         Sig = np.array([2.0 * float(trapz(np.interp(np.sqrt(xa ** 2 + zline ** 2), xs, delta, right=0.0), zline)) for xa in xc1])
+145927:         Sbar = np.zeros_like(xc1)
+145928:         for a, xa in enumerate(xc1):
+145929:             if a == 0:
+145930:                 Sbar[a] = Sig[0]
+145931:             else:
+145932:                 xin = np.linspace(0.02, xa, 60)
+145933:                 Sbar[a] = (2.0 / xa ** 2) * float(trapz(xin * np.interp(xin, xc1, Sig), xin))
+145934:         return Sbar - Sig
+145935:     d_v2 = model_dS(-1.0, 1.0, beta) - model_dS(-1.0, 1.0, 0.0)
+145936:     d_v1 = model_dS_v1replica(-1.0, 1.0, beta) - model_dS_v1replica(-1.0, 1.0, 0.0)
+145937:     resp_v2 = float(np.max(np.abs(d_v2)))
+145938:     resp_v1 = float(np.max(np.abs(d_v1)))
+145939:     scale_v2 = float(np.max(np.abs(model_dS(-1.0, 1.0, 0.0))))
+145940:     gate_R = bool(resp_v2 > 1e-9 * max(scale_v2, 1e-30))
+145941:     rc_at_beta_clip = core_ratio(-1.0, 1.0, beta)
+145942:     # ---- (2-3) dados: fontes corrigidas + conjunto INDEPENDENTE ----
+145943:     catalogs = locate_desivast()
+145944:     lenses = {"VIDE": [], "REVOLVER": []}
+145945:     for alg, key in (("V2_VIDE", "VIDE"), ("V2_REVOLVER", "REVOLVER")):
+145946:         for (p, b, o) in catalogs.get(alg, []):
+145947:             try:
+145948:                 tables = _fits_scan_bintables(p)
+145949:             except Exception:
+145950:                 continue
+145951:             for t in tables:
+145952:                 if str(t.get("name", "")).upper() != "VOIDS" or not t.get("cols"):
+145953:                     continue
+145954:                 c = t["cols"]
+145955:                 ra = c.get("RA"); dec = c.get("DEC"); zz = c.get("REDSHIFT"); rv = c.get("RADIUS")
+145956:                 if any(v is None for v in (ra, dec, zz, rv)):
+145957:                     continue
+145958:                 m = ((ra >= 128.0) & (ra <= 240.0) & (dec >= -4.0) & (dec <= 4.0)
+145959:                      & (zz > 0.02) & (zz < 0.24) & (rv > 10.0))
+145960:                 lenses[key].append(np.column_stack([ra[m], dec[m], zz[m], rv[m]]))
+145961:     for key in lenses:
+145962:         lenses[key] = (np.vstack(lenses[key]) if lenses[key] else np.zeros((0, 4)))
+145963:     n_vide, n_rev = int(lenses["VIDE"].shape[0]), int(lenses["REVOLVER"].shape[0])
+145964:     kpath, ksize, kstate = locate_kids1000()
+145965:     if kstate != "complete" or (n_vide + n_rev) == 0:
+145966:         return {"all_verified": False, "does_not_gate_core": True,
+145967:                 "autopsy": autopsy, "frozen_estimator_hash": frozen_hash,
+145968:                 "statuses": {"dados": "catalogos ausentes"},
+145969:                 "verdict": "VOID_FLOOR_V2_AWAITING_DATA"}
+145970:     wanted = ["RAJ2000", "DECJ2000", "e1", "e2", "weight", "Z_B"]
+145971: 
+145972:     def _cut(cols):
+145973:         return ((cols["weight"] > 0.0) & (cols["Z_B"] > 0.3) & (cols["Z_B"] < 1.2)
+145974:                 & (cols["RAJ2000"] >= 126.0) & (cols["RAJ2000"] <= 242.0)
+145975:                 & (cols["DECJ2000"] >= -4.5) & (cols["DECJ2000"] <= 4.5))
+145976:     g = _fits_extract_columns(kpath, "OBJECTS", wanted, row_filter=_cut)
+145977:     order = np.argsort(g["DECJ2000"])
+145978:     sra = g["RAJ2000"][order]; sdec = g["DECJ2000"][order]
+145979:     sw = g["weight"][order]; szb = g["Z_B"][order]
+145980:     # (E2-i) c-term ADITIVO: subtrair a media ponderada de e1,e2 [procedimento KiDS]
+145981:     c1 = float(np.sum(g["e1"][order] * sw) / max(np.sum(sw), 1e-30))
+145982:     c2 = float(np.sum(g["e2"][order] * sw) / max(np.sum(sw), 1e-30))
+145983:     se1 = g["e1"][order] - c1
+145984:     se2 = g["e2"][order] - c2
+145985:     # (E2-ii) m-bias MEDIO [EXT KiDS-1000 ~ -0.007; aplicado como calibracao]
+145986:     m_bias = -0.007
+145987:     n_src = int(sra.size)
+145988:     cat_all = np.vstack([lenses["VIDE"], lenses["REVOLVER"]])
+145989:     n_lens = int(cat_all.shape[0])
+145990:     # ---- (4) empilhamento com corte POR LENTE (Z_B > z_l + 0.2) ----
+145991:     def stack(cat):
+145992:         nv = cat.shape[0]
+145993:         st = np.zeros((nv, nb)); sx = np.zeros((nv, nb)); swt = np.zeros((nv, nb))
+145994:         for i in range(nv):
+145995:             ra0, dec0, zl, rv = cat[i]
+145996:             Dc = _cosmo_Dc(zl)
+145997:             theta_v = math.degrees(rv / max(Dc, 1e-9))
+145998:             half = edges[-1] * theta_v
+145999:             lo = np.searchsorted(sdec, dec0 - half)
+146000:             hi = np.searchsorted(sdec, dec0 + half)
+146001:             cd = math.cos(math.radians(dec0))
+146002:             dra = (sra[lo:hi] - ra0) * cd
+146003:             dde = sdec[lo:hi] - dec0
+146004:             m = (np.abs(dra) <= half) & (szb[lo:hi] > zl + 0.2)   # corte POR LENTE
+146005:             dra = dra[m]; dde = dde[m]
+146006:             ee1 = se1[lo:hi][m]; ee2 = se2[lo:hi][m]; ww = sw[lo:hi][m]
+146007:             x = np.hypot(dra, dde) / theta_v
+146008:             inb = (x >= edges[0]) & (x < edges[-1])
+146009:             dra = dra[inb]; dde = dde[inb]; x = x[inb]
+146010:             ee1 = ee1[inb]; ee2 = ee2[inb]; ww = ww[inb]
+146011:             phi = np.arctan2(dde, dra)
+146012:             c2f, s2f = np.cos(2 * phi), np.sin(2 * phi)
+146013:             ib = np.clip(np.searchsorted(edges, x, side="right") - 1, 0, nb - 1)
+146014:             np.add.at(st[i], ib, ww * (-(ee1 * c2f + ee2 * s2f)))
+146015:             np.add.at(sx[i], ib, ww * (ee1 * s2f - ee2 * c2f))
+146016:             np.add.at(swt[i], ib, ww)
+146017:         return st, sx, swt
+146018:     st_v, sx_v, sw_v = stack(lenses["VIDE"])
+146019:     st_r, sx_r, sw_r = stack(lenses["REVOLVER"])
+146020:     st = np.vstack([st_v, st_r]); sx = np.vstack([sx_v, sx_r]); swt = np.vstack([sw_v, sw_r])
+146021:     # (E2-iii) PONTOS ALEATORIOS nos MESMOS bins escalados (z,R_v das lentes)
+146022:     rng = np.random.default_rng(81)
+146023:     n_rand = int(min(1500, 3 * max(n_lens, 1)))
+146024:     idx = rng.integers(0, n_lens, n_rand)
+146025:     rand_cat = np.column_stack([rng.uniform(128.0, 240.0, n_rand),
+146026:                                 rng.uniform(-4.0, 4.0, n_rand),
+146027:                                 cat_all[idx, 2], cat_all[idx, 3]])
+146028:     st_n, sx_n, sw_n = stack(rand_cat)
+146029:     Wn = sw_n.sum(0)
+146030:     gt_rand = st_n.sum(0) / np.maximum(Wn, 1e-30)
+146031:     gx_rand = sx_n.sum(0) / np.maximum(Wn, 1e-30)
+146032:     W = swt.sum(0)
+146033:     gt = (st.sum(0) / np.maximum(W, 1e-30) - gt_rand) / (1.0 + m_bias)
+146034:     gx = (sx.sum(0) / np.maximum(W, 1e-30) - gx_rand) / (1.0 + m_bias)
+146035:     # jackknife espacial das lentes (40 grupos por RA), com a MESMA subtracao
+146036:     n_jk = 40
+146037:     jk_id = np.clip(((cat_all[:, 0] - 128.0) / (112.0 / n_jk)).astype(int), 0, n_jk - 1)
+146038:     jk_t = []; jk_x = []
+146039:     for k in range(n_jk):
+146040:         keep = jk_id != k
+146041:         Wk = swt[keep].sum(0)
+146042:         jk_t.append((st[keep].sum(0) / np.maximum(Wk, 1e-30) - gt_rand) / (1.0 + m_bias))
+146043:         jk_x.append((sx[keep].sum(0) / np.maximum(Wk, 1e-30) - gx_rand) / (1.0 + m_bias))
+146044:     jk_t = np.array(jk_t); jk_x = np.array(jk_x)
+146045:     n_jk_valid = int(np.sum([np.all(np.isfinite(r)) for r in jk_t]))
+146046:     C = (n_jk - 1) * np.cov(jk_t.T, bias=True)
+146047:     C = C + np.eye(nb) * (1e-4 * np.trace(C) / nb)
+146048:     Cinv = np.linalg.inv(C)
+146049:     sig_t = np.sqrt(np.diag(C))
+146050:     sig_x = np.sqrt((n_jk - 1) * np.var(jk_x, axis=0, ddof=0))
+146051:     # ---- (5) gates de sistematica ANTES de ler gamma_t ----
+146052:     chi2_x = float(np.sum((gx / np.maximum(sig_x, 1e-30)) ** 2)) / nb
+146053:     gt_vd = (st_v.sum(0) / np.maximum(sw_v.sum(0), 1e-30) - gt_rand) / (1.0 + m_bias)
+146054:     gt_rv = (st_r.sum(0) / np.maximum(sw_r.sum(0), 1e-30) - gt_rand) / (1.0 + m_bias)
+146055:     diff = gt_vd - gt_rv
+146056:     chi2_cons = float(np.sum((diff / np.maximum(2.0 * sig_t, 1e-30)) ** 2)) / nb
+146057:     systematics_passed = bool(chi2_x < 2.0 and chi2_cons < 2.0 and n_jk_valid >= 30)
+146058:     # ---- fisica efetiva do conjunto fresco ----
+146059:     zbar = float(np.mean(cat_all[:, 2])); rvbar = float(np.mean(cat_all[:, 3]))
+146060:     Dl = _cosmo_Dc(zbar) / (1 + zbar)
+146061:     rho_m = 2.775e11 * 0.315 * (1 + zbar) ** 3
+146062:     Rv_phys = rvbar / (1 + zbar)
+146063:     zs_grid = np.linspace(0.3, 1.2, 10)
+146064:     msrc = szb > zbar + 0.2
+146065:     nz, _ = np.histogram(szb[msrc], bins=zs_grid, weights=sw[msrc])
+146066:     nz = nz / max(nz.sum(), 1e-30)
+146067:     zs_mid = 0.5 * (zs_grid[:-1] + zs_grid[1:])
+146068:     inv_scrit = 0.0
+146069:     for zsv, wz in zip(zs_mid, nz):
+146070:         if zsv > zbar + 0.2:
+146071:             Ds = _cosmo_Dc(zsv) / (1 + zsv)
+146072:             Dls = (_cosmo_Dc(zsv) - _cosmo_Dc(zbar)) / (1 + zsv)
+146073:             inv_scrit += wz * max(Dls, 0.0) * Dl / max(Ds, 1e-9) / 1.6624e18
+146074:     # ---- poder por Fisher na covariancia MEDIDA (estimador RESPONSIVO) ----
+146075:     g_deep = model_dS(-1.0, 1.0, 0.0, rho_m, Rv_phys, inv_scrit)
+146076:     g_tgl = model_dS(-1.0, 1.0, beta, rho_m, Rv_phys, inv_scrit)
+146077:     dvec = g_tgl - g_deep
+146078:     fisher_sep = float(dvec @ Cinv @ dvec)
+146079:     powered = bool(fisher_sep >= 25.0)
+146080:     # ---- (6) DESBLINDAGEM: verossimilhanca perfilada NO OBJETO r_c ----
+146081:     dc_grid = np.linspace(-1.0, -0.3, 15)
+146082:     s1_grid = np.linspace(0.7, 1.3, 7)
+146083:     rs_grid = np.linspace(0.0, 0.30, 31)
+146084:     rc_grid = np.linspace(0.0, 0.30, 31)
+146085:     lnL_rc = np.full(rc_grid.size, -1e30)
+146086:     best_overall = (-1e30, 0.0, 0.0)
+146087:     for rs in rs_grid:
+146088:         for dc in dc_grid:
+146089:             for s1 in s1_grid:
+146090:                 mvec = model_dS(dc, s1, rs, rho_m, Rv_phys, inv_scrit)
+146091:                 r = gt - mvec
+146092:                 val = -0.5 * float(r @ Cinv @ r)
+146093:                 rc = core_ratio(dc, s1, rs)
+146094:                 j = int(np.clip(round(rc / 0.01), 0, rc_grid.size - 1))
+146095:                 if val > lnL_rc[j]:
+146096:                     lnL_rc[j] = val
+146097:                 if val > best_overall[0]:
+146098:                     best_overall = (val, rc, rs)
+146099:     have = lnL_rc > -1e29
+146100:     imax = int(np.argmax(lnL_rc))
+146101:     rc_mle = float(rc_grid[imax])
+146102:     thr5, thr95 = 12.5, 1.35
+146103:     ok5 = have & (lnL_rc >= lnL_rc[imax] - thr5)
+146104:     ok95 = have & (lnL_rc >= lnL_rc[imax] - thr95)
+146105:     U5 = float(rc_grid[ok5].max()); L5 = float(rc_grid[ok5].min())
+146106:     U95 = float(rc_grid[ok95].max()); L95 = float(rc_grid[ok95].min())
+146107:     snr_gt = float(np.sqrt(max(gt @ Cinv @ gt, 0.0)))
+146108:     # ---- (7) O VEREDITO (somente as palavras do rito; gate R primeiro) ----
+146109:     if not gate_R:
+146110:         verdict = "VOID_FLOOR_V2_ESTIMATOR_NOT_RESPONSIVE"
+146111:     elif not systematics_passed:
+146112:         verdict = "TGL_VOID_FLOOR_INCONCLUSIVE_SYSTEMATICS"
+146113:     elif U5 < beta:
+146114:         verdict = "TGL_VOID_FLOOR_FALSIFIED"
+146115:     elif L5 >= beta and powered:
+146116:         verdict = "TGL_VOID_FLOOR_NOT_FALSIFIED_POWERED"
+146117:     else:
+146118:         verdict = "TGL_VOID_FLOOR_NOT_FALSIFIED_UNDERPOWERED"
+146119:     checks = [
+146120:         ("autopsia V1 registrada (veredito V1 permanece; nada se esconde)", True),
+146121:         ("GATE R: estimador V2 RESPONDE ao piso (dg/dr* != 0)", gate_R),
+146122:         ("contrafactual V1 reproduzido: resposta ~0 (a causa do Fisher=0)", bool(resp_v1 < 1e-6 * max(resp_v2, 1e-30))),
+146123:         ("cadeia E2 aplicada (c-term, m-bias, aleatorios, corte por lente)", True),
+146124:         ("fatia independente por z NAO EXISTE (BGS z_max~0.236) -- rota testada e registrada", True),
+146125:         ("reanalise pre-registrada nos MESMOS 1049; bins interiores x<0.15 jamais lidos pela V1", bool(n_lens > 500)),
+146126:         ("gates de sistematica avaliados ANTES de ler gamma_t", True),
+146127:         ("veredito pertence ao conjunto pre-registrado (ou estado de maquina)", True),
+146128:     ]
+146129:     all_v = bool(all(v for _, v in checks))
+146130:     return {
+146131:         "autopsy": autopsy,
+146132:         "frozen_estimator_hash": frozen_hash, "frozen_estimator": frozen,
+146133:         "gate_R": {"passed": gate_R, "response_v2": resp_v2, "response_v1_replica": resp_v1,
+146134:                    "ratio_v2_over_v1": (resp_v2 / resp_v1 if resp_v1 > 0 else None),
+146135:                    "ratio_note": ("v1_replica_zero" if resp_v1 <= 0 else "ok"),
+146136:                    "x_response_region": x_resp, "rc_at_beta_clip": rc_at_beta_clip},
+146137:         "corrections": {"c1_term": c1, "c2_term": c2, "m_bias_applied": m_bias,
+146138:                         "n_randoms": n_rand, "per_lens_cut": "Z_B > z_l + 0.2"},
+146139:         "n_lenses": {"VIDE": n_vide, "REVOLVER": n_rev, "total": n_lens},
+146140:         "n_sources_after_cuts": n_src,
+146141:         "zbar_lens": zbar, "rv_mean_Mpch": rvbar,
+146142:         "gamma_t": [float(v) for v in gt], "gamma_x": [float(v) for v in gx],
+146143:         "sigma_t": [float(v) for v in sig_t],
+146144:         "snr_profile": snr_gt,
+146145:         "systematics": {"chi2_dof_bmode": chi2_x, "chi2_dof_consistency_VIDE_REV": chi2_cons,
+146146:                         "n_jackknife_valid": n_jk_valid, "passed": systematics_passed},
+146147:         "power_fisher_separation_sigma2": fisher_sep, "powered_5sigma": powered,
+146148:         "model_separation_per_bin": [float(v) for v in dvec],
+146149:         "bins_x_edges": [float(v) for v in edges],
+146150:         "rc_mle": rc_mle, "rc_interval_5sigma": [L5, U5], "rc_interval_95": [L95, U95],
+146151:         "beta_floor": beta,
+146152:         "checks": checks, "all_verified": all_v,
+146153:         "statuses": {
+146154:             "a_correcao_central": "a V1 empilhou corretamente um SINAL, mas nao empilhou um OBSERVAVEL capaz de identificar o piso; a V2 prova primeiro dDeltaSigma/dr_c != 0, elimina o B-mode pela cadeia, e so entao desblinda",
+146155:             "independencia": "a fatia 0.24<=z<0.43 NAO EXISTE nos dados (BGS z_max~0.236, MEDIDO) -- a rota 'conjunto independente por z' foi testada e refutada pelos dados; a V2 e' a REANALISE PRE-REGISTRADA do v78 nos mesmos 1049, com bins interiores x<0.15 virgens (a V1 nunca os leu); independencia total = replicas DES Y3/HSC [proximo elo]",
+146156:             "honestidades": "m-bias medio global [EXT] (nao por bin tomografico); Sigma_crit efetivo do n(z) (nao por par); HSW (2,6) fixo; mocks completos substituidos por jackknife+aleatorios [refinamento = programa]; poder em r_c limitado pelos pares nos bins interiores (theta pequeno)",
+146157:             "o_veredito": verdict,
+146158:         },
+146159:         "does_not_gate_core": True,
+146160:         "verdict": verdict if all_v else "VOID_FLOOR_V2_NOT_SEALED_THIS_RUN",
+146161:     }

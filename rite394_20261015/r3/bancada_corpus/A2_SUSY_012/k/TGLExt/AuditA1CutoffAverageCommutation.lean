@@ -1,0 +1,8 @@
+import TGLExt.V351CutoffAverageCommutation
+set_option pp.universes true
+#check TGLV350.Regular.regularSpectralResolvent_commutes_regular
+#print axioms TGLV350.Regular.regularSpectralResolvent_commutes_regular
+#check TGLV350.Regular.regularInverseCutoffSqrt_commutes_regular
+#print axioms TGLV350.Regular.regularInverseCutoffSqrt_commutes_regular
+#check TGLV350.Regular.regularInverseCutoffSqrt_commutes_average
+#print axioms TGLV350.Regular.regularInverseCutoffSqrt_commutes_average

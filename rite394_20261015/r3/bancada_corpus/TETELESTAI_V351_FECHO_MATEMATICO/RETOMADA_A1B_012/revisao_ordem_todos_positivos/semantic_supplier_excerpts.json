@@ -1,0 +1,45 @@
+{
+  "timestamp": "2026-09-14T22:28:44.999358-03:00",
+  "records": [
+    {
+      "source": {
+        "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\v\\TGLExt\\V350DualFixedWeightLaws.lean",
+        "bytes": 7187,
+        "sha256": "93fda2f3b9a2c519d13e1356de7fcebd2f273d3d0078eeac6d505af795ae9c75"
+      },
+      "start": 12,
+      "end": 18,
+      "text": "noncomputable section\n\n/-- Positive bounded inputs in the same regular algebra. -/\nabbrev PositiveCoreInput (P : TGLExt.SiteProfile) :=\n  {A : RegularHilbert (TGLExt.TowerHilbert P) →L[ℂ]\n    RegularHilbert (TGLExt.TowerHilbert P) // A ∈ regularCoreAlgebra P ∧ 0 ≤ A}\n"
+    },
+    {
+      "source": {
+        "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\v\\TGLExt\\V350ScalarDualWeight.lean",
+        "bytes": 4685,
+        "sha256": "e20dc5262ec98b62c8a6797fd07492e584a03fefefd0dd87b1666484dd72bc53"
+      },
+      "start": 13,
+      "end": 16,
+      "text": "/-- Scalar evaluation of the actual dual form at the same tower vacuum,\nembedded in the unit interval. This is a weight, not a trace. -/\ndef scalarDualWeight (P : SiteProfile) (A : PositiveCoreInput P) : ℝ≥0∞ :=\n  dualQuadraticIntegral A.val (regularVacuum P)"
+    },
+    {
+      "source": {
+        "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\v\\TGLExt\\V350ScalarWeightDomain.lean",
+        "bytes": 3081,
+        "sha256": "e83ada9b5abbf2c179c28b03d3c020be83861681ba3ae450999c1c64ea8e2f0f"
+      },
+      "start": 43,
+      "end": 48,
+      "text": "def scalarWeightLeftIdeal (P : SiteProfile) :\n    Submodule ℂ (regularCoreAlgebra P).toStarSubalgebra where\n  carrier := {A | HasFiniteScalarSquare P A.val}\n  zero_mem' := HasFiniteScalarSquare.zero P\n  add_mem' := fun hA hB => HasFiniteScalarSquare.add P _ _ hA hB\n  smul_mem' := fun c _ hA => HasFiniteScalarSquare.smul P c _ hA"
+    },
+    {
+      "source": {
+        "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\v\\TGLExt\\V350LevelExpectationUniformBound.lean",
+        "bytes": 4735,
+        "sha256": "6ec762be7f9014e45f88ffa9971a0e1672618f6d4289fb7e6247e5159a21e6b5"
+      },
+      "start": 57,
+      "end": 84,
+      "text": "theorem vonNeumann_norm_closed {H : Type} [NormedAddCommGroup H]\n    [InnerProductSpace ℂ H] [CompleteSpace H] (M : VonNeumannAlgebra H) :\n    IsClosed (M : Set (H →L[ℂ] H)) := by\n  rw [← VonNeumannAlgebra.centralizer_centralizer M]\n  exact Set.isClosed_centralizer _\n\n/-- The inherited operator order is the star order: the square root of a\npositive element remains in the same norm-closed algebra. -/\ntheorem vonNeumann_starOrdered {H : Type} [NormedAddCommGroup H]\n    [InnerProductSpace ℂ H] [CompleteSpace H] (M : VonNeumannAlgebra H) :\n    StarOrderedRing M.toStarSubalgebra := by\n  letI : IsClosed (M.toStarSubalgebra : Set (H →L[ℂ] H)) := vonNeumann_norm_closed M\n  apply StarOrderedRing.of_nonneg_iff'\n  · intro x y h z\n    simpa only [add_comm] using add_le_add_left h z\n  · intro x\n    constructor\n    · intro hx\n      have hm : CFC.sqrt x.val ∈ M.toStarSubalgebra := by\n        rw [CFC.sqrt_eq_real_sqrt x.val (show 0 ≤ x.val from hx)]\n        exact cfcₙ_mem (𝕜' := ℂ) Real.sqrt x.property\n      refine ⟨⟨CFC.sqrt x.val,hm⟩,Subtype.ext ?_⟩\n      change x.val = star (CFC.sqrt x.val) * CFC.sqrt x.val\n      rw [(CFC.sqrt_nonneg x.val).isSelfAdjoint.star_eq, CFC.sqrt_mul_sqrt_self x.val hx]\n    · rintro ⟨s,hs⟩\n      change 0 ≤ x.val\n      rw [congrArg Subtype.val hs]\n      exact star_mul_self_nonneg s.val"
+    }
+  ]
+}

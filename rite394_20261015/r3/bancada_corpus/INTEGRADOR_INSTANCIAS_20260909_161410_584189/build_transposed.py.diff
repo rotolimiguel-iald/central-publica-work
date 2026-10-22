@@ -1,0 +1,78 @@
+--- original/build_transposed.py
++++ new/build_transposed.py
+@@ -12,6 +12,27 @@
+     with t.open("xb") as f:f.write(b);f.flush();os.fsync(f.fileno())
+     assert t.read_bytes()==b
+     os.rename(t,p);assert p.read_bytes()==b
++
++def lean_declarations(text):
++    """Read the reviewed one-namespace source convention, including named local instances."""
++    pattern=re.compile(r"(?m)^(?:noncomputable[ \t]+)?"
++        r"(abbrev|def|structure|theorem|local[ \t]+instance)[ \t]+"
++        r"([^\W\d]\w*'*)(?=[ \t\r\n:({\[])")
++    declarations=[(re.sub(r"[ \t]+"," ",m.group(1)),m.group(2))
++                  for m in pattern.finditer(text)]
++    names=[name for _,name in declarations]
++    assert len(names)==len(set(names)), "Duplicate declaration names"
++    # Reject anonymous/scoped/other instance syntax instead of silently omitting it.
++    instance_headers=re.findall(r"(?m)^[ \t]*(?:(?:local|scoped|noncomputable|"
++        r"private|protected)[ \t]+)*instance\b[^\r\n]*",text)
++    local_instances=[name for kind,name in declarations if kind=="local instance"]
++    assert len(instance_headers)==len(local_instances), (
++        "Every instance must be a named top-level 'local instance NAME'; explicit review required")
++    prints=re.findall(r"(?m)^#print axioms ([\w.']+)[ \t]*$",text)
++    assert len(prints)==len(set(prints)) and set(prints)==set(names), (
++        "Every declaration, including each local instance, requires exactly one #print axioms")
++    return declarations
++
+ def prepare(folder):
+     folder=folder.resolve();assert folder.is_relative_to(BASE)
+     result_path=folder/"INTEGRATION_RESULT.json"
+@@ -34,6 +55,11 @@
+         source=folder/"transposed_sources"/m["key"]
+         data=source.read_bytes();text=data.decode("utf-8")
+         assert text==embedded[m["key"]]
++        declarations=lean_declarations(text)
++        expected_declarations=[{"kind":kind,"name":m["namespace"]+"."+name}
++                               for kind,name in declarations]
++        assert m["declarations"]==expected_declarations, (
++            "Source declarations differ from frozen integration metadata: "+m["module"])
+         assert not re.search(r"\b(?:sorry|admit|native_decide|unsafe|axiom)\b",text)
+         target=build/m["key"];new(target,data);source_records.append(rec(source))
+         for module in re.findall(r"(?m)^import ([\w.]+)$",text):
+@@ -85,16 +111,24 @@
+                             "-i",str(build/"TGL/Audit.ilean"),"TGL/Audit.lean"],
+                  "expected_axiom_terms":re.findall(r"(?m)^#print axioms ([\w.']+)\s*$",embedded["TGL/Audit.lean"]),
+                  "expected_sentinels":ast.literal_eval(sentinel_nodes[0])})
++    declaration_names=[d["name"] for m in modules for d in m["declarations"]]
++    assert len(declaration_names)==len(set(declaration_names))
++    if "all_declaration_names" in result:
++        assert set(declaration_names)==set(result["all_declaration_names"])
++        assert len(declaration_names)==len(result["all_declaration_names"])
+     text="\n".join("import TGLExt."+m["module"] for m in modules)+"\n"
+-    text+="\n".join("#print axioms "+n for n in result["theorem_names"])+"\n"
++    text+="\n".join("#print axioms "+n for n in declaration_names)+"\n"
+     new(build/"NewModulesAudit.lean",text.encode("utf-8"))
+     runs.append({"module":"NewModulesAudit","command":[str(lean),"-o",str(build/"NewModulesAudit.olean"),
+                  "-i",str(build/"NewModulesAudit.ilean"),"NewModulesAudit.lean"],
+-                 "expected_axiom_terms":result["theorem_names"]})
++                 "expected_axiom_terms":declaration_names})
+     packages=sorted(p for p in (kernel/".lake/packages").iterdir() if p.is_dir())
+     libraries=[kernel/".lake/build/lib/lean"]+[p/".lake/build/lib/lean" for p in packages if (p/".lake/build/lib/lean").is_dir()]
+     plan={"status":"PREPARED_NOT_EXECUTED","created_utc":datetime.now(timezone.utc).isoformat(),
+           "integration_result":rec(result_path),"integrated_copy":rec(program),"build":build.as_posix(),
++          "declaration_names":declaration_names,
++          "local_instance_names":[d["name"] for m in modules for d in m["declarations"]
++                                  if d["kind"]=="local instance"],
+           "runs":runs,"sources":source_records,"dependency_overlay":overlay,"local_dependency_modules":len(visited),"external_boundary":[rec(p) for p in dict.fromkeys(boundary)],
+           "environment_overrides":{"LEAN_PATH":os.pathsep.join([str(build)]+[str(p) for p in libraries]),
+                                    "LEAN_SRC_PATH":str(build),"TMP":str(build),"TEMP":str(build),
+@@ -148,7 +182,7 @@
+     outcome={"status":"PASS_TRANSPOSED_SCOPE" if valid else "FAIL_VISIBLE","created_utc":datetime.now(timezone.utc).isoformat(),
+              "plan":rec(planpath),"runs":results,"input_boundary_unchanged":stable,
+              "um_py_executed":False,"canonical_changes":False,"transitive_dependencies_all_hashed":False,
+-             "scope_note":"The transposed modules, copied TGLExt root, copied full TGL/Audit and dedicated new-theorem audit are compiled against byte-copied canonical local dependencies and existing Mathlib binaries. Canonical module sources are not rebuilt; um.py is never run."}
++             "scope_note":"The transposed modules, copied TGLExt root, copied full TGL/Audit and dedicated audit of all new declarations including named local instances are compiled against byte-copied canonical local dependencies and existing Mathlib binaries. Canonical module sources are not rebuilt; um.py is never run."}
+     new(build/"TRANSPOSED_RESULT.json",(json.dumps(outcome,ensure_ascii=False,indent=2)+"\n").encode("utf-8"))
+     print(json.dumps({"status":outcome["status"],"result":str(build/"TRANSPOSED_RESULT.json")}))
+     return 0 if valid else 1

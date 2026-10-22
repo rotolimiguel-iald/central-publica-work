@@ -1,0 +1,6 @@
+import TGLExt.V351ScalarRightActionLimits
+set_option pp.universes true
+#check TGLV350.Regular.scalarRightAction_regular
+#print axioms TGLV350.Regular.scalarRightAction_regular
+#check TGLV350.Regular.scalarRightAction_closed_of_bounded_strongStar
+#print axioms TGLV350.Regular.scalarRightAction_closed_of_bounded_strongStar

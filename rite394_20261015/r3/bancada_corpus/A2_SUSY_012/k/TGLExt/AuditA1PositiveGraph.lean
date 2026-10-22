@@ -1,0 +1,32 @@
+import TGLExt.V351RegularPositiveGraph
+set_option pp.universes true
+#check TGLV350.Regular.realScalarMultiplier_nonneg
+#print axioms TGLV350.Regular.realScalarMultiplier_nonneg
+#check TGLV350.Regular.realScalarMultiplier_complement
+#print axioms TGLV350.Regular.realScalarMultiplier_complement
+#check TGLV350.Regular.realScalarMultiplier_le_one
+#print axioms TGLV350.Regular.realScalarMultiplier_le_one
+#check TGLV350.Regular.regularSpectralCoordinates
+#print axioms TGLV350.Regular.regularSpectralCoordinates
+#check TGLV350.Regular.regularSpectralResolvent
+#print axioms TGLV350.Regular.regularSpectralResolvent
+#check TGLV350.Regular.regularSpectralResolvent_nonneg
+#print axioms TGLV350.Regular.regularSpectralResolvent_nonneg
+#check TGLV350.Regular.regularSpectralResolvent_le_one
+#print axioms TGLV350.Regular.regularSpectralResolvent_le_one
+#check TGLV350.Regular.regularSpectralResolvent_injective
+#print axioms TGLV350.Regular.regularSpectralResolvent_injective
+#check TGLV350.Regular.regularSpectralResolvent_complement_injective
+#print axioms TGLV350.Regular.regularSpectralResolvent_complement_injective
+#check TGLV350.Regular.regularPositiveGenerator
+#print axioms TGLV350.Regular.regularPositiveGenerator
+#check TGLV350.Regular.regularPositiveGenerator_closed
+#print axioms TGLV350.Regular.regularPositiveGenerator_closed
+#check TGLV350.Regular.regularPositiveGenerator_domain_dense
+#print axioms TGLV350.Regular.regularPositiveGenerator_domain_dense
+#check TGLV350.Regular.regularPositiveGenerator_selfadjoint
+#print axioms TGLV350.Regular.regularPositiveGenerator_selfadjoint
+#check TGLV350.Regular.regularPositiveGenerator_positive
+#print axioms TGLV350.Regular.regularPositiveGenerator_positive
+#check TGLV350.Regular.regularPositiveGenerator_zero_kernel
+#print axioms TGLV350.Regular.regularPositiveGenerator_zero_kernel

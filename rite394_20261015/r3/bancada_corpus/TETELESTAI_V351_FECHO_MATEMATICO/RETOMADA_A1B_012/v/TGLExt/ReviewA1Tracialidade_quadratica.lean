@@ -1,0 +1,7 @@
+import TGLExt.V351QuadraticTrace
+import TGLExt.V351RegularCoreTraceConstruction
+set_option pp.universes true
+#check TGLV350.Regular.scalarInverseLimitWeight_tracial
+#print axioms TGLV350.Regular.scalarInverseLimitWeight_tracial
+#check TGLV350.Regular.scalarInverseLimitTraceData
+#print axioms TGLV350.Regular.scalarInverseLimitTraceData

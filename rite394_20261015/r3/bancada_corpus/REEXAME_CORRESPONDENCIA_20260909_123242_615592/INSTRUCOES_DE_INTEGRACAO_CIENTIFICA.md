@@ -1,0 +1,15 @@
+# Integração científica do lote de reexame
+[INPUT — orientação de bancada para a sessão codificadora] Estas instruções acompanham as fontes aprovadas e seus recibos; não alteram o gate.
+
+1. Preservar a preparação canônica: coherentStateCurve usa a frequência covetorial por direção. Não substituí-la silenciosamente por P(x+t v). O módulo AffineSamplingObstruction deve acompanhar essa proposta como controle formal obrigatório de seu alcance.
+2. Não acrescentar automaticamente o Fisher espacial do codec à matéria canônica. Na preparação unitária estacionária em primeira ordem, a tangente das probabilidades em zero é nula; o Fisher dessa tangente é zero, mesmo com resposta entrópica quadrática não nula. O tensor de derivadas espaciais do registro é outro objeto. FisherCorrectedEinstein só se aplica com a identificação e os matchings escritos no enunciado.
+3. Manter a completação T_eff explicitamente tipada, com sua própria hipótese de conservação. A escolha −½ tr_g(F)g não é determinada apenas por contrações nulas.
+4. Usar o estado rotulado de 32 componentes sem renormalização por soma variável: cada par tem massa fixa 1/16 e admite recuperação exata. O Fisher é uma média com fator 1/16. Positividade e suavidade valem em U; normalização é global.
+5. Preservar o caráter proposto do codec arctan e seu referencial/carta. Antes de tratá-lo como lei física, especificar e demonstrar compatibilidade de transformação. O controle de recodificação de Minkowski consta do reexame.
+6. Preservar rótulo do ramo no registro que precisa distinguir os dois resultados de peso 1/2. Não exigir inversão do colapso inteiro como condição para decodificar a geometria do domínio declarado.
+7. Registrar nomes Lean completos no índice. Há colisões curtas entre ChatgptAudit.SelectionRecord.decodeRecord e ChatgptAudit.AngularTensorCodec.decodeRecord, e entre ChatgptAudit.ConeVolume.tensor_quad_smul e ChatgptAudit.FisherEinstein.tensor_quad_smul. ChatgptAudit.SelectionAngle.phaseReading também colide em nome curto com uma declaração canônica. Nenhuma dessas colisões é igualdade de objetos; preservar o diagnóstico de ambiguidade.
+8. A ampliação de Ward é para campos suaves gerais sobre Minkowski. Não promover seu flag para ausência de anomalias quânticas interagentes, nem para controle UV ou fundo curvo geral.
+9. A compilação Lean da tabela embutida e a identidade do restante da AST não equivalem a uma rodada Python selada. O programa não foi executado/importado nesta bancada. A integração canônica, seus diagnósticos de execução e qualquer novo selo devem seguir o procedimento autorizado da sessão codificadora.
+10. Para o próximo avanço gravitacional, reutilizar o calor coerente e a equivalência de área já demonstrados. Investigar a realização conjunta da condição de área e a extensão além de um único covetor, com regularidade e conservação; não reabrir os resultados especiais conservados, Gibbs, somáveis ou as ondas já existentes.
+
+Todos os originais e a cópia integrada anterior devem permanecer intactos. Esta entrega foi feita em arquivos novos dentro de Chatgpt.

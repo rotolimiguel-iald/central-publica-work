@@ -1,0 +1,183 @@
+import TGLExt.V354RegularLegacyWitness
+import TGLExt.V354RegularSusy
+set_option pp.universes true
+#check TGLV354.CoreProjection
+#print TGLV354.CoreProjection
+#print axioms TGLV354.CoreProjection
+#check TGLV354.CoreProjection.ofOperator
+#print TGLV354.CoreProjection.ofOperator
+#print axioms TGLV354.CoreProjection.ofOperator
+#check TGLV354.CoreProjection.operator
+#print TGLV354.CoreProjection.operator
+#print axioms TGLV354.CoreProjection.operator
+#check TGLV354.CoreProjection.operator_bot
+#print TGLV354.CoreProjection.operator_bot
+#print axioms TGLV354.CoreProjection.operator_bot
+#check TGLV354.CoreProjection.operator_le_iff
+#print TGLV354.CoreProjection.operator_le_iff
+#print axioms TGLV354.CoreProjection.operator_le_iff
+#check TGLV354.CoreProjection.operator_mem
+#print TGLV354.CoreProjection.operator_mem
+#print axioms TGLV354.CoreProjection.operator_mem
+#check TGLV354.CoreProjection.operator_ofOperator
+#print TGLV354.CoreProjection.operator_ofOperator
+#print axioms TGLV354.CoreProjection.operator_ofOperator
+#check TGLV354.CoreProjection.positive
+#print TGLV354.CoreProjection.positive
+#print axioms TGLV354.CoreProjection.positive
+#check TGLV354.CoreProjection.sup_apply_eq_zero
+#print TGLV354.CoreProjection.sup_apply_eq_zero
+#print axioms TGLV354.CoreProjection.sup_apply_eq_zero
+#check TGLV354.TraceCompletion.ShiftRelated
+#print TGLV354.TraceCompletion.ShiftRelated
+#print axioms TGLV354.TraceCompletion.ShiftRelated
+#check TGLV354.TraceCompletion.ShiftRelated.cyclic
+#print TGLV354.TraceCompletion.ShiftRelated.cyclic
+#print axioms TGLV354.TraceCompletion.ShiftRelated.cyclic
+#check TGLV354.TraceCompletion.ShiftRelated.map
+#print TGLV354.TraceCompletion.ShiftRelated.map
+#print axioms TGLV354.TraceCompletion.ShiftRelated.map
+#check TGLV354.TraceCompletion.ShiftRelated.refl
+#print TGLV354.TraceCompletion.ShiftRelated.refl
+#print axioms TGLV354.TraceCompletion.ShiftRelated.refl
+#check TGLV354.TraceCompletion.ShiftRelated.star_transport
+#print TGLV354.TraceCompletion.ShiftRelated.star_transport
+#print axioms TGLV354.TraceCompletion.ShiftRelated.star_transport
+#check TGLV354.TraceCompletion.ShiftRelated.symm
+#print TGLV354.TraceCompletion.ShiftRelated.symm
+#print axioms TGLV354.TraceCompletion.ShiftRelated.symm
+#check TGLV354.TraceCompletion.ShiftRelated.trans
+#print TGLV354.TraceCompletion.ShiftRelated.trans
+#print axioms TGLV354.TraceCompletion.ShiftRelated.trans
+#check TGLV354.TraceCompletion.boundedPolar_intertwines
+#print TGLV354.TraceCompletion.boundedPolar_intertwines
+#print axioms TGLV354.TraceCompletion.boundedPolar_intertwines
+#check TGLV354.TraceCompletion.boundedPolar_transports_shift_factors
+#print TGLV354.TraceCompletion.boundedPolar_transports_shift_factors
+#print axioms TGLV354.TraceCompletion.boundedPolar_transports_shift_factors
+#check TGLV354.TraceCompletion.cyclicTraceCandidate
+#print TGLV354.TraceCompletion.cyclicTraceCandidate
+#print axioms TGLV354.TraceCompletion.cyclicTraceCandidate
+#check TGLV354.TraceCompletion.cyclicTraceCandidate_cyclic
+#print TGLV354.TraceCompletion.cyclicTraceCandidate_cyclic
+#print axioms TGLV354.TraceCompletion.cyclicTraceCandidate_cyclic
+#check TGLV354.TraceCompletion.cyclicTraceCandidate_dual
+#print TGLV354.TraceCompletion.cyclicTraceCandidate_dual
+#print axioms TGLV354.TraceCompletion.cyclicTraceCandidate_dual
+#check TGLV354.TraceCompletion.cyclicTraceCandidate_positive
+#print TGLV354.TraceCompletion.cyclicTraceCandidate_positive
+#print axioms TGLV354.TraceCompletion.cyclicTraceCandidate_positive
+#check TGLV354.TraceCompletion.cyclicTraceCandidate_positive_faithful
+#print TGLV354.TraceCompletion.cyclicTraceCandidate_positive_faithful
+#print axioms TGLV354.TraceCompletion.cyclicTraceCandidate_positive_faithful
+#check TGLV354.TraceCompletion.cyclicTraceCandidate_positive_of_compatibility
+#print TGLV354.TraceCompletion.cyclicTraceCandidate_positive_of_compatibility
+#print axioms TGLV354.TraceCompletion.cyclicTraceCandidate_positive_of_compatibility
+#check TGLV354.TraceCompletion.cyclicTraceCandidate_related
+#print TGLV354.TraceCompletion.cyclicTraceCandidate_related
+#print axioms TGLV354.TraceCompletion.cyclicTraceCandidate_related
+#check TGLV354.TraceCompletion.cyclicTraceCandidate_star
+#print TGLV354.TraceCompletion.cyclicTraceCandidate_star
+#print axioms TGLV354.TraceCompletion.cyclicTraceCandidate_star
+#check TGLV354.TraceCompletion.cyclicTraceCandidate_zero
+#print TGLV354.TraceCompletion.cyclicTraceCandidate_zero
+#print axioms TGLV354.TraceCompletion.cyclicTraceCandidate_zero
+#check TGLV354.TraceCompletion.positiveShift_trace_compatible
+#print TGLV354.TraceCompletion.positiveShift_trace_compatible
+#print axioms TGLV354.TraceCompletion.positiveShift_trace_compatible
+#check TGLV354.TraceCompletion.positiveTrace_le_cyclicTraceCandidate
+#print TGLV354.TraceCompletion.positiveTrace_le_cyclicTraceCandidate
+#print axioms TGLV354.TraceCompletion.positiveTrace_le_cyclicTraceCandidate
+#check TGLV354.TraceCompletion.regularFullWitness
+#print TGLV354.TraceCompletion.regularFullWitness
+#print axioms TGLV354.TraceCompletion.regularFullWitness
+#check TGLV354.TraceCompletion.regularLegacyCore
+#print TGLV354.TraceCompletion.regularLegacyCore
+#print axioms TGLV354.TraceCompletion.regularLegacyCore
+#check TGLV354.TraceCompletion.regularLegacyThreeLocks
+#print TGLV354.TraceCompletion.regularLegacyThreeLocks
+#print axioms TGLV354.TraceCompletion.regularLegacyThreeLocks
+#check TGLV354.TraceCompletion.regularLegacyThreeLocks_concrete
+#print TGLV354.TraceCompletion.regularLegacyThreeLocks_concrete
+#print axioms TGLV354.TraceCompletion.regularLegacyThreeLocks_concrete
+#check TGLV354.TraceCompletion.regularModularRealization
+#print TGLV354.TraceCompletion.regularModularRealization
+#print axioms TGLV354.TraceCompletion.regularModularRealization
+#check TGLV354.TraceCompletion.scalarTrace_transport_of_support
+#print TGLV354.TraceCompletion.scalarTrace_transport_of_support
+#print axioms TGLV354.TraceCompletion.scalarTrace_transport_of_support
+#check TGLV354.TraceCompletion.selfAdjoint_factor_supports
+#print TGLV354.TraceCompletion.selfAdjoint_factor_supports
+#print axioms TGLV354.TraceCompletion.selfAdjoint_factor_supports
+#check TGLV354.TraceCompletion.selfAdjoint_pow_closedRange
+#print TGLV354.TraceCompletion.selfAdjoint_pow_closedRange
+#print axioms TGLV354.TraceCompletion.selfAdjoint_pow_closedRange
+#check TGLV354.TraceCompletion.selfAdjoint_pow_ker
+#print TGLV354.TraceCompletion.selfAdjoint_pow_ker
+#print axioms TGLV354.TraceCompletion.selfAdjoint_pow_ker
+#check TGLV354.boundedAbsolute_norm
+#print TGLV354.boundedAbsolute_norm
+#print axioms TGLV354.boundedAbsolute_norm
+#check TGLV354.boundedAbsolute_range
+#print TGLV354.boundedAbsolute_range
+#print axioms TGLV354.boundedAbsolute_range
+#check TGLV354.boundedPolar
+#print TGLV354.boundedPolar
+#print axioms TGLV354.boundedPolar
+#check TGLV354.boundedPolar.congr_simp
+#print TGLV354.boundedPolar.congr_simp
+#print axioms TGLV354.boundedPolar.congr_simp
+#check TGLV354.boundedPolar_apply_eq_zero_iff
+#print TGLV354.boundedPolar_apply_eq_zero_iff
+#print axioms TGLV354.boundedPolar_apply_eq_zero_iff
+#check TGLV354.boundedPolar_commutes
+#print TGLV354.boundedPolar_commutes
+#print axioms TGLV354.boundedPolar_commutes
+#check TGLV354.boundedPolar_initial_support
+#print TGLV354.boundedPolar_initial_support
+#print axioms TGLV354.boundedPolar_initial_support
+#check TGLV354.boundedPolar_mem
+#print TGLV354.boundedPolar_mem
+#print axioms TGLV354.boundedPolar_mem
+#check TGLV354.boundedPolar_mul_absolute
+#print TGLV354.boundedPolar_mul_absolute
+#print axioms TGLV354.boundedPolar_mul_absolute
+#check TGLV354.boundedPolar_mul_star
+#print TGLV354.boundedPolar_mul_star
+#print axioms TGLV354.boundedPolar_mul_star
+#check TGLV354.boundedPolar_norm
+#print TGLV354.boundedPolar_norm
+#print axioms TGLV354.boundedPolar_norm
+#check TGLV354.boundedPolar_star_mul
+#print TGLV354.boundedPolar_star_mul
+#print axioms TGLV354.boundedPolar_star_mul
+#check TGLV354.coreProjectionSpaces
+#print TGLV354.coreProjectionSpaces
+#print axioms TGLV354.coreProjectionSpaces
+#check TGLV354.coreProjectionTrace
+#print TGLV354.coreProjectionTrace
+#print axioms TGLV354.coreProjectionTrace
+#check TGLV354.coreProjectionTraceSubadditive
+#print TGLV354.coreProjectionTraceSubadditive
+#print axioms TGLV354.coreProjectionTraceSubadditive
+#check TGLV354.coreProjectionTrace_subadd
+#print TGLV354.coreProjectionTrace_subadd
+#print axioms TGLV354.coreProjectionTrace_subadd
+#check TGLV354.instBoundedOrderCoreProjection
+#print TGLV354.instBoundedOrderCoreProjection
+#print axioms TGLV354.instBoundedOrderCoreProjection
+#check TGLV354.projection_join_comparison
+#print TGLV354.projection_join_comparison
+#print axioms TGLV354.projection_join_comparison
+#check TGLV354.regularSupportProjection
+#print TGLV354.regularSupportProjection
+#print axioms TGLV354.regularSupportProjection
+#check TGLV354.regularSusyData
+#print TGLV354.regularSusyData
+#print axioms TGLV354.regularSusyData
+#check TGLV354.regularSusy_gives_breuer
+#print TGLV354.regularSusy_gives_breuer
+#print axioms TGLV354.regularSusy_gives_breuer
+#check TGLV354.regularSusy_operator_identifications
+#print TGLV354.regularSusy_operator_identifications
+#print axioms TGLV354.regularSusy_operator_identifications

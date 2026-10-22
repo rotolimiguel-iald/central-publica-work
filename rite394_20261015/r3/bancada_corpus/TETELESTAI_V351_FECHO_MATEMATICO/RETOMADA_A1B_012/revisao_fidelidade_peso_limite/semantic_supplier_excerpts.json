@@ -1,0 +1,65 @@
+{
+  "timestamp": "2026-09-14T22:48:59.665534-03:00",
+  "records": [
+    {
+      "source": {
+        "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\v\\TGLExt\\V350ResolventSquareRoot.lean",
+        "bytes": 4631,
+        "sha256": "6a1ad3a2fa7041aa45d56b2448e18a5fce6b90e9e069f045df89483ecb1e3f90"
+      },
+      "start": 13,
+      "end": 50,
+      "text": "theorem positive_sqrt_injective (R : H →L[ℂ] H) (hR : 0 ≤ R)\n    (hi : Function.Injective R) : Function.Injective (CFC.sqrt R : H →L[ℂ] H) := by\n  intro x y h\n  apply hi\n  have hh := congrArg (fun z : H => (CFC.sqrt R : H →L[ℂ] H) z) h\n  change (CFC.sqrt R * CFC.sqrt R) x = (CFC.sqrt R * CFC.sqrt R) y at hh\n  simpa only [CFC.sqrt_mul_sqrt_self R hR] using hh\n\ntheorem resolvent_sqrt_pair_commute (R : H →L[ℂ] H) :\n    CFC.sqrt R * CFC.sqrt (1-R) = CFC.sqrt (1-R) * CFC.sqrt R := by\n  have hc : Commute R (1-R) := resolvent_graph_commute R\n  rw [CFC.sqrt_eq_cfc, CFC.sqrt_eq_cfc]\n  exact ((hc.cfc_nnreal NNReal.sqrt).symm.cfc_nnreal NNReal.sqrt).symm\n\ntheorem resolvent_sqrt_pair_square_sum (R : H →L[ℂ] H) (hR : 0 ≤ R) (hone : R ≤ 1) :\n    CFC.sqrt R * CFC.sqrt R + CFC.sqrt (1-R) * CFC.sqrt (1-R) = 1 := by\n  rw [CFC.sqrt_mul_sqrt_self R hR, CFC.sqrt_mul_sqrt_self (1-R) (sub_nonneg.mpr hone)]\n  abel\n\n/-- A positive square root of the resolvent graph, constructed from bounded CFC roots. -/\ndef resolventSquareRoot (R : H →L[ℂ] H) (hR : 0 ≤ R) (hi : Function.Injective R) :\n    H →ₗ.[ℂ] H := boundedGraphOperator (CFC.sqrt R) (CFC.sqrt (1-R))\n      (positive_sqrt_injective R hR hi)\n\ntheorem resolventSquareRoot_domain (R : H →L[ℂ] H) (hR : 0 ≤ R)\n    (hi : Function.Injective R) :\n    (resolventSquareRoot R hR hi).domain = (CFC.sqrt R).range := rfl\n\ntheorem resolventSquareRoot_closed (R : H →L[ℂ] H) (hR : 0 ≤ R)\n    (hi : Function.Injective R) (hone : R ≤ 1) :\n    (resolventSquareRoot R hR hi).IsClosed :=\n  bounded_graph_closed _ _ _ (resolvent_sqrt_pair_commute R)\n    (resolvent_sqrt_pair_square_sum R hR hone)\n\ntheorem resolventSquareRoot_dense (R : H →L[ℂ] H) (hR : 0 ≤ R)\n    (hi : Function.Injective R) : Dense ((resolventSquareRoot R hR hi).domain : Set H) :=\n  bounded_graph_domain_dense _ _ _ (IsSelfAdjoint.of_nonneg (CFC.sqrt_nonneg R))\n"
+    },
+    {
+      "source": {
+        "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\v\\TGLExt\\V350AntiunitaryPositiveConjugation.lean",
+        "bytes": 2986,
+        "sha256": "83be0cf3f811bd6fd429c7705fdb1a00b27fdd6496ee971b9ca5f355c00d6f36"
+      },
+      "start": 8,
+      "end": 15,
+      "text": "namespace TGLV350.Regular\nopen ChatgptAudit.Continuous050\nnoncomputable section\nvariable {H : Type} [NormedAddCommGroup H] [InnerProductSpace ℂ H] [CompleteSpace H]\nvariable (U : H ≃ₛₗᵢ[starRingEnd ℂ] H)\n\n/-- Fix the canonical Hilbert-operator CFC instances before specializing H. -/\ndef hilbertPositiveSqrt (T : H →L[ℂ] H) : H →L[ℂ] H := CFC.sqrt T"
+    },
+    {
+      "source": {
+        "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\v\\TGLExt\\V350ScalarDualWeightFaithfulness.lean",
+        "bytes": 3967,
+        "sha256": "3ff3e31e49de71f035a425202ef1796be18da2b46bdb60a7f6c34b8a2e73f61c"
+      },
+      "start": 52,
+      "end": 59,
+      "text": "/-- Evaluating the dual form at the interval vacuum is faithful on N+.\nFinitude is checked before toReal is used; the resolvent is in F. -/\ntheorem dualQuadraticIntegral_vacuum_faithful (P : SiteProfile)\n    (A : RegularHilbert (TowerHilbert P) →L[ℂ] RegularHilbert (TowerHilbert P))\n    (hm : A ∈ regularCoreAlgebra P) (hA : 0 ≤ A) :\n    dualQuadraticIntegral A (regularVacuum P) = 0 ↔ A = 0 := by\n  constructor\n  · intro hv"
+    },
+    {
+      "source": {
+        "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\v\\TGLExt\\V351InverseCutoffCFC.lean",
+        "bytes": 7577,
+        "sha256": "cbdf10aea749a552b0f47afb3ef59560ed47d6f46cf7dd8064dc963a092c3490"
+      },
+      "start": 125,
+      "end": 132,
+      "text": "theorem regularInverseGeneratorCutoff_sqrt_right (P : SiteProfile) (ε : ℝ) (hε : 0 < ε) :\n    ∃ h : hilbertPositiveSqrt (regularInverseGeneratorCutoff P ε) ∈ regularCoreAlgebra P,\n      (⟨hilbertPositiveSqrt (regularInverseGeneratorCutoff P ε),h⟩ :\n        (regularCoreAlgebra P).toStarSubalgebra) ∈ scalarPolarRightAlgebra P :=\n  scalarRightAction_sqrt P\n    ⟨regularInverseGeneratorCutoff P ε,regularInverseGeneratorCutoff_mem P ε⟩\n    (regularInverseGeneratorCutoff_right P ε hε) (regularInverseGeneratorCutoff_nonneg P ε hε)\n"
+    },
+    {
+      "source": {
+        "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\v\\TGLExt\\V351InverseLimitWeight.lean",
+        "bytes": 6740,
+        "sha256": "cfdced33d3cafdd2782f4d7e8ca77974e0ddee22f19803dfbd36275787c28f1e"
+      },
+      "start": 87,
+      "end": 96,
+      "text": "def scalarInverseLimitWeight (P : SiteProfile) (X : PositiveCoreInput P) : ℝ≥0∞ :=\n  ⨆ n : ℕ, scalarInverseCutoffWeight P (1/((n : ℝ)+1)) X\n\ntheorem scalarInverseLimitWeight_zero (P : SiteProfile) :\n    scalarInverseLimitWeight P (PositiveCoreInput.zero P) = 0 := by\n  simp only [scalarInverseLimitWeight,scalarInverseCutoffWeight_zero,ciSup_const]\n\ntheorem scalarInverseCutoffWeight_le_limit (P : SiteProfile) (n : ℕ) (X : PositiveCoreInput P) :\n    scalarInverseCutoffWeight P (1/((n : ℝ)+1)) X ≤ scalarInverseLimitWeight P X :=\n  le_iSup (fun m : ℕ => scalarInverseCutoffWeight P (1/((m : ℝ)+1)) X) n"
+    },
+    {
+      "source": {
+        "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\v\\TGLExt\\V350DenseAntilinearExtension.lean",
+        "bytes": 2400,
+        "sha256": "32b93a00492f449da2884ebedf0df85aac1b7b1e620d9c2b999f7bcd6f41b4cf"
+      },
+      "start": 19,
+      "end": 22,
+      "text": "theorem denseAntilinearExtension_norm (x : H) : ‖f.extendOfNorm e x‖=‖x‖ := by\n  refine hd.induction ?_ (isClosed_eq (by fun_prop) continuous_norm) x\n  rintro _ ⟨y,rfl⟩\n  rw [denseAntilinearExtension_apply f e hd hn y,hn y]"
+    }
+  ]
+}

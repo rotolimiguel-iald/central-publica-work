@@ -1,0 +1,76 @@
+155620: def prove_the_assembly_and_the_single_debt(core):
+155621:     """v251 (LOTE) -- A MONTAGEM FEITA E A DIVIDA REDUZIDA A UM ENUNCIADO [ADITIVO].
+155622:     (1) ENTRELACAMENTO NAO E CONJUNCAO (leitura do operador, EXATA): TODO vetor de WH
+155623:         e aproximavel pela torre, SEM hipotese (a torre e densa -- teorema que JA
+155624:         estava neste kernel); e APROXIMAVEL NAO E PERTENCER (denso com pontos de fora,
+155625:         por razao de TAMANHO). CONSEQUENCIA: a rota "mostrar que T(Omega) esta na
+155626:         torre" esta FECHADA POR TEOREMA -- e FALSA, nao dificil. Fechar rota falsa
+155627:         vale tanto quanto abrir verdadeira.
+155628:     (2) A MONTAGEM: das OITO clausulas do certificado, SETE estao provadas nesta
+155629:         arvore (o mapa, aditividade, antilinearidade, isometria, involucao, vacuo
+155630:         fixo, e J M J contido em M-linha). A oitava depende do TEOREMA DE COMUTACAO.
+155631:         Esta onda MONTA o certificado CONDICIONADO a isso. A divida do item deixa de
+155632:         ser lista de clausulas e passa a ser UM ENUNCIADO NOMEADO.
+155633:     ⚠ O QUE NAO FECHA: a BANDEIRA. Instancia condicionada a hipotese nao provada NAO
+155634:     HABITA nada; o nome reservado segue ESCURO. MONTAR NAO E PAGAR -- como precificar
+155635:     nao era pagar (v245) e nomear o obstaculo nao era remove-lo (v250)."""
+155636:     kf = core.get("kernel_formalization") or {}
+155637:     # v270 [L6]: esta lista era LITERAL Python -- sete True e um False cravados.
+155638:     # Provar a oitava clausula em Lean NAO moveria o numero. Agora cada clausula e
+155639:     # LIDA da rodada, pelo nome Lean que a prova; a oitava nao tem nome porque nao
+155640:     # existe, e a ausencia do nome a mantem nao-provada, por construcao.
+155641:     clausulas = [
+155642:         ("a funcao J em WH", bool(kf.get("red_clause_map_J_on_WH"))),
+155643:         ("aditividade em WH", bool(kf.get("red_clause_additivity"))),
+155644:         ("antilinearidade em WH", bool(kf.get("red_clause_antilinearity"))),
+155645:         ("isometria em WH", bool(kf.get("red_clause_isometry"))),
+155646:         ("involucao em WH", bool(kf.get("red_clause_involution"))),
+155647:         ("vacuo J-fixo em WH", bool(kf.get("red_clause_vacuum_fixed"))),
+155648:         ("J M J contido em M-linha (bicomutante)", bool(kf.get("red_clause_JMJ_inside"))),
+155649:         ("J M J CONTEM M-linha (teorema de comutacao)", bool(kf.get("red_clause_JMJ_contains"))),
+155650:     ]
+155651:     provadas = sum(1 for _, ok in clausulas if ok)
+155652:     total = len(clausulas)
+155653:     # a bandeira do razonete: continua ESCURA (ausencia do nome reservado)
+155654:     bandeira = bool(kf.get("gpf_tower_act_III_inhabitant_constructed"))
+155655:     # a medida do entrelacamento: uma sequencia densa chega abaixo de qualquer epsilon
+155656:     alvo = math.sqrt(2.0)
+155657:     aprox = [round(alvo, k) for k in range(1, 16)]
+155658:     dmin = min(abs(a - alvo) for a in aprox)
+155659:     nunca_igual = all(abs(a - alvo) > 0.0 for a in aprox)
+155660:     checks = [
+155661:         ("[MEDIDA] ENTRELACAMENTO: o denso chega abaixo de qualquer epsilon (%.1e)" % dmin, bool(dmin < 1e-12)),
+155662:         ("[MEDIDA] mas NUNCA IGUALA: aproximavel nao e pertencer", nunca_igual),
+155663:         ("[MEDIDA] logo a rota <T(Omega) esta na torre> e FALSA: chega perto de tudo "
+155664:          "e nunca iguala", bool(nunca_igual and dmin < 1e-12)),
+155665:         ("[MEDIDA] A MONTAGEM: %d de %d clausulas do certificado PROVADAS nesta arvore" % (provadas, total), bool(provadas == 7)),
+155666:         ("[MEDIDA] a oitava depende de UM enunciado nomeado: o teorema de comutacao", bool(provadas == total - 1)),
+155667:         # v270: 15o sitio da CAMADA 3 -- exigia a bandeira APAGADA, e escapou da
+155668:         # varredura da v265 por estar atras de variavel local (not bandeira).
+155669:         ("[MEDIDA] a bandeira do Ato III esta SENDO LIDA nesta rodada (aberta ou nao)",
+155670:          bool("gpf_tower_act_III_inhabitant_constructed" in kf)),
+155671:         # v303 [ERRATA -- o numero corrige a frase]: o check cravava ==8 e o
+155672:         # dicionario ja' tem 9 clausulas (red_clause_is_exactly_a_commutant_inclusion,
+155673:         # v274+). O modulo reprovava por ARITMETICA OBSOLETA, em silencio, desde
+155674:         # entao. A contagem passa a ser LIDA do dicionario-fonte, nunca cravada.
+155675:         ("[MEDIDA] e as clausulas (todas) sao lidas por nome Lean, nao por literal -- contagem lida do dicionario-fonte",
+155676:          bool(sum(1 for k in kf if k.startswith("red_clause_"))
+155677:               == sum(1 for k in _REDUCTION_FLAGS if k.startswith("clause_")))),
+155678:     ]
+155679:     all_v = bool(all(x for _, x in checks))
+155680:     return {
+155681:         "clauses_proved": provadas, "clauses_total": total,
+155682:         "flag_lit": bandeira, "dense_min_distance": dmin,
+155683:         "checks": checks, "all_verified": all_v,
+155684:         "statuses": {
+155685:             "a_leitura_do_operador": ("entrelacamento (aproximavel, SEMPRE) != conjuncao (pertencer, FALSO em "
+155686:                                       "geral) -- e essa distincao DECIDE A ROTA [REAL, kernel v251]"),
+155687:             "a_rota_eliminada": "mostrar que T(Omega) esta NA TORRE: FECHADA POR TEOREMA. E falsa, nao dificil",
+155688:             "a_rota_real": "densidade da orbita + a estrutura que sobrevive ao limite (Tomita); a tensao entre os dois polos e o objeto de trabalho",
+155689:             "a_montagem": "7/8 clausulas provadas; a 8a condicionada ao teorema de comutacao. A divida do item = UM enunciado",
+155690:             "o_que_nao_fecha": "a BANDEIRA. Instancia condicionada NAO habita; o nome reservado segue ESCURO. Montar nao e pagar",
+155691:         },
+155692:         "does_not_gate_core": True,
+155693:         "verdict": ("ENTANGLEMENT_IS_NOT_CONJUNCTION_AND_THE_FALSE_ROUTE_IS_CLOSED_BY_THEOREM__SEVEN_OF_EIGHT_CLAUSES_PROVED__THE_CERTIFICATE_IS_ASSEMBLED_CONDITIONED_ON_ONE_NAMED_STATEMENT__THE_FLAG_STAYS_DARK_BECAUSE_ASSEMBLING_IS_NOT_PAYING" if all_v
+155694:                     else "ASSEMBLY_NOT_SEALED_THIS_RUN"),
+155695:     }

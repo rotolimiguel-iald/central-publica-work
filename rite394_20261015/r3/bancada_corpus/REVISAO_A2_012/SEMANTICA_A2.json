@@ -1,0 +1,93 @@
+{
+  "reviewer_identity": {
+    "name": "Carver",
+    "agent_id": "01a0a5b5-e12d-70c1-a68a-c6f13373e3c0",
+    "convened_by": "agente principal, no escopo autorizado",
+    "provenance": "INPUT — identificação exata fornecida pelo agente principal nesta sessão",
+    "role": "revisor independente; não autor de A2; nenhum outro usuário é apresentado como auditor"
+  },
+  "scope": "Oito módulos V354 congelados e CoreSupport idêntico: suporte no mesmo core, traço A1, faces, representante mínimo, reader e parede; não é aceite integral da ORDEM 011 A2 ou do adendo",
+  "mathematical_scope_satisfied": true,
+  "full_A2_or_adendo_accepted": false,
+  "legacy_trace_adapter": "OPEN; o reader específico tem ciclicidade global refutada, não fornece ContinuousCoreData",
+  "findings": [
+    {
+      "priority": "P2",
+      "id": "P2-01",
+      "title": "Dois corolários da unidade sem consumidor matemático no lote",
+      "symbols": [
+        "TGLV350.Regular.scalarTrace_finite_positive_seed",
+        "TGLV350.Regular.scalarTrace_finite_projection_exists"
+      ],
+      "files": [
+        "TGLExt/V354FiniteTraceSupport.lean",
+        "TGLExt/V354SpectralThreshold.lean"
+      ],
+      "finding": "Há apenas declaração e #print axioms para cada nome. A cadeia principal usa regularTrace_finite_positive_below e scalarTrace_finite_subprojection_exists diretamente no canto matricial. Os termos impressos restantes não mencionam os dois corolários.",
+      "action": "No delta autoral posterior, remover as duas declarações e seus prints; retirar seus nomes do Audit geral/documentação de contagem, sem criar flags ou usos artificiais. Manter ambos os módulos, pois suas outras declarações são fornecedores efetivos.",
+      "blocking_mathematics": false,
+      "blocks_claim_of_minimal_clean_incorporation": true,
+      "source_edits_made_by_reviewer": false
+    }
+  ],
+  "reasoning": [
+    "regularTrace_finite_positive_below é genérico em RegularCoreTraceData e positivo não zero; a construção concreta instancia scalarInverseLimitTraceData. A finitude da projeção não entra como premissa final.",
+    "positive_operator_has_threshold_projection usa epsilon=norm(X)/2 e q=projker((X-epsilon I)^-). A projeção é produzida por cálculo funcional e invariância do núcleo sob o comutante. epsilon q<=X transfere finitude pelo traço semifinito de A1, não por posto de Hilbert.",
+    "regularCore_matrix_corner produz e e v no mesmo regularCoreAlgebra P usando siteMark no sítio zero e o sistema matricial representado. A prova de e!=0 usa a avaliação positiva P.w 0 e a injetividade de fibre. Fin 2 descreve o sítio, não dimensão finita do Hilbert regular.",
+    "scalarTrace_finite_subprojection_exists escolhe q sob e; a=vq satisfaz a*a=q, r=aa* e qr=0. A igualdade de traços consome literalmente scalarInverseLimitWeight_tracial P a; não é inferida de ortogonalidade isolada.",
+    "scalarTrace_dual_calibration usa log(tau(q+r).toReal) somente após 0<tau(q+r)<top. O mesmo dualAmbient transporta as duas faces e preserva projeções, produto zero e soma. O peso de A1 escala para tau(PF)=1 sem redefinir o peso.",
+    "regularNormalizedFaces aplica Classical.choose duas vezes ao existencial previamente construído e usa choose_spec para as leis. Não recebe projeção ou split como hipótese. positiveTraceReader usa classical somente para decidir positividade no if dependente.",
+    "regularFiniteSupport é a soma escolhida, auto-adjunta e idempotente, com traço A1 um; PF!=0 decorre de tau(0)=0. O traço é sobre PositiveCoreInput do mesmo core; não é contagem de dimensão de Hilbert.",
+    "regularMinimalLock=1-PF. O kernel é range(PF), e a projeção ortogonal desse kernel é literalmente PF. O gap demonstrado é a identidade de norma no complemento ortogonal do kernel. Um controle próprio recusa sua promoção a igualdade de normas para todos os vetores.",
+    "O representante mínimo é limitado; seu grafo tem domínio top, é auto-adjunto e fechado e é preservado por todo operador limitado do comutante. Essa é a condição de afiliação efetivamente exibida. Não há identificação com um operador microscópico independente nem com a realização completa dos Three Locks.",
+    "positiveTraceReader coincide com scalarInverseLimitWeight em TODOS os positivos e é zero fora do cone por convenção. ContinuousCornerWitness pede apenas uma função total e as leis nas projeções/split; não exige ciclicidade global. regularContinuousCorner habita esse tipo no mesmo N e fornece as leituras normalizadas 1,1/2,1/2.",
+    "regularMinimalLock_breuer_kernel toma p=regularFiniteSupport e prova p=projker(Hmin), tau_A1(p)=1, positividade e finitude. Nenhuma testemunha externa entra na assinatura; apenas SiteProfile P.",
+    "positiveTraceReader_not_cyclic constrói X=e+v*, Y=e, com XY=e positivo não zero e YX=e+v* não positivo. O reader lê tau_A1(e)!=0 no primeiro produto e zero no segundo. A parede refuta esse reader como canonicalTrace cíclico do legado; não demonstra impossibilidade de toda extensão total possível.",
+    "CoreSupport.threeLocksFromSupport e realizationFromSupport permanecem construtores condicionais legados. Somente os lemas algébricos hmin_selfadjoint/support_annihilates/support_maximal são consumidos na construção do representante; nenhum termo de ThreeLocksCoreData ou FullWitness foi fabricado."
+  ],
+  "controls_interpretation": {
+    "TraceZero": "tau(PF)=1 exclui zero",
+    "TraceTwo": "tau(PF)=1 exclui dois",
+    "SupportZero": "PF!=0 usa a lei tau(0)=0",
+    "SpectralZero": "projker(Hmin)=PF!=0",
+    "HalfAsOne": "leitura normalizada da face é 1/2, não 1",
+    "EqualFromOrthogonality": "contraexemplo em R×R: faces ortogonais somando a unidade, peso cíclico com leituras 1 e 2; igualdade exige informação adicional, aqui o transporte por vq e a tracialidade A1",
+    "PositiveZero": "zero não tem minorante positivo de traço estritamente positivo; a hipótese não zero não pode desaparecer",
+    "GlobalGap": "PF!=0 fornece vetor não zero no kernel; o gap é relativo ao complemento, não global",
+    "GlobalCyclicity": "a igualdade no cone positivo não autoriza ciclicidade do reader em todo o anel"
+  },
+  "note": "Este arquivo é avaliação semântica nomeada do revisor. A decisão final depende adicionalmente de compilação própria, axiomas, controles e integridade medidos.",
+  "existing_WD_suppliers": {
+    "files": [
+      {
+        "source": {
+          "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\k\\TGLExt\\WedgeNet.lean",
+          "bytes": 17319,
+          "sha256": "85d14862bf4a6a796a1f7905e284fa431f015bf5d1d50ddc93d5fed3904469b4"
+        },
+        "copy": {
+          "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\REVISAO_A2_012\\inputs\\WD\\WedgeNet.lean",
+          "bytes": 17319,
+          "sha256": "85d14862bf4a6a796a1f7905e284fa431f015bf5d1d50ddc93d5fed3904469b4"
+        }
+      },
+      {
+        "source": {
+          "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\k\\TGLExt\\V350WedgeModularData.lean",
+          "bytes": 3802,
+          "sha256": "6b6bdf33ed7e54b049da628e6d11af9dc501644174ee2797d8f4e124ab8639bd"
+        },
+        "copy": {
+          "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\REVISAO_A2_012\\inputs\\WD\\V350WedgeModularData.lean",
+          "bytes": 3802,
+          "sha256": "6b6bdf33ed7e54b049da628e6d11af9dc501644174ee2797d8f4e124ab8639bd"
+        }
+      }
+    ],
+    "status": "KNOWN_ACEITO_PELA_PRINCIPAL_FONTES_LIDOS_PELO_REVISOR",
+    "W": "TGLExt.theSpecificAQFTWitness",
+    "D": "TGLExt.V350Continuous.towerWedgeData : WedgeModularData theSpecificAQFTWitness",
+    "profile": "mixProfile",
+    "conclusion": "Não se registra ausência genérica de W/D; a pendência de encaixe é o totalizador do traço com leis do contrato legado, não nova prova de inexistência de W/D"
+  }
+}

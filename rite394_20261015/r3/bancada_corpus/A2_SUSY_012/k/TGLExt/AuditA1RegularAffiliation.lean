@@ -1,0 +1,8 @@
+import TGLExt.V351RegularGeneratorAffiliation
+set_option pp.universes true
+#check TGLV350.Regular.character_commutation_realScalarMultiplier
+#print axioms TGLV350.Regular.character_commutation_realScalarMultiplier
+#check TGLV350.Regular.regularSpectralResolvent_mem
+#print axioms TGLV350.Regular.regularSpectralResolvent_mem
+#check TGLV350.Regular.regularPositiveGenerator_commutant_graph
+#print axioms TGLV350.Regular.regularPositiveGenerator_commutant_graph

@@ -1,0 +1,85 @@
+{
+  "timestamp": "2026-09-14T23:14:01.558245-03:00",
+  "records": [
+    {
+      "source": {
+        "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\v\\TGLExt\\BoundedGraphOperator.lean",
+        "bytes": 11526,
+        "sha256": "4d70d27d25f31fed13b73a7ae60601478718e41bbc38c24c38117b0cc26dc84f"
+      },
+      "start": 10,
+      "end": 40,
+      "text": "--     periodo do fluxo forca retorno de rotulos em localizacao fiel covariante; ligado ao boost 044 (negativos tipados).\n--   049-050: SUBESPACO PADRAO CONTINUO em L^2 — T_c = M_exp(-c xi) positivo auto-adjunto (grafo limitado), J\n--     antiunitaria, S_c = J T_c involucao fechada, K_c = Fix S_c subespaco padrao; adjunto S_c^dagger = T_c J,\n--     Delta_c = S_c^dagger S_c = T_c^2 = T_{2c} com igualdade de dominios, resolvente (I + Delta_c)^{-1}.\n--     Identificacao T_c = Delta_c^{1/2} e BW seguem OPEN.\n--   051: balanco optico finito — Q - K DeltaA = K E com E >= 0 (integral optica), E/t^4 -> (a^2 + c^2)/12; Riccati;\n--     no caso variavel o drift Z_R(s) - s R(s) persiste (controles).\n--   052: setor horizontal (plano de Pauli X,Y do 1o sitio) — a esperanca centralizante zera as duas direcoes;\n--     o horizonte modular faz o quarto de volta; forma invariante = c x produto GNS real; [INPUT] traco relativo = 1\n--     fixa c = 1/2 (densidade de area 1/2); forma efetiva de densidade |2p - 1|. Escala livre sem calibracao por Omega.\n--   053: polarizador D = P_R(-i)P_R no Hilbert real; acao GNS de todo TowerHorizon preserva Omega e entrelaca D;\n--     radical = centralizador (setor auto-adjunto); CONTRAEXEMPLO: covariancia + calibracao comum NAO da unicidade\n--     da area (9/10 vs 1377/1250 no 2o par).\n--   054: custo modular do polarizador C_D(x) = sum 2||D^(n+1)x||^2/(2n+1): l.s.c., preservado por todo TowerHorizon,\n--     custo zero <=> centralizador; f(0)=0, f(0)=2 localModularCost; C_D(X_1 Omega) = log2/3 na referencia p = 1/3.\n--   Estatuto: [REAL] o que esta compilado; [INPUT] calibracao por Omega, traco relativo = 1; [OPEN] H3, selecao\n--   fisica da area, escala dimensional, regiao <-> algebra, BW/identificacao T_c = Delta^{1/2}, reconstrucao geral.\n-- Auditoria da gerencia (sessao d554e796, 07/09/2026): hashes 185/185 (9 entregas); 9/9 auditores exit 0;\n--   recompilacao INDEPENDENTE 43/43, axiomas no trio; guarda de colisao; enunciados lidos.\n--   Transposicao: cabecalho + prefixo TGLExt. (+ regra 3).\n-- NAO move gate; nao e fisica; NOT_FALSIFIED nunca e CONFIRMED; CONFIRMADA proibido.\n-- ---------------------------------------------------------------------\nimport Mathlib.Analysis.InnerProductSpace.LinearPMap\nimport Mathlib.Algebra.Module.Submodule.Equiv\n\nset_option autoImplicit false\nset_option maxHeartbeats 1200000\n\nnamespace ChatgptAudit.Continuous049\n\nopen Set"
+    },
+    {
+      "source": {
+        "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\v\\TGLExt\\BoundedGraphOperator.lean",
+        "bytes": 11526,
+        "sha256": "4d70d27d25f31fed13b73a7ae60601478718e41bbc38c24c38117b0cc26dc84f"
+      },
+      "start": 117,
+      "end": 130,
+      "text": "/-- Density uses A*=A and injectivity, not a bounded inverse of A. -/\ntheorem bounded_graph_domain_dense [CompleteSpace E] (A B : E →L[ℂ] E) (hAi : Function.Injective A)\n    (hA : IsSelfAdjoint A) :\n    Dense ((boundedGraphOperator A B hAi).domain : Set E) := by\n  have hsa : A.adjoint = A := hA.star_eq\n  have hk : A.ker = ⊥ := LinearMap.ker_eq_bot.mpr hAi\n  have hc : A.range.topologicalClosure = ⊤ := by\n    rw [Submodule.topologicalClosure_eq_top_iff, A.orthogonal_range, hsa, hk]\n  intro x\n  change x ∈ (A.range.topologicalClosure : Set E)\n  rw [hc]\n  trivial\n\n/-- Closedness is a closed relation in the ordinary product topology. -/"
+    },
+    {
+      "source": {
+        "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\v\\TGLExt\\V351RegulatorWeightOrder.lean",
+        "bytes": 5182,
+        "sha256": "b908f79a4d20ca8f456eb245e2a605a6cc6e611667e1c8a8d6cb1cee2ee4f838"
+      },
+      "start": 22,
+      "end": 49,
+      "text": "theorem regularInverseGeneratorCutoff_commutes (P : SiteProfile)\n    (ε η : ℝ) (hε : 0 < ε) (hη : 0 < η) :\n    Commute (regularInverseGeneratorCutoff P ε) (regularInverseGeneratorCutoff P η) := by\n  rw [regularInverseGeneratorCutoff_cfc P ε hε,regularInverseGeneratorCutoff_cfc P η hη]\n  exact cfc_commute_cfc _ _ _\n\n/-- The inverse identity is obtained on the graph of the same unbounded h. -/\ntheorem regularInverseGeneratorCutoff_resolvent_identity (P : SiteProfile)\n    (ε η : ℝ) (hε : 0 < ε) (hη : 0 < η) :\n    regularInverseGeneratorCutoff P ε - regularInverseGeneratorCutoff P η =\n      ((η-ε : ℝ) : ℂ) • (regularInverseGeneratorCutoff P η * regularInverseGeneratorCutoff P ε) := by\n  ext1 x\n  have hh := (regularInverseGeneratorCutoff_graph_iff P η hη\n    (regularInverseGeneratorCutoff P ε x)\n    (x-(ε : ℂ) • regularInverseGeneratorCutoff P ε x)).mp\n      (regularInverseGeneratorCutoff_graph P ε hε x)\n  rw [map_add,map_sub,map_smul,map_smul] at hh\n  change regularInverseGeneratorCutoff P ε x - regularInverseGeneratorCutoff P η x =\n    ((η-ε : ℝ) : ℂ) • (regularInverseGeneratorCutoff P η (regularInverseGeneratorCutoff P ε x))\n  rw [Complex.ofReal_sub,sub_smul]\n  have he := congrArg (fun v => v-regularInverseGeneratorCutoff P η x) hh\n  calc\n    _ = (regularInverseGeneratorCutoff P η x -\n        (ε : ℂ) • regularInverseGeneratorCutoff P η (regularInverseGeneratorCutoff P ε x) +\n        (η : ℂ) • regularInverseGeneratorCutoff P η (regularInverseGeneratorCutoff P ε x)) -\n          regularInverseGeneratorCutoff P η x := he.symm\n    _ = _ := by abel\n"
+    },
+    {
+      "source": {
+        "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\v\\TGLExt\\V351RegularPositiveGraph.lean",
+        "bytes": 8384,
+        "sha256": "d56ea107302802ee76d65a3c32c69be9fe41cddb4901a65486ab7f1bfb345390"
+      },
+      "start": 90,
+      "end": 113,
+      "text": "    regularSpectralResolvent P ≤ 1 := by\n  apply sub_nonneg.mp\n  have h := map_nonneg (regularSpectralCoordinates P).conjStarAlgEquiv\n    (sub_nonneg.mpr (realScalarMultiplier_le_one\n      (H := TowerHilbert P) (fun x => Real.sigmoid (2*Real.pi*x)) (by fun_prop)\n      (fun x => Real.sigmoid_nonneg _) (fun x => Real.sigmoid_le_one _)))\n  simpa only [map_sub, map_one, regularSpectralResolvent] using h\n\ntheorem regularSpectralResolvent_injective (P : SiteProfile) :\n    Function.Injective (regularSpectralResolvent P) :=\n  (regularSpectralCoordinates P).injective.comp\n    ((realScalarMultiplier_injective _ _ _ _ (fun _ => Real.sigmoid_pos _)).comp\n      (regularSpectralCoordinates P).symm.injective)\n\ntheorem regularSpectralResolvent_complement_injective (P : SiteProfile) :\n    Function.Injective (1-regularSpectralResolvent P :\n      RegularHilbert (TowerHilbert P) →L[ℂ] RegularHilbert (TowerHilbert P)) := by\n  let g : ℝ → ℝ := fun x => Real.sigmoid (2*Real.pi*x)\n  have hg : Continuous g := by fun_prop\n  have h0 : ∀ x, 0 ≤ g x := fun x => Real.sigmoid_nonneg _\n  have h1 : ∀ x, g x ≤ 1 := fun x => Real.sigmoid_le_one _\n  change Function.Injective (1 - (regularSpectralCoordinates P).conjStarAlgEquiv\n    (realScalarMultiplier g hg h0 h1) : _ →L[ℂ] _)\n  rw [← map_one (regularSpectralCoordinates P).conjStarAlgEquiv,"
+    },
+    {
+      "source": {
+        "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\v\\.lake\\packages\\mathlib\\Mathlib\\Topology\\UniformSpace\\Equicontinuity.lean",
+        "bytes": 58387,
+        "sha256": "dd3e8de0798b50489e45f0e117af17473290e2e1c1fc26218e7beccd3cdce692"
+      },
+      "start": 977,
+      "end": 986,
+      "text": "/-- If `F : ι → X → α` is an equicontinuous family of functions,\n`f : X → α` is a continuous function, and `l` is a filter on `ι`,\nthen `{x | Filter.Tendsto (F · x) l (𝓝 (f x))}` is a closed set. -/\ntheorem Equicontinuous.isClosed_setOf_tendsto {l : Filter ι} {F : ι → X → α} {f : X → α}\n    (hF : Equicontinuous F) (hf : Continuous f) :\n    IsClosed {x | Tendsto (F · x) l (𝓝 (f x))} :=\n  closure_subset_iff_isClosed.mp fun x hx ↦\n    (hF x).tendsto_of_mem_closure (hf.continuousAt.mono_left inf_le_left) (fun _ ↦ id) hx\n\nend"
+    },
+    {
+      "source": {
+        "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\v\\.lake\\packages\\mathlib\\Mathlib\\Topology\\MetricSpace\\UniformConvergence.lean",
+        "bytes": 15603,
+        "sha256": "01ed18a99a0f7b7183c033776cddfcd198c3e9b9000809d4c7572d6436c63e3a"
+      },
+      "start": 94,
+      "end": 102,
+      "text": "/-- If `f : α → γ → β` is a family of a functions, all of which are Lipschitz with the\nsame constant, then the family is uniformly equicontinuous. -/\nlemma _root_.LipschitzWith.uniformEquicontinuous (f : α → γ → β) (K : ℝ≥0)\n    (h : ∀ c, LipschitzWith K (f c)) : UniformEquicontinuous f := by\n  rw [uniformEquicontinuous_iff_uniformContinuous]\n  rw [← lipschitzWith_ofFun_iff] at h\n  exact h.uniformContinuous\n\nlemma lipschitzOnWith_iff {f : γ → α →ᵤ β} {K : ℝ≥0} {s : Set γ} :"
+    },
+    {
+      "source": {
+        "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\v\\.lake\\packages\\mathlib\\Mathlib\\Analysis\\CStarAlgebra\\ContinuousFunctionalCalculus\\Instances.lean",
+        "bytes": 21281,
+        "sha256": "f05652edd12f24ddd2aa058ceb8762cceabda14a4580d7d237dcde26aaf8d6f4"
+      },
+      "start": 283,
+      "end": 298,
+      "text": "\nopen NNReal in\ninstance Nonneg.instNonUnitalContinuousFunctionalCalculus :\n    NonUnitalContinuousFunctionalCalculus ℝ≥0 A (0 ≤ ·) :=\n  QuasispectrumRestricts.cfc (q := IsSelfAdjoint) ContinuousMap.realToNNReal\n    NNReal.isClosedEmbedding_coe le_rfl\n    (fun _ ↦ nonneg_iff_isSelfAdjoint_and_quasispectrumRestricts)\n\n/-- In a C⋆-algebra, commuting nonnegative elements have nonnegative products. -/\nlemma Commute.mul_nonneg {a b : A} (ha : 0 ≤ a) (hb : 0 ≤ b) (h : Commute a b) :\n    0 ≤ a * b := by\n  rw [nonneg_iff_isSelfAdjoint_and_quasispectrumRestricts]\n  refine ⟨ha.isSelfAdjoint.commute_iff hb.isSelfAdjoint |>.mp h, ?_⟩\n  rw [nonneg_iff_isSelfAdjoint_and_quasispectrumRestricts] at hb\n  obtain ⟨x, hx₁, hx₂, rfl⟩ := CFC.exists_sqrt_of_isSelfAdjoint_of_quasispectrumRestricts hb.1 hb.2\n  have hx := nonneg_iff_isSelfAdjoint_and_quasispectrumRestricts.mpr ⟨hx₁, hx₂⟩"
+    },
+    {
+      "source": {
+        "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TETELESTAI_V351_FECHO_MATEMATICO\\RETOMADA_A1B_012\\v\\.lake\\packages\\mathlib\\Mathlib\\Analysis\\CStarAlgebra\\ContinuousFunctionalCalculus\\Order.lean",
+        "bytes": 28173,
+        "sha256": "0802a500623d378e8c953961cac3c6391932515a7236d44dbceea11e2eb4611b"
+      },
+      "start": 444,
+      "end": 456,
+      "text": "instance instNonnegSpectrumClassComplexNonUnital : NonnegSpectrumClass ℂ A where\n  quasispectrum_nonneg_of_nonneg a ha x hx := by\n    rw [Unitization.quasispectrum_eq_spectrum_inr' ℂ ℂ a] at hx\n    exact spectrum_nonneg_of_nonneg (Unitization.inr_nonneg_iff.mpr ha) hx\n\nlemma norm_le_norm_of_nonneg_of_le {a b : A} (ha : 0 ≤ a := by cfc_tac) (hab : a ≤ b) :\n    ‖a‖ ≤ ‖b‖ := by\n  suffices ∀ a b : A⁺¹, 0 ≤ a → a ≤ b → ‖a‖ ≤ ‖b‖ by\n    have hb := ha.trans hab\n    simpa only [ge_iff_le, Unitization.norm_inr] using\n      this a b (by simpa) (by rwa [Unitization.inr_le_iff a b])\n  intro a b ha hab\n  have hb : 0 ≤ b := ha.trans hab"
+    }
+  ]
+}

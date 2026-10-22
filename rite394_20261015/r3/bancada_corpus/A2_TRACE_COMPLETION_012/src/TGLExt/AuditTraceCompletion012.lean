@@ -1,0 +1,37 @@
+import TGLExt.V354CyclicTraceCompletion
+
+set_option pp.universes true
+
+#print TGLV354.TraceCompletion.ShiftRelated
+#print TGLV354.TraceCompletion.ShiftRelated.refl
+#print TGLV354.TraceCompletion.ShiftRelated.symm
+#print TGLV354.TraceCompletion.ShiftRelated.trans
+#print TGLV354.TraceCompletion.ShiftRelated.cyclic
+#print TGLV354.TraceCompletion.ShiftRelated.map
+#print TGLV354.TraceCompletion.ShiftRelated.star_transport
+#print TGLV354.TraceCompletion.cyclicTraceCandidate
+#print TGLV354.TraceCompletion.positiveTrace_le_cyclicTraceCandidate
+#print TGLV354.TraceCompletion.cyclicTraceCandidate_related
+#print TGLV354.TraceCompletion.cyclicTraceCandidate_cyclic
+#print TGLV354.TraceCompletion.cyclicTraceCandidate_star
+#print TGLV354.TraceCompletion.cyclicTraceCandidate_dual
+#print TGLV354.TraceCompletion.cyclicTraceCandidate_zero
+#print TGLV354.TraceCompletion.cyclicTraceCandidate_positive_faithful
+#print TGLV354.TraceCompletion.cyclicTraceCandidate_positive_of_compatibility
+
+#print axioms TGLV354.TraceCompletion.ShiftRelated
+#print axioms TGLV354.TraceCompletion.ShiftRelated.refl
+#print axioms TGLV354.TraceCompletion.ShiftRelated.symm
+#print axioms TGLV354.TraceCompletion.ShiftRelated.trans
+#print axioms TGLV354.TraceCompletion.ShiftRelated.cyclic
+#print axioms TGLV354.TraceCompletion.ShiftRelated.map
+#print axioms TGLV354.TraceCompletion.ShiftRelated.star_transport
+#print axioms TGLV354.TraceCompletion.cyclicTraceCandidate
+#print axioms TGLV354.TraceCompletion.positiveTrace_le_cyclicTraceCandidate
+#print axioms TGLV354.TraceCompletion.cyclicTraceCandidate_related
+#print axioms TGLV354.TraceCompletion.cyclicTraceCandidate_cyclic
+#print axioms TGLV354.TraceCompletion.cyclicTraceCandidate_star
+#print axioms TGLV354.TraceCompletion.cyclicTraceCandidate_dual
+#print axioms TGLV354.TraceCompletion.cyclicTraceCandidate_zero
+#print axioms TGLV354.TraceCompletion.cyclicTraceCandidate_positive_faithful
+#print axioms TGLV354.TraceCompletion.cyclicTraceCandidate_positive_of_compatibility

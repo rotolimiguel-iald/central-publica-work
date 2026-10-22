@@ -1,0 +1,3 @@
+# Derivação054 — a mesma torre
+[DERIVED — anterior ao código]
+Usar statePolarizer P da053 e seu implementador GNS de todos os TowerHorizon. A fórmula local state_polarizer_local permite iterar D em matrizes autoadjuntas; o peso de cada transição é d log(wi/wj), não só d. A soma dos pares, com o produto GNS efetivo, é Σi<j(wi−wj)log(wi/wj)|Aij|². Provar finitude nos prefixos e os controles RAW X1/X2 (log2/3 e2log2/3); não substituir os objetos por vetores renormalizados. Densidade/fecho só serão declarados Lean se provados. Nenhum vínculo físico calor/área é assumido. Detalhes: CONTINUACAO054_DERIVACAO_PREVIA.md.

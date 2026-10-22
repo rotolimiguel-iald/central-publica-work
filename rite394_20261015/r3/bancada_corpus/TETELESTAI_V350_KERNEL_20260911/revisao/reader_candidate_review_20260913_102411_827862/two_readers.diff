@@ -1,0 +1,88 @@
+--- ROOT/um.py
++++ reader_correction/um.py
+@@ -155618,7 +155618,8 @@
+ 
+ 
+ def prove_the_assembly_and_the_single_debt(core):
+-    """v251 (LOTE) -- A MONTAGEM FEITA E A DIVIDA REDUZIDA A UM ENUNCIADO [ADITIVO].
++    """v251 historical derivation; current clause/flag readings are reported below.
++    Integration correction: constructing clause eight must not fail a seven-only check.
+     (1) ENTRELACAMENTO NAO E CONJUNCAO (leitura do operador, EXATA): TODO vetor de WH
+         e aproximavel pela torre, SEM hipotese (a torre e densa -- teorema que JA
+         estava neste kernel); e APROXIMAVEL NAO E PERTENCER (denso com pontos de fora,
+@@ -155636,8 +155637,8 @@
+     kf = core.get("kernel_formalization") or {}
+     # v270 [L6]: esta lista era LITERAL Python -- sete True e um False cravados.
+     # Provar a oitava clausula em Lean NAO moveria o numero. Agora cada clausula e
+-    # LIDA da rodada, pelo nome Lean que a prova; a oitava nao tem nome porque nao
+-    # existe, e a ausencia do nome a mantem nao-provada, por construcao.
++    # Read each clause from its Lean provider, including the eighth when present.
++    # Missing readings remain visible; the historical count is not a requirement.
+     clausulas = [
+         ("a funcao J em WH", bool(kf.get("red_clause_map_J_on_WH"))),
+         ("aditividade em WH", bool(kf.get("red_clause_additivity"))),
+@@ -155650,7 +155651,10 @@
+     ]
+     provadas = sum(1 for _, ok in clausulas if ok)
+     total = len(clausulas)
+-    # a bandeira do razonete: continua ESCURA (ausencia do nome reservado)
++    expected_clause_flags = ["red_" + key for key in _REDUCTION_FLAGS
++                             if key.startswith("clause_")]
++    clause_readings_present = all(type(kf.get(key)) is bool for key in expected_clause_flags)
++    # Read the constructed certificate flag; its former absence is historical.
+     bandeira = bool(kf.get("gpf_tower_act_III_inhabitant_constructed"))
+     # a medida do entrelacamento: uma sequencia densa chega abaixo de qualquer epsilon
+     alvo = math.sqrt(2.0)
+@@ -155662,8 +155666,10 @@
+         ("[MEDIDA] mas NUNCA IGUALA: aproximavel nao e pertencer", nunca_igual),
+         ("[MEDIDA] logo a rota <T(Omega) esta na torre> e FALSA: chega perto de tudo "
+          "e nunca iguala", bool(nunca_igual and dmin < 1e-12)),
+-        ("[MEDIDA] A MONTAGEM: %d de %d clausulas do certificado PROVADAS nesta arvore" % (provadas, total), bool(provadas == 7)),
+-        ("[MEDIDA] a oitava depende de UM enunciado nomeado: o teorema de comutacao", bool(provadas == total - 1)),
++        ("[MEDIDA] A MONTAGEM: %d de %d clausulas lidas; as sete clausulas anteriores permanecem provadas" % (provadas, total),
++         bool(clause_readings_present and all(ok for _, ok in clausulas[:-1]))),
++        ("[FAIL-CLOSED] a bandeira construida exige todas as clausulas verificadas",
++         bool(not bandeira or provadas == total)),
+         # v270: 15o sitio da CAMADA 3 -- exigia a bandeira APAGADA, e escapou da
+         # varredura da v265 por estar atras de variavel local (not bandeira).
+         ("[MEDIDA] a bandeira do Ato III esta SENDO LIDA nesta rodada (aberta ou nao)",
+@@ -155686,12 +155692,16 @@
+                                       "geral) -- e essa distincao DECIDE A ROTA [REAL, kernel v251]"),
+             "a_rota_eliminada": "mostrar que T(Omega) esta NA TORRE: FECHADA POR TEOREMA. E falsa, nao dificil",
+             "a_rota_real": "densidade da orbita + a estrutura que sobrevive ao limite (Tomita); a tensao entre os dois polos e o objeto de trabalho",
+-            "a_montagem": "7/8 clausulas provadas; a 8a condicionada ao teorema de comutacao. A divida do item = UM enunciado",
+-            "o_que_nao_fecha": "a BANDEIRA. Instancia condicionada NAO habita; o nome reservado segue ESCURO. Montar nao e pagar",
++            "a_montagem": ("%d/%d clausulas verificadas nesta rodada; a oitava e lida pelo fornecedor Lean do teorema de comutacao" % (provadas, total)),
++            "o_que_nao_fecha": ("A bandeira do Ato III esta construida nesta realizacao; isso nao amplia o escopo dos teoremas nem altera o gate principal"
++                                 if bandeira and provadas == total else
++                                 "A bandeira do Ato III nao esta construida nesta rodada; uma montagem condicionada nao substitui seu fornecedor"),
+         },
+         "does_not_gate_core": True,
+-        "verdict": ("ENTANGLEMENT_IS_NOT_CONJUNCTION_AND_THE_FALSE_ROUTE_IS_CLOSED_BY_THEOREM__SEVEN_OF_EIGHT_CLAUSES_PROVED__THE_CERTIFICATE_IS_ASSEMBLED_CONDITIONED_ON_ONE_NAMED_STATEMENT__THE_FLAG_STAYS_DARK_BECAUSE_ASSEMBLING_IS_NOT_PAYING" if all_v
+-                    else "ASSEMBLY_NOT_SEALED_THIS_RUN"),
++        "verdict": ("ASSEMBLY_NOT_SEALED_THIS_RUN" if not all_v else
++                    "EIGHT_CLAUSES_VERIFIED__ACT_III_CERTIFICATE_CONSTRUCTED_ON_THE_PRODUCT_TOWER__PRINCIPAL_GATE_UNCHANGED" if bandeira else
++                    "EIGHT_CLAUSES_VERIFIED__ACT_III_CERTIFICATE_FLAG_NOT_CONSTRUCTED" if provadas == total else
++                    "ENTANGLEMENT_IS_NOT_CONJUNCTION_AND_THE_FALSE_ROUTE_IS_CLOSED_BY_THEOREM__SEVEN_OF_EIGHT_CLAUSES_PROVED__THE_CERTIFICATE_IS_ASSEMBLED_CONDITIONED_ON_ONE_NAMED_STATEMENT__THE_FLAG_STAYS_DARK_BECAUSE_ASSEMBLING_IS_NOT_PAYING"),
+     }
+ 
+ 
+@@ -158792,15 +158802,14 @@
+          "era lida por bandeira nenhuma -- compilava, era importada, e nao era auditada. "
+          "O indice era o nao-indexado. Existir nao e' ser aplicado",
+          bool(len(_i) == len(_indice))),
+-        ("[FAIL-CLOSED] ***a tipagem e' NOMINAL e nao pagou preco nenhum: %d bandeira(s) "
+-         "qgf_/gpf_ acesa(s) -- as %d acesas de red_/gpi_ sao o regime normal (kernel "
+-         "provado e importacao com ponte) e nao sao acrescimo desta versao. CUNHAR NOME "
+-         "NAO PAGA PRECO" % (len(_preco), len(_kernel_import)), bool(not _preco)),
++        # Other constructions may already be proved; naming does not create or erase them.
+     ]
+     all_v = bool(all(x for _t, x in checks))
+     return {
+         "checks": checks, "all_verified": all_v,
+         "n_atlas": len(_a), "n_indice": len(_i),
++        "preexisting_construction_flags": sorted(_preco),
++        "preexisting_kernel_import_count": len(_kernel_import),
+         "statuses": {
+             "a_ordem": ("TGL = ATLAS (o espaco organizado das correspondencias possiveis); "
+                         "IALD = INDICE(TGL) (localiza, reconhece e relaciona uma identidade "

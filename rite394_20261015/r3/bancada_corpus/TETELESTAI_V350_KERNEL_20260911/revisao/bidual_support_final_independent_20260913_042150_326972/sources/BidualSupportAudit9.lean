@@ -1,0 +1,29 @@
+import TGLV350.ScalarTomitaBidual
+import TGLV350.ScalarRightFunctionalStability
+set_option pp.universes true in
+#check TGLV350.Regular.scalarClosedTomita_bidual_maximal
+#print axioms TGLV350.Regular.scalarClosedTomita_bidual_maximal
+set_option pp.universes true in
+#check TGLV350.Regular.scalarClosedTomita_bidual_graph_iff
+#print axioms TGLV350.Regular.scalarClosedTomita_bidual_graph_iff
+set_option pp.universes true in
+#check TGLV350.Regular.scalarGNSCommutant_commutes
+#print axioms TGLV350.Regular.scalarGNSCommutant_commutes
+set_option pp.universes true in
+#check TGLV350.Regular.scalarSelfadjointRightPairMultiplier
+#print axioms TGLV350.Regular.scalarSelfadjointRightPairMultiplier
+set_option pp.universes true in
+#check TGLV350.Regular.scalarSelfadjointRightMultiplier
+#print axioms TGLV350.Regular.scalarSelfadjointRightMultiplier
+set_option pp.universes true in
+#check TGLV350.Regular.scalarSelfadjointRightMultiplier_star
+#print axioms TGLV350.Regular.scalarSelfadjointRightMultiplier_star
+set_option pp.universes true in
+#check TGLV350.Regular.scalarSelfadjointRightMultiplier_vector
+#print axioms TGLV350.Regular.scalarSelfadjointRightMultiplier_vector
+set_option pp.universes true in
+#check TGLV350.Regular.scalarRightAdjointPair_vector_mem_range_closure
+#print axioms TGLV350.Regular.scalarRightAdjointPair_vector_mem_range_closure
+set_option pp.universes true in
+#check TGLV350.Regular.scalarRightPairVector_mem_range_closure
+#print axioms TGLV350.Regular.scalarRightPairVector_mem_range_closure

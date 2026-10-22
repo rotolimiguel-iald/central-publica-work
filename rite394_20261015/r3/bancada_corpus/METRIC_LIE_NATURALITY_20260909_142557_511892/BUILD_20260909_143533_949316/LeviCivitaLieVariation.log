@@ -1,0 +1,158 @@
+'ChatgptAudit.MetricLieConnection.coordinateConnectionLie' depends on axioms: [propext, Classical.choice, Quot.sound]
+'ChatgptAudit.MetricLieConnection.smooth_matrix_inverse' depends on axioms: [propext, Classical.choice, Quot.sound]
+'ChatgptAudit.MetricLieConnection.actual_inverse_left' depends on axioms: [propext, Classical.choice, Quot.sound]
+'ChatgptAudit.MetricLieConnection.actual_inverse_right' depends on axioms: [propext, Classical.choice, Quot.sound]
+'ChatgptAudit.MetricLieConnection.matrix_inverse_spatial_jet' depends on axioms: [propext, Classical.choice, Quot.sound]
+LeviCivitaLieVariation.lean:87:6: error: Tactic `rewrite` failed: Did not find an occurrence of the pattern
+  coordinatePartial
+    (fun y =>
+      (((fun y => tensorFieldJet g y i a b) + fun y => tensorFieldJet g y b i a) - fun y => tensorFieldJet g y a i b)
+          y *
+        ?m.106)
+    x r
+in the target expression
+  coordinatePartial (fun y => (tensorFieldJet g y i a b + tensorFieldJet g y b i a - tensorFieldJet g y a i b) * 2⁻¹) x
+      r =
+    (coordinatePartial (fun y => tensorFieldJet g y i a b) x r +
+          coordinatePartial (fun y => tensorFieldJet g y b i a) x r -
+        coordinatePartial (fun y => tensorFieldJet g y a i b) x r) *
+      2⁻¹
+
+U : Set Coordinate4
+hU : IsOpen U
+g : TensorField4
+hg : SmoothMatrixOn U g
+x : Coordinate4
+hx : x ∈ U
+r i a b : Fin 4
+hd : ∀ (k c d : Fin 4), DifferentiableAt ℝ (fun y => tensorFieldJet g y k c d) x
+⊢ coordinatePartial (fun y => (tensorFieldJet g y i a b + tensorFieldJet g y b i a - tensorFieldJet g y a i b) * 2⁻¹) x
+      r =
+    (coordinatePartial (fun y => tensorFieldJet g y i a b) x r +
+          coordinatePartial (fun y => tensorFieldJet g y b i a) x r -
+        coordinatePartial (fun y => tensorFieldJet g y a i b) x r) *
+      2⁻¹
+
+Note: The target expression is not type-correct under the `instances` transparency level, which may have triggered the failure. This is usually caused by unfolding of semireducible definitions in prior tactic steps. Use `set_option linter.tacticCheckInstances true` to investigate the source of the issue.
+Full error:
+  function expected
+    tensorFieldJet g y i a
+'ChatgptAudit.MetricLieConnection.lower_metric_spatial_jet' depends on axioms: [propext,
+ sorryAx,
+ Classical.choice,
+ Quot.sound]
+'ChatgptAudit.MetricLieConnection.levi_civita_spatial_jet' depends on axioms: [propext,
+ sorryAx,
+ Classical.choice,
+ Quot.sound]
+'ChatgptAudit.MetricLieConnection.metric_jet_symmetric' depends on axioms: [propext, Classical.choice, Quot.sound]
+LeviCivitaLieVariation.lean:129:78: error: unsolved goals
+U : Set Coordinate4
+hU : IsOpen U
+g : TensorField4
+V : VectorField4
+hg : SmoothMatrixOn U g
+hV : SmoothVectorOn U V
+hs : ∀ x ∈ U, (g x)ᵀ = g x
+hi : ∀ x ∈ U, IsUnit (g x)
+x : Coordinate4
+hx : x ∈ U
+i : Fin 4
+hsym : ∀ (a b : Fin 4), g x a b = g x b a
+hdd :
+  ∀ (r k : Fin 4),
+    (fun j => tensorFieldJet (fun y => tensorFieldJet g y j) x r) k =
+      (fun j => tensorFieldJet (fun y => tensorFieldJet g y j) x k) r
+hlow :
+  lowerChristoffelJet
+      (lieMetricJetDerivative (g x) (tensorFieldJet g x) (fun r k => tensorFieldJet (fun y => tensorFieldJet g y k) x r)
+        (V x) (vectorJacobian V x) (tensorFieldJet (vectorJacobian V) x))
+      i =
+    ∑ k, V x k • lowerChristoffelJet (fun k_1 => tensorFieldJet (fun y => tensorFieldJet g y k_1) x k) i +
+            ∑ k, vectorJacobian V x k i • lowerChristoffelJet (tensorFieldJet g x) k +
+          (vectorJacobian V x)ᵀ * lowerChristoffelJet (tensorFieldJet g x) i +
+        lowerChristoffelJet (tensorFieldJet g x) i * vectorJacobian V x +
+      g x * tensorFieldJet (vectorJacobian V) x i
+hj :
+  tensorFieldJet (coordinateMetricLie g V) x =
+    lieMetricJetDerivative (g x) (tensorFieldJet g x) (fun r k => tensorFieldJet (fun y => tensorFieldJet g y k) x r)
+      (V x) (vectorJacobian V x) (tensorFieldJet (vectorJacobian V) x)
+hJ :
+  ∀ (k : Fin 4),
+    tensorFieldJet (fun y => leviCivitaField g (fun y => (g y)⁻¹) y i) x k =
+      -(g x)⁻¹ * tensorFieldJet g x k * (g x)⁻¹ * lowerChristoffelJet (tensorFieldJet g x) i +
+        (g x)⁻¹ * lowerChristoffelJet (fun k_1 => tensorFieldJet (fun y => tensorFieldJet g y k_1) x k) i
+hleft : ∀ (M : Tensor4), (g x)⁻¹ * (g x * M) = M
+hright : ∀ (M : Tensor4), g x * ((g x)⁻¹ * M) = M
+⊢ -1 • V x 0 • ((g x)⁻¹ * (tensorFieldJet g x 0 * ((g x)⁻¹ * lowerChristoffelJet (tensorFieldJet g x) i))) +
+      (-1 • V x 1 • ((g x)⁻¹ * (tensorFieldJet g x 1 * ((g x)⁻¹ * lowerChristoffelJet (tensorFieldJet g x) i))) +
+        (-1 • V x 2 • ((g x)⁻¹ * (tensorFieldJet g x 2 * ((g x)⁻¹ * lowerChristoffelJet (tensorFieldJet g x) i))) +
+          (-1 • V x 3 • ((g x)⁻¹ * (tensorFieldJet g x 3 * ((g x)⁻¹ * lowerChristoffelJet (tensorFieldJet g x) i))) +
+            (-1 • ((g x)⁻¹ * ((vectorJacobian V x)ᵀ * (g x * ((g x)⁻¹ * lowerChristoffelJet (tensorFieldJet g x) i)))) +
+              (-1 • (vectorJacobian V x * ((g x)⁻¹ * lowerChristoffelJet (tensorFieldJet g x) i)) +
+                (V x 0 •
+                    ((g x)⁻¹ * lowerChristoffelJet (fun k => tensorFieldJet (fun y => tensorFieldJet g y k) x 0) i) +
+                  (V x 1 •
+                      ((g x)⁻¹ * lowerChristoffelJet (fun k => tensorFieldJet (fun y => tensorFieldJet g y k) x 1) i) +
+                    (V x 2 •
+                        ((g x)⁻¹ *
+                          lowerChristoffelJet (fun k => tensorFieldJet (fun y => tensorFieldJet g y k) x 2) i) +
+                      (V x 3 •
+                          ((g x)⁻¹ *
+                            lowerChristoffelJet (fun k => tensorFieldJet (fun y => tensorFieldJet g y k) x 3) i) +
+                        (vectorJacobian V x 0 i • ((g x)⁻¹ * lowerChristoffelJet (tensorFieldJet g x) 0) +
+                          (vectorJacobian V x 1 i • ((g x)⁻¹ * lowerChristoffelJet (tensorFieldJet g x) 1) +
+                            (vectorJacobian V x 2 i • ((g x)⁻¹ * lowerChristoffelJet (tensorFieldJet g x) 2) +
+                              (vectorJacobian V x 3 i • ((g x)⁻¹ * lowerChristoffelJet (tensorFieldJet g x) 3) +
+                                ((g x)⁻¹ * ((vectorJacobian V x)ᵀ * lowerChristoffelJet (tensorFieldJet g x) i) +
+                                  ((g x)⁻¹ * (lowerChristoffelJet (tensorFieldJet g x) i * vectorJacobian V x) +
+                                    tensorFieldJet (vectorJacobian V) x i))))))))))))))) =
+    -1 • (vectorJacobian V x * ((g x)⁻¹ * lowerChristoffelJet (tensorFieldJet g x) i)) +
+      (vectorJacobian V x 0 i • ((g x)⁻¹ * lowerChristoffelJet (tensorFieldJet g x) 0) +
+        (vectorJacobian V x 1 i • ((g x)⁻¹ * lowerChristoffelJet (tensorFieldJet g x) 1) +
+          (vectorJacobian V x 2 i • ((g x)⁻¹ * lowerChristoffelJet (tensorFieldJet g x) 2) +
+            (vectorJacobian V x 3 i • ((g x)⁻¹ * lowerChristoffelJet (tensorFieldJet g x) 3) +
+              ((g x)⁻¹ * (lowerChristoffelJet (tensorFieldJet g x) i * vectorJacobian V x) +
+                (tensorFieldJet (vectorJacobian V) x i +
+                  (V x 0 •
+                      (-1 •
+                          ((g x)⁻¹ * (tensorFieldJet g x 0 * ((g x)⁻¹ * lowerChristoffelJet (tensorFieldJet g x) i))) +
+                        (g x)⁻¹ * lowerChristoffelJet (fun k => tensorFieldJet (fun y => tensorFieldJet g y k) x 0) i) +
+                    (V x 1 •
+                        (-1 •
+                            ((g x)⁻¹ *
+                              (tensorFieldJet g x 1 * ((g x)⁻¹ * lowerChristoffelJet (tensorFieldJet g x) i))) +
+                          (g x)⁻¹ *
+                            lowerChristoffelJet (fun k => tensorFieldJet (fun y => tensorFieldJet g y k) x 1) i) +
+                      (V x 2 •
+                          (-1 •
+                              ((g x)⁻¹ *
+                                (tensorFieldJet g x 2 * ((g x)⁻¹ * lowerChristoffelJet (tensorFieldJet g x) i))) +
+                            (g x)⁻¹ *
+                              lowerChristoffelJet (fun k => tensorFieldJet (fun y => tensorFieldJet g y k) x 2) i) +
+                        V x 3 •
+                          (-1 •
+                              ((g x)⁻¹ *
+                                (tensorFieldJet g x 3 * ((g x)⁻¹ * lowerChristoffelJet (tensorFieldJet g x) i))) +
+                            (g x)⁻¹ *
+                              lowerChristoffelJet (fun k => tensorFieldJet (fun y => tensorFieldJet g y k) x 3)
+                                i))))))))))
+LeviCivitaLieVariation.lean:158:19: warning: This simp argument is unused:
+  hright
+
+Hint: Omit it from the simp argument list.
+  simp only [hleft,̵h̵r̵i̵g̵h̵t̵]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+'ChatgptAudit.MetricLieConnection.metric_lie_connection_variation' depends on axioms: [propext,
+ sorryAx,
+ Classical.choice,
+ Quot.sound]
+'ChatgptAudit.MetricLieConnection.metric_lie_connection_first_derivative' depends on axioms: [propext,
+ sorryAx,
+ Classical.choice,
+ Quot.sound]
+'ChatgptAudit.MetricLieConnection.metric_lie_ricci_reduced_to_connection' depends on axioms: [propext,
+ sorryAx,
+ Classical.choice,
+ Quot.sound]

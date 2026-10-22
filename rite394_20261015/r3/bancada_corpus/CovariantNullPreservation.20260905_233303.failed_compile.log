@@ -1,0 +1,36 @@
+CovariantNullPreservation.lean:37:4: error: Type mismatch
+  DifferentiableAt.sum fun b x_1 => DifferentiableAt.mul (hg a b) (hV b)
+has type
+  DifferentiableAt ℝ (∑ i ∈ ?m.70, (fun y => g y a i) * fun y => V y i) x
+but is expected to have type
+  DifferentiableAt ℝ (fun y => ∑ b, g y a b * V y b) x
+CovariantNullPreservation.lean:39:6: error: Tactic `rewrite` failed: Did not find an occurrence of the pattern
+  coordinatePartial (fun y => ∑ k, ((fun y => V y k) * fun y => ∑ b, g y k b * V y b) y) x i
+in the target expression
+  coordinatePartial (fun y => ∑ a, V y a * ∑ b, g y a b * V y b) x i =
+    tensorPair (g x) (vectorPartial V x i) (V x) + tensorPair (tensorFieldJet g x i) (V x) (V x) +
+      tensorPair (g x) (V x) (vectorPartial V x i)
+
+g : TensorField4
+V : VectorField4
+x : Coordinate4
+hg : ∀ (a b : Fin 4), DifferentiableAt ℝ (fun y => g y a b) x
+hV : ∀ (a : Fin 4), DifferentiableAt ℝ (fun y => V y a) x
+i : Fin 4
+hd : ∀ (a : Fin 4), DifferentiableAt ℝ (fun y => ∑ b, g y a b * V y b) x
+⊢ coordinatePartial (fun y => ∑ a, V y a * ∑ b, g y a b * V y b) x i =
+    tensorPair (g x) (vectorPartial V x i) (V x) + tensorPair (tensorFieldJet g x i) (V x) (V x) +
+      tensorPair (g x) (V x) (vectorPartial V x i)
+
+Note: The target expression is not type-correct under the `instances` transparency level, which may have triggered the failure. This is usually caused by unfolding of semireducible definitions in prior tactic steps. Use `set_option linter.tacticCheckInstances true` to investigate the source of the issue.
+Full error:
+  function expected
+    g y a
+'ChatgptAudit.tensor_pair_symmetric' depends on axioms: [propext, Classical.choice, Quot.sound]
+'ChatgptAudit.frame_pair_entry' depends on axioms: [propext, Classical.choice, Quot.sound]
+'ChatgptAudit.mixed_frame_pair_entry' depends on axioms: [propext, Classical.choice, Quot.sound]
+'ChatgptAudit.quad_coordinate_derivative' depends on axioms: [propext, sorryAx, Classical.choice, Quot.sound]
+'ChatgptAudit.metric_compatible_quad_derivative' depends on axioms: [propext, sorryAx, Classical.choice, Quot.sound]
+'ChatgptAudit.null_field_covariant_pairing' depends on axioms: [propext, sorryAx, Classical.choice, Quot.sound]
+'ChatgptAudit.null_field_direction_pairing' depends on axioms: [propext, sorryAx, Classical.choice, Quot.sound]
+'ChatgptAudit.null_field_preserves_frame_pairing' depends on axioms: [propext, sorryAx, Classical.choice, Quot.sound]

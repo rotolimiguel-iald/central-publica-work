@@ -1,0 +1,20 @@
+structure ContinuousCoreData (W : TGLSpecificAQFTWitness) (D : WedgeModularData W) where
+  Core : Type
+  [instCoreRing : Ring Core]
+  [instCoreStarRing : StarRing Core]
+  [instCoreAlgebra : Algebra ℂ Core]
+  embedding : D.wedgeAlgebra.toStarSubalgebra →⋆ₐ[ℂ] Core
+  embedding_injective : Function.Injective embedding
+  dualAction : ℝ → (Core ≃⋆ₐ[ℂ] Core)
+  dualAction_zero : dualAction 0 = StarAlgEquiv.refl
+  dualAction_add : ∀ s t : ℝ, dualAction (s + t) = (dualAction s).trans (dualAction t)
+  canonicalTrace : Core → ENNReal
+  trace_zero : canonicalTrace 0 = 0
+  trace_tracial : ∀ x y : Core, canonicalTrace (x * y) = canonicalTrace (y * x)
+  trace_star : ∀ x : Core, canonicalTrace (star x) = canonicalTrace x
+  trace_dual_scaling : ∀ (s : ℝ) (x : Core),
+    canonicalTrace ((dualAction s) x) = ENNReal.ofReal (Real.exp (-s)) * canonicalTrace x
+
+attribute [instance] ContinuousCoreData.instCoreRing
+attribute [instance] ContinuousCoreData.instCoreStarRing
+attribute [instance] ContinuousCoreData.instCoreAlgebra

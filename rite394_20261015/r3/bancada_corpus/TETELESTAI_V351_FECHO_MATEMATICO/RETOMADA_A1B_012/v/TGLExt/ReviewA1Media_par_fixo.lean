@@ -1,0 +1,6 @@
+import TGLExt.V351AverageFixedPair
+set_option pp.universes true
+#check TGLV350.Regular.scalarWeightStar_fixed_pair_of_polarRight
+#print axioms TGLV350.Regular.scalarWeightStar_fixed_pair_of_polarRight
+#check TGLV350.Regular.regularAverage_square_fixed_pair
+#print axioms TGLV350.Regular.regularAverage_square_fixed_pair

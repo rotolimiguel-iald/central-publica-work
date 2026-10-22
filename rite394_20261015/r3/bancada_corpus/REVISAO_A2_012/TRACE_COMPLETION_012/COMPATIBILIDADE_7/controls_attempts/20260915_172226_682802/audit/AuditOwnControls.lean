@@ -1,0 +1,10 @@
+import IndependentCompatibilityControls
+#print axioms IndependentTraceCompatibility.unit_read_exact
+#print axioms IndependentTraceCompatibility.unit_read_nonzero
+#print axioms IndependentTraceCompatibility.polar_one
+#print axioms IndependentTraceCompatibility.polar_one_product
+#print axioms IndependentTraceCompatibility.polar_one_product_nonzero
+#print axioms IndependentTraceCompatibility.polar_zero
+#print axioms IndependentTraceCompatibility.zero_power_zero_at_one
+#print axioms IndependentTraceCompatibility.zero_operator_at_one
+#print axioms IndependentTraceCompatibility.zero_power_zero_nonzero

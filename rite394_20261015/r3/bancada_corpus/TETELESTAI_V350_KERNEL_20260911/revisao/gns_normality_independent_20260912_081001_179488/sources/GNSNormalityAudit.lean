@@ -1,0 +1,23 @@
+import TGLV350.ScalarGNSStrongContinuity
+import TGLV350.ScalarGNSNormality
+set_option pp.universes true in
+#check TGLV350.Regular.scalarGNSRepresentation_tendsto_of_uniformly_bounded
+#print axioms TGLV350.Regular.scalarGNSRepresentation_tendsto_of_uniformly_bounded
+set_option pp.universes true in
+#check TGLV350.Regular.operator_le_of_sub_nonneg
+#print axioms TGLV350.Regular.operator_le_of_sub_nonneg
+set_option pp.universes true in
+#check TGLV350.Regular.dualOrbitRepresentation_nonneg
+#print axioms TGLV350.Regular.dualOrbitRepresentation_nonneg
+set_option pp.universes true in
+#check TGLV350.Regular.scalarGNSRepresentation_nonneg
+#print axioms TGLV350.Regular.scalarGNSRepresentation_nonneg
+set_option pp.universes true in
+#check TGLV350.Regular.scalarGNSRepresentation_monotone
+#print axioms TGLV350.Regular.scalarGNSRepresentation_monotone
+set_option pp.universes true in
+#check TGLV350.Regular.scalarGNSRepresentation_preserves_positive_isLUB
+#print axioms TGLV350.Regular.scalarGNSRepresentation_preserves_positive_isLUB
+set_option pp.universes true in
+#check TGLV350.Regular.scalarGNSRepresentation_preserves_positive_directed_isLUB
+#print axioms TGLV350.Regular.scalarGNSRepresentation_preserves_positive_directed_isLUB

@@ -1,0 +1,74 @@
+[
+  {
+    "line": 46,
+    "text": "def ricciSymbol (k : Fin 4 → ℝ) (ε : Fin 4 → Fin 4 → ℝ)\n    (μ ν : Fin 4) : ℝ :="
+  },
+  {
+    "line": 54,
+    "text": "theorem linRicci_planeWave\n    (k : Fin 4 → ℝ) (ε : Fin 4 → Fin 4 → ℝ) (w w' w'' : ℝ → ℝ)\n    (hw : ∀ u, HasDerivAt w (w' u) u)\n    (hw' : ∀ u, HasDerivAt w' (w'' u) u)\n    (μ ν : Fin 4) (x : Fin 4 → ℝ) :\n    linRicci (fun μ ν => fun y => ε μ ν * planeWaveG k w y) μ ν x\n      = ricciSymbol k ε μ ν * w'' (dotCov k x) := by"
+  },
+  {
+    "line": 86,
+    "text": "theorem ricciSymbol_tt (k : Fin 4 → ℝ) (ε : Fin 4 → Fin 4 → ℝ)\n    (htraceless : (∑ γ : Fin 4, etaDiag γ * ε γ γ) = 0)\n    (htransverse : ∀ ν, (∑ α : Fin 4, etaDiag α * k α * ε α ν) = 0)\n    (hsymm : ∀ μ ν, ε μ ν = ε ν μ) (μ ν : Fin 4) :\n    ricciSymbol k ε μ ν\n      = -(∑ α : Fin 4, etaDiag α * k α * k α) * ε μ ν / 2 := by"
+  },
+  {
+    "line": 109,
+    "text": "theorem qgPhysicsCertificate_massless\n    (k : Fin 4 → ℝ) (ε : Fin 4 → Fin 4 → ℝ) (w w' w'' : ℝ → ℝ)\n    (hw : ∀ u, HasDerivAt w (w' u) u)\n    (hw' : ∀ u, HasDerivAt w' (w'' u) u)\n    (hsymm : ∀ μ ν, ε μ ν = ε ν μ)\n    (htraceless : (∑ γ : Fin 4, etaDiag γ * ε γ γ) = 0)\n    (htransverse : ∀ ν, (∑ α : Fin 4, etaDiag α * k α * ε α ν) = 0)\n    (hsolve : ∀ (μ ν : Fin 4) (x : Fin 4 → ℝ),\n      linRicci (fun μ ν => fun y => ε μ ν * planeWaveG k w y) μ ν x = 0)\n    (hε : ∃ μ ν, ε μ ν ≠ 0)\n    (hwave : ∃ x : Fin 4 → ℝ, w'' (dotCov k x) ≠ 0) :\n    (∑ α : Fin 4, etaDiag α * k α * k α) = 0 := by"
+  },
+  {
+    "line": 137,
+    "text": "def kStd : Fin 4 → ℝ := fun i => if i = 0 then 1 else if i = 1 then 1 else 0"
+  },
+  {
+    "line": 139,
+    "text": "theorem kStd_null : (∑ α : Fin 4, etaDiag α * kStd α * kStd α) = 0 := by"
+  },
+  {
+    "line": 144,
+    "text": "def physPol (p c : ℝ) : Fin 4 → Fin 4 → ℝ := fun μ ν =>"
+  },
+  {
+    "line": 149,
+    "text": "def gaugePol (ξ : Fin 4 → ℝ) : Fin 4 → Fin 4 → ℝ := fun μ ν =>"
+  },
+  {
+    "line": 153,
+    "text": "def gaugeOf (ε : Fin 4 → Fin 4 → ℝ) : Fin 4 → ℝ := fun ν =>"
+  },
+  {
+    "line": 159,
+    "text": "theorem tt_decomposition (ε : Fin 4 → Fin 4 → ℝ)\n    (hsymm : ∀ μ ν, ε μ ν = ε ν μ)\n    (htraceless : (∑ γ : Fin 4, etaDiag γ * ε γ γ) = 0)\n    (htransverse : ∀ ν, (∑ α : Fin 4, etaDiag α * kStd α * ε α ν) = 0) :\n    ∀ μ ν, ε μ ν = physPol (ε 2 2) (ε 2 3) μ ν + gaugePol (gaugeOf ε) μ ν := by"
+  },
+  {
+    "line": 197,
+    "text": "theorem gauge_fixes_physical (ξ : Fin 4 → ℝ) :\n    gaugePol ξ 2 2 = 0 ∧ gaugePol ξ 2 3 = 0 := by"
+  },
+  {
+    "line": 203,
+    "text": "theorem physical_not_gauge (p c : ℝ) (ξ : Fin 4 → ℝ)\n    (h : ∀ μ ν, physPol p c μ ν = gaugePol ξ μ ν) : p = 0 ∧ c = 0 := by"
+  },
+  {
+    "line": 212,
+    "text": "theorem qgPhysicsCertificate_helicities :\n    (∀ ε : Fin 4 → Fin 4 → ℝ, (∀ μ ν, ε μ ν = ε ν μ) →\n      (∑ γ : Fin 4, etaDiag γ * ε γ γ) = 0 →\n      (∀ ν, (∑ α : Fin 4, etaDiag α * kStd α * ε α ν) = 0) →\n      ∀ μ ν, ε μ ν = physPol (ε 2 2) (ε 2 3) μ ν + gaugePol (gaugeOf ε) μ ν)\n    ∧ (∀ ξ : Fin 4 → ℝ, gaugePol ξ 2 2 = 0 ∧ gaugePol ξ 2 3 = 0)\n    ∧ (∀ (p c : ℝ) (ξ : Fin 4 → ℝ),\n        (∀ μ ν, physPol p c μ ν = gaugePol ξ μ ν) → p = 0 ∧ c = 0) :="
+  },
+  {
+    "line": 225,
+    "text": "def physKinetic (p c : ℝ) (w' : ℝ → ℝ) (u : ℝ) : ℝ :="
+  },
+  {
+    "line": 231,
+    "text": "theorem qgPhysicsCertificate_ghostfree :\n    (∀ (p c : ℝ) (w' : ℝ → ℝ) (u : ℝ), 0 ≤ physKinetic p c w' u)\n    ∧ (∀ (p c : ℝ) (w' : ℝ → ℝ) (u : ℝ),\n        (p ≠ 0 ∨ c ≠ 0) → w' u ≠ 0 → 0 < physKinetic p c w' u) := by"
+  },
+  {
+    "line": 250,
+    "text": "def einsteinSymbol (k : Fin 4 → ℝ) (ε : Fin 4 → Fin 4 → ℝ)\n    (μ ν : Fin 4) : ℝ :="
+  },
+  {
+    "line": 259,
+    "text": "theorem qgPhysicsCertificate_conservation\n    (k : Fin 4 → ℝ) (ε : Fin 4 → Fin 4 → ℝ)\n    (hsymm : ∀ μ ν, ε μ ν = ε ν μ) (ν : Fin 4) :\n    (∑ μ : Fin 4, etaDiag μ * k μ * einsteinSymbol k ε μ ν) = 0 := by"
+  },
+  {
+    "line": 292,
+    "text": "theorem qgPhysicsCertificate_anomaly\n    (k : Fin 4 → ℝ) (ε : Fin 4 → Fin 4 → ℝ) (ξ : Fin 4 → ℝ) (μ ν : Fin 4) :\n    ricciSymbol k (fun a b => ε a b + (k a * ξ b + k b * ξ a)) μ ν\n      = ricciSymbol k ε μ ν := by"
+  }
+]

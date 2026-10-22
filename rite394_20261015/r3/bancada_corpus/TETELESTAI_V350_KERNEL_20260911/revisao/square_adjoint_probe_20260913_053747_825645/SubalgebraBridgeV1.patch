@@ -1,0 +1,85 @@
+--- author_snapshot.lean
++++ SubalgebraBridgeV1.lean
+@@ -12,9 +12,10 @@
+ open scoped Topology
+ noncomputable section
+ 
+-private theorem differencePairing {H B : Type} [NormedAddCommGroup H]
+-    [InnerProductSpace ℂ H] [AddCommGroup B] [Module ℂ B] [Mul B]
+-    (j : B →ₗ[ℂ] H) (a u v : B) (y z : H)
++private theorem differencePairing {H : Type} [NormedAddCommGroup H]
++    [InnerProductSpace ℂ H] [CompleteSpace H]
++    (E : NonUnitalStarSubalgebra ℂ (H →L[ℂ] H))
++    (j : E →ₗ[ℂ] H) (a u v : E) (y z : H)
+     (he : a = (1/4 : ℂ) • (u*u-v*v))
+     (hu : inner ℂ (j (u*u)) y = inner ℂ z (j (u*u)))
+     (hv : inner ℂ (j (v*v)) y = inner ℂ z (j (v*v))) :
+@@ -44,8 +45,8 @@
+     (a d : B) (ha : star a=a) (hd : star d=d) : star (a-d)=a-d :=
+   (star_sub a d).trans (congrArg₂ (fun x y : B => x-y) ha hd)
+ 
++set_option maxHeartbeats 600000 in
+ /-- Tests on selfadjoint squares suffice for every selfadjoint right vector. -/
+-set_option maxHeartbeats 600000 in
+ theorem scalarSelfadjointPairing_of_squarePairing (P : SiteProfile)
+     (y z : ScalarGNSHilbert P)
+     (hsq : ∀ b : scalarPairedRightAlgebra P, star b=b →
+@@ -61,11 +62,13 @@
+     (starSumFixed a _ ha (scalarRightSquareCutoff_star P a ha n))
+   have hm := hsq (a-scalarRightSquareCutoff P a ha n)
+     (starDifferenceFixed a _ ha (scalarRightSquareCutoff_star P a ha n))
+-  exact differencePairing (H := ScalarGNSHilbert P) (B := scalarPairedRightAlgebra P)
++  refine differencePairing (H := ScalarGNSHilbert P) (scalarPairedRightAlgebra P)
+     (scalarRightPairVector P)
+     (scalarRightSquareApproximation P a ha n)
+-    (a+scalarRightSquareCutoff P a ha n) (a-scalarRightSquareCutoff P a ha n) y z
+-    (scalarRightSquareApproximation_difference_of_squares P a ha n) hp hm
++    (a+scalarRightSquareCutoff P a ha n) (a-scalarRightSquareCutoff P a ha n) y z ?_ ?_ ?_
++  · exact scalarRightSquareApproximation_difference_of_squares P a ha n
++  · exact hp
++  · exact hm
+ 
+ /-- The limit is in the fixed space of the already defined F, not an auxiliary operator. -/
+ theorem scalarFixedPairing_of_squarePairing (P : SiteProfile)
+@@ -110,18 +113,19 @@
+   · intro x; exact scalarTomitaAdjoint_involutive P x
+   · intro x hx; exact scalarFixedPairing_of_squarePairing P y z hsq x hx
+ 
+-private theorem fixedVectorTest {H B : Type} [NormedAddCommGroup H]
+-    [InnerProductSpace ℂ H] [AddCommGroup B] [Module ℂ B] [Star B]
+-    (j : B →ₗ[ℂ] H) (D : Submodule ℂ H) (F : D → H)
+-    (hj : ∀ a : B, ∃ ha : j a ∈ D, F ⟨j a,ha⟩=j (star a))
++private theorem fixedVectorTest {H : Type} [NormedAddCommGroup H]
++    [InnerProductSpace ℂ H] [CompleteSpace H]
++    (E : NonUnitalStarSubalgebra ℂ (H →L[ℂ] H))
++    (j : E →ₗ[ℂ] H) (D : Submodule ℂ H) (F : D → H)
++    (hj : ∀ a : E, ∃ ha : j a ∈ D, F ⟨j a,ha⟩=j (star a))
+     (y z : H) (hp : ∀ x : D, inner ℂ (F x) y = inner ℂ z (x:H))
+-    (a : B) (ha : star a=a) : inner ℂ (j a) y = inner ℂ z (j a) := by
++    (a : E) (ha : star a=a) : inner ℂ (j a) y = inner ℂ z (j a) := by
+   obtain ⟨hx,hf⟩ := hj a
+   have he := hf.trans (congrArg j ha)
+   exact (congrArg (fun v : H => inner ℂ v y) he).symm.trans (hp ⟨j a,hx⟩)
+ 
++set_option maxHeartbeats 600000 in
+ /-- Exact test characterization. It does not postulate graph density of squares. -/
+-set_option maxHeartbeats 600000 in
+ theorem scalarClosedTomita_squarePairing_iff (P : SiteProfile) (y z : ScalarGNSHilbert P) :
+     (∃ hy : y ∈ scalarClosedTomitaDomain P, scalarClosedTomita P ⟨y,hy⟩=z) ↔
+     ∀ b : scalarPairedRightAlgebra P, star b=b →
+@@ -131,10 +135,12 @@
+   · intro h b hb
+     have hs : star (b*b)=b*b := (star_mul b b).trans
+       (congrArg₂ (fun u v : scalarPairedRightAlgebra P => u*v) hb hb)
+-    exact fixedVectorTest (H := ScalarGNSHilbert P) (B := scalarPairedRightAlgebra P)
++    refine fixedVectorTest (H := ScalarGNSHilbert P) (scalarPairedRightAlgebra P)
+       (scalarRightPairVector P) (scalarTomitaAdjointDomain P)
+-      (fun x => scalarTomitaAdjoint P x) (fun a => scalarRightPairVector_original_adjoint P a) y z
+-      ((scalarClosedTomita_bidual_graph_iff P y z).mp h) (b*b) hs
++      (fun x => scalarTomitaAdjoint P x) ?_ y z ?_ (b*b) hs
++    · intro a
++      exact scalarRightPairVector_original_adjoint P a
++    · exact (scalarClosedTomita_bidual_graph_iff P y z).mp h
+   · exact scalarClosedTomita_of_squarePairing P y z
+ 
+ private theorem boundedActionSquarePairing {H : Type} [NormedAddCommGroup H]

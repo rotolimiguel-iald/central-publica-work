@@ -1,0 +1,5 @@
+[REAL — registro de execução] Ordem 007, 05/09/2026.
+
+Os logs de compilação e seus metadados incluem todas as tentativas dos dez módulos da entrega. As versões corrigidas têm backups byte a byte. Uma falha adicional ocorreu na orquestração PowerShell: após compilar `PeriodAveragePrefix`, tentou-se chamar relativamente `\.Chatgpt\verify_stage.ps1` na mesma sessão de shell. O verificador muda o diretório corrente para Chatgpt, de modo que o segundo caminho relativo não foi encontrado. O erro foi de localização do script, depois de o primeiro módulo passar; o segundo módulo foi depois invocado diretamente em uma nova chamada e compilou. A transcrição autoritativa desse erro está no resultado da ferramenta desta sessão. Os comandos de reprodução da entrega usam caminhos absolutos para evitar esse problema.
+
+A verificação das provas é feita sobre os hashes exatos das fontes finais. Tentativas com erros de Lean ou avisos ficam como histórico e não são usadas para certificar as fontes finais. A entrega não contém `sorry` nas fontes e não usa os logs fracassados para contar teoremas pagos.

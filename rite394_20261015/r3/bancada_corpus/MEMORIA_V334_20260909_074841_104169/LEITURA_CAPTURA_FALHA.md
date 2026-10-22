@@ -1,0 +1,1 @@
+[REAL] A segunda conferência parou porque comparou o SHA do arquivo de captura completo ao SHA do stdout. O escritor do um.py acrescenta cabeçalho, stdout, delimitador e stderr. A correção lê o formato e o comprimento registrados e compara apenas o stdout, mantendo o hash bruto separado. Arquivos originais intactos.

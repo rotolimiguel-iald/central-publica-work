@@ -1,0 +1,68 @@
+ScalarStressConservation.lean:32:4: error: Type mismatch: After simplification, term
+  DifferentiableAt.mul hq (differentiableAt_const 2⁻¹)
+ has type
+  @DifferentiableAt ℝ DenselyNormedField.toNontriviallyNormedField Coordinate4 Pi.normedAddCommGroup.toAddCommGroup
+    Pi.normedSpace.toModule PseudoMetricSpace.toUniformSpace.toTopologicalSpace ℝ Real.normedCommRing.toAddCommGroup
+    (NormedAlgebra.toNormedSpace ℝ).toModule PseudoMetricSpace.toUniformSpace.toTopologicalSpace
+    ((fun y => tensorQuad (gInv y) (w y)) * fun x => 2⁻¹) x
+but is expected to have type
+  @DifferentiableAt ℝ DenselyNormedField.toNontriviallyNormedField Coordinate4 Pi.addCommGroup
+    (Pi.Function.module (Fin 4) ℝ ℝ) Pi.topologicalSpace ℝ Real.instAddCommGroup Semiring.toModule
+    PseudoMetricSpace.toUniformSpace.toTopologicalSpace (fun y => tensorQuad (gInv y) (w y) * 2⁻¹) x
+ScalarStressConservation.lean:41:4: error: Tactic `rewrite` failed: Did not find an occurrence of the pattern
+  tensorFieldDivergence gInv Gamma
+    (fun y => vecMulVec (w y) (w y) - fun i k => ((fun y => tensorQuad (gInv y) (w y) / 2) * fun y => g y i k) y) x j
+in the target expression
+  coupling *
+      tensorFieldDivergence gInv Gamma (fun y => vecMulVec (w y) (w y) - (tensorQuad (gInv y) (w y) / 2) • g y) x j =
+    coupling *
+      (covectorDivergence gInv Gamma w x * w x j +
+        ∑ i, ∑ k, gInv x i k * w x k * (covectorDerivative Gamma w x i j - covectorDerivative Gamma w x j i))
+
+g gInv : TensorField4
+Gamma : ConnectionField4
+w : CovectorField4
+coupling : ℝ
+x : Coordinate4
+hg : ∀ (i j : Fin 4), DifferentiableAt ℝ (fun y => g y i j) x
+hgi : ∀ (i j : Fin 4), DifferentiableAt ℝ (fun y => gInv y i j) x
+hw : ∀ (j : Fin 4), DifferentiableAt ℝ (fun y => w y j) x
+hl : gInv x * g x = 1
+hs : (gInv x)ᵀ = gInv x
+hm : ∀ (i : Fin 4), covariantTensorJet (g x) (tensorFieldJet g x) (Gamma x) i = 0
+hd : ∀ (i : Fin 4), tensorFieldJet gInv x i = -Gamma x i * gInv x - gInv x * (Gamma x i)ᵀ
+j : Fin 4
+hq : DifferentiableAt ℝ (fun y => tensorQuad (gInv y) (w y)) x
+hhalf : DifferentiableAt ℝ (fun y => tensorQuad (gInv y) (w y) / 2) x
+ho : ∀ (i k : Fin 4), DifferentiableAt ℝ (fun y => vecMulVec (w y) (w y) i k) x
+ht :
+  ∀ (i k : Fin 4), DifferentiableAt ℝ (fun y => (vecMulVec (w y) (w y) - (tensorQuad (gInv y) (w y) / 2) • g y) i k) x
+⊢ coupling *
+      tensorFieldDivergence gInv Gamma (fun y => vecMulVec (w y) (w y) - (tensorQuad (gInv y) (w y) / 2) • g y) x j =
+    coupling *
+      (covectorDivergence gInv Gamma w x * w x j +
+        ∑ i, ∑ k, gInv x i k * w x k * (covectorDerivative Gamma w x i j - covectorDerivative Gamma w x j i))
+
+Note: The target expression is not type-correct under the `instances` transparency level, which may have triggered the failure. This is usually caused by unfolding of semireducible definitions in prior tactic steps. Use `set_option linter.tacticCheckInstances true` to investigate the source of the issue.
+Full error:
+  function expected
+    gInv x i
+'ChatgptAudit.Coherent023.covector_stress_divergence_point' depends on axioms: [propext,
+ sorryAx,
+ Classical.choice,
+ Quot.sound]
+'ChatgptAudit.Coherent023.covector_derivative_symmetric' depends on axioms: [propext, Classical.choice, Quot.sound]
+'ChatgptAudit.Coherent023.covector_stress_divergence_closed' depends on axioms: [propext,
+ sorryAx,
+ Classical.choice,
+ Quot.sound]
+'ChatgptAudit.Coherent023.covector_stress_conservation_iff_wave_at' depends on axioms: [propext,
+ sorryAx,
+ Classical.choice,
+ Quot.sound]
+'ChatgptAudit.Coherent023.covector_stress_conserved_on' depends on axioms: [propext,
+ sorryAx,
+ Classical.choice,
+ Quot.sound]
+'ChatgptAudit.Coherent023.potential_covector_smooth' depends on axioms: [propext, Classical.choice, Quot.sound]
+'ChatgptAudit.Coherent023.potential_covector_closed' depends on axioms: [propext, Classical.choice, Quot.sound]

@@ -1,0 +1,5 @@
+# Dedução prévia — derivada do limite sob erro linear
+[DERIVED — roteiro para Lean] Para os mesmos valores em zero, o erro entre quocientes incrementais satisfaz ‖slope(f,0,t)−slope(f_N,0,t)‖≤e_N: o fator |t| do erro cancela o inverso do incremento. Em t=0, ambos os slopes são zero por definição.
+Dado ε>0, escolher N fixo com e_N<ε/3 e ‖d_N−d‖<ε/3. A derivada existente desse único corte em zero permite escolher a vizinhança perfurada onde ‖slope(f_N,0,t)−d_N‖<ε/3. A desigualdade triangular prova slope(f,0,t)→d. A API hasDerivAt_iff_tendsto_slope conclui HasDerivAt f d 0.
+Não se supõe convergência de derivadas numa vizinhança. Nem completude do espaço normado é necessária para este passo: f e d já são dados. O erro em t=0 também permite deduzir a igualdade dos valores iniciais, eliminando uma hipótese redundante no corolário.
+Escopo exclusivamente analítico. A instanciação pelos cortes XX e a identificação d=iV precisam usar os teoremas concretos dos módulos de cociclo, não um campo que assume a conclusão.

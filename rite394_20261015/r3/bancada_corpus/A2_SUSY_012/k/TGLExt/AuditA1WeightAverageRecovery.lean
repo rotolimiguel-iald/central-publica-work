@@ -1,0 +1,4 @@
+import TGLExt.V351WeightAverageRecovery
+set_option pp.universes true
+#check TGLV350.Regular.scalarWeight_square_eq_iSup_averages
+#print axioms TGLV350.Regular.scalarWeight_square_eq_iSup_averages
