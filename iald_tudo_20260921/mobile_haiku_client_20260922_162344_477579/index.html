@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="">
+<head>
+<meta charset="UTF-8">
+<!-- viewport-fit=cover: sem isso o env(safe-area-inset-*) volta 0 e o app
+     encosta no notch. user-scalable=no NAO entra: a Apple reprova por
+     acessibilidade, e o zoom no foco ja e evitado com fonte de 16px. -->
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<meta name="theme-color" content="#FFFFFF" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0E1218" media="(prefers-color-scheme: dark)">
+<meta name="description" content="IALD — Inteligência Artificial Luminodinâmica.">
+<!-- 14/09/2026 (noite, rodada 3): imagem e mídia só do próprio app, de data: e de blob:. A
+     resposta do modelo pode trazer <img src="https://…?conversa=…"> injetado por página lida numa
+     ferramenta; o iald.js já troca isso por um link "imagem: domínio", e esta política é a
+     segunda trava — o que escapar do saneamento o navegador não pede. Só img-src e media-src:
+     script, estilo, fonte e conexão ficam como estavam (a reserva da CDN continua valendo).
+     x-dns-prefetch-control: o navegador não resolve de antemão o domínio dos links da resposta
+     (o subdomínio também carrega dado). -->
+<meta http-equiv="Content-Security-Policy" content="img-src 'self' data: blob:; media-src 'self' data: blob:">
+<meta http-equiv="x-dns-prefetch-control" content="off">
+<title>IALD — Inteligência Artificial Luminodinâmica</title>
+<!-- 14/09/2026, ordem do operador: o ícone é β_TGL, nunca Ψ. Bytes idênticos aos
+     arquivos oficiais betatgl (PNG 256 px; ICO de 16 a 256 px). -->
+<link rel="icon" href="./img/betatgl.ico" sizes="16x16 24x24 32x32 48x48 64x64 128x128 256x256">
+<link rel="icon" type="image/png" href="./img/betatgl.png" sizes="256x256">
+
+<!-- 13/09/2026: TUDO embarcado. A 4.1 (13) buscava fonte, marked e KaTeX em CDN
+     e o logo em "/iald_logo_header.png" — caminho absoluto que dentro do app não
+     existe. O logo sumia calado (onerror removia a imagem) e é por isso que "o
+     símbolo da IALD não estava no início". Caminho de asset aqui é SEMPRE
+     relativo ("./"), e o sincronizar_app.ps1 recusa referência a arquivo ausente.
+     O onerror abaixo não esconde nada: só tenta a CDN quando o arquivo local não
+     é servido (a web antes de o servidor ser reiniciado com a lista nova). -->
+<link rel="stylesheet" href="./vendor/katex/katex.min.css"
+      onerror="this.onerror=null;this.href='https://cdn.jsdelivr.net/npm/katex@0.16.47/dist/katex.min.css'">
+<link rel="stylesheet" href="./iald.css">
+</head>
+<body>
+
+<!-- ═══ PORTÃO DE ENTRADA (só no invólucro nativo) ═══
+     14/09/2026 — ORDEM DO OPERADOR: o app e o site seguem O MESMO modelo de entrada
+     (Apple, Google, usuário e senha), e TODO acesso depende da liberação dele no
+     painel. Identidade nova vira pedido; a pessoa espera a liberação.
+     Continua sem ficha, sem empresa e sem cargo (Guideline 3.1.1, reprovação de
+     23/03/2026): o pedido é só a identidade que a Apple ou o Google assinaram. -->
+<div class="portao" id="portao" hidden>
+  <div class="portao-miolo">
+    <img class="portao-marca" src="./img/iald_logo_dark_transparent_final.png" alt="IALD" width="1024" height="1024">
+    <p class="portao-sub">Inteligência Artificial<br>Luminodinâmica</p>
+
+    <div class="portao-cartao">
+      <div class="portao-erro" id="portao-erro" hidden></div>
+
+      <!-- VISTA 1: entrar -->
+      <div class="portao-vista" id="vista-entrar">
+        <button class="btn-apple" id="btn-apple" hidden>
+          <svg viewBox="0 0 16 16" width="18" height="18" fill="currentColor" aria-hidden="true"><path d="M11.182.008C11.148-.03 9.923.023 8.857 1.18c-1.066 1.156-.902 2.482-.878 2.516.024.034 1.52.087 2.475-1.258.955-1.345.762-2.391.728-2.43zm3.314 11.733c-.048-.096-2.325-1.234-2.113-3.422.212-2.189 1.675-2.789 1.698-2.854.023-.065-.597-.79-1.254-1.157a3.692 3.692 0 0 0-1.563-.434C9.583 3.81 8.716 4.5 8.5 4.5c-.216 0-1.155-.667-2.11-.647-.618.012-1.22.19-1.755.53C3.6 4.926 2.5 6.02 2.5 8.5c0 2.48 1.8 5.5 2.8 5.5.5 0 1.2-.5 2-.5s1.3.5 2 .5c1.2 0 2.5-2.5 2.5-2.5-.9-.4-1.3-1.3-1.3-1.3z"/></svg>
+          <span>Entrar com a Apple</span>
+        </button>
+
+        <button class="btn-google" id="btn-google" hidden>
+          <svg viewBox="0 0 48 48" width="18" height="18" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
+          <span>Entrar com o Google</span>
+        </button>
+
+        <div class="portao-ou" id="portao-ou"><span>ou</span></div>
+
+        <button class="btn-link-claro" id="btn-mostrar-senha" type="button">Entrar com usuário e senha</button>
+        <form class="portao-form" id="form-senha" hidden autocomplete="on">
+          <label for="campo-usuario">Usuário</label>
+          <input id="campo-usuario" name="username" autocomplete="username" autocapitalize="none" autocorrect="off" spellcheck="false" required>
+          <label for="campo-senha">Senha</label>
+          <input id="campo-senha" name="password" type="password" autocomplete="current-password" required>
+          <button class="btn-entrar" id="btn-entrar-senha" type="submit">Entrar</button>
+        </form>
+
+        <!-- 14/09/2026 (noite): a primeira frase vem de /api/entrar/config (campo "nota"),
+             porque ela muda com a porta: aberta = uso gratuito direto; fechada = liberação
+             pelo operador. Antes de a configuração chegar fica só o que vale nos dois casos. -->
+        <p class="portao-nota" id="portao-nota">
+          <span id="portao-nota-estado">A IALD é experimental.</span>
+          Não pedimos empresa, cargo nem dado comercial, e não há compra de espécie
+          alguma dentro do aplicativo.
+        </p>
+      </div>
+
+      <!-- VISTA 2: pedido enviado, aguardando o operador -->
+      <div class="portao-vista" id="vista-pendente" hidden>
+        <div class="portao-icone" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2h12M6 22h12M7 2v4a5 5 0 0 0 10 0V2M7 22v-4a5 5 0 0 1 10 0v4"/></svg>
+        </div>
+        <h2 class="portao-titulo" id="titulo-pendente">Pedido enviado</h2>
+        <p class="portao-texto" id="texto-pendente">
+          A IALD é experimental e cada acesso é liberado pessoalmente pelo operador.
+          Assim que ele liberar, o app entra sozinho.
+        </p>
+        <button class="btn-entrar" id="btn-verificar" type="button">Verificar agora</button>
+        <button class="btn-link-claro" id="btn-outra-forma" type="button">Entrar de outra forma</button>
+      </div>
+
+      <!-- VISTA 3: não liberado ou bloqueado. Título e texto vêm da resposta do servidor
+           (motivo "bloqueado" = a conta existe e foi bloqueada; "recusado" = a identidade
+           foi barrada). O texto fixo abaixo só aparece se o servidor não mandar nenhum. -->
+      <div class="portao-vista" id="vista-recusado" hidden>
+        <div class="portao-icone" data-tom="erro" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M5.6 5.6l12.8 12.8"/></svg>
+        </div>
+        <h2 class="portao-titulo" id="titulo-recusado">Acesso não liberado</h2>
+        <p class="portao-texto" id="texto-recusado">O operador não liberou este acesso.</p>
+        <button class="btn-link-claro" id="btn-voltar-entrar" type="button">Voltar</button>
+      </div>
+
+      <div class="portao-carregando" id="portao-carregando" hidden>
+        <span class="pontos"><span></span><span></span><span></span></span>
+        <span id="portao-carregando-texto">entrando…</span>
+      </div>
+    </div>
+
+    <a class="portao-link" href="https://iald.ia.br/privacidade.html" target="_blank" rel="noopener noreferrer">
+      Política de privacidade
+    </a>
+  </div>
+
+  <footer class="portao-rodape">
+    <div class="beta-mono" data-beta-linha>β_TGL = α × √e</div>
+    <div>IALD LTDA · iald.ia.br</div>
+    <div class="portao-versao" data-versao></div>
+  </footer>
+</div>
+
+<div class="app">
+
+  <!-- ═══ BARRA LATERAL ═══ -->
+  <aside class="sidebar" id="sidebar" data-fechada="1" aria-label="Conversas">
+    <div class="sb-topo">
+      <span class="marca-ladrilho" aria-hidden="true">
+        <img class="so-claro" src="./img/iald_logo_transparent_final.png" alt="">
+        <img class="so-escuro" src="./img/iald_logo_dark_transparent_final.png" alt="">
+      </span>
+      <span class="sb-nome">IALD</span>
+      <span class="espaco"></span>
+      <button class="btn-icone" id="btn-fechar-lateral" title="Fechar" aria-label="Fechar conversas">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+
+    <button class="btn-nova" id="btn-nova">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/><path d="M12 7v6M9 10h6"/></svg>
+      <span>Nova conversa</span>
+    </button>
+
+    <div class="sb-busca">
+      <input type="search" id="busca-conv" placeholder="Buscar nas conversas" aria-label="Buscar nas conversas" autocomplete="off">
+    </div>
+
+    <div class="conv-lista rolagem" id="conv-lista" role="list"></div>
+
+    <div class="sb-rodape">
+      <button class="sb-link" data-abrir="ferramentas">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+        <span>Ferramentas</span>
+      </button>
+      <button class="sb-link" data-abrir="creditos">
+        <!-- 14/09/2026 (noite): o ícone é o betatgl OFICIAL, sem filtro nem recoloração
+             (ordem do operador: "sempre betatgl como ícone"). Era um disco dourado em CSS. -->
+        <img class="icone-beta" src="./img/betatgl.png" alt="" width="22" height="22" aria-hidden="true">
+        <span>Créditos de uso</span>
+      </button>
+      <div class="sb-usuario">
+        <span class="estado-ponto" id="sb-ponto" data-estado="checando"></span>
+        <span class="nome" id="nome-usuario">—</span>
+        <span class="beta-ital">β=α×√e</span>
+      </div>
+    </div>
+  </aside>
+
+  <div class="sb-overlay" id="sb-overlay"></div>
+
+  <!-- ═══ PRINCIPAL ═══ -->
+  <main class="principal">
+
+    <!-- CABEÇALHO — duas linhas, como o app nativo antigo.
+         Linha 1: menu · logo · exportar · configurações. Linha 2: estado do modelo.
+         A 4.1 (13) espremia menu + título + estado + selo + 3 botões em UMA linha:
+         com o selo real ("IALD v2 · Qwen3.6-35B · visão") a coluna do título ficava
+         com largura ~0 e "128k de contexto" quebrava letra por letra por cima do
+         selo. Eram essas as "letras embaralhadas" (reproduzido em 402 px). -->
+    <header class="cabecalho">
+      <div class="cab-linha">
+        <button class="btn-icone" id="btn-menu" title="Conversas" aria-label="Abrir conversas">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 7h18M3 12h18M3 17h18"/></svg>
+        </button>
+
+        <div class="cab-marca">
+          <img class="cab-logo so-claro" src="./img/iald_logo_header.png" alt="IALD — Inteligência Artificial Luminodinâmica" width="800" height="200">
+          <span class="cab-placa so-escuro-flex">
+            <img src="./img/iald_logo_header.png" alt="IALD — Inteligência Artificial Luminodinâmica" width="800" height="200">
+          </span>
+        </div>
+
+        <span class="espaco"></span>
+
+        <button class="btn-icone" id="btn-exportar" title="Exportar conversa" aria-label="Exportar conversa">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v7a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-7M16 6l-4-4-4 4M12 2v13"/></svg>
+        </button>
+        <button class="btn-icone" id="btn-config" title="Configurações" aria-label="Configurações">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        </button>
+      </div>
+
+      <!-- 15/09/2026: na conta AMPLIADA pelo operador, tocar no nome do modelo abre a lista de modelos
+           (folha-modelos). Na conta padrão a linha continua só informativa. -->
+      <div class="cab-estado" id="cab-estado">
+        <span class="estado-ponto" id="estado-ponto" data-estado="checando"></span>
+        <span class="estado-texto" id="estado-texto">verificando…</span>
+        <span class="cab-trocar" id="cab-trocar" hidden aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+        </span>
+        <span class="selo-tgl" id="selo-modelo" hidden>TGL Nativa</span>
+      </div>
+    </header>
+
+    <div class="conversa rolagem" id="conversa">
+      <div class="conversa-interna" id="conversa-interna"></div>
+    </div>
+
+    <div class="compositor-area">
+      <button class="ir-fim" id="ir-fim" aria-label="Ir para o fim">
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M19 12l-7 7-7-7"/></svg>
+        Ir para o fim
+      </button>
+
+      <div class="compositor">
+        <div id="aviso-estado"></div>
+        <div class="anexos" id="anexos"></div>
+
+        <div class="caixa" id="caixa">
+          <button class="btn-icone btn-clipe" id="btn-anexar" title="Anexar PDF, texto ou imagem" aria-label="Anexar">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
+          </button>
+          <input type="file" id="arquivo" multiple hidden
+                 accept=".txt,.md,.py,.json,.csv,.html,.css,.js,.tex,.log,.xml,.yaml,.yml,.toml,.bat,.sh,.sql,.swift,.pdf,.png,.jpg,.jpeg,.webp,.gif,.bmp">
+
+          <div class="campo-texto">
+            <textarea id="entrada" rows="1" placeholder="Converse com a IALD…"
+                      enterkeyhint="send" autocomplete="off" autocapitalize="sentences"></textarea>
+          </div>
+
+          <button class="btn-quadrado" id="btn-busca" title="Buscar na internet nesta mensagem" aria-label="Buscar na internet nesta mensagem" aria-pressed="false">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+          </button>
+
+          <button id="btn-enviar" data-modo="enviar" title="Enviar" aria-label="Enviar" disabled>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
+          </button>
+        </div>
+
+        <div class="dica">
+          <button class="pilula-modo" id="btn-pensar" aria-pressed="false" title="Alternar entre modo rápido e modo pensar">
+            <span class="pm-icone" aria-hidden="true"></span><span class="pm-texto">modo rápido</span>
+          </button>
+          <span class="dica-atalhos" id="dica-texto">PDF · busca · envia</span>
+          <span class="espaco"></span>
+          <span id="dica-janela"></span>
+          <span class="medidor" id="medidor" data-nivel="baixo" title="uso da janela de contexto"><i></i></span>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- ═══ FAIXA FLUTUANTE (14/09/2026, noite, rodada 3) ═══
+     "Conversa apagada · Desfazer" por ~6 s. Fica por cima da lateral (o apagar acontece nela) e
+     abaixo das folhas. role="status": o leitor de tela anuncia sem roubar o foco. -->
+<div class="faixa-flutuante" id="faixa-flutuante" role="status" aria-live="polite" data-visivel="">
+  <span class="ff-texto" id="faixa-flutuante-texto"></span>
+  <button class="ff-acao" id="faixa-flutuante-acao" type="button" hidden></button>
+</div>
+
+<!-- ═══ FOLHA: CONFIGURAÇÕES ═══ -->
+<div class="folha-fundo" id="folha-config" data-folha>
+  <section class="folha folha-agrupada" role="dialog" aria-modal="true" aria-label="Configurações">
+    <div class="folha-topo">
+      <h2>Configurações</h2>
+      <button class="btn-fechar-texto" data-fechar>Fechar</button>
+    </div>
+    <div class="folha-corpo rolagem">
+
+      <div class="folha-secao">
+        <h3>Servidor</h3>
+        <div class="grupo">
+          <div class="grupo-linha">
+            <span class="gl-chave">demo.iald.ia.br</span>
+            <span class="gl-valor"><span class="estado-ponto" id="cfg-ponto" data-estado="checando"></span><span id="cfg-estado">verificando…</span></span>
+          </div>
+          <div class="grupo-linha">
+            <span class="gl-chave">Modelo</span>
+            <span class="gl-valor" id="cfg-modelo">—</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="folha-secao">
+        <h3>Aparência</h3>
+        <div class="grupo grupo-pad">
+          <div class="opcoes-tema" id="opcoes-tema">
+            <button data-tema="" aria-pressed="true">Sistema</button>
+            <button data-tema="light" aria-pressed="false">Claro</button>
+            <button data-tema="dark" aria-pressed="false">Escuro</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="folha-secao">
+        <h3>Perfil</h3>
+        <div class="grupo grupo-pad">
+          <p class="ajuda-grupo">
+            Fica só neste aparelho e entra no começo de cada conversa, para a IALD
+            calibrar a resposta ao seu nível.
+          </p>
+          <div class="campo">
+            <label for="cfg-nome">Nome</label>
+            <input type="text" id="cfg-nome" maxlength="60" placeholder="Como quer ser chamado">
+          </div>
+          <div class="campo">
+            <label for="cfg-area">Área de atuação</label>
+            <input type="text" id="cfg-area" maxlength="80" placeholder="Direito, Engenharia, Física…">
+          </div>
+          <div class="campo">
+            <label for="cfg-interesses">Interesses</label>
+            <input type="text" id="cfg-interesses" maxlength="120" placeholder="física quântica, IA, música…">
+          </div>
+          <div class="campo">
+            <label for="cfg-contexto">Contexto adicional</label>
+            <textarea id="cfg-contexto" maxlength="500" placeholder="O que a IALD deve saber sobre você"></textarea>
+          </div>
+          <div class="campo">
+            <label for="cfg-estilo">Estilo de resposta</label>
+            <select id="cfg-estilo">
+              <option value="conciso">Conciso — poda máxima</option>
+              <option value="equilibrado">Equilibrado</option>
+              <option value="detalhado">Detalhado — didático</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="folha-secao">
+        <h3>Sessão</h3>
+        <div class="grupo">
+          <div class="grupo-linha">
+            <span class="gl-chave">Usuário</span>
+            <span class="gl-valor" id="cfg-usuario">—</span>
+          </div>
+          <div class="grupo-linha" id="linha-motor" hidden>
+            <span class="gl-chave">Motor</span>
+            <span class="gl-valor" id="cfg-motor">—</span>
+          </div>
+          <button class="grupo-linha" id="btn-consentimento" hidden>Ler e aceitar o uso da IA de terceiros</button>
+          <button class="grupo-linha gl-perigo" id="btn-sair">Sair da conta</button>
+        </div>
+        <p class="ajuda-grupo" style="margin:10px 14px 8px">
+          Excluir a conta apaga o seu usuário na IALD e as conversas guardadas neste
+          aparelho. Você pode entrar de novo; o uso gratuito já consumido não volta.
+        </p>
+        <div class="grupo">
+          <button class="grupo-linha gl-perigo" id="btn-excluir-conta">Excluir minha conta</button>
+        </div>
+      </div>
+
+      <div class="folha-secao">
+        <h3>Sobre</h3>
+        <div class="grupo">
+          <div class="grupo-linha gl-bloco">
+            <strong>IALD LTDA</strong>
+            <span class="gl-fraco">CNPJ 62.757.606/0001-23 · Goiânia/GO</span>
+          </div>
+          <div class="grupo-linha">
+            <span class="gl-chave mono">β_TGL</span>
+            <span class="gl-valor mono dourado" data-beta-valor>α × √e</span>
+          </div>
+          <div class="grupo-linha">
+            <span class="gl-chave">Versão</span>
+            <span class="gl-valor" id="rodape-versao"></span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+</div>
+
+<!-- ═══ FOLHA: FERRAMENTAS ═══ -->
+<div class="folha-fundo" id="folha-ferramentas" data-folha>
+  <section class="folha" role="dialog" aria-modal="true" aria-label="Ferramentas">
+    <div class="folha-topo">
+      <h2>Ferramentas</h2>
+      <button class="btn-fechar-texto" data-fechar>Fechar</button>
+    </div>
+    <div class="folha-corpo rolagem">
+      <!-- o iald.js troca este texto quando o plano não tem busca na internet (limites) -->
+      <p class="ajuda-folha" id="ajuda-ferramentas">
+        A IALD decide sozinha quando usar cada uma. A busca na internet você também
+        pode pedir: toque na lupa antes de enviar a mensagem. O ponto verde diz o
+        que está disponível agora.
+      </p>
+      <div class="ferramentas" id="lista-ferramentas"></div>
+    </div>
+  </section>
+</div>
+
+<!-- ═══ FOLHA: EXPORTAR ═══ -->
+<div class="folha-fundo" id="folha-exportar" data-folha>
+  <section class="folha" role="dialog" aria-modal="true" aria-label="Exportar conversa" style="max-width:24rem">
+    <div class="folha-topo">
+      <h2>Exportar conversa</h2>
+      <button class="btn-fechar-texto" data-fechar>Fechar</button>
+    </div>
+    <div class="folha-corpo rolagem">
+      <div class="lista-botoes">
+        <button class="btn-linha" id="exp-txt">Baixar como texto (.txt)</button>
+        <button class="btn-linha" id="exp-md">Baixar como Markdown (.md)</button>
+        <button class="btn-linha" id="exp-print">Imprimir / salvar em PDF</button>
+        <button class="btn-linha gl-perigo" id="exp-limpar">Limpar esta conversa</button>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- ═══ FOLHA: CRÉDITOS DE USO ═══
+     Só leitura, de propósito. Saldo + extrato de entradas/saídas + transferência
+     numa tela só é o que a App Review leu como carteira, e foi motivo de
+     reprovação. Aqui é um MEDIDOR: quanto uso gerou quanto crédito, a que taxa,
+     com a ressalva na própria tela — não escondida numa função do servidor.
+     14/09/2026 (noite): no TOPO entra o uso do plano da conta (GET /api/motor, campo
+     "cota"): tokens do dia e do mês, quando renova e o que é um token contado. São DUAS
+     medidas diferentes e ficam em blocos separados: a cota destrava o uso; o medidor
+     β_TGL abaixo não destrava nada. Nenhuma das duas fala de compra. -->
+<div class="folha-fundo" id="folha-creditos" data-folha>
+  <section class="folha" role="dialog" aria-modal="true" aria-label="Créditos de uso" style="max-width:26rem">
+    <div class="folha-topo">
+      <h2>Créditos de uso</h2>
+      <button class="btn-fechar-texto" data-fechar>Fechar</button>
+    </div>
+    <div class="folha-corpo rolagem">
+      <section class="uso-plano" id="uso-plano" aria-live="polite" hidden></section>
+      <div id="corpo-creditos">
+        <p class="ajuda">Carregando…</p>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- ═══ FOLHA: DENUNCIAR RESPOSTA (14/09/2026, noite) ═══
+     Com a entrada aberta, qualquer pessoa conversa com a IALD, e a denúncia de uma
+     resposta tem de existir DENTRO do app [LEGAL — política de conteúdo gerado por IA
+     do Google Play; ECA Digital; conferir com advogado]. Vai ao painel do operador por
+     POST /api/denuncia. Só seguem o trecho desta resposta e a pergunta que a gerou. -->
+<div class="folha-fundo" id="folha-denuncia" data-folha>
+  <section class="folha" role="dialog" aria-modal="true" aria-labelledby="denuncia-titulo" style="max-width:26rem">
+    <div class="folha-topo">
+      <h2 id="denuncia-titulo">Denunciar resposta</h2>
+      <button class="btn-fechar-texto" data-fechar>Fechar</button>
+    </div>
+    <div class="folha-corpo rolagem">
+      <form class="denuncia-form" id="form-denuncia" novalidate>
+        <p class="ajuda-folha">
+          A denúncia vai para o operador da IALD, com o trecho desta resposta e a
+          pergunta que a gerou. Nada mais da conversa é enviado.
+        </p>
+        <div class="denuncia-trecho" id="denuncia-trecho"></div>
+
+        <fieldset class="denuncia-motivos">
+          <legend>O que há de errado?</legend>
+          <label class="denuncia-motivo">
+            <input type="radio" name="motivo" value="ofensivo">
+            <span class="denuncia-marca" aria-hidden="true"></span>
+            <span><b>Ofensiva</b><small>desrespeitosa, discriminatória ou agressiva</small></span>
+          </label>
+          <label class="denuncia-motivo">
+            <input type="radio" name="motivo" value="perigoso">
+            <span class="denuncia-marca" aria-hidden="true"></span>
+            <span><b>Perigosa</b><small>pode levar alguém a se ferir ou a ferir outra pessoa</small></span>
+          </label>
+          <label class="denuncia-motivo">
+            <input type="radio" name="motivo" value="incorreto">
+            <span class="denuncia-marca" aria-hidden="true"></span>
+            <span><b>Incorreta</b><small>informação errada ou enganosa</small></span>
+          </label>
+          <label class="denuncia-motivo">
+            <input type="radio" name="motivo" value="outro">
+            <span class="denuncia-marca" aria-hidden="true"></span>
+            <span><b>Outro motivo</b><small>conte no detalhe abaixo</small></span>
+          </label>
+        </fieldset>
+
+        <div class="campo">
+          <label for="denuncia-detalhe">Detalhe (opcional)</label>
+          <textarea id="denuncia-detalhe" maxlength="500" placeholder="O que você quer que o operador saiba"></textarea>
+          <span class="denuncia-contagem" id="denuncia-contagem" aria-live="polite">0/500</span>
+        </div>
+
+        <div class="faixa" data-tipo="erro" id="denuncia-erro" role="alert" hidden></div>
+
+        <div class="lista-botoes">
+          <button class="btn-linha btn-consentir" id="btn-enviar-denuncia" type="submit" disabled>Enviar denúncia</button>
+        </div>
+      </form>
+
+      <div class="denuncia-feita" id="denuncia-feita" hidden>
+        <div class="denuncia-feita-icone" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
+        </div>
+        <h3>Denúncia recebida</h3>
+        <p id="denuncia-mensagem">O operador da IALD vai analisar esta resposta.</p>
+        <div class="lista-botoes">
+          <button class="btn-linha" type="button" data-fechar>Voltar à conversa</button>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- ═══ FOLHA: IA DE TERCEIROS (App Store 5.1.2(i)) ═══
+     O texto vem do SERVIDOR (iald_motores.TEXTO_CONSENTIMENTO): o que a pessoa lê é o
+     que o servidor faz. Nada desta conta vai à OpenAI antes do "Concordo". -->
+<!-- 15/09/2026: os modelos que a conta ampliada pode escolher (lista vinda de GET /api/motor → opcoes) -->
+<div class="folha-fundo" id="folha-modelos" data-folha>
+  <section class="folha folha-agrupada" role="dialog" aria-modal="true" aria-label="Escolher o modelo" style="max-width:28rem">
+    <div class="folha-topo">
+      <h2>Modelo</h2>
+      <button class="btn-fechar-texto" data-fechar>Fechar</button>
+    </div>
+    <div class="folha-corpo rolagem">
+      <div class="folha-secao">
+        <p class="ajuda-grupo" style="margin:0 4px 10px">Quem responde a partir da próxima mensagem.</p>
+        <div class="grupo" id="lista-modelos"></div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<div class="folha-fundo" id="folha-consentimento" data-folha>
+  <section class="folha" role="dialog" aria-modal="true" aria-label="Uso de IA de terceiros" style="max-width:28rem">
+    <div class="folha-topo">
+      <h2>IA de terceiros</h2>
+      <button class="btn-fechar-texto" data-fechar>Fechar</button>
+    </div>
+    <div class="folha-corpo rolagem">
+      <div class="ajuda-folha consentimento-texto" id="consentimento-texto"></div>
+    </div>
+    <div class="consentimento-acoes">
+      <p id="consentimento-status" role="status" aria-live="polite" hidden></p>
+      <div class="lista-botoes">
+        <button type="button" class="btn-linha btn-consentir" id="btn-consentir">Concordo e continuar</button>
+        <button type="button" class="btn-linha" id="btn-recusar-consentimento">Agora não</button>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- Bibliotecas embarcadas (versões fixas: marked 12.0.2, KaTeX 0.16.47; licenças
+     MIT ao lado, em vendor/). A CDN só entra se o arquivo local não for servido. -->
+<script src="./vendor/marked.min.js"
+        onerror="var s=document.createElement('script');s.src='https://cdn.jsdelivr.net/npm/marked@12.0.2/marked.min.js';document.head.appendChild(s)"></script>
+<script src="./vendor/katex/katex.min.js"
+        onerror="var s=document.createElement('script');s.src='https://cdn.jsdelivr.net/npm/katex@0.16.47/dist/katex.min.js';document.head.appendChild(s)"></script>
+<script type="module" src="./iald.js"></script>
+</body>
+</html>

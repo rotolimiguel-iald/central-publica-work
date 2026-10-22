@@ -1,0 +1,6 @@
+### d1_camb_v3_pipeline
+Fonte: resultado_publicado_integral /core/d1_camb_v3_pipeline
+Pipeline construído cego; autochecagem CAMB em β_TGL=0, segunda Friedmann e limites w constante. Injeção/recuperação com covariância dos dados, três β e SH0ES: pulls/cobertura passam critério; MCMC fase3 validado em sintéticos/Asimov.
+NEGATIVO com emenda ao lado: sensibilidade C livre REPROVOU;24/24 realizações na borda do prior. Fecho H(0)=H₀ absorve C em ρ_Λ: cancela de H(z) em β=0(diferença2,2×10⁻¹⁶), só sobrevive ordem β(5,2×10⁻⁵). Não rerodado nem afrouxado: diagnóstico de degenerescência, fora da matriz de vereditos. Dados reais liberados por linha do operador; resultado lido por v366 (registro do veredito, não nova execução). all_verified=true; does_not_gate_core=true; in_contour_roster_v314=false. PT/EN dizem o mesmo.
+Remissões (relativas ao tópico; destinos internos preservados):
+{"amendment":{"@":"/amendment"},"sigma_beta":{"@":"/sigma_beta"},"c_free_degeneracy":{"@":"/c_free_degeneracy"},"mcmc_asimov":{"@":"/mcmc_asimov"},"checks":{"@":"/checks","items":9},"statuses":{"@":"/statuses"},"injection_sha16":{"@":"/injection_sha16"},"injection_amendment_sha16":{"@":"/injection_amendment_sha16"},"selfcheck_sha16":{"@":"/selfcheck_sha16"},"refusal_sha16":{"@":"/refusal_sha16"},"amendment_hash":{"@":"/amendment_hash"},"verdict":{"@":"/verdict"}}

@@ -1,0 +1,169 @@
+
+1. A REGRA, A CONFIGURAÇÃO, O CONSENTIMENTO E O CAMINHO DA OPENAI INTACTO
+  [OK]    admin da lista com claude gravado → claude  claude
+  [OK]    admin da lista SEM o nome da conta → regra de sempre (nativa)  nativa
+  [OK]    admin da lista com a lista vazia (claude não configurado) → nativa  nativa
+  [OK]    ampliada fora da lista com claude forjado → regra (nativa)  nativa
+  [OK]    padrão NA lista com claude → openai (a lista não amplia)  openai
+  [OK]    padrão fora da lista com claude forjado → openai  openai
+  [OK]    gratuito admin da lista com claude → openai  openai
+  [OK]    nome com maiúsculas/espaços confere  claude
+  [OK]    sem os argumentos novos, exatamente como antes ('claude' gravado nunca vale)  
+  [OK]    Config montada à mão com motor_operador='claude' não fura a lista  
+  [OK]    IALD_MOTOR_PADRAO/OPERADOR=claude recusados (nativa, com aviso)  ["IALD_MOTOR_PADRAO desconhecido ('claude'); usando nativa", "IALD_MOTOR_OPERADOR desconhecido ('claude'); usando nativa"]
+  [OK]    config do claude: nenhum IALD_OPENAI_* reaproveitado (sem chave, padrões do claude)  Config(motor_padrao='nativa', motor_operador='nativa', modelo='claude-sonnet-5', chave=ausente)
+  [OK]    padrões: max_saida 16000, esforço high, ttl 5m, fator 1.6, sem esforço OpenAI, sem reserva nativa  
+  [OK]    planos, memória, ferramentas e pedidos/min vêm da configuração base  
+  [OK]    preço 5 min (2,00 / 0,20 / 10,00 / 2,50) e claude não configurado sem chave  
+  [OK]    TTL 1h → escrita a 4,00 (a reserva casa com o TTL); lista normalizada; tetos por conta = global  
+  [OK]    a tabela da OpenAI continua com a escrita de 5 min (a troca é só na config do claude)  
+  [OK]    chave de ADMINISTRAÇÃO recusada (motor desligado) sem o valor no aviso; fator < 1 e modelo não-Claude recusados  ['IALD_CLAUDE_API_KEY é uma chave de administração; motor claude desligado', "IALD_CLAUDE_MODELO não é um modelo Claude ('gpt-5.6-luna'); usando claude-sonnet-5", 'IALD_CLAUDE_FATOR_TOKENS abaixo do mínimo 1.0; usando 1.6']
+  [OK]    repr da config do claude não mostra a chave  
+  [OK]    registro OpenAI igual ao de antes; o da Anthropic diz 'anthropic'  
+  [OK]    chamada antiga registro_de_consentimento(superficie, agora) continua valendo  
+  [OK]    consentimento da OpenAI NÃO libera a Anthropic  
+  [OK]    o da Anthropic não libera a OpenAI; campo copiado do da OpenAI não vale como Anthropic  
+  [OK]    provedor desconhecido → False  
+  [OK]    texto do consentimento: nomeia Anthropic e Claude, o pacote de memória da TGL e a moderação da OpenAI  
+  [OK]    nota de serviço da OpenAI byte a byte a de antes  
+  [OK]    nota do claude: 'Claude Sonnet 5 (claude-sonnet-5) da Anthropic' e a frase que corrige o prefixo  
+  [OK]    rótulos  
+  [OK]    mensagens ao usuário dos códigos do claude  
+  [OK]    mensagens da OpenAI inalteradas (crédito, 429, 400)  
+  [OK]    caminho da OpenAI BYTE A BYTE o de antes (hash de ouro do iald_motores original)  4d6338324ff55d12
+  [OK]    reserva: fator 1.0 = a conta de sempre; fator 1.6 multiplica só a entrada estimada  0.018478 0.023563
+
+importando o servidor...
+[IALD-AUTH] 2026-09-23 08:34:01 | LOGIN_OK | user=luiz | ip=127.0.0.1
+[IALD-AUTH] 2026-09-23 08:34:01 | LOGIN_OK | user=bia | ip=127.0.0.1
+[IALD-AUTH] 2026-09-23 08:34:01 | LOGIN_OK | user=ana | ip=127.0.0.1
+[IALD-AUTH] 2026-09-23 08:34:01 | LOGIN_OK | user=caio | ip=127.0.0.1
+[IALD-AUTH] 2026-09-23 08:34:01 | LOGIN_OK | user=gil | ip=127.0.0.1
+
+2. ESCOLHA: SÓ O OPERADOR DA LISTA VÊ E ESCOLHE O CLAUDE
+  [OK]    operador da lista: 3 opções cliente antigo (nativa, openai, claude-sonnet), Claude disponível  [{'detalhe': 'Servidor da IALD', 'disponivel': True, 'id': 'nativa', 'rotulo': 'IALD Nativa · Qwen3.6-35B'}, {'detalhe': 'OpenAI · gpt-5.6-luna', 'disponivel': True, 'id': 'openai', 'rotulo': 'ChatGPT 5.6 Luna'}, {'detalhe': 'Anthropic · claude-sonnet-5', 'disponivel': True, 'id': 'claude-sonnet', 'modelo': 'claude-sonnet-5', 'provedor': 'claude', 'rotulo': 'Claude Sonnet 5'}]
+  [OK]    …pelo token do app (Bearer) a mesma lista  
+[IALD-AUTH] 2026-09-23 08:34:01 | MOTOR_ESCOLHA | user=luiz | ip=127.0.0.1 | motor=claude-sonnet
+  [OK]    operador escolhe o Claude na web: 200, motor claude, consentimento da Anthropic ainda não dado  {'consentimento': {'dado': False, 'necessario': True, 'provedor': 'Anthropic', 'texto': 'Para responder a você neste modo, a IALD usa um serviço de inteligência artificial de terceiros: o Claude, pela API da Anthropic (Anthropic, PBC, Estados Unidos).\n\nO que é enviado à Anthropic a cada mensagem: o texto que você escreve, o histórico recente desta conversa, o conteúdo dos arquivos e imagens que você anexar e as informações de perfil que você preencher nas configurações (nome, área, interesses, contexto). Junto com cada pedido vai também o pacote de memória da TGL mantido pelo servidor da IALD — as instruções da IALD, o núcleo canônico e o cluster da TGL, o mesmo pacote que acompanha o motor da OpenAI. Não são enviados a sua senha, o seu e-mail nem a sua identidade Apple ou Google; a Anthropic recebe só um código derivado da sua conta, usado para prevenir abuso.\n\nAs suas mensagens continuam passando pela verificação de segurança da IALD, que usa o serviço de moderação da OpenAI antes de seguir para a Anthropic.\n\nPara que serve: só para gerar as respostas da IALD. Segundo os termos comerciais da Anthropic, o conteúdo enviado pela API não é usado para treinar os modelos dela; a guarda desses dados segue a política de privacidade da Anthropic.\n\nVocê pode recusar agora e revogar depois. Sem este consentimento a conta não recebe respostas do Claude; você pode voltar a outro modelo tocando no nome do modelo no alto da tela.', 'versao': 1}, 'consentimento_dado': False, 'motor': 'claude', 'motor_selecao': 'claude-sonnet', 'ok': True}
+  [OK]    /api/motor: claude, Anthropic, claude-sonnet-5, rótulo, disponível  {'motor': 'claude', 'provedor': 'Anthropic', 'modelo': 'claude-sonnet-5'}
+  [OK]    …consentimento: necessário, NÃO dado (o da OpenAI não vale), texto e versão da Anthropic  
+  [OK]    …cota do razão do claude e limites do claude (saída 16000, janela 600000)  {'agente': True, 'ferramentas': ['search_web', 'fetch_url', 'get_current_datetime'], 'imagens': True, 'janela': 600000, 'max_saida': 16000, 'pensar': True}
+[IALD-AUTH] 2026-09-23 08:34:01 | MOTOR_ESCOLHA | user=luiz | ip=127.0.0.1 | motor=openai
+[IALD-AUTH] 2026-09-23 08:34:01 | MOTOR_ESCOLHA | user=luiz | ip=127.0.0.1 | motor=claude-sonnet
+  [OK]    pelo token do app: troca para openai e volta ao claude  
+  [OK]    motor inválido: 400 com erro de modelo inválido  
+  [OK]    ampliada fora da lista: só nativa e openai  [{'detalhe': 'Servidor da IALD', 'disponivel': True, 'id': 'nativa', 'rotulo': 'IALD Nativa · Qwen3.6-35B'}, {'detalhe': 'OpenAI · gpt-5.6-luna', 'disponivel': True, 'id': 'openai', 'rotulo': 'ChatGPT 5.6 Luna'}]
+  [OK]    …escolher claude sem autorização: 409 e nada gravado  409
+  [OK]    padrão (ana): motor openai, só opção openai, escolha Claude 409  openai 409
+  [OK]    padrão NA lista (caio, claude gravado): motor claude, só opção openai, escolha Claude 409  claude 409
+  [OK]    gratuita (gil, claude gravado): motor claude, só opção openai, escolha Claude 409  claude 409
+  [OK]    ampliada com Claude gravado: seleção preservada para recusa explícita  claude
+  [OK]    …recusa sem envio e sem fallback para llama  
+  [OK]    padrão com Claude gravado: recusa sem trocar de provedor  Modelo Claude indisponível para esta conta.
+  [OK]    painel: fixar claude em ampliada fora da lista → 409  
+  [OK]    painel: fixar claude em conta padrão da lista → 409 (a lista não amplia)  
+[IALD-AUTH] 2026-09-23 08:34:01 | ADMIN_MOTOR | user=luiz | ip=127.0.0.1 | user=luiz model=claude
+  [OK]    painel: fixar claude no operador da lista → 200, efetivo claude  {'motor': 'claude', 'motor_efetivo': 'claude', 'motor_selecao': 'claude-sonnet', 'ok': True}
+  [OK]    lista do painel: claude_permitido e motor efetivo  
+  [OK]    painel: seletor com a opção Claude (desligada fora da lista) e linha do Claude no estado do motor  
+  [OK]    JS do painel passa no node --check  
+[IALD-AUTH] 2026-09-23 08:34:01 | ADMIN_ACESSO_NATIVA | user=luiz | ip=127.0.0.1 | user=lia acesso=chatgpt
+  [OK]    reduzir o acesso tira a escolha 'claude' pendurada  
+
+3. CONSENTIMENTO POR PROVEDOR
+  [OK]    operador no claude SEM o consentimento da Anthropic (tem o da OpenAI): aviso da Anthropic, nada enviado  [{'tipo': 'consentimento_ia', 'texto': 'Esta conta está no Claude, da Anthropic, e isso precisa do seu consentimento. Abra o aviso para ler o que é enviado e de
+  [OK]    conta no claude, aceite SEM provedor (app antigo = OpenAI) → 409, nada gravado da Anthropic  409 {'error': 'O modelo desta conta mudou; leia o aviso de novo. Nada foi alterado.', 'motor': 'claude', 'provedor': 'Anthropic'}
+  [OK]    …aceite do texto da OpenAI com o motor no claude → 409 (leia de novo), nada gravado  409
+  [OK]    …versão do aviso diferente da vigente → 409, nada gravado  409
+  [OK]    …provedor desconhecido → 400  
+[IALD-AUTH] 2026-09-23 08:34:01 | CONSENTIMENTO_IA | user=luiz | ip=127.0.0.1 | aceito v1 provedor=Anthropic
+  [OK]    aceite grava no campo da Anthropic; o da OpenAI fica como estava  {'consentido': True, 'ok': True, 'provedor': 'Anthropic'}
+  [OK]    /api/motor agora diz consentimento dado  
+  [OK]    /api/motor lista os consentimentos registrados (OpenAI e Anthropic), para revogar cada um  [{'dado': True, 'motor': 'openai', 'provedor': 'OpenAI'}, {'dado': True, 'motor': 'claude', 'provedor': 'Anthropic'}]
+  [OK]    conta na nativa: consentimento → 400 (não há terceiro), nada gravado  400
+[IALD-AUTH] 2026-09-23 08:34:01 | CONSENTIMENTO_IA | user=bia | ip=127.0.0.1 | revogado
+  [OK]    conta na nativa: REVOGAR (sem provedor = OpenAI, como antes de 21/09) → 200 e o registro sai  200
+[IALD-AUTH] 2026-09-23 08:34:01 | CONSENTIMENTO_IA | user=ana | ip=127.0.0.1 | revogado provedor=Anthropic
+  [OK]    conta na OpenAI revoga o da Anthropic (registro antigo): 200, só o da Anthropic sai  200
+[IALD-AUTH] 2026-09-23 08:34:01 | CONSENTIMENTO_IA | user=ana | ip=127.0.0.1 | aceito v1
+  [OK]    conta padrão (openai): consentimento no campo de sempre, sem o da Anthropic  
+[IALD-AUTH] 2026-09-23 08:34:01 | MOTOR_ESCOLHA | user=luiz | ip=127.0.0.1 | motor=openai
+  [OK]    /api/motor/escolha devolve o bloco de consentimento do motor EFETIVO (texto, versão, provedor)  {'consentimento': {'dado': True, 'necessario': True, 'provedor': 'OpenAI', 'texto': 'Para responder a você, esta conta da IALD usa um serviço de inteligência ar
+[IALD-AUTH] 2026-09-23 08:34:01 | MOTOR_ESCOLHA | user=luiz | ip=127.0.0.1 | motor=claude-sonnet
+  [OK]    …e de volta ao claude: o texto da Anthropic  {'consentimento': {'dado': True, 'necessario': True, 'provedor': 'Anthropic', 'texto': 'Para responder a você neste modo, a IALD usa um serviço de inteligência 
+
+4. CONVERSA: O MESMO PREFIXO EM CACHE, A NOTA NO BLOCO VARIÁVEL, RAZÃO E RÓTULO DO CLAUDE
+  [OK]    a OpenAI recebe o prefixo da casa no início da mensagem developer  
+  [OK]    payload da OpenAI (conta padrão) como antes: chaves, HMAC 'iald-openai-v1:', nota da OpenAI, sem Claude  ['max_completion_tokens', 'messages', 'model', 'prompt_cache_key', 'reasoning_effort', 'safety_identifier', 'store', 'stream', 'stream_options']
+  [OK]    resposta do Claude chega à pessoa, rotulada claude / claude-sonnet-5 / Claude Sonnet 5  β = α·√e [DERIVED].
+  [OK]    system[0] = EXATAMENTE o prefixo que a OpenAI recebe, com cache_control (e só ele marcado; cache automático no topo do pedido — revisão 21/09)  2
+  [OK]    a nota do Claude fica no bloco VARIÁVEL (fora do cache): Claude Sonnet 5 da Anthropic  NOTA DE SERVIÇO (do servidor da IALD; prevalece sobre o texto acima quando houve
+  [OK]    as mensagens do Claude: só a pergunta da pessoa (o system do cliente não passa)  [{'role': 'user', 'content': [{'type': 'text', 'text': 'qual o valor de beta?'}]}]
+  [OK]    pedido ao Claude: modelo, max_tokens 16000, metadata HMAC 'iald-anthropic-v1:', esforço high, sem campos da OpenAI  ['cache_control', 'max_tokens', 'messages', 'metadata', 'model', 'output_config', 'system', 'thinking']
+  [OK]    nenhuma chamada ao llama; a moderação foi à OpenAI com a chave da OpenAI (nunca a do Claude)  
+  [OK]    razão do CLAUDE registra a chamada (modelo claude-sonnet-5); o da OpenAI não tem claude  {'usd': 0.03045, 'entrada': 12020, 'cache': 0, 'saida': 40, 'chamadas': 1, 'modelos': {'claude-sonnet-5': 1}}
+  [OK]    medição TGLC com origem 'claude'  [('luiz', 'claude')]
+  [OK]    reservas do claude em banco PRÓPRIO  
+  [OK]    /api/active-model: claude:claude-sonnet-5, 'IALD · Claude Sonnet 5', sem consultar o llama  {'consentimento_dado': True, 'id': 'claude:claude-sonnet-5', 'label': 'servida pela API da Anthropic', 'motor': 'claude', 'n_ctx': 600000, 'online': True, 'short': 'IALD · Claude Sonnet 5', 'vision': True}
+  [OK]    /api/contexto: a janela do claude (600000)  600000
+[IALD-AUTH] 2026-09-23 08:34:01 | DENUNCIA_RECEBIDA | user=luiz | ip=127.0.0.1 | id=den_20260923083401_d106fd motivo=incorreto
+  [OK]    /api/denuncia registra motor claude e modelo claude-sonnet-5  [{'id': 'den_20260923083401_d106fd', 'usuario': 'luiz', 'motivo': 'incorreto', 'detalhe': '', 'resposta': 'β = 2', 'pergunta': 'β?', 'superficie': 'web', 'motor
+
+5. O CLAUDE NUNCA CAI NO LLAMA
+  [OK]    GET /v1/models no claude: 403, nada ao llama  
+  [OK]    POST /v1/completions no claude: 403, nada ao llama  
+[motores] luiz: O pacote anthropic não está instalado no servidor da IALD; o motor Claude fica parado.
+  [FALHA] SDK ausente: aviso motor_indisponivel claro, nada ao Claude nem ao llama; opção indisponível  [{'tipo': 'motor_indisponivel', 'texto': 'O pacote anthropic não está instalado no servidor da IALD; o motor Claude fica
+  [OK]    _chat_claude devolvendo None: recusa visível, NUNCA o llama  
+[claude] HTTP 402 billing_error: Your credit balance is too low
+[motores] luiz: HTTP 402 claude_sem_credito: Your credit balance is too low
+[saldo] a Anthropic recusou por falta de crédito (claude_sem_credito); bandeira: esgotado
+  [OK]    402 da Anthropic: 'O crédito da Anthropic acabou. Avise o operador.'; nada ao llama  O crédito da Anthropic acabou. Avise o operador.
+  [OK]    …e a bandeira de crédito da OpenAI NÃO é tocada  []
+  [OK]    …a recusa antes de gerar não é cobrada: reserva liberada, razão do claude sem chamada nova  pendentes=0 1->1
+[motores] luiz: A memória canônica ou o kernel integral não puderam ser validados; o envio externo está bloqueado.
+  [OK]    memória canônica indisponível: recusa visível, nada ao Claude nem ao llama  
+
+5b. REVISÃO: ATLAS INTEGRAL, FERRAMENTAS, RESERVA NAS RECUSAS, IMAGEM
+[claude] luiz: IALD_MEMORIA_MODO=atlas_integral; nada enviado à Anthropic
+  [OK]    atlas_integral: claude recusa (motor_indisponivel), NADA à Anthropic nem ao llama  [{'tipo': 'motor_indisponivel', 'texto': 'O motor Claude não atende com a configuração atual de memória do servidor (IALD_MEMORIA_MODO=atlas_integral leva o Atl
+  [FALHA] …/api/motor: o Claude indisponível (a opção também)  
+  [OK]    …_motor_externo_indisponivel(claude) diz o motivo em atlas_integral  O motor Claude não atende com a configuração atual de memória do servidor (IALD_MEMORIA_MODO=atlas_integral leva o Atlas inteiro). Nada foi enviado.
+[claude] luiz: o prefixo leva o Atlas integral; nada enviado à Anthropic
+  [OK]    …prefixo com <ATLAS_CANONICO (qualquer modo): recusa antes de montar o envio, nada à Anthropic  [{'tipo': 'motor_indisponivel', 'texto': 'O motor Claude não atende com a configuração atual de memória do servidor (IALD_MEMORIA_MODO=atlas_integral leva o Atl
+  [OK]    config do claude: acervo e memória da OpenAI NÃO passam (só a lista fechada), com aviso  ['search_web']
+[claude] luiz: ferramenta fora da lista fechada do claude recusada: 'consultar_acervo'
+[claude] luiz: ferramenta fora da lista fechada do claude recusada: 'consultar_memoria'
+[claude] luiz: ferramenta fora da lista fechada do claude recusada: 'lembrar'
+[claude] luiz: ferramenta fora da lista fechada do claude recusada: 'prova_viva'
+[claude] luiz: ferramenta fora da lista fechada do claude recusada: 'generate_file'
+  [OK]    executor do claude: acervo, memória, lembrar, prova viva e arquivo RECUSADOS sem chegar ao execute_public_tool  ['get_current_datetime']
+  [OK]    …a lista fechada tem as canônicas (kernel, Atlas, fontes, search_tgl/fetch_tgl) e nenhuma do acervo/memória  ['fetch_tgl', 'fetch_url', 'get_current_datetime', 'iald_atlas_read', 'iald_atlas_search', 'iald_kernel_list', 'iald_kernel_read', 'iald_kernel_search', 'iald_kernel_verification', 'iald_public_read', 'search_tgl', 'search_web']
+[claude] HTTP 529 overloaded_error: overloaded_error
+[motores] luiz: HTTP 529 overloaded: overloaded_error
+  [OK]    529 overloaded_error antes do stream: reserva LIBERADA (US$ 0)  settled 0.0
+[claude] HTTP 504 timeout_error: timeout_error
+[motores] luiz: HTTP 504 timeout_error: timeout_error
+  [OK]    504 timeout_error antes do stream: reserva MANTIDA e liquidada pela estimativa (> 0)  estimated_partial 0.04005
+  [OK]    …529 mid/antes: a mensagem é a do Claude sobrecarregado; o 529 da OpenAI fica no texto genérico  
+  [OK]    imagem no Claude: responde (sem 'motor_indisponivel') e a imagem vai como bloco image/png  Vi a imagem.
+  [OK]    …input_estimates em claude-*: teto de 4784 tokens por imagem (sem MemoryUnavailable)  (5347, 5354)
+
+6. O ATLAS PELAS FERRAMENTAS DO CLAUDE SEM §V, §VI E §X
+  [OK]    unidade: sem memória, UNAVAILABLE (fail-closed)  
+  [OK]    unidade: read com suppress=PRIVATE_SECTIONS; argumento 'suppress' do modelo recusado  
+[IALD-AUTH] 2026-09-23 08:34:02 | AGENT_TOOL | user=luiz | ip=agent | loop=1 tool=iald_atlas_search args={"query": "beta"}
+  [OK]    rota (agente de verdade): o Claude pediu o Atlas e a busca foi SEM §V/§VI/§X  [('search', {'query': 'beta', 'suppress': ('V', 'VI', 'X')})] Achei no Atlas.
+  [OK]    …ferramentas pagas do claude incluem o Atlas e o kernel; consulta exigida → tool_choice any  ['search_web', 'fetch_url', 'get_current_datetime', 'iald_kernel_verification', 'iald_kernel_search', 'iald_kernel_read', 'iald_kernel_list', 'iald_atlas_search', 'iald_atlas_read', 'iald_public_read', 'search_tgl', 'fetch_tgl']
+  [OK]    …2ª volta: o pensamento assinado volta intacto e o prefixo em cache é o mesmo  
+  [OK]    …nada ao llama  
+
+7. RESERVAS SEPARADAS E O PAINEL
+  [OK]    3 cobranças acima da reserva no claude: o claude pausa (aviso limite / conferência), nada enviado  [{'tipo': 'limite', 'texto': 'O serviço externo está pausado para conferência de cobrança até a renovação diária (meia-noite UTC, 21h em Brasília).', 'bloqueado
+  [OK]    …e a OpenAI segue respondendo (reservas separadas)  resposta da OpenAI
+  [OK]    /admin/api/motor: bloco claude (chave definida, modelo, contas, tetos, gasto, acima da reserva)  {'avisos': [], 'cache_ttl': '5m', 'chave_definida': True, 'cobrancas_acima_da_reserva': [{'actual': 1.0, 'at': '2026-09-23T11:34:02+00:00', 'cap': 0.001, 'day_utc': '2026-09-23', 'scope': 'conta', 'us
+  [OK]    …a chave do Claude (e a da OpenAI) NUNCA sai no painel  
+  [OK]    fontes públicas conferidas por hash; escrita fora do staging bloqueada  []
+  [OK]    nenhuma tentativa de rede  []
+
+RESULTADO: 113 OK, 2 falhas

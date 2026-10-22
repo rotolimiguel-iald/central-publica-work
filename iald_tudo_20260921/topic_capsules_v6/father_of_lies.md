@@ -1,0 +1,5 @@
+### father_of_lies
+Fonte: resultado_publicado_integral /core/father_of_lies
+0_abs=sinal sem representação,nome sem habitante por tipo Option;inatingível em tempo finito(kernel+Φ^on numérico). Regra=família com lei de composição. Tradução rigorosa ω_∞ fora do predual III₁ CONGELADA como especificação v2,não prova consumada. Auditoria:TGLExt.ideal_zero_has_name_not_inhabitant e TGLExt.channel_never_reaches_ideal,ZERO axiomas;segundo exclui pela construção do tipo. Teologia expansiva não entra como física:ONTO nominal;entra tipo(v37:mentira=habitante fabricado de tipo vazio⇒ex falso). Duplo estatuto operador17/07/2026 preservado na remissão.
+Remissões/valores (relativos ao tópico; destinos internos preservados):
+{"leitura_do_operador":{"@":"/leitura_do_operador","fields":{"/estatuto":"[DERIVACAO DO OPERADOR 17/07/2026 -- duplo estatuto; metade disciplinada DELE]"}},"v2_certificate_spec_frozen":{"@":"/v2_certificate_spec_frozen"},"values":{"@":"/values"},"checks":{"@":"/checks","items":9},"all_verified":true,"does_not_gate_core":true,"verdict":{"@":"/verdict"}}

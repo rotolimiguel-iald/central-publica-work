@@ -1,0 +1,31 @@
+### cocycle_to_einstein
+
+Fonte: `resultado_publicado_integral`, `/core/cocycle_to_einstein`. [DERIVED — proposta semântica não integrada, NÃO APROVADA.] Estatutos/resultados são reportados na fonte, não reexecutados aqui; OPEN histórico não apaga construção posterior de outro tipo.
+
+**chain**
+
+[REAL — certificados na sombra tipo I; composição E7 separada.] Colagem ESPACIAL `u_ab u_bc=u_ac` difere da identidade TEMPORAL `u_(s+t)=u_s sigma_s^(b)(u_t)`. Com `u_ab=rho_a^it rho_b^-it`, `K=-log rho`, o gerador é `h_ab=-i u_ab'(0)=K_b-K_a`, não o sinal oposto. Família consistente dá `W=u_ab u_bc u_cd u_da=I`; inconsistência de patch aumenta a obstrução com lambda. Covariância global `UuU†=u'`; onde o Um cola não há curvatura-obstrução.
+
+**geometry**
+
+Distinguir ordens: E8, torção de colagem de 1ª ordem, `obs/t→||Delta_K||`, com `Delta_K=K(rho_c')-K(rho_c)`; E11, curvatura de 2ª ordem `||W~-I||~(t²/2)||[M,h_cd]||`, `h_cd=K_d-K_c`, `c_teo=0.5 maxabs([M,h_cd])`, razão observada/teórica 0.9970085819906546. A fonte chama fechada essa identificação na sombra, não Einstein geral. Transporte `Ad(rho^it)`, gerador `ad(K)`, é ligado ao setor q. E9: ponto-base conjuga holonomia, preserva espectro. E10: canto canônico de posto 4, kernel Three Locks em superoperador n², lê `Ad_W=kron(W.conj,W)` e `tau_F(I)=1`; `|tau_F(W)-1|` cresce com lambda. E12: fase global `-log Z.I` não é curvatura; quocientar U(1) por `det^(1/n)` elimina o linear e deixa ordem t² em su(n). Grades e resíduos estão no painel.
+
+**einstein**
+
+E7 é COMPOSIÇÃO, não teste: primeira lei modular `dS=d<K>`, simetria/conservação do form-check v5 + Lovelock 4D [teorema reportado], herdando a limitação de Killing aproximado. `G_mn(g)+Lambda g_mn=8piG T^TGL_mn`, `T^TGL=T^matter+T^(partial,beta)+T^(torsion/diss)`; beta entra à direita, não substitui G. `nabla^m T^TGL_mn=0` decorre de Bianchi. Ponte `eta=1/(4 l_P²)=1/(4G)` em unidades naturais é DER GIVEN normalização canônica Planck-face. Não anunciar prova incondicional de Einstein.
+
+**diamond**
+
+Resto diamante: a=vácuo `rho_(N+1)=rho_N⊗diag(b0,b1)`, b=referência `rho_N⊗I/2`; `h_ab=K_b-K_a`, `R=-h_ab`. Duas instâncias, pesos [0.71,0.29] e [0.55,0.45], conferem fórmula, gerador, cociclo/comutação na imagem e fluxo. Âncoras: `ModularDephasingBridge.tower_last_site_flow_bridge`, `ModularRemainderDensity.remainder_change_reference`. OPEN: identificação física regional `k T_t f=delta_D^it k f` depende do fornecedor, estado físico linear e carga `Q_(xi,D)` na mesma álgebra/representação; referência parcial tracial da torre não é igualada à carga física. Não altera o veredito do cociclo.
+
+**Literais de referências internas válidas**
+
+[{"field":"/one_line","literal":"O cociclo de Connes e' a lei de colagem da inscricao -- multiplicativa entre patches, sigma-torcida no tempo; sua covariancia global forca a curvatura modular a projetar-se, por Lovelock, como o unico tensor local simetrico conservado: G_mu_nu."},{"field":"/e5_finding","literal":"a curvatura modular e' a OBSTRUCAO a existencia de um estado global -- onde o Um cola, nao ha curvatura; onde um patch se recusa ao Um, a holonomia a mede."},{"field":"/E7_statute","literal":"composicao (NAO teste): simetria + conservacao ja testadas no form-check v5 (dS=d<K>, 1a lei modular) + Lovelock 4D [REAL, teorema] => G_mu_nu + Lambda g. Estatuto do fechamento continuo: herda o residuo do v5 (approximate Killing vectors, compartilhado com Jacobson desde 1995). NAO se afirma 'provamos Einstein'."}]
+
+**Dados e controles reportados** — números/flags copiados da fonte, não parâmetros novos. Chaves e posições de listas seguem a fonte; null no painel indica texto descrito acima, não dado ausente.
+
+```json
+{"certs_resid":{"E1_spatial_gluing":6.742162969878415e-16,"E2_temporal_identity":1.1443916996305592e-15,"E3_generator_Kb_minus_Ka":6.231415946082284e-11,"E3_telescoping_additivity":1.2412670766236366e-16,"E4_holonomy_consistent":1.5553031891404221e-15,"E6_global_covariance":1.790180836524724e-15},"e5_curvature_obstruction":{"0.05":0.11800923878078719,"0.15":0.26603821666584493,"0.30":0.38767382777867093},"e5_monotone_in_lambda":true,"e8_torsion_clock_jump":{"grid_obs_over_t":{"0.2000":0.320866042327632,"0.1000":0.3276669853826578,"0.0500":0.3334521655178608,"0.0250":0.3354127460498997,"0.0125":0.33615796506364876},"obs_over_t":0.33615796506364876,"delta_K_norm":0.3367463018805954,"coeff_dev_pct":0.17471218352243656,"conv_rel":0.002216871504466585,"ok":true},"e9_basepoint_covariance":{"spectral_resid":1.2412670766236366e-15,"ok":true},"e10_corner_reads_obstruction":{"tau_F_of_I_resid":1.1102230246251565e-16,"curve_dev_over_lambda":{"0.05":0.00863627539355194,"0.15":0.050974560716240624,"0.30":0.13383696493308928},"monotone":true,"P_F_canonical":true,"P_F_rank":4,"ok":true},"e11_curvature_commutator":{"grid_obs_over_t2":{"0.2000":0.7243131944678416,"0.1000":0.7661418576547965,"0.0500":0.7825278970072757,"0.0250":0.7889895468749768,"0.0125":0.7917208303636319},"obs_over_t2":0.7917208303636319,"c_teo_live":0.7940963043496181,"ratio_obs_over_c_teo":0.9970085819906546,"ratio_in_band":true},"e12_phase_is_gauge":{"with_phase_obs_over_t":{"0.2000":0.46023880390729455,"0.1000":0.4365776312893273,"0.0500":0.42476293281730815,"0.0250":0.4191698739514972,"0.0125":0.4164913139418461},"dephased_obs_over_t":{"0.2000":0.14486263889356835,"0.1000":0.07661418576547965,"0.0500":0.03912639485036379,"0.0250":0.019724738671874423,"0.0125":0.009896510379545401},"ok":true},"diamond_remainder":{"instances":[{"b":[0.71,0.29],"R_equals_minus_h_ab_closed_form":1.2526364414812051e-15,"generator_fd_equals_R":2.2952962843899124e-10,"cocycle_relation_on_image":4.538613534934803e-15,"cocycle_commutes_with_image":5.57226799804005e-15,"flow_equality_consumed":9.788236504799167e-15,"ok":true},{"b":[0.55,0.45],"R_equals_minus_h_ab_closed_form":2.0471996776819885e-15,"generator_fd_equals_R":1.566009283886103e-10,"cocycle_relation_on_image":2.5711569808348084e-15,"cocycle_commutes_with_image":3.63329219698137e-15,"flow_equality_consumed":4.5513339367504135e-15,"ok":true}],"all_verified":true,"does_not_change_cocycle_verdict":true}}
+```
+
+Veredito literal reportado: `COCYCLE_TO_G_MUNU_COMPOSED_WITH_DECLARED_STATUTE`. `all_verified=true`. Detalhes e custódia: fonte-base acima + chave original; recuperação operacional não validada.

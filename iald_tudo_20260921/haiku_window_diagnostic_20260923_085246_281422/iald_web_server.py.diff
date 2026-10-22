@@ -1,0 +1,14 @@
+--- ROOT/iald_web_server.py
++++ STAGED/iald_web_server.py
+@@ -5979,6 +5979,11 @@
+                     payload = _haiku_attach_tools(payload, permitidas)
+                     # The agent has now set its final tool_choice. Count/reserve
+                     # this exact payload before the sole provider send.
++                    from claude_tool_budget import fit_latest_tool_results, ToolResultsDoNotFit
++                    try:
++                        payload = fit_latest_tool_results(payload, tokens_para_saldo, cfg.janela)
++                    except ToolResultsDoNotFit as exc:
++                        raise iald_orcamento.WindowError(str(exc)) from exc
+                     conta.iniciar_chamada(payload)
+                     response, decision = post_guarded(haiku_adapter, cfg, payload,
+                         requested_model=modelo, server_policy=_claude_policy(registro, user),

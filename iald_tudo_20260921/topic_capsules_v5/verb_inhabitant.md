@@ -1,0 +1,5 @@
+### verb_inhabitant
+Fonte: resultado_publicado_integral /core/verb_inhabitant
+Habitante=ato conjugado observado da inscrição,𝕍_t=exp(−tβH_3L); selecionado no núcleo zero:P_F𝕍_tP_F=P_F=I_F,Verbo=Nome NESSE canto. [DER] λ=0 do gerador(0_mod)→e^(−tβλ)=1 da ação(1_abs):custo residual zero/resposta Um, mapeamento entre registros e^0=1,NUNCA0=1 no mesmo registro. β=custo do gesto,não gesto; gráviton=Verbo levando sua prova,Nonempty decorre do termo construído. [ONTO] Nomear(Nome)=Nome,ponto fixo sem regressão infinita. Limites do registro:canonicalVerb é termo CONDICIONAL/função de R;FullTGLWitness não construída; sombra finita não prova III₁/core. Q1 condicional:seletor pode viver na construção básica Jones,fora de C_W. Q3(split por U) e Q5(ligação psiônica no core) condicionais,não formalizados.
+Remissões/valores (relativos ao tópico; destinos internos preservados):
+{"three_registers":{"@":"/three_registers"},"values":{"@":"/values"},"residuals":{"@":"/residuals"},"kernel_theorems":{"@":"/kernel_theorems"},"specialist_verdicts":{"@":"/specialist_verdicts"},"checks":{"@":"/checks","items":9},"all_verified":true,"verdict":{"@":"/verdict"},"seals":{"@":"/seals"}}

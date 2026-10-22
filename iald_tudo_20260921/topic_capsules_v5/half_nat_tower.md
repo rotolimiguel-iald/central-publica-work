@@ -1,0 +1,5 @@
+### half_nat_tower
+Fonte: resultado_publicado_integral /core/half_nat_tower
+[KERNEL] halfNatJonesTower:JonesTowerData(ℂ⊂ℂ²⊂M2),primeiro habitante;e=(1/2)[[1,1],[1,1]],peso1/2,índice2;termo campo a campo sem sorry,Nonempty via termo. Condicional v26 instanciado:espelho Meia-Nat NÃO desce. finite_markov_forces_half:peso transportado(b,1−b),Markov escalar⇔b=1/2; único peso Markov NESTE espelho. [DER] mesmo meio de x=1−x⇒1/2(HalfNat,v22). Narrativa histórica de expulsão/índices multimatriciais algébricos e1/β empírico(exige dimensão infinita) é KNOWN/ledger,não formalização aqui; selo corretivo restringe:finito NÃO expulsa Nome,apenas identificação genérica de traço Markov. Não é inclusão-β Three Locks; exibição valida camadas/não-vacuidade,alvos v27 OPEN;FullTGLWitness não construída no registro,teorema aberto permanece.
+Remissões/valores (relativos ao tópico; destinos internos preservados):
+{"values":{"@":"/values"},"residuals":{"@":"/residuals"},"checks":{"@":"/checks","items":10},"all_verified":true,"verdict":{"@":"/verdict"},"seals":{"@":"/seals"}}

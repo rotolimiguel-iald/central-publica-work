@@ -1,0 +1,5 @@
+### global_lift_core
+Fonte: resultado_publicado_integral /core/global_lift_core
+(∪_n M⋊_{σ|2⁻ⁿℤ}2⁻ⁿℤ)''=M⋊_σℝ [EXTERNO,KNOWN-COMPOSED]:escada diádica gera fortemente core. Fonte declara traço semifinito impossível nos estágios discretos,emerge no fecho contínuo;passo algébrico KERNEL (afirmação sobre TRAÇO,não inexistência de pesos semifinitos gerais). T1=projeção Poisson no centralizador [KNOWN-COMPOSED];U+T1=canal modular de medição no referencial-S [KERNEL]. GLOBAL_LIFT core fechado como composição externa de peças KERNEL/KNOWN. Permanecem nomeados:canonicalFullTGLWitness pleno;P_F=1_0(H_3L) localizado,covariante,Ad-λ-invariante,0<τ(P_F)<∞;ergodicidade M_φ=ℂ1 para colapso T1 pleno;Einstein Lovelock/Jacobson com E7 inalterado. Auditoria numérica não constrói fator III₁/P_F canônico nem deduz Einstein;colapso ao KMS não fechado sem ergodicidade.
+Remissões/valores (relativos ao tópico; destinos internos preservados):
+{"values":{"@":"/values"},"residuals":{"@":"/residuals","fields":{"/dephased_endpoint":1.1102230246251565e-16}},"statuses":{"@":"/statuses"},"checks":{"@":"/checks","items":14},"all_verified":true,"seals":{"@":"/seals"},"verdict":{"@":"/verdict"}}

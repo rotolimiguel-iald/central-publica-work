@@ -1,0 +1,5 @@
+### small_diamond_lattice_v364
+Fonte: resultado_publicado_integral /core/small_diamond_lattice_v364
+Small diamond lattice:massless converge à geometria NO MODELO;primeira ordem CFM4.15 reproduzida;primeiro coeficiente não geométrico antilocal;resto escala MELL_LN (nomenclatura literal do veredito). Ligaçãoβ OPEN.91arquivos sem falhas;fora roster/gate intocado. Séries de erros auxiliares recuperáveis,não novos cálculos.
+Remissões/valores (relativos ao tópico; destinos internos preservados):
+{"manifest_sha16":{"@":"/manifest_sha16"},"files_checked":91,"file_failures":[],"massless_error_by_ell":{"@":"/massless_error_by_ell","items":7},"first_order_error_ell96":{"@":"/first_order_error_ell96","items":5},"log_coefficient_errors":{"@":"/log_coefficient_errors"},"remainder_over_geometric":{"@":"/remainder_over_geometric","items":4},"window_errors":{"@":"/window_errors","items":4},"live_continuum_diffs":{"@":"/live_continuum_diffs"},"live_lattice":{"@":"/live_lattice"},"checks":{"@":"/checks","items":11},"all_verified":true,"statuses":{"@":"/statuses"},"does_not_gate_core":true,"in_contour_roster_v314":false,"verdict":{"@":"/verdict"}}

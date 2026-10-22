@@ -1,0 +1,137 @@
+{
+  "status": "MUDANCAS_NECESSARIAS",
+  "created_utc": "2026-09-22T17:27:19.588143+00:00",
+  "scope": "Revisao de claude_guarded_transport.py e claude_memory_package.py/testes,dependencias diretas e adaptador real lidos para fundamentar contrato; sem servidor ou credenciais.",
+  "pins": {
+    "C:\\IALD\\Central de Patentes\\work\\iald_tudo_20260921\\claude_guarded_transport.py": "5f752fc63bfe2ba1562a2f635db825121e9687258f357b55d9f8ce3dc7c4f611",
+    "C:\\IALD\\Central de Patentes\\work\\iald_tudo_20260921\\claude_memory_package.py": "a66f0ddf580b2ed10b3c667c4153cb8f9f287323e3de2e4633a87da4e5662b9a",
+    "C:\\IALD\\Central de Patentes\\work\\iald_tudo_20260921\\test_claude_guarded_transport.py": "5a517281c7373abfac477095d8706d069b3a69b82aa45978fd8d0ec2d4131cc6",
+    "C:\\IALD\\Central de Patentes\\work\\iald_tudo_20260921\\test_claude_memory_package.py": "3a2684d2d22f3b979f418bd4d5d7bfb6c89ad080b71045d27eadf91ad6fd8c47",
+    "C:\\IALD\\Central de Patentes\\work\\iald_tudo_20260921\\claude_account_policy.py": "570d4ea41c2b3cf15a1af1d00ce1cb3604424f0f77cf3e5e816fc6deb31add12",
+    "C:\\IALD\\Central de Patentes\\work\\iald_tudo_20260921\\claude_profile_pipeline.py": "67b81340bdefdf654cc9a13699c138254c8e3788f51f90b78b11a71c779d58c6",
+    "C:\\IALD\\Central de Patentes\\work\\iald_tudo_20260921\\claude_request_guard.py": "17fbc48d06b6530f8add9e24e05041b7dc37c16d303d0a2b20910ee455f46d56",
+    "C:\\IALD\\Central de Patentes\\work\\iald_tudo_20260921\\claude_profiles.py": "a2b6898277d04e16fa4d17ed3048a852eea71516fff9a71b22c52d0d36cfaf4c",
+    "C:\\IALD\\Central de Patentes\\work\\iald_tudo_20260921\\claude_native_counter.py": "12fb67d17bae6b1ca4367ec73da453c4d7e132f2e01c741079f33aab44e233fe",
+    "C:\\IALD\\Central de Patentes\\work\\iald_tudo_20260921\\test_claude_guard_real_converter.py": "5be24e2f3a9c5904e876f368edb6d45069165989b8d8eb35cc4b69989c1e2195",
+    "C:\\IALD\\projetos_pyhton\\IALD\\iald_motor_claude.py": "fb70f041c55ceb7affae4f045b8ec9f5c6c3a701582840e74ba306b383dbf37f"
+  },
+  "provided_tests": {
+    "run": 13,
+    "failures": 0,
+    "errors": 0,
+    "passed": true
+  },
+  "findings": [
+    {
+      "id": "F1",
+      "priority": "P1",
+      "file": "C:\\IALD\\Central de Patentes\\work\\iald_tudo_20260921\\claude_guarded_transport.py",
+      "line": 27,
+      "title": "Cliente herdado ainda permite retries do SDK",
+      "evidence": {
+        "adapter_max_retries": 2,
+        "client_constructed_max_retries": 2,
+        "stream_calls_at_python_boundary": 1,
+        "actual_http_calls": 0,
+        "interpretation": "A chamada Python unica nao desabilita retries internos do SDK."
+      },
+      "impact": "Contradiz contrato no-retry do transporte; erros retryable podem reenviar geracao automaticamente apesar de messages.stream ser chamado uma vez no wrapper.",
+      "fix": "Criar cliente derivado com max_retries=0 explicitamente, preservando timeout, inclusive cliente injetado; nao alterar cliente compartilhado. Testar opcoes reais,nao apenas call_count do mock.",
+      "dependency": {
+        "file": "C:\\IALD\\projetos_pyhton\\IALD\\iald_motor_claude.py",
+        "lines": [
+          110,
+          317,
+          323
+        ]
+      }
+    },
+    {
+      "id": "F2",
+      "priority": "P1",
+      "file": "C:\\IALD\\Central de Patentes\\work\\iald_tudo_20260921\\claude_guarded_transport.py",
+      "line": 65,
+      "title": "Falha local apos abertura do stream e classificada sem cobranca",
+      "evidence": {
+        "entered_stream": 1,
+        "closed_stream": 1,
+        "response_status": 500,
+        "error_code": "claude_erro_local",
+        "adapter_says_certainly_no_charge": true,
+        "decision": null
+      },
+      "impact": "_resposta_de_excecao converte ValueError/RuntimeError local em claude_erro_local; recusa_sem_cobranca aceita esse codigo, embora geracao ja tenha sido iniciada. Integracao pode liberar reserva de pedido possivelmente cobrado.",
+      "fix": "Distinguir erro apos tentativa de geracao com codigo nao liberavel/estado de cobranca ambiguo e conservar decisao de contexto; testar real recusa_sem_cobranca apos manager.__enter__.",
+      "dependency": {
+        "file": "C:\\IALD\\projetos_pyhton\\IALD\\iald_motor_claude.py",
+        "lines": [
+          181,
+          188,
+          828
+        ]
+      }
+    },
+    {
+      "id": "F3",
+      "priority": "P2",
+      "file": "C:\\IALD\\Central de Patentes\\work\\iald_tudo_20260921\\claude_memory_package.py",
+      "line": 39,
+      "title": "Reserva planejada pode ser validada com margem e saida menores",
+      "evidence": {
+        "loader_accepted": true,
+        "declared_output": 1,
+        "declared_margin": 0,
+        "reported_dynamic_tokens": 10999,
+        "dynamic_at_output4096_margin1024": 5880,
+        "permanent_tokens": 188000
+      },
+      "impact": "Manifesto aritmeticamente consistente com margem0/saida1 e aceito como >=10k dinamico,mas transporte usa margem1024 e pode pedir4096,restando5880. Hash do prefixo e igualdade de budget nao garantem perfil de reserva exigido.",
+      "fix": "Validar perfil reservado explicitamente (saida4096,margem1024,ou politica de minimo equivalente) antes de testar >=10000; nao usar so os valores declarados no proprio manifesto."
+    },
+    {
+      "id": "F4",
+      "priority": "P2",
+      "file": "C:\\IALD\\Central de Patentes\\work\\iald_tudo_20260921\\claude_guarded_transport.py",
+      "line": 69,
+      "title": "Selecao divergente no payload vira erro interno em vez de recusa de autorizacao",
+      "evidence": {
+        "status": 500,
+        "code": "claude_erro_local",
+        "count_calls": 0,
+        "generation_calls": 0,
+        "bypass": false
+      },
+      "impact": "profile_call levanta PermissionError para payload model diferente; excecao cai no handler generico,produz HTTP500 claude_erro_local. Nao ha bypass nem envio,mas o cliente recebe falha de servidor em vez de403.",
+      "fix": "Tratar PermissionError de preflight como403 claude_model_forbidden e preferir validar divergencia antes de construir cliente."
+    }
+  ],
+  "real_adapter_sse_checks": [
+    {
+      "midstream_error": false,
+      "sse_error_visible": false,
+      "done_emitted": true,
+      "manager_closed_once": true,
+      "usage_line_present": true
+    },
+    {
+      "midstream_error": true,
+      "sse_error_visible": true,
+      "done_emitted": true,
+      "manager_closed_once": true,
+      "usage_line_present": false
+    }
+  ],
+  "positive_checks": [
+    "Politica conta/modelo recusa antes de count/send quando requested_model proibido.",
+    "Guard conta snapshot final,checa SHA do primeiro bloco e modelo,rejeita falha/overflow/mutacao antes de gerar;tool results passam pela mesma contagem.",
+    "Fluxo real em sucesso/erro parcial emite DONE e fecha gerente uma vez;close antes de consumo tambem testado.",
+    "Pacote usa caminho fixo,prefix SHA,comparacao do manifesto/prefixo ao fim e tipos inteiros de budget via context_budget."
+  ],
+  "integration_limits": [
+    "Autenticacao de sessao,consentimento e reserva financeira sao precondicoes EXPLICITAS do chamador; nao auditadas no servidor nem tratadas como bypass dos modulos.",
+    "tools_sha256 apenas validado como string e retornado; estes modulos nao comparam schema de ferramentas com esse hash. Integração deve definir/validar identidade se pretende exigir o pacote de ferramentas medido;contagem final continua protegendo janela.",
+    "Sem nova chamada API/rede ou teste de retries HTTP reais;F1 prova configuracao herdada2,nao custo incorrido nesta auditoria.",
+    "Streaming com tool_use/refusal e contabilizacao de uso parcial nao auditados exaustivamente;testes respectivos so mockavam _Fluxo.",
+    "Nenhuma fonte/codigo/producao modificado;somente script,fixtures sinteticas e parecer na subpasta de auditoria."
+  ]
+}

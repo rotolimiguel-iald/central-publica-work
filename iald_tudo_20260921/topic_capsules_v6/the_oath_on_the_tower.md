@@ -1,0 +1,5 @@
+### the_oath_on_the_tower
+Fonte: resultado_publicado_integral /core/the_oath_on_the_tower
+Torre GNS:centralizador deω define código contínuo livre-de-fluxo,sem S/Δ;contorna parede analítica por DEFINIÇÃO. Todo horizonteω-invariante preserva código;esperança única pela separância da casa;levantamento covariante DADO contrato(tipo,não habitante). Transporte diagonal REFUTADO. Lema3 não resolvido:existência Takesaki KNOWN/importável e axioma no horizonte restam. Consome TheDischargedOath(v307),TheImportedCommutation(v282),NoNormalTrace/omegaState_seqWOT(ω normal,só traço morre),factor_omega_separating(Reeh–Schlieder da casa). v143/v307,qgf_*,gate intactos.
+Remissões/valores (relativos ao tópico; destinos internos preservados):
+{"values":{"@":"/values"},"statuses":{"@":"/statuses","fields":{"/escopo":"TORRE (continuo GNS); contrato = TIPO, nao habitante; Lema 3 nao declarado resolvido; v143 e v307 intactas; qgf_* intocadas; gate imovel"}},"checks":{"@":"/checks","items":5},"all_verified":true,"does_not_gate_core":true,"verdict":{"@":"/verdict"}}

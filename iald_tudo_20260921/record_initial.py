@@ -1,0 +1,50 @@
+"""Persist verified prerequisites and the full completion checklist, without secrets."""
+from datetime import datetime
+import hashlib
+import importlib.util
+import json
+from pathlib import Path
+WORK=Path(__file__).resolve().parent
+APP=Path(r'C:\IALD\projetos_pyhton\IALD')
+spec=importlib.util.spec_from_file_location('targets',WORK.parent/'iald_context_math_20260915/record_prepared.py')
+helper=importlib.util.module_from_spec(spec);spec.loader.exec_module(helper)
+MARKER='IALD_CLAUDE_CENTRAL_BUILD18_INITIAL_AUDIT_20260921'
+
+def main():
+    initial_path=sorted(WORK.glob('initial_*.json'))[-1]
+    initial=json.loads(initial_path.read_bytes())
+    assert all(row['matches_order'] for row in initial['files'].values())
+    now=datetime.now().astimezone();stamp=now.strftime('%Y%m%d_%H%M%S_%f')
+    note='''[INPUT] Executar integralmente ORDEM_CODEX_20260921_TUDO_CLAUDE_CENTRAL_BUILD18.md e a ordem subordinada de exportação mobile; preservar a ordem T1→T5 e parar nos atos reservados ao operador. Não modificar os módulos de servidor/motores/JS/HTML reservados à sessão Claude. Não comprar crédito nem criar outra chave Android.
+
+[REAL — auditoria inicial] Os nove hashes de arquivos indicados nas ordens conferem integralmente com o disco. Servidor /health local e público HTTP 200; POST anônimo /api/iald-sync/puxar HTTP 503. Segredo/URL da sincronização e chave Anthropic ausentes, constatados somente como presença/ausência sem expor conteúdo. SDK anthropic ausente. Git mobile na branch codex/mobile-release com apenas www/iald.js e www/index.html modificados. Nenhum arquivo de código, configuração, chave ou serviço foi alterado por esta auditoria.
+
+[REAL — navegador] O operador entrou no Render e o serviço central-de-patentes (srv-d99dphecjfls7384ee10) mostra commit 54f580be689a1c47b47546369fab7510403b2696 publicado. Environment em edição, uma linha nova com nome CENTRAL_IALD_SYNC_SEGREDO preparada, ainda sem valor/salvamento. Não clicar em Show secret nem exportar valores. A pergunta de autorização específica para gerar/guardar o segredo e transmiti-lo ao Render está pendente; exigência da política da ferramenta de navegador para novo acesso persistente entre serviços. Não houve recusa de auto-review neste estágio.
+
+[OPEN — checklist integral, nenhuma etapa concluída por inferência]
+- T1: autorização específica pendente → script gerar_segredo_sync sem --substituir → Render variável única → implantação → anônimo 503→401 → conferir ausência de conversa → reiniciar só filho web → verificar ciclos assinados por pelo menos dois minutos → recibo sync_central.json → operador verifica a aba da patente na Central. Nunca entrar na Central em nome dele.
+- T2: operador entra no roteador 10.95.94.160; exceção mínima files.pythonhosted.org; pip dry-run; parar se alterar versões instaladas; instalar somente se esse gate passar; registrar versões.
+- T3: conta API platform.claude.com, saldo/tier; criar somente uma chave IALD servidor no workspace padrão e usar formulário local protegido; nenhuma compra; saldo inferior a US$ 5 exige ação do operador; recibo claude_chave.json sem chave.
+- T4: contar tokens com ferramenta aprovada e núcleo sem seções privadas; fator Claude/o200k do operador arredondado para cima +5%; só linha correspondente do .env com backup; reinício do filho; disponibilidade na conta luiz; consentimento Anthropic separado; no máximo duas mensagens, fria ≤US$2 e quente ≤US$0,30 em cinco minutos; cache_read na segunda; se não houver, registrar defeito e não repetir testes; claude_teste.json com custo/tokens lidos do razão.
+- T5: remover backup de www por movimento seguro para _backups_*; instalar versões exatas Filesystem 8.1.3, Share 8.0.2, Printer 8.1.4; registrar MIT/MIT/MPL-2.0; PrivacyInfo FileTimestamp C617.1; workflow ios-dependencies regenerar lock; sync; conferir FileProvider/cache-path; iOS build18 e Android versionCode17; APK/AAB assinados com chave existente e certificado comparado; APK downloads/IALD-4.1-17.apk com tamanho/SHA; push somente app; Xcode Cloud; TestFlight interno e externo, O que testar e matriz de disponibilidade.
+- Testes físicos obrigatórios antes de declarar exportação resolvida: iPhone/iPad, Android14 e ≤10 se houver; TXT/MD Unicode, fórmulas, conversa longa, compartilhar/cancelar; PDF escuro/multipágina/impressão/cancelar; rótulos/troca/consentimentos por provedor. Sem medição em aparelho, manter pendente e não anunciar exportação resolvida.
+
+A meta continua integral e ativa. Esta é uma auditoria e preparação, não ativação do Claude nem publicação de novas builds. Recibo inicial em work/iald_tudo_20260921/initial_*.json; Render aberto para continuação.
+'''
+    body='# Estado inicial da execução — Claude, Central e builds 18/17\n\n'+note
+    helper.create(WORK/'STATUS_INICIAL.md',body.encode())
+    rows=[]
+    for path in helper.TARGETS:
+        before=path.read_bytes();assert MARKER.encode() not in before
+        backup=path.with_name(path.name+'.bak_'+stamp);helper.create(backup,before)
+        newline='\r\n' if b'\r\n' in before else '\n'
+        addition='\n\n## '+now.strftime('%d/%m/%Y %H:%M')+' — Codex: auditoria da ordem Claude/Central/builds\n\n<!-- '+MARKER+' -->\n\n'+note
+        after=before+addition.replace('\n',newline).encode()
+        tmp=path.with_name(path.name+'.tmp_'+stamp);helper.create(tmp,after)
+        assert path.read_bytes()==before
+        tmp.replace(path);assert path.read_bytes()==after and len(after)>len(before)
+        rows.append({'path':str(path),'backup':str(backup),'sha256':hashlib.sha256(after).hexdigest()})
+    helper.create(WORK/'initial_memory_record.json',json.dumps({'at':now.isoformat(),'status':'T1_AWAITING_SPECIFIC_APPROVAL',
+        'audit':str(initial_path),'memories':rows,'goal_complete':False},ensure_ascii=False,indent=2).encode())
+    print(json.dumps({'audit_recorded':True,'memories':len(rows),'goal_complete':False}))
+if __name__=='__main__':main()

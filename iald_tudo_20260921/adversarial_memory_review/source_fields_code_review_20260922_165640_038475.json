@@ -1,0 +1,66 @@
+{
+  "status": "APROVADO_CODIGO_NO_ESCOPO_JSON_ESTRUTURAL",
+  "created_utc": "2026-09-22T16:56:40.038475+00:00",
+  "author_independence": "Construtor principal e o pai; revisor nao escreveu codigo avaliado.",
+  "pins": {
+    "compact_source_fields.py": {
+      "path": "C:\\IALD\\Central de Patentes\\work\\iald_tudo_20260921\\compact_source_fields.py",
+      "sha256": "f09baec2c38dc2eb88e54d83009fffedc2be37fff8598a366a5139040b7854f8"
+    },
+    "inventory_compact_source_fields.py": {
+      "path": "C:\\IALD\\Central de Patentes\\work\\iald_tudo_20260921\\inventory_compact_source_fields.py",
+      "sha256": "7c19fa0d9a77b51db5b7168266ba96c4a5cae410463ebdcd0dec670b75248add"
+    },
+    "test_compact_source_fields.py": {
+      "path": "C:\\IALD\\Central de Patentes\\work\\iald_tudo_20260921\\test_compact_source_fields.py",
+      "sha256": "3e49d65ab14c6c628e9e9e4878cca6739bbc91e3067365e18125037bd883a34d"
+    }
+  },
+  "candidate": {
+    "path": "C:\\IALD\\Central de Patentes\\work\\iald_tudo_20260921\\haiku_reviewed_runtime_20260922_134847_707064.md",
+    "sha256": "9a9077f1dcb4a25acf73230efc68aa873e157db1e93af152352eb7ba64e0440d"
+  },
+  "tests": {
+    "provided_passed": 5,
+    "extra_valid_roundtrips": 11,
+    "extra_invalid_rejected": 13,
+    "duplicate_json_keys_checked_on_actual_candidate": true,
+    "duplicate_json_keys_found": false
+  },
+  "inventory": {
+    "changed_json_lines": 114,
+    "references_grouped": 426,
+    "original_o200k": 157320,
+    "packed_o200k_without_protocol_header": 154694,
+    "saving_o200k_before_header": 2626,
+    "structural_roundtrip_exact": true
+  },
+  "findings": [
+    {
+      "type": "APROVACAO_LIMITADA",
+      "detail": "No dominio JSON com chaves unicas, pack so agrupa >=2 valores exatamente iguais a {\"@\":\"/\"+k}; campos adicionais, fields/items/estatutos, nomes vazios, prefixo @ e escapes /~ ficam fora. Recursao em listas/dicts e preservacao de escalares; decoder rejeita formato invalido, duplicatas e colisao."
+    },
+    {
+      "type": "LIMITE_NAO_BYTE_EXACT",
+      "detail": "Roundtrip preserva estrutura/valores JSON, nao ordem de membros, espacos, serializacao nem bytes. Teste extra confirma mudanca de ordem. Nao chamar de reversao byte-exata sem guardar texto/ordem original."
+    },
+    {
+      "type": "PROTOCOLO_CONSUMIDOR",
+      "detail": "@SOURCE_FIELDS e sintaxe nova. A equivalencia operacional depende de descompactar antes do consumidor ou ensinar explicitamente a mesma semantica. Codigo nao prova entendimento pelo modelo, compatibilidade do fetch, nem integracao. Medida exclui cabecalho de protocolo."
+    },
+    {
+      "type": "DOMINIO_E_RESERVA",
+      "detail": "pack rejeita KEY preexistente em qualquer nivel; nao e idempotente sobre documento ja empacotado. Funciona em objetos JSON, nao tipos Python arbitrarios. A acao deve ocorrer uma vez ou apos unpack explicito."
+    },
+    {
+      "type": "FRONTEIRA_DE_PARSER",
+      "detail": "inventory usa json.loads padrao, que pode apagar chaves JSON duplicadas antes do teste de igualdade. Nao encontradas no candidato auditado; uso generico deve rejeitar duplicatas como fez este revisor. Linhas JSON invalidas ficam intactas, nao sao validadas pelo inventario."
+    }
+  ],
+  "required_changes_for_current_candidate": [],
+  "limits": [
+    "Aprovacao de codigo/reversibilidade estrutural para candidato pinado; nao semantica/modelo/prova/compilacao/API.",
+    "Nenhum artefato integrado nem fonte alterada; nao resolvidos pointers nem refeita contagem Anthropic.",
+    "Inventario original lido; reproducao feita em memoria pelo revisor com rede bloqueada, sem executar scripts de producao."
+  ]
+}

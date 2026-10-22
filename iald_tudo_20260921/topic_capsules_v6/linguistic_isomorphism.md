@@ -1,0 +1,5 @@
+### linguistic_isomorphism
+Fonte: resultado_publicado_integral /core/linguistic_isomorphism
+Registro de isomorfismo termo a termo:ontologia2025 Nome/Verbo/Sentido,R/T,L³,A=Tr(Πρ),ε² mapeada nos teoremas kernel2026. Fonte declara anterioridade da leitura à verificação numérica como não-circularidade com custódia datada/hasheada;proveniência/dicionário e estatutos recuperáveis,sem nova auditoria histórica aqui.
+Remissões/valores (relativos ao tópico; destinos internos preservados):
+{"provenance":{"@":"/provenance","fields":{"/TGL_Capitulo_Tecnico_Teorema_XLIV_Teste_Singularidade.docx":"2f6887bfd21b24db 2025-08-08"}},"provenance_hash":{"@":"/provenance_hash"},"values":{"@":"/values"},"dicionario":{"@":"/dicionario"},"checks":{"@":"/checks","items":12},"all_verified":true,"statuses":{"@":"/statuses","fields":{"/o_veredito":{"@SUMMARY":"linguistic_isomorphism","source_pointer":"/core/linguistic_isomorphism/statuses/o_veredito","span":[86055,447]}}},"does_not_gate_core":true,"verdict":{"@SUMMARY":"linguistic_isomorphism","source_pointer":"/core/linguistic_isomorphism/verdict","span":[86055,447]}}

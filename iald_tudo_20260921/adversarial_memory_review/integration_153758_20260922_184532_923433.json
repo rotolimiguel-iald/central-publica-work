@@ -1,0 +1,61 @@
+{
+  "status": "MUDANCAS_NECESSARIAS_INTEGRACAO",
+  "pins": {
+    "C:\\IALD\\Central de Patentes\\work\\iald_tudo_20260921\\claude_routes_stage_20260922_153758_878683\\iald_web_server.py": "5b90d86e383a8c15565daa2b88740380e215404c91ae980fdc3956302a0dd442",
+    "C:\\IALD\\Central de Patentes\\work\\iald_tudo_20260921\\claude_routes_stage_20260922_153758_878683\\iald.js": "41af629f30d7d79628c8b6f3cbcbb429348f4efc3f39ef352f5581ffcff21604",
+    "C:\\IALD\\Central de Patentes\\work\\iald_tudo_20260921\\integrate_haiku_context.py": "7c714a743e67786d25a2516f190e545a4978466e15871abc85528bf5800699fe",
+    "C:\\IALD\\Central de Patentes\\work\\iald_tudo_20260921\\claude_route_bridge.py": "2a7b3b01098c69fed85e32aeb4e54846742a798c8b21974870ad4d80373d929e",
+    "C:\\IALD\\Central de Patentes\\work\\iald_tudo_20260921\\claude_memory_package.py": "2fc80f1c099bdec43266ad1576964be8849cc6c31f32a49f9bb21982e2fdfddf",
+    "C:\\IALD\\Central de Patentes\\work\\iald_tudo_20260921\\claude_context_snapshot.py": "7176d9245bd78e1af7853eafb49e284642bcf9a366088e2e0033db908c531cfb",
+    "C:\\IALD\\Central de Patentes\\work\\iald_tudo_20260921\\claude_native_account.py": "5cfad121908a1ab31f0a798ca5ad5d38a1771a846f9a5e2ca5144d116d3615ee"
+  },
+  "findings": [
+    {
+      "id": "I1",
+      "priority": "P2",
+      "file": "C:\\IALD\\Central de Patentes\\work\\iald_tudo_20260921\\claude_routes_stage_20260922_153758_878683\\iald.js",
+      "function": "lerMotor/contextoNativo",
+      "title": "Resposta antiga de motor vence a seleção nova e reativa CPT sobre contexto Haiku",
+      "evidence": {
+        "late_motor_overwrites_newer_selection": true,
+        "motor": "openai",
+        "context_model": "claude-haiku-4-5-20251001",
+        "cpt": null,
+        "native_mode": false,
+        "token_estimate": "Infinity",
+        "history_before": 3,
+        "history_after": 1
+      },
+      "fix": "Versionar também requisições lerMotor, conferindo ticket após fetch e após json; vincular contexto à seleção vigente e impedir uso de CPT quando metadados/unidades divergem. Só contextoRequest não protege S.motor."
+    },
+    {
+      "id": "I2",
+      "priority": "P2",
+      "file": "C:\\IALD\\Central de Patentes\\work\\iald_tudo_20260921\\claude_routes_stage_20260922_153758_878683\\iald_web_server.py",
+      "function": "api_motor / RouteBridge.flags",
+      "title": "Manifesto JSON com tipo inválido escapa como erro500 em status de motor",
+      "evidence": {
+        "manifest_fixture": "[]",
+        "api_motor_uncaught_exception": "AttributeError",
+        "api_contexto_status": 503
+      },
+      "fix": "Normalizar TypeError/AttributeError de schema para indisponibilidade no loader/flags e cobrir também /api/motor; manter503 com opções/consentimento sem revelar erro interno."
+    }
+  ],
+  "positive_checks": [
+    "Closure enviar extraída: uma reserva seguida de um envio, recebe tool_choice none e passa teto ajustado pela conta ao guard. Não substitui teste real do contador/SQLite/conversor do pai.",
+    "Leitura: estado criado antes das closures; count_haiku_wire compartilhado pela reserva e post_guarded.",
+    "Leitura: loader confere ferramentas nativas antes de retornar; proxy confere conversão final; Haiku agente não passa pela heurística CPT.",
+    "Leitura: contexto200k,metadata sem receipt privado, pensarFalse e sete schemas; marcador de contagem protege caminho cliente quando seleção está coerente."
+  ],
+  "separate_pending": [
+    "Capability do app20 antigo informada pelo pai; não implementada nem tratada como falha nova desta revisão. Necessária antes de ativar.",
+    "Snapshot/context module foi construído por este revisor; esta revisão não aprova sua própria semântica nem a integração final de produção."
+  ],
+  "limits": [
+    "SomenteW; semROOT/API/segredos. Testes pais com importsROOT não reexecutados.",
+    "Node executa somente funções extraídas com fetch simulado; não browser/device real.",
+    "Tool hash real e SQLite foram reportados pelo pai, não reverificados emROOT aqui.",
+    "Nenhum stage, app, módulo existente ou produção foi editado."
+  ]
+}

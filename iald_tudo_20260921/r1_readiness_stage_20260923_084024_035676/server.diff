@@ -1,0 +1,39 @@
+--- ROOT/iald_web_server.py
++++ STAGED/iald_web_server.py
+@@ -6371,8 +6371,20 @@
+     opcoes.append({"id": "openai", "rotulo": iald_motores.rotulo_do_modelo(modelo_ext),
+                    "detalhe": "OpenAI · " + modelo_ext,
+                    "disponivel": not _motor_externo_indisponivel(modelo_ext)})
+-    opcoes.extend(row for row in CLAUDE_ROUTES.options(registro, usuario)
+-                  if row["id"] != "claude-haiku" or _haiku_client_ready())
++    for offered in CLAUDE_ROUTES.options(registro, usuario):
++        if offered["id"] == "claude-haiku" and not _haiku_client_ready():
++            continue
++        row = dict(offered)
++        try:
++            cfg = CLAUDE_ROUTES.configuration(dict(registro, modelo_claude=row["modelo"]), usuario)
++            motivo = _motor_externo_indisponivel(row["modelo"], cfg)
++        except (ValueError, PermissionError, OSError, KeyError):
++            motivo = "Não foi possível validar a disponibilidade deste modelo."
++        row["disponivel"] = not bool(motivo)
++        if motivo:
++            row["motivo"] = motivo
++            row["detalhe"] = row.get("detalhe", "") + " · " + motivo
++        opcoes.append(row)
+     return opcoes
+ 
+ 
+@@ -6398,9 +6410,12 @@
+             try:
+                 fields = CLAUDE_ROUTES.select(option, conta, username)
+                 # Validate the selected profile, including its configured price.
+-                CLAUDE_ROUTES.configuration(dict(conta, **fields), username)
++                cfg = CLAUDE_ROUTES.configuration(dict(conta, **fields), username)
+                 if fields.get("modelo_claude") == _HAIKU_PROFILE.model and not _haiku_client_ready():
+                     return jsonify({"error": "Atualize o aplicativo para usar o Haiku com memória integral."}), 426
++                motivo = _motor_externo_indisponivel(fields["modelo_claude"], cfg)
++                if motivo:
++                    return jsonify({"error": motivo}), 409
+             except (ValueError, PermissionError, OSError, KeyError):
+                 return jsonify({"error": "Esse modelo não está disponível para esta conta."}), 409
+         else:

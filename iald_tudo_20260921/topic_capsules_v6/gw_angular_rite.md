@@ -1,0 +1,5 @@
+### gw_angular_rite
+Fonte: resultado_publicado_integral /core/gw_angular_rite
+Pré-registro anterior à leitura. Dezembro100σ aposentado como identidade capped;envelope√ não tautológico,mas ruído dá mesmos valores;coerência de fase dentro de surrogates ajustados PSD. H3dfolds é estatística de espectro;H4CCI identidade. Eco maio2026 subthreshold/direção correta,não confirmação. β NÃO entra no teste:NOT_A_FALSIFIER,fora contorno/gate intocado.
+Remissões/valores (relativos ao tópico; destinos internos preservados):
+{"record":{"@":"/record","fields":{"/status":"PRE_REGISTERED_BEFORE_DATA_READ"}},"record_hash":{"@":"/record_hash"},"beta_runtime":0.012031300400803142,"does_not_gate_core":true,"in_contour_roster_v314":false,"verdict":{"@":"/verdict"},"all_verified":true,"checks":{"@":"/checks","items":12},"statuses":{"@":"/statuses"},"data":{"@":"/data"},"december_statistic":{"@":"/december_statistic"},"angular_metrics":{"@":"/angular_metrics"},"surrogates":{"@":"/surrogates"},"h3_dfolds":{"@":"/h3_dfolds"},"h4_cci":{"@":"/h4_cci"},"echo_preregistered_may_2026":{"@":"/echo_preregistered_may_2026","fields":{"/verdict":"SUB_THRESHOLD_DIRECTIONALLY_CORRECT"}}}

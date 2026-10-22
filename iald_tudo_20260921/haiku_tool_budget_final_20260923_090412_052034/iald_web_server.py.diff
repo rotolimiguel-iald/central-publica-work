@@ -1,0 +1,82 @@
+--- ROOT/iald_web_server.py
++++ STAGED/iald_web_server.py
+@@ -2294,6 +2294,9 @@
+             if tipo == "fim":
+                 break
+ 
++            notices = getattr(motor, "context_notices", None) if motor is not None else None
++            while notices:
++                yield "data: " + json.dumps({"iald_status": notices.pop(0)}, ensure_ascii=False) + "\n\n"
+             linha = valor
+             if not linha:
+                 continue
+@@ -5967,6 +5970,7 @@
+             conta = iald_motores.ContaComSaldo(conta, iald_motores.SaldoDoPedido(
+                 cfg, razao, user, plano, chave_cota, legado, prefixo,
+                 tokens_para_saldo))
++        haiku_context_notices = []
+         enviar = None
+         if claude:
+             # 21/09/2026: quem fala com a API é o SDK da Anthropic, por iald_motor_claude — a chave vai
+@@ -5979,6 +5983,15 @@
+                     payload = _haiku_attach_tools(payload, permitidas)
+                     # The agent has now set its final tool_choice. Count/reserve
+                     # this exact payload before the sole provider send.
++                    from claude_tool_budget import fit_latest_tool_results, ToolResultsDoNotFit
++                    try:
++                        before_fit = payload
++                        payload = fit_latest_tool_results(payload, tokens_para_saldo, cfg.janela)
++                        if payload["messages"] != before_fit["messages"]:
++                            haiku_context_notices.append({"fase": "respondendo", "rotulo":
++                                "Resultados em excertos parciais; respondendo com as evidências que cabem."})
++                    except ToolResultsDoNotFit as exc:
++                        raise iald_orcamento.WindowError(str(exc)) from exc
+                     conta.iniciar_chamada(payload)
+                     response, decision = post_guarded(haiku_adapter, cfg, payload,
+                         requested_model=modelo, server_policy=_claude_policy(registro, user),
+@@ -6008,6 +6021,8 @@
+                                                    provedor=motor,
+                                                    # 21/09/2026 (revisão): JSON inválido não roda
+                                                    entrada_invalida=estado_claude.entrada_invalida if claude else None)
++            if haiku:
++                adaptador.context_notices = haiku_context_notices
+             if claude:
+                 executor = _executar_ferramenta_claude
+             elif gratuito:
+@@ -6371,8 +6386,20 @@
+     opcoes.append({"id": "openai", "rotulo": iald_motores.rotulo_do_modelo(modelo_ext),
+                    "detalhe": "OpenAI · " + modelo_ext,
+                    "disponivel": not _motor_externo_indisponivel(modelo_ext)})
+-    opcoes.extend(row for row in CLAUDE_ROUTES.options(registro, usuario)
+-                  if row["id"] != "claude-haiku" or _haiku_client_ready())
++    for offered in CLAUDE_ROUTES.options(registro, usuario):
++        if offered["id"] == "claude-haiku" and not _haiku_client_ready():
++            continue
++        row = dict(offered)
++        try:
++            cfg = CLAUDE_ROUTES.configuration(dict(registro, modelo_claude=row["modelo"]), usuario)
++            motivo = _motor_externo_indisponivel(row["modelo"], cfg)
++        except (ValueError, PermissionError, OSError, KeyError):
++            motivo = "Não foi possível validar a disponibilidade deste modelo."
++        row["disponivel"] = not bool(motivo)
++        if motivo:
++            row["motivo"] = motivo
++            row["detalhe"] = row.get("detalhe", "") + " · " + motivo
++        opcoes.append(row)
+     return opcoes
+ 
+ 
+@@ -6398,9 +6425,12 @@
+             try:
+                 fields = CLAUDE_ROUTES.select(option, conta, username)
+                 # Validate the selected profile, including its configured price.
+-                CLAUDE_ROUTES.configuration(dict(conta, **fields), username)
++                cfg = CLAUDE_ROUTES.configuration(dict(conta, **fields), username)
+                 if fields.get("modelo_claude") == _HAIKU_PROFILE.model and not _haiku_client_ready():
+                     return jsonify({"error": "Atualize o aplicativo para usar o Haiku com memória integral."}), 426
++                motivo = _motor_externo_indisponivel(fields["modelo_claude"], cfg)
++                if motivo:
++                    return jsonify({"error": motivo}), 409
+             except (ValueError, PermissionError, OSError, KeyError):
+                 return jsonify({"error": "Esse modelo não está disponível para esta conta."}), 409
+         else:

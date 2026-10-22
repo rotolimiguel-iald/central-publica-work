@@ -1,0 +1,5 @@
+### void_floor_kappa_v8
+Fonte: resultado_publicado_integral /core/void_floor_kappa_v8
+κ ACTDR6 empilhado em vazios LRG,z0.40–0.80:lente pesa matéria TOTAL,sem supressão de traçador;kernel CMB eficiente,população grande. Registro usa dados adquiridos mas cap explícito:31746vazios,4000mantidos. NOT_FALSIFIED_UNDERPOWERED,não confirmação. Pré-registro/controles preservados,gate intocado.
+Remissões/valores (relativos ao tópico; destinos internos preservados):
+{"frozen_v8_spec":{"@":"/frozen_v8_spec","fields":{"/verdicts":{"@TGL_LITERAL":"L1"}}},"frozen_v8_hash":{"@":"/frozen_v8_hash"},"n_voids":31746,"n_kept":4000,"capped":true,"groups_n":{"@":"/groups_n","items":4},"n_gal_caps":{"@":"/n_gal_caps"},"values":{"@":"/values"},"stack_kappa":{"@":"/stack_kappa","items":8},"sigma_bins":{"@":"/sigma_bins","items":8},"checks":{"@":"/checks","items":8},"all_verified":true,"statuses":{"@":"/statuses","fields":{"/o_veredito":"TGL_VOID_FLOOR_KAPPA_V8_NOT_FALSIFIED_UNDERPOWERED"}},"does_not_gate_core":true,"verdict":{"@":"/verdict"}}

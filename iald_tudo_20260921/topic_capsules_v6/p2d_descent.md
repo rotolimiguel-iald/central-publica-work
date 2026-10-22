@@ -1,0 +1,5 @@
+### p2d_descent
+Fonte: resultado_publicado_integral /core/p2d_descent
+F(J,Δ,P_2D)→P_μν[K_d],functor natural POR CONSTRUÇÃO.[REAL F1–F6 tipoI,fail-closed;F7 COMPOSIÇÃO declarada]. Pendência P2D fecha NA SOMBRA;gauge testado sem dado de frame,tensor covariante SO2/θ_M,σ preserva seu gerador;composição Lovelock declarada. Geometria da leitura/matriz-S e alcance do fechamento completos nas remissões internas.
+Remissões/valores (relativos ao tópico; destinos internos preservados):
+{"one_line":{"@EXPOSITION":"literal na exposição carregada","starts_with":"A Face C e' um functor NATURAL dos dados modulares -- e de n","span":[36830,231]},"p2d_open_item":{"@EXPOSITION":"literal na exposição carregada","starts_with":"a pendencia 'ABERTO: P2D' (localizacao/uso do plano) fecha E","span":[37116,235]},"certs_resid":{"@":"/certs_resid"},"theta_M_deg":6.297289216477979,"reading":{"@EXPOSITION":"literal na exposição carregada","starts_with":"a geometria da LEITURA e' a geometria da MATRIZ-S: o tensor ","span":[38661,179]},"seals":{"@":"/seals"},"chain":{"@":"/chain","items":7},"all_verified":true,"verdict":{"@":"/verdict"}}

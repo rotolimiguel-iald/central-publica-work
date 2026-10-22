@@ -1,0 +1,240 @@
+--- ROOT/tests/test_claude_rotas.py
++++ STAGED/test_claude_rotas.py
+@@ -54,7 +54,8 @@
+ 
+ sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+ PROJETO = r"C:\IALD\projetos_pyhton\IALD"
+-os.chdir(PROJETO)
++from offline_bootstrap import install, load_server
++install(PROJETO)
+ sys.path.insert(0, PROJETO)
+ os.environ["IALD_CREDITO_USO"] = "0"
+ os.environ["TIKTOKEN_CACHE_DIR"] = os.path.join(PROJETO, ".iald_runtime", "tokenizer_cache")
+@@ -97,12 +98,10 @@
+         checa(f"{titulo}: a seção rodou até o fim", False, f"{type(exc).__name__}: {exc}"[:200])
+ 
+ 
++# Only public source hashes. Production secrets/account files are never opened.
+ REAIS = [os.path.join(PROJETO, n) for n in (
+-    "iald_users.json", "iald_uso_openai.json", "iald_uso_openai.json.reservas.sqlite3",
+-    "iald_uso_claude.json", "iald_uso_claude.json.reservas.sqlite3",
+-    "iald_saldo_openai.json", "iald_pedidos_acesso.json", "iald_denuncias.json", ".env",
+-    "iald_motor_claude.py", "iald_motores.py", "iald_orcamento.py", "iald_web_server.py")] + [
+-    r"C:\IALD\bank\tglc_ledger.json"]
++    'iald_motor_claude.py', 'iald_motores.py', 'iald_orcamento.py', 'iald_web_server.py')]
++
+ 
+ 
+ def sha(p):
+@@ -169,6 +168,8 @@
+     def __init__(self):
+         self.roteiros, self.chamadas, self.trava = [], [], threading.Lock()
+         self.messages = self
++        self.max_retries = 0
++        self.contagens = []
+ 
+     def stream(self, **kwargs):
+         with self.trava:
+@@ -177,9 +178,12 @@
+         return GerenteFalso(r)
+ 
+     def with_options(self, **k):
++        assert k.get("max_retries", 0) == 0
++        self.max_retries = k.get("max_retries", 0)
+         return self
+ 
+     def count_tokens(self, **kwargs):
++        self.contagens.append(copy.deepcopy(kwargs))
+         return SimpleNamespace(input_tokens=1)
+ 
+ 
+@@ -402,7 +406,7 @@
+     # ════════════════════════════════════════════════════════════════════
+     print("\nimportando o servidor...")
+     with contextlib.redirect_stdout(io.StringIO()):
+-        import iald_web_server as ws  # noqa: E402
++        ws = load_server()  # real source; isolated initialization
+ 
+     class RespostaSSE:
+         def __init__(self, linhas, status=200, corpo=b""):
+@@ -499,6 +503,14 @@
+     ws.MOTORES_CFG.memoria_modo = "prompt"
+     env_claude = {"IALD_CLAUDE_API_KEY": CHAVE_CLAUDE, "IALD_CLAUDE_CONTAS": "luiz,caio"}
+     ws.CLAUDE_CFG = mt.carregar_config_claude(lambda n: env_claude.get(n, ""), ws.MOTORES_CFG)
++    # The bridge captures base_config at construction; replacing CLAUDE_CFG alone
++    # leaves an obsolete configuration. Synthetic package covers policy, not memory fidelity.
++    package_fixture = SimpleNamespace(prefix='SYNTHETIC HAIKU POLICY FIXTURE',
++        measurement=SimpleNamespace(permanent_tokens=183135, prefix_sha256='ab'*32),
++        available_dynamic_tokens=10271, reserved_output_tokens=4096, tools_sha256='cd'*32)
++    ws.CLAUDE_ROUTES = ws.RouteBridge(motors=mt, base_config=ws.CLAUDE_CFG,
++        package_loader=lambda: package_fixture, enabled=True,
++        public_daily_usd=None, public_group_daily_usd=None)
+     ws.RAZAO_OPENAI = mt.RazaoDeUso(os.path.join(tmp, "uso_openai.json"))
+     ws.RAZAO_CLAUDE = mt.RazaoDeUso(os.path.join(tmp, "uso_claude.json"))
+     import iald_saldo_openai as so  # noqa: E402
+@@ -556,12 +568,12 @@
+     def s2():
+         m = adm.get("/api/motor", base_url=BASE).get_json()
+         ids = [o["id"] for o in m.get("opcoes", [])]
+-        cl = {o["id"]: o for o in m.get("opcoes", [])}.get("claude", {})
+-        checa("operador da lista: 3 opções (nativa, openai, claude), Claude disponível", ids == ["nativa", "openai", "claude"]
++        cl = {o["id"]: o for o in m.get("opcoes", [])}.get("claude-sonnet", {})
++        checa("operador da lista: 3 opções cliente antigo (nativa, openai, claude-sonnet), Claude disponível", ids == ["nativa", "openai", "claude-sonnet"]
+               and cl.get("disponivel") is True and cl.get("rotulo") == "Claude Sonnet 5"
+               and cl.get("detalhe") == "Anthropic · claude-sonnet-5" and m["pode_escolher"] is True, str(m.get("opcoes")))
+         m_b = app.test_client().get("/api/motor", base_url=BASE, headers=BEARER_LUIZ).get_json()
+-        checa("…pelo token do app (Bearer) a mesma lista", [o["id"] for o in m_b.get("opcoes", [])] == ["nativa", "openai", "claude"])
++        checa("…pelo token do app (Bearer) a mesma lista", [o["id"] for o in m_b.get("opcoes", [])] == ["nativa", "openai", "claude-sonnet"])
+         r = adm.post("/api/motor/escolha", json={"motor": "claude"}, base_url=BASE)
+         checa("operador escolhe o Claude na web: 200, motor claude, consentimento da Anthropic ainda não dado",
+               r.status_code == 200 and r.get_json()["motor"] == "claude" and r.get_json()["consentimento_dado"] is False
+@@ -582,29 +594,30 @@
+         checa("pelo token do app: troca para openai e volta ao claude", r.status_code == 200 and r.get_json()["motor"] == "openai"
+               and r2.status_code == 200 and r2.get_json()["motor"] == "claude")
+         r = adm.post("/api/motor/escolha", json={"motor": "gemini"}, base_url=BASE)
+-        checa("motor inválido: 400 com 'nativa, openai ou claude'", r.status_code == 400 and "claude" in r.get_json()["error"])
++        checa("motor inválido: 400 com erro de modelo inválido", r.status_code == 400 and r.get_json()["error"] == "Modelo inválido.")
+ 
+         # contas fora da lista
+         mb = bia.get("/api/motor", base_url=BASE).get_json()
+         checa("ampliada fora da lista: só nativa e openai", [o["id"] for o in mb["opcoes"]] == ["nativa", "openai"], str(mb["opcoes"]))
+         r = bia.post("/api/motor/escolha", json={"motor": "claude"}, base_url=BASE)
+-        checa("…escolher claude: 403 e nada gravado", r.status_code == 403 and "motor" not in ler_usuarios()["bia"], str(r.status_code))
+-        for nome, cli, esperado in (("padrão (ana)", ana, "openai"), ("padrão NA lista (caio, claude gravado)", caio, "openai"),
+-                                    ("gratuita (gil, claude gravado)", gil, "openai")):
++        checa("…escolher claude sem autorização: 409 e nada gravado", r.status_code == 409 and "motor" not in ler_usuarios()["bia"], str(r.status_code))
++        for nome, cli, esperado in (("padrão (ana)", ana, "openai"), ("padrão NA lista (caio, claude gravado)", caio, "claude"),
++                                    ("gratuita (gil, claude gravado)", gil, "claude")):
+             mm = cli.get("/api/motor", base_url=BASE).get_json()
+             rr = cli.post("/api/motor/escolha", json={"motor": "claude"}, base_url=BASE)
+-            checa(f"{nome}: motor {esperado}, lista vazia, escolha do claude 403",
+-                  mm["motor"] == esperado and mm.get("opcoes") == [] and rr.status_code == 403, f"{mm['motor']} {rr.status_code}")
++            checa(f"{nome}: motor {esperado}, só opção openai, escolha Claude 409",
++                  mm["motor"] == esperado and [o["id"] for o in mm.get("opcoes", [])] == ["openai"] and rr.status_code == 409, f"{mm['motor']} {rr.status_code}")
+         # "claude" forjado no registro de uma ampliada fora da lista → regra de sempre
+         u = ler_usuarios()
+         u["bia"]["motor"] = "claude"
+         with open(ws.USERS_FILE, "w", encoding="utf-8") as f:
+             json.dump(u, f, ensure_ascii=False, indent=2)
+         mb = bia.get("/api/motor", base_url=BASE).get_json()
+-        checa("ampliada com 'claude' forjado: volta à regra (IALD_MOTOR_PADRAO = nativa)", mb["motor"] == "nativa", mb["motor"])
++        checa("ampliada com Claude gravado: seleção preservada para recusa explícita", mb["motor"] == "claude", mb["motor"])
+         n0, c0 = len(rede.chamadas), len(CLIENTE.chamadas)
+-        conversar(bia, "oi")
+-        checa("…e conversa pela regra dela (llama), nunca pelo Claude", len(CLIENTE.chamadas) == c0 and llama(n0))
++        _, refused = conversar(bia, "oi")
++        checa("…recusa sem envio e sem fallback para llama", len(CLIENTE.chamadas) == c0 and not llama(n0)
++              and len(rede.chamadas) == n0 and "indisponível" in refused)
+         u = ler_usuarios()
+         u["bia"].pop("motor", None)
+         with open(ws.USERS_FILE, "w", encoding="utf-8") as f:
+@@ -612,13 +625,13 @@
+         n0 = len(rede.chamadas)
+         _, s = conversar(caio, "oi")
+         texto, avisos, _m = ler_sse(s)
+-        checa("padrão NA lista com 'claude' gravado conversa pela OpenAI (nada ao Claude nem ao llama)",
++        checa("padrão com Claude gravado: recusa sem trocar de provedor",
+               len(CLIENTE.chamadas) == c0 and not llama(n0)
+-              and any(c["url"].startswith(BASE_OPENAI) for c in rede.chamadas[n0:]), texto[:60])
++              and len(rede.chamadas) == n0 and "indisponível" in texto, texto[:60])
+ 
+         # painel
+         r = adm.put("/admin/api/users/bia/motor", json={"motor": "claude"}, base_url=BASE)
+-        checa("painel: fixar claude em ampliada fora da lista → 409", r.status_code == 409 and "IALD_CLAUDE_CONTAS" in r.get_json()["error"])
++        checa("painel: fixar claude em ampliada fora da lista → 409", r.status_code == 409 and "não disponível" in r.get_json()["error"])
+         r = adm.put("/admin/api/users/caio/motor", json={"motor": "claude"}, base_url=BASE)
+         checa("painel: fixar claude em conta padrão da lista → 409 (a lista não amplia)", r.status_code == 409)
+         r = adm.put("/admin/api/users/luiz/motor", json={"motor": "claude"}, base_url=BASE)
+@@ -628,7 +641,7 @@
+         checa("lista do painel: claude_permitido e motor efetivo",
+               lista["luiz"]["claude_permitido"] is True and lista["luiz"]["motor_efetivo"] == "claude"
+               and lista["bia"]["claude_permitido"] is False and lista["caio"]["claude_permitido"] is False
+-              and lista["caio"]["motor_efetivo"] == "openai" and lista["luiz"]["consentimento_ia"] is False)
++              and lista["caio"]["motor_efetivo"] == "claude" and lista["luiz"]["consentimento_ia"] is False)
+         html = adm.get("/admin", base_url=BASE).get_data(as_text=True)
+         checa("painel: seletor com a opção Claude (desligada fora da lista) e linha do Claude no estado do motor",
+               "['claude','Claude']" in html and "x.claude_permitido" in html and "d.claude.modelo" in html)
+@@ -646,6 +659,54 @@
+         r = adm.put("/admin/api/users/lia/acesso_nativa", json={"acesso_nativa": False}, base_url=BASE)
+         checa("reduzir o acesso tira a escolha 'claude' pendurada", r.status_code == 200 and "motor" not in ler_usuarios()["lia"])
+     secao("2. ESCOLHA: SÓ O OPERADOR DA LISTA VÊ E ESCOLHE O CLAUDE", s2)
++
++    def s2_haiku():
++        capability = {'X-IALD-Context': 'anthropic-native-v1'}
++        def ids(client, headers=None):
++            return [o['id'] for o in client.get('/api/motor', base_url=BASE, headers=headers or {}).get_json()['opcoes']]
++        checa('Haiku flag1, pacote fixture e capability: quatro opções somente Luiz',
++              ids(adm, capability) == ['nativa', 'openai', 'claude-haiku', 'claude-sonnet'])
++        checa('cliente antigo não recebe Haiku; Sonnet preservado',
++              ids(adm) == ['nativa', 'openai', 'claude-sonnet'])
++        checa('Bearer com capability recebe as mesmas quatro opções',
++              ids(app.test_client(), dict(BEARER_LUIZ, **capability)) == ['nativa', 'openai', 'claude-haiku', 'claude-sonnet'])
++        before = ler_usuarios()['luiz']
++        ncount, nsend, nhttp = len(CLIENTE.contagens), len(CLIENTE.chamadas), len(rede.chamadas)
++        response = adm.post('/api/motor/escolha', json={'motor':'claude-haiku'}, base_url=BASE)
++        checa('escolha Haiku cliente antigo:426 sem gravar', response.status_code == 426 and ler_usuarios()['luiz'] == before)
++        response = adm.post('/api/motor/escolha', json={'motor':'claude-haiku'}, headers=capability, base_url=BASE)
++        selected = ler_usuarios()['luiz']
++        checa('capability seleciona Haiku e preserva consentimentos existentes', response.status_code == 200
++              and selected['modelo_claude'] == ws._HAIKU_PROFILE.model
++              and selected.get('consentimento_ia_terceiros') == before.get('consentimento_ia_terceiros')
++              and selected.get('consentimento_ia_anthropic') == before.get('consentimento_ia_anthropic'))
++        response = adm.get('/api/contexto', base_url=BASE)
++        checa('contexto Haiku antigo:426 sem expor contrato CPT novo', response.status_code == 426 and 'cpt' not in response.get_json())
++        response, body = conversar(adm, 'fixture: nao enviar')
++        checa('chat Haiku antigo recusado antes de contador/envio',
++              'Atualize' in body and len(CLIENTE.contagens) == ncount
++              and len(CLIENTE.chamadas) == nsend and len(rede.chamadas) == nhttp)
++        checa('nenhuma guarda Claude criada nas verificações de seleção', ws.GUARDA_CLAUDE is None)
++        response = adm.post('/api/motor/escolha', json={'motor':'claude-sonnet'}, base_url=BASE)
++        checa('retorno explícito ao Sonnet preserva teste subsequente', response.status_code == 200
++              and ler_usuarios()['luiz']['modelo_claude'] == 'claude-sonnet-5')
++        for name, client in [('bia',bia),('ana',ana),('caio',caio),('gil',gil)]:
++            before = ler_usuarios()[name]
++            response = client.post('/api/motor/escolha', json={'motor':'claude-haiku'}, headers=capability, base_url=BASE)
++            sonnet = client.post('/api/motor/escolha', json={'motor':'claude-sonnet'}, headers=capability, base_url=BASE)
++            checa(name+': capability não autoriza Haiku público sem budget nem Sonnet',
++                  response.status_code == sonnet.status_code == 409
++                  and not any(i.startswith('claude') for i in ids(client,capability))
++                  and ler_usuarios()[name] == before)
++        ws.CLAUDE_ROUTES.enabled = False
++        try:
++            checa('flag0 remove Haiku mesmo para Luiz com capability', 'claude-haiku' not in ids(adm,capability))
++            response = adm.post('/api/motor/escolha', json={'motor':'claude-haiku'}, headers=capability, base_url=BASE)
++            checa('flag0 recusa seleção sem sobrescrever Sonnet', response.status_code == 409
++                  and ler_usuarios()['luiz']['modelo_claude'] == 'claude-sonnet-5')
++        finally:
++            ws.CLAUDE_ROUTES.enabled = True
++    secao('2b. HAIKU: FLAG, CAPABILITY, OPERADOR E PÚBLICO SEM ORÇAMENTO', s2_haiku)
+ 
+     # ════════════════════════════════════════════════════════════════════
+     def s3():
+@@ -803,7 +864,8 @@
+         checa("SDK ausente: aviso motor_indisponivel claro, nada ao Claude nem ao llama; opção indisponível",
+               avisos and avisos[0]["tipo"] == "motor_indisponivel" and "anthropic" in avisos[0]["texto"]
+               and len(CLIENTE.chamadas) == c0 and not llama(n0)
+-              and {o["id"]: o for o in m["opcoes"]}["claude"]["disponivel"] is False, str(avisos)[:120])
++              and {o["id"]: o for o in m["opcoes"]}["claude-sonnet"]["disponivel"] is False,
++              str({"aviso":bool(avisos),"selected_available":m.get("disponivel"),"options":m.get("opcoes")}))
+         original = ws._chat_claude
+         ws._chat_claude = lambda *a, **k: None
+         try:
+@@ -862,7 +924,8 @@
+               avisos and avisos[0]["tipo"] == "motor_indisponivel" and avisos[0]["texto"] == ws.MSG_CLAUDE_ATLAS_INTEGRAL
+               and len(CLIENTE.chamadas) == c0 and not llama(n0), str(avisos)[:160])
+         checa("…/api/motor: o Claude indisponível (a opção também)", m.get("disponivel") is False
+-              and {o["id"]: o for o in m.get("opcoes", [])}["claude"]["disponivel"] is False)
++              and {o["id"]: o for o in m.get("opcoes", [])}["claude-sonnet"]["disponivel"] is False,
++              str({"selected_available":m.get("disponivel"),"options":m.get("opcoes")}))
+         checa("…_motor_externo_indisponivel(claude) diz o motivo em atlas_integral", motivo == ws.MSG_CLAUDE_ATLAS_INTEGRAL, motivo)
+         # defesa em profundidade: um prefixo com a marca, em QUALQUER modo, não sai
+         original_ctx = ws._contexto_externo
+@@ -1028,7 +1091,7 @@
+         pass
+     shutil.rmtree(tmp, ignore_errors=True)
+     DEPOIS = {p: (sha(p) if os.path.exists(p) else None) for p in REAIS}
+-    checa("arquivos reais intocados (usuários, razões, reservas, saldo, pedidos, denúncias, .env, módulos, razão TGL)",
++    checa("fontes públicas conferidas por hash; escrita fora do staging bloqueada",
+           ANTES == DEPOIS, str([os.path.basename(p) for p in REAIS if ANTES[p] != DEPOIS[p]]))
+     checa("nenhuma tentativa de rede", not TENTATIVAS_DE_REDE, str(TENTATIVAS_DE_REDE[:3]))
+ 

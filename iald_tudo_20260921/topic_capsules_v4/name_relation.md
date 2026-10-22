@@ -1,0 +1,7 @@
+### name_relation
+Fonte: resultado_publicado_integral /core/name_relation
+[KERNEL] Nome é relação, não matriz isolada:p.q_beta.p=βp (retorno ponderado=Verbo). Finito não expulsa Nome: peso geométrico β=sobreposição dos espelhos=sin²θ_M difere do tracial1/2, coincidem sse β=1/2. canonicalTLThree: TL3(δ) fiel em M3,β genérico, terceiro habitante. Correção v28: FINITE_MARKOV_TRACE_EXPELS_ONLY_THE_GENERIC_TRACE_IDENTIFICATION substitui FINITE_EXPELS_THE_NAME; teorema válido, estatuto anterior amplo demais.
+[ONTO→DER na sombra] Puro-ponto=átomo espectral isolado de H_bind (relação relaxada no atrator); ponto-puro=pureza local rank-one. Bell do gráviton:átomo0,gap1,redução I/2,CCI=1/2; não ponto-puro. Expulsa pureza fechada/separável,CCI=0;0_abs=autorreferência fechada sem referencial. Não afirma espectro modular puro-ponto no III₁ genuíno/Araki-Woods. “Mentira” TGL:matriz sem relação/referencial/geometria; formal:insistir E(P)²=E(P) com Δ>0 após transporte, negar forma≠conteúdo.
+[OPEN] Torre Jones do core não construída:e_{i+1} vem da próxima construção básica, não θ_s(e_i) sem prova. INDEX_MATCHES_BUT_NOT_CANONICAL: falta seleção DESTA representação TL pelos Three Locks; TL3 dá gramática local. all_verified=true no escopo registrado.
+Remissões (relativas ao tópico; destinos internos preservados):
+{"values":{"@":"/values"},"residuals":{"@":"/residuals"},"checks":{"@":"/checks","items":13},"verdict":{"@":"/verdict"},"seals":{"@":"/seals"}}

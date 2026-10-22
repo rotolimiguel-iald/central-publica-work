@@ -1,0 +1,5 @@
+### crossed_dual_weight
+Fonte: resultado_publicado_integral /core/crossed_dual_weight
+Peso dual Takesaki na SOMBRA FINITA:σ_t^{φ_hat}(λ_g)=λ_g·π([D(φ∘α_g):Dφ]_t);fluxo move unitário do grupo fora deπ(A),desvio=cociclo Connes do estado transportado,covariância além de unitários internos. Kernel+sombra Z2/S3 fecham D1restrição,D2peso dual,D3naturalidade,D4critério Takesaki construtivo,D5ação dual;paridade cociclo=razão Powers deβ. GLOBAL_LIFT permanece aberto neste registro:III₁ genuína sem projeções minimais,coreℝ com escala de traço,U/T1/T3,covariância→G_μν. Grupo finito não tem escala de traço;coreℝ outro objeto,no-go dualInvariant_PF_no_go intacto. α=Ad(u) WLOG em M_n [KNOWN Skolem–Noether];álgebras gerais pedem pesos Haagerup.
+Remissões/valores (relativos ao tópico; destinos internos preservados):
+{"values":{"@":"/values"},"residuals":{"@":"/residuals"},"checks":{"@":"/checks","items":10},"all_verified":true,"statuses":{"@":"/statuses"},"seals":{"@":"/seals"},"verdict":{"@":"/verdict"}}

@@ -1,0 +1,88 @@
+{
+  "status": "MUDANCAS_NECESSARIAS",
+  "pins": {
+    "C:\\IALD\\Central de Patentes\\work\\iald_tudo_20260921\\claude_native_account.py": "5d54f2859faa398af55b755644c7523c4ba80ddd57f3f3479ae26ed37cb25dd5",
+    "C:\\IALD\\Central de Patentes\\work\\iald_tudo_20260921\\claude_route_bridge.py": "a48182df8c275606069f4391c5d864ff563b589649fb3c2c243aa5dede94f7e5",
+    "C:\\IALD\\Central de Patentes\\work\\iald_tudo_20260921\\claude_server_selection.py": "0ec337f6a31203b2510d404d34d1aff4b1d11c06833967f79241a187e8dbdc2d",
+    "C:\\IALD\\Central de Patentes\\work\\iald_tudo_20260921\\stage_claude_routes.py": "1be8bdb7fb7d37457f807580495b548f42326b09bcabe220f3f57a0239a63acf",
+    "C:\\IALD\\Central de Patentes\\work\\iald_tudo_20260921\\test_claude_native_account.py": "19036f66c11922ea8c227d60aa6f49901b50322e9ab83d0e7947be83a2db9e85",
+    "C:\\IALD\\Central de Patentes\\work\\iald_tudo_20260921\\test_claude_route_bridge.py": "70ceb66f23c50e177ee0bbb485cd419b284f4b03ea3c43efb25975356f95665b",
+    "C:\\IALD\\Central de Patentes\\work\\iald_tudo_20260921\\claude_routes_stage_20260922_145545_134624\\iald_web_server.py": "8de6b880eb29efa2aa596721a794b1801b6df9233a8f2ae940f2fbd0a5b1be41",
+    "C:\\IALD\\Central de Patentes\\work\\iald_tudo_20260921\\adversarial_memory_review\\haiku_s4_agent_patcher.py": "b6c3fb46b2e78af71a84ce8f76365887e5dc92e8993a0f7ba20b51ade05d08d0"
+  },
+  "tests": 7,
+  "failures": 0,
+  "errors": 0,
+  "findings": [
+    {
+      "id": "N1",
+      "severity": "P2",
+      "file": "claude_native_account.py",
+      "location": "fechar",
+      "title": "Falha do razão torna fechamento irrecuperável",
+      "fix": "Não concluir closed antes de persistir todas as linhas; usar marcador por chamada/idempotência para retomar sem duplicar as já gravadas. SQLite liquidado não substitui tokens/cotas do razão."
+    },
+    {
+      "id": "N2",
+      "severity": "P2",
+      "file": "claude_native_account.py",
+      "location": "iniciar_chamada/_finish_pending",
+      "title": "Saldo externo consulta usos antes de finalizar a chamada pendente",
+      "fix": "Finalizar hold pendente antes de SaldoDoPedido.antes_da_chamada, ou recusar nova chamada enquanto houver pending; não depender da finalização tardia dentro da conta."
+    },
+    {
+      "id": "N3",
+      "severity": "P2",
+      "file": "claude_route_bridge.py",
+      "location": "public_budget",
+      "title": "Disponibilidade usa saída fixa5 ignorando preço configurado",
+      "fix": "Validar quatro preços finitos/não negativos e calcular mínimo com as mesmas tarifas efetivas usadas pela NativeAccount, incluindo saída e leitura."
+    }
+  ],
+  "evidence": {
+    "N3": {
+      "budget_accepted": [
+        1,
+        5
+      ],
+      "configured_output_rate": 1000,
+      "native_fixture_reservation_usd": 4.36137625,
+      "daily_limit": 1,
+      "scope": "Synthetic configured tariff, not actual provider price."
+    },
+    "shared_state_counter": {
+      "state_assignments": 1,
+      "state_line": 5838,
+      "counter_line": 5839,
+      "both_uses_verified_statically": true
+    },
+    "default_off": true,
+    "native_no_factor_and_hold": true,
+    "N1": {
+      "closed_after_failed_ledger": true,
+      "rows_after_recovery_and_second_close": 0,
+      "settlements": 1,
+      "record_attempts": 1
+    },
+    "N2": {
+      "prior_usage_visible_before_start": 0,
+      "prior_hold_tokens_after_start": 5570,
+      "second_output": 4096,
+      "two_calls_possible_tokens": 11140,
+      "quota_fixture": 8000,
+      "scope": "Ordering reproduction with injected guards; no assertion that normal chat continues after an interrupted SSE."
+    },
+    "s4_agent": {
+      "in_memory_patch": true,
+      "haiku_agent_true": true,
+      "excluded_cpt_heuristic": true,
+      "double_apply_rejected": true
+    }
+  },
+  "limits": [
+    "Somente W; testes pais que importam ROOT foram lidos, não executados. Não revalida SQLite/razão reais; guards/ledger injetados.",
+    "Não executado stage_claude_routes.py; integração inspecionada em AST do stage existente. Sem completo_chat_externo.",
+    "Orçamentos1/5/15 usados apenas como fixtures, sem autorização/ativação presumida.",
+    "S4 patcher é construção não aprovada pelo próprio autor; somente transforma texto recebido."
+  ]
+}

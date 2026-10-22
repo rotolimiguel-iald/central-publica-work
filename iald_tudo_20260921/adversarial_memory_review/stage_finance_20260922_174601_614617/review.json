@@ -1,0 +1,118 @@
+{
+  "status": "MUDANCAS_NECESSARIAS",
+  "created_utc": "2026-09-22T17:46:03.965804+00:00",
+  "pins": {
+    "C:\\IALD\\Central de Patentes\\work\\iald_tudo_20260921\\claude_routes_stage_20260922_143846_415442\\iald_web_server.py": "bdf5f8f9648e1e7fb9d0a73a166b1c93611015b3aaadf5a6b6c754e31e9373f2",
+    "C:\\IALD\\projetos_pyhton\\IALD\\iald_web_server.py": "f4f7c70b0bb1886f90025faa10b18985504ea643583cd8225e6348979d7f4902",
+    "C:\\IALD\\projetos_pyhton\\IALD\\iald_motores.py": "87fae82393f8adba65c4404503259724433239084dde6c3d24f98e2667241ae0",
+    "C:\\IALD\\projetos_pyhton\\IALD\\iald_orcamento.py": "0cd5513886827e69f93b59adb0a0bb604066f86e0473ffbb15fa23a3d55d3cf3",
+    "C:\\IALD\\projetos_pyhton\\IALD\\iald_motor_claude.py": "fb70f041c55ceb7affae4f045b8ec9f5c6c3a701582840e74ba306b383dbf37f",
+    "C:\\IALD\\Central de Patentes\\work\\iald_tudo_20260921\\claude_route_bridge.py": "ddf721ff851791a3bcd1dfb58a29f64e821b12b7fa1a15a20f78cff554acccdd",
+    "C:\\IALD\\Central de Patentes\\work\\iald_tudo_20260921\\claude_server_selection.py": "0ec337f6a31203b2510d404d34d1aff4b1d11c06833967f79241a187e8dbdc2d",
+    "C:\\IALD\\Central de Patentes\\work\\iald_tudo_20260921\\claude_memory_package.py": "2fc80f1c099bdec43266ad1576964be8849cc6c31f32a49f9bb21982e2fdfddf",
+    "C:\\IALD\\Central de Patentes\\work\\iald_tudo_20260921\\claude_guarded_transport.py": "153cd10b2c52576194c9e945a6417f291df1180fe6f2f45949e6d7b2141d8377",
+    "C:\\IALD\\Central de Patentes\\work\\iald_tudo_20260921\\test_claude_route_bridge.py": "20a44f806b365c12cb4bc4b98d4b0e1379d15c6d5815134ed9040fa7b8917d8d",
+    "C:\\IALD\\Central de Patentes\\work\\iald_tudo_20260921\\test_claude_server_selection.py": "34e95646edc3c5d920ddd89bd546a404c6e0496b83f4ac14e411e101003d2400"
+  },
+  "findings": [
+    {
+      "id": "S1",
+      "priority": "P1",
+      "title": "Haiku gratuito anunciado disponível, mas cota global do grupo é sempre zero",
+      "file": "C:\\IALD\\Central de Patentes\\work\\iald_tudo_20260921\\claude_route_bridge.py",
+      "line": 16,
+      "evidence": {
+        "option_available": true,
+        "group_cap": 0.0,
+        "zero_usage_denial": "global_gratuito",
+        "plan_daily_usd": 0.02,
+        "factor": 1.6
+      },
+      "fix": "Definir política financeira Haiku explícita e autorizada (grupo e plano), validá-la antes de anunciar disponibilidade; não remover o guarda. O plano herdado de US$0,02 também é inferior à entrada fria de uma memória de180k tokens com as tarifas configuradas.",
+      "origin": "Regressão de integração: gratuito agora admitido, configuração legada ainda o proíbe."
+    },
+    {
+      "id": "S2",
+      "priority": "P2",
+      "title": "Contagem nativa não alimenta reserva nem liquidação sem usage",
+      "file": "C:\\IALD\\Central de Patentes\\work\\iald_tudo_20260921\\claude_routes_stage_20260922_143846_415442\\iald_web_server.py",
+      "line": 5924,
+      "evidence": {
+        "synthetic_native_input": 184609,
+        "legacy_estimate_before_factor": 180000,
+        "factor": 1.6,
+        "reserved_input_estimate": 288000,
+        "reserved_usd": 0.43448,
+        "same_formula_using_native_usd": 0.28585625,
+        "missing_usage_quota_tokens": 146800,
+        "native_input_minus_prefix": 1474,
+        "limitation": "Fixture isolation of legacy accounting. Not a provider count or incurred cost; do not merely set factor1 on an o200k estimator."
+      },
+      "fix": "Propagar medição nativa do mesmo payload para reserva e fallback de entrada por chamada, inclusive voltas de ferramenta. Não multiplicar uma medição nativa por fator o200k; manter reservas separadas de saída ambígua.",
+      "origin": "Estimador legado preservado apesar da nova medição; perda de consistência financeira na integração."
+    },
+    {
+      "id": "S3",
+      "priority": "P2",
+      "title": "Rota de contexto devolve janela legada e falha sem resposta controlada ao indisponibilizar Haiku",
+      "file": "C:\\IALD\\Central de Patentes\\work\\iald_tudo_20260921\\claude_routes_stage_20260922_143846_415442\\iald_web_server.py",
+      "line": 7090,
+      "evidence": {
+        "context_route_window": 32768,
+        "selected_profile_window": 200000,
+        "package_unavailable_exception_escapes": true,
+        "no_remaining_dynamic_field": true
+      },
+      "fix": "Responder perfil Haiku medido com unidades e saldo dinâmico explícitos; tratar indisponibilidade como fazem /api/motor e active-model.",
+      "origin": "Nova configuração pode levantar; chamada e regra32k antigas preservadas."
+    },
+    {
+      "id": "S4",
+      "priority": "P2",
+      "title": "Hash medido das ferramentas não é conferido no stage",
+      "file": "C:\\IALD\\Central de Patentes\\work\\iald_tudo_20260921\\claude_routes_stage_20260922_143846_415442\\iald_web_server.py",
+      "line": 5950,
+      "evidence": {
+        "declared_tools_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "changed_tools_forwarded": true,
+        "tools_hash_checks_in_stage": 0,
+        "security_scope": "No private-tool execution demonstrated; breaks pinning to reviewed tool schema. Native recount still protects token window."
+      },
+      "fix": "Conferir hash canônico do schema efetivamente enviado contra o manifesto, ou versionar explicitamente subconjuntos permitidos; divergência deve ficar visível e impedir anunciar pacote íntegro.",
+      "origin": "Obrigação de integração antes pendente não implementada."
+    }
+  ],
+  "provided_tests": {
+    "run": 13,
+    "failures": 0,
+    "errors": 0
+  },
+  "positive_checks": {
+    "unchanged_security_ast": {
+      "require_auth": true,
+      "require_admin": true,
+      "_conta_bloqueada": true,
+      "_executar_ferramenta_claude": true,
+      "_ferramentas_permitidas_claude": true
+    },
+    "admin_denied_before_store_access": true,
+    "saldo_before_reservation_output_cap": 6526,
+    "normalized_input_including_cache_creation": {
+      "prompt_tokens": 184609,
+      "completion_tokens": 100,
+      "total_tokens": 184709,
+      "prompt_tokens_details": {
+        "cached_tokens": 0,
+        "cache_write_tokens": 183135
+      }
+    },
+    "native_allowlist_sonnet_blocked_and_no_fallback": "provided tests passed"
+  },
+  "limits": [
+    "No full server import or completo_chat_externo test; exact AST fragments plus pure modules and explicit mocks.",
+    "No API, network, environment/credentials, users, ledger or production writes. Synthetic counts/prices are not provider measurements.",
+    "Original ROOT compared read-only; no endpoint integration or runtime configuration inferred.",
+    "Admin dashboard still reports base Claude/Sonnet configuration, not individual Haiku activation/package/tools; ancillary visibility gap observed statically.",
+    "Midstream partial usage and interrupted-charge reconciliation remain inherited; this audit does not certify provider billing."
+  ]
+}

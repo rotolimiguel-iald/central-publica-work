@@ -1,0 +1,187 @@
+
+1. A REGRA, A CONFIGURAÇÃO, O CONSENTIMENTO E O CAMINHO DA OPENAI INTACTO
+  [OK]    admin da lista com claude gravado → claude  claude
+  [OK]    admin da lista SEM o nome da conta → regra de sempre (nativa)  nativa
+  [OK]    admin da lista com a lista vazia (claude não configurado) → nativa  nativa
+  [OK]    ampliada fora da lista com claude forjado → regra (nativa)  nativa
+  [OK]    padrão NA lista com claude → openai (a lista não amplia)  openai
+  [OK]    padrão fora da lista com claude forjado → openai  openai
+  [OK]    gratuito admin da lista com claude → openai  openai
+  [OK]    nome com maiúsculas/espaços confere  claude
+  [OK]    sem os argumentos novos, exatamente como antes ('claude' gravado nunca vale)  
+  [OK]    Config montada à mão com motor_operador='claude' não fura a lista  
+  [OK]    IALD_MOTOR_PADRAO/OPERADOR=claude recusados (nativa, com aviso)  ["IALD_MOTOR_PADRAO desconhecido ('claude'); usando nativa", "IALD_MOTOR_OPERADOR desconhecido ('claude'); usando nativa"]
+  [OK]    config do claude: nenhum IALD_OPENAI_* reaproveitado (sem chave, padrões do claude)  Config(motor_padrao='nativa', motor_operador='nativa', modelo='claude-sonnet-5', chave=ausente)
+  [OK]    padrões: max_saida 16000, esforço high, ttl 5m, fator 1.6, sem esforço OpenAI, sem reserva nativa  
+  [OK]    planos, memória, ferramentas e pedidos/min vêm da configuração base  
+  [OK]    preço 5 min (2,00 / 0,20 / 10,00 / 2,50) e claude não configurado sem chave  
+  [OK]    TTL 1h → escrita a 4,00 (a reserva casa com o TTL); lista normalizada; tetos por conta = global  
+  [OK]    a tabela da OpenAI continua com a escrita de 5 min (a troca é só na config do claude)  
+  [OK]    chave de ADMINISTRAÇÃO recusada (motor desligado) sem o valor no aviso; fator < 1 e modelo não-Claude recusados  ['IALD_CLAUDE_API_KEY é uma chave de administração; motor claude desligado', "IALD_CLAUDE_MODELO não é um modelo Claude ('gpt-5.6-luna'); usando claude-sonnet-5", 'IALD_CLAUDE_FATOR_TOKENS abaixo do mínimo 1.0; usando 1.6']
+  [OK]    repr da config do claude não mostra a chave  
+  [OK]    registro OpenAI igual ao de antes; o da Anthropic diz 'anthropic'  
+  [OK]    chamada antiga registro_de_consentimento(superficie, agora) continua valendo  
+  [OK]    consentimento da OpenAI NÃO libera a Anthropic  
+  [OK]    o da Anthropic não libera a OpenAI; campo copiado do da OpenAI não vale como Anthropic  
+  [OK]    provedor desconhecido → False  
+  [OK]    texto do consentimento: nomeia Anthropic e Claude, o pacote de memória da TGL e a moderação da OpenAI  
+  [OK]    nota de serviço da OpenAI byte a byte a de antes  
+  [OK]    nota do claude: 'Claude Sonnet 5 (claude-sonnet-5) da Anthropic' e a frase que corrige o prefixo  
+  [OK]    rótulos  
+  [OK]    mensagens ao usuário dos códigos do claude  
+  [OK]    mensagens da OpenAI inalteradas (crédito, 429, 400)  
+  [OK]    caminho da OpenAI BYTE A BYTE o de antes (hash de ouro do iald_motores original)  4d6338324ff55d12
+  [OK]    reserva: fator 1.0 = a conta de sempre; fator 1.6 multiplica só a entrada estimada  0.018478 0.023563
+
+importando o servidor...
+[IALD-AUTH] 2026-09-23 08:31:45 | LOGIN_OK | user=luiz | ip=127.0.0.1
+[IALD-AUTH] 2026-09-23 08:31:45 | LOGIN_OK | user=bia | ip=127.0.0.1
+[IALD-AUTH] 2026-09-23 08:31:45 | LOGIN_OK | user=ana | ip=127.0.0.1
+[IALD-AUTH] 2026-09-23 08:31:45 | LOGIN_OK | user=caio | ip=127.0.0.1
+[IALD-AUTH] 2026-09-23 08:31:45 | LOGIN_OK | user=gil | ip=127.0.0.1
+Traceback (most recent call last):
+  File "C:\IALD\Central de Patentes\work\iald_tudo_20260921\route_tests_review_20260923_083004_645755\test_claude_rotas.py", line 94, in secao
+    fn()
+    ~~^^
+  File "C:\IALD\Central de Patentes\work\iald_tudo_20260921\route_tests_review_20260923_083004_645755\test_claude_rotas.py", line 570, in s2
+    (m["motor"], m["provedor"], m["modelo"], m.get("rotulo"), m["disponivel"])
+                 ~^^^^^^^^^^^^
+KeyError: 'provedor'
+Traceback (most recent call last):
+  File "C:\IALD\Central de Patentes\work\iald_tudo_20260921\route_tests_review_20260923_083004_645755\test_claude_rotas.py", line 94, in secao
+    fn()
+    ~~^^
+  File "C:\IALD\Central de Patentes\work\iald_tudo_20260921\route_tests_review_20260923_083004_645755\test_claude_rotas.py", line 680, in s3
+    checa("/api/motor agora diz consentimento dado", m["consentimento"]["dado"] is True)
+                                                     ~~~~~~~~~~~~~~~~~~^^^^^^^^
+KeyError: 'dado'
+
+2. ESCOLHA: SÓ O OPERADOR DA LISTA VÊ E ESCOLHE O CLAUDE
+  [FALHA] operador da lista: 3 opções (nativa, openai, claude), Claude disponível  [{'detalhe': 'Servidor da IALD', 'disponivel': True, 'id': 'nativa', 'rotulo': 'IALD Nativa · Qwen3.6-35B'}, {'detalhe': 'OpenAI · gpt-5.6-luna', 'disponivel': True, 'id': 'openai', 'rotulo': 'ChatGPT 5.6 Luna'}]
+  [FALHA] …pelo token do app (Bearer) a mesma lista  
+  [FALHA] operador escolhe o Claude na web: 200, motor claude, consentimento da Anthropic ainda não dado  {'error': 'Esse modelo não está disponível para esta conta.'}
+  [FALHA] 2. ESCOLHA: SÓ O OPERADOR DA LISTA VÊ E ESCOLHE O CLAUDE: a seção rodou até o fim  KeyError: 'provedor'
+
+3. CONSENTIMENTO POR PROVEDOR
+[Qwen36-sys] 2 system(s) fundidos em 1 no topo
+[iald-mode] fast
+[iald-surface] web
+  [FALHA] operador no claude SEM o consentimento da Anthropic (tem o da OpenAI): aviso da Anthropic, nada enviado  []
+  [FALHA] conta no claude, aceite SEM provedor (app antigo = OpenAI) → 409, nada gravado da Anthropic  400 {'error': 'Esta conta responde pela IALD Nativa: não há serviço de terceiros a consentir. Nada foi alterado.'}
+  [FALHA] …aceite do texto da OpenAI com o motor no claude → 409 (leia de novo), nada gravado  400
+  [FALHA] …versão do aviso diferente da vigente → 409, nada gravado  400
+  [OK]    …provedor desconhecido → 400  
+  [FALHA] aceite grava no campo da Anthropic; o da OpenAI fica como estava  {'error': 'Esta conta responde pela IALD Nativa: não há serviço de terceiros a consentir. Nada foi alterado.'}
+  [FALHA] 3. CONSENTIMENTO POR PROVEDOR: a seção rodou até o fim  KeyError: 'dado'
+
+4. CONVERSA: O MESMO PREFIXO EM CACHE, A NOTA NO BLOCO VARIÁVEL, RAZÃO E RÓTULO DO CLAUDE
+  [OK]    a OpenAI recebe o prefixo da casa no início da mensagem developer  
+  [OK]    payload da OpenAI (conta padrão) como antes: chaves, HMAC 'iald-openai-v1:', nota da OpenAI, sem Claude  ['max_completion_tokens', 'messages', 'model', 'prompt_cache_key', 'reasoning_effort', 'safety_identifier', 'store', 'stream', 'stream_options']
+[Qwen36-sys] 2 system(s) fundidos em 1 no topo
+[iald-mode] fast
+[iald-surface] web
+  [FALHA] resposta do Claude chega à pessoa, rotulada claude / claude-sonnet-5 / Claude Sonnet 5  resposta nativa
+  [FALHA] system[0] = EXATAMENTE o prefixo que a OpenAI recebe, com cache_control (e só ele marcado; cache automático no topo do pedido — revisão 21/09)  1
+  [FALHA] a nota do Claude fica no bloco VARIÁVEL (fora do cache): Claude Sonnet 5 da Anthropic  
+  [FALHA] as mensagens do Claude: só a pergunta da pessoa (o system do cliente não passa)  None
+  [FALHA] pedido ao Claude: modelo, max_tokens 16000, metadata HMAC 'iald-anthropic-v1:', esforço high, sem campos da OpenAI  []
+  [FALHA] nenhuma chamada ao llama; a moderação foi à OpenAI com a chave da OpenAI (nunca a do Claude)  
+  [FALHA] razão do CLAUDE registra a chamada (modelo claude-sonnet-5); o da OpenAI não tem claude  None
+  [FALHA] medição TGLC com origem 'claude'  [('luiz', 'chat')]
+  [FALHA] reservas do claude em banco PRÓPRIO  
+  [FALHA] /api/active-model: claude:claude-sonnet-5, 'IALD · Claude Sonnet 5', sem consultar o llama  {'id': 'iald_nativa_v2_35b', 'label': 'IALD Nativa v2 (35B-A3B MoE, dataset canonico 161ex, Q4_K_M)', 'n_ctx': None, 'online': False, 'short': 'IALD v2 · Qwen3.6-35B', 'vision': False}
+  [FALHA] /api/contexto: a janela do claude (600000)  131072
+[IALD-AUTH] 2026-09-23 08:31:45 | DENUNCIA_RECEBIDA | user=luiz | ip=127.0.0.1 | id=den_20260923083145_f3a72d motivo=incorreto
+Traceback (most recent call last):
+  File "C:\IALD\Central de Patentes\work\iald_tudo_20260921\route_tests_review_20260923_083004_645755\test_claude_rotas.py", line 94, in secao
+    fn()
+    ~~^^
+  File "C:\IALD\Central de Patentes\work\iald_tudo_20260921\route_tests_review_20260923_083004_645755\test_claude_rotas.py", line 829, in s5
+    with sqlite3.connect(ws.GUARDA_CLAUDE.path) as db:
+                         ^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'NoneType' object has no attribute 'path'
+  [FALHA] /api/denuncia registra motor claude e modelo claude-sonnet-5  [{'id': 'den_20260923083145_f3a72d', 'usuario': 'luiz', 'motivo': 'incorreto', 'detalhe': '', 'resposta': 'β = 2', 'pergunta': 'β?', 'superficie': 'web', 'motor
+
+5. O CLAUDE NUNCA CAI NO LLAMA
+  [FALHA] GET /v1/models no claude: 403, nada ao llama  
+  [FALHA] POST /v1/completions no claude: 403, nada ao llama  
+[Qwen36-sys] 2 system(s) fundidos em 1 no topo
+[iald-mode] fast
+[iald-surface] web
+  [FALHA] SDK ausente: aviso motor_indisponivel claro, nada ao Claude nem ao llama; opção indisponível  []
+[Qwen36-sys] 2 system(s) fundidos em 1 no topo
+[iald-mode] fast
+[iald-surface] web
+  [FALHA] _chat_claude devolvendo None: recusa visível, NUNCA o llama  
+[Qwen36-sys] 2 system(s) fundidos em 1 no topo
+[iald-mode] fast
+[iald-surface] web
+  [FALHA] 402 da Anthropic: 'O crédito da Anthropic acabou. Avise o operador.'; nada ao llama  resposta nativa
+  [OK]    …e a bandeira de crédito da OpenAI NÃO é tocada  []
+  [FALHA] 5. O CLAUDE NUNCA CAI NO LLAMA: a seção rodou até o fim  AttributeError: 'NoneType' object has no attribute 'path'
+
+5b. REVISÃO: ATLAS INTEGRAL, FERRAMENTAS, RESERVA NAS RECUSAS, IMAGEM
+[Qwen36-sys] 2 system(s) fundidos em 1 no topo
+[iald-mode] fast
+[iald-surface] web
+  [FALHA] atlas_integral: claude recusa (motor_indisponivel), NADA à Anthropic nem ao llama  []
+  [FALHA] …/api/motor: o Claude indisponível (a opção também)  
+  [OK]    …_motor_externo_indisponivel(claude) diz o motivo em atlas_integral  O motor Claude não atende com a configuração atual de memória do servidor (IALD_MEMORIA_MODO=atlas_integral leva o Atlas inteiro). Nada foi enviado.
+[Qwen36-sys] 2 system(s) fundidos em 1 no topo
+[iald-mode] fast
+[iald-surface] web
+  [FALHA] …prefixo com <ATLAS_CANONICO (qualquer modo): recusa antes de montar o envio, nada à Anthropic  []
+  [OK]    config do claude: acervo e memória da OpenAI NÃO passam (só a lista fechada), com aviso  ['search_web']
+[claude] definições de ferramentas ilegíveis (PermissionError); fora da lista
+[claude] luiz: ferramenta fora da lista fechada do claude recusada: 'consultar_acervo'
+[claude] definições de ferramentas ilegíveis (PermissionError); fora da lista
+[claude] luiz: ferramenta fora da lista fechada do claude recusada: 'consultar_memoria'
+[claude] definições de ferramentas ilegíveis (PermissionError); fora da lista
+[claude] luiz: ferramenta fora da lista fechada do claude recusada: 'lembrar'
+[claude] definições de ferramentas ilegíveis (PermissionError); fora da lista
+[claude] luiz: ferramenta fora da lista fechada do claude recusada: 'prova_viva'
+[claude] definições de ferramentas ilegíveis (PermissionError); fora da lista
+[claude] luiz: ferramenta fora da lista fechada do claude recusada: 'generate_file'
+[claude] definições de ferramentas ilegíveis (PermissionError); fora da lista
+  [OK]    executor do claude: acervo, memória, lembrar, prova viva e arquivo RECUSADOS sem chegar ao execute_public_tool  ['get_current_datetime']
+[claude] definições de ferramentas ilegíveis (PermissionError); fora da lista
+Traceback (most recent call last):
+  File "C:\IALD\Central de Patentes\work\iald_tudo_20260921\route_tests_review_20260923_083004_645755\test_claude_rotas.py", line 94, in secao
+    fn()
+    ~~^^
+  File "C:\IALD\Central de Patentes\work\iald_tudo_20260921\route_tests_review_20260923_083004_645755\test_claude_rotas.py", line 910, in s5b
+    est, valor = ultima_reserva()
+    ^^^^^^^^^^
+TypeError: cannot unpack non-iterable NoneType object
+  [FALHA] …a lista fechada tem as canônicas (kernel, Atlas, fontes, search_tgl/fetch_tgl) e nenhuma do acervo/memória  ['fetch_tgl', 'fetch_url', 'get_current_datetime', 'iald_atlas_read', 'iald_atlas_search', 'iald_kernel_list', 'iald_kernel_read', 'iald_kernel_search', 'iald_kernel_verification', 'search_tgl', 'search_web']
+[Qwen36-sys] 2 system(s) fundidos em 1 no topo
+[iald-mode] fast
+[iald-surface] web
+  [FALHA] 5b. REVISÃO: ATLAS INTEGRAL, FERRAMENTAS, RESERVA NAS RECUSAS, IMAGEM: a seção rodou até o fim  TypeError: cannot unpack non-iterable NoneType object
+
+6. O ATLAS PELAS FERRAMENTAS DO CLAUDE SEM §V, §VI E §X
+[claude] definições de ferramentas ilegíveis (PermissionError); fora da lista
+  [OK]    unidade: sem memória, UNAVAILABLE (fail-closed)  
+[claude] definições de ferramentas ilegíveis (PermissionError); fora da lista
+[claude] definições de ferramentas ilegíveis (PermissionError); fora da lista
+  [OK]    unidade: read com suppress=PRIVATE_SECTIONS; argumento 'suppress' do modelo recusado  
+[Qwen36-sys] 2 system(s) fundidos em 1 no topo
+[iald-mode] fast
+[iald-surface] web
+  [FALHA] rota (agente de verdade): o Claude pediu o Atlas e a busca foi SEM §V/§VI/§X  [] resposta nativa
+  [FALHA] …ferramentas pagas do claude incluem o Atlas e o kernel; consulta exigida → tool_choice any  []
+  [FALHA] …2ª volta: o pensamento assinado volta intacto e o prefixo em cache é o mesmo  
+  [FALHA] …nada ao llama  
+
+7. RESERVAS SEPARADAS E O PAINEL
+[Qwen36-sys] 2 system(s) fundidos em 1 no topo
+[iald-mode] fast
+[iald-surface] web
+  [FALHA] 3 cobranças acima da reserva no claude: o claude pausa (aviso limite / conferência), nada enviado  []
+  [OK]    …e a OpenAI segue respondendo (reservas separadas)  resposta da OpenAI
+  [OK]    /admin/api/motor: bloco claude (chave definida, modelo, contas, tetos, gasto, acima da reserva)  {'avisos': [], 'cache_ttl': '5m', 'chave_definida': True, 'cobrancas_acima_da_reserva': [{'actual': 1.0, 'at': '2026-09-23T11:31:45+00:00', 'cap': 0.001, 'day_utc': '2026-09-23', 'scope': 'conta', 'us
+  [OK]    …a chave do Claude (e a da OpenAI) NUNCA sai no painel  
+  [OK]    fontes públicas conferidas por hash; escrita fora do staging bloqueada  []
+  [OK]    nenhuma tentativa de rede  []
+
+RESULTADO: 46 OK, 38 falhas

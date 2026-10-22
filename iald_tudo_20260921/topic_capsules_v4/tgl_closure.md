@@ -1,0 +1,7 @@
+### tgl_closure
+Fonte: resultado_publicado_integral /core/tgl_closure
+Separação de tipos:q_F suporte no core≠e_Nome espelho acima;E1(e_Nome)=βq_F. H3L_min=1−q_F representante mínimo da classe de kernel [KERNEL:aniquilação+maximalidade]. DADO suporte,threeLocksFromSupport/realizationFromSupport habitam camadas;gap pleno tipado em4 entradas [KNOWN-COMPOSED].
+Existência matemática da testemunha completa por composição KNOWN:BW1975/76+Takesaki(core II_inf)+Haagerup(hiperfinito)+II_inf difuso(split faces)+Jones1983(índice1/β≈83.1≥4 existe). Não prova kernel dessa existência. Torre Nome contém TL_β no invariante [KNOWN automático],sem exigir TLJ puro. Não unicidade absorvida como gauge [DEF/AX Princípio Gauge do Nome,não derivado];invariantes peso/índice/defeito [KERNEL].
+Histórico not_claimed:full_TGL_witness_constructed permanece False até termo Lean pleno sem axiomas customizados; preservar esta negativa no escopo do registro,sem generalizar frente a posteriores. Espaço-tempo curvo OPEN; nada experimental validado. Fecha arquitetura matemática INTERNA,não descrição provada da natureza;certificação kernel separada. all_verified=true.
+Remissões (relativas ao tópico; destinos internos preservados):
+{"what_remains_named":{"@":"/what_remains_named"},"statuses":{"@":"/statuses"},"values":{"@":"/values"},"residuals":{"@":"/residuals"},"checks":{"@":"/checks","items":11},"verdict":{"@":"/verdict"},"seals":{"@":"/seals"}}

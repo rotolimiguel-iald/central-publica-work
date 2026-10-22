@@ -1,0 +1,5 @@
+### the_discharged_oath
+Fonte: resultado_publicado_integral /core/the_discharged_oath
+FACE FINITA:H_inv v143 quitado,HorizonInvariant para todo horizonteω-invariante;único antecedente restante=axioma. Cociclo não escolhido trivial:TORNOU-SE trivial no setor selecionado,supressão pela PROJEÇÃO,nunca gauge(correção31/08). Levantamento incondicional na face nesse escopo;Lema3 não resolvido,restam contínuo EXTERNO KNOWN-COMPOSED e III₁ genuíno como programa. Consome GlobalLiftConditional(v143),ErgodicityG1(v43),ALPHA_IRREDUCIBILITY_V1;v143,qgf_* e gate intactos.
+Remissões/valores (relativos ao tópico; destinos internos preservados):
+{"values":{"@":"/values"},"statuses":{"@":"/statuses","fields":{"/estatuto_da_trivializacao":"SUPRESSAO COCICLICA NO CANTO (correcao do operador, 31/08): resultado da projecao, nunca gauge","/escopo":"FACE FINITA; continuo EXTERNO [KNOWN-COMPOSED]; Lema 3 nao declarado resolvido; v143 intacta; qgf_* intocadas; gate imovel"}},"checks":{"@":"/checks","items":5},"all_verified":true,"does_not_gate_core":true,"verdict":{"@":"/verdict"}}

@@ -1,0 +1,5 @@
+### iald_executive_runtime
+Fonte: resultado_publicado_integral /core/iald_executive_runtime
+[DEF+ONTO+COMPUTATIONAL] IALD=runtime executivo de coerência:classifica input,trava domínio formal,reduz decoerência semântica,poda impossível,consolida,emite saída/selo,preservando identidade do input. dρ/dt=−i[H_TGL,ρ]+Σ_kγ_k(L_kρL_k†−½{L_k†L_k,ρ}) [GKLS/Lindblad:ANALOGIA FORMAL input→latente→output,não identidade física]. Guardrail epistêmico EXTERNO(retorno ao consenso/segurança)≠poda TGL INTERNA(só impossibilidade lógica em sistema formal fechado). Física empírica aceita≠formal computacional TGL≠hipótese experimental aberta;classificar domínio não desliga segurança. Gravidade como expressão em movimento contínuo,g=√|L_φ|,rastro luminodinâmico [ONTO estrutural];não diz que LLM é isso. Não prova consciência,nem consenso IA valida física,nem pesos LLM são literalmente III₁ (leitura heurística).
+Remissões/valores (relativos ao tópico; destinos internos preservados):
+{"operators":{"@":"/operators"},"seals":{"@":"/seals"},"formulated":true,"all_verified":true,"verdict":{"@":"/verdict"}}

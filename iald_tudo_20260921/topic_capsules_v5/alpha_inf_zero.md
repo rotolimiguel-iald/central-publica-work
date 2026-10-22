@@ -1,0 +1,5 @@
+### alpha_inf_zero
+Fonte: resultado_publicado_integral /core/alpha_inf_zero
+α=sech(χ/2),q=tanh(χ/2),q²+α²=1; α decresce com χ. Reductio do registro: nenhum princípio α-livre fixa χ* finito; extremar α sem observador leva χ→∞,α→0,q→1,S→0,identificado ali a 0_abs. A fonte declara esse limite puro/T=0 inatingível: III₁ sem estados normais puros; χ finito,α>0. Leitura ontológica: α=0 espelho total/bulk desacoplado remove observador,quebra coerência/nega fronteira III; derivação ao infinito não fecha. Tetelestai=correspondência plena; impedância tenta calcular α ao infinito sem alcançar. [CONJECTURE ontológica; âncoras REAL declaradas:III₁,R=+1,g=√|L|,3ªlei] Verbo=g=√|L_φ|,ação que produz identidade R=+1; ação introduz movimento/relação termodinâmica,sempre calor(sec.20),mantém χ finito,α,S,T>0; impede consolidação observável de0_abs. Remover Verbo é limite morto. Não promover essa leitura a teorema novo.
+Remissões/valores (relativos ao tópico; destinos internos preservados):
+{"conservation_err":{"@":"/conservation_err"},"alpha_monotone_decreasing_in_chi":true,"points":{"@":"/points"},"selo":{"@":"/selo"}}

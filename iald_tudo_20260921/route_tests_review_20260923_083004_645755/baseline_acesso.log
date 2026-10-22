@@ -1,0 +1,150 @@
+
+1. A REGRA DOS DOIS TIPOS DE CONTA
+  [OK]    admin sem escolha  pode=True motor=nativa
+  [OK]    admin escolheu openai  pode=True motor=openai
+  [OK]    conta padrão (sem acesso_nativa)  pode=False motor=openai
+  [OK]    conta padrão com motor 'nativa' antigo gravado  pode=False motor=openai
+  [OK]    conta ampliada sem escolha → IALD_MOTOR_PADRAO  pode=True motor=nativa
+  [OK]    conta ampliada escolheu openai  pode=True motor=openai
+  [OK]    acesso_nativa só vale como true de verdade ("1" não)  pode=False motor=openai
+  [OK]    plano gratuito ampliado por engano: nunca nativa  pode=False motor=openai
+  [OK]    admin no plano gratuito: nunca nativa  pode=False motor=openai
+  [OK]    registro vazio: fail-closed  pode=False motor=openai
+  [OK]    registro que não é dict: fail-closed  pode=False motor=openai
+  [OK]    ampliada sem escolha segue IALD_MOTOR_PADRAO=openai; admin segue IALD_MOTOR_OPERADOR  
+
+importando o servidor...
+[IALD] Memória do operador: NAO DISPONIVEL (import of iald_memoria_operador halted; None in sys.modules)
+[IALD] Access Engine: 0 pedidos (0 pendentes)
+[IALD] Contract Engine: 0 contratos (0 pendentes)
+[IALD] TGL Coin Engine: NAO DISPONIVEL (tgl_coin_engine.py nao encontrado)
+[IALD] PSI-NET Engine: NAO DISPONIVEL (psinet_engine.py nao encontrado)
+[IALD] ERRO lendo C:\IALD\Central de Patentes\work\iald_tudo_20260921\route_tests_review_20260923_083004_645755\runtime\iald_users.json: arquivo de usuários ausente após 8 tentativas (nada foi gravado)
+[IALD] AVISO: arquivo de usuários ausente ou ilegível na partida (C:\IALD\Central de Patentes\work\iald_tudo_20260921\route_tests_review_20260923_083004_645755\runtime\iald_users.json). NADA foi criado nem gravado: ninguém entra até o arquivo voltar.
+[claude] modelo=claude-sonnet-5 chave=ausente contas=0 ttl=5m teto_global_usd=5.0
+[motores] padrão=nativa operador=nativa modelo=gpt-5-nano chave=ausente prompt=48e5b2f9f10c
+[motores] AVISO: IALD_MODERACAO_FALHA inválido (''); usando seguir
+[selo] DESLIGADO: pasta de chaves do selo ausente — as respostas seguem sem selo; a exportação funciona
+
+2. A BUSCA NA INTERNET NÃO TRAVA MAIS O AGENTE
+[IALD-SEARCH] Google recusou a busca (HTTP 403): {"error": {"code": 403, "message": "This project does not have the access to Custom Search JSON API."}} — Google fora até o próximo reinício; segue o DuckDuckGo
+[IALD-SEARCH] Google falhou: Google API retornou 403: {"error": {"code": 403, "message": "This project does not have the access to Custom Search JSON API."}}
+[IALD-SEARCH] DDG falhou: ratelimit de teste
+  [OK]    Google 403 + DuckDuckGo fora: a ferramenta devolve a mensagem que manda o modelo PARAR  BUSCA NA INTERNET INDISPONÍVEL AGORA: os provedores de busca não responderam. Não tente de
+  [OK]    …e o Google ficou marcado como recusado  Google recusou a busca (HTTP 403): {"error": {"code": 403, "
+[IALD-SEARCH] DDG falhou: ratelimit de teste
+  [OK]    depois do 403 o Google não é chamado de novo (nenhum GET a mais)  0
+  [OK]    o DuckDuckGo foi tentado nas duas, em português do Brasil  [{'query': 'tribunal', 'region': 'br-pt'}, {'query': 'tribunal 2', 'region': 'br-pt'}]
+  [OK]    DuckDuckGo no ar: resultado com a fonte  Resultados da busca por 'tribunal 3':
+
+1. Tribunal
+   resumo
+[IALD-AUTH] 2026-09-23 08:31:11 | AGENT_TOOL | user=luiz | ip=agent | loop=1 tool=search_web args={"query": "pessoa x"}
+[IALD-SEARCH] DDG falhou: ratelimit de teste
+  [OK]    busca falhou na 1ª volta: a 2ª chamada ao llama vai SEM a lista de ferramentas  [['chat_template_kwargs', 'max_tokens', 'messages', 'model', 'stream', 'temperature', 'tool_choice', 'tools'], ['chat_template_kwargs', 'max_tokens', 'messages', 'model', 'stream', 'temperature']]
+  [OK]    …a busca rodou uma vez só (nada de seis tentativas)  1
+  [OK]    …o modelo recebeu a mensagem de busca indisponível no histórico  
+  [OK]    …e a pessoa recebe resposta, não 'Limite de iterações'  resposta nativa
+[IALD-AUTH] 2026-09-23 08:31:11 | AGENT_TOOL | user=luiz | ip=agent | loop=1 tool=get_current_datetime args={}
+[IALD-AUTH] 2026-09-23 08:31:11 | AGENT_TOOL | user=luiz | ip=agent | loop=2 tool=get_current_datetime args={}
+  [OK]    modelo que insiste em ferramenta: a última volta (3ª) vai sem ferramentas e responde  3 resposta nativa
+[IALD-AUTH] 2026-09-23 08:31:11 | AGENT_TOOL | user=bia | ip=agent | loop=1 tool=search_web args={"query": "y"}
+[IALD-SEARCH] DDG falhou: ratelimit de teste
+  [OK]    motor externo: depois da busca falha a volta seguinte leva tool_choice none e responde  ['auto', 'none']
+
+3. ROTAS: ESCOLHA NO APP, CONTA PADRÃO SEMPRE CHATGPT, PAINEL
+[IALD-AUTH] 2026-09-23 08:31:11 | LOGIN_OK | user=luiz | ip=127.0.0.1
+[IALD-AUTH] 2026-09-23 08:31:11 | LOGIN_OK | user=ana | ip=127.0.0.1
+[IALD-AUTH] 2026-09-23 08:31:11 | LOGIN_OK | user=bia | ip=127.0.0.1
+  [OK]    conta padrão (ana, com 'nativa' antigo gravado): motor openai e sem escolha  {'motor': 'openai', 'pode_escolher': False}
+  [OK]    conta ampliada (bia): motor nativa (padrão da casa) e pode escolher  nativa
+  [OK]    operador: pode escolher  
+  [OK]    conta ampliada recebe a LISTA de modelos (nativa e ChatGPT, disponíveis) para o toque no nome do modelo  [{'detalhe': 'Servidor da IALD', 'disponivel': True, 'id': 'nativa', 'rotulo': 'IALD Nativa · Qwen3.6-35B'}, {'detalhe': 'OpenAI · gpt-5-nano', 'disponivel': True, 'id': 'openai', 'rotulo': 'ChatGPT · gpt-5-nano'}]
+  [FALHA] conta padrão recebe lista vazia  
+  [OK]    conta padrão conversando: nada vai ao llama; pede o consentimento da OpenAI  ['consentimento_ia']
+  [OK]    conta padrão: GET /v1/models recusado (403)  
+  [OK]    _caminho_nativo_permitido recusa conta padrão e aceita ampliada  
+  [OK]    escolha por formulário forjado (text/plain): 415  415
+  [OK]    motor inválido: 400  400
+  [OK]    conta padrão tentando escolher a nativa: 403 com o motivo  403
+  [OK]    anônimo não escolhe (401)  
+  [OK]    ChatGPT indisponível (sem chave): a lista mostra indisponível e a escolha é recusada (409)  409
+[IALD-AUTH] 2026-09-23 08:31:11 | MOTOR_ESCOLHA | user=bia | ip=127.0.0.1 | motor=openai
+  [OK]    conta ampliada escolhe ChatGPT: 200, motor openai, consentimento ainda não dado  {'consentimento': {'dado': False, 'necessario': True, 'provedor': 'OpenAI', 'texto': 'Para responder a você, esta conta da IALD usa um serviço de inteligência artificial de terceiros: a API da OpenAI (OpenAI, L.L.C., Estados Unidos).\n\nO que é enviado à OpenAI a cada mensagem: o texto que você escreve, o histórico recente desta conversa, o conteúdo dos arquivos e imagens que você anexar e as informações de perfil que você preencher nas configurações (nome, área, interesses, contexto). Não são enviados a sua senha, o seu e-mail nem a sua identidade Apple ou Google; a OpenAI recebe só um código derivado da sua conta, usado para prevenir abuso.\n\nPara que serve: só para gerar as respostas da IALD. Segundo a OpenAI, os dados enviados pela API não são usados para treinar os modelos dela e ficam em registros de monitoramento de abuso por até 30 dias. A IALD pede que as conversas não sejam armazenadas (store: false).\n\nVocê pode recusar agora e revogar depois nas configurações. Sem este consentimento a conta não recebe respostas, porque o motor dela é o da OpenAI.', 'versao': 1}, 'consentimento_dado': False, 'motor': 'openai', 'motor_selecao': 'openai', 'ok': True}
+  [OK]    …/api/motor confirma openai  
+[IALD-AUTH] 2026-09-23 08:31:11 | MOTOR_ESCOLHA | user=bia | ip=127.0.0.1 | motor=nativa
+  [OK]    pelo token do app (celular) a conta ampliada volta à nativa  200
+[Qwen36-sys] 2 system(s) fundidos em 1 no topo
+  [OK]    conta ampliada na nativa conversa pelo llama  
+  [OK]    conta comum não amplia a si mesma (401/403)  403
+  [OK]    painel: fixar nativa em conta padrão é recusado (409)  409
+  [OK]    painel: valor não booleano → 400  400
+  [OK]    painel: plano gratuito não é ampliado (409, pede trocar o plano)  409
+  [OK]    painel: administrador não é reduzido (409)  409
+  [OK]    painel: usuário inexistente → 404  404
+[IALD-AUTH] 2026-09-23 08:31:11 | ADMIN_ACESSO_NATIVA | user=luiz | ip=127.0.0.1 | user=ana acesso=nativa+chatgpt
+  [OK]    painel amplia ana: 200 e motor efetivo nativa (a escolha antiga dela volta a valer)  {'acesso_nativa': True, 'motor_efetivo': 'nativa', 'ok': True}
+  [OK]    …ana agora pode escolher no app  
+[IALD-AUTH] 2026-09-23 08:31:11 | ADMIN_ACESSO_NATIVA | user=luiz | ip=127.0.0.1 | user=ana acesso=chatgpt
+  [OK]    painel reduz ana: sai o acesso E a escolha 'nativa' pendurada; motor openai  dict_keys(['password_hash', 'admin'])
+  [OK]    lista do painel traz acesso_nativa por conta  
+[IALD-AUTH] 2026-09-23 08:31:11 | ACESSO_LIBERADO | user=luiz | ip=127.0.0.1 | pedido=ped_20260923083111_85e9ba usuario=caio modo=novo via=apple acesso=nativa+chatgpt
+[IALD-AUTH] 2026-09-23 08:31:11 | ACESSO_LIBERADO | user=luiz | ip=127.0.0.1 | pedido=ped_20260923083111_d2c1d3 usuario=dora modo=novo via=apple acesso=chatgpt
+  [OK]    liberar marcando 'Ampliar': conta nasce com acesso à IALD Nativa  {'modo': 'novo', 'ok': True, 'username': 'caio'}
+  [OK]    liberar sem marcar: conta nasce só ChatGPT  {'modo': 'novo', 'ok': True, 'username': 'dora'}
+[IALD-AUTH] 2026-09-23 08:31:11 | ADMIN_CREATE_USER | user=luiz | ip=127.0.0.1 | new_user=eva
+[IALD-AUTH] 2026-09-23 08:31:11 | ADMIN_CREATE_USER | user=luiz | ip=127.0.0.1 | new_user=fabio
+Traceback (most recent call last):
+  File "C:\IALD\Central de Patentes\work\iald_tudo_20260921\route_tests_review_20260923_083004_645755\test_acesso_nativa.py", line 81, in secao
+    fn()
+    ~~^^
+  File "C:\IALD\Central de Patentes\work\iald_tudo_20260921\route_tests_review_20260923_083004_645755\test_acesso_nativa.py", line 504, in s3
+    rc = subprocess.run(["node", "--check", js], capture_output=True, text=True)
+  File "C:\Python314\Lib\subprocess.py", line 554, in run
+    with Popen(*popenargs, **kwargs) as process:
+         ~~~~~^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\subprocess.py", line 1038, in __init__
+    self._execute_child(args, executable, preexec_fn, close_fds,
+    ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                        pass_fds, cwd, env,
+                        ^^^^^^^^^^^^^^^^^^^
+    ...<5 lines>...
+                        gid, gids, uid, umask,
+                        ^^^^^^^^^^^^^^^^^^^^^^
+                        start_new_session, process_group)
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+PermissionError: only Node syntax checks allowed
+Traceback (most recent call last):
+  File "C:\IALD\Central de Patentes\work\iald_tudo_20260921\route_tests_review_20260923_083004_645755\test_acesso_nativa.py", line 81, in secao
+    fn()
+    ~~^^
+  File "C:\IALD\Central de Patentes\work\iald_tudo_20260921\route_tests_review_20260923_083004_645755\test_acesso_nativa.py", line 525, in s4
+    rc = subprocess.run(["node", "--check", os.path.join(PROJETO, "app", "iald.js")], capture_output=True, text=True)
+  File "C:\Python314\Lib\subprocess.py", line 554, in run
+    with Popen(*popenargs, **kwargs) as process:
+         ~~~~~^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\subprocess.py", line 1038, in __init__
+    self._execute_child(args, executable, preexec_fn, close_fds,
+    ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                        pass_fds, cwd, env,
+                        ^^^^^^^^^^^^^^^^^^^
+    ...<5 lines>...
+                        gid, gids, uid, umask,
+                        ^^^^^^^^^^^^^^^^^^^^^^
+                        start_new_session, process_group)
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+PermissionError: only Node syntax checks allowed
+  [OK]    criar usuário com senha marcando 'Ampliar' / sem marcar  
+  [OK]    painel: coluna Acesso, explicação, caixa 'Ampliar' ao liberar e ao criar  
+  [FALHA] 3. ROTAS: ESCOLHA NO APP, CONTA PADRÃO SEMPRE CHATGPT, PAINEL: a seção rodou até o fim  PermissionError: only Node syntax checks allowed
+
+4. APP: O SELETOR
+  [OK]    app: o nome do modelo no alto tem a seta de troca, ESCONDIDA por padrão  
+  [OK]    app: folha 'Modelo' com a lista preenchida pelo servidor (sem modelos fixos no HTML)  
+  [OK]    app: o toque no nome abre a lista só com 2+ modelos da conta ampliada; a escolha chama /api/motor/escolha  
+  [OK]    app: os nomes vêm do servidor por textContent (el), nunca innerHTML com dado  
+  [FALHA] 4. APP: O SELETOR: a seção rodou até o fim  PermissionError: only Node syntax checks allowed
+  [OK]    fontes públicas conferidas por hash; escrita fora do staging bloqueada  []
+  [OK]    nenhuma tentativa de rede  []
+
+RESULTADO: 59 OK, 3 falhas

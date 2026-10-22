@@ -1,0 +1,5 @@
+### ga_mass_audit
+Fonte: resultado_publicado_integral /core/ga_mass_audit
+Erro v4:ler |R|²=β(reflexão S-boundary) como amplitude de FONTE gravitacional⇒v_univ=βc/√(2π)≈1439km/s para tudo;coincidência em aglomerados,erro de ORDENS galáctico;âncora GA fator0.5/janela larga mascarava. RETIRADA como lei de fonte a forma2β²(c²/4πG)R,preservada histórica. Correção:M_TGL^linear=M_RG STEALTH [CONDICIONAL(P1)–(P4)+T1,Face C/Jacobson linear;8πG kernelv74,mestrev97]. β vive na RESPOSTA fronteira:dephasing,expoenteH0,piso;não massa-fonte.
+Remissões/valores (relativos ao tópico; destinos internos preservados):
+{"values":{"@":"/values"},"scale_audit":{"@":"/scale_audit","items":6},"checks":{"@":"/checks","items":5},"all_verified":true,"statuses":{"@":"/statuses","fields":{"/o_veredito":{"@EXPOSITION":"literal na exposição carregada","starts_with":"GA_MASS_FORM_RETIRED__REFLECTION_WAS_MISREAD_AS_SOURCE__LINE","span":[81457,106]}}},"does_not_gate_core":true,"verdict":{"@EXPOSITION":"literal na exposição carregada","starts_with":"GA_MASS_FORM_RETIRED__REFLECTION_WAS_MISREAD_AS_SOURCE__LINE","span":[81457,106]}}
