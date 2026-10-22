@@ -54,7 +54,7 @@ def main():
     artifact=result['artifact'];path,meta=store.resolve('luiz',artifact['id'])
     assert hashlib.sha256(path.read_bytes()).hexdigest()==meta['sha256']
     denied=False
-    try:store.resolve('taveiraneto',artifact['id'])
+    try:store.resolve('[dado pessoal removido]',artifact['id'])
     except (ValueError,PermissionError):denied=True
     assert denied,'Owner isolation failed'
     historical=api.execute('bench_map',{});assert historical['counts']['routes']>=1
