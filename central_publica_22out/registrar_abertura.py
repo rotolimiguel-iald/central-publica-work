@@ -65,9 +65,10 @@ TXT_M2 = f"""
 ## 22/10/2026 — A CENTRAL ABERTA {MARCA}
 Ordem do operador cumprida: {linha_repos}; site `/central/` (SUBIDA VERIFICADA); um.acom `{info["sha256"][:16]}`. Critério, esteira, achados e a
 errata do depositante (pessoa física) em [[central-publica-22out]]. Decisão do operador: a frase do autoteste do ACOM Crypto não é a frase-chave
-de acesso («É diferente — publique»). O commit `{bound}` do the_boundary foi empurrado às 10:37 por OUTRA sessão. Pendente, decisão do operador:
-reescrever (force-push) o histórico do `central-publica` para tirar do commit `2b3028f` o 2º telefone e o CEP do cartão CNPJ (dado de registro
-público da Receita; corrigido à frente em `41e0b66`).
+de acesso («É diferente — publique»). O commit `{bound}` do the_boundary foi empurrado às 10:37 por OUTRA sessão. Achados tardios corrigidos à
+frente: o 2º telefone e o CEP do cartão CNPJ (núcleo `41e0b66`); os identificadores das contas de dois testadores convidados (núcleo `8f05bc6`)
+e as pastas de convite e provisionamento dessas contas (work, `git rm` em `c42e40c8`). Pendente, decisão do operador: reescrever o histórico
+público (force-push, negado pelo classificador de segurança) ou apagar e recriar os dois repositórios, para tirá-los também dos commits antigos.
 """
 LINHA_M1 = ("- [A CENTRAL ABERTA (22/10)](central-publica-22out.md) — **3 repositórios públicos + /central/ no site + um.acom**; critério, esteira "
             "e conferência em `work/central_publica_22out`; depositante = pessoa física (errata ao lado) " + MARCA + "\n")

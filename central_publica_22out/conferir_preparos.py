@@ -42,6 +42,10 @@ ENDERECO = re.compile(r"(?i)\bCEP\b[^\d]{0,6}\d{2}\.?\d{3}-?\d{3}\b|\b(?:Qd|Quad
 EMAIL_PESSOAL = re.compile(r"(?<![A-Za-z0-9._%+-])[A-Za-z0-9._%+-]++@(hotmail|gmail|icloud|outlook|yahoo|live|uol|bol|terra|msn|me|protonmail|"
                            r"rmiguel\.adv)\.[a-z.]{2,6}", re.I)   # possessiva: linear em trechos longos sem @
 CASA = re.compile(r"(?i)(rotoli|\biald\b|luminodin|\bTGL\b|um\.py|haja luz|matplotlib)")
+# (22/10/2026) identificadores de pessoas privadas (lista LOCAL ~/.iald_privado/terceiros_privados.json; nunca no código publicado)
+_TPP = Path.home() / ".iald_privado" / "terceiros_privados.json"
+TERC = (re.compile(r"(?i)(?<![A-Za-zÀ-ú])(?:" + "|".join(json.loads(_TPP.read_text(encoding="utf-8"))["nomes"]) + r")(?![A-Za-zÀ-ú])")
+        if _TPP.is_file() else None)
 TXT_EXT = {".py", ".lean", ".md", ".json", ".jsonl", ".txt", ".tex", ".csv", ".tsv", ".toml", ".yaml", ".yml", ".js", ".mjs", ".ts", ".tsx",
            ".jsx", ".html", ".css", ".ipynb", ".sh", ".ps1", ".bat", ".cfg", ".ini", ".sql", ".bib", ".sty", ".cls", ".xml", ".svg", ".dat",
            ".log", ".out", ".diff", ".patch", ".spec", ".gitignore", ".gitattributes", ".example", ".r", ".jl", ".c", ".h", ".cpp", ".rs"}
@@ -161,6 +165,8 @@ for p in _todos():
             marca("e-mail pessoal sem máscara", rel)
         if ENDERECO.search(t):
             marca("endereço, CEP ou nascimento sem máscara", rel)
+        if TERC is not None and TERC.search(t):
+            marca("identificador de terceiro sem máscara", rel)
         # os 4 scripts da esteira trazem os PADRÕES da regra e exemplos fictícios (revistos em 22/10/2026) — só eles, só nesta pasta
         esteira = rel.startswith("central_publica_22out/") and partes[-1] in ("aplicar_regra_escritorio.py", "conferir_preparos.py",
                                                                               "guarda_publica.py", "testar_regra_escritorio.py")
