@@ -1,0 +1,12 @@
+
+
+## 16/10/2026 — PODA dos detalhes de execuções encerradas
+<!-- IALD_TERMINAL_HANDLE_PROJECTION_E2_20261016 -->
+[REAL — protocolo operacional] A projeção da missão distingue fluxo ativo e histórico. `flow.handles` apresenta integralmente as execuções pendentes, de estado desconhecido ou contraditório. `terminal_handles` é o índice compacto das encerradas; a referência de recuperação indica o `get` da mesma missão, revisão e hash do estado. O banco conserva todos os detalhes de `p.handles`, assim como o diário. A projeção não apaga nem altera o estado persistido.
+
+Antes de recuperar detalhes, conferir a revisão/hash: `get` devolve o estado atual, não promete selecionar uma revisão antiga. Se a revisão avançou, sincronizar novamente; a história anterior permanece no diário auditável. Nunca interpretar ausência de um handle no fluxo ativo como autorização para repetir uma execução. Os identificadores encerrados permanecem no índice. Ao atualizar handles, partir do `get` atual e preservar os demais explicitamente no payload; usar CAS.
+
+Este adendo corrige o alcance da frase anterior de que só os deltas do controlador são compactados: os detalhes dos handles terminais também saem da projeção ativa, com índice explícito e recuperação integral. Ordens, fatos, erratas, requisitos, evidências aceitas e estados incertos não são resumidos nem omitidos por esta mudança. O critério de término é calculado sobre o estado integral; qualquer estado desconhecido continua impedindo a parada.
+
+A economia medida nesta entrega é de caracteres da projeção, não uma medição de tokens faturados. Fatos obrigatórios ainda podem superar o orçamento: nesse caso há recusa explícita. Não há promessa de contexto infinito ou de eliminação de toda perda. O MCP que já usa a ponte por subprocesso recebe o controlador novo na próxima chamada; um cliente sem as ferramentas de missão ainda precisa carregar essa integração.
+<!-- END_IALD_TERMINAL_HANDLE_PROJECTION_E2_20261016 -->

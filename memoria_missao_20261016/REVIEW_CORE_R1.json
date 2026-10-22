@@ -1,0 +1,97 @@
+{
+  "schema": "iald-independent-code-review/v1",
+  "review": "CORE_R1",
+  "unit": "F9.MEMORIA_MISSAO_20261016",
+  "reviewer": "mission_memory_review",
+  "role": "independent_reviewer_not_builder",
+  "verdict": "REQUEST_CHANGES",
+  "timestamp": "2026-10-16T11:30:49.642867+00:00",
+  "statute": "REAL: findings reproduced locally; no scientific acceptance",
+  "files_reviewed": {
+    "C:\\IALD\\Central de Patentes\\work\\memoria_missao_20261016\\review_core_r1\\mission.py": "c3d66f053f42dbc5be5f06624004071a71f8a66d2cfbf06f6189cdc70796ab57",
+    "C:\\IALD\\Central de Patentes\\work\\memoria_missao_20261016\\review_core_r1\\mission_cli.py": "2ba692fcdbc615f9cd74ef2c6a0c046bd4b1412f13a11dd96761edb855a0b324",
+    "C:\\IALD\\Central de Patentes\\work\\memoria_missao_20261016\\review_core_r1\\test_mission.py": "817395d3f65c92905a47dd8e41de47b6571d20bbce51aabbd9070cf8c4bd32ea",
+    "C:\\IALD\\Central de Patentes\\work\\memoria_missao_20261016\\review_core_r1\\adversarial_review.py": "a24361a3b254b10ad4cd23a2ea07bf8627b09bce915e4b2d608b28725db0aa9f",
+    "C:\\IALD\\Central de Patentes\\work\\memoria_missao_20261016\\review_core_r1\\lib\\iald_memory\\store.py": "b213498dabb3f7e663fce9f7da681f9c28c84b75f975957e858b0594b9bcfde2",
+    "C:\\IALD\\Central de Patentes\\work\\memoria_missao_20261016\\review_core_r1\\lib\\iald_memory\\guard.py": "0d1d34015e9b0f6a6fd2d68b82f164872a26819473877afa0fc04eac49c6bbdc"
+  },
+  "test_summary": {
+    "existing_suite_passed": 20,
+    "existing_suite_failed": 0,
+    "adversarial_findings_reproduced": 5,
+    "additional_policy_observation": 1
+  },
+  "findings": [
+    {
+      "id": "R1-01",
+      "severity": "ALTO",
+      "file": "mission.py",
+      "line": 88,
+      "title": "Candidato de modelo executa delta de missão",
+      "reproduction": "model_candidate_changes_operational_state",
+      "observed": "Registro candidate/DECLARADO de actor.kind=model com meta KEY foi aplicado: A=satisfied, mesmo submitter/reviewer e tetelestai=true. O candidato não apareceu em current_records.",
+      "impact": "Contorna a revisão independente e promove saída de modelo a estado operacional consolidado.",
+      "fix": "Reservar interpretação de KEY a registro operacional autorizado fact/REAL; manter metadados de candidatos como dados visíveis. Validar formato e linhagem dos deltas."
+    },
+    {
+      "id": "R1-02",
+      "severity": "ALTO",
+      "file": "mission.py",
+      "line": 119,
+      "title": "Candidato apaga instrução consolidada da projeção",
+      "reproduction": "candidate_supersedes_mandatory_instruction",
+      "observed": "Candidato DECLARADO com supersedes aponta para decisão INPUT; current_records conserva apenas o candidato. ACOM.project preserva ambas.",
+      "impact": "Um agente retomado perde uma restrição ainda não revogada por autoridade apropriada.",
+      "fix": "Candidato não suprime registro consolidado. Preservar linhagem/ordens obrigatórias, ou usar projeção canônica do ACOM para registros não operacionais."
+    },
+    {
+      "id": "R1-03",
+      "severity": "MEDIO",
+      "file": "mission.py",
+      "line": 121,
+      "title": "Projeção omite fluxo e handles de execução",
+      "reproduction": "operational_flow_omitted_from_projection",
+      "observed": "p.phase=dispatch_uncertain, next_action de reconciliação e handle com job_id ficaram ausentes da projeção de missão.",
+      "impact": "Retomada pelo pacote compacto perde o identificador necessário para reconciliar envio incerto e pode repetir trabalho externo.",
+      "fix": "Transportar p/flow integral e identificadores, sob o mesmo limite fail-closed."
+    },
+    {
+      "id": "R1-04",
+      "severity": "MEDIO",
+      "file": "mission.py",
+      "line": 257,
+      "title": "Mesmo evento concorrente não é idempotente",
+      "reproduction": "simultaneous_identical_request",
+      "observed": "Duas chamadas claim com pedido/event_id idênticos geram UUID/tempo distintos; uma conclui e outra retorna IdempotencyConflict. Só uma revisão é gravada.",
+      "impact": "Retry concorrente legítimo é confundido com mudança de conteúdo; a segurança CAS permanece, mas o contrato idempotente falha.",
+      "fix": "Após conflito concorrente, recuperar evento pelo request_sha256 e devolver o recibo existente; nunca repetir materialmente. Ou serializar preparação/commit sob o mesmo bloqueio."
+    },
+    {
+      "id": "R1-05",
+      "severity": "MEDIO",
+      "file": "mission.py",
+      "line": 48,
+      "title": "Hash de prefixo aceito como hash do artefato inteiro",
+      "reproduction": "oversized_prefix_is_accepted_as_full_artifact",
+      "observed": "Arquivo de 67.109.888 bytes aceito com hash dos primeiros 67.108.865 bytes; hash integral diverge.",
+      "impact": "Pino devolvido não identifica bytes integrais do artefato.",
+      "fix": "Rejeitar len(raw)>max_bytes antes do hash, como exige o contrato read_checked."
+    }
+  ],
+  "policy_observation": {
+    "case": "submit_and_accept_while_held",
+    "observed": "hold=true blocks claim/preflight but submit and accept can still reach tetelestai=true.",
+    "classification": "Clarify intended policy. Receiving a result already produced during a pause may be legitimate; do not imply execution was stopped by this alone."
+  },
+  "boundary_assessment": "kind=fact/statute=REAL is meaningful against model actors because MemoryStore rejects their promotion. A further self-declared source/protocol string does not authenticate an agent beyond local OS/ACL authority. No proof of scientific truth or Lindblad in weights follows.",
+  "limitations": [
+    "MCP bridge and handoff are separate follow-up scope, not approved here.",
+    "No production writes, installation, provider calls or science execution.",
+    "Local session-memory init failed visibly on hard-link reference publication (WinError 5); no foreign task reference adopted."
+  ],
+  "evidence": {
+    "C:\\IALD\\Central de Patentes\\work\\memoria_missao_20261016\\review_core_r1\\ADVERSARIAL_OBSERVATIONS.json": "c1feebb056b42359a01ca06d63f6ad89068b0b4670fcbb41635b21d9df3eaa49",
+    "C:\\IALD\\Central de Patentes\\work\\memoria_missao_20261016\\review_core_r1\\OVERSIZE_OBSERVATION.json": "49c4789d9bb062cbc92c4202ff4ecfd62508211059fb2398b4386f0d2bfd2567",
+    "C:\\IALD\\Central de Patentes\\work\\memoria_missao_20261016\\review_core_r1\\MEMORY_FAILURE.json": "ee497f86e7c1ff4ff29263bb3a1a8c26bd589b450fd051a730c7428280ce8b52"
+  }
+}

@@ -1,0 +1,64 @@
+# Missão ancorada — protocolo operacional v1
+
+## O que muda
+
+A inscrição original e as restrições permanecem imutáveis na ACOM existente. A missão ganha requisitos com critérios, dependências, dono temporário, revisão e evidências por SHA-256. A projeção mostra o estado vigente; as transições antigas continuam no mesmo diário. Não existe segundo banco nem seletor global de “última tarefa”.
+
+**Antes de trabalhar ou retomar:** use a referência EXATA da própria missão. Leia `mission_cli.py` com `operation=project`, ou `iald_mission_sync` no MCP existente. Guarde `receipt.revision` e `projection_sha256`. Uma sessão nova sem referência inscreve a fonte autorizada pelo `session_memory.py init`; não herda outra missão por proximidade ou data. O arquivo de referência e o requisito acompanham todo handoff, delegação e resumo de compactação.
+
+**Antes de cada ação material:** reivindique o requisito (`claim`); sincronize novamente; execute `check` / `iald_mission_preflight` com task_id, ator, lease_id, revisão e hash da projeção. A posse vence; dependências e bytes pinados são relidos. Revisão antiga, pausa, trabalho já satisfeito ou fonte alterada recusam a ação. Confira a resposta antes de executar. Preflight não é autorização humana e não envolve o processo externo numa transação; o resultado volta por CAS e será recusado se o estado avançou.
+
+**Agentes:** `handoff` / `iald_mission_handoff` reúne referência, requisito, critério, lease e projeção no mesmo snapshot. O agente lê a missão ao começar e ao retomar. Antes de integrar uma devolução, o coordenador sincroniza e confere de novo. ID de ator é atribuído pelo chamador local; não é autenticação criptográfica. Quem constrói entrega `submit` com pinos; um revisor diferente, com revisão real e artefato próprio, faz `accept`. Não invente um revisor no script.
+
+**Evolução e PODA:** `amend` altera o critério com fonte e motivo; `extend` acrescenta obrigações; `invalidate` exige recibo atual, fonte e motivo e revoga os dependentes transitivos. Versões antigas sobrevivem. Requisito satisfeito sai da fila ativa. Mudança de dependência exige revalidação explícita. `tetelestai=true` exige todos os requisitos satisfeitos, pinos legíveis e nenhuma execução pendente/incerta em p.handles. Isso é satisfação operacional; não ratifica ciência nem move o gate.
+
+**Pausa:** `hold=true` impede preflight, novas reivindicações e aceite. Permite custodiar por submit um resultado que já voltou, mantendo-o como candidato. Falta de resposta nunca prova falha do provedor. Preserve request_id/job_id em p.handles e resolva o estado pela evidência antes de nova chamada. Atualize handles pela transição ACOM existente, com fonte: estados terminais reconhecidos são completed, returned, failed, cancelled, closed, accepted, consumed, done e terminated. Estado desconhecido impede a parada.
+
+**Tempo real:** `poll` lê por até 30 segundos, em processo local, e só devolve projeção nova se a revisão mudou. Não chama IA. Não há push para os pesos, nem atualização mágica de sessões já carregadas. Clientes devem sincronizar nas fronteiras acima. Uma chamada externa já em voo não é repetida, cancelada ou desfeita por uma revisão da memória.
+
+## CLI e MCP
+
+Python: `C:\Python314\python.exe -B -X utf8 C:\IALD\MEMORIA_IALD\mission_cli.py`.
+
+Envie JSON UTF-8 por stdin, nunca interpolado como código shell. Exemplo de leitura:
+
+```json
+{"operation":"project","reference":"CAMINHO_EXATO_DA_REFERENCIA.json","max_chars":24000}
+```
+
+Para configurar uma missão uma única vez: `configure`, `reference`, `actor:{id,kind:"agent"}`, `expected_revision`, `event_id` estável, `requirements:[{id,criterion,depends_on:[]}]`, `sources:[{path,sha256}]`.
+
+Toda mutação posterior leva os mesmos campos de identidade, além da revisão/hash recuperados. `claim` leva task_id e lease_seconds opcional (60–43200); `submit` leva lease_id e evidence; `accept` leva review_evidence. Evidências são arquivos de até 64 MiB, hash integral. Para arquivo maior, use um manifesto menor que pine o original, declarando esse alcance.
+
+`hold` e `invalidate` levam `state_sha256` do recibo atual (não dependem de projetar evidência já rompida); obtenha-o por `get` se necessário. `hold` leva hold, reason e sources. `invalidate` leva task_id, reason e sources. `release` e `block` exigem dono, reason e sources. `amend` leva criterion, reason e sources. `extend` leva requirements adicionais, reason e sources. Duplicar o mesmo event_id/payload recupera o evento; conteúdo diferente com o mesmo ID é recusado.
+
+MCP: `iald_mission_sync`, `iald_mission_preflight`, `iald_mission_transition`, `iald_mission_handoff`, registrados no servidor **iald-orchestrator já existente**. Processo antigo pode não expor as ferramentas até recarga; o CLI absoluto funciona em processo novo. Não afirmar recarga nem reiniciar sessões alheias sem evidência.
+
+## Compacidade e limites
+
+Só deltas do controlador são reduzidos ao estado vigente. Ordens, fatos, erratas, candidatos e handles externos permanecem visíveis: uma correção parcial não apaga o restante da ordem original. Se o estado obrigatório não cabe, há overflow explícito; nunca se corta o contexto silenciosamente. O histórico completo continua recuperável por get e auditável pelo verificador ACOM.
+
+A fila científica e a memória canônica dos provedores continuam com seus contratos próprios. Esta entrega não reenvia jobs pendentes nem altera suas generations. Provedores textuais não executam preflight local: o coordenador realiza a verificação antes do envio e antes da integração. Clientes antigos que ignorarem o protocolo não ganham sincronização automática.
+
+O operador propôs preservar a identidade e dissipar desvios até a satisfação (PODA/Tetelestai). Aqui a implementação é um controle discreto de estado, revisão e evidência. Ler repetidamente o mesmo estado é idempotente; descartar trabalho já satisfeito não apaga sua história. Não se afirma que esse software realiza uma equação GKLS/Lindblad, altera KV-cache ou pesos, elimina toda alucinação ou garante ausência absoluta de perda em qualquer máquina.
+
+## Recuperação
+
+Falha visível → obter get/receipt → conferir originais e handles → registrar correção ao lado → project → preflight. Não reconstruir ciência porque o resumo ficou velho. Antes de código novo, localizar o requisito e ler o que já o atende. Toda implantação conserva backup de bytes, pinos e resultado; instalação, carregamento e uso efetivo são verificações distintas.
+
+
+## 16/10/2026 — Capacidade do repasse pelo MCP
+
+O MCP `iald_mission_handoff` aceita `max_chars`, assim como a sincronização. Passe a mesma capacidade explícita às duas operações (por exemplo, 100000 para a missão atual). O padrão continua 24000 para compatibilidade. Capacidade insuficiente ou inválida provoca recusa sem truncamento; recupere a revisão e a projeção atuais antes de tentar novamente. A capacidade maior não exige imprimir o pacote inteiro na saída do coordenador: conserve o recibo completo e apresente apenas o resumo pertinente. Processos antigos precisam de recarga; o CLI absoluto funciona imediatamente. Esta correção não reinicia processos existentes nem altera a missão científica.
+
+
+## 16/10/2026 — PODA dos detalhes de execuções encerradas
+<!-- IALD_TERMINAL_HANDLE_PROJECTION_E2_20261016 -->
+[REAL — protocolo operacional] A projeção da missão distingue fluxo ativo e histórico. `flow.handles` apresenta integralmente as execuções pendentes, de estado desconhecido ou contraditório. `terminal_handles` é o índice compacto das encerradas; a referência de recuperação indica o `get` da mesma missão, revisão e hash do estado. O banco conserva todos os detalhes de `p.handles`, assim como o diário. A projeção não apaga nem altera o estado persistido.
+
+Antes de recuperar detalhes, conferir a revisão/hash: `get` devolve o estado atual, não promete selecionar uma revisão antiga. Se a revisão avançou, sincronizar novamente; a história anterior permanece no diário auditável. Nunca interpretar ausência de um handle no fluxo ativo como autorização para repetir uma execução. Os identificadores encerrados permanecem no índice. Ao atualizar handles, partir do `get` atual e preservar os demais explicitamente no payload; usar CAS.
+
+Este adendo corrige o alcance da frase anterior de que só os deltas do controlador são compactados: os detalhes dos handles terminais também saem da projeção ativa, com índice explícito e recuperação integral. Ordens, fatos, erratas, requisitos, evidências aceitas e estados incertos não são resumidos nem omitidos por esta mudança. O critério de término é calculado sobre o estado integral; qualquer estado desconhecido continua impedindo a parada.
+
+A economia medida nesta entrega é de caracteres da projeção, não uma medição de tokens faturados. Fatos obrigatórios ainda podem superar o orçamento: nesse caso há recusa explícita. Não há promessa de contexto infinito ou de eliminação de toda perda. O MCP que já usa a ponte por subprocesso recebe o controlador novo na próxima chamada; um cliente sem as ferramentas de missão ainda precisa carregar essa integração.
+<!-- END_IALD_TERMINAL_HANDLE_PROJECTION_E2_20261016 -->

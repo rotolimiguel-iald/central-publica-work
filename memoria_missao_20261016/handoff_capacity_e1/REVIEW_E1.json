@@ -1,0 +1,200 @@
+{
+  "schema": "iald-independent-focal-review/v1",
+  "time_utc": "2026-10-16T13:18:52.360932+00:00",
+  "reviewer": {
+    "id": "codex-mission-memory-review",
+    "kind": "agent"
+  },
+  "author_distinct": "codex-gerente-tgl",
+  "verdict": "PASS_FOCAL_CANDIDATE",
+  "requirement": "M1_HANDOFF_CAPACITY",
+  "mission": {
+    "reference": {
+      "path": "C:\\IALD\\Central de Patentes\\work\\memoria_missao_20261016\\FECHO_MISSION_REFERENCE.json",
+      "sha256": "bf6466e16020ad3a24786d49f1f00b9633bce2397079407f2651904750947c11",
+      "bytes": 672
+    },
+    "context_id": "34290aaa-3dcc-51d5-b224-f3eeec93509b",
+    "revision": 35,
+    "projection_sha256": "100c40c496c63f5b680e9a43b6332a39f1816cf3063e62a1050bdb379cd88ffc",
+    "actual_chars": 41660,
+    "criterion": "Expose and forward the same explicit projection budget in MCP handoff; refuse insufficient/invalid budgets without truncation. Verify current mission and large synthetic mission over real MCP; independent review, byte backups and additive custody.",
+    "lease_owner": "codex-gerente-tgl"
+  },
+  "finding": "Defeito material corroborado pela assinatura instalada sem max_chars e pela missão maior que 24000 caracteres; recibo do construtor preserva recusa após preflight na revisão33.",
+  "independent_checks": {
+    "whole_AST_equal_after_removing_only_new_argument_and_request_key": true,
+    "four_tools": [
+      "iald_mission_handoff",
+      "iald_mission_preflight",
+      "iald_mission_sync",
+      "iald_mission_transition"
+    ],
+    "isolated_in_memory_capture": {
+      "executed_by_reviewer": true,
+      "CLI_or_store_access": false,
+      "default_budget_forwarded": 24000,
+      "explicit_budget_forwarded": 100000,
+      "invalid_255_forwarded_unchanged_for_core_refusal": true,
+      "other_handoff_fields_preserved": true
+    },
+    "overflow": "mission.py _project valida int estrito entre256 e2000000 e recusa len(encoded(body)) > max_chars; nenhuma truncagem foi adicionada.",
+    "revision_and_integrity": "_current exige revisão e SHA atuais. handoff usa um único snapshot para _check e _project. _project confere pinos dos satisfeitos e mantém a projeção completa.",
+    "lease": "_check preservado verifica working, dono, ID, validade, epoch e dependências. Alteração no bridge não salta esse caminho.",
+    "compatibility": "max_chars opcional com padrão24000; sync/preflight/transition/invoke e catálogo de quatro ferramentas permanecem estruturalmente iguais.",
+    "protocol": "Adendo português explica capacidade explícita, recusa, nova sincronização e necessidade de recarga dos processos existentes."
+  },
+  "reviewed_builder_test_evidence": {
+    "execution_authorship": "Executados pelo construtor; revisor leu scripts e verificou hashes/asserções, sem rerodar MCP ou suíte geral.",
+    "real_mission": {
+      "receipt": {
+        "path": "C:\\IALD\\Central de Patentes\\work\\memoria_missao_20261016\\handoff_capacity_e1\\VERIFICATION_CANDIDATE.json",
+        "sha256": "9feb239deb4e40f843c3e8442b66408e13028f7a3b940f3198a285b83007bd3c",
+        "bytes": 1918
+      },
+      "revision": 35,
+      "chars": 41660,
+      "exact_budget_passes": true,
+      "default_short_invalid_stale_refused": [
+        "default_overflow",
+        "one_char_short",
+        "invalid_budget",
+        "stale_revision"
+      ],
+      "real_MCP_schema_and_full_projection_match": true,
+      "poll_unchanged": true
+    },
+    "synthetic": {
+      "receipt": {
+        "path": "C:\\IALD\\Central de Patentes\\work\\memoria_missao_20261016\\handoff_capacity_e1\\SYNTHETIC_MCP.json",
+        "sha256": "f05cbd4cb1efe0981407668d0aa00a25eede2af1bf59c1aa07f2521cc1b10b50",
+        "bytes": 1010
+      },
+      "chars": 40191,
+      "requirements": 8,
+      "isolated_scope": {
+        "house": "IALD",
+        "principal": "synthetic-handoff-e1"
+      },
+      "actual_CLI_and_stdio_MCP": true,
+      "full_projection_equal_to_controller": true
+    },
+    "limits": "Recibos resumem asserções do teste, não são transcrição integral de transporte. Posse e guardas preservadas também foram conferidas no código; não se alega nova execução adversarial de todas as guardas."
+  },
+  "checked_embedded_pins": [
+    {
+      "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\IALD_ORQUESTRACAO_20260923\\iald_orchestrator\\mission_bridge.py",
+      "sha256": "68ca1f9eecb74bd0921c0a9d9cd58b10011b140ae901df88f74986aa5b4f03de",
+      "bytes": 3184
+    },
+    {
+      "path": "C:\\IALD\\Central de Patentes\\work\\memoria_missao_20261016\\FECHO_MISSION_REFERENCE.json",
+      "sha256": "bf6466e16020ad3a24786d49f1f00b9633bce2397079407f2651904750947c11",
+      "bytes": 672
+    },
+    {
+      "path": "C:\\IALD\\Central de Patentes\\work\\memoria_missao_20261016\\FECHO_MISSION_REFERENCE.json",
+      "sha256": "bf6466e16020ad3a24786d49f1f00b9633bce2397079407f2651904750947c11",
+      "bytes": 672
+    },
+    {
+      "path": "C:\\IALD\\Central de Patentes\\work\\memoria_missao_20261016\\handoff_capacity_e1\\mission_bridge_candidate.py",
+      "sha256": "b52a90e86145cdde20e983cb2cfd689899858d1649508525d2089bdd3698723a",
+      "bytes": 3243
+    },
+    {
+      "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\IALD_ORQUESTRACAO_20260923\\mcp_server.py",
+      "sha256": "d86597a753554c7a8d99702cc19403b8d2362ab71ca43d43a26044d271b79eee",
+      "bytes": 4187
+    },
+    {
+      "path": "C:\\IALD\\Central de Patentes\\work\\memoria_missao_20261016\\handoff_capacity_e1\\mission_bridge_candidate.py",
+      "sha256": "b52a90e86145cdde20e983cb2cfd689899858d1649508525d2089bdd3698723a",
+      "bytes": 3243
+    },
+    {
+      "path": "C:\\IALD\\Central de Patentes\\work\\memoria_missao_20261016\\handoff_capacity_e1\\verify_synthetic.py",
+      "sha256": "bceebe4b18f39bf36095ad7153b714c3a787435c4706bd077c7db308b7813d21",
+      "bytes": 3774
+    },
+    {
+      "path": "C:\\IALD\\Central de Patentes\\work\\memoria_missao_20261016\\handoff_capacity_e1\\synthetic\\REFERENCE.json",
+      "sha256": "75913226dcc26f5864ca69f51719e8845824a6d3173f5087941f2cf20792a88c",
+      "bytes": 341
+    }
+  ],
+  "inputs": [
+    {
+      "path": "C:\\IALD\\Central de Patentes\\work\\memoria_missao_20261016\\handoff_capacity_e1\\FINDING.json",
+      "sha256": "d0a6da3c0c51681264f6d5315d39a0cc198a1f08ab12c0d79d2c09580a0eb381",
+      "bytes": 986
+    },
+    {
+      "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\IALD_ORQUESTRACAO_20260923\\iald_orchestrator\\mission_bridge.py",
+      "sha256": "68ca1f9eecb74bd0921c0a9d9cd58b10011b140ae901df88f74986aa5b4f03de",
+      "bytes": 3184
+    },
+    {
+      "path": "C:\\IALD\\Central de Patentes\\work\\memoria_missao_20261016\\handoff_capacity_e1\\mission_bridge_candidate.py",
+      "sha256": "b52a90e86145cdde20e983cb2cfd689899858d1649508525d2089bdd3698723a",
+      "bytes": 3243
+    },
+    {
+      "path": "C:\\IALD\\Central de Patentes\\work\\memoria_missao_20261016\\handoff_capacity_e1\\PROTOCOL_ADDENDUM.md",
+      "sha256": "4b38d80b60ce3379586d63487f078ab7c888a22f7728f1ecf07bf8713202340c",
+      "bytes": 729
+    },
+    {
+      "path": "C:\\IALD\\Central de Patentes\\work\\memoria_missao_20261016\\handoff_capacity_e1\\verify.py",
+      "sha256": "d57962caac152ab7796eb9d9b456262926dc660d948506e83355a82d16e31068",
+      "bytes": 5100
+    },
+    {
+      "path": "C:\\IALD\\Central de Patentes\\work\\memoria_missao_20261016\\handoff_capacity_e1\\verify_synthetic.py",
+      "sha256": "bceebe4b18f39bf36095ad7153b714c3a787435c4706bd077c7db308b7813d21",
+      "bytes": 3774
+    },
+    {
+      "path": "C:\\IALD\\Central de Patentes\\work\\memoria_missao_20261016\\handoff_capacity_e1\\candidate_server.py",
+      "sha256": "cc6d3e2e3b05fac20f92b5ae3f91913f6c692b28b53dc9f334b79b34bf632090",
+      "bytes": 413
+    },
+    {
+      "path": "C:\\IALD\\Central de Patentes\\work\\memoria_missao_20261016\\handoff_capacity_e1\\synthetic_server.py",
+      "sha256": "03b18d8c905b22caf4535676d1dd6851cb382b735d4d5833808d8e403dcbb8dc",
+      "bytes": 603
+    },
+    {
+      "path": "C:\\IALD\\Central de Patentes\\work\\memoria_missao_20261016\\handoff_capacity_e1\\VERIFICATION_CANDIDATE.json",
+      "sha256": "9feb239deb4e40f843c3e8442b66408e13028f7a3b940f3198a285b83007bd3c",
+      "bytes": 1918
+    },
+    {
+      "path": "C:\\IALD\\Central de Patentes\\work\\memoria_missao_20261016\\handoff_capacity_e1\\SYNTHETIC_MCP.json",
+      "sha256": "f05cbd4cb1efe0981407668d0aa00a25eede2af1bf59c1aa07f2521cc1b10b50",
+      "bytes": 1010
+    },
+    {
+      "path": "C:\\IALD\\MEMORIA_IALD\\lib\\iald_memory\\mission.py",
+      "sha256": "b6516977d7e9385d858c409421fd0527bca4763d2cf8613b50a4d2c21e203d44",
+      "bytes": 19435
+    },
+    {
+      "path": "C:\\IALD\\MEMORIA_IALD\\mission_cli.py",
+      "sha256": "4464b8bd2197435ac913fbd6eed9663604503628bc6be550b31864da4f01f9c7",
+      "bytes": 2451
+    },
+    {
+      "path": "C:\\IALD\\Central de Patentes\\work\\memoria_missao_20261016\\FECHO_MISSION_REFERENCE.json",
+      "sha256": "bf6466e16020ad3a24786d49f1f00b9633bce2397079407f2651904750947c11",
+      "bytes": 672
+    }
+  ],
+  "scope_limits": [
+    "Aprovação somente do candidato e evidência focal; instalação, backups dos destinos e verificação instalada ainda não executados nesta revisão.",
+    "Não é aceite integral M1, nova prova científica, fechamento de quadro ou alteração de gate.",
+    "Nenhum lease assumido, transition/accept, provedor, compilação, memória global ou destino instalado alterado pelo revisor.",
+    "Travamentos iniciais na importação FastMCP e encerramentos correspondentes foram relatados pelo coordenador; não foram medidos ou executados por este revisor."
+  ],
+  "required_next_step": "Coordenador pode prosseguir com implantação autorizada e conferir os destinos/recibo instalado; aceite independente posterior precisa sincronização e pinos atuais."
+}

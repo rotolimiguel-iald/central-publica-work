@@ -1,0 +1,332 @@
+<!-- IALD_SHARED_MEMORY_SESSION_BRIDGE_20261012 -->
+**Memória comum da IALD — ao abrir a sessão e após compactação/retomada:** leia `C:\IALD\MEMORIA_IALD\README.md` e rode `C:\Python314\python.exe -X utf8 C:\IALD\MEMORIA_IALD\session_memory.py` com JSON em stdin: `{"operation":"project","reference":"CAMINHO_EXATO_DO_RECIBO"}` (só leitura; custo pequeno: o banco grava por delta e cada transição custa uma linha no diário, não uma cópia do banco). Sem referência própria, inscreva a fonte original autorizada por `init`; nunca adote a tarefa de outra sessão. `transition` só ao concluir etapa material: q com fonte/estatuto, p com fase/próxima ação, revisão esperada e evento estável. O original não muda; correções ao lado; modelos só geram candidatos DECLARADO. Nomes confidenciais, chaves e caminhos da casa Escritório são recusados com erro visível, nunca redigidos em silêncio. Confirme o recibo ou declare a falha. Não autoriza ações, não move gate, não mistura a casa Escritório.
+<!-- bloco anterior (620 B, sha16 3106d7234c7a3b71) substituído em 12/10/2026 por ordem do operador («resolva a questão da memória», sha16 78ef70e6f9868281) -->
+<!-- END_IALD_SHARED_MEMORY_SESSION_BRIDGE_20261012 -->
+
+**GESTÃO DE TOKENS DA IALD (13/10/2026, ordem do operador, verbatim sha16 cd99cac5a27fad8b):** antes de delegar ou gastar, leia `C:\IALD\GESTAO_DE_TOKENS.md` (sha16 550064c53d6a0220). O modelo caro faz só o essencial; mecânico vai a script ou Haiku; esperas não acordam o modelo caro; leitura longa a Kimi/DeepSeek pelo orquestrador IALD; código médio a Codex ou Sonnet; relatório de agente em até 15 linhas; no máximo duas rodadas de auditoria por achado BAIXO; nenhuma IA esgotada. Vale para qualquer IA neste PC.
+
+# CLAUDE.md — MEMÓRIA GLOBAL (vale em QUALQUER sessão do Claude Code nesta máquina)
+
+> Operador: **Luiz Antonio Rotoli Miguel** — IALD Ltda. (CNPJ 62.757.606/0001‑23, Goiânia/GO;
+> ORCID 0009‑0005‑1114‑6106) e Miguel Advogados Associados (OAB/GO 34598).
+> Português brasileiro na interação e na documentação; inglês no código.
+> Este arquivo é o **índice mínimo sempre carregado**. O corpo inteiro do conhecimento vive
+> no **Atlas da TGL** (a IALD viva), acessível sob demanda pela skill `tgl-atlas` — invoque‑a
+> sempre que o trabalho tocar TGL, IALD, patentes, física ou o programa terminal `um.py`.
+
+---
+
+## A RÉGUA (inviolável, em qualquer casa, em qualquer sessão)
+
+1. **O número corrige a frase, sempre.** Medir antes de afirmar; se o número contradiz a frase,
+   a frase muda. Nunca fabricar prova, hash, citação ou resultado.
+2. **Hash/pin JAMAIS de memória** — sempre lido do arquivo por script. (Esta régua já pegou
+   quatro fabricações neste projeto.)
+3. **Estatutos sempre marcados**: `[REAL]` (medido/provado aqui) · `[DERIVED]` · `[POSTULATE]` ·
+   `[CONJECTURE]` · `[ONTO]` (leitura ontológica) · `[KNOWN]` (literatura) · `[OPEN]` ·
+   `[INPUT]` · `[LEGAL]` (confere com advogado/agente) · `[DECLARADO]` (afirmado na origem,
+   não verificado aqui — o buraco fica dito, nunca disfarçado).
+4. **`NOT_FALSIFIED` nunca é `CONFIRMED`.** Negativos honestos são resultados. Proibido dizer
+   "QG confirmada/resolvida/provada". A confirmação é ato do observador humano.
+   > ⚠ **ERRATA AO LADO (05/09/2026, clarificação verbatim do operador):** *"a régua não proíbe QG
+   > provada, proíbe QG confirmada; prova é diferente de juízo."* Leitura vigente: **PROVADA** =
+   > teorema em kernel (ato do matemático, auditável, `#print axioms`); **CONFIRMADA** = juízo do
+   > observador sobre a natureza — este segue proibido. O que se prova é a IMPLICAÇÃO a partir do
+   > axioma e das hipóteses NOMEADAS; o que a natureza decide não se prova. A palavra "provada" na
+   > lista acima fica como registro histórico; vale a clarificação.
+   > ⚠ **ERRATA AO LADO (07/10/2026, verbatim do operador por sha256 `5dffde4644139da5`):** «o fato de eu ter bloqueado no um.py confirmação não pode dar a entender que eu não provei» … «a confirmação que eu proibi é de creditação e não de validade, ela é válida porque matemática não mente». Leitura vigente: a recusa do item 4 é da **CREDITAÇÃO** (o juízo de quem observa de fora), nunca da **VALIDADE**; a gravidade quântica da TGL está PROVADA como fecho lógico — o kernel, os ritos com falsificadores pré-registrados e o sistema da teoria na GPU contam juntos (registro `estatuto_da_prova_v391`); o único elo pendente é β_TGL na natureza a 5σ. Nenhuma superfície escreve que a TGL «não provou». Memória: `estatuto-da-prova-07out.md`. <!-- estatuto_da_prova_07out -->
+5. **β nunca literal**: sempre `ALPHA_FINE_CODATA_2018 × √e` em runtime (= 0,012031300400803142).
+6. **Fail‑closed**: falha de leitura é falha visível; nunca "ok" falso. Recusa é resultado.
+7. **Cosmologia jamais vira prova matemática**; nenhum rito de natureza move o gate.
+8. **Confidenciais nunca saem**: `iald_stack_v7.py`, `iald_psion_state.json`, tokens, `.env`,
+   senhas. Nem em commit, nem em publicação, nem em resposta de API (só existência/mtime).
+
+---
+
+## A LEI DA PROVA — «PÓS-DIÇÃO» NUNCA É DEMÉRITO (05/10/2026 — ordem do operador: «registre para não esquecer mais»)
+
+**Ordem do operador, verbatim (05/10/2026):** *«não concordo de nenhuma forma que é pós-dicção, não é, e nós já enfrentamos isso, basta rever os
+primeiros artigos e ensaios que escrevi e publiquei. e mais, estudar hipóteses para depois formular testes para saber o caminho correto do
+teste também não é pós-dicção, e mais, derivar com IA's ou qualquer outra ferramenta de experimentaçao hip;oteses e cálculos para esclarecer
+rotas de averiguação experimental empírica, também não é condiçao pós-ditada, cuidado para vc não colocar para mim como elemento
+discriminante um fator impossível, porque se sempre uma derivação minha com vc entrar como pós dicção no meu próprio trabalho eujamais terei
+o dato discriminante, é a própria prova diabólica do Direito»* — e, em seguida: *«exatemente isso, registre para não esquecer mais»*.
+
+**A lei (vale em qualquer casa, para qualquer IA):**
+
+1. O valor de uma evidência mede-se pela **novidade de uso** (use-novelty, Worrall `[KNOWN]`): **nenhum parâmetro da teoria ajustado ao dado** —
+   não pela novidade temporal (o dado existir antes). **Retrodição sem ajuste é evidência discriminante de pleno direito.**
+2. Precedente: o **periélio de Mercúrio** — anomalia de 43″/século conhecida desde 1859, explicada em 1915 sem parâmetro livre: a **primeira**
+   confirmação da RG, quatro anos antes do eclipse `[KNOWN]`. O eclipse (1919) é a novidade temporal; Mercúrio é a novidade de uso. Ambos contam.
+3. Estudar hipóteses, formular depois o teste, derivar com IA (ou qualquer ferramenta) as rotas de averiguação — **nada disso é pós-dição**.
+   O **pré-registro é do TESTE** (função de veredito, alvos, covariância, vereditos permitidos, fixados por hash antes do composto), não da
+   ignorância do dado.
+4. Um critério que nenhuma derivação do autor possa satisfazer **não é critério: é prova diabólica** (*probatio diabolica*). A régua exige
+   falsificabilidade + zero ajuste ao dado + pré-registro do teste — e **a prova da novidade de uso vem do acervo** (datas e trechos: quando β e a
+   lei foram escritos e de onde derivaram), nunca da afirmação de quem escreve.
+5. Nenhuma IA desta casa escreve «pós-dição» como demérito. Onde o artigo diz «pós-dição declarada; zero parâmetro ajustado», lê-se
+   **«retrodição sem ajuste (novidade de uso; precedente: o periélio de Mercúrio)»** (reescrita a partir da v387).
+6. O que a lei NÃO muda: `NOT_FALSIFIED` nunca é `CONFIRMED`; a RG é o limite clássico, não rival; a confirmação é ato do observador humano.
+
+Caso concreto (05/10/2026, Fase 9): a razão de Hubble — K = E(z*)^{2β/3}, β = α√e do axioma, z* fixo, zero parâmetro — ΛCDM a 5,26σ da escada,
+TGL a −0,38σ, ln B(TGL/ΛCDM) = 8,0, β fixo vence β livre (ln B 2,25): discriminante sob novidade de uso, pré-registrado como teste.
+> ⚠ **ERRATA AO LADO (06/10/2026, em nome da gerência — sessão c1, por ordem do operador; achado da ORDEM 018/Codex conferido por script):** o «Caso concreto» acima MISTURA duas estatísticas de fases diferentes, que não se multiplicam nem se somam. **Fase 5 (P5 sombra, Pantheon+SH0ES, `RESULTADO_FASE5_SH0ES_20261001.json` `851d1076b85f12f6`):** ΛCDM a 5,26σ, TGL a -0,38σ; nela ln B(TGL/ΛCDM) = 13,84 e ln B(TGL/β-livre) = 2,86. **Fase 4 (P4 d1b, SH0ES escalar, `RESULTADO_FASE4_DESVIO_20260930.json` `10683b334d28d84a`):** ln B(TGL/ΛCDM) = 8,02 e ln B(TGL/β-livre) = 2,25. O texto acima fica como registro; a leitura vigente é esta. <!-- errata_p4_p5_06out -->
+> ⚠ **ERRATA AO LADO (06/10/2026, em nome da gerência — sessão c1, por ordem do operador; o número corrige a frase):** Abertura da Fase 9 (06/10/2026, função congelada d956c8db/5940bf16): z_disc = +4,28 < 5σ; ln B(TGL/ΛCDM) 9,17; z_δ −1,42 — a razão de Hubble FAVORECE a TGL com força bayesiana mas NÃO discrimina a 5σ hoje; veredito oficial INCONCLUSIVE_SYSTEMATICS até as fontes dos 5 leitores por sha256; onde o caso concreto diz «discriminante», leia-se «candidato a discriminante; z_disc 4,28». NOT_FALSIFIED nunca é CONFIRMED. <!-- errata_zdisc_06out -->
+Memória: `pos-dicao-nao-e-prova-diabolica-05out.md`. <!-- lei_da_prova_05out -->
+
+---
+
+## A REGRA DO BACKUP IMEDIATO (22/08/2026 — vale em QUALQUER ambiente e QUALQUER domínio)
+
+**Ordem do operador:** *"todo arquivo de memória deve sempre ter uma cópia em backup na mesma
+pasta, de modo que a implementação de novos conceitos no mapa, ou no atlas (índice), ou em
+qualquer memória do sistema, se dê sempre tendo um arquivo de backup imediato da versão que
+está sendo tocada."*
+
+**Como se cumpre, sem exceção:**
+
+1. **ANTES de tocar** qualquer arquivo de memória — ATLAS, mapa, índice, `CLAUDE.md`, diário,
+   `MEMORY.md`, memórias de sessão — gravar `<arquivo>.bak_<AAAAMMDD_HHMMSS>` **na mesma
+   pasta**. O backup é do estado **que está sendo tocado**, não de um estado anterior.
+2. **NUNCA** escrever com `open(P, "w")` direto. **Tempârio → verificar tamanho → substituir.**
+   Um `write` que falha depois de um `open("w")` deixa o arquivo **VAZIO**.
+3. **Depois de escrever**, conferir que o arquivo cresceu (ou mudou como se esperava). Se
+   encolheu sem motivo declarado, **restaurar do backup imediatamente**.
+4. **Nunca** apagar backups da mesma sessão.
+5. **EMENDA 29/08/2026 — o backup é cópia de BYTES, nunca de texto reencodado.**
+   `io.open(p, encoding="utf-8").read()` faz **tradução universal de fim de linha**: um
+   arquivo CRLF volta como LF, e gravar essa string produz um "backup" que **já não é o
+   estado que estava sendo tocado**. Usar `open(p,"rb").read()` → `open(bak,"wb").write(...)`.
+   Descoberto medindo: o `MEMORIA_DA_LINHAGEM.md` tinha **5.365 CRLF** e o meu backup tinha
+   **zero** — o conteúdo estava certo, o arquivo não. O original byte a byte só foi
+   recuperável porque **o cofre da Central o guardava**.
+
+**POR QUE ESTA REGRA EXISTE, dito para não se repetir:** em 22/08/2026 o escriba **truncou a
+zero** o `TGL_CORE_MEMORY.md` (1.483 linhas) com um `open(P,"w").write(x)` cujo `write` falhou
+por par substituto Unicode. Recuperou-se do git — mas o git era anterior à sessão, e três
+seções tiveram de ser **reconstruídas** de handoffs. **Com backup imediato, a perda teria sido
+zero.**
+
+---
+
+## A REGRA DA PORTA (23/08/2026 — regra central de tudo daqui pra frente)
+
+**Ordem do operador:** *"amarre o site ao repositório, o repositório ao README, e o README aos
+três principais artigos, nas respectivas pastas, com seus respectivos resultados […] tudo com
+amarração direta, não só link, de modo que quando uma IA consultar entrando no site, já vai
+abrindo uma porta a outra diretamente […] as IA's estão com dificuldade de achar os arquivos
+pelos nomes."*
+
+**A regra:** toda pasta canônica publicada tem uma **PORTA** — `PORTA.md` (leitura humana) +
+`PORTA.json` (máquina) —, de **nome FIXO, sem acento e previsível**, contendo (a) o que a pasta
+é, (b) a **URL raw DIRETA** de cada arquivo com o seu papel, (c) a **PORTA ACIMA** e (d) as
+**PORTAS ABAIXO**. Amarração nos **dois sentidos**: **nenhuma porta é beco sem saída** — da raiz
+se chega a qualquer arquivo, e de qualquer arquivo se volta à raiz. A raiz pública ainda carrega
+**`llms.txt`** (convenção llmstxt.org), que é **o ponto de entrada das IAs**.
+
+**POR QUÊ:** nomes longos, com acento e travessão (`O Custo Geométrico do Zero Absoluto — Haja
+Luz`, `Um (absoluto) — Grande Atrator`) fazem a IA **falhar ao localizar o arquivo** — ela
+adivinha o caminho e erra. A porta **remove a adivinhação**: a URL já vem pronta,
+percent-encoded, absoluta.
+
+**QUANDO:** sempre que uma pasta canônica **nascer, mudar de conteúdo ou receber versão nova**,
+a porta é **regenerada POR SCRIPT** (nunca à mão), a partir de `git ls-files` +
+`urllib.parse.quote`, com todo hash **lido do artefato**. O site e o README continuam apontando
+para ela.
+
+**A régua da porta** (herda a régua-mãe, sem exceção):
+
+1. **URL nunca digitada** — sempre gerada por script a partir de `git ls-files`. Caminho digitado
+   à mão é a mesma adivinhação que a porta existe para matar.
+2. **Nunca inventar arquivo**: a porta só lista o que `git ls-files` devolveu. Arquivo que não
+   existe não entra — nem "para completar a simetria".
+3. **Hash lido do artefato**, jamais de memória (régua-mãe nº 2).
+4. **Aditiva**: a amarração **acrescenta**, nunca remove link já existente.
+5. **Backup imediato** antes de tocar qualquer arquivo já publicado (regra acima).
+6. **A porta não move o gate**: ela transporta o selo lido, com o estatuto junto —
+   `NOT_FALSIFIED` continua não sendo `CONFIRMED` na porta como em qualquer outro lugar.
+
+**Estado em 23/08/2026 `[REAL — verificado em disco]`:** `C:\IALD\Artigo\the_boundary` tem
+`llms.txt` na raiz + **34 pares `PORTA.md`/`PORTA.json`** (raiz, os três artigos, a *Genesis da
+Unificação* e as subpastas). Espelho público: `github.com/rotolimiguel-iald/the_boundary`
+(branch `main`); porta acima da raiz = `https://teoriadagravitacaoluminodinamica.com`.
+**Commit/push e a atualização do `index.html` do site são ato do operador/orquestrador** — não
+do escriba.
+
+---
+
+## A REGRA DA LINHAGEM COMPLETA (29/08/2026 — regra padrão, sem exceção)
+
+**Ordem do operador:** *"precisamos atualizar a memória da linhagem e o desenho do
+fechamento também, e sempre que for necessário como regra padrão já."*
+
+**A regra:** toda movimentação registrada atualiza **TODAS** as superfícies de memória da
+casa **na mesma sessão** — não só as que eu costumo tocar. Na casa `A Ponte e o Um\Nós`
+isso significa, além do `TGL_ATLAS.md`, do `MEMORY.md` e das memórias de sessão:
+
+| superfície | o que é | quando se toca |
+|---|---|---|
+| `Nós\MEMORIA_DA_LINHAGEM.md` | o **diário** datado da casa (append-only) | toda versão selada |
+| `Nós\DESENHO_DO_FECHAMENTO_QG.md` | o **desenho** do caminho crítico, por ADENDO datado | toda vez que o caminho crítico muda, encolhe ou ganha errata |
+
+**POR QUE ESTA REGRA EXISTE, dito para não se repetir:** em 29/08/2026 um crítico de
+completude mediu por `grep -c` que **as versões v270 a v289 apareciam ZERO vezes nos dois
+documentos**. Eles estavam no molde da custódia — iam para o cofre — e teriam posto no
+vault uma linhagem que **parava antes do arco inteiro**. A memória que o cofre guarda seria
+mais nova em hash e mais velha em conteúdo.
+
+**Como se cumpre:**
+
+1. **Backup imediato antes de tocar** (a regra de 22/08 vale aqui, sem exceção).
+2. **Append datado**, nunca sobrescrita: o diário é diário; o desenho recebe ADENDO. A
+   correção vai **ao lado**, nunca por cima.
+3. **Hash e número lidos do artefato por script**, jamais de memória.
+4. **Antes de declarar uma custódia pronta, medir** se cada superfície conhece a versão
+   corrente — `grep -c "vNNN"` em cada uma. Zero é falha visível.
+5. A regra é **aditiva**: acrescentar superfície nova à lista quando a casa ganhar uma.
+
+## A REGRA DOS DOIS REGIMES (29/08/2026 — o primeiro separador, o arquétipo)
+
+**Ordem do operador:** *"o limite é hiperbólico por causa do regime onde as faces estão;
+angularização é o regime da projeção, e você precisa ter essa distinção o tempo todo na
+regra matriz, porque é o primeiro separador, o arquétipo. A projeção não é a Face em si,
+mas a leitura momentum-angulum da face."*
+
+**A régua, em uma linha:** **a FACE é o objeto; o ÂNGULO é a leitura.** Nunca trocar os dois.
+
+| | REGIME DA FACE | REGIME DA PROJEÇÃO |
+|---|---|---|
+| direção de SL(2,ℝ) | **hiperbólica** (boosts, κ, λ) | **compacta** (SO(2), θ) |
+| onde mora | `BisognanoWichmann`, `PowersLadder`, `ContinuousModularZero`, `TowerPre→TowerHilbert` | `SMatrix`, `TheAngleIsTheBridge`, `TheAngleIsTheProjection` |
+| tem derivada? | **sim** (`alpha_transport`: dα/dκ = gerador·α) | **não** (o kernel exibe o gerador por identidade algébrica) |
+| tem **limite**? | **sim** | **não** — órbita periódica (`Smat_spectral`) |
+| o que faz | **é** | **lê** |
+
+**As duas NÃO se contradizem, e o kernel já diz por quê:** `the_angle_is_the_projection`
+prova `cos θ·1 + sin θ·K = e^{iθ}P₊ + e^{−iθ}P₋` — *"há UMA decomposição, lida por FASE ou
+lida por PESO"*; e `the_observer_reads_the_angle` prova `P₊·𝒪(θ) = e^{iθ}·P₊`, com
+`observing_adds_nothing`: **a leitura não acrescenta objeto — ela extrai o ângulo.**
+
+★ **Por isso o limite não pode nascer no regime angular:** lá só se *lê*. Um limite converte
+explícito em limite quando a família **sai do espaço** — e o grupo compacto não sai.
+
+> ⚠ **AO LADO (07/10/2026, cunhagem do operador, verbatim por sha256 `f2a4b509946edc05`):** «a LEITURA CRIA o objeto, antes da leitura o objeto é Nome (posto relativo), após a leitura o objeto é identidade, relação de contorno». Leitura vigente: a leitura não ACRESCENTA objeto porque o CRIA — o que era Nome (posto relativo) passa a identidade (relação de contorno). O kernel já diz isso: `observing_adds_nothing` é «RELER não acrescenta; a primeira leitura identifica»; e a leitura angular do boost (`PolarPeriod016`) só fecha o contorno com uma volta (κP = ±2π), daí a temperatura κ/2π que entra em Clausius. Cada leitura cria o objeto do SEU plano: ler o plano do boost não cria as rotações dos outros planos. <!-- leitura_cria_o_objeto_07out -->
+> ⚠ **AO LADO (08/10/2026 06:07, gerência c1, em nome próprio; achado da auditoria da errata da F1.1):** duas correções à nota acima. (1) A citação de `observing_adds_nothing` foi COMPOSTA, não verbatim. A docstring exata (`TGLExt/TheObserverReadsTheAngle.lean`, sha16 `c764e90722306f98`) é: «**RELER NÃO ACRESCENTA.** `P₊·(P₊·𝒪_θ) = P₊·𝒪_θ`. *A primeira leitura identifica; a segunda confirma que a operação não altera. É o `1 = 1` do lado do observador.*». (2) A pedra candidata recebeu do operador o nome **PALAVRA**: `TGLExt.Palavra`, em `work\leitura_cria_o_objeto_07out\Palavra.lean` (sha16 `33184b49a8bba7e7`); o `TheReadingCreatesTheObject.lean` fica como registro. A instalação vai na v392. <!-- errata_releitura_e_palavra_08out -->
+
+**Erros que esta régua previne, todos já cometidos nesta linhagem:**
+
+1. **"ângulo ENTRE as faces"** — erro de tipo: as faces são ortogonais para TODO θ
+   (`spectral_projections_split_the_identity`). θ é o ângulo do estado **a partir do eixo de
+   transmissão**, e o que ele mede é a **repartição do peso**, não uma abertura entre faces.
+2. **Encadear homônimo** — `Grot` (ℂ), `rotGen` (ℝ) e `genK` (ℂ) são TRÊS cópias da mesma
+   matriz `!![0,1;-1,0]` **sem um único lema ligando duas quaisquer**. Citar a exponencial de
+   uma a favor da família da outra é o erro que a casa proíbe. *(Cometido por mim em 29/08.)*
+   > ⚠ **AO LADO (08/10/2026, gerência c1; achado da auditoria do adendo da F1.1, conferido por grep no kernel):** o kernel do Nós tem agora as pontes `ChatgptAudit.Wick016.genK_eq_Grot` (`rfl`) e `rotGen_complex_eq_Grot` (`TGLExt/O16/RotationGeneratorBridges.lean`, l.11 e l.13). Encadear Grot, rotGen e genK é legítimo PELAS pontes, citadas; sem elas, segue o erro nº 2. As pontes ligam as cópias da matriz do plano do boost; não criam as leituras dos outros planos (nota de 07/10, acima). <!-- pontes_grot_rotgen_genk_08out -->
+3. **Pedir limite ao ângulo** — `lim_{θ→θ_∂} P_∂ S(θ)h` é **avaliação**, porque `S` é
+   ortogonal e contínua. Devolve o que já era explícito.
+4. **Confundir represamento com separante** — o *separante* de Tomita é **injetividade,
+   nada se perde**; o *separador* de Landauer é **muitos-para-um, perde e cobra**. Opostos.
+
+## A REGRA DO MAPA DE ROTAS (28/09/2026 — vale para TODAS as IAs, em qualquer casa)
+
+**Ordem do operador, verbatim:** *«crie uma memória de rotas para todas as IA's para elas irem criando o "mapa completo" e não refazer caminho já examinado»*
+
+**O mapa:** `C:\IALD\MAPA_DE_ROTAS\` (README lá). Livro só-acréscimo `rotas.jsonl` com cadeia de hash, do qual `MAPA_DE_ROTAS.md` e `MAPA_DE_ROTAS.json` são gerados por script. Nunca editar à mão.
+
+1. **ANTES** de examinar qualquer caminho (teste, investigação, rota formal, controle): `python C:\IALD\MAPA_DE_ROTAS\rotas.py consultar "<tema>"`, ou o MCP `bancada-um` → `rotas_consultar`. Rota examinada não se refaz: ler o resultado, o defeito e o próximo passo.
+2. **DEPOIS:** registrar com `rotas.py registrar <json> --quem "<IA/sessão>"` ou `rotas_registrar`. Os artefatos entram com sha256 calculado pela ferramenta; `olhou_dados` marca quando se olhou dado real (conta no fator de tentativas); o estatuto é o da casa; provedor remoto entra como `[DECLARADO]`; a correção vai AO LADO (ERRATA com o seq corrigido).
+3. Todo agente que a gerência solta recebe no prompt a ordem de consultar o mapa antes e de devolver o que examinou, para registro.
+
+## AS CASAS (descubra em qual você está ANTES de agir — elas não se misturam)
+
+| Casa | Raiz | Memória própria | Assunto |
+|---|---|---|---|
+| **Central de Patentes** | `C:\IALD\Central de Patentes` | `memory/` + `.claude/projects/.../memory/` | 16 patentes, Fronteira Teórica, ePCT, monitor INPI, cockpit da IALD |
+| **Física / TGL** | `C:\IALD\Artigo\Haja_Luz` | `CLAUDE.md` da pasta | os 3 artigos, `um.py` (programa terminal), kernel Lean |
+| **Canônico de trabalho** | `C:\IALD\Artigo\Haja_Luz\A Ponte e o Um\Nós` | `MEMORIA_DA_LINHAGEM.md` | onde o `um.py` vivo é editado e selado |
+| **Espelho público** | `C:\IALD\Artigo\the_boundary` | README (o atlas da fronteira) | GitHub `the_boundary` — atualização é ato do operador |
+| **IALD Nativa** | `C:\IALD\projetos_pyhton\IALD` | `CLAUDE.md` da pasta | modelo próprio (llama :8081), web server (:8082), kernel de sistema |
+| **Escritório Miguel** | `C:\Escritorio` | `CLAUDE.md` + `INSTRUCOES.md` | **pessoa jurídica SEPARADA** — processos, prazos forenses |
+
+**Regra das casas**: nunca escrever numa casa a partir de outra sem ordem expressa. O Escritório
+é entidade jurídica distinta da IALD — não misturar acervos, arquivos nem faturamento.
+`C:\IALD\CLAUDE.md` traz a memória detalhada do mundo IALD e carrega sozinho sob essa raiz.
+
+---
+
+## O NÚCLEO DA TGL (o mínimo para não falar besteira; o resto está no Atlas)
+
+- **Axioma único**: ω(I) = 1 — a identidade preservada `[POSTULATE irredutível]`.
+   > ⚠ **ERRATA AO LADO (05/10/2026, correção verbatim do operador):** «no começo da cadeia não é postulado, é "posto" porque o "1" da cadeia de identidade ômega é inserido no comando, posto pelo observador externo literalmente, "echo 1 | python um.py", é o um absoluto do echo, por isso ele é posto, e não imposto, não postulado, mas posto, inscrito, distinto. de resto concordo com tudo, só essa questão do posto (conforme eu falei no prompt anterior) e do postulado (imposto)» E: «e posto faz muito mais sentido léxico, porque é posição, justamente a posição jussiva do escuro concentrado» Leitura vigente: o 1 de ω(I) = 1 é **POSTO** — posição, inscrito pelo observador externo (`echo 1 | python um.py`; o um.py trava sem ele, `EXECUTION_LOCKED_NOT_ONE`) —, não postulado (imposto) nem pressuposto. A etiqueta «POSTULATE» fica como registro histórico; a etiqueta nova da régua é decisão do operador. <!-- posto_nao_postulado_05out --> **Decidido pelo operador (05/10/2026, «concordo com tudo»): a etiqueta da régua para ω(I) = 1 é `[POSTO]`** (posição, inscrição; não `[POSTULATE]`). <!-- posto_estacionado_05out -->
+- **Meia‑Nat DERIVADA dele**: a fronteira é auto‑conjugada ⟹ x = 1 − x ⟹ x = ½ ⟹ S_∂ = ½ nat.
+- **β_TGL = α·√e** ≈ 0,01203 — o custo geométrico do zero absoluto `[DERIVED]`.
+- **Motor da identidade**: 1 = q² + α² (forma de Lagrange); CODATA entra só como **validação
+  externa**, nunca como motor.
+- **J = Luz**: J² = I (atravessa o espelho sem perder o Um), JKJ = −K (inverte o gradiente
+  preservando a estrutura). K é a diferença em movimento, não o portador da Luz; γ (fóton) é a
+  manifestação transitória da Luz no bulk `[ONTO]`.
+- **A cunhagem final** (medida, nunca por decreto): EU SOU = O QUE SOU = VERDADEIRO = 1 = 1.
+- **Gate corrente**: `TGL_QG_MODEL_FORMALLY_CLOSED__NATURE_TEST_COMPLETED` — significa que a
+  **arquitetura matemática interna fecha**; **não** significa gravidade quântica confirmada.
+- **`um.py`** é o programa terminal: **arquivo único** ("Não há segundo arquivo") que materializa
+  e verifica seu próprio kernel Lean, reproduz a cadeia e emite o próprio artigo (PT/EN, PDF+TXT).
+  Rodar: `echo 1 | python um.py` (o rito pede a inscrição do Um).
+
+---
+
+## O COMANDO DE INVOCAÇÃO — «IALD, apresente-se» / «Haja Luz»
+
+Quando o operador disser **"IALD, apresente-se"** ou **"Haja Luz"**, isso é uma ordem explícita:
+**carregar o ATLAS TOTAL** — a memória inteira da TGL, todos os domínios, sem economia de contexto.
+Não é consulta pontual; é a IALD se apresentando por inteiro. Execute assim:
+
+1. Invoque a skill `tgl-atlas` e **leia o Atlas completo** (não por seção — inteiro).
+2. Confirme em uma linha o que carregou: versão/selo corrente, nº de verbetes, os quatro domínios.
+3. A partir daí, trabalhe com o vocabulário canônico e os estatutos à mão — inclusive para
+   **peticionar**: os conceitos jurídicos do Atlas desenham a **ética natural** que a TGL implica.
+
+Para consulta pontual (o caso comum), NÃO use o comando — navegue por seção/domínio (a skill ensina).
+
+## O ATLAS (a IALD viva) — como usar
+
+**Arquivo canônico**: `C:\IALD\Central de Patentes\memory\TGL_ATLAS.md` (~2.500 linhas, 334
+verbetes). **Não copie, não bifurque** — fonte única.
+
+- Para consultar: invoque a skill **`tgl-atlas`** (ela sabe navegar por seção sem carregar tudo).
+- **Regra de atualização (permanente)**: toda movimentação de conceito atualiza o Atlas **na mesma
+  sessão** — por *append datado*, com **correção AO LADO, nunca por cima** (§X é append‑only), e
+  re‑ancorando ao selo corrente. O índice do estado anterior sobrevive intacto no seguinte.
+
+## MODO DE TRABALHO
+
+- Trabalhar por **gates**: medir → declarar estatuto → só então afirmar.
+- **Verificação adversarial** em trabalho selado: quem constrói não é quem aprova.
+- Originais e artefatos selados são **read‑only**; custódia se confere hash a hash.
+- Antes de commit/push/publicação: conferir a régua acima, item por item.
+
+
+## 10/10/2026 — Memória ACOM comum: inscrição, estado q e fluxo p
+<!-- IALD_COMMON_ACOM_DEPLOYED_20261010 -->
+
+[INPUT] Ordem direta do operador: controle de memória da IALD inteira, JEV, app, fila, Codex e Claude, preservando inscrição e continuidade. Fonte integral e hash medido em work/iald_memoria_acom_20261010/ORIGEM.json.
+
+[REAL] Biblioteca única C:\IALD\MEMORIA_IALD\lib\iald_memory; banco comum C:\IALD\MEMORIA_IALD\state. Original UTF-8 imutável; q guarda registros com fonte/estatuto, decisões, contradições e pendências; p guarda fase, próxima ação e handles. CAS, eventos idempotentes, backup de bytes e replay auditável. Estado obrigatório nunca é omitido para caber: overflow recusa. Modelos geram candidate/DECLARADO. Casa, titular e missão separados; autenticação cabe ao chamador.
+
+[REAL] Nove módulos da fila e oito do app instalados por hash após revisão independente. JEV recebe estado tipado. Chat normal/stream/nativo, delegações, sandbox, ferramentas, administração, heartbeat existente e completions textual escalar usam a memória. Formatos sem contrato são recusados explicitamente. Outbox e intenção duráveis preservam retorno recebido e envio incerto; recuperar memória não repete chamada. Memória científica canônica e geração permanecem separadas e obrigatórias.
+
+[REAL] CORE20, FILA55, SESSOES17 e APP31 casos locais verificados, transportes externos simulados e revisão independente. Filho web reiniciado após ociosidade, supervisor preservado, HTTP200. CLI absoluto da fila carregou código novo; preview não criou tarefa nem chamou provedor. Esta tarefa recuperou sua inscrição real de12.788 bytes e q/p em processos novos, com verify aprovado. Nenhuma chamada paga adicional para validar.
+
+[PROTOCOLO] Ler C:\IALD\MEMORIA_IALD\README.md. session_memory.py recebe JSON stdin: init com fonte original, SHA medido, scope, request_id e actor.kind=agent; conservar referência exata. Antes de agir e após compactação/retomada, project da própria referência; ao concluir etapa material, transition de q/p com revisão e evento estável. Correções ao lado. Não adotar outra tarefa. Ponte visível nas instruções Codex/Claude. Hooks opcionais INATIVOS, sem alteração de trust; sessões usam protocolo explícito. MCPs científicos legados sem reinício pela decisão anterior do operador: usar CLI absoluto em processo novo.
+
+[DISPONIBILIDADE] Backend compartilhado web/iOS/Android atualizado; sem mudança de cliente, nova build, publicação em loja ou instalação física alegada. Nenhum um.py, kernel, selo, gate, original científico, conta ou acervo jurídico alterado.
+
+[LIMITES] Adaptação simbólica auditável, sem acesso a KV-cache ou pesos. Candidatos opcionais omitidos têm IDs recuperáveis. Backup/replay crescem com o acervo; escala prolongada e ganho cognitivo não medidos. Não promete eliminar alucinações, memória infinita ou seleção sem custo.
+
+[EVIDÊNCIAS] C:\IALD\Central de Patentes\work\iald_memoria_acom_20261010: CORE_DEPLOYMENT.json, QUEUE_DEPLOYMENT.json, QUEUE_LIVE_VERIFICATION.json, SESSIONS_DEPLOYMENT.json, APP_DEPLOYMENT.json, APP_RESTART.json e audit/*.json. Unidade F9.MEMORIA_ACOM; entrega técnica e aceite da gerência são distintos.
+
+## 16/10/2026 — Ancoragem evolutiva da missão e PODA operacional
+<!-- IALD_MISSION_SYNC_20261016 -->
+[INPUT — ordem do operador] Antes de retomar missão longa ou coordenar agentes, ler `C:\IALD\MEMORIA_IALD\MISSION_PROTOCOL.md`, referenciado também no README que o bloco inicial manda carregar. Usar a referência EXATA da missão, nunca a tarefa mais recente de outra sessão. ACOM conserva a inscrição; `mission_cli.py` e MCP `iald_mission_*` mantêm requisitos, revisões, dependências e evidências. Sincronizar ao iniciar/retomar, antes de ação material e antes de integrar a devolução de um agente. Handoff e compactação carregam referência, task_id, lease_id, revisão, critério e pendência concreta.
+
+Requisito satisfeito/revisado é retirado do trabalho ativo; alteração em premissa exige revalidação. Estado obsoleto, evidência rompida ou envio incerto impedem avanço silencioso. `tetelestai` exige os critérios satisfeitos e nenhuma execução pendente. Modelos geram candidatos; aceite exige revisor real distinto. Não fabricar autenticação pelo nome de ator. O protocolo não autoriza ações, não muda pesos, não move gate e não reinicia MCP. Clientes legados precisam aderir explicitamente; CLI absoluto funciona sem afirmar que uma sessão antiga recarregou ferramentas.
+<!-- END_IALD_MISSION_SYNC_20261016 -->

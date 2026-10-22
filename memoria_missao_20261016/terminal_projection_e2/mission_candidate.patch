@@ -1,0 +1,36 @@
+--- C:\IALD\MEMORIA_IALD\lib\iald_memory\mission.py
++++ C:\IALD\Central de Patentes\work\memoria_missao_20261016\terminal_projection_e2\mission_candidate.py
+@@ -130,11 +130,18 @@
+             row['ready']=t['status'] in {'open','needs_revalidation'} and all(tasks[d]['status']=='satisfied' for d in t['depends_on'])
+             (settled if t['status'] in TERMINAL else active).append(row)
+         terminal_handle_states={'completed','returned','failed','cancelled','closed','accepted','consumed','done','terminated'}
++        # Project terminal details as an index only; the ACOM snapshot is untouched.
++        # Preserve the installed classification: inspect every PRESENT state field.
++        flow=copy.deepcopy(snap['p'])
+         unresolved_handles=[]
+-        for h in snap['p']['handles']:
++        terminal_handles=[]
++        for h in sorted(flow['handles'],key=lambda row:row['id']):
+             values=[h[k] for k in ('phase','status') if k in h]
+             if not values or any(not isinstance(v,str) or v not in terminal_handle_states for v in values):
+                 unresolved_handles.append(h)
++            else:
++                terminal_handles.append({k:h[k] for k in ('id','status','phase','task_id','no_repeat') if k in h})
++        flow['handles']=unresolved_handles
+         done=all(t['status']=='satisfied' for t in tasks.values()) and not unresolved_handles
+         # An erratum may correct one clause, not replace the entire prior order.
+         # Only controller deltas are compacted; all other source records stay visible.
+@@ -145,7 +152,12 @@
+             'state_sha256':snap['receipt']['state_sha256'],'mission_record_id':previous,
+             'hold':state['hold'],'hold_reason':state['hold_reason'],
+             'active':active,'settled':settled,'tetelestai':done,
+-            'current_records':current_records,'flow':snap['p'],
++            'current_records':current_records,'flow':flow,
++            'terminal_handles':terminal_handles,
++            'terminal_handles_recovery':{'operation':'get','context_id':self.context_id,
++                'revision':snap['revision'],'state_sha256':snap['receipt']['state_sha256'],
++                'field':'p.handles',
++                'instruction':'Use the same mission reference. get returns current state; compare revision and state_sha256. Earlier states require journal replay.'},
+             'unresolved_handles':unresolved_handles,
+             'next_ready':[] if state['hold'] or done else [r['id'] for r in active if r['ready']],
+             'history':{'operation':'get','context_id':self.context_id,'records':len(snap['q']['records'])},
