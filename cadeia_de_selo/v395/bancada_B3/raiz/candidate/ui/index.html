@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bancada Um · TGL</title>
+<link rel="stylesheet" href="/ui/style.css">
+</head>
+<body>
+<header>
+  <div class="marca"><span class="um">Um</span><span class="sub">Bancada da TGL</span></div>
+  <div id="chips" class="chips"></div>
+</header>
+
+<nav id="abas">
+  <button data-aba="modelo" class="ativa">Modelo e dados</button>
+  <button data-aba="evidencia">Evidência</button>
+  <button data-aba="lago">Lago de dados</button>
+  <button data-aba="gw">Ondas gravitacionais</button>
+  <button data-aba="livro">Livro de tentativas</button>
+  <button data-aba="validacao">Validação</button>
+  <button data-aba="relatorios">Relatórios</button>
+</nav>
+
+<main>
+<section id="aba-modelo" class="aba ativa">
+  <div class="grade3">
+    <div class="painel controles">
+      <h2>Parâmetros</h2>
+      <div id="sliders"></div>
+      <div class="botoes">
+        <button id="b-tgl" class="ouro">β = α√e</button>
+        <button id="b-zero">β = 0 (ΛCDM)</button>
+        <button id="b-fid">fiducial</button>
+      </div>
+      <h2>Conjuntos</h2>
+      <div id="conjuntos" class="conjuntos"></div>
+      <p class="nota">Cada movimento solicita uma <b>avaliação</b> (diagnóstico): não entra no livro de tentativas. Ajustes, comparações e posteriores entram.</p>
+    </div>
+    <div class="painel graficos">
+      <div class="tres">
+        <div><h3>D<sub>M</sub>/r<sub>d</sub></h3><canvas id="g-dm"></canvas></div>
+        <div><h3>D<sub>H</sub>/r<sub>d</sub></h3><canvas id="g-dh"></canvas></div>
+        <div><h3>D<sub>V</sub>/r<sub>d</sub></h3><canvas id="g-dv"></canvas></div>
+      </div>
+      <div class="duas">
+        <div><h3>Desvios (predito − observado)/σ</h3><canvas id="g-pull"></canvas></div>
+        <div><h3>Φ<sub>total</sub>(z) = 1 + β|1 + w<sub>eff</sub>|</h3><canvas id="g-phi"></canvas></div>
+      </div>
+      <div class="legenda"><span class="l-tgl">— modelo</span><span class="l-lcdm">- - ΛCDM com os mesmos (H₀, ω_b, ω_c)</span><span class="l-dr1">● DESI DR1</span><span class="l-dr2">■ DESI DR2</span></div>
+    </div>
+    <div class="painel numeros">
+      <h2>χ²</h2>
+      <table id="t-chi2"></table>
+      <h2>Derivados</h2>
+      <table id="t-der"></table>
+      <h2>Planck comprimido</h2>
+      <table id="t-planck"></table>
+    </div>
+  </div>
+</section>
+
+<section id="aba-evidencia" class="aba">
+  <div class="grade2">
+    <div class="painel">
+      <h2>Buscar evidência</h2>
+      <div id="conj-ev" class="conjuntos"></div>
+      <label class="linha"><input type="checkbox" id="c-livre"> c livre (sensibilidade à normalização da primitiva)</label>
+      <div class="linha">modo <select id="modo"><option value="tgl">TGL (corrigido + mapa de R efetivo, ratificado 30/09)</option><option value="selado">reprodução do selado (V3)</option><option value="corrigido">corrigido (Chen+2019 · DR1 correlacionado · D_M* por razão)</option></select></div>
+      <div class="linha">mapa de R <select id="mapa-r"><option value="eff">Ω_m efetivo (1+β)Ω_m — canônico</option><option value="nu">Ω_m nu — reprodução histórica</option></select></div>
+      <p class="nota">Vale também para a aba Modelo. O <b>mapa efetivo</b> foi escolhido pelo operador em 30/09 [INPUT]. O nu fica para reprodução histórica: toda a sensibilidade a β da rota comprimida depende dele (auditoria de 28/09). O modo corrigido conserta os defeitos técnicos verificados; não decide o mapa.</p>
+      <div class="botoes">
+        <button id="b-ajustar">Ajustar (β livre)</button>
+        <button id="b-comparar" class="ouro">Comparar ΛCDM × TGL × β livre</button>
+      </div>
+      <div class="linha">walkers <input id="n-w" type="number" value="256" min="16" max="4096" step="16">
+        passos <input id="n-p" type="number" value="2000" min="100" max="20000" step="100">
+        queima <input id="n-q" type="number" value="500" min="0" step="50">
+        semente <input id="n-s" type="number" value="42"></div>
+      <div class="botoes"><button id="b-amostrar" class="ouro">Amostrar o posterior (GPU)</button></div>
+      <div id="progresso" class="progresso"><div></div></div>
+      <div id="ev-texto" class="evtexto"></div>
+    </div>
+    <div class="painel">
+      <h3>Posterior de β</h3><canvas id="g-post"></canvas>
+      <h3>β × H₀</h3><canvas id="g-2d"></canvas>
+      <p class="nota">Linhas: <span class="l-zero">0 (ΛCDM)</span> e <span class="l-ouro">α√e (TGL)</span>. Toda significância vem ao lado da <b>corrigida</b> pelo número de famílias de teste do livro.</p>
+    </div>
+  </div>
+</section>
+
+<section id="aba-lago" class="aba"><div class="painel"><h2>O lago de dados da TGL</h2><div id="lago"></div></div></section>
+<section id="aba-gw" class="aba"><div class="painel"><h2>Ondas gravitacionais residentes</h2><div id="gw"></div></div></section>
+<section id="aba-livro" class="aba"><div class="painel"><h2>Livro de tentativas</h2><div id="livro"></div></div></section>
+<section id="aba-validacao" class="aba"><div class="painel"><h2>Validação da máquina</h2><div id="validacao"></div></div></section>
+<section id="aba-relatorios" class="aba"><div class="painel"><h2>Relatórios da gerência</h2><div id="relatorios"></div></div></section>
+</main>
+<footer>Diagnóstico ≠ confirmação · toda saída traz o estatuto · PROVADA ≠ CONFIRMADA · a natureza decide</footer>
+<script src="/ui/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,115 @@
+--- v394/bancada_B3_servico/evento_c1_b3_v394.py
++++ v395/bancada_B3_servico/evento_c1_b3_v395.py
+@@ -1,13 +1,19 @@
+-"""Evento c1 SINCRONIZACAO_BANCADA do B(n) da v394 (salto v392 -> v394), no conjunto fechado de chaves do esboco R3.5."""
++"""Evento c1 SINCRONIZACAO_BANCADA do B(n) da v395 (passo simples v394 -> v395, sem salto), no conjunto fechado de chaves do esboco R3.5."""
+ import hashlib
+ import json
++import os
+ import subprocess
+ 
+ NOS = r"C:\IALD\Artigo\Haja_Luz\A Ponte e o Um\Nós"
+ sh = lambda p: hashlib.sha256(open(p, "rb").read()).hexdigest()
+-dados = {"versao": "v394", "acao": "sincronizacao", "bancada": r"C:\IALD\Bancada_Um",
++dados = {"versao": "v395", "acao": "sincronizacao", "bancada": r"C:\IALD\Bancada_Um",
+          "um_py": sh(NOS + r"\um.py"), "selo": sh(NOS + r"\um_absoluto_selo.json"), "unidade": "F0.6"}
+-assert dados["um_py"].startswith("972e81f22dd8cc68"), dados["um_py"][:16]
++D = os.path.dirname(os.path.abspath(__file__))
++ESP = os.path.join(D, "..", "ESPERADOS_v395.json")
++assert os.path.isfile(ESP), "ESPERADOS_v395.json nao existe ainda (e gerado antes do rito, por gerar_esperados_v395): sem ele o um.py do Nos nao tem com que ser conferido; nada foi anotado no quadro"
++CAND16 = json.load(open(ESP, encoding="utf-8"))["candidato_sha16"]
++assert len(CAND16) >= 16, CAND16
++assert dados["um_py"].startswith(CAND16), ("o um.py do Nos nao e o candidato de ESPERADOS_v395.json", dados["um_py"][:16], CAND16)
+ r = subprocess.run(["python", r"C:\IALD\PROGRAMA_IALD\iald.py", "anotar", "--quem", "claude-c1", "--tipo", "SINCRONIZACAO_BANCADA",
+                     "--unidade", "F0.6", "--dados", json.dumps(dados, ensure_ascii=False)],
+                    capture_output=True, text=True, encoding="utf-8", cwd=r"C:\IALD\PROGRAMA_IALD")
+
+--- v394/bancada_B3_servico/recibo_parada_v394.py
++++ v395/bancada_B3_servico/recibo_parada_v395.py
+@@ -1,4 +1,4 @@
+-"""10-bis-a da v394: recibo da parada do servico da Bancada Um (porta 18777), no molde do recibo_parada_v392.py."""
++"""10-bis-a da v395: recibo da parada do servico da Bancada Um (porta 18777), no molde do recibo_parada_v394.py."""
+ import datetime
+ import json
+ import os
+@@ -6,6 +6,8 @@
+ import subprocess
+ 
+ D = os.path.dirname(os.path.abspath(__file__))
++AUT = os.environ.get("V395_AUTORIZACAO_OPERADOR", "").strip()
++assert AUT, "defina V395_AUTORIZACAO_OPERADOR com a ordem do operador que cobre este ato (data e texto): o script nao presume autorizacao"
+ s = socket.socket()
+ s.settimeout(1)
+ aberta = s.connect_ex(("127.0.0.1", 18777)) == 0
+@@ -16,20 +18,20 @@
+                      "Measure-Object).Count"], capture_output=True, text=True)
+ n_proc = int(ps.stdout.strip().splitlines()[-1])
+ assert n_proc == 0, "ha %d processo(s) um_bancada.py vivos: parar pelo PID antes deste recibo" % n_proc
+-rel392 = json.load(open(os.path.join(D, "..", "..", "v392", "bancada_B3_servico", "RECIBO_RELIGAMENTO_v392.json"), encoding="utf-8"))
+-pid_ultimo = rel392["pid"]
++rel394 = json.load(open(os.path.join(D, "..", "..", "v394", "bancada_B3_servico", "RECIBO_RELIGAMENTO_v394.json"), encoding="utf-8"))
++pid_ultimo = rel394["pid"]
+ agora = datetime.datetime.now().astimezone().isoformat()
+ rec = {"passo": "10-bis-a", "servico": "um_bancada.py", "pid": pid_ultimo,
+-       "pid_estado": "ultimo PID conhecido do servico (religamento da v392, 13/10); o processo ja nao existe",
++       "pid_estado": "ultimo PID conhecido do servico (religamento da v394, %s/%s); o processo ja nao existe" % (rel394["hora_recibo"][8:10], rel394["hora_recibo"][5:7]),
+        "processos_um_bancada_vivos": n_proc,
+        "linha_de_comando": r'"C:\Python314\pythonw.exe" -X utf8 C:\IALD\Bancada_Um\um_bancada.py',
+        "porta": 18777, "porta_fechada": True,
+        "hora_recibo": agora, "hora": agora,
+-       "nota": "o servico ja estava fora do ar antes da v394 (indisponivel desde 16/10, DELIVERY_D_R1): nenhum processo um_bancada.py "
+-               "e a porta 18777 fechada, conferidas por este script; nada foi parado por esta cadeia",
++       "nota": ("nenhum processo um_bancada.py vivo e a porta 18777 fechada, conferidos por este script no momento do recibo; o script nao para nada: o servico foi religado no passo %s da v394 (PID %s), "
++                "e a parada que precede este recibo e ato do operador, pelo PID, nao desta cadeia" % (rel394.get("passo"), pid_ultimo)),
+        "religar": r'"C:\Python314\pythonw.exe" -X utf8 C:\IALD\Bancada_Um\um_bancada.py',
+-       "autor": "claude-c1 (gerencia), por autorizacao geral do operador (13/10 e 19/10)"}
+-p = os.path.join(D, "RECIBO_PARADA_v394.json")
++       "autor": "claude-c1 (gerencia)", "autorizacao_do_operador": AUT}
++p = os.path.join(D, "RECIBO_PARADA_v395.json")
+ assert not os.path.exists(p), "o recibo ja existe: nao sobrescrevo"
+ open(p + ".tmp", "w", encoding="utf-8").write(json.dumps(rec, ensure_ascii=False, indent=1))
+ os.replace(p + ".tmp", p)
+
+--- v394/bancada_B3_servico/recibo_religamento_v394.py
++++ v395/bancada_B3_servico/recibo_religamento_v395.py
+@@ -1,4 +1,4 @@
+-"""10-ter da v394: recibo do religamento do servico da Bancada Um, no molde do recibo_religamento_v392.py + completar_recibos.py.
++"""10-ter da v395: recibo do religamento do servico da Bancada Um, no molde do recibo_religamento_v394.py + completar_recibos.py.
+ Confere a identidade servida contra o Nos (sha do um.py lido na hora) e contra o recibo do 10-bis (manifesto novo lido do arquivo)."""
+ import datetime
+ import glob
+@@ -9,16 +9,20 @@
+ import urllib.request
+ 
+ D = os.path.dirname(os.path.abspath(__file__))
++AUT = os.environ.get("V395_AUTORIZACAO_OPERADOR", "").strip()
++assert AUT, "defina V395_AUTORIZACAO_OPERADOR com a ordem do operador que cobre este ato (data e texto): o script nao presume autorizacao"
+ NOS = r"C:\IALD\Artigo\Haja_Luz\A Ponte e o Um\Nós"
+ um_sha = hashlib.sha256(open(os.path.join(NOS, "um.py"), "rb").read()).hexdigest()
+-rb = sorted(glob.glob(os.path.join(D, "..", "bancada_B3", "RECIBO_SINCRONIZACAO_v394_*.json")))
++rb = sorted(glob.glob(os.path.join(D, "..", "bancada_B3", "RECIBO_SINCRONIZACAO_v395_*.json")))
+ assert len(rb) == 1, rb
+ b = json.load(open(rb[0], encoding="utf-8"))
+-assert b["veredito"].startswith("REPINADA_B4__SALTO_v392_v394__APLICADA"), b["veredito"]
++n_esp = int(b["manifesto_anterior"]["deployment_id"].split("-")[0][1:]) + 1   # B<n>: a geracao do manifesto anterior + 1
++assert b["veredito"].startswith("REPINADA_B%d__APLICADA__SERVICO_DEVE_SER_REINICIADO_COM_RECIBO" % n_esp), b["veredito"]
++assert "__SALTO_" not in b["veredito"], b["veredito"]   # passo simples: a Bancada pinava a v394 e o Nos passou a v395
+ man_novo = b["aplicacao"]["pos_conferencia"]["canonical_manifest_sha256"]
+ c = json.loads(urllib.request.urlopen("http://127.0.0.1:18777/api/contratos", timeout=15).read().decode("utf-8"))
+ e = json.loads(urllib.request.urlopen("http://127.0.0.1:18777/api/estado", timeout=15).read().decode("utf-8"))
+-assert c.get("canonical_version") == "v394", c.get("canonical_version")
++assert c.get("canonical_version") == "v395", c.get("canonical_version")
+ assert c.get("canonical_manifest_sha256") == man_novo, (c.get("canonical_manifest_sha256"), man_novo)
+ assert c.get("um_py_sha256") == um_sha, (c.get("um_py_sha256"), um_sha)
+ pid = subprocess.run(["powershell", "-NoProfile", "-Command",
+@@ -33,8 +37,8 @@
+        "pid": int(pid.splitlines()[0]),
+        "mcp": "a reconexao dos adaptadores MCP das sessoes (/mcp) e ato do operador em cada sessao aberta",
+        "hora_recibo": agora, "hora": agora,
+-       "autor": "claude-c1 (gerencia), por autorizacao geral do operador (13/10 e 19/10)"}
+-p = os.path.join(D, "RECIBO_RELIGAMENTO_v394.json")
++       "autor": "claude-c1 (gerencia)", "autorizacao_do_operador": AUT}
++p = os.path.join(D, "RECIBO_RELIGAMENTO_v395.json")
+ assert not os.path.exists(p), "o recibo ja existe: nao sobrescrevo"
+ open(p + ".tmp", "w", encoding="utf-8").write(json.dumps(rec, ensure_ascii=False, indent=1))
+ os.replace(p + ".tmp", p)
