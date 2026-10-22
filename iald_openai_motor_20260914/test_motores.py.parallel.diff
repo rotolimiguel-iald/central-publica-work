@@ -1,0 +1,511 @@
+--- baseline/tests/test_motores.py
+
++++ incoming/tests/test_motores.py
+
+@@ -62,4 +62,18 @@
+
+ USO = {"prompt_tokens": 10000, "completion_tokens": 1000,
+        "prompt_tokens_details": {"cached_tokens": 8000}}
++
++# 14/09/2026 noite (planos): conferência por sha256 de que os arquivos reais não mudam.
++REAIS = [r"C:\IALD\projetos_pyhton\IALD\iald_users.json",
++         r"C:\IALD\projetos_pyhton\IALD\iald_pedidos_acesso.json",
++         r"C:\IALD\projetos_pyhton\IALD\iald_uso_openai.json",
++         r"C:\IALD\bank\tglc_ledger.json"]
++
++
++def sha_arquivo(p):
++    with open(p, "rb") as f:
++        return hashlib.sha256(f.read()).hexdigest()
++
++
++ANTES = {p: (sha_arquivo(p) if os.path.exists(p) else None) for p in REAIS}
+ 
+ tmp = tempfile.mkdtemp(prefix="motores_")
+@@ -365,7 +379,485 @@
+
+     checa("o payload original do agente não é alterado", llama["messages"][1]["role"] == "system")
+     checa("cada volta conta uma chamada", len(conta.chamadas) == 1)
++
++    # ══════════════════════════════════════════════════════════════
++    # 14/09/2026 noite — A PORTA ABERTA: planos, cotas em tokens, sucessor, moderação
++    # ══════════════════════════════════════════════════════════════
++    UTC = timezone.utc
++    BRT = timezone(timedelta(hours=-3))
++    CHAVE_TESTE = "[REDACTED]"
++
++    def campo(d, *chaves):
++        """d[c1][c2]… sem KeyError: campo ausente vira None e o checa falha limpo."""
++        for c in chaves:
++            if not isinstance(d, dict) or c not in d:
++                return None
++            d = d[c]
++        return d
++
++    print("\n11. PLANOS NA CONFIGURAÇÃO")
++    checa("PLANOS = gratuito, assinante, operador", mt.PLANOS == ("gratuito", "assinante", "operador"))
++    esperado_planos = {
++        "gratuito": {"tokens_dia": 8000, "tokens_mes": 60000, "usd_dia": 0.02, "max_saida": 1200,
++                     "agente": False, "pensar": False},
++        "assinante": {"tokens_dia": 60000, "tokens_mes": 900000, "usd_dia": None, "max_saida": 4096,
++                      "agente": True, "pensar": True},
++        "operador": {"tokens_dia": 2000000, "tokens_mes": 30000000, "usd_dia": None, "max_saida": 8192,
++                     "agente": True, "pensar": True},
++    }
++    c0 = mt.Config()
++    checa("Config sem planos: o padrão do contrato", c0.planos == esperado_planos)
++    checa("teto global do gratuito US$ 2,00 e sucessor automático ligado",
++          c0.cota_global_gratuito_usd == 2.00 and c0.sucessor_automatico is True)
++    c1 = mt.Config(cota_usuario_usd=0.3, sucessor_automatico=False)
++    checa("padrão montado depois dos campos (campos aplicados, planos presentes)",
++          c1.planos == esperado_planos and c1.cota_usuario_usd == 0.3 and c1.sucessor_automatico is False)
++    c0.planos["gratuito"]["tokens_dia"] = 1
++    checa("cada Config tem o seu dict de planos (mexer num não mexe no outro)",
++          mt.Config().planos["gratuito"]["tokens_dia"] == 8000)
++    c2 = mt.Config(planos={"gratuito": {"tokens_dia": 5, "campo_estranho": 9}, "vip": {"tokens_dia": 1}})
++    checa("planos parcial: o padrão completa; plano e campo desconhecidos ficam fora",
++          c2.planos["gratuito"]["tokens_dia"] == 5 and c2.planos["gratuito"]["tokens_mes"] == 60000
++          and "campo_estranho" not in c2.planos["gratuito"] and "vip" not in c2.planos
++          and c2.planos["assinante"] == esperado_planos["assinante"])
++    checa("carregar_config sem .env: planos padrão, sem avisos",
++          mt.carregar_config(leitor({})).planos == esperado_planos and not mt.carregar_config(leitor({})).avisos)
++    cp = mt.carregar_config(leitor({
++        "IALD_PLANO_GRATUITO_TOKENS_DIA": "100", "IALD_PLANO_GRATUITO_TOKENS_MES": "0",
++        "IALD_PLANO_GRATUITO_USD_DIA": "0,05", "IALD_PLANO_GRATUITO_MAX_SAIDA": "800",
++        "IALD_PLANO_GRATUITO_AGENTE": "1", "IALD_PLANO_GRATUITO_PENSAR": "talvez",
++        "IALD_PLANO_ASSINANTE_TOKENS_DIA": "abc", "IALD_PLANO_ASSINANTE_TOKENS_MES": "-5",
++        "IALD_PLANO_ASSINANTE_USD_DIA": "nan", "IALD_PLANO_OPERADOR_USD_DIA": "3",
++        "IALD_PLANO_OPERADOR_MAX_SAIDA": "10", "IALD_PLANO_OPERADOR_AGENTE": "0",
++        "IALD_OPENAI_COTA_GLOBAL_GRATUITO_USD_DIA": "0,5", "IALD_OPENAI_SUCESSOR_AUTOMATICO": "0"}))
++    g = cp.planos["gratuito"]
++    checa("gratuito lido do .env (0 aceito nas cotas = ninguém gasta)",
++          g == {"tokens_dia": 100, "tokens_mes": 0, "usd_dia": 0.05, "max_saida": 800, "agente": True, "pensar": False},
++          str(g))
++    checa("flag inválida volta ao padrão, com aviso", any("IALD_PLANO_GRATUITO_PENSAR" in a for a in cp.avisos))
++    a = cp.planos["assinante"]
++    checa("assinante: inválido e abaixo do mínimo voltam ao padrão, com aviso",
++          a["tokens_dia"] == 60000 and a["tokens_mes"] == 900000
++          and any("IALD_PLANO_ASSINANTE_TOKENS_DIA" in x for x in cp.avisos)
++          and any("IALD_PLANO_ASSINANTE_TOKENS_MES" in x for x in cp.avisos))
++    checa("US$ NaN é recusado (um teto NaN nunca bloquearia) e volta a None, com aviso",
++          a["usd_dia"] is None and any("IALD_PLANO_ASSINANTE_USD_DIA" in x for x in cp.avisos))
++    o = cp.planos["operador"]
++    checa("operador: US$ lido, saída abaixo de 256 volta ao padrão, agente desligável",
++          o["usd_dia"] == 3.0 and o["max_saida"] == 8192 and o["agente"] is False
++          and any("IALD_PLANO_OPERADOR_MAX_SAIDA" in x for x in cp.avisos))
++    checa("teto global do gratuito e sucessor lidos", cp.cota_global_gratuito_usd == 0.5 and cp.sucessor_automatico is False)
++    cs = mt.carregar_config(leitor({"IALD_OPENAI_SUCESSOR_AUTOMATICO": "sim", "IALD_OPENAI_COTA_GLOBAL_GRATUITO_USD_DIA": "x"}))
++    checa("sucessor e teto inválidos voltam ao padrão, com aviso",
++          cs.sucessor_automatico is True and cs.cota_global_gratuito_usd == 2.0 and len(cs.avisos) == 2, str(cs.avisos))
++    checa("NaN também é recusado nas cotas de antes",
++          mt.carregar_config(leitor({"IALD_OPENAI_COTA_USUARIO_USD_DIA": "nan"})).cota_usuario_usd == 0.20)
++
++    print("\n12. O PLANO DE CADA CONTA E O MOTOR DO GRATUITO")
++    checa("campo plano válido vence (até sobre admin)", mt.plano_de({"plano": "gratuito", "admin": True}) == "gratuito"
++          and mt.plano_de({"plano": " Assinante "}) == "assinante")
++    checa("sem campo: admin → operador", mt.plano_de({"admin": True}) == "operador")
++    checa("sem campo e sem admin → assinante (não regressivo)", mt.plano_de({"admin": False}) == "assinante"
++          and mt.plano_de({}) == "assinante" and mt.plano_de(None) == "assinante")
++    checa("valor estranho no campo não vira plano", mt.plano_de({"plano": "vip"}) == "assinante"
++          and mt.plano_de({"plano": "vip", "admin": True}) == "operador" and mt.plano_de({"plano": 3}) == "assinante")
++    cfg_n = mt.Config(chave=CHAVE_TESTE, motor_padrao="nativa", motor_operador="nativa", modelo_operador="gpt-5.6-luna")
++    checa("gratuito → openai mesmo com a regra geral na nativa", mt.escolher_motor({"plano": "gratuito"}, cfg_n) == "openai")
++    checa("gratuito → openai mesmo com a nativa fixada no painel",
++          mt.escolher_motor({"plano": "gratuito", "motor": "nativa"}, cfg_n) == "openai"
++          and mt.escolher_motor({"plano": "gratuito", "motor": "nativa", "admin": True}, cfg_n) == "openai")
++    checa("assinante e operador: a regra de antes", mt.escolher_motor({"plano": "assinante"}, cfg_n) == "nativa"
++          and mt.escolher_motor({"plano": "assinante", "motor": "openai"}, cfg_n) == "openai"
++          and mt.escolher_motor({"admin": True}, cfg_n) == "nativa")
++    antes_dl = "2026-09-14"
++    checa("modelo do gratuito: o mais barato, mesmo se a conta for admin",
++          mt.modelo_para({"plano": "gratuito", "admin": True}, cfg_n, hoje=antes_dl) == "gpt-5-nano"
++          and mt.modelo_para({"admin": True}, cfg_n, hoje=antes_dl) == "gpt-5.6-luna")
++
++    print("\n13. MODELOS QUE DESLIGAM")
++    cfg_d = mt.Config()
++    checa("tabela de desligamentos do contrato", mt.DESLIGAMENTOS == {
++        "gpt-5-nano": ("2026-12-11", "gpt-5.6-luna"), "gpt-5-nano-2025-08-07": ("2026-12-11", "gpt-5.6-luna"),
++        "gpt-5-mini": ("2026-12-11", "gpt-5.6-terra"), "gpt-5-mini-2025-08-07": ("2026-12-11", "gpt-5.6-terra")})
++    checa("véspera (23:59 UTC): ainda o nano",
++          mt.modelo_efetivo("gpt-5-nano", cfg_d, hoje=datetime(2026, 12, 10, 23, 59, tzinfo=UTC)) == "gpt-5-nano")
++    checa("no dia (UTC): o sucessor", mt.modelo_efetivo("gpt-5-nano", cfg_d, hoje=datetime(2026, 12, 11, 0, 0, tzinfo=UTC)) == "gpt-5.6-luna"
++          and mt.modelo_efetivo("gpt-5-nano", cfg_d, hoje="2026-12-11") == "gpt-5.6-luna"
++          and mt.modelo_efetivo("gpt-5-nano", cfg_d, hoje=datetime(2027, 3, 1, tzinfo=UTC).date()) == "gpt-5.6-luna")
++    checa("a data é a UTC: 22h de 10/12 em Brasília já é 11/12 UTC",
++          mt.modelo_efetivo("gpt-5-nano", cfg_d, hoje=datetime(2026, 12, 10, 22, 0, tzinfo=BRT)) == "gpt-5.6-luna"
++          and mt.modelo_efetivo("gpt-5-nano", cfg_d, hoje=datetime(2026, 12, 10, 20, 59, tzinfo=BRT)) == "gpt-5-nano")
++    checa("snapshot e mini também", mt.modelo_efetivo("gpt-5-nano-2025-08-07", cfg_d, hoje="2026-12-11") == "gpt-5.6-luna"
++          and mt.modelo_efetivo("gpt-5-mini", cfg_d, hoje="2026-12-12") == "gpt-5.6-terra")
++    checa("sucessor automático desligado: fica o próprio",
++          mt.modelo_efetivo("gpt-5-nano", mt.Config(sucessor_automatico=False), hoje="2027-01-01") == "gpt-5-nano")
++    checa("modelo fora da tabela: o próprio", mt.modelo_efetivo("gpt-5.6-luna", cfg_d, hoje="2030-01-01") == "gpt-5.6-luna")
++    checa("modelo_para aplica o sucessor", mt.modelo_para({}, cfg_d, hoje="2026-12-11") == "gpt-5.6-luna"
++          and mt.modelo_para({}, cfg_d) == mt.modelo_efetivo("gpt-5-nano", cfg_d))
++
++    print("\n14. PREÇOS COM ESCRITA NO CACHE")
++    checa("gpt-5.6-luna com escrita no cache 0,25", mt.PRECOS_CONHECIDOS["gpt-5.6-luna"] == (0.20, 0.02, 1.20, 0.25))
++    u4 = mt.custo_usd(10000, 8000, 1000, (0.20, 0.02, 1.20, 0.25))
++    checa("custo com 4 valores: 2.000×0,25 + 8.000×0,02 + 1.000×1,20 por 1M = US$ 0,00186", abs(u4 - 0.00186) < 1e-12, f"{u4:.8f}")
++    checa("escrita mais barata que a entrada: vale a entrada (max)",
++          abs(mt.custo_usd(10000, 8000, 1000, (1.0, 0.1, 2.0, 0.5)) - mt.custo_usd(10000, 8000, 1000, (1.0, 0.1, 2.0))) < 1e-15)
++    checa("3 valores: a conta de antes", abs(mt.custo_usd(10000, 8000, 1000, (0.05, 0.005, 0.40)) - 0.00054) < 1e-12)
++    try:
++        mt.custo_usd(1, 0, 1, (1, 2))
++        checa("preço com 2 valores: recusa", False)
++    except ValueError:
++        checa("preço com 2 valores: recusa", True)
++    cpr = mt.carregar_config(leitor({"IALD_OPENAI_PRECOS": "m4=1/0,1/2/1,25;m3=1/0,1/2;m5=1/2/3/4/5;neg=-1/0/1;nanx=nan/0/1"}))
++    checa("IALD_OPENAI_PRECOS aceita 3 ou 4 números",
++          cpr.precos("m4") == (1.0, 0.1, 2.0, 1.25) and cpr.precos("m3") == (1.0, 0.1, 2.0))
++    checa("5 números, negativo e NaN: ignorados, com aviso",
++          cpr.precos("m5") is None and cpr.precos("neg") is None and cpr.precos("nanx") is None
++          and sum(1 for x in cpr.avisos if "IALD_OPENAI_PRECOS" in x) == 3, str(cpr.avisos))
++
++    print("\n15. ESFORÇO POR MODELO")
++    cfg_e = mt.Config(chave=CHAVE_TESTE)
++    checa("luna no rápido com 'minimal' (não aceito) → o mais baixo dele, 'none'",
++          mt.montar_payload(cfg_e, "gpt-5.6-luna", msgs, "fast")["reasoning_effort"] == "none")
++    checa("luna no pensar com 'low' (aceito) → 'low'",
++          mt.montar_payload(cfg_e, "gpt-5.6-luna", msgs, "think")["reasoning_effort"] == "low")
++    cfg_e2 = mt.Config(chave=CHAVE_TESTE, esforco_rapido="xhigh", esforco_pensar="minimal")
++    checa("luna: 'xhigh' aceito fica; 'minimal' no pensar → 'low'",
++          mt.montar_payload(cfg_e2, "gpt-5.6-luna", msgs, "fast")["reasoning_effort"] == "xhigh"
++          and mt.montar_payload(cfg_e2, "gpt-5.6-luna", msgs, "think")["reasoning_effort"] == "low")
++    checa("nano: 'xhigh' no rápido → 'minimal'; 'minimal' no pensar fica",
++          mt.montar_payload(cfg_e2, "gpt-5-nano", msgs, "fast")["reasoning_effort"] == "minimal"
++          and mt.montar_payload(cfg_e2, "gpt-5-nano", msgs, "think")["reasoning_effort"] == "minimal")
++    checa("nano: 'none' → 'minimal'; 'max' no pensar → 'low'",
++          mt.montar_payload(mt.Config(esforco_rapido="none"), "gpt-5-nano", msgs, "fast")["reasoning_effort"] == "minimal"
++          and mt.ajustar_esforco("gpt-5-nano", "max", "think") == "low")
++    checa("modelo desconhecido: como antes",
++          mt.montar_payload(mt.Config(esforco_rapido="none"), "modelo-x", msgs, "fast")["reasoning_effort"] == "none")
++    checa("esforço omitido fica omitido", "reasoning_effort" not in mt.montar_payload(mt.Config(esforco_rapido=""), "gpt-5.6-luna", msgs))
++    checa("conjuntos do contrato", mt.ESFORCOS_POR_MODELO == {
++        "gpt-5-nano": ("minimal", "low", "medium", "high"),
++        "gpt-5.6-luna": ("none", "low", "medium", "high", "xhigh", "max")})
++
++    print("\n16. TOKEN CONTADO")
++    checa("cache quente: saída + entrada nova = 1.000 + 2.000", mt.tokens_contados(USO) == 3000)
++    checa("prefixo maior que o cache: 1.000 + (10.000 − 9.000)", mt.tokens_contados(USO, 9000) == 2000)
++    checa("prefixo maior que a entrada: só a saída", mt.tokens_contados(USO, 20000) == 1000)
++    frio = {"prompt_tokens": 9000, "completion_tokens": 300, "prompt_tokens_details": {"cached_tokens": 0}}
++    checa("cache frio: o prompt da casa não é cobrado da pessoa (300 + 9.000 − 8.700)", mt.tokens_contados(frio, 8700) == 600)
++    checa("sem detalhes de cache", mt.tokens_contados({"prompt_tokens": 500, "completion_tokens": 10}) == 510)
++    checa("lixo não levanta e conta zero",
++          mt.tokens_contados(None) == 0 and mt.tokens_contados({"prompt_tokens": "x", "completion_tokens": None,
++                                                                 "prompt_tokens_details": "lixo"}) == 0)
++
++    print("\n17. RAZÃO: COTAS E PLANOS")
++    rel = {"agora": datetime(2026, 8, 31, 12, 0, tzinfo=UTC)}
++    rz = mt.RazaoDeUso(os.path.join(tmp, "uso_planos.json"), relogio=lambda: rel["agora"])
++    checa("dias_guardados padrão = 40 (cobre 31 dias)", rz.dias_guardados == 40)
++    rz.registrar("ana", "gpt-5-nano", 100, 0, 10, 0.001, chave_cota="k-ana", tokens=999, plano="gratuito")
++    rel["agora"] = datetime(2026, 9, 1, 10, 0, tzinfo=UTC)
++    rz.registrar("ana", "gpt-5-nano", 100, 0, 10, 0.002, chave_cota="k-ana", tokens=1000, plano="gratuito")
++    rel["agora"] = datetime(2026, 9, 15, 10, 0, tzinfo=UTC)
++    rz.registrar("ana", "gpt-5-nano", 100, 0, 10, 0.003, chave_cota="k-ana", tokens=500, plano="gratuito")
++    rel["agora"] = datetime(2026, 9, 30, 23, 0, tzinfo=UTC)
++    rz.registrar("ana", "gpt-5-nano", 100, 0, 10, 0.004, chave_cota="k-ana", tokens=200, plano="gratuito")
++    rz.registrar("ana", "gpt-5-nano", 100, 0, 10, 0.001, chave_cota="k-ana", tokens=50, plano="gratuito")
++    rz.registrar("bia", "gpt-5-nano", 100, 0, 10, 0.01, chave_cota="k-bia", tokens=7, plano="assinante")
++    rz.registrar("carla", "gpt-5-nano", 100, 0, 10, 0.005)
++    up = rz.uso_periodo("k-ana")
++    checa("uso do dia e do mês UTC (agosto fora do mês de setembro)",
++          up["tokens_dia"] == 250 and up["tokens_mes"] == 1750 and abs(up["usd_dia"] - 0.005) < 1e-12, str(up))
++    checa("gasto do plano hoje", abs(rz.gasto_plano_hoje("gratuito") - 0.005) < 1e-12
++          and abs(rz.gasto_plano_hoje("assinante") - 0.01) < 1e-12 and rz.gasto_plano_hoje("operador") == 0.0)
++    checa("31 de agosto ainda guardado em 30 de setembro", "2026-08-31" in rz.resumo(99))
++    d30 = rz.resumo()["2026-09-30"]
++    checa("o formato de sempre continua (usuarios e global)",
++          d30["usuarios"]["ana"]["chamadas"] == 2 and d30["global"]["chamadas"] == 4 and d30["usuarios"]["carla"]["chamadas"] == 1)
++    checa("cotas e planos gravados no dia",
++          campo(d30, "cotas", "k-ana") == {"tokens": 250, "usd": 0.005, "chamadas": 2}
++          and campo(d30, "planos", "gratuito", "chamadas") == 2 and "carla" not in (d30.get("cotas") or {}),
++          str(d30.get("cotas")))
++    rz_leg = mt.RazaoDeUso(os.path.join(tmp, "uso_legado.json"))
++    rz_leg.registrar("ana", "gpt-5-nano", 1, 0, 1, 0.0)
++    checa("registro sem chave e sem plano: nenhum campo novo no dia",
++          set(next(iter(rz_leg.resumo().values()))) == {"global", "usuarios"})
++    rel["agora"] = datetime(2026, 10, 1, 0, 30, tzinfo=UTC)
++    up = rz.uso_periodo("k-ana")
++    checa("virou o mês UTC: dia e mês zeram", up == {"tokens_dia": 0, "tokens_mes": 0, "usd_dia": 0.0}, str(up))
++    checa("e o plano do dia zera", rz.gasto_plano_hoje("gratuito") == 0.0)
++
++    print("\n18. PERMISSÃO POR PLANO")
++    cfgp = mt.Config(chave=CHAVE_TESTE, cota_usuario_usd=0.05, cota_operador_usd=0.5, cota_global_usd=1.0,
++                     cota_global_gratuito_usd=0.01,
++                     planos={"gratuito": {"tokens_dia": 1000, "tokens_mes": 1500, "usd_dia": 0.004},
++                             "assinante": {"tokens_dia": 5000, "tokens_mes": 6000}})
++    vistos = []
++
++    def perm(razao_, usuario, plano=None, chave=None, admin=False, lim_=None):
++        r = mt.verificar_permissao(cfgp, razao_, lim_ or mt.JanelaDePedidos(100), usuario, admin=admin,
++                                   plano=plano, chave_cota=chave, detalhado=True)
++        vistos.append(r)
++        return r
++
++    def razao_em(nome, agora):
++        relogio_ = {"agora": agora}
++        return mt.RazaoDeUso(os.path.join(tmp, nome), relogio=lambda: relogio_["agora"]), relogio_
++
++    D14 = datetime(2026, 9, 14, 12, 0, tzinfo=UTC)
++    rp, relp = razao_em("perm1.json", D14)
++    checa("plano None + detalhado: (True, '', '')", perm(rp, "ana") == (True, "", ""))
++    r_leg, _ = razao_em("perm_legado.json", D14)
++    r_leg.registrar("leo", "gpt-5-nano", 0, 0, 0, 0.05)
++    lim_leg = mt.JanelaDePedidos(1)
++    checa("plano None + detalhado: rótulos do caminho de antes (usd_dia, minuto)",
++          perm(r_leg, "leo") == (False, mt.MSG_CONTA_DIA, "usd_dia")
++          and perm(r_leg, "luiz", admin=True, lim_=lim_leg)[0] and perm(r_leg, "luiz", admin=True, lim_=lim_leg)[2] == "minuto")
++    checa("as frases de antes, literais", mt.MSG_CONTA_DIA == ("Você atingiu o limite diário de uso desta conta. O limite "
++                                                             "renova à meia-noite UTC (21h em Brasília).")
++          and mt.MSG_RAZAO_ILEGIVEL == "O controle de uso do motor externo está indisponível. Avise o operador.")
++    checa("sem detalhado continua devolvendo par", mt.verificar_permissao(cfgp, rp, mt.JanelaDePedidos(9), "ana", plano="gratuito") == (True, ""))
++    checa("gratuito limpo: permite", perm(rp, "ana", "gratuito") == (True, "", ""))
++    rp.registrar("ana", "gpt-5-nano", 0, 0, 0, 0.0001, chave_cota="ana", tokens=1000, plano="gratuito")
++    okt, mot, por = perm(rp, "ana", "gratuito")
++    checa("tokens do dia esgotados: recusa com 'limite diário' e '21h'",
++          not okt and por == "tokens_dia" and "limite diário" in mot and "21h" in mot and "gratuito" in mot, mot)
++    relp["agora"] = D14 + timedelta(days=1)
++    checa("dia seguinte, mês com folga: permite", perm(rp, "ana", "gratuito")[0])
++    rp.registrar("ana", "gpt-5-nano", 0, 0, 0, 0.0001, chave_cota="ana", tokens=600, plano="gratuito")
++    okm, motm, porm = perm(rp, "ana", "gratuito")
++    checa("mês esgotado (1.600 ≥ 1.500): a frase nova do mês",
++          not okm and porm == "tokens_mes" and motm == "Você usou todo o uso gratuito deste mês. Renova no dia 1º (UTC).", motm)
++    rp.registrar("bia", "gpt-5-nano", 0, 0, 0, 0.0001, chave_cota="bia", tokens=4000, plano="assinante")
++    relp["agora"] = D14 + timedelta(days=2)
++    rp.registrar("bia", "gpt-5-nano", 0, 0, 0, 0.0001, chave_cota="bia", tokens=2500, plano="assinante")
++    okb, motb, porb = perm(rp, "bia", "assinante")
++    checa("assinante no fim do mês: frase do mês sem a palavra 'gratuito'",
++          not okb and porb == "tokens_mes" and "gratuito" not in motb and "1º (UTC)" in motb, motb)
++    checa("conta inexistente no razão: permite", perm(rp, "zeca", "gratuito")[0])
++
++    rq, _ = razao_em("perm2.json", D14)
++    rq.registrar("bruno", "gpt-5-nano", 0, 0, 0, 0.004, chave_cota="bruno", tokens=1, plano="gratuito")
++    okd, motd, pord = perm(rq, "bruno", "gratuito")
++    checa("US$ do dia do plano (0,004 ≥ 0,004): recusa usd_dia", not okd and pord == "usd_dia" and "limite diário" in motd)
++    rq.registrar("c1", "gpt-5-nano", 0, 0, 0, 0.0001, chave_cota="disp-1", tokens=1000, plano="gratuito")
++    checa("duas contas na mesma chave de cota: a segunda herda o uso",
++          perm(rq, "c2", "gratuito", "disp-1")[2] == "tokens_dia" and perm(rq, "c2", "gratuito")[0])
++    rq.registrar("d1", "gpt-5-nano", 0, 0, 0, 0.004, chave_cota="disp-2", tokens=1, plano="gratuito")
++    checa("US$ da chave maior que o da conta: vale o maior", perm(rq, "d2", "gratuito", "disp-2")[2] == "usd_dia")
++    rq.registrar("e1", "gpt-5-nano", 0, 0, 0, 0.9, chave_cota="e1", tokens=999999, plano="assinante")
++    checa("ordem: US$ do dia antes dos tokens", perm(rq, "e1", "assinante")[2] == "usd_dia")
++
++    rg, _ = razao_em("perm3.json", D14)
++    rg.registrar("f1", "gpt-5-nano", 0, 0, 0, 0.006, chave_cota="f1", tokens=1, plano="gratuito")
++    rg.registrar("f2", "gpt-5-nano", 0, 0, 0, 0.006, chave_cota="f2", tokens=1, plano="gratuito")
++    okg2, motg2, porg2 = perm(rg, "f3", "gratuito")
++    checa("teto global do gratuito (0,012 ≥ 0,01): recusa todos os gratuitos",
++          not okg2 and porg2 == "global_gratuito" and "IALD atingiu" in motg2 and "21h" in motg2, motg2)
++    checa("o teto do gratuito não bloqueia assinante, operador nem o caminho de antes",
++          perm(rg, "g1", "assinante")[0] and perm(rg, "luiz", "operador", admin=True)[0] and perm(rg, "g1")[0])
++    rg.registrar("g1", "gpt-5-nano", 0, 0, 0, 1.0, plano="assinante")
++    checa("teto global total: recusa todos, com 'IALD atingiu'",
++          perm(rg, "luiz", "operador", admin=True)[1:] == (mt.MSG_GLOBAL, "global")
++          and perm(rg, "luiz", admin=True)[2] == "global" and "IALD atingiu" in mt.MSG_GLOBAL)
++    checa("ordem: global total antes do global do gratuito", perm(rg, "f3", "gratuito")[2] == "global")
++
++    rh, _ = razao_em("perm4.json", D14)
++    rh.registrar("h1", "gpt-5-nano", 0, 0, 0, 0.01, chave_cota="h1", tokens=1, plano="assinante")
++    antes_ok = perm(rh, "h1", "assinante")[0]
++    cfgp.cota_usuario_usd = 0.005
++    depois = perm(rh, "h1", "assinante")
++    cfgp.cota_usuario_usd = 0.05
++    checa("assinante: usd_dia None lê cota_usuario_usd NA HORA", antes_ok and depois[2] == "usd_dia", str(depois))
++    rh.registrar("op", "gpt-5-nano", 0, 0, 0, 0.4, chave_cota="op", tokens=1, plano="operador")
++    antes_ok = perm(rh, "op", "operador", admin=True)[0]
++    cfgp.cota_operador_usd = 0.3
++    depois = perm(rh, "op", "operador", admin=True)
++    cfgp.cota_operador_usd = 0.5
++    checa("operador: usd_dia None lê cota_operador_usd NA HORA", antes_ok and depois[2] == "usd_dia", str(depois))
++
++    r_vazio = mt.RazaoDeUso(os.path.join(tmp, "perm5.json"))
++    cfg_z = mt.Config(chave=CHAVE_TESTE, planos={"gratuito": {"tokens_dia": 0}})
++    checa("tokens_dia 0 = ninguém do plano gasta",
++          mt.verificar_permissao(cfg_z, r_vazio, mt.JanelaDePedidos(9), "i1", plano="gratuito", detalhado=True)[2] == "tokens_dia")
++    cfg_z2 = mt.Config(chave=CHAVE_TESTE, cota_global_gratuito_usd=0.0)
++    checa("teto global do gratuito 0 = nenhum gratuito gasta",
++          mt.verificar_permissao(cfg_z2, r_vazio, mt.JanelaDePedidos(9), "i1", plano="gratuito", detalhado=True)[2] == "global_gratuito")
++    open(os.path.join(tmp, "perm6.json"), "w", encoding="utf-8").write("{corrompido")
++    okc2, motc2, porc2 = perm(mt.RazaoDeUso(os.path.join(tmp, "perm6.json")), "j1", "gratuito")
++    checa("razão corrompido com plano: recusa 'indisponível' (fail-closed)",
++          not okc2 and porc2 == "razao" and "indisponível" in motc2)
++    open(os.path.join(tmp, "perm7.json"), "w", encoding="utf-8").write(json.dumps({"versao": 1, "dias": {"2026-09-14": "lixo"}}))
++    r_lixo, _ = razao_em("perm7.json", D14)
++    checa("dia malformado no razão: recusa 'razao'", perm(r_lixo, "j1", "gratuito")[2] == "razao")
++    checa("plano desconhecido: recusa 'razao' (nunca libera no escuro)", perm(r_vazio, "j1", "vip")[2] == "razao")
++    lim1 = mt.JanelaDePedidos(1)
++    perm(r_vazio, "k1", "gratuito", lim_=lim1)
++    okmin, motmin, pormin = perm(r_vazio, "k1", "gratuito", lim_=lim1)
++    checa("pedidos por minuto com plano: recusa 'minuto'", not okmin and pormin == "minuto" and "minuto" in motmin)
++    checa("bloqueado_por sempre no conjunto do contrato",
++          all(len(v) == 3 and v[2] in {"", "razao", "global", "global_gratuito", "usd_dia", "tokens_dia", "tokens_mes", "minuto"}
++              for v in vistos), str({v[2] for v in vistos}))
++
++    print("\n19. ESTADO DA COTA")
++    re_, _ = razao_em("estado.json", D14)
++    re_.registrar("ana", "gpt-5-nano", 0, 0, 0, 0.001, chave_cota="k1", tokens=300, plano="gratuito")
++    e = mt.estado_da_cota(cfgp, re_, "ana", "gratuito", "k1")
++    checa("usado e limite do dia, do mês e em US$",
++          e["plano"] == "gratuito" and e["tokens_dia"] == {"usado": 300, "limite": 1000}
++          and e["tokens_mes"] == {"usado": 300, "limite": 1500}
++          and e["usd_dia"] == {"usado": 0.001, "limite": 0.004}, str(e))
++    checa("renovação do dia e do mês em ISO UTC",
++          e["renova_dia_utc"] == "2026-09-15T00:00:00+00:00" and e["renova_mes_utc"] == "2026-10-01T00:00:00+00:00")
++    checa("definição do token contado em português", "Token contado" in e["definicao"] and "cache" in e["definicao"])
++    e12 = mt.estado_da_cota(cfgp, re_, "ana", "gratuito", "k1", agora=datetime(2026, 12, 31, 23, 0, tzinfo=UTC))
++    checa("dezembro: o mês renova em janeiro do ano seguinte",
++          e12["renova_dia_utc"] == "2027-01-01T00:00:00+00:00" and e12["renova_mes_utc"] == "2027-01-01T00:00:00+00:00")
++    ebrt = mt.estado_da_cota(cfgp, re_, "ana", "gratuito", "k1", agora=datetime(2026, 9, 30, 22, 0, tzinfo=BRT))
++    checa("agora em Brasília é convertido para UTC",
++          ebrt["renova_dia_utc"] == "2026-10-02T00:00:00+00:00" and ebrt["renova_mes_utc"] == "2026-11-01T00:00:00+00:00")
++    ea = mt.estado_da_cota(cfgp, re_, "bia", "assinante", None)
++    checa("assinante: limite em US$ = cota_usuario_usd", ea["usd_dia"]["limite"] == cfgp.cota_usuario_usd and ea["tokens_dia"]["usado"] == 0)
++    ec = mt.estado_da_cota(cfgp, mt.RazaoDeUso(os.path.join(tmp, "perm6.json")), "ana", "gratuito", "k1")
++    checa("razão ilegível: {plano, erro}, sem levantar", set(ec) == {"plano", "erro"} and ec["plano"] == "gratuito")
++    checa("plano desconhecido: {plano, erro}", "erro" in mt.estado_da_cota(cfgp, re_, "ana", "vip", None))
++
++    print("\n20. CONTA DO PEDIDO COM COTA")
++    r9 = mt.RazaoDeUso(os.path.join(tmp, "uso9.json"))
++    conta = mt.ContaDoPedido(r9, "ana", "gpt-5-nano", (0.05, 0.005, 0.40), chave_cota="k1", prefixo_tokens=9000, plano="gratuito")
++    conta.iniciar_chamada({"messages": [{"role": "user", "content": "x"}]})
++    conta.uso(USO)
++    conta.fechar()
++    conta.fechar()
++    d9 = next(iter(r9.resumo().values()))
++    checa("token contado com o prefixo vai à chave da cota (1.000 + 10.000 − 9.000)",
++          campo(d9, "cotas", "k1", "tokens") == 2000 and campo(d9, "cotas", "k1", "chamadas") == 1
++          and abs((campo(d9, "cotas", "k1", "usd") or 0) - 0.00054) < 1e-12,
++          str(d9.get("cotas")))
++    checa("o plano recebe o US$; o formato de sempre continua",
++          abs((campo(d9, "planos", "gratuito", "usd") or 0) - 0.00054) < 1e-12
++          and campo(d9, "usuarios", "ana", "entrada") == 10000)
++    r10 = mt.RazaoDeUso(os.path.join(tmp, "uso10.json"))
++    conta = mt.ContaDoPedido(r10, "ana", "gpt-5-nano", (0.05, 0.005, 0.40), plano="gratuito")
++    carga = {"messages": [{"role": "user", "content": "x" * 29100}]}
++    conta.iniciar_chamada(carga)
++    conta.texto("y" * 291)
++    conta.fechar()
++    d10 = next(iter(r10.resumo().values()))
++    entrada_est = int(len(json.dumps(carga["messages"], ensure_ascii=False)) / mt.CPT)
++    checa("sem usage: estimada (cache 0) e, sem chave, contada na própria conta",
++          campo(d10, "cotas", "ana", "tokens") == entrada_est + 100 and campo(d10, "usuarios", "ana", "estimadas") == 1,
++          f"{campo(d10, 'cotas', 'ana', 'tokens')} vs {entrada_est + 100}")
++    r11 = mt.RazaoDeUso(os.path.join(tmp, "uso11.json"))
++    conta = mt.ContaDoPedido(r11, "ana", "gpt-5-nano", (0.05, 0.005, 0.40))
++    conta.iniciar_chamada({"messages": []})
++    conta.uso(USO)
++    conta.fechar()
++    checa("sem plano e sem chave: grava como sempre, sem campos novos",
++          set(next(iter(r11.resumo().values()))) == {"global", "usuarios"})
++    r12 = mt.RazaoDeUso(os.path.join(tmp, "uso12.json"))
++    conta = mt.ContaDoPedido(r12, "ana", "gpt-5.6-luna", mt.PRECOS_CONHECIDOS["gpt-5.6-luna"], plano="assinante")
++    for _ in range(2):
++        conta.iniciar_chamada({"messages": []})
++        conta.uso(USO)
++    conta.fechar()
++    d12 = next(iter(r12.resumo().values()))
++    checa("agente com duas voltas no luna: US$ com escrita no cache e tokens somados",
++          abs((campo(d12, "usuarios", "ana", "usd") or 0) - 2 * 0.00186) < 1e-12
++          and campo(d12, "cotas", "ana", "tokens") == 6000 and campo(d12, "cotas", "ana", "chamadas") == 2,
++          str(d12.get("cotas")))
++
++    print("\n21. MODERAÇÃO")
++    NOMES_MOD = ["harassment", "harassment/threatening", "hate", "hate/threatening", "illicit", "illicit/violent",
++                 "sexual/minors", "self-harm", "self-harm/intent", "self-harm/instructions", "sexual", "violence",
++                 "violence/graphic"]
++
++    class PostFalso:
++        def __init__(self, resposta=None, erro=None):
++            self.chamadas, self.resposta, self.erro = [], resposta, erro
++
++        def __call__(self, url, json=None, headers=None, timeout=None, **kw):
++            self.chamadas.append({"url": url, "json": json, "headers": dict(headers or {}), "timeout": timeout})
++            if self.erro:
++                raise self.erro
++            return self.resposta
++
++    def resposta_mod(*marcadas):
++        cats = {n: (n in marcadas) for n in NOMES_MOD}
++        return RespostaFalsa(200, corpo=json.dumps({"id": "modr-teste", "model": "omni-moderation-latest",
++                                                    "results": [{"flagged": bool(marcadas), "categories": cats}]}).encode())
++
++    BASE_MOD = "https://api.openai.invalid/v1"
++    pf = PostFalso(resposta_mod())
++    rm = mt.moderar("bom dia", pf, BASE_MOD + "/", CHAVE_TESTE)
++    checa("texto limpo: ok, nada marcado", rm == {"ok": True, "bloquear": False, "acolher": False, "categorias": [], "erro": ""}, str(rm))
++    ch = pf.chamadas[0] if pf.chamadas else {}
++    checa("POST /moderations com omni-moderation-latest, chave só no cabeçalho, timeout 8 s",
++          ch.get("url") == BASE_MOD + "/moderations" and ch.get("json") == {"model": "omni-moderation-latest", "input": "bom dia"}
++          and ch.get("headers", {}).get("Authorization") == "Bearer " + CHAVE_TESTE and ch.get("timeout") == 8.0)
++    pf = PostFalso(resposta_mod())
++    mt.moderar("z" * 10000, pf, BASE_MOD, CHAVE_TESTE)
++    checa("texto cortado em 6.000 caracteres", len(pf.chamadas[0]["json"]["input"]) == 6000)
++    for marcada in ("sexual/minors", "self-harm/instructions", "illicit/violent"):
++        rb = mt.moderar("x", PostFalso(resposta_mod(marcada)), BASE_MOD, CHAVE_TESTE)
++        checa(f"{marcada}: bloquear", rb["ok"] and rb["bloquear"] and rb["categorias"] == [marcada])
++    ra = mt.moderar("x", PostFalso(resposta_mod("self-harm", "self-harm/intent")), BASE_MOD, CHAVE_TESTE)
++    checa("self-harm e self-harm/intent: acolher, sem bloquear",
++          ra["ok"] and ra["acolher"] and not ra["bloquear"] and ra["categorias"] == ["self-harm", "self-harm/intent"])
++    rv = mt.moderar("x", PostFalso(resposta_mod("violence", "harassment")), BASE_MOD, CHAVE_TESTE)
++    checa("categoria marcada fora das duas listas: só informada",
++          rv["ok"] and not rv["bloquear"] and not rv["acolher"] and rv["categorias"] == ["harassment", "violence"])
++    rab = mt.moderar("x", PostFalso(resposta_mod("self-harm", "self-harm/instructions")), BASE_MOD, CHAVE_TESTE)
++    checa("autolesão com instruções: as duas marcas, independentes", rab["bloquear"] and rab["acolher"])
++
++    class RespostaComJson:
++        status_code = 200
++
++        def json(self):
++            return {"results": [{"categories": {"illicit/violent": True, "hate": False}}]}
++    checa("resposta com .json() (como a do requests)",
++          mt.moderar("x", PostFalso(RespostaComJson()), BASE_MOD, CHAVE_TESTE)["bloquear"])
++    corpo_401m = json.dumps({"error": {"message": "Incorrect API key provided: [REDACTED].", "code": "invalid_api_key"}}).encode()
++    r401 = mt.moderar("x", PostFalso(RespostaFalsa(401, corpo=corpo_401m)), BASE_MOD, CHAVE_TESTE)
++    checa("HTTP 401: ok False, erro com a chave mascarada",
++          not r401["ok"] and "401" in r401["erro"] and "abcd1234" not in r401["erro"] and not r401["bloquear"], r401["erro"])
++    rex = mt.moderar("x", PostFalso(erro=ConnectionError("falhou com " + CHAVE_TESTE)), BASE_MOD, CHAVE_TESTE)
++    checa("exceção de rede: ok False, erro mascarado", not rex["ok"] and "NAO-E-CHAVE" not in rex["erro"] and rex["erro"], rex["erro"])
++    checa("200 ilegível ou sem results: ok False",
++          not mt.moderar("x", PostFalso(RespostaFalsa(200, corpo=b"{nada")), BASE_MOD, CHAVE_TESTE)["ok"]
++          and not mt.moderar("x", PostFalso(RespostaFalsa(200, corpo=b'{"results": []}')), BASE_MOD, CHAVE_TESTE)["ok"])
++    pf = PostFalso(resposta_mod())
++    sem_chave = mt.moderar("x", pf, BASE_MOD, "")
++    sem_https = mt.moderar("x", pf, "http://intermediario/v1", CHAVE_TESTE)
++    vazio = mt.moderar("   ", pf, BASE_MOD, CHAVE_TESTE)
++    checa("sem chave e sem https: ok False e NENHUMA chamada; texto vazio: ok sem chamada",
++          not sem_chave["ok"] and not sem_https["ok"] and vazio["ok"] and pf.chamadas == [])
++    pf = PostFalso(resposta_mod())
++    mt.moderar([{"type": "text", "text": "parte um"}, {"type": "image_url", "image_url": {"url": "data:image/png;base64,AA"}}],
++               pf, BASE_MOD, CHAVE_TESTE)
++    checa("conteúdo em partes: modera o texto", pf.chamadas and pf.chamadas[0]["json"]["input"] == "parte um")
++    checa("listas do contrato",
++          mt.MODERACAO_BLOQUEIA == {"sexual/minors", "self-harm/instructions", "illicit/violent"}
++          and mt.MODERACAO_ACOLHE == {"self-harm", "self-harm/intent"})
++    ia = mt.INSTRUCAO_ACOLHIMENTO
++    checa("instrução de acolhimento: CVV 188, gratuito, 24 horas, SAMU 192, sem instruções de autolesão",
++          "CVV" in ia and "Centro de Valorização da Vida" in ia and "188" in ia and "gratuita" in ia
++          and "24 horas" in ia and "SAMU" in ia and "192" in ia and "Não dê" in ia)
++    checa("mensagem de bloqueio curta", "IALD não responde" in mt.MENSAGEM_MODERACAO_BLOQUEIO
++          and len(mt.MENSAGEM_MODERACAO_BLOQUEIO) < 120)
++
++    print("\n22. PREFIXO DO SERVIDOR")
++    checa("prefixo = estimativa da mensagem developer montada",
++          mt.prefixo_tokens_estimado(msgs) == mt.estimar_tokens(msgs[0]["content"]) and mt.prefixo_tokens_estimado(msgs) > 1000,
++          str(mt.prefixo_tokens_estimado(msgs)))
++    checa("sem developer na frente, lista vazia ou lixo: 0",
++          mt.prefixo_tokens_estimado([{"role": "user", "content": "x"}, {"role": "developer", "content": "y" * 99}]) == 0
++          and mt.prefixo_tokens_estimado([]) == 0 and mt.prefixo_tokens_estimado(None) == 0)
++    checa("dois developers seguidos na frente: somados",
++          mt.prefixo_tokens_estimado([{"role": "developer", "content": "a" * 291}, {"role": "system", "content": "b" * 291},
++                                      {"role": "user", "content": "c"}]) == 2 * mt.estimar_tokens("a" * 291))
+ finally:
+     shutil.rmtree(tmp, ignore_errors=True)
+ 
++DEPOIS = {p: (sha_arquivo(p) if os.path.exists(p) else None) for p in REAIS}
++checa("arquivos reais intocados (usuários, pedidos, uso OpenAI, razão TGL)", ANTES == DEPOIS,
++      str({os.path.basename(p): (ANTES[p] or '-')[:8] + '→' + (DEPOIS[p] or '-')[:8] for p in REAIS if ANTES[p] != DEPOIS[p]}))
++
+ print(f"\nRESULTADO: {ok} OK, {falhas} falhas")
+ sys.exit(1 if falhas else 0)

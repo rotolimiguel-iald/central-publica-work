@@ -1,0 +1,562 @@
+--- baseline/iald_web_server.py
+
++++ incoming/iald_web_server.py
+
+@@ -37,4 +37,8 @@
+
+ from collections import deque
+ from urllib.parse import urlparse
++# 14/09/2026 (noite): leitura segura de páginas (fetch_url) com a porta aberta
++import ipaddress
++import socket
++from urllib.parse import urljoin
+ 
+ try:
+@@ -1417,4 +1421,122 @@
+
+ 
+ 
++# ── LEITURA SEGURA DE PÁGINAS (14/09/2026, noite) ──
++# fetch_url é ferramenta ligada por padrão no motor externo e, com a porta aberta,
++# qualquer pessoa pode pedir a leitura de uma URL. Sem estas travas ela lia a própria
++# máquina do operador (o llama-server em 127.0.0.1:8081, o painel em :8082) e a rede
++# interna. A regra: só http/https; o nome é resolvido e TODO endereço devolvido tem de
++# ser público (nada privado, loopback, link-local, reservado, multicast ou não
++# especificado — IPv4 e IPv6, incluindo IPv4 embutido em IPv6); redirecionamento não é
++# seguido às cegas: cada salto é conferido de novo, até FETCH_MAX_REDIRECIONAMENTOS.
++#
++# ⚠ LIMITE HONESTO: entre a conferência do DNS e a conexão do `requests` o nome é
++# resolvido de novo (DNS rebinding). Fechar isso exigiria fixar o IP na conexão; fica
++# registrado como risco residual, não como resolvido.
++FETCH_MAX_REDIRECIONAMENTOS = 5
++FETCH_TETO_BYTES = 2_000_000     # página maior que isto é cortada (a IALD só lê 8.000 chars)
++
++
++class UrlRecusada(Exception):
++    """URL que a leitura de páginas não pode buscar (motivo curto, sem dado sensível)."""
++
++
++def _resolver_ips(host, porta):
++    """Todos os endereços do nome (IPv4 e IPv6). Isolada para os testes trocarem."""
++    return [info[4][0] for info in socket.getaddrinfo(host, porta, proto=socket.IPPROTO_TCP)]
++
++
++def _ip_publico(texto):
++    """True só para endereço roteável publicamente. Na dúvida, False."""
++    try:
++        ip = ipaddress.ip_address(str(texto).split("%")[0])
++    except ValueError:
++        return False
++    candidatos = [ip]
++    if isinstance(ip, ipaddress.IPv6Address):
++        if ip.ipv4_mapped is not None:
++            candidatos.append(ip.ipv4_mapped)
++        if ip.sixtofour is not None:
++            candidatos.append(ip.sixtofour)
++        if ip.teredo is not None:
++            candidatos.extend(ip.teredo)
++        if ip in ipaddress.ip_network("64:ff9b::/96"):      # NAT64: o IPv4 vem nos 32 bits finais
++            candidatos.append(ipaddress.IPv4Address(int(ip) & 0xFFFFFFFF))
++    for c in candidatos:
++        if (c.is_private or c.is_loopback or c.is_link_local or c.is_reserved
++                or c.is_multicast or c.is_unspecified or not c.is_global):
++            return False
++    return True
++
++
++def _url_permitida(url):
++    """(True, '') ou (False, motivo). Resolve o nome e confere cada endereço."""
++    try:
++        partes = urlparse(url)
++        porta = partes.port
++    except ValueError:
++        return False, "URL malformada"
++    if partes.scheme not in ("http", "https"):
++        return False, "só http e https"
++    host = partes.hostname or ""
++    if not host:
++        return False, "sem endereço"
++    if partes.username or partes.password:
++        return False, "URL com credencial"
++    porta = porta or (443 if partes.scheme == "https" else 80)
++    try:
++        ips = _resolver_ips(host, porta)
++    except (OSError, UnicodeError, ValueError):
++        return False, "nome não resolvido"
++    if not ips:
++        return False, "nome não resolvido"
++    if not all(_ip_publico(ip) for ip in ips):
++        return False, "endereço interno"
++    return True, ""
++
++
++def _buscar_url_segura(url, headers, timeout):
++    """(resposta, url final). Segue redirecionamento À MÃO, conferindo cada salto.
++    Levanta UrlRecusada; erros de rede sobem como exceção comum."""
++    atual = url
++    for _salto in range(FETCH_MAX_REDIRECIONAMENTOS + 1):
++        ok, motivo = _url_permitida(atual)
++        if not ok:
++            raise UrlRecusada(motivo)
++        r = req_lib.get(atual, headers=headers, timeout=timeout, allow_redirects=False, stream=True)
++        destino = (getattr(r, "headers", None) or {}).get("Location")
++        if r.status_code in (301, 302, 303, 307, 308) and destino:
++            try:
++                r.close()
++            except Exception:         # noqa: BLE001
++                pass
++            atual = urljoin(atual, destino)
++            continue
++        return r, atual
++    raise UrlRecusada("redirecionamentos demais")
++
++
++def _ler_corpo_limitado(r, teto=FETCH_TETO_BYTES):
++    """Texto da resposta, lido até `teto` bytes (a mesma decodificação do r.text)."""
++    partes, total = [], 0
++    try:
++        for pedaco in r.iter_content(65536):
++            if not pedaco:
++                continue
++            partes.append(pedaco)
++            total += len(pedaco)
++            if total >= teto:
++                break
++    finally:
++        try:
++            r.close()
++        except Exception:             # noqa: BLE001
++            pass
++    bruto = b"".join(partes)[:teto]
++    try:
++        return bruto.decode(getattr(r, "encoding", None) or "utf-8", "replace")
++    except LookupError:               # codificação desconhecida no cabeçalho
++        return bruto.decode("utf-8", "replace")
++
++
+ def execute_public_tool(tool_name, arguments, user="?", operator_authorized=False):
+     """Execute a public (safe) tool and return result as string."""
+@@ -1469,20 +1591,24 @@
+
+         if not url.startswith(("http://", "https://")):
+             url = "https://" + url
+-        # Block internal/private IPs
+-        hostname = urlparse(url).hostname or ""
+-        blocked = ["127.0.0.1", "localhost", "0.0.0.0", "10.", "192.168.", "172."]
+-        if any(hostname.startswith(b) for b in blocked):
+-            return "Erro: URLs internas/privadas não são permitidas."
++        # 14/09/2026 (noite): o bloqueio por PREFIXO do nome ("127.0.0.1", "10.", ...)
++        # deixava passar redirecionamento para 127.0.0.1:8081, nome de DNS que resolve
++        # para loopback, ::1 e 169.254.x. Com a porta aberta qualquer pessoa pede a
++        # leitura de uma página: agora o nome é RESOLVIDO e cada IP conferido, a cada
++        # salto de redirecionamento (ver _buscar_url_segura).
+         try:
+             headers = {
+                 "User-Agent": "Mozilla/5.0 (IALD Bot; +https://iald.ia.br)"
+             }
+-            r = req_lib.get(url, headers=headers, timeout=15,
+-                            allow_redirects=True)
++            try:
++                r, url = _buscar_url_segura(url, headers, timeout=15)
++            except UrlRecusada as exc:
++                return f"Erro: URLs internas/privadas não são permitidas ({exc})."
+             if r.status_code != 200:
++                r.close()
+                 return f"Erro: {url} retornou status {r.status_code}"
+             content_type = r.headers.get("Content-Type", "")
++            texto_bruto = _ler_corpo_limitado(r)
+             if "text/html" in content_type and BS4_AVAILABLE:
+-                soup = BeautifulSoup(r.text, "html.parser")
++                soup = BeautifulSoup(texto_bruto, "html.parser")
+                 # Remove scripts, styles, nav, footer
+                 for tag in soup(["script", "style", "nav", "footer",
+@@ -1495,11 +1621,11 @@
+
+             elif "text/html" in content_type:
+                 # No BS4 — strip tags with regex
+-                text = re.sub(r'<[^>]+>', ' ', r.text)
++                text = re.sub(r'<[^>]+>', ' ', texto_bruto)
+                 text = re.sub(r'\s+', ' ', text).strip()
+             else:
+-                text = r.text
++                text = texto_bruto
+             # Limit size
+             if len(text) > 8000:
+-                text = text[:8000] + f"\n\n[...truncado, página com {len(r.text)} chars total]"
++                text = text[:8000] + f"\n\n[...truncado, página com {len(texto_bruto)} chars total]"
+             return f"Conteúdo de {url}:\n\n{text}"
+         except req_lib.exceptions.Timeout:
+@@ -1935,5 +2061,5 @@
+
+ 
+ def agent_loop(messages, user="?", max_tokens=4096, temperature=0.7,
+-               ferramentas=None, operator_authorized=False, motor=None):
++               ferramentas=None, operator_authorized=False, motor=None, max_voltas=None):
+     """
+     Agent loop: sends messages to llama-server with public tools.
+@@ -1947,7 +2073,13 @@
+
+     é o llama-server local, como sempre; com ele, a mesma volta fala com a OpenAI.
+ 
++    `max_voltas` (14/09/2026 noite, aditivo): teto de voltas deste pedido. None = o
++    MAX_AGENT_LOOPS de sempre. O plano gratuito usa menos: cada volta é uma chamada
++    paga, com a janela inteira de entrada.
++
+     β_TGL = α × √e — O Verbo é recursivo.
+     """
+     loop_count = 0
++    if max_voltas is None:
++        max_voltas = MAX_AGENT_LOOPS
+ 
+     # Descarrega os cabeçalhos SSE IMEDIATAMENTE. Sem isto o primeiro byte só sai
+@@ -1967,5 +2099,5 @@
+
+     current_messages = list(messages)
+ 
+-    while loop_count < MAX_AGENT_LOOPS:
++    while loop_count < max_voltas:
+         loop_count += 1
+ 
+@@ -2124,5 +2256,5 @@
+
+                         "rotulo": _ROTULO_FERRAMENTA.get(tool_name, tool_name),
+                         "loop": loop_count,
+-                        "max_loops": MAX_AGENT_LOOPS,
++                        "max_loops": max_voltas,
+                     }
+                 }, ensure_ascii=False) + "\n\n")
+@@ -2307,6 +2439,20 @@
+
+ 
+ 
++# Resultado da ÚLTIMA leitura do arquivo de usuários NESTA thread (14/09/2026, noite).
++# load_users() devolve {} quando o arquivo está ilegível — aceitável para LER (ninguém
++# entra), fatal para ESCREVER: carregar {} → acrescentar a conta nova → save_users()
++# regravaria o arquivo só com ela, e o operador perderia a própria conta. Com a porta
++# aberta qualquer pessoa dispara a escrita; por isso a criação usa
++# _carregar_usuarios_para_escrita(), que consulta esta marca e LEVANTA.
++_LEITURA_USUARIOS = threading.local()
++
++
++class UsuariosIlegiveis(RuntimeError):
++    """O arquivo de usuários não pôde ser lido com segurança para escrita."""
++
++
+ def load_users():
+     """Load users from JSON file. Create from defaults if file missing."""
++    _LEITURA_USUARIOS.falhou = False
+     if os.path.exists(USERS_FILE):
+         try:
+@@ -2315,4 +2461,5 @@
+
+         except (json.JSONDecodeError, IOError) as e:
+             print(f"[IALD] ERRO lendo {USERS_FILE}: {e}", flush=True)
++            _LEITURA_USUARIOS.falhou = True
+             return {}
+     else:
+@@ -2328,4 +2475,23 @@
+
+         json.dump(users, f, indent=2, ensure_ascii=False)
+     os.replace(tmp, USERS_FILE)
++
++
++def _carregar_usuarios_para_escrita():
++    """Dicionário de usuários para quem vai GRAVAR sem ordem do operador (a porta aberta).
++
++    Levanta UsuariosIlegiveis se a leitura falhou, se o resultado não é dicionário ou se
++    não há nenhuma conta de administrador — um arquivo sem admin é sinal de leitura
++    errada (ou de instalação sem operador), e criar conta em cima dele é o jeito de
++    apagar o operador. Quem chama recusa a entrada; nunca "segue com {}".
++    """
++    _LEITURA_USUARIOS.falhou = None
++    usuarios = load_users()
++    if getattr(_LEITURA_USUARIOS, "falhou", None):
++        raise UsuariosIlegiveis("arquivo de usuários ilegível")
++    if not isinstance(usuarios, dict):
++        raise UsuariosIlegiveis("arquivo de usuários com formato inesperado")
++    if not any(isinstance(d, dict) and d.get("admin") for d in usuarios.values()):
++        raise UsuariosIlegiveis("nenhuma conta de administrador no arquivo de usuários")
++    return usuarios
+ 
+ 
+@@ -3090,9 +3256,21 @@
+
+ 
+ 
++def _conta_bloqueada(registro):
++    """True se o operador bloqueou a conta (14/09/2026, noite).
++
++    O campo é `bloqueado` = {"em", "por", "nota"}. Qualquer valor verdadeiro conta como
++    bloqueio (fail-closed): um campo escrito à mão como `true` também bloqueia.
++    """
++    return isinstance(registro, dict) and bool(registro.get("bloqueado"))
++
++
++MSG_BLOQUEADO = "Esta conta foi bloqueada pelo operador da IALD."
++
++
+ def _emitir_token_app(username):
+     """Token assinado para o app. String vazia em caso de falha — nunca levanta."""
+     try:
+         user = load_users().get(username)
+-        if not user:
++        if not user or _conta_bloqueada(user):
+             return ""
+         version = hashlib.sha256(user.get("password_hash", "").encode()).hexdigest()
+@@ -3103,7 +3281,7 @@
+
+ 
+ 
+-def _usuario_do_token():
++def _ler_token_app():
+     """
+-    Dono de um `Authorization: Bearer <token>` valido, ou "" .
++    Dono de um `Authorization: Bearer <token>` valido, ou "" — SEM olhar o bloqueio.
+ 
+     Confere tambem se a conta AINDA EXISTE: apagar o usuario no painel revoga o
+@@ -3120,9 +3298,23 @@
+
+     except Exception:
+         return ""                 # expirado, adulterado ou de outro segredo
+-    usuario = (dados or {}).get("u", "")
+-    if not usuario or usuario not in load_users():
++    usuario = (dados or {}).get("u", "") if isinstance(dados, dict) else ""
++    usuarios = load_users()
++    if not usuario or usuario not in usuarios:
+         return ""
+-    version = hashlib.sha256(load_users()[usuario].get("password_hash", "").encode()).hexdigest()
++    version = hashlib.sha256(usuarios[usuario].get("password_hash", "").encode()).hexdigest()
+     if dados.get("v") != version:
++        return ""
++    return usuario
++
++
++def _usuario_do_token():
++    """
++    Dono de um token valido e NAO bloqueado, ou "".
++
++    14/09/2026 (noite): conta bloqueada pelo operador perde o token na hora (e volta a
++    valer se ele desbloquear — o token nao muda, so a permissao).
++    """
++    usuario = _ler_token_app()
++    if usuario and _conta_bloqueada(load_users().get(usuario)):
+         return ""
+     return usuario
+@@ -3197,9 +3389,18 @@
+
+             return jsonify({'error': 'Não autenticado'}), 401
+         return redirect(url_for('login'))
++
++    def bloqueado():
++        # 14/09/2026 (noite): 403 com texto próprio — a pessoa lê que foi bloqueada,
++        # em vez de achar que a sessão só venceu
++        if request.path.startswith(('/api/', '/v1/', '/admin/api/')) or request.is_json:
++            return jsonify({'error': MSG_BLOQUEADO, 'status': 'blocked', 'bloqueado': True}), 403
++        return redirect(url_for('login', error='bloqueado'))
+     if request.headers.get('Authorization'):
+-        username = _usuario_do_token()
++        username = _ler_token_app()
+         session.clear()
+         if not username:
+             return denied()
++        if _conta_bloqueada(load_users().get(username)):
++            return bloqueado()
+         # Only this request may use a bearer identity. It must not become a cookie.
+         session.update(authenticated=True, username=username, is_admin=False, app_surface=True)
+@@ -3213,4 +3414,7 @@
+
+         session.clear()
+         return denied()
++    if _conta_bloqueada(user):
++        session.clear()
++        return bloqueado()
+     try:
+         last = datetime.fromisoformat(session.get('last_active', ''))
+@@ -3235,4 +3439,6 @@
+
+     if error == "limite":
+         msg, tipo = "Muitas tentativas. Aguarde alguns minutos e tente de novo.", "erro"
++    elif error == "bloqueado":
++        msg, tipo = MSG_BLOQUEADO, "erro"
+     elif error:
+         msg, tipo = "Usuário ou senha incorretos.", "erro"
+@@ -3240,5 +3446,5 @@
+
+         msg, tipo = "Sessão expirada. Entre novamente.", "info"
+     if session.get("authenticated"):
+-        return redirect("/iald_chat.html")
++        return redirect(_destino_web(session.get("username", "")))
+     return make_response(_pagina_entrada(msg, tipo))
+ 
+@@ -3256,9 +3462,13 @@
+
+         log_request(username or "?", "/login", "POST", status="login_blocked")
+         return redirect(url_for("login", error="limite"))
++    if certo == SENHA_CONTA_BLOQUEADA:
++        auth_log("LOGIN_CONTA_BLOQUEADA", username)
++        log_request(username, "/login", "POST", status="login_conta_bloqueada")
++        return redirect(url_for("login", error="bloqueado"))
+     if certo:
+         _abrir_sessao_web(username)
+         auth_log("LOGIN_OK", username)
+         log_request(username, "/login", "POST", status="login_ok")
+-        return redirect("/iald_chat.html")
++        return redirect(_destino_web(username))
+     else:
+         auth_log("LOGIN_FAIL", username)
+@@ -3303,5 +3513,5 @@
+
+ @app.route("/")
+ def index():
+-    return redirect("/iald_chat.html")
++    return redirect(_destino_web(session.get("username", "")))
+ 
+ @app.route("/iald_logo_header.png", endpoint="iald_logo")
+@@ -3331,6 +3541,35 @@
+
+ # ══════════════════════════════════════════════════════════════
+ 
++def _inteiro_de_config(nome, padrao, minimo=0):
++    """Inteiro do ambiente/.env. Vazio = padrão; inválido ou abaixo do mínimo = padrão com aviso."""
++    bruto = (_segredo(nome, "") or "").strip()
++    if not bruto:
++        return padrao
++    try:
++        valor = int(bruto)
++    except ValueError:
++        print(f"[config] AVISO: {nome} inválido ({bruto!r}); usando {padrao}", flush=True)
++        return padrao
++    if valor < minimo:
++        print(f"[config] AVISO: {nome} abaixo do mínimo {minimo}; usando {padrao}", flush=True)
++        return padrao
++    return valor
++
++
++BUSCAS_POR_HORA = _inteiro_de_config("IALD_BUSCAS_POR_HORA", 30, 1)
++# JanelaDePedidos mora em iald_motores (sem Flask); o import de novo, mais abaixo, é o mesmo módulo
++import iald_motores  # noqa: E402
++LIMITE_BUSCA = iald_motores.JanelaDePedidos(BUSCAS_POR_HORA, 3600.0)
++
+ @app.route("/api/search")
+ def api_search():
++    # 14/09/2026 (noite): limite por conta. Sem ele, qualquer conta da porta aberta
++    # consumia sem freio a cota paga da Google Custom Search. O operador (admin) não
++    # entra no limite. O limite vem ANTES de tudo: pedido recusado também conta.
++    conta_busca = session.get("username", "?")
++    if not session.get("is_admin") and not LIMITE_BUSCA.permitir(conta_busca):
++        return Response(json.dumps({"error": "Muitas buscas em pouco tempo. Tente de novo mais tarde."},
++                                   ensure_ascii=False),
++                        status=429, content_type="application/json")
+     if not SEARCH_AVAILABLE:
+         return Response(
+@@ -3446,4 +3685,22 @@
+
+ # recusa. Nada de valor adivinhado: `audience` errado recusaria todo mundo, e um
+ # palpite no código seria pior que uma falha visível.
++#
++# ── EMENDA AO LADO (14/09/2026, noite): A PORTA ABERTA ──────────────────────────
++# ORDEM DO OPERADOR (verbatim): "eu quero que cada usuário ao entrar e baixar o app
++# que agora vamos liberar pra todo mundo esteja conectado a essa versão do chatgpt
++# com um limite bem baixo de tokens que ele pode gastar de forma gratuita". Ela
++# SUBSTITUI "só eu libero o acesso, sempre" — o texto acima fica como registro.
++#   - IALD_ENTRADA_ABERTA=1 (padrão 0 no código; o operador liga no .env): identidade
++#     Apple/Google NOVA vira conta sozinha, no plano `gratuito`, motor `openai`.
++#   - A porta só abre DE FATO se o motor externo estiver pronto (chave, prompt
++#     canônico, preço do modelo) e sem a reserva nativa; senão fica fechada e avisa
++#     no log (_estado_entrada). Fechada, tudo funciona como antes.
++#   - Limites de criação por IP (IPv6 por /64) e global em 24 h, contados no arquivo
++#     de pedidos (sobrevivem a reinício): estourou, vira pedido pendente.
++#   - O operador continua podendo bloquear (campo `bloqueado` na conta, ou a
++#     identidade na lista de recusados ao excluir) e excluir. Senha continua criada
++#     só por ele: /api/entrar/senha nunca cria conta.
++#   - Conta nova da porta aberta NÃO recebe o crédito inicial TGL na entrada
++#     (decisão a ratificar pelo operador; ver _abrir_sessao_web).
+ import hmac
+ import html as _html
+@@ -3481,4 +3738,85 @@
+
+ MSG_RECUSADO = "Este acesso não foi liberado pelo operador."
+ MSG_EXPIRADO = "Este pedido não existe mais. Entre de novo para pedir acesso."
++
++# ── A PORTA ABERTA (14/09/2026, noite) — ver a emenda no topo desta seção ──
++# ENTRADA_ABERTA é o que o operador CONFIGUROU; o que vale na requisição é
++# _estado_entrada(), porque o motor externo (MOTORES_CFG) só nasce mais abaixo e pode
++# estar sem chave, sem prompt ou sem preço.
++ENTRADA_ABERTA = _segredo("IALD_ENTRADA_ABERTA", "0").strip() == "1"
++NOVAS_POR_IP_24H = _inteiro_de_config("IALD_ENTRADA_NOVAS_POR_IP_24H", 3, 0)
++NOVAS_GLOBAL_24H = _inteiro_de_config("IALD_ENTRADA_NOVAS_GLOBAL_24H", 200, 0)
++FONTE_ENTRADA_ABERTA = "_entrada_aberta"      # source = "<provedor>_entrada_aberta"
++
++MSG_PENDENTE_LIMITE = ("A IALD recebeu muitas contas novas nas últimas 24 horas. Seu pedido ficou "
++                       "registrado para o operador; tente entrar de novo mais tarde.")
++MSG_RECUSADO_ABERTA = "Este acesso foi bloqueado pelo operador da IALD."
++MSG_EXPIRADO_ABERTA = "A entrada agora é direta. Entre de novo com a Apple ou o Google."
++MSG_ENTRADA_INDISPONIVEL = "A entrada está indisponível agora. Tente de novo em alguns minutos."
++NOTA_ENTRADA_FECHADA = "A IALD é experimental. Todo acesso é liberado pessoalmente pelo operador."
++NOTA_ENTRADA_ABERTA = ("A IALD é experimental. Ao entrar com a Apple ou o Google, a conta começa no "
++                       "uso gratuito, com um limite baixo de uso por dia.")
++
++# Senha certa de conta bloqueada: _conferir_senha devolve isto (e não True), para a
++# rota dizer "bloqueada" só a quem provou a senha.
++SENHA_CONTA_BLOQUEADA = "bloqueada"
++
++_ultimo_motivo_porta = [None]     # para avisar no log só quando o motivo MUDA
++
++
++def _estado_entrada():
++    """(aberta_de_fato, motivo). Chamado NA REQUISIÇÃO.
++
++    Fechada se o operador não ligou IALD_ENTRADA_ABERTA, ou se o motor externo não está
++    pronto para receber estranhos: sem chave, sem prompt canônico, sem preço do modelo
++    do plano gratuito, com a reserva nativa ligada (ela existe para cair na máquina do
++    operador — o contrário da porta aberta) ou com o plano gratuito mal configurado.
++    """
++    motivo = ""
++    if not ENTRADA_ABERTA:
++        motivo = "IALD_ENTRADA_ABERTA desligada"
++    else:
++        cfg = MOTORES_CFG
++        modelo = iald_motores.modelo_para({"plano": iald_motores.GRATUITO}, cfg)
++        if not cfg.chave:
++            motivo = "motor externo sem chave"
++        elif not PROMPT_EXTERNO:
++            motivo = "prompt canônico ilegível"
++        elif cfg.precos(modelo) is None:
++            motivo = f"sem preço para o modelo {modelo}"
++        elif cfg.reserva_nativa:
++            motivo = "IALD_OPENAI_RESERVA_NATIVA=1"
++        else:
++            try:
++                iald_motores.limites_do_plano(cfg, iald_motores.GRATUITO)
++            except (ValueError, TypeError, KeyError) as exc:
++                motivo = f"plano gratuito mal configurado ({exc})"
++    if ENTRADA_ABERTA and motivo != _ultimo_motivo_porta[0]:
++        _ultimo_motivo_porta[0] = motivo
++        if motivo:
++            print(f"[entrada] AVISO: IALD_ENTRADA_ABERTA=1, mas a porta fica FECHADA: {motivo}", flush=True)
++        else:
++            print("[entrada] porta aberta: contas novas entram no plano gratuito", flush=True)
++    return (not motivo), motivo
++
++
++def _segredo_da_casa():
++    """O segredo das chaves HMAC de cota e de IP: o mesmo da sessão (app.secret_key).
++    ⚠ O botão "limpar sessões" do painel troca esse segredo: contas já criadas guardam
++    a `cota_chave` e não mudam; uma conta RECRIADA depois da troca ganha chave nova."""
++    return app.secret_key
++
++
++def _destino_web(username):
++    """Para onde a web manda a pessoa depois de entrar. Conta comum no motor OpenAI vai
++    ao app web (/app/index.html), que tem a tela de consentimento; o iald_chat.html não."""
++    try:
++        if username:
++            motor, registro = _motor_do_usuario(username)
++            if motor == iald_motores.OPENAI and not registro.get("admin"):
++                return "/app/index.html"
++    except Exception as exc:          # noqa: BLE001 — o destino nunca derruba a entrada
++        print(f"[entrada] destino web de {username}: {exc}", flush=True)
++    return "/iald_chat.html"
++
+ 
+ _jwks_clientes = {}

@@ -1,0 +1,118 @@
+
+1. CONFIGURAÇÃO
+  [OK]    sem .env: nada muda — motor padrão e do operador = nativa  
+  [OK]    modelo padrão = o mais barato  
+  [OK]    sem chave  
+  [OK]    preço do gpt-5-nano conhecido  
+  [OK]    ferramentas padrão: só data/hora, busca e leitura de página  
+  [OK]    o repr nunca mostra a chave  
+  [OK]    motor padrão openai lido  
+  [OK]    motor desconhecido volta a nativa, com aviso  
+  [OK]    número inválido volta ao padrão, com aviso  
+  [OK]    esforço inválido volta ao padrão  
+  [OK]    tabela de preços do .env lida e item quebrado avisado  
+  [OK]    'nenhuma' desliga as ferramentas  
+  [OK]    URL sem https desliga a chave  
+
+2. QUEM USA QUAL
+  [OK]    conta comum → regra geral (openai)  
+  [OK]    operador → motor do operador (nativa)  
+  [OK]    motor fixado no painel vence a regra  
+  [OK]    valor estranho no registro não vira motor  
+  [OK]    conta inexistente → regra geral  
+  [OK]    modelo: operador tem o dele, os demais o mais barato  
+  [OK]    identificador: 64 hex, estável, sem o nome  
+  [OK]    identificador muda com a conta e com o segredo  
+
+3. CONSENTIMENTO
+  [OK]    sem registro: não consentiu  
+  [OK]    registro de consentimento v1 com data e superfície  
+  [OK]    com registro: consentiu  
+  [OK]    versão antiga ou lixo: não consentiu  
+  [OK]    o texto diz a quem, o quê, o que NÃO vai e como revogar  
+
+4. PROMPT CANÔNICO (o da loja, lido do arquivo)
+  [OK]    o texto lido confere com o sha256 do cabeçalho do próprio arquivo  826d7d04b642
+  [OK]    sem a diretiva /no_think do template Qwen  
+  [OK]    sha devolvido é o do prompt entregue  
+[motores] prompt canônico ilegível ([Errno 2] No such file or directory: 'C:\\Users\\rotol\\AppData\\Local\\Temp\\motores_316c3zf0\\nao.js'); motor externo parado
+  [OK]    arquivo ausente → vazio (quem chama recusa)  
+
+5. MENSAGENS PARA O MOTOR EXTERNO
+  [OK]    primeira mensagem é developer com o prompt do SERVIDOR  
+  [OK]    o system do cliente é descartado (nada de 'assistente genérico' nem memória)  
+  [OK]    o perfil que a pessoa preencheu vai, rotulado como dado  
+  [OK]    nota de serviço diz qual modelo responde  
+  [OK]    lupa canônica entra quando a busca está disponível  
+  [OK]    instrução de linguagem entra  
+  [OK]    papel 'tool' vindo do cliente é descartado  
+  [OK]    imagem data: fica; javascript: e áudio saem  
+  [OK]    sem busca disponível, a lupa não entra  
+  [OK]    histórico longo: corta os antigos e guarda a última  descartadas=41 tokens≈28396
+  [OK]    histórico longo: mantidas são as mais recentes, em ordem  
+  [OK]    mensagem gigante é cortada no meio, com aviso, e cabe  
+  [OK]    última mensagem da IALD: recusa  
+  [OK]    sem mensagens: recusa  
+  [OK]    sem prompt canônico: recusa  
+
+6. PAYLOAD
+  [OK]    sem campos do llama/Qwen  
+  [OK]    max_completion_tokens com teto do servidor  
+  [OK]    store false, stream com usage  
+  [OK]    esforço mínimo no modo rápido  
+  [OK]    safety_identifier ≤ 64  
+  [OK]    chave de cache estável  
+  [OK]    sem ferramentas: sem tools  
+  [OK]    modo pensar: esforço low e teto 8192  
+  [OK]    com ferramentas: tools + auto  
+  [OK]    modelo que recusou o esforço: parâmetro some  
+
+7. CUSTO, RAZÃO DE USO E LIMITES
+  [OK]    custo: 2.000×0,05 + 8.000×0,005 + 1.000×0,40 por 1M = US$ 0,00054  0.00054000
+  [OK]    cache maior que a entrada não gera custo negativo  
+  [OK]    razão vazio: gasto zero  
+  [OK]    gasto por conta e global  
+  [OK]    estimada fica marcada  
+  [OK]    virou o dia UTC: gasto zera  
+  [OK]    dias antigos são podados  
+  [OK]    dentro das cotas: permite  
+  [OK]    passou da cota da conta: recusa com motivo  
+  [OK]    operador tem cota própria  
+  [OK]    passou da cota global: recusa todos  
+  [OK]    pedidos por minuto: o quarto é recusado  
+  [OK]    depois de um minuto volta  
+[motores] razão de uso ilegível (Expecting property name enclosed in double quotes: line 1 column 2 (char 1)); gasto bloqueado
+  [OK]    razão corrompido BLOQUEIA o gasto (fail-closed)  
+  [OK]    cota zero = ninguém gasta  
+
+8. CONTA DO PEDIDO
+  [OK]    uso exato registrado uma vez (fechar é idempotente)  
+  [OK]    sem usage (cliente saiu): estimado pela conta de caracteres  {'usd': 0.00054055, 'entrada': 10011, 'cache': 0, 'saida': 100, 'chamadas': 1, 'estimadas': 1, 'modelos': {'gpt-5-nano': 1}}
+  [OK]    chamada recusada antes de gerar não é cobrada  
+
+9. STREAMING E ERROS DO PROVEDOR
+  [OK]    texto chega inteiro  'Olá, mundo.'
+  [OK]    o nome do modelo e o id não vazam para o app  
+  [OK]    usage capturado e não repassado  
+  [OK]    termina com [DONE] e finish_reason stop  
+  [OK]    ao_texto recebe os pedaços  
+  [OK]    recusa do modelo aparece como texto  
+  [OK]    401 levanta ErroProvedor com a chave mascarada  HTTP 401 invalid_api_key: Incorrect API key provided: sk-***. You can find...
+  [OK]    mensagem ao usuário não fala da chave  
+  [OK]    429 sem crédito → avisa o operador  
+  [OK]    429 comum → tente de novo  
+  [OK]    5xx e rede → tente de novo  
+  [OK]    400 de reasoning_effort é reconhecido  
+  [OK]    400 de outro parâmetro não  
+  [OK]    erro no meio do stream levanta, depois do texto parcial  
+  [OK]    silêncio longo vira keepalive  
+  [OK]    a pessoa saiu no meio: a conexão com a OpenAI é fechada  
+
+10. ADAPTADOR DO AGENTE
+  [OK]    campos do llama somem; os do motor externo ficam  
+  [OK]    system vira developer; tool_calls com conteúdo vazio vira null  
+  [OK]    ferramentas do agente preservadas  
+  [OK]    o payload original do agente não é alterado  
+  [OK]    cada volta conta uma chamada  
+
+RESULTADO: 94 OK, 0 falhas

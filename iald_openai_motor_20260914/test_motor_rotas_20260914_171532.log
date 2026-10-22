@@ -1,0 +1,193 @@
+[IALD] Memória do operador: 2 fatos ativos (0 sempre, 2 sob demanda) | bloco fixo: 0 tokens
+[IALD] Access Engine: 2 pedidos (0 pendentes)
+[IALD] Contract Engine: 1 contratos (1 pendentes)
+[TGLC] Ledger: C:\IALD\bank\tglc_ledger.json
+[IALD] TGL Coin Engine: DISPONIVEL | Contas: 22
+[Ψ-NET] Dir: C:\IALD\psinet
+[Ψ-NET] Max file: 10 MB
+[IALD] PSI-NET Engine: DISPONIVEL | Max: 10 MB | Pending: 3
+[motores] padrão=nativa operador=nativa modelo=gpt-5-nano chave=definida prompt=48e5b2f9f10c
+importando o servidor...
+  [OK]    o prompt canônico do servidor foi lido  
+[IALD-AUTH] 2026-09-14 17:15:36 | LOGIN_OK | user=ana | ip=127.0.0.1
+
+1. CONTA LIBERADA SEM CONSENTIMENTO: nada sai
+  [OK]    HTTP 200 com aviso de consentimento  [{'tipo': 'consentimento_ia', 'texto': 'Esta conta responde pelo serviço de IA da OpenAI e isso precisa do seu consentim
+  [OK]    o aviso traz o texto completo do servidor  
+  [OK]    NENHUMA chamada: nem OpenAI nem llama  
+  [OK]    /api/motor: openai, sem consentimento, modelo mais barato  
+  [OK]    aceito precisa ser booleano  
+  [OK]    formulário forjado (text/plain com cara de JSON) não consente — CSRF  HTTP 415
+[IALD-AUTH] 2026-09-14 17:15:36 | LOGIN_OK | user=caio | ip=127.0.0.1
+  [OK]    exclusão de conta por formulário forjado é recusada — CSRF  HTTP 415
+[IALD-AUTH] 2026-09-14 17:15:36 | CONSENTIMENTO_IA | user=ana | ip=127.0.0.1 | aceito v1
+  [OK]    consentimento registrado na conta  
+
+2. CONTA LIBERADA COM CONSENTIMENTO: responde pela OpenAI
+  [OK]    uma chamada, e ela vai à OpenAI  ['https://api.openai.invalid/v1/chat/completions']
+  [OK]    zero chamadas ao llama-server local  
+  [OK]    texto chega ao app  'Sou a IALD, servida pelo gpt-5-nano.'
+  [OK]    modelo gpt-5-nano, store false, usage no stream  
+  [OK]    sem campos do Qwen  
+  [OK]    prompt do SERVIDOR na frente, como developer  
+  [OK]    o system do cliente não passa  
+  [OK]    o perfil da pessoa passa, rotulado  
+  [OK]    A MEMÓRIA DO OPERADOR NÃO VAI À OPENAI  
+  [OK]    instrução de linguagem técnica para quem não tem linguagem sagrada  
+  [OK]    safety_identifier é código, não o nome  
+  [OK]    a chave vai só no cabeçalho de autorização  
+  [OK]    a chave e o nome do modelo não chegam ao app  
+  [OK]    gasto exato registrado pelo usage  US$ 0.00021000
+
+3. O OPERADOR SEGUE NA IALD NATIVA (com a memória dele)
+[IALD-AUTH] 2026-09-14 17:15:37 | LOGIN_OK | user=luiz | ip=127.0.0.1
+[Memoria] recuperou 0 fato(s) para esta pergunta
+[Qwen36-sys] 2 system(s) fundidos em 1 no topo
+[iald-mode] fast
+[iald-surface] web
+  [OK]    vai ao llama-server local, nunca à OpenAI  ['http://127.0.0.1:8081/v1/chat/completions']
+  [OK]    a memória do operador segue indo ao modelo DELE (o desvio não quebrou o caminho nativo)  
+  [OK]    resposta da nativa chega  
+[Memoria] recuperou 0 fato(s) para esta pergunta
+[Qwen36-sys] 2 system(s) fundidos em 1 no topo
+[iald-mode] fast
+[iald-surface] web
+  [OK]    caminho de ferramentas NATIVO intacto: payload do llama como antes, sem cabeçalho de chave  ['http://127.0.0.1:8081/v1/chat/completions']
+
+4. MOTOR FIXADO NO PAINEL VENCE A REGRA
+[IALD-AUTH] 2026-09-14 17:15:37 | LOGIN_OK | user=bia | ip=127.0.0.1
+[Memoria] recuperou 0 fato(s) para esta pergunta
+[Qwen36-sys] 3 system(s) fundidos em 1 no topo
+[iald-mode] fast
+[iald-surface] web
+  [OK]    bia (fixada na nativa) vai ao llama  
+  [OK]    corpo JSON que não é objeto: aviso, sem erro 500 e sem chamada  HTTP 400
+  [OK]    sem pergunta do usuário: aviso de pedido inválido, sem chamada  
+
+5. CONTA NO MOTOR EXTERNO NÃO ALCANÇA O LLAMA POR OUTRA ROTA /v1
+  [OK]    POST /v1/completions → 403  
+  [OK]    e nada foi ao llama  
+
+6. FERRAMENTAS NO MOTOR EXTERNO: só as permitidas
+  [OK]    a frase aciona o caminho de ferramentas  
+[IALD-AUTH] 2026-09-14 17:15:37 | AGENT_TOOL | user=ana | ip=agent | loop=1 tool=search_web args={"query": "cotação do dólar"}
+  [OK]    duas voltas na OpenAI (ferramenta e resposta)  2
+  [OK]    só data/hora, busca e leitura de página são oferecidas  ['fetch_url', 'get_current_datetime', 'search_web']
+  [OK]    a ferramenta rodou para a conta, sem poder de operador  [('search_web', 'ana', False)]
+  [OK]    segunda volta leva a chamada (conteúdo null) e o resultado  
+  [OK]    sem campos do Qwen também no agente  
+  [OK]    memória do operador fora também no agente  
+  [OK]    resposta final chega  'O dólar está em R$ X.'
+[IALD-AUTH] 2026-09-14 17:15:37 | AGENT_TOOL | user=ana | ip=agent | loop=1 tool=consultar_acervo args={"query": "stack v7"}
+  [OK]    ferramenta NÃO permitida pedida pelo modelo não roda  []
+
+7. ERROS DO PROVEDOR
+[motores] ana: HTTP 401 invalid_api_key: Incorrect API key provided: sk-***.
+  [OK]    401 vira aviso legível, sem a chave  
+  [OK]    chamada recusada não entra no gasto  
+[motores] gpt-5-nano recusou reasoning_effort; seguindo sem ele
+  [OK]    400 de reasoning_effort: tenta de novo sem o parâmetro  
+  [OK]    e o servidor lembra para as próximas  
+
+8. LIMITES
+  [OK]    cota do dia estourada: aviso, sem chamada  
+  [OK]    pedidos por minuto: aviso, sem chamada  
+
+9. SEM CHAVE: FAIL-CLOSED
+[motores] ana: O motor externo desta conta ainda não foi configurado no servidor da IALD.
+  [OK]    aviso de motor indisponível  
+  [OK]    e NÃO cai na máquina do operador  
+[motores] ana: O motor externo desta conta ainda não foi configurado no servidor da IALD.
+[Memoria] recuperou 0 fato(s) para esta pergunta
+[Qwen36-sys] 3 system(s) fundidos em 1 no topo
+[iald-mode] fast
+[iald-surface] web
+  [OK]    só com a reserva nativa ligada pelo operador vai ao llama  
+[motores] ana: O prompt canônico da IALD não pôde ser lido; o motor externo fica parado por segurança.
+  [OK]    sem prompt canônico: aviso, nada sai  
+
+10. O QUE O APP VÊ
+  [OK]    active-model da conta: OpenAI, sem selo nativo  
+  [OK]    active-model sem sessão: o modelo nativo, como antes  
+  [OK]    active-model do operador: nativo  
+  [OK]    /api/contexto da conta usa a janela do motor externo  
+  [OK]    /api/contexto do operador usa a janela do llama  
+  [OK]    app com token: responde pela OpenAI  
+  [OK]    active-model pelo token do app também personaliza  
+
+11. REVOGAR
+[IALD-AUTH] 2026-09-14 17:15:37 | CONSENTIMENTO_IA | user=ana | ip=127.0.0.1 | revogado
+  [OK]    revogado  
+  [OK]    depois de revogar: aviso de novo, nada sai  
+
+12. PAINEL
+  [OK]    lista mostra motor fixado, efetivo e consentimento  
+[IALD-AUTH] 2026-09-14 17:15:37 | ADMIN_MOTOR | user=luiz | ip=127.0.0.1 | user=ana motor=nativa
+  [OK]    operador fixa a nativa para ana  
+  [OK]    motor inválido → 400  
+[IALD-AUTH] 2026-09-14 17:15:37 | ADMIN_MOTOR | user=luiz | ip=127.0.0.1 | user=ana motor=regra-geral
+  [OK]    vazio volta à regra geral  
+  [OK]    conta comum não mexe em motor  
+  [OK]    estado do motor no painel, SEM a chave  
+  [OK]    gasto do dia aparece no painel  
+  [OK]    conta comum não vê o estado do motor  
+  [OK]    painel tem a coluna Motor, o seletor e a linha de estado  
+
+13. PLANO GRATUITO: motor OpenAI sempre, saída curta, sem agente, cota em tokens
+[IALD-AUTH] 2026-09-14 17:15:37 | LOGIN_OK | user=gi | ip=127.0.0.1
+  [OK]    gratuito com a nativa FIXADA vai à OpenAI, nunca ao llama  ['https://api.openai.invalid/v1/chat/completions']
+  [OK]    saída do plano gratuito (1200) mesmo pedindo 16000 no modo pensar  1200
+  [OK]    pensar desligado no gratuito: esforço do modo rápido (ou omitido)  None
+  [OK]    a memória do operador não vai  
+  [OK]    /api/motor: plano gratuito e cota com o token contado do pedido  {'bloqueado_por': '', 'definicao': 'Token contado = os tokens da resposta (incluindo o raciocínio) mais os tokens que você enviou e que não vieram do cache. As instruções fixas da IALD não entram na s
+  [OK]    a cota é gravada na chave da identidade (cota_chave), não no nome  
+  [OK]    agente desligado no gratuito: uma chamada, sem ferramentas  1
+  [OK]    cota em tokens do dia esgotada: aviso 'limite' com bloco cota, ZERO chamadas  {'tipo': 'limite', 'texto': 'Você atingiu o limite diário do uso gratuito. O limite renova à meia-noite UTC (21h em Brasília).', 'bloqueado_por': 'tokens_dia', 
+  [OK]    teto mensal: aviso com bloqueado_por tokens_mes, texto do mês, zero chamadas  [{'tipo': 'limite', 'texto': 'Você usou todo o uso gratuito deste mês. Renova no dia 1º (UTC).', 'bloqueado_por': 'token
+  [OK]    /api/motor volta a mostrar a cota livre  
+  [OK]    GET /v1 da conta no motor externo não alcança o llama (403)  
+
+14. RESERVA NATIVA NUNCA SERVE O GRATUITO
+[motores] gi: O motor externo desta conta ainda não foi configurado no servidor da IALD.
+  [OK]    gratuito sem chave e com reserva: aviso motor_indisponivel, ZERO chamadas ao llama  [{'tipo': 'motor_indisponivel', 'texto': 'O motor externo desta conta ainda não foi configurado no s
+  [OK]    a memória falsa do operador não aparece na resposta  
+  [OK]    segunda trava do api_post: None para o gratuito vira aviso, nunca o caminho nativo  
+
+15. /api/motor COM PLANO E COTA PARA AS DEMAIS CONTAS
+[IALD-AUTH] 2026-09-14 17:15:37 | CONSENTIMENTO_IA | user=ana | ip=127.0.0.1 | aceito v1
+  [OK]    conta liberada sem campo plano = assinante (não regressivo), cota de 60 mil tokens/dia  {'bloqueado_por': '', 'definicao': 'Token contado = os tokens da resposta (incluindo o raciocínio) mais os tokens que vo
+  [OK]    operador na nativa: plano operador, sem cota da OpenAI  
+  [OK]    assinante no modo pensar mantém o teto de 8192 (não regressivo)  8192
+
+16. MODERAÇÃO (antes do modelo)
+[IALD-AUTH] 2026-09-14 17:15:37 | MODERACAO_BLOQUEIO | user=gi | ip=127.0.0.1 | categorias=sexual,sexual/minors
+  [OK]    categoria grave: aviso 'moderacao' e o modelo NÃO é chamado  [{'tipo': 'moderacao', 'texto': 'A IALD não responde a esse tipo de pedido. Se quiser, escreva sobre
+  [OK]    a moderação recebeu o texto da última mensagem, com o modelo omni e a chave só no cabeçalho  
+  [OK]    o aviso não devolve as categorias nem o texto  
+[IALD-AUTH] 2026-09-14 17:15:37 | MODERACAO_ACOLHIMENTO | user=gi | ip=127.0.0.1 | categorias=self-harm,self-harm/instructions,self-harm/intent
+  [OK]    autolesão (mesmo com 'instructions' junto): ACOLHE — o modelo responde com a instrução do CVV 188  
+[moderacao] gi: HTTP 500 : falha falsa; seguindo sem moderação
+  [OK]    moderação falhou e IALD_MODERACAO_FALHA=seguir: o pedido segue  
+[moderacao] gi: HTTP 500 : falha falsa; pedido recusado
+  [OK]    moderação falhou e =bloquear: aviso 'moderacao_indisponivel', modelo não chamado  
+
+17. VAGAS DO USO GRATUITO (semáforo)
+[motores] gi: sem vaga no uso gratuito (4 streams)
+  [OK]    semáforo cheio: aviso 'ocupado', ZERO chamadas  
+[motores] ana: HTTP 500 : roteiro vazio
+  [OK]    assinante não depende da vaga do gratuito  
+  [OK]    depois da resposta a vaga volta  
+  [OK]    pedido inválido depois de pegar a vaga também a devolve  
+
+18. PAINEL: PLANO NA LISTA E NO ESTADO DO MOTOR
+  [OK]    lista traz plano escrito, efetivo e uso de tokens pela chave da cota  {'dia': 2244, 'erro': '', 'mes': 2244}
+  [OK]    estado do motor traz os limites dos três planos  
+[IALD-AUTH] 2026-09-14 17:15:37 | ADMIN_PLANO | user=luiz | ip=127.0.0.1 | user=ana plano=gratuito
+  [OK]    operador põe ana no gratuito: motor efetivo vira openai  
+  [OK]    plano inválido → 400  
+[IALD-AUTH] 2026-09-14 17:15:37 | ADMIN_PLANO | user=luiz | ip=127.0.0.1 | user=ana plano=regra
+  [OK]    vazio volta à regra  
+  [OK]    conta comum não mexe em plano  
+  [OK]    arquivos reais intocados (usuários, pedidos, uso OpenAI, razão TGL)  {}
+
+RESULTADO: 103 OK, 0 falhas
