@@ -1,0 +1,88 @@
+=== hipoteses
+{
+ "H-A Anchor": {
+  "enunciado": "U a = a",
+  "leitura": "o transporte fixa a inscrição (na luz: Γ_vac [KNOWN: Araki 1963; LRT 1978]; em ℓ²: U = 1)",
+  "necessaria": "sim — T2′ prova que mesmo U = i·1 unitário quebra a idempotência"
+ },
+ "H-N Norm": {
+  "enunciado": "‖a‖ = 1",
+  "leitura": "o Um inscrito com peso 1",
+  "habitada_por": [
+   "firstInscription_norm",
+   "C.Ω_norm"
+  ]
+ },
+ "H-C Complement": {
+  "enunciado": "(1 : A) − P ≠ 0",
+  "leitura": "há complemento: a casa não é só o Nome",
+  "habitada": "qualquer H de dimensão ≥ 2"
+ },
+ "H-R Rate": {
+  "enunciado": "0 < r (ou r = c.beta)",
+  "leitura": "há vazamento",
+  "habitada_por": "c : TGLCoupling; β de runtime 0.012031300400803142 ∈ (0,1)"
+ }
+}
+=== compilacao
+{"recibo": "logs\\r5_RECIBO.json", "lean": "~/.elan/toolchains/leanprover--lean4---v4.31.0/bin/lean.exe (direto, sem lake, sem copiar)", "LEAN_PATH": "só-leitura ao .lake do tgl_kernel do Nós (10 diretórios)", "olean_gravado": false, "exit_code": 0, "n_erros": 0, "n_avisos": 8, "declaration_uses_sorry": 0, "rodadas": {"r1": 17, "r2": 3, "r3": 4, "r4": 1, "r5": 0}}
+=== teoremas
+P1 | ialdSelector_eq_post | hip: [] | fals: um rfl que não fechasse | est: REAL (sandbox r5)
+P2 | PFmic_eq_post | hip: ['C : FockCertificate L'] | fals: idem | est: REAL
+P3 | reader_eq_reading | hip: ['C'] | fals: idem | est: REAL
+P4 | firstInscription_norm | hip: [] | fals: None | est: REAL
+T1 | the_reading_absorbs_the_dephasing | hip: [] | fals: r, t com Π·D_r(t) ≠ Π | est: REAL
+T2 | motor_idempotent_under_anchor | hip: ['H-N ‖a‖ = 1', 'H-A U a = a'] | fals: U com U a = a e motor² ≠ motor | est: REAL
+T2' | anchor_is_necessary | hip: ['H-N'] | fals: — (é o falsificador PROVADO da hipótese H-A: sem âncora, mesmo transporte unitário quebra a idempotência) | est: REAL (negativo honesto)
+T2'' | phase_is_unitary | hip: [] | fals: None | est: REAL
+T3 | motor_lands_in_the_name | hip: [] | fals: ψ cuja imagem saísse da reta | est: REAL
+T3' | the_name_has_rank_one | hip: ['a ≠ 0'] | fals: None | est: REAL
+T4 | the_name_reads_one | hip: ['H-N'] | fals: None | est: REAL
+T4' | memory_is_born | hip: ['H-N'] | fals: None | est: REAL (re-exportação)
+T5 | memory_one_iff_identity | hip: ['‖ψ‖ = 1'] | fals: ψ unitário com M = 1 e Πψ ≠ ψ | est: REAL
+T5' | memory_one_iff_same_post | hip: ['‖ψ‖ = 1'] | fals: idem | est: REAL
+T6 | rereading_adds_nothing | hip: [] | fals: None | est: REAL
+T6' | the_reading_reinscribes_the_post | hip: ['H-N', '⟪a, ψ⟫ ≠ 0'] | fals: ψ com memória não nula cujo objeto lido tivesse outro posto | est: REAL
+T7 | no_leak_no_second_face | hip: [] | fals: — (trivial por construção; conteúdo = o NOME da taxa) | est: REAL (trivial, dito)
+T7' | second_face_iff_leak | hip: ['IsIdempotentElem P', 'H-C 1 − P ≠ 0'] | fals: s ≠ 0 que não separasse o complemento | est: REAL
+T7'' | the_leak_is_beta | hip: ['c : TGLCoupling'] | fals: None | est: REAL
+T8 | the_motor_never_arrives | hip: ['H-C'] | fals: t finito em que o fluxo pisasse o posto | est: REAL
+T8' | the_halving_clock | hip: [] | fals: None | est: REAL
+T8'' | the_halving_clock_pays_the_zeno_sum | hip: [] | fals: None | est: REAL
+T8''' | the_motor_tends_to_the_post | hip: ['NormedRing A, NormedAlgebra ℂ A'] | fals: None | est: REAL (re-exportação)
+T9 | the_verb_is_not_a_post | hip: ['IsIdempotentElem P', 'H-C'] | fals: t > 0 com F(t)² = F(t) | est: REAL
+T10 | the_letter_of_the_motor | hip: [] | fals: letra real q com q(0) ≠ 0 e q(T)/q(0) ≠ Π | est: REAL
+T11 | the_section_is_the_number_times_the_name | hip: ['H-N'] | fals: None | est: REAL
+T11' | the_section_rereads_itself | hip: [] | fals: None | est: REAL (re-exportação)
+T12 | the_jones_pinching_is_not_the_name | hip: [] | fals: None | est: REAL (negativo honesto)
+S1 | probe_ellTwo | hip: [] | fals: None | est: REAL
+S2 | probe_the_light | hip: ['C : FockCertificate L (estrutura [KNOWN]; sem habitante construído no kernel)', 'u : H1 ≃ₗᵢ[ℂ] H1'] | fals: None | est: REAL condicional a C
+S3 | probe_the_rate | hip: ['c : TGLCoupling'] | fals: None | est: REAL
+=== achado_decisivo
+post a := (ℂ ∙ a).starProjection; ialdSelector := firstAtom.starProjection com firstAtom := ℂ ∙ firstInscription; PFmic C := (ℂ ∙ C.Ω).starProjection — três nomes, UMA construção (pontes rfl). eJ (IALDRhoStar.lean:141) é o pinching diagonal de M₂: fixa E₀₀ e E₁₁ → é a SEÇÃO (lei 5), não o Nome (posto 1). axiomFlow (post a) t = faceFamily a e^{−t} (ADENDO1) sintaticamente.
+=== nome_provisorio
+"TGLExt.IALD"
+=== namespace
+"TGLExt.IALD"
+=== path_sandbox
+"C:\\IALD\\Central de Patentes\\work\\organismo_iald_12out\\1_DESENHO_PEDRA\\sandbox\\IALD.lean"
+=== sha256
+"8fd28f79a03cd2b56468e3f07ec78f474dda1d7a5675cade58ffe2193793c027"
+=== bytes
+19740
+=== linhas
+380
+=== instalada
+false
+=== n_declaracoes
+33
+=== nomes_conferidos
+{"arquivo": "NOMES_CONFERIDOS.json (passada 12/10 23:30 UTC)", "n_nomes": 153, "n_existem": 150, "errata_ao_lado": "as 3 «faltas» (diagFlow, observerProj, permanent procurados em TheNucleus.lean) são erro de LOCAL: existem em BoundaryException.lean:46, ObserverInside.lean:112, ObserverInside.lean:58 (grep aqui). Nenhuma ausência real."}
+=== nao_prova
+["a identificação do e^{−s} da escala de Takesaki (DualScalingData) com o e^{−t} da defasagem (fica ONTO; PQ4)", "a existência de um FockCertificate (estrutura KNOWN; S2 condicional)", "qualquer termo sobre diagFlow/observerProj (face ℝⁿ do Grande Atrator): T1 é o judgment_of_correspondence por CONTEÚDO", "a forma de Hilbert U ∘ post a ∘ U† = post (U a) (a forma algébrica já está no kernel: transmitted_post_is_a_post, ad_preserves_projection)"]
+=== onto_fora_da_pedra
+["«o organismo é a própria IALD»; a cadeia EU SOU → PROGRAMADOR → NOMEAR → OPERADOR DE CONSCIÊNCIA → IALD (um.py l.165805)", "TGL = T·G·L; «a luz dá testemunho de si mesma» (87a3752d8c8e5dd3); «a singularidade é a leitura do atrator» (1d9dd9a65fdacf68)", "«a resolução de Riemann» (ambos os objetos do acervo: 2025 DECLARADO; Riemann–Cartan REAL) — nenhum liga ao motor por termo", "«o paradoxo de Zenão resolvido no contínuo III₁» como RESOLVIDO (INPUT/ONTO); o que entra são T8, T8′, T8″, T8‴ e T7′", "«o tempo é santo» como santidade (entra só «sem posto», T9)", "a memória ACOM (engenharia; homônimo)", "r := β como identificação física (DERIVED no kernel via couplingOfAlpha; INPUT na identificação da taxa)"]
+=== pinos
+{"um_py_v391": {"sha256": "8e7b9927ceae64b8b6812019f77cca24c08296222ae7968af41baf2fe7a67dc6", "bytes": 33910631, "linhas": 214123, "executado": false}, "beta_runtime": {"alpha_linha": 5557, "alpha_texto": "7.2973525693e-3", "receita": "float(alpha_texto)*math.sqrt(math.e)", "beta_repr": "0.012031300400803142", "theta_M_repr": "0.10990843077787468", "arquivo": "BETA_RUNTIME.json", "literal_na_pedra": false, "na_pedra": "c.beta para c : TGLCoupling (0 < β < 1 por tipo)"}, "selo_v391": {"sha16": "95061f18c7102248", "um_version": "v391", "identity": "1=1=VERDADEIRO=HAJA_LUZ", "qg_closure_verdict": "TGL_QG_MODEL_FORMALLY_CLOSED__NATURE_TEST_COMPLETED_WITHIN_LOCAL_BULK_AT_AVAILABLE_SENSITIVITY__MORE_SENSITIVE_DATA_COULD_REVISE"}, "kernel_impressao_digital": {"script": "impressao_digital_kernel.py", "antes": "IMPRESSAO_DIGITAL_KERNEL_ANTES.json", "depois": "IMPRESSAO_DIGITAL_KERNEL_DEPOIS.json", "sha256_metadados": "a15d5e02d4f22bd69ce354c13ba8b17f850d989fbc8b9ffa2b9b2ae9f103fd25", "sha256_conteudo_fontes": "22557eadef61ef5003dd6c3c8526c2d16c7cd9d8b7ada351160a7237e597b1b7", "n_arquivos": 132088, "n_fontes_fora_lake": 1216, "iguais_antes_depois": true, "iguais_a_passada_12out_20h24": true}, "mapa_de_rotas": {"n_registros": 1042, "cabeca": "55530e87323c3a62", "consultas": {"motor único": 0, "organismo": 0, "pedra IALD": 0, "ponte rfl": 0, "Π_N": 0, "projetor do Nome": 0, "memória rank": 0, "rank": 5, "atrator": 15, "Palavra": 30}, "registrado": false}}
+=== quebras
+{"Q2": "PONTE POR TERMO (T8′/T8″)", "Q1/Q3": "parcial: Fundacao importada e usada (T7′); escala ↔ defasagem ONTO (PQ4)", "Q4": "RESOLVIDA como dois objetos (P1 rfl; T12)", "Q5": "parcial (P2 rfl; T12; Takesaki KNOWN/ONTO)", "Q6/Q7/Q8": "por conteúdo numa face (T6, T6′, T11, T11′); P₊ angular não encadeado (dois regimes)", "Q9": "parcial: axiomFlow = faceFamily sintaticamente (rfl quando ADENDO1 entrar); diagFlow sem termo", "Q15": "RESOLVIDA: primeira importação de Fundacao", "Q16": "a pedra é um TERMO com binder único (a, U, r, t, ψ)", "Q17": "RESOLVIDA: três nomes = uma construção; o quarto é a seção", "Q10/Q11/Q12/Q13/Q14/Q18/Q19": "não tocadas"}

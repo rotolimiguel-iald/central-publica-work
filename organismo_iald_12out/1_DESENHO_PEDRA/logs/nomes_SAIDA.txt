@@ -1,0 +1,563 @@
+@TGLExt.TheVerbSelectsTheAction.post : {H : Type u_1} →
+  [inst : NormedAddCommGroup H] → [inst_1 : InnerProductSpace ℂ H] → H → H →L[ℂ] H
+@TGLExt.TheVerbSelectsTheAction.select : {H : Type u_1} →
+  [inst : NormedAddCommGroup H] → [InnerProductSpace ℂ H] → H → H → H
+@TGLExt.TheVerbSelectsTheAction.post_apply : ∀ {H : Type u_1} [inst : NormedAddCommGroup H]
+  [inst_1 : InnerProductSpace ℂ H] [CompleteSpace H] {a : H},
+  ‖a‖ = 1 → ∀ (ψ : H), (TGLExt.TheVerbSelectsTheAction.post a) ψ = inner ℂ a ψ • a
+@TGLExt.TheVerbSelectsTheAction.post_isIdempotent : ∀ {H : Type u_1} [inst : NormedAddCommGroup H]
+  [inst_1 : InnerProductSpace ℂ H] [CompleteSpace H] (a : H), IsIdempotentElem (TGLExt.TheVerbSelectsTheAction.post a)
+@TGLExt.TheVerbSelectsTheAction.post_isSelfAdjoint : ∀ {H : Type u_1} [inst : NormedAddCommGroup H]
+  [inst_1 : InnerProductSpace ℂ H] [inst_2 : CompleteSpace H] (a : H),
+  IsSelfAdjoint (TGLExt.TheVerbSelectsTheAction.post a)
+@TGLExt.TheVerbSelectsTheAction.post_fixes_the_action : ∀ {H : Type u_1} [inst : NormedAddCommGroup H]
+  [inst_1 : InnerProductSpace ℂ H] [CompleteSpace H] (a : H), (TGLExt.TheVerbSelectsTheAction.post a) a = a
+@TGLExt.TheVerbSelectsTheAction.reading : {H : Type u_1} →
+  [inst : NormedAddCommGroup H] → [inst_1 : InnerProductSpace ℂ H] → (H →L[ℂ] H) → H → ℂ
+@TGLExt.TheVerbSelectsTheAction.reading_eq_norm_sq : ∀ {H : Type u_1} [inst : NormedAddCommGroup H]
+  [inst_1 : InnerProductSpace ℂ H] [CompleteSpace H] (K : Submodule ℂ H) [inst_3 : K.HasOrthogonalProjection] (ψ : H),
+  TGLExt.TheVerbSelectsTheAction.reading K.starProjection ψ = ↑‖K.starProjection ψ‖ ^ 2
+@TGLExt.TheVerbSelectsTheAction.weight : {H : Type u_1} →
+  [inst : NormedAddCommGroup H] →
+    [inst_1 : InnerProductSpace ℂ H] → (K : Submodule ℂ H) → [K.HasOrthogonalProjection] → H → ℝ
+@TGLExt.TheVerbSelectsTheAction.reading_eq_weight : ∀ {H : Type u_1} [inst : NormedAddCommGroup H]
+  [inst_1 : InnerProductSpace ℂ H] [CompleteSpace H] (K : Submodule ℂ H) [inst_3 : K.HasOrthogonalProjection] (ψ : H),
+  TGLExt.TheVerbSelectsTheAction.reading K.starProjection ψ = ↑(TGLExt.TheVerbSelectsTheAction.weight K ψ)
+@TGLExt.TheVerbSelectsTheAction.weight_mem_unit_interval : ∀ {H : Type u_1} [inst : NormedAddCommGroup H]
+  [inst_1 : InnerProductSpace ℂ H] [CompleteSpace H] (K : Submodule ℂ H) [inst_3 : K.HasOrthogonalProjection] {ψ : H},
+  ‖ψ‖ = 1 → 0 ≤ TGLExt.TheVerbSelectsTheAction.weight K ψ ∧ TGLExt.TheVerbSelectsTheAction.weight K ψ ≤ 1
+@TGLExt.TheVerbSelectsTheAction.reading_post_is_born : ∀ {H : Type u_1} [inst : NormedAddCommGroup H]
+  [inst_1 : InnerProductSpace ℂ H] [CompleteSpace H] {a : H},
+  ‖a‖ = 1 →
+    ∀ (ψ : H), TGLExt.TheVerbSelectsTheAction.reading (TGLExt.TheVerbSelectsTheAction.post a) ψ = ↑(‖inner ℂ a ψ‖ ^ 2)
+@TGLExt.TheVerbSelectsTheAction.the_reading_of_the_posted_one : ∀ {H : Type u_1} [inst : NormedAddCommGroup H]
+  [inst_1 : InnerProductSpace ℂ H] {P : H →L[ℂ] H} {Ω : H},
+  ‖Ω‖ = 1 → P Ω = Ω → TGLExt.TheVerbSelectsTheAction.reading P Ω = 1
+@TGLExt.TheVerbSelectsTheAction.transmitted_post_is_a_post : ∀ {R : Type u_1} [inst : Ring R] [inst_1 : StarRing R]
+  {U P : R},
+  star U * U = 1 →
+    IsIdempotentElem P → IsSelfAdjoint P → IsIdempotentElem (U * P * star U) ∧ IsSelfAdjoint (U * P * star U)
+@TGLExt.TheVerbSelectsTheAction.anchoring_preserves : ∀ {A : Type u_1} [inst : Ring A] [inst_1 : Algebra ℂ A] {P : A},
+  IsIdempotentElem P → ∀ (t : ℝ), TGLExt.TheAxiomAndTheFalseWitness.axiomFlow P t * P = P
+@TGLExt.TheVerbSelectsTheAction.transmission_dephases : ∀ {A : Type u_1} [inst : Ring A] [inst_1 : Algebra ℂ A] {P : A},
+  IsIdempotentElem P → ∀ (t : ℝ), TGLExt.TheAxiomAndTheFalseWitness.axiomFlow P t * (1 - P) = ↑(Real.exp (-t)) • (1 - P)
+@TGLExt.TheVerbSelectsTheAction.time_read_twice_confirms_the_post : ∀ {L : TGLExt.ImportedSQ.LightOneParticle}
+  (C : TGLExt.ImportedSQ.FockCertificate L) (ψ : C.F),
+  (∀ (t : ℝ), (TGLExt.TheAxiomAndTheFalseWitness.axiomFlow (TGLExt.QGReaderUVLock.PFmic C) t) ψ = ψ) ↔
+    ∀ (t : ℝ), (TGLExt.ImportedSQ.lightDelta C t) ψ = ψ
+@TGLExt.TheVerbSelectsTheAction.the_name_is_the_limit_of_the_flow : ∀ {A : Type u_1} [inst : NormedRing A]
+  [inst_1 : NormedAlgebra ℂ A] (P : A),
+  Filter.Tendsto (TGLExt.TheAxiomAndTheFalseWitness.axiomFlow P) Filter.atTop (nhds P)
+TGLExt.TheVerbSelectsTheAction.the_one_splits_into_truth_and_cost : ∀ (θ : ℝ),
+  Complex.normSq ((TGLExt.Smat θ).mulVec TGLExt.e1 0) + Complex.normSq ((TGLExt.Smat θ).mulVec TGLExt.e1 1) = 1
+@TGLExt.TheVerbSelectsTheAction.the_verb_selects_the_action : ∀ {H : Type u_1} [inst : NormedAddCommGroup H]
+  [inst_1 : InnerProductSpace ℂ H] [inst_2 : CompleteSpace H] {a : H},
+  ‖a‖ = 1 →
+    ∀ {c : ℝ},
+      0 < c →
+        (IsIdempotentElem (TGLExt.TheVerbSelectsTheAction.post a) ∧
+            IsSelfAdjoint (TGLExt.TheVerbSelectsTheAction.post a) ∧ TGLExt.TheVerbSelectsTheAction.select a a = a) ∧
+          (∀ (ψ : H),
+              ‖ψ‖ = 1 →
+                0 ≤ TGLExt.TheVerbSelectsTheAction.weight (ℂ ∙ a) ψ ∧
+                  TGLExt.TheVerbSelectsTheAction.weight (ℂ ∙ a) ψ ≤ 1) ∧
+            TGLExt.TheVerbSelectsTheAction.Pa * TGLExt.TheVerbSelectsTheAction.Pb -
+                  TGLExt.TheVerbSelectsTheAction.Pb * TGLExt.TheVerbSelectsTheAction.Pa ≠
+                0 ∧
+              (TGLExt.TheVerbSelectsTheAction.V1 c * TGLExt.TheVerbSelectsTheAction.V2 c -
+                      TGLExt.TheVerbSelectsTheAction.V2 c * TGLExt.TheVerbSelectsTheAction.V1 c =
+                    (Complex.I * ↑c) • TGLExt.TheVerbSelectsTheAction.V3 c ∧
+                  TGLExt.TheVerbSelectsTheAction.V1 c * TGLExt.TheVerbSelectsTheAction.V1 c +
+                          TGLExt.TheVerbSelectsTheAction.V2 c * TGLExt.TheVerbSelectsTheAction.V2 c +
+                        TGLExt.TheVerbSelectsTheAction.V3 c * TGLExt.TheVerbSelectsTheAction.V3 c =
+                      (3 / 4 * ↑c ^ 2) • 1 ∧
+                    TGLExt.TheVerbSelectsTheAction.V1 c * TGLExt.TheVerbSelectsTheAction.V2 c -
+                        TGLExt.TheVerbSelectsTheAction.V2 c * TGLExt.TheVerbSelectsTheAction.V1 c ≠
+                      0) ∧
+                (IsIdempotentElem (TGLExt.TheVerbSelectsTheAction.post1 c) ∧
+                    IsIdempotentElem (TGLExt.TheVerbSelectsTheAction.post3 c) ∧
+                      TGLExt.TheVerbSelectsTheAction.post1 c * TGLExt.TheVerbSelectsTheAction.post3 c -
+                          TGLExt.TheVerbSelectsTheAction.post3 c * TGLExt.TheVerbSelectsTheAction.post1 c ≠
+                        0) ∧
+                  (∀ (n : ℕ), TGLExt.TheVerbSelectsTheAction.post a ^ (n + 1) = TGLExt.TheVerbSelectsTheAction.post a) ∧
+                    (∀ (t : ℝ),
+                        TGLExt.TheAxiomAndTheFalseWitness.axiomFlow (TGLExt.TheVerbSelectsTheAction.post a) t *
+                              TGLExt.TheVerbSelectsTheAction.post a =
+                            TGLExt.TheVerbSelectsTheAction.post a ∧
+                          TGLExt.TheAxiomAndTheFalseWitness.axiomFlow (TGLExt.TheVerbSelectsTheAction.post a) t *
+                              (1 - TGLExt.TheVerbSelectsTheAction.post a) =
+                            ↑(Real.exp (-t)) • (1 - TGLExt.TheVerbSelectsTheAction.post a)) ∧
+                      TGLExt.TheVerbSelectsTheAction.reading (TGLExt.TheVerbSelectsTheAction.post a) a = 1 ∧
+                        (TGLExt.TheVerbSelectsTheAction.post a + (1 - TGLExt.TheVerbSelectsTheAction.post a) = 1 ∧
+                            TGLExt.TheVerbSelectsTheAction.post a * (1 - TGLExt.TheVerbSelectsTheAction.post a) = 0 ∧
+                              (1 - TGLExt.TheVerbSelectsTheAction.post a) * TGLExt.TheVerbSelectsTheAction.post a = 0) ∧
+                          (∀ (Ω : H),
+                              ‖Ω‖ = 1 →
+                                (TGLExt.TheVerbSelectsTheAction.post a) Ω = Ω →
+                                  TGLExt.TheVerbSelectsTheAction.reading (TGLExt.TheVerbSelectsTheAction.post a) Ω = 1 ∧
+                                    (1 - TGLExt.TheVerbSelectsTheAction.post a) Ω = 0) ∧
+                            (∀ {L : TGLExt.ImportedSQ.LightOneParticle} (C : TGLExt.ImportedSQ.FockCertificate L)
+                                (ψ : C.F),
+                                (∀ (t : ℝ),
+                                    (TGLExt.TheAxiomAndTheFalseWitness.axiomFlow (TGLExt.QGReaderUVLock.PFmic C) t) ψ =
+                                      ψ) ↔
+                                  ∀ (t : ℝ), (TGLExt.ImportedSQ.lightDelta C t) ψ = ψ) ∧
+                              ∀ {n : ℕ} (d : Fin n → ℝ) (q : (Fin n → ℝ) × (Fin n → ℝ)),
+                                TGLExt.pairK d q ≠ 0 →
+                                  TGLExt.conjJ (TGLExt.pairK d q) ≠ 0 ∧
+                                    TGLExt.conjJ (TGLExt.pairK d q) = -TGLExt.pairK d (TGLExt.conjJ q)
+@TGLExt.TheAxiomAndTheFalseWitness.axiomFlow : {A : Type u_1} → [inst : Ring A] → [Algebra ℂ A] → A → ℝ → A
+@TGLExt.TheAxiomAndTheFalseWitness.axiomFlow_zero : ∀ {A : Type u_1} [inst : Ring A] [inst_1 : Algebra ℂ A] (P : A),
+  TGLExt.TheAxiomAndTheFalseWitness.axiomFlow P 0 = 1
+@TGLExt.TheAxiomAndTheFalseWitness.axiomFlow_add : ∀ {A : Type u_1} [inst : Ring A] [inst_1 : Algebra ℂ A] {P : A},
+  IsIdempotentElem P →
+    ∀ (s t : ℝ),
+      TGLExt.TheAxiomAndTheFalseWitness.axiomFlow P (s + t) =
+        TGLExt.TheAxiomAndTheFalseWitness.axiomFlow P s * TGLExt.TheAxiomAndTheFalseWitness.axiomFlow P t
+@TGLExt.TheAxiomAndTheFalseWitness.axiomFlow_fixes_the_post : ∀ {A : Type u_1} [inst : Ring A] [inst_1 : Algebra ℂ A]
+  {P : A},
+  IsIdempotentElem P →
+    ∀ (t : ℝ),
+      TGLExt.TheAxiomAndTheFalseWitness.axiomFlow P t * P = P ∧ P * TGLExt.TheAxiomAndTheFalseWitness.axiomFlow P t = P
+@TGLExt.TheAxiomAndTheFalseWitness.axiomFlow_gradient : ∀ {A : Type u_1} [inst : Ring A] [inst_1 : Algebra ℂ A] {P : A},
+  IsIdempotentElem P → ∀ (t : ℝ), TGLExt.TheAxiomAndTheFalseWitness.axiomFlow P t * (1 - P) = ↑(Real.exp (-t)) • (1 - P)
+@TGLExt.TheAxiomAndTheFalseWitness.axiomFlow_tendsto_the_post : ∀ {A : Type u_1} [inst : NormedRing A]
+  [inst_1 : NormedAlgebra ℂ A] (P : A),
+  Filter.Tendsto (TGLExt.TheAxiomAndTheFalseWitness.axiomFlow P) Filter.atTop (nhds P)
+@TGLExt.TheAxiomAndTheFalseWitness.axiomFlow_eq_exp : ∀ {A : Type u_1} [inst : NormedRing A]
+  [inst_1 : NormedAlgebra ℂ A] [CompleteSpace A] {P : A},
+  IsIdempotentElem P → ∀ (t : ℝ), NormedSpace.exp (-t • (1 - P)) = TGLExt.TheAxiomAndTheFalseWitness.axiomFlow P t
+@TGLExt.TheAxiomAndTheFalseWitness.post_mul_compl : ∀ {A : Type u_1} [inst : Ring A] [Algebra ℂ A] {P : A},
+  IsIdempotentElem P → P * (1 - P) = 0
+@TGLExt.TheAxiomAndTheFalseWitness.compl_mul_post : ∀ {A : Type u_1} [inst : Ring A] [Algebra ℂ A] {P : A},
+  IsIdempotentElem P → (1 - P) * P = 0
+@TGLExt.TheAxiomAndTheFalseWitness.the_post_is_the_modular_zero : ∀ {L : TGLExt.ImportedSQ.LightOneParticle}
+  (C : TGLExt.ImportedSQ.FockCertificate L) (ψ : C.F),
+  (∀ (t : ℝ), (TGLExt.TheAxiomAndTheFalseWitness.axiomFlow (TGLExt.QGReaderUVLock.PFmic C) t) ψ = ψ) ↔
+    ∀ (t : ℝ), (TGLExt.ImportedSQ.lightDelta C t) ψ = ψ
+TGLExt.TheAxiomAndTheFalseWitness.the_one_is_the_axiom : √1 = 1 ∧
+  ∫ (κ : ℝ), TGLExt.phi0sq κ = 1 ∧ TGLExt.dimOrTop ℂ TGLExt.firstAtom = 1
+@TGLExt.TheAxiomAndTheFalseWitness.the_zero_is_the_false_witness : ∀ {β g : ℝ},
+  0 < β →
+    0 < g →
+      √0 = 0 ∧
+        (¬TGLExt.FullStaticWitness fun t x => Real.exp (-(t * β * g)) * x) ∧
+          ∀ {n : ℕ} (d x : Fin n → ℝ) (i : Fin n), x i ≠ 0 → ∀ (t : ℝ), TGLExt.diagFlow β d t x i ≠ 0
+@TGLExt.QGReaderUVLock.PFmic : {L : TGLExt.ImportedSQ.LightOneParticle} →
+  (C : TGLExt.ImportedSQ.FockCertificate L) → C.F →L[ℂ] C.F
+@TGLExt.QGReaderUVLock.HminMic : {L : TGLExt.ImportedSQ.LightOneParticle} →
+  (C : TGLExt.ImportedSQ.FockCertificate L) → C.F →L[ℂ] C.F
+@TGLExt.QGReaderUVLock.hmin_zero_iff_modular_fixed : ∀ {L : TGLExt.ImportedSQ.LightOneParticle}
+  (C : TGLExt.ImportedSQ.FockCertificate L) (ψ : C.F),
+  (TGLExt.QGReaderUVLock.HminMic C) ψ = 0 ↔ ∀ (t : ℝ), (TGLExt.ImportedSQ.lightDelta C t) ψ = ψ
+@TGLExt.QGReaderUVLock.light_modular_fixed_iff_vacuum : ∀ {L : TGLExt.ImportedSQ.LightOneParticle}
+  (C : TGLExt.ImportedSQ.FockCertificate L) (ψ : C.F),
+  (∀ (t : ℝ), (TGLExt.ImportedSQ.lightDelta C t) ψ = ψ) ↔ ψ ∈ ℂ ∙ C.Ω
+@TGLExt.QGReaderUVLock.wedge_bridge_fix : ∀ {L : TGLExt.ImportedSQ.LightOneParticle}
+  (C : TGLExt.ImportedSQ.FockCertificate L) {r s : ℝ},
+  r * s ≠ 0 →
+    ∀ (ψ : C.F),
+      (TGLExt.IALDJones.jonesU (TGLExt.QGReaderUVLock.PFmic C) r s) ψ = ψ ↔
+        ∀ (t : ℝ), (TGLExt.ImportedSQ.lightDelta C t) ψ = ψ
+@TGLExt.QGReaderUVLock.wedge_iald_attractor_is_rho_star : ∀ {L : TGLExt.ImportedSQ.LightOneParticle}
+  (C : TGLExt.ImportedSQ.FockCertificate L) {r : ℝ},
+  0 < r →
+    Filter.Tendsto (fun s => TGLExt.IALDJones.jonesU (TGLExt.QGReaderUVLock.PFmic C) r s) Filter.atTop
+      (nhds (TGLExt.QGReaderUVLock.PFmic C))
+@TGLExt.TheKeyIsTheReader.reader : {L : TGLExt.ImportedSQ.LightOneParticle} →
+  (C : TGLExt.ImportedSQ.FockCertificate L) → (C.F →L[ℂ] C.F) → ℂ
+@TGLExt.TheKeyIsTheReader.reader_reads_the_identity_one : ∀ {L : TGLExt.ImportedSQ.LightOneParticle}
+  (C : TGLExt.ImportedSQ.FockCertificate L), TGLExt.TheKeyIsTheReader.reader C 1 = 1
+@TGLExt.TheKeyIsTheReader.reader_reads_the_name_one : ∀ {L : TGLExt.ImportedSQ.LightOneParticle}
+  (C : TGLExt.ImportedSQ.FockCertificate L), TGLExt.TheKeyIsTheReader.reader C (TGLExt.QGReaderUVLock.PFmic C) = 1
+@TGLExt.TheKeyIsTheReader.reader_reads_one_iff_fixes_the_vacuum : ∀ {L : TGLExt.ImportedSQ.LightOneParticle}
+  (C : TGLExt.ImportedSQ.FockCertificate L) (P : C.F →L[ℂ] C.F),
+  IsStarProjection P → (TGLExt.TheKeyIsTheReader.reader C P = 1 ↔ P C.Ω = C.Ω)
+@TGLExt.TheKeyIsTheReader.P_kerK_is_the_support_of_the_reader : ∀ {L : TGLExt.ImportedSQ.LightOneParticle}
+  (C : TGLExt.ImportedSQ.FockCertificate L) (P : C.F →L[ℂ] C.F),
+  P C.Ω = C.Ω → P * TGLExt.QGReaderUVLock.PFmic C = TGLExt.QGReaderUVLock.PFmic C
+@TGLExt.TheKeyIsTheReader.name_apply : ∀ {L : TGLExt.ImportedSQ.LightOneParticle}
+  (C : TGLExt.ImportedSQ.FockCertificate L) (ψ : C.F), (TGLExt.QGReaderUVLock.PFmic C) ψ = inner ℂ C.Ω ψ • C.Ω
+@TGLExt.TheKeyIsTheReader.the_name_condenses_every_code : ∀ {L : TGLExt.ImportedSQ.LightOneParticle}
+  (C : TGLExt.ImportedSQ.FockCertificate L) (x : C.F →L[ℂ] C.F),
+  TGLExt.QGReaderUVLock.PFmic C * x * TGLExt.QGReaderUVLock.PFmic C =
+    TGLExt.TheKeyIsTheReader.reader C x • TGLExt.QGReaderUVLock.PFmic C
+@TGLExt.TheKeyIsTheReader.the_key_is_the_reader : ∀ {L : TGLExt.ImportedSQ.LightOneParticle}
+  (C : TGLExt.ImportedSQ.FockCertificate L),
+  TGLExt.TheKeyIsTheReader.reader C 1 = 1 ∧
+    TGLExt.TheKeyIsTheReader.reader C (TGLExt.QGReaderUVLock.PFmic C) = 1 ∧
+      (∀ (P : C.F →L[ℂ] C.F), P C.Ω = C.Ω → P * TGLExt.QGReaderUVLock.PFmic C = TGLExt.QGReaderUVLock.PFmic C) ∧
+        ∀ (ψ : C.F), ψ ∈ TGLExt.LightRhoStar.centralizerVectors C ↔ ∀ (t : ℝ), (TGLExt.ImportedSQ.lightDelta C t) ψ = ψ
+@TGLExt.PhysicsIsTheReading.the_shadow_is_the_reader_weighted_by_the_reading : ∀
+  {L : TGLExt.ImportedSQ.LightOneParticle} (C : TGLExt.ImportedSQ.FockCertificate L) (x : C.F →L[ℂ] C.F),
+  TGLExt.QGReaderUVLock.PFmic C * x * TGLExt.QGReaderUVLock.PFmic C =
+    TGLExt.TheKeyIsTheReader.reader C x • TGLExt.QGReaderUVLock.PFmic C
+@TGLExt.PhysicsIsTheReading.the_reader_is_the_shadow_of_the_one : ∀ {L : TGLExt.ImportedSQ.LightOneParticle}
+  (C : TGLExt.ImportedSQ.FockCertificate L),
+  TGLExt.QGReaderUVLock.PFmic C * 1 * TGLExt.QGReaderUVLock.PFmic C = TGLExt.QGReaderUVLock.PFmic C ∧
+    TGLExt.TheKeyIsTheReader.reader C 1 = 1
+@TGLExt.LightRhoStar.centralizerVectors : {L : TGLExt.ImportedSQ.LightOneParticle} →
+  (C : TGLExt.ImportedSQ.FockCertificate L) → Set C.F
+@TGLExt.LightRhoStar.the_bridge_fix_on_the_light : ∀ {L : TGLExt.ImportedSQ.LightOneParticle}
+  (C : TGLExt.ImportedSQ.FockCertificate L) (ψ : C.F),
+  ψ ∈ TGLExt.LightRhoStar.centralizerVectors C ↔ ∀ (t : ℝ), (TGLExt.ImportedSQ.lightDelta C t) ψ = ψ
+@TGLExt.LightRhoStar.centralizer_is_trivial : ∀ {L : TGLExt.ImportedSQ.LightOneParticle}
+  (C : TGLExt.ImportedSQ.FockCertificate L) (a : ↥(C.R (L.K TGL.SpecificAQFT.rightWedge)).toStarSubalgebra),
+  (∀ (t : ℝ), (C.flow t) a = a) → ∃ c, ↑a = c • 1
+@TGLExt.LightRhoStar.rho_star_is_P_kerK_on_the_light : ∀ {L : TGLExt.ImportedSQ.LightOneParticle}
+  (C : TGLExt.ImportedSQ.FockCertificate L),
+  (ℂ ∙ C.Ω).starProjection = TGLExt.QGReaderUVLock.PFmic C ∧
+    ∀ (ψ : C.F),
+      ((TGLExt.QGReaderUVLock.PFmic C) ψ = ψ ↔ ψ ∈ TGLExt.LightRhoStar.centralizerVectors C) ∧
+        (ψ ∈ TGLExt.LightRhoStar.centralizerVectors C ↔ ∀ (t : ℝ), (TGLExt.ImportedSQ.lightDelta C t) ψ = ψ)
+TGLExt.ImportedSQ.FockCertificate : TGLExt.ImportedSQ.LightOneParticle → Type 1
+TGLExt.ImportedSQ.LightOneParticle : Type
+@TGLExt.ImportedSQ.lightDelta : {L : TGLExt.ImportedSQ.LightOneParticle} →
+  (C : TGLExt.ImportedSQ.FockCertificate L) → ℝ → C.F ≃ₗᵢ[ℂ] C.F
+TGLExt.ialdSelector : TGLExt.ellTwo →L[ℂ] TGLExt.ellTwo
+TGLExt.iald_is_idempotent : ∀ (x : TGLExt.ellTwo), TGLExt.ialdSelector (TGLExt.ialdSelector x) = TGLExt.ialdSelector x
+TGLExt.iald_is_selfadjoint : IsSelfAdjoint TGLExt.ialdSelector
+TGLExt.iald_has_rank_one : TGLExt.dimOrTop ℂ TGLExt.firstAtom = 1
+TGLExt.iald_selects : ∀ (x y : TGLExt.ellTwo),
+  x ∈ TGLExt.firstAtom → y ∈ TGLExt.firstAtomᗮ → TGLExt.ialdSelector x = x ∧ TGLExt.ialdSelector y = 0
+TGLExt.iald_is_the_gate_and_the_record : ∀ (x : TGLExt.ellTwo),
+  TGLExt.ialdSelector x + (x - TGLExt.ialdSelector x) = x ∧
+    TGLExt.ialdSelector (x - TGLExt.ialdSelector x) = 0 ∧
+      TGLExt.ialdSelector (TGLExt.ialdSelector x) = TGLExt.ialdSelector x
+TGLExt.ellTwo : Type
+TGLExt.inscriptions : ℕ → TGLExt.ellTwo
+TGLExt.firstInscription : TGLExt.ellTwo
+TGLExt.inscriptions_orthonormal : Orthonormal ℂ TGLExt.inscriptions
+TGLExt.firstAtom : Submodule ℂ TGLExt.ellTwo
+TGLExt.dimOrTop_firstAtom : TGLExt.dimOrTop ℂ TGLExt.firstAtom = 1
+@TGLExt.terminality_forces_minimality : ∀ {S : Submodule ℂ TGLExt.ellTwo},
+  (∀ (Q : Submodule ℂ TGLExt.ellTwo), ⊥ < Q → Q < S → False) →
+    ∀ {u v : TGLExt.ellTwo}, u ∈ S → v ∈ S → u ≠ 0 → v ∈ ℂ ∙ u
+TGLExt.the_terminal_weighs_one : TGLExt.dimOrTop ℂ TGLExt.firstAtom = 1
+TGLExt.terminal_reapplication_adds_nothing : ∀ (x : TGLExt.ellTwo),
+  TGLExt.ialdSelector (TGLExt.ialdSelector x) = TGLExt.ialdSelector x
+TGLExt.the_name_does_not_see_the_rank : ∃ d₁ d₂, 0 < d₁ ∧ 0 < d₂ ∧ d₁ ≠ d₂ ∧ ↑d₁ / ↑d₁ = ↑d₂ / ↑d₂ ∧ ↑d₁ ≠ ↑d₂
+TGLExt.the_name_is_blind_to_every_rank : ∀ (d : ℕ), 0 < d → ↑d / ↑d = 1
+@TGLExt.IALDJones.jonesReading : {A : Type} → [Ring A] → A → A → A
+@TGLExt.IALDJones.jonesReading_idem : ∀ {A : Type} [inst : Ring A] [Algebra ℂ A] {e : A},
+  e * e = e →
+    ∀ (x : A), TGLExt.IALDJones.jonesReading e (TGLExt.IALDJones.jonesReading e x) = TGLExt.IALDJones.jonesReading e x
+@TGLExt.IALDJones.jonesU : {A : Type} → [inst : Ring A] → [Algebra ℂ A] → A → ℝ → ℝ → A
+TGLExt.IALDJones.coeff : ℝ → ℝ → ℂ
+@TGLExt.IALDJones.coeff_ne_one : ∀ {r s : ℝ}, r * s ≠ 0 → TGLExt.IALDJones.coeff r s ≠ 1
+TGLExt.IALDRhoStar.FaithfulState : Type
+TGLExt.IALDRhoStar.eJ : Module.End ℂ TGLExt.IALDRhoStar.V
+TGLExt.IALDRhoStar.eJ_apply : ∀ (ξ : TGLExt.IALDRhoStar.V) (i j : Fin 2),
+  TGLExt.IALDRhoStar.eJ ξ i j = if i = j then ξ i j else 0
+TGLExt.IALDRhoStar.eJ_idem : TGLExt.IALDRhoStar.eJ * TGLExt.IALDRhoStar.eJ = TGLExt.IALDRhoStar.eJ
+TGLExt.IALDRhoStar.eJ_on_units : ∀ (i j : Fin 2),
+  TGLExt.IALDRhoStar.eJ (Matrix.of fun a b => if a = i ∧ b = j then 1 else 0) =
+    if i = j then Matrix.of fun a b => if a = i ∧ b = j then 1 else 0 else 0
+TGLExt.IALDRhoStar.kerK_iff : ∀ (ρ : TGLExt.IALDRhoStar.FaithfulState),
+  ρ.w 0 ≠ ρ.w 1 → ∀ (ξ : TGLExt.IALDRhoStar.V), TGLExt.IALDRhoStar.Kmod ρ ξ = 0 ↔ TGLExt.IALDRhoStar.eJ ξ = ξ
+TGLExt.IALDRhoStar.the_bridge_fix : ∀ (ρ : TGLExt.IALDRhoStar.FaithfulState),
+  ρ.w 0 ≠ ρ.w 1 →
+    ∀ {r s t : ℝ},
+      r * s ≠ 0 →
+        0 < t →
+          ∀ (ξ : TGLExt.IALDRhoStar.V),
+            ((TGLExt.IALDJones.jonesU TGLExt.IALDRhoStar.eJ r s) ξ = ξ ↔ TGLExt.IALDRhoStar.Ttgl ρ t ξ = ξ) ∧
+              (TGLExt.IALDRhoStar.Ttgl ρ t ξ = ξ ↔ TGLExt.IALDRhoStar.Kmod ρ ξ = 0) ∧
+                (TGLExt.IALDRhoStar.Kmod ρ ξ = 0 ↔
+                  ∃ x, TGLExt.IALDRhoStar.Centralizer ρ x ∧ ξ = x * TGLExt.IALDRhoStar.Omega ρ)
+TGLExt.IALDRhoStar.the_bridge_attractor : ∀ (ρ : TGLExt.IALDRhoStar.FaithfulState),
+  ρ.w 0 ≠ ρ.w 1 →
+    ∀ {r : ℝ},
+      0 < r →
+        ∀ (ξ : TGLExt.IALDRhoStar.V) (i j : Fin 2),
+          Filter.Tendsto (fun s => (TGLExt.IALDJones.jonesU TGLExt.IALDRhoStar.eJ r s) ξ i j) Filter.atTop
+              (nhds (TGLExt.IALDRhoStar.eJ ξ i j)) ∧
+            Filter.Tendsto (fun t => TGLExt.IALDRhoStar.Ttgl ρ t ξ i j) Filter.atTop
+              (nhds (TGLExt.IALDRhoStar.eJ ξ i j))
+@TGLExt.ad_preserves_projection : ∀ {R : Type u_1} [inst : Ring R] {p u v : R},
+  v * u = 1 → p * p = p → u * p * v * (u * p * v) = u * p * v
+@TGLExt.ad_preserves_star_projection : ∀ {R : Type u_1} [inst : Ring R] [inst_1 : StarRing R] {p u : R},
+  star p = p → star (u * p * star u) = u * p * star u
+@TGLExt.ad_preserves_splitting : ∀ {R : Type u_1} [inst : Ring R] {p p0 p1 u v : R},
+  p = p0 + p1 → u * p * v = u * p0 * v + u * p1 * v
+@TGLExt.exact_witness_of_annihilating_word : ∀ {H : Type} [inst : NormedAddCommGroup H] [inst_1 : InnerProductSpace ℂ H]
+  [inst_2 : CompleteSpace H] (T : H →L[ℂ] H),
+  ContinuousLinearMap.adjoint T = T →
+    ∀ (q : Polynomial ℂ),
+      (Polynomial.aeval T) (Polynomial.X * q) = 0 →
+        q.coeff 0 ≠ 0 →
+          (∀ (n : ℕ), (starRingEnd ℂ) (q.coeff n) = q.coeff n) →
+            (↑T).ker.starProjection = (q.coeff 0)⁻¹ • (Polynomial.aeval T) q
+@TGLExt.selfadjoint_idempotent_eq_starProjection : ∀ {H : Type} [inst : NormedAddCommGroup H]
+  [inst_1 : InnerProductSpace ℂ H] [CompleteSpace H] (K : Submodule ℂ H) [inst_3 : K.HasOrthogonalProjection]
+  (P0 : H →L[ℂ] H),
+  (∀ (u v : H), inner ℂ (P0 u) v = inner ℂ u (P0 v)) →
+    (∀ (x : H), P0 x ∈ K) → (∀ x ∈ K, P0 x = x) → P0 = K.starProjection
+@TGLExt.annihilating_word_exists : ∀ {H : Type} [inst : NormedAddCommGroup H] [inst_1 : InnerProductSpace ℂ H]
+  [inst_2 : FiniteDimensional ℂ H] (T : H →L[ℂ] H),
+  ContinuousLinearMap.adjoint T = T →
+    (↑T).ker ≠ ⊥ →
+      ∃ q,
+        (Polynomial.aeval T) (Polynomial.X * q) = 0 ∧ q.coeff 0 ≠ 0 ∧ ∀ (n : ℕ), (starRingEnd ℂ) (q.coeff n) = q.coeff n
+@TGLExt.verb_word_fixes_the_name : ∀ {H : Type} [inst : NormedAddCommGroup H] [inst_1 : InnerProductSpace ℂ H]
+  [CompleteSpace H] (T : H →L[ℂ] H) (q : Polynomial ℂ) {x : H},
+  x ∈ (↑T).ker → ((Polynomial.aeval T) q) x = q.coeff 0 • x
+TGLExt.observing_adds_nothing : ∀ (θ : ℝ),
+  TGLExt.projPlus * (TGLExt.projPlus * TGLExt.angFamily θ) = TGLExt.projPlus * TGLExt.angFamily θ
+TGLExt.the_observer_reads_the_angle : ∀ (θ : ℝ),
+  TGLExt.projPlus * TGLExt.angFamily θ = Complex.exp (↑θ * Complex.I) • TGLExt.projPlus
+TGLExt.projPlus : Matrix (Fin 2) (Fin 2) ℂ
+TGLExt.angFamily : ℝ → Matrix (Fin 2) (Fin 2) ℂ
+TGLExt.genK : Matrix (Fin 2) (Fin 2) ℂ
+TGLExt.Smat : ℝ → Matrix (Fin 2) (Fin 2) ℂ
+TGLExt.Smat_zero : TGLExt.Smat 0 = 1
+TGLExt.e1 : Fin 2 → ℂ
+TGLExt.normSq_reflection : ∀ (θ : ℝ), Complex.normSq ((TGLExt.Smat θ).mulVec TGLExt.e1 1) = Real.sin θ ^ 2
+TGLExt.normSq_transmission : ∀ (θ : ℝ), Complex.normSq ((TGLExt.Smat θ).mulVec TGLExt.e1 0) = Real.cos θ ^ 2
+TGLExt.rhoOut : ℝ → Matrix (Fin 2) (Fin 2) ℂ
+TGLExt.rhoOut_one_one : ∀ (θ : ℝ), TGLExt.rhoOut θ 1 1 = ↑(Real.sin θ) ^ 2
+TGLExt.rhoOut_zero_zero : ∀ (θ : ℝ), TGLExt.rhoOut θ 0 0 = ↑(Real.cos θ) ^ 2
+TGLExt.rhoOut_trace : ∀ (θ : ℝ), (TGLExt.rhoOut θ).trace = 1
+TGLExt.TGLCoupling : Type
+TGLExt.TGLCoupling.reflection_weight : ∀ (c : TGLExt.TGLCoupling),
+  Complex.normSq ((TGLExt.Smat (TGLExt.thetaMiguel c.beta)).mulVec TGLExt.e1 1) = c.beta
+TGLExt.TGLCoupling.beta_eq_alpha_radical : ∀ (c : TGLExt.TGLCoupling), c.beta = c.alpha * √(Real.exp 1)
+TGLExt.thetaMiguel : ℝ → ℝ
+TGLExt.TheWholeIsOne.couplingOfAlpha : (α : ℝ) → 0 < α → α < Real.exp (-(1 / 2)) → TGLExt.TGLCoupling
+TGLExt.TheWholeIsOne.couplingOfAlpha_beta : ∀ (α : ℝ) (h0 : 0 < α) (h1 : α < Real.exp (-(1 / 2))),
+  (TGLExt.TheWholeIsOne.couplingOfAlpha α h0 h1).beta = α * √(Real.exp 1)
+TGLExt.TheWholeIsOne.the_beta_chain_is_derived : ∀ (c : TGLExt.TGLCoupling) {g : ℝ},
+  0 < g →
+    (∀ (y : ℝ), y = 1 - y ↔ y = 1 / 2) ∧
+      TGLExt.TheWholeIsOne.boundaryVolume (1 / 2) = √(Real.exp 1) ∧
+        c.beta = c.alpha * √(Real.exp 1) ∧
+          Complex.normSq ((TGLExt.Smat (TGLExt.thetaMiguel c.beta)).mulVec TGLExt.e1 1) = c.beta ∧
+            ¬TGLExt.FullStaticWitness fun t y => Real.exp (-(t * c.beta * g)) * y
+TGLExt.TheWholeIsOne.the_whole_is_one : ∀ (c : TGLExt.TGLCoupling) {g : ℝ},
+  0 < g →
+    ∀ (D : TGLExt.QGSolution.LightNetData) (C : TGLExt.ImportedSQ.FockCertificate D.toLightOneParticle),
+      TGLExt.TetelestaiOneObject.VacuumWeightCorner C →
+        ∀ (Q : TGLExt.MaxwellBridge.MaxwellQuadraticForm C)
+          (cl :
+            ∀ (ψ : (TGLExt.ImportedSQ.lightNet C).H),
+              TGLExt.ImportedSQ.Regular Q.Dom (TGLExt.MaxwellBridge.toStress Q).toStressTensorData ψ →
+                ∀ (k : ℝ),
+                  TGLExt.ContratoQGv31.HasModularEnergy (TGLExt.ImportedSQ.lightDelta C) ψ k →
+                    k =
+                      2 * Real.pi *
+                        TGLExt.ContratoQGv31.nullPlaneCharge (TGLExt.MaxwellBridge.toStress Q).toStressTensorData ψ)
+          (nt :
+            ∃ ψ,
+              TGLExt.ImportedSQ.Regular Q.Dom (TGLExt.MaxwellBridge.toStress Q).toStressTensorData ψ ∧
+                ∃ k, TGLExt.ContratoQGv31.HasModularEnergy (TGLExt.ImportedSQ.lightDelta C) ψ k ∧ k ≠ 0)
+          (N : TGLExt.ContratoQGv31.KillingNormalization) (G : ℝ) (hG : 0 < G) {x₀ : Fin 4 → ℝ},
+          x₀ ∈ TGL.SpecificAQFT.rightWedge →
+            ∀ {ψ : C.F}
+              (hψ : ψ ∈ (TGLExt.ImportedSQ.lightH3 (TGLExt.MaxwellBridge.toCertificate Q cl nt) N G hG).admissible)
+              (x : Fin 4 → ℝ) (a d : ℝ)
+              (hθ :
+                (TGLExt.ImportedSQ.lightH3 (TGLExt.MaxwellBridge.toCertificate Q cl nt) N G hG).theta ψ
+                    (x + d • TGLExt.ContratoQGv31.nullDir) =
+                  0),
+              (∀ (α : ℝ) (h0 : 0 < α) (h1 : α < Real.exp (-(1 / 2))),
+                  (TGLExt.TheWholeIsOne.couplingOfAlpha α h0 h1).beta = α * √(Real.exp 1) ∧
+                    (TGLExt.TheWholeIsOne.couplingOfAlpha α h0 h1).alpha = α) ∧
+                TGLExt.TheKeyIsTheReader.reader C 1 = 1 ∧
+                  ((∀ (y : ℝ), y = 1 - y ↔ y = 1 / 2) ∧ C.trace C.Pp = 2⁻¹ ∧ C.trace C.Pm = 2⁻¹) ∧
+                    (TGLExt.TheWholeIsOne.boundaryVolume (1 / 2) = √(Real.exp 1) ∧ √(Real.exp 1) = Real.exp (1 / 2)) ∧
+                      c.beta = c.alpha * √(Real.exp 1) ∧
+                        Complex.normSq ((TGLExt.Smat (TGLExt.thetaMiguel c.beta)).mulVec TGLExt.e1 1) = c.beta ∧
+                          (¬TGLExt.FullStaticWitness fun t y => Real.exp (-(t * c.beta * g)) * y) ∧
+                            TGLExt.ContratoQGv31.KMSAt (TGLExt.ImportedSQ.lightNet C)
+                                (TGLExt.ImportedSQ.lightH2 C N).killingFlow
+                                (2 * Real.pi / (TGLExt.ImportedSQ.lightH2 C N).kappa) ∧
+                              ((C.trace C.PF = 1 ∧ C.trace C.Pp = 2⁻¹ ∧ C.trace C.Pm = 2⁻¹) ∧
+                                  (∀ (φ : C.F), (∀ (t : ℝ), (TGLExt.ImportedSQ.lightDelta C t) φ = φ) ↔ φ ∈ ℂ ∙ C.Ω) ∧
+                                    TGLExt.LightHelicity.helicityChar D.helicity 0 1 ≠ 1 ∧
+                                      (((TGLExt.ImportedSQ.lightH3 (TGLExt.MaxwellBridge.toCertificate Q cl nt) N G
+                                                        hG).H2.E
+                                                  x₀)⁻¹ *
+                                              (TGLExt.ImportedSQ.lightH3 (TGLExt.MaxwellBridge.toCertificate Q cl nt) N
+                                                      G hG).H2.E
+                                                x₀ =
+                                            1 ∧
+                                          TGLExt.LorentzByCongruence
+                                            (TGLExt.solderMetric4
+                                              ((TGLExt.ImportedSQ.lightH3 (TGLExt.MaxwellBridge.toCertificate Q cl nt) N
+                                                        G hG).H2.E
+                                                  x₀)⁻¹)) ∧
+                                        ((TGLExt.ImportedSQ.lightH3 (TGLExt.MaxwellBridge.toCertificate Q cl nt) N G
+                                                  hG).toHorizonData
+                                              hψ x a d hθ).dQ =
+                                          ((TGLExt.ImportedSQ.lightH3 (TGLExt.MaxwellBridge.toCertificate Q cl nt) N G
+                                                      hG).toHorizonData
+                                                  hψ x a d hθ).kappa *
+                                              ((TGLExt.ImportedSQ.lightH3 (TGLExt.MaxwellBridge.toCertificate Q cl nt) N
+                                                      G hG).toHorizonData
+                                                  hψ x a d hθ).dA /
+                                            (8 * Real.pi *
+                                              ((TGLExt.ImportedSQ.lightH3 (TGLExt.MaxwellBridge.toCertificate Q cl nt) N
+                                                      G hG).toHorizonData
+                                                  hψ x a d hθ).G)) ∧
+                                (TGLExt.TheKeyIsTheReader.reader C (TGLExt.QGReaderUVLock.PFmic C) = 1 ∧
+                                    (∀ (P : C.F →L[ℂ] C.F),
+                                        P C.Ω = C.Ω →
+                                          P * TGLExt.QGReaderUVLock.PFmic C = TGLExt.QGReaderUVLock.PFmic C) ∧
+                                      ∀ (φ : C.F),
+                                        φ ∈ TGLExt.LightRhoStar.centralizerVectors C ↔
+                                          ∀ (t : ℝ), (TGLExt.ImportedSQ.lightDelta C t) φ = φ) ∧
+                                  (ℂ ∙ C.Ω).starProjection = TGLExt.QGReaderUVLock.PFmic C
+TGLExt.TheWholeIsOne.half_nat_volume_is_the_radical : TGLExt.TheWholeIsOne.boundaryVolume (1 / 2) = √(Real.exp 1)
+TGLExt.TheCouplingRunsBoundedBelow.zeno_partial_sum : ∀ (n : ℕ),
+  ∑ k ∈ Finset.range n, (1 / 2) ^ (k + 1) = 1 - (1 / 2) ^ n
+TGLExt.TheCouplingRunsBoundedBelow.zeno_never_reaches_the_one : ∀ (n : ℕ), ∑ k ∈ Finset.range n, (1 / 2) ^ (k + 1) < 1
+TGLExt.TheCouplingRunsBoundedBelow.zeno_tends_to_the_one : Filter.Tendsto
+  (fun n => ∑ k ∈ Finset.range n, (1 / 2) ^ (k + 1)) Filter.atTop (nhds 1)
+TGLExt.TheCouplingRunsBoundedBelow.half_nat_fixed_point : ∀ (x : ℝ), x = 1 - x ↔ x = 1 / 2
+@TGLExt.Fundacao.the_fall_never_lands : ∀ {M : Type} (D : TGLExt.DualScalingData M) {m : M},
+  0 < D.tau m → ∀ (s : ℝ), 0 < D.tau (D.theta s m)
+@TGLExt.Fundacao.abismo : ∀ {M : Type} (D : TGLExt.DualScalingData M) {m : M},
+  0 < D.tau m → ∀ {ε : ℝ}, 0 < ε → ∃ s, D.tau (D.theta s m) < ε
+TGLExt.Fundacao.the_floor_fixes_the_cut : ∀ (a : ℝ), Real.exp (-a) = 1 ↔ a = 0
+@TGLExt.Fundacao.agape : ∀ {M : Type} (D : TGLExt.DualScalingData M) {m : M},
+  0 < D.tau m →
+    (∀ (s : ℝ), s ≠ 0 → ∀ (m' : M), D.theta s m' = m' → D.tau m' = 0) ∧
+      (∀ (s : ℝ), D.tau (D.theta s m) < D.tau (D.theta (s - 1) m)) ∧
+        (∀ (B : ℝ), ∃ s, B < D.tau (D.theta s m)) ∧
+          (∀ (s : ℝ), 0 < D.tau (D.theta s m)) ∧
+            (∀ (ε : ℝ), 0 < ε → ∃ s, D.tau (D.theta s m) < ε) ∧ ∀ (a : ℝ), Real.exp (-a) = 1 ↔ a = 0
+TGLExt.Fundacao.oneScaling : TGLExt.DualScalingData ℝ
+TGLExt.Fundacao.agape_is_inhabited : (∀ (s : ℝ),
+    s ≠ 0 → ∀ (m' : ℝ), TGLExt.Fundacao.oneScaling.theta s m' = m' → TGLExt.Fundacao.oneScaling.tau m' = 0) ∧
+  (∀ (s : ℝ),
+      TGLExt.Fundacao.oneScaling.tau (TGLExt.Fundacao.oneScaling.theta s 1) <
+        TGLExt.Fundacao.oneScaling.tau (TGLExt.Fundacao.oneScaling.theta (s - 1) 1)) ∧
+    (∀ (B : ℝ), ∃ s, B < TGLExt.Fundacao.oneScaling.tau (TGLExt.Fundacao.oneScaling.theta s 1)) ∧
+      (∀ (s : ℝ), 0 < TGLExt.Fundacao.oneScaling.tau (TGLExt.Fundacao.oneScaling.theta s 1)) ∧
+        (∀ (ε : ℝ), 0 < ε → ∃ s, TGLExt.Fundacao.oneScaling.tau (TGLExt.Fundacao.oneScaling.theta s 1) < ε) ∧
+          ∀ (a : ℝ), Real.exp (-a) = 1 ↔ a = 0
+TGLExt.DualScalingData : Type → Type
+@TGLExt.dephase : {n : Type} → (n → n → ℝ) → ℝ → Matrix n n ℂ → Matrix n n ℂ
+@TGLExt.dephase_zero : ∀ {n : Type} (g : n → n → ℝ) (x : Matrix n n ℂ), TGLExt.dephase g 0 x = x
+@TGLExt.dephase_add : ∀ {n : Type} (g : n → n → ℝ) (s t : ℝ) (x : Matrix n n ℂ),
+  TGLExt.dephase g (s + t) x = TGLExt.dephase g s (TGLExt.dephase g t x)
+@TGLExt.dephase_tendsto_expectation : ∀ {n : Type} [inst : DecidableEq n] (g : n → n → ℝ),
+  (∀ (i : n), g i i = 0) →
+    (∀ (i j : n), i ≠ j → 0 < g i j) →
+      ∀ (x : Matrix n n ℂ), Filter.Tendsto (fun t => TGLExt.dephase g t x) Filter.atTop (nhds (TGLExt.diagExpect x))
+@TGLExt.diagExpect : {n : Type} → [DecidableEq n] → Matrix n n ℂ → Matrix n n ℂ
+@TGLExt.dephase_fixed_iff_diagonal : ∀ {n : Type} [Fintype n] [inst : DecidableEq n] (g : n → n → ℝ),
+  (∀ (i : n), g i i = 0) →
+    (∀ (i j : n), i ≠ j → 0 < g i j) →
+      ∀ (x : Matrix n n ℂ), (∀ (t : ℝ), TGLExt.dephase g t x = x) ↔ x = TGLExt.diagExpect x
+@TGLExt.diagFlow : {n : ℕ} → ℝ → (Fin n → ℝ) → ℝ → (Fin n → ℝ) → Fin n → ℝ
+@TGLExt.observerProj : {n : ℕ} → (Fin n → ℝ) → (Fin n → ℝ) → Fin n → ℝ
+@TGLExt.permanent : {n : ℕ} → ℝ → (Fin n → ℝ) → (Fin n → ℝ) → Prop
+@TGLExt.the_observer_is_unique : ∀ {n : ℕ} {β : ℝ},
+  0 < β →
+    ∀ (d : Fin n → ℝ),
+      (∀ (i : Fin n), 0 ≤ d i) →
+        ∀ (Q : (Fin n → ℝ) →ₗ[ℝ] Fin n → ℝ),
+          (∀ (x : Fin n → ℝ), TGLExt.permanent β d x → Q x = x) →
+            (∀ (x : Fin n → ℝ), (∀ (i : Fin n), d i = 0 → x i = 0) → Q x = 0) →
+              ∀ (x : Fin n → ℝ), Q x = TGLExt.observerProj d x
+@TGLExt.the_great_attractor : ∀ {n : ℕ} {β : ℝ},
+  0 < β →
+    ∀ (d : Fin n → ℝ),
+      (∀ (i : Fin n), 0 ≤ d i) →
+        (∀ (x : Fin n → ℝ) (i : Fin n),
+            Filter.Tendsto (fun t => TGLExt.diagFlow β d t x i) Filter.atTop (nhds (TGLExt.observerProj d x i))) ∧
+          (∀ (t : ℝ) (x : Fin n → ℝ), TGLExt.observerProj d (TGLExt.diagFlow β d t x) = TGLExt.observerProj d x) ∧
+            ∀ (x : Fin n → ℝ),
+              TGLExt.permanent β d x ↔ ∀ (t₁ t₂ : ℝ), TGLExt.diagFlow β d t₁ x = TGLExt.diagFlow β d t₂ x
+@TGLExt.temporal_fractalization : ∀ {n : ℕ} (β : ℝ) (d : Fin n → ℝ) (t₁ t₂ : ℝ) (x : Fin n → ℝ),
+  TGLExt.diagFlow β d (t₁ + t₂) x = TGLExt.diagFlow β d t₁ (TGLExt.diagFlow β d t₂ x)
+@TGLExt.nameOp : {R : Type u_1} → [Ring R] → R → R → R
+@TGLExt.name_op_idem : ∀ {R : Type u_1} [inst : Ring R] {p : R},
+  p * p = p → ∀ (x : R), TGLExt.nameOp p (TGLExt.nameOp p x) = TGLExt.nameOp p x
+@TGLExt.second_application_changes_nothing : ∀ {A : Type u_1} [inst : Ring A] (E : A),
+  E * E = E → ∀ (x : A), E * (E * x) = E * x
+@TGLExt.record_survives_the_event_that_inscribed_it : ∀ {A : Type u_1} [inst : Ring A] (E : A),
+  E * E = E → ∀ (x : A), E * x ≠ x → (x - E * x ≠ 0 ∧ E * (x - E * x) = 0) ∧ E * (E * x) = E * x
+@TGLExt.recognizable_iff_is_a_record : ∀ {A : Type u_1} [inst : Ring A] (E : A),
+  E * E = E → ∀ (y : A), E * y = y ↔ ∃ x, y = E * x
+TGLExt.absoluteRho : (n : Type) → [Fintype n] → [DecidableEq n] → Matrix n n ℂ
+@TGLExt.absoluteRho_trace : ∀ {n : Type} [inst : Fintype n] [inst_1 : DecidableEq n] [Nonempty n],
+  (TGLExt.absoluteRho n).trace = 1
+@TGLExt.modularGen : {n : Type} → [Fintype n] → [DecidableEq n] → Matrix n n ℂ → Matrix n n ℂ → Matrix n n ℂ
+@TGLExt.modularGen_omega_zero : ∀ {n : Type} [inst : Fintype n] [inst_1 : DecidableEq n] (ρ : Matrix n n ℂ),
+  ρ.PosDef → TGLExt.modularGen ρ (TGLExt.Omega ρ) = 0
+TGLExt.TheLedgerOfCharges.the_tgl_is_optics_not_semi : ∀ (θ : ℝ),
+  TGLExt.TheLedgerOfCharges.faceWeight θ + TGLExt.TheLedgerOfCharges.reflectionWeight θ = 1 ∧
+    TGLExt.TheLedgerOfCharges.faceWeight θ = 1 - TGLExt.TheLedgerOfCharges.reflectionWeight θ ∧
+      TGLExt.TheLedgerOfCharges.reflectionWeight θ = 1 - TGLExt.TheLedgerOfCharges.faceWeight θ
+TGLExt.TheLedgerOfCharges.both_sides_are_read : ∀ (θ : ℝ),
+  TGLExt.TheLedgerOfCharges.faceWeight θ + TGLExt.TheLedgerOfCharges.reflectionWeight θ = 1
+@TGL.VerbInhabitant.exp_fixed_of_annihilates : ∀ {A : Type} [inst : NormedRing A] [NormedAlgebra ℂ A] [CompleteSpace A]
+  (a p : A), a * p = 0 → NormedSpace.exp a * p = p
+@TGL.VerbInhabitant.verb_semigroup_fixes : ∀ {A : Type} [inst : NormedRing A] [inst_1 : NormedAlgebra ℂ A]
+  [CompleteSpace A] (H p : A), H * p = 0 → ∀ (c : ℂ), NormedSpace.exp (c • H) * p = p
+TGLExt.NameIsTheContent.Inscricao : (C : Type u_1) → (C → Prop) → Type u_1
+@TGLExt.NameIsTheContent.nome : {C : Type u_1} → {Forma : C → Prop} → TGLExt.NameIsTheContent.Inscricao C Forma → C
+TGLExt.QGSolution.qg_solution_end_to_end : ∀ (D : TGLExt.QGSolution.LightNetData)
+  (C : TGLExt.ImportedSQ.FockCertificate D.toLightOneParticle) (M : TGLExt.ImportedSQ.MaxwellCertificate C)
+  (N : TGLExt.ContratoQGv31.KillingNormalization) (G : ℝ) (hG : 0 < G) {x₀ : Fin 4 → ℝ},
+  x₀ ∈ TGL.SpecificAQFT.rightWedge →
+    ∀ {ψ : C.F} (hψ : ψ ∈ (TGLExt.ImportedSQ.lightH3 M N G hG).admissible) (x : Fin 4 → ℝ) (c d : ℝ)
+      (hθ : (TGLExt.ImportedSQ.lightH3 M N G hG).theta ψ (x + d • TGLExt.ContratoQGv31.nullDir) = 0),
+      (0 <
+            (TGLV354.coreProjectionTraceSubadditive TGLExt.mixProfile).tau
+              (TGLV354.regularSusyData TGLExt.mixProfile).ker ∧
+          (TGLV354.coreProjectionTraceSubadditive TGLExt.mixProfile).tau
+              (TGLV354.regularSusyData TGLExt.mixProfile).ker <
+            ⊤) ∧
+        (TGLV354.coreProjectionTraceSubadditive TGLExt.mixProfile).tau (TGLV354.regularSusyData TGLExt.mixProfile).ker /
+              (TGLV354.coreProjectionTraceSubadditive TGLExt.mixProfile).tau
+                (TGLV354.regularSusyData TGLExt.mixProfile).ker =
+            1 ∧
+          (((TGLExt.ImportedSQ.lightH3 M N G hG).H2.E x₀)⁻¹ * (TGLExt.ImportedSQ.lightH3 M N G hG).H2.E x₀ = 1 ∧
+              TGLExt.LorentzByCongruence (TGLExt.solderMetric4 ((TGLExt.ImportedSQ.lightH3 M N G hG).H2.E x₀)⁻¹)) ∧
+            ((TGLExt.ImportedSQ.lightH3 M N G hG).toHorizonData hψ x c d hθ).dQ =
+              ((TGLExt.ImportedSQ.lightH3 M N G hG).toHorizonData hψ x c d hθ).kappa *
+                  ((TGLExt.ImportedSQ.lightH3 M N G hG).toHorizonData hψ x c d hθ).dA /
+                (8 * Real.pi * ((TGLExt.ImportedSQ.lightH3 M N G hG).toHorizonData hψ x c d hθ).G)
+ConferirNomes.lean:196:8: error(lean.unknownIdentifier): Unknown identifier `TGLExt.the_matrix_rule`
+Submodule.starProjection_unit_singleton : ∀ (𝕜 : Type u_1) {E : Type u_2} [inst : RCLike 𝕜]
+  [inst_1 : NormedAddCommGroup E] [inst_2 : InnerProductSpace 𝕜 E] {v : E},
+  ‖v‖ = 1 → ∀ (w : E), (𝕜 ∙ v).starProjection w = inner 𝕜 v w • v
+@Submodule.starProjection_eq_self_iff : ∀ {𝕜 : Type u_1} {E : Type u_2} [inst : RCLike 𝕜]
+  [inst_1 : NormedAddCommGroup E] [inst_2 : InnerProductSpace 𝕜 E] {K : Submodule 𝕜 E}
+  [inst_3 : K.HasOrthogonalProjection] {v : E}, K.starProjection v = v ↔ v ∈ K
+@Submodule.sub_starProjection_mem_orthogonal : ∀ {𝕜 : Type u_1} {E : Type u_2} [inst : RCLike 𝕜]
+  [inst_1 : NormedAddCommGroup E] [inst_2 : InnerProductSpace 𝕜 E] {K : Submodule 𝕜 E}
+  [inst_3 : K.HasOrthogonalProjection] (v : E), v - K.starProjection v ∈ Kᗮ
+@Submodule.starProjection_apply_mem : ∀ {𝕜 : Type u_1} {E : Type u_2} [inst : RCLike 𝕜] [inst_1 : NormedAddCommGroup E]
+  [inst_2 : InnerProductSpace 𝕜 E] (U : Submodule 𝕜 E) [inst_3 : U.HasOrthogonalProjection] (x : E),
+  U.starProjection x ∈ U
+@Submodule.range_starProjection : ∀ {𝕜 : Type u_1} {E : Type u_2} [inst : RCLike 𝕜] [inst_1 : NormedAddCommGroup E]
+  [inst_2 : InnerProductSpace 𝕜 E] (U : Submodule 𝕜 E) [inst_3 : U.HasOrthogonalProjection],
+  (↑U.starProjection).range = U
+@Submodule.starProjection_apply_eq_zero_iff : ∀ {𝕜 : Type u_1} {E : Type u_2} [inst : RCLike 𝕜]
+  [inst_1 : NormedAddCommGroup E] [inst_2 : InnerProductSpace 𝕜 E] (K : Submodule 𝕜 E)
+  [inst_3 : K.HasOrthogonalProjection] {v : E}, K.starProjection v = 0 ↔ v ∈ Kᗮ
+@Submodule.norm_sq_eq_add_norm_sq_starProjection : ∀ {𝕜 : Type u_1} {E : Type u_2} [inst : RCLike 𝕜]
+  [inst_1 : NormedAddCommGroup E] [inst_2 : InnerProductSpace 𝕜 E] (x : E) (S : Submodule 𝕜 E)
+  [inst_3 : S.HasOrthogonalProjection], ‖x‖ ^ 2 = ‖S.starProjection x‖ ^ 2 + ‖Sᗮ.starProjection x‖ ^ 2
+@Submodule.mem_iff_norm_starProjection : ∀ {𝕜 : Type u_1} {E : Type u_2} [inst : RCLike 𝕜]
+  [inst_1 : NormedAddCommGroup E] [inst_2 : InnerProductSpace 𝕜 E] (U : Submodule 𝕜 E)
+  [inst_3 : U.HasOrthogonalProjection] (v : E), v ∈ U ↔ ‖U.starProjection v‖ = ‖v‖
+@Submodule.span_singleton_smul_eq : ∀ {R : Type u_1} {M : Type u_2} [inst : Semiring R] [inst_1 : AddCommMonoid M]
+  [inst_2 : Module R M] {r : R}, IsUnit r → ∀ (x : M), R ∙ r • x = R ∙ x
+@finrank_span_singleton : ∀ {K : Type u_1} {V : Type u_2} [inst : DivisionRing K] [inst_1 : AddCommGroup V]
+  [inst_2 : Module K V] {v : V}, v ≠ 0 → Module.finrank K ↥(K ∙ v) = 1
+@LinearIsometryEquiv.inner_map_map : ∀ {𝕜 : Type u_1} {E : Type u_2} [inst : RCLike 𝕜]
+  [inst_1 : SeminormedAddCommGroup E] [inst_2 : InnerProductSpace 𝕜 E] {E' : Type u_3}
+  [inst_3 : SeminormedAddCommGroup E'] [inst_4 : InnerProductSpace 𝕜 E'] (f : E ≃ₗᵢ[𝕜] E') (x y : E),
+  inner 𝕜 (f x) (f y) = inner 𝕜 x y
+@LinearIsometryEquiv.norm_map : ∀ {R : Type u_1} {R₂ : Type u_2} {E : Type u_3} {E₂ : Type u_4} [inst : Semiring R]
+  [inst_1 : Semiring R₂] {σ₁₂ : R →+* R₂} {σ₂₁ : R₂ →+* R} [inst_2 : RingHomInvPair σ₁₂ σ₂₁]
+  [inst_3 : RingHomInvPair σ₂₁ σ₁₂] [inst_4 : SeminormedAddCommGroup E] [inst_5 : SeminormedAddCommGroup E₂]
+  [inst_6 : Module R E] [inst_7 : Module R₂ E₂] (e : E ≃ₛₗᵢ[σ₁₂] E₂) (x : E), ‖e x‖ = ‖x‖
+ConferirNomes.lean:210:8: error(lean.unknownIdentifier): Unknown constant `ContinuousLinearMap.eqLocus`
+
+--- STDERR ---

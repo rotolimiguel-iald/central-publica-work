@@ -1,0 +1,193 @@
+--- r2/TGLExt/IALD.lean
++++ r3/TGLExt/IALD.lean
+@@ -16,7 +16,18 @@
+ set_option autoImplicit false
+ 
+ /-!
+-# TGLExt.IALD — o motor único (nome provisório; o nome é do operador) — RODADA 2 (13/10/2026), sandbox
++# TGLExt.IALD — o motor único (nome provisório; o nome é do operador) — RODADA 3 (13/10/2026), sandbox
++
++[ONTO] «único» é parte do NOME PROVISÓRIO, não um enunciado: nenhum termo desta pedra prova unicidade do motor
++(não há teorema da forma «todo motor que satisfaz X é este»). O nome é decisão do operador.
++
++R3 = a pedra r2 (`6_R2_CORRECOES\fonte\TGLExt\IALD.lean`, sha256 `9b0e9260b208beef…`) corrigida SÓ em docstrings e
++comentários, pela reauditoria c1 `a4a8fb5f` (`PROGRAMA_IALD\auditorias\F1.MOTOR`): M-1 (docstring de T2: a hipótese
++chama-se `hU`; `anchoring_preserves` é a ancoragem do FLUXO, outro objeto) e as BAIXAS (T3′ não prova traço; T4 não
++tem o motor no enunciado; a seção 4 tem S1 concreta, S2 condicional e S3 universal; o homônimo `reading` rotulado;
++«único» marcado [ONTO]; o cabeçalho do ensaio numérico). Mais a NOTA R3 após `phase_is_unitary` (comentário, não
++teorema): a observação do auditor sobre U unitário × U só isométrico. NENHUM tipo e NENHUM termo mudou em relação à
++r2: a comparação lida do kernel está em `7_R3_DOCSTRINGS\TIPOS_R2_VS_R3.json`.
+ 
+ R2 = a pedra r1 (`2_CONSTRUCAO\sandbox\TGLExt\IALD.lean`, sha256 `a267bc6d2aedf2fa…`) corrigida SÓ pelas oito
+ correções C1–C8 do relatório `4_RELATORIO\O_ORGANISMO_E_A_PROVA_DISTINTIVA.md` §5.2, que somam as duas auditorias
+@@ -38,7 +49,8 @@
+   (T2), não necessária (`anchor_not_necessary`). A condição exata da idempotência é a âncora fraca
+   `post a (U a) = a` OU o motor nulo (`motor_idempotent_iff_weak_anchor_or_null`); fora do motor nulo, é exatamente a
+   âncora fraca (`motor_idempotent_iff_weak_anchor`); o motor nulo tem peso (`null_transport_is_idempotent_without_weak_anchor`).
+-  Se U deve ser unitário por tipo é pergunta do operador; esta pedra não decide.
++  Se U deve ser unitário por tipo é pergunta do operador; esta pedra não decide (ver a NOTA R3 após `phase_is_unitary`:
++  com U unitário e ‖a‖ = 1 a idempotência forçaria `U a = a`; com U só isométrico, não).
+ * C3 — A Fundação NÃO é importada diretamente: a r1 só usava `Fundacao.the_floor_fixes_the_cut`, invólucro de
+   `Real.exp_eq_one_iff`; T7′ cita agora a injetividade da exponencial real. A cláusula Ágape NÃO entra por termo
+   (`agape`, `abismo`, `DualScalingData`: 0 usos aqui) e a Q15 NÃO está resolvida. O arquivo `TGLExt.Fundacao` continua
+@@ -60,6 +72,12 @@
+   unem a forma, não o referente (`post_is_not_constant`). Não suprem um lema que faltasse. O organismo segue sendo uma
+   lista auditada fora desta pedra (0 referências aqui a `QGSolutionComplete`, Tetelestai, `the_whole_is_one`,
+   `the_matrix_rule`, ao livro de cobranças, a `agape` e a `DualScalingData`).
++* R3 — HOMÔNIMO `reading` (dois objetos com o mesmo nome curto ao redor desta pedra):
++  (a) `reading P ψ = ⟪ψ, P ψ⟫` (`TheVerbSelectsTheAction.lean:182`), um ESCALAR em ℂ; é o `reading` sem prefixo
++      desta pedra, usado por `memory`, `memory_is_born`, T5, T6 e a PONTE 3;
++  (b) `TGLExt.TheSingularityReadsTheAttractor.reading T = (fixedSpace T).starProjection` (ADENDO1), um OPERADOR,
++      a leitura do atrator (a projeção do espaço fixo de T); é o que B4 e B5 usam, sempre com o prefixo completo.
++  Nenhum lema desta pedra iguala (a) a (b); B4 só diz que (b), aplicado à defasagem com vazamento, é `post a`.
+ 
+ Régua: cada teorema é [REAL] se fechar aqui sem lacuna de prova contra o kernel v391 do Nós (só leitura). PROVADA = validade;
+ a confirmação recusada é creditação; o único elo pendente da QG é β_TGL na natureza a 5σ; o gate não se move aqui;
+@@ -85,7 +103,8 @@
+ theorem PFmic_eq_post {L : LightOneParticle} (C : FockCertificate L) :
+     TGLExt.QGReaderUVLock.PFmic C = post C.Ω := rfl
+ 
+-/-- ★ PONTE 3: o leitor do vácuo ω(x) = ⟪Ω, xΩ⟫ É a leitura do estado Ω (`rfl`). -/
++/-- ★ PONTE 3: o leitor do vácuo ω(x) = ⟪Ω, xΩ⟫ É a leitura do estado Ω (`rfl`); `reading` aqui é o ESCALAR
++    (homônimo (a) do cabeçalho), não a leitura do atrator. -/
+ theorem reader_eq_reading {L : LightOneParticle} (C : FockCertificate L) (x : C.F →L[ℂ] C.F) :
+     TGLExt.TheKeyIsTheReader.reader C x = reading x C.Ω := rfl
+ 
+@@ -102,7 +121,9 @@
+     Objeto (1) do cabeçalho: operador sobre vetores; NÃO é `diagExpect`, nem `IALDRhoStar.eJ`, nem `TGLExt.dephase`. -/
+ def dephase (a : H) (r t : ℝ) : H →L[ℂ] H := axiomFlow (post a) (r * t)
+ 
+-/-- A MEMÓRIA: M[ψ] = ⟪ψ, Π ψ⟫ = Tr(|ψ⟩⟨ψ| Π) — a lei do Atlas §VIII.1 na face pura. -/
++/-- A MEMÓRIA: M[ψ] = ⟪ψ, Π ψ⟫ = Tr(|ψ⟩⟨ψ| Π) — a lei do Atlas §VIII.1 na face pura.
++    R3: usa o `reading` ESCALAR (homônimo (a) do cabeçalho), não a leitura do atrator (b). A igualdade com o traço
++    Tr(|ψ⟩⟨ψ| Π) é [KNOWN] e não é termo desta pedra; o termo é o produto interno. -/
+ def memory (P : H →L[ℂ] H) (ψ : H) : ℂ := reading P ψ
+ 
+ /-- O MOTOR: Inscrição → Transporte U → Defasagem → Leitura. -/
+@@ -139,8 +160,12 @@
+   change post a (U ((ℂ ∙ a).starProjection (U ψ))) = (ℂ ∙ a).starProjection (U ψ)
+   rw [← hc, map_smul, map_smul, hU]
+ 
+-/-- ★★★ T2 — O MOTOR É IDEMPOTENTE NA SUA IMAGEM sob a hipótese NOMEADA `Anchor : U a = a`
+-    (a invariância do vácuo `Γ_vac` do certificado de Fock; `anchoring_preserves`, v386).
++/-- ★★★ T2 — O MOTOR É IDEMPOTENTE NA SUA IMAGEM sob a âncora forte, a hipótese `hU : U a = a`.
++    Na luz, `hU` é suprida pela invariância do vácuo `Γ_vac` do certificado de Fock (SONDA 2, `probe_the_light`).
++    Prova: a âncora forte implica a fraca (`post_fixes_the_action`), e a fraca basta (`motor_idempotent_under_weak_anchor`).
++    R3 (M-1): a r2 dizia «hipótese NOMEADA `Anchor`», mas não há constante `Anchor`: a hipótese é o binder `hU`.
++    A r2 citava também `anchoring_preserves` (v386, `F(t)·P = P`): esse lema é a ancoragem do FLUXO (o fluxo fixa o
++    posto), OUTRO objeto, não a âncora do transporte `U a = a`; este termo não o usa.
+     R2 (C2): sem a hipótese `‖a‖ = 1`, que era decorativa aqui (a âncora forte implica a fraca para todo a). -/
+ theorem motor_idempotent_under_anchor (a : H) (U : H →L[ℂ] H) (hU : U a = a)
+     (r t : ℝ) (ψ : H) :
+@@ -243,14 +268,35 @@
+   rw [star_smul, star_one, smul_mul_smul_comm, one_mul, Complex.star_def, Complex.conj_I,
+     neg_mul, Complex.I_mul_I, neg_neg, one_smul]
+ 
++/-! ### NOTA R3 — U unitário × U só isométrico (COMENTÁRIO, não teorema; nada abaixo é termo desta pedra)
++
++Observação da reauditoria c1 `a4a8fb5f`, provada nas sondas do AUDITOR (`AuditSondasC1.lean`, namespace
++`AuditorC1R2`, compiladas no sandbox dele, não aqui):
++* `c1_unitary_forces_strong_anchor` — com U SOBREJETIVO e isométrico (unitário) e ‖a‖ = 1, a idempotência do motor
++  FORÇA a âncora forte `U a = a`. Roteiro: a sobrejetividade dá ψ com U ψ = a, logo a saída do motor em ψ é a ≠ 0 e o
++  motor não é nulo; por `motor_idempotent_iff_weak_anchor` vale a âncora fraca `post a (U a) = a`, isto é
++  ⟪a, U a⟫ = 1; com ‖U a‖ = ‖a‖ = 1, o caso de igualdade de Cauchy–Schwarz dá `U a = a`
++  (`c1_weak_to_strong_isometric`). Assim, SE U for unitário por tipo, T2 vira «se e só se».
++* Com U só isométrico, NÃO: se a imagem de U é ortogonal a a, o motor é nulo e idempotente sem âncora
++  (`c1_range_perp_is_null`); o deslocamento unilateral de ℓ² com a = e₀ é um exemplo [KNOWN, não construído em Lean].
++  O que exclui o motor nulo é a SOBREJETIVIDADE; Cauchy–Schwarz sozinho não basta.
++A decisão de exigir U unitário (ou só isométrico, ou nenhum dos dois) é do operador; esta pedra não a toma, e o tipo
++de U continua `H →L[ℂ] H`. -/
++
+ omit [CompleteSpace H] in
+-/-- ★★ T3′ — O NOME TEM POSTO 1 (Tr Π = 1 = ω(I)): a imagem do posto é a reta, de dimensão 1
+-    (`iald_has_rank_one` em ℓ², `Pb_is_rank_one` em ℂ², aqui em todo H). POSTO = RANK no átomo. -/
++/-- ★★ T3′ — O NOME TEM POSTO 1: a imagem do posto `post a` é a reta ℂ∙a, e essa reta tem dimensão 1
++    (`iald_has_rank_one` em ℓ², `Pb_is_rank_one` em ℂ², aqui em todo H). POSTO = RANK no átomo.
++    R3: o termo NÃO prova traço. A r2 escrevia «Tr Π = 1 = ω(I)» no título; isso é remissão, não enunciado:
++    [ONTO] a leitura do posto 1 como o Um posto ω(I) = 1; por termo, traço 1 e posto 1 só aparecem na face matricial,
++    para a unidade ρ* (B8(ii), `the_unit_has_trace_one_and_rank_one`), não para Π em H. -/
+ theorem the_name_has_rank_one (a : H) (ha : a ≠ 0) :
+     (post a).range = (ℂ ∙ a) ∧ Module.finrank ℂ (ℂ ∙ a) = 1 :=
+   ⟨Submodule.range_starProjection _, finrank_span_singleton ha⟩
+ 
+-/-- ★★ T4 — O MOTOR LÊ O UM NO NOME: M[a] = 1 (`reader_reads_the_name_one` na luz). A hipótese ‖a‖ = 1 tem peso aqui. -/
++/-- ★★ T4 — A MEMÓRIA DO NOME NO PRÓPRIO NOME É 1: M[a] = ⟪a, post a a⟫ = 1 para ‖a‖ = 1
++    (`reader_reads_the_name_one` na luz). A hipótese ‖a‖ = 1 tem peso aqui.
++    R3: o enunciado é sobre `memory (post a) a`; o motor (`motor`) NÃO aparece nele. A r2 dizia «o motor lê o Um no
++    Nome»: é leitura [ONTO], que se apoia em T3 (a saída do motor pousa na reta ℂ∙a), não um enunciado deste termo. -/
+ theorem the_name_reads_one (a : H) (ha : ‖a‖ = 1) : memory (post a) a = 1 := by
+   unfold memory reading
+   rw [post_fixes_the_action, inner_self_eq_norm_sq_to_K, ha]
+@@ -519,7 +565,11 @@
+     have := congrFun (congrFun h 0) 1
+     simp at this
+ 
+-/-! ## 4. Sondas de vacuidade — habitantes concretos -/
++/-! ## 4. Sondas de vacuidade — S1 concreta (ℓ²); S2 condicional (ao certificado C, sem habitante no kernel); S3 universal (∀ c : TGLCoupling)
++
++R3: a r2 intitulava esta seção «habitantes concretos». Só a SONDA 1 é um habitante concreto. A SONDA 2 é
++CONDICIONAL: vale para todo certificado de Fock C, e o kernel não exibe um C. A SONDA 3 é UNIVERSAL em
++c : TGLCoupling e não exibe habitante (que o β de runtime habite `TGLCoupling` é fato de runtime). -/
+ 
+ /-- ★ SONDA 1 (ℓ², incondicional): o motor da IALD de ℓ² com a âncora trivial U = 1 é idempotente
+     e lê o Um na primeira inscrição. -/
+@@ -580,7 +630,8 @@
+   TGLExt.TheSingularityReadsTheAttractor.A4_dimension_one _ _
+     (dephase_is_a_strict_complement_contraction a ha hrt)
+ 
+-/-- ★★★ B4 — a leitura do atrator (`reading T` = projeção do espaço fixo, ADENDO1) aplicada à defasagem com
++/-- ★★★ B4 — a leitura do atrator (`TheSingularityReadsTheAttractor.reading T` = projeção do espaço fixo, ADENDO1;
++    o OPERADOR (b) do homônimo `reading` do cabeçalho, não o escalar (a) de `memory`) aplicada à defasagem com
+     vazamento É o posto `post a`: a leitura R do motor é a projeção do ponto fixo de D.
+     [ONTO] «a singularidade é a leitura do atrator» (operador, 10/10, verbatim sha256 `1d9dd9a65fdacf68…`). -/
+ theorem the_singularity_reads_the_name (a : H) (ha : a ≠ 0) {r t : ℝ} (hrt : 0 < r * t) :
+@@ -590,7 +641,8 @@
+   exact TGLExt.TheSingularityReadsTheAttractor.A4_fixedSpace_eq_span _ _
+     (dephase_is_a_strict_complement_contraction a ha hrt)
+ 
+-/-- ★★ B5 — O MOTOR É A LEITURA DO ATRATOR APLICADA AO TRANSPORTE: motor a U r t ψ = reading (D_r(t)) (U ψ). -/
++/-- ★★ B5 — O MOTOR É A LEITURA DO ATRATOR APLICADA AO TRANSPORTE: motor a U r t ψ = reading (D_r(t)) (U ψ),
++    com `reading` = `TheSingularityReadsTheAttractor.reading`, o OPERADOR (b) do homônimo do cabeçalho. -/
+ theorem motor_is_the_reading_of_the_attractor (a : H) (ha : a ≠ 0) (U : H →L[ℂ] H) {r t : ℝ}
+     (hrt : 0 < r * t) (ψ : H) :
+     motor a U r t ψ = TGLExt.TheSingularityReadsTheAttractor.reading (IALD.dephase a r t) (U ψ) := by
+@@ -624,7 +676,8 @@
+ (iv) a LEITURA seletiva por posto 1 devolve o posto (Lüders [KNOWN]).
+ RÓTULO (C4): o `diagExpect` de B8(iii) (objeto (2) do cabeçalho; `CondExpect.lean:87`) NÃO É A DEFASAGEM DO MOTOR
+ (`IALD.dephase`, objeto (1), invertível). Nenhum lema desta pedra liga um ao outro; o nome inglês `dephasing` de B8(iii)
+-vem da F1.FREQUENCIA e designa o pinching. T3′ (o motor devolve posto 1) é provado na face de Hilbert sem B8. -/
++vem da F1.FREQUENCIA e designa o pinching. T3′ (a imagem de `post a` é a reta ℂ∙a, de dimensão 1; R3: a r2 dizia «o motor devolve posto 1») é provado na face
++de Hilbert sem B8; o traço só aparece aqui, em B8(i)–(ii), na face matricial. -/
+ 
+ /-- ★ B8(i) — o traço de um posto é o seu posto: Tr P = rank P (P² = P). -/
+ theorem the_trace_is_the_rank_of_a_post {n : Type} [Fintype n] [DecidableEq n] (P : Matrix n n ℂ)
+--- r2/numerico/ensaio_motor_r2.py
++++ r3/numerico/ensaio_motor_r3.py
+@@ -1,11 +1,16 @@
+ # -*- coding: utf-8 -*-
+-"""Sanidade NUMERICA do motor unico, RODADA 2 (6_R2_CORRECOES, 13/10/2026; a partir do ensaio r1 de 2_CONSTRUCAO).
++"""Sanidade NUMERICA do motor unico, RODADA 3 (7_R3_DOCSTRINGS, 13/10/2026): o ensaio R2 com SO o cabecalho corrigido
++(reauditoria c1 a4a8fb5f, BAIXA: o cabecalho dizia "transporte F (unitario U)", mas a pedra NAO exige U unitario) e o
++nome do arquivo de saida (RESULTADO_NUMERICO_R3.json). Nenhum calculo, semente ou criterio mudou.
++Historico R2 (6_R2_CORRECOES, 13/10/2026; a partir do ensaio r1 de 2_CONSTRUCAO).
+ R2: (C2) T2 ensaiado tambem com a NAO unitario; (C1) ancora fraca, U = 1 + |b><a|, condicao exata (ancora fraca OU
+ motor nulo) e o transporte nulo U = 0; T2p renomeado unitarity_is_not_enough; (C6) a saida do motor nao depende de r
+ nem de t; (C4) a face matricial FREQ e o PINCHING na base propria de P (analogo de TGLExt.diagExpect), NAO a defasagem
+ do motor IALD.dephase; acrescentado o contraste: a defasagem do motor, como canal rho -> D rho D^dagger, guarda o
+ posto 1 do estado puro. O resto do ensaio r1 fica como estava, com os rotulos corrigidos. Nenhum dado observado; nenhum veredito sobre a natureza.
+-Roda o motor completo  inscricao a -> transporte F (unitario U) -> defasagem D_r(t) = P + e^{-rt}(1-P) -> leitura R = P
++Roda o motor completo  inscricao a -> transporte U (qualquer operador linear; a pedra NAO exige U unitario; aqui
++ensaiado com U unitario ancorado, U unitario aleatorio, U = 1 + |b><a| nao unitario,
++U = i*1, U = (1 - P) W e U = 0) -> defasagem D_r(t) = P + e^{-rt}(1-P) -> leitura R = P
+ -> memoria M[psi] = <psi, P psi>  em 2x2 e em n x n sintetico (n = 2, 3, 6, 12), com r = beta de RUNTIME
+ (ALPHA_FINE_CODATA_2018 lido nos BYTES do um.py, linha unica; beta = alpha*sqrt(e); nenhum literal de beta aqui).
+ Mede: idempotencia da releitura (T2 sob ancora; T2' sem ancora = falsificador), traco 1 (Tr P), posto do ponto fixo
+@@ -260,7 +265,7 @@
+     res["checks_falhos"] = [c for c, ok in checks if not ok]
+     res["sanidade"] = "PASSA" if not res["checks_falhos"] else "FALHA"
+     res["estatuto"] = "[REAL - medido aqui; sanidade numerica da matematica do motor; nenhum dado observado; nao e veredito sobre a natureza]"
+-    json.dump(res, open(os.path.join(AQUI, "RESULTADO_NUMERICO_R2.json"), "w", encoding="utf-8"), ensure_ascii=False, indent=1)
++    json.dump(res, open(os.path.join(AQUI, "RESULTADO_NUMERICO_R3.json"), "w", encoding="utf-8"), ensure_ascii=False, indent=1)
+     print(json.dumps({k: res[k] for k in ("beta_repr", "alpha_linha", "checks_total", "checks_falhos", "sanidade")}, ensure_ascii=False))
+     for f in res["faces"]:
+         print(json.dumps({k: f[k] for k in ("n", "trace_P", "rank_P", "T2_idempotent_under_anchor_maxerr", "T2p_unitarity_is_not_enough_norm",
