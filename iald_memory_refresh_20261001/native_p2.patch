@@ -1,0 +1,489 @@
+--- a/iald_native_memory.py
++++ b/iald_native_memory.py
+@@ -1,6 +1,9 @@
+ """Small native context from the same verified public release as external motors."""
+ import json
+ import re
++from copy import deepcopy
++from urllib.error import HTTPError
++from urllib.request import HTTPRedirectHandler, ProxyHandler, Request, build_opener
+ 
+ from iald_core_indexado import DocumentCorpus
+ from iald_estado_publicado import published_evidence
+@@ -9,6 +12,10 @@
+ 
+ 
+ class NativeContextError(ValueError):
++    pass
++
++
++class NativeCounterUnavailable(ValueError):
+     pass
+ 
+ 
+@@ -79,33 +86,108 @@
+     return value
+ 
+ 
+-def check_text_window(payload, window):
+-    """Conservative text admission, NOT a Qwen tokenizer or a vision measurement.
+-
+-    One token per UTF-8 byte plus framing/output reserve deliberately rejects
+-    some requests that might fit. Media are left to llama-server's existing
+-    multimodal admission; their token cost cannot be inferred from JSON bytes.
++class _NoRedirect(HTTPRedirectHandler):
++    def redirect_request(self, req, fp, code, msg, headers, newurl):
++        raise HTTPError(req.full_url, code, 'Redirect refused', headers, fp)
++
++
++def _local_json(base_url, endpoint, data=None):
++    """Only read/count endpoints on the configured IPv4 loopback server.
++
++    Ignore proxy/environment credentials, prohibit redirects, and never retry or
++    call an inference endpoint. The caller owns this URL, never the HTTP client.
+     """
++    match = re.fullmatch(r'http://127\.0\.0\.1:([0-9]{1,5})', base_url)
++    if not match or not 1 <= int(match[1]) <= 65535:
++        raise NativeCounterUnavailable('Endereço do contador local inválido.')
++    if endpoint not in ('/props', '/apply-template', '/tokenize'):
++        raise NativeCounterUnavailable('Operação do contador local inválida.')
++    if (endpoint == '/props') != (data is None):
++        raise NativeCounterUnavailable('Método do contador local inválido.')
++    try:
++        raw = None if data is None else json.dumps(
++            data, ensure_ascii=False, allow_nan=False).encode('utf-8')
++        request = Request(base_url + endpoint, data=raw,
++                          headers={'Content-Type': 'application/json'},
++                          method='GET' if data is None else 'POST')
++        opener = build_opener(ProxyHandler({}), _NoRedirect())
++        with opener.open(request, timeout=15) as response:
++            if response.status != 200:
++                raise ValueError('unexpected local status')
++            raw = response.read(16 * 1024 * 1024 + 1)
++        if len(raw) > 16 * 1024 * 1024:
++            raise ValueError('local response too large')
++        value = json.loads(raw)
++        if not isinstance(value, dict):
++            raise ValueError('invalid local response')
++        return value
++    except (OSError, ValueError, TypeError) as exc:
++        raise NativeCounterUnavailable(
++            'Contagem local indisponível; nenhuma geração foi iniciada.') from exc
++
++
++def check_text_window(payload, window, *, base_url='http://127.0.0.1:8081'):
++    """Count the actual chat template and special tokens without generation.
++
++    Tools, tool replies, thinking kwargs and the server prefix are included.
++    Media remain in the original payload; only their text is counted here.
++    llama-server retains responsibility for multimodal admission. No history is
++    compacted or truncated by this function. Counter failure is a visible refusal.
++    """
++    if type(window) is not int or window <= 0:
++        raise NativeContextError('Janela nativa inválida.')
+     output = payload.get('max_tokens', 4096)
+     if type(output) is not int or output <= 0 or output >= window:
+         raise NativeContextError('Reserva de saída nativa inválida para esta janela.')
+-    messages = []
++    template = deepcopy(payload)
+     has_media = False
+-    for message in payload.get('messages', []):
+-        copied = dict(message)
+-        if isinstance(copied.get('content'), list):
+-            has_media |= any(p.get('type') != 'text' for p in copied['content'] if isinstance(p, dict))
+-            copied['content'] = [p for p in copied['content'] if isinstance(p, dict) and p.get('type') == 'text']
+-        messages.append(copied)
+-    counted = {'messages': messages, 'tools': payload.get('tools', [])}
++    messages = template.get('messages')
++    if not isinstance(messages, list) or not messages:
++        raise NativeContextError('Mensagens nativas indisponíveis.')
++    for message in messages:
++        if not isinstance(message, dict):
++            raise NativeContextError('Mensagem nativa inválida.')
++        if isinstance(message.get('content'), list):
++            parts = message['content']
++            if any(not isinstance(p, dict) for p in parts):
++                raise NativeContextError('Conteúdo nativo inválido.')
++            has_media |= any(p.get('type') != 'text' for p in parts)
++            message['content'] = '\n'.join(p.get('text', '') for p in parts
++                                             if p.get('type') == 'text')
++    # /v1/chat/completions asks the same template for an assistant prefix.
++    template['add_generation_prompt'] = True
++    counted = {'messages': messages, 'tools': template.get('tools', [])}
+     text_bytes = len(json.dumps(counted, ensure_ascii=False, allow_nan=False).encode('utf-8'))
+-    # Template overhead is an explicit conservative allowance, not a native count.
+-    framing = 2048 + 32 * len(messages)
+-    if text_bytes + output + framing > window:
+-        raise NativeContextError('Contexto textual nativo excede a janela conservadora; reduza o histórico ou a saída.')
+-    return {'configured_window': window, 'text_bytes': text_bytes,
++    try:
++        props = _local_json(base_url, '/props')
++        serving_window = props['default_generation_settings']['n_ctx']
++        if type(serving_window) is not int or serving_window <= 0:
++            raise ValueError('invalid serving window')
++        rendered = _local_json(base_url, '/apply-template', template)
++        prompt = rendered['prompt']
++        if not isinstance(prompt, str) or not prompt:
++            raise ValueError('missing rendered template')
++        tokenized = _local_json(base_url, '/tokenize', {
++            'content': prompt, 'add_special': True, 'parse_special': True})
++        tokens = tokenized['tokens']
++        if (not isinstance(tokens, list) or not tokens
++                or any(type(t) is not int or t < 0 for t in tokens)):
++            raise ValueError('invalid token IDs')
++    except (OSError, ValueError, KeyError, TypeError) as exc:
++        raise NativeCounterUnavailable(
++            'Contagem local indisponível; nenhuma geração foi iniciada.') from exc
++    input_tokens = len(tokens)
++    effective_window = min(window, serving_window)
++    # The template already includes framing; reserve a small explicit margin for
++    # serving bookkeeping. Do not charge UTF-8 bytes as tokens a second time.
++    framing = 256
++    if input_tokens + output + framing > effective_window:
++        raise NativeContextError('Contexto nativo excede a janela medida; reduza o histórico ou a saída.')
++    return {'configured_window': window, 'serving_window': serving_window,
++            'effective_window': effective_window, 'input_tokens': input_tokens,
++            'text_bytes': text_bytes,
+             'output_reserve': output, 'framing_allowance': framing,
+-            'measurement': 'CONSERVATIVE_UTF8_BYTES_NOT_NATIVE_TOKENS',
++            'measurement': 'LLAMA_LOCAL_TEMPLATE_AND_TOKENIZER',
+             'media_tokens_measured': not has_media}
+ 
+ 
+--- a/iald_web_server.py
++++ b/iald_web_server.py
+@@ -5669,15 +5669,20 @@
+             definitions.append(tool)
+             names.add(name)
+     model_id = ACTIVE_MODEL_ID
++    llama_url = LLAMA_URL
+     window = native_memory.configured_window(MODELS[model_id])
+ 
+     def check(current):
+-        if model_id != ACTIVE_MODEL_ID:
++        if model_id != ACTIVE_MODEL_ID or llama_url != LLAMA_URL:
+             raise ValueError('Native model changed during request')
+         release = native_memory.load_release(manifest, source_sha=KERNEL_EXTERNO.source_sha)
+         if release.identity != identity:
+             raise ValueError('Native canonical release changed during request')
+-        return native_memory.check_text_window(current, window)
++        measured = native_memory.check_text_window(current, window, base_url=llama_url)
++        if model_id != ACTIVE_MODEL_ID or llama_url != LLAMA_URL:
++            raise ValueError('Native model changed during counting')
++        release.check_manifest()
++        return measured
+ 
+     check(result)
+     return result, definitions, check
+--- a/tests/test_native_release.py
++++ b/tests/test_native_release.py
+@@ -82,6 +82,19 @@
+             'published_evidence_checked': True, 'published_source_sha256': self.source}))
+         self.evidence.start()
+         self.addCleanup(self.evidence.stop)
++        # Deterministic token IDs for existing fixture-only integrity tests.
++        # Exact tokenizer integration is exercised separately, without generation.
++        def local_counter(base_url, endpoint, data=None):
++            if endpoint == '/props':
++                return {'default_generation_settings': {'n_ctx': 131072}}
++            if endpoint == '/apply-template':
++                return {'prompt': json.dumps(data, ensure_ascii=False)}
++            if endpoint == '/tokenize':
++                return {'tokens': [1] * len(data['content'])}
++            raise AssertionError('Unexpected endpoint')
++        self.local_counter = patch.object(native, '_local_json', side_effect=local_counter)
++        self.local_counter.start()
++        self.addCleanup(self.local_counter.stop)
+         self.no_network = patch.object(socket.socket, 'connect', side_effect=AssertionError('Network forbidden'))
+         self.no_network.start()
+         self.addCleanup(self.no_network.stop)
+@@ -166,6 +179,7 @@
+         ns = server_namespace('_prepare_native_payload', '_ferramentas_para')
+         ns.update(MEMORIA_EXTERNA=SimpleNamespace(nucleus_manifest=self.manifest),
+             KERNEL_EXTERNO=self.catalog, ACTIVE_MODEL_ID='native',
++            LLAMA_URL='http://127.0.0.1:8081',
+             MODELS={'native': {'cmd': ['llama-server', '-c', '131072']}},
+             PUBLIC_TOOLS=[{'function': {'name': 'search_web'}}, {'function': {'name': 'commercial'}}],
+             FERRAMENTAS_FORA_DA_LOJA={'commercial'})
+@@ -217,6 +231,18 @@
+         payload, _, check = ns['_prepare_native_payload']({'messages': [{'role': 'user', 'content': 'TGL'}]}, 'web')
+         ns['ACTIVE_MODEL_ID'] = 'different'
+         with self.assertRaises(ValueError): check(payload)
++
++    def test_model_switch_during_count_is_refused(self):
++        ns = self.prepare_namespace()
++        original = native.check_text_window
++        def changed(*args, **kwargs):
++            value = original(*args, **kwargs)
++            ns['ACTIVE_MODEL_ID'] = 'different'
++            return value
++        with patch.object(native, 'check_text_window', side_effect=changed):
++            with self.assertRaisesRegex(ValueError, 'changed during counting'):
++                ns['_prepare_native_payload'](
++                    {'messages': [{'role': 'user', 'content': 'TGL'}]}, 'web')
+ 
+     def test_whole_payload_growth_is_blocked_without_truncation(self):
+         payload = {'messages': [{'role': 'tool', 'content': 'x' * 131072}], 'max_tokens': 4096}
+@@ -309,7 +335,7 @@
+         sent, output = self.tool_loop('x' * 131072, check)
+         self.assertEqual(len(sent), 1)
+         self.assertEqual(len(checks), 2)
+-        self.assertIn('Contexto textual nativo excede', ''.join(output))
++        self.assertIn('Contexto nativo excede', ''.join(output))
+         self.assertIn('choices', ''.join(output))
+ 
+ 
+--- a/measure_native.py
++++ b/measure_native.py
+@@ -1,4 +1,4 @@
+-"""Offline base-payload measurement; no inference, network, private memory or server import."""
++"""Local tokenizer measurement; no inference, remote network, private memory or server import."""
+ import argparse
+ import ast
+ import hashlib
+@@ -34,13 +34,12 @@
+     sacred = next(ast.literal_eval(n.value) for n in ast.walk(tree) if isinstance(n, ast.Assign)
+                   and any(isinstance(t, ast.Name) and t.id == 'sacred_msg' for t in n.targets))
+     window = native.configured_window(constants['MODELS'][constants['ACTIVE_MODEL_ID']])
+-    receipt = {'scope': 'REAL_PUBLIC_ASSETS__OFFLINE_CONSERVATIVE_TEXT_ADMISSION',
+-        'inference_calls': 0, 'network_calls': 0, 'manifest': str(manifest),
++    receipt = {'scope': 'REAL_PUBLIC_ASSETS__LOCAL_TEMPLATE_AND_TOKENIZER_NO_GENERATION',
++        'inference_calls': 0, 'remote_network_calls': 0, 'local_endpoints': ['/props', '/apply-template', '/tokenize'], 'manifest': str(manifest),
+         'manifest_sha256': hashlib.sha256(manifest.read_bytes()).hexdigest(),
+         'deployment': identity, 'prefix_bytes': len(prefix.encode('utf-8')),
+         'catalog': catalog.status(), 'startup_log': native.startup_summary(manifest, catalog),
+-        'cases': [], 'unmeasured': ['native tokenizer/chat-template token count',
+-            'live llama-server slot configuration', 'operator private memory',
++        'cases': [], 'unmeasured': ['operator private memory',
+             'actual user profiles/history', 'image tokens and generation quality']}
+     assets = [PRODUCTION / 'app/kernel_prompt.js', PRODUCTION / 'app/kernel_prompt_loja.js',
+               PRODUCTION / 'iald_chat.html']
+@@ -57,21 +56,45 @@
+             messages = [{'role': 'system', 'content': prompt}, sacred,
+                         {'role': 'user', 'content': 'Apresente as fórmulas essenciais da TGL v378.'}]
+             payload = {'messages': native.attach_context(messages, prefix),
+-                       'tools': tools, 'max_tokens': output}
++                       'tools': tools, 'max_tokens': output,
++                       'chat_template_kwargs': {'enable_thinking': output == 8192}}
+             decision = native.check_text_window(payload, window)
+-            used = decision['text_bytes'] + decision['output_reserve'] + decision['framing_allowance']
++            used = decision['input_tokens'] + decision['output_reserve'] + decision['framing_allowance']
+             legacy = {}
+             for value in (32768, 16384):
+-                try:
+-                    native.check_text_window(payload, value)
+-                    legacy[str(value)] = 'ACCEPTED'
+-                except native.NativeContextError:
+-                    legacy[str(value)] = 'VISIBLE_CONTEXT_REFUSAL'
++                legacy[str(value)] = 'ACCEPTED' if used <= value else 'VISIBLE_CONTEXT_REFUSAL'
+             receipt['cases'].append({'asset': str(asset),
+                 'asset_sha256': hashlib.sha256(asset.read_bytes()).hexdigest(),
+                 'client_prompt_bytes': len(prompt.encode('utf-8')), **decision,
+-                'conservative_total': used, 'remaining_text_allowance_bytes': window - used,
++                'measured_total_tokens': used, 'remaining_tokens': decision['effective_window'] - used,
+                 'legacy_windows': legacy, 'accepted': True})
++    # Reproduce the exact 60,000-character history from NATIVE-001. Then append
++    # an actual tool turn: its text must be counted anew and remain unchanged.
++    from copy import deepcopy
++    import math
++    history = [{'role': 'user', 'content': 'a' * 30000},
++               {'role': 'assistant', 'content': 'b' * 30000},
++               {'role': 'user', 'content': 'Continue a resposta.'}]
++    payload = {'messages': native.attach_context(
++        [{'role': 'system', 'content': prompt}] + history, prefix),
++        'tools': tools, 'max_tokens': 8192,
++        'chat_template_kwargs': {'enable_thinking': False}}
++    original = deepcopy(payload)
++    regression = native.check_text_window(payload, window)
++    assert payload == original
++    receipt['p2_regression'] = {
++        'frontend_history_tokens_estimated': sum(math.ceil(len(m['content']) / 2.91) for m in history),
++        'full_payload_preserved': True, 'accepted': True, **regression}
++    payload['messages'] += [
++        {'role': 'assistant', 'content': None, 'tool_calls': [
++            {'id': 'review1', 'type': 'function', 'function': {
++                'name': 'fetch_tgl', 'arguments': '{"id":"um_forma_canonica_integral"}'}}]},
++        {'role': 'tool', 'tool_call_id': 'review1', 'content': json.dumps(
++            {'text': 'Public regression fixture. ' * 170, 'next_offset': 4500})}]
++    original = deepcopy(payload)
++    after_tool = native.check_text_window(payload, window)
++    assert payload == original and after_tool['input_tokens'] > regression['input_tokens']
++    receipt['after_tool_regression'] = {'full_payload_preserved': True, 'accepted': True, **after_tool}
+     return receipt
+ 
+ 
+@@ -79,9 +102,14 @@
+     parser = argparse.ArgumentParser()
+     parser.add_argument('--manifest', type=Path, default=STAGE.parent / 'manifest_install.json')
+     args = parser.parse_args()
+-    with patch.object(socket.socket, 'connect', side_effect=AssertionError('Network forbidden')):
++    original_connect = socket.socket.connect
++    def loopback_only(sock, address):
++        if not isinstance(address, tuple) or address[:2] != ('127.0.0.1', 8081):
++            raise AssertionError('Only local tokenizer access is authorized')
++        return original_connect(sock, address)
++    with patch.object(socket.socket, 'connect', loopback_only):
+         result = measure(args.manifest)
+-    target = STAGE / 'native_measurement.json'
++    target = STAGE / 'native_token_measurement.json'
+     raw = (json.dumps(result, ensure_ascii=False, indent=2) + '\n').encode('utf-8')
+     if target.exists():
+         raise SystemExit('Receipt exists; preserve it before rerunning with a changed release.')
+@@ -91,5 +119,7 @@
+     os.replace(temporary, target)
+     print(json.dumps({'receipt': str(target), 'cases': len(result['cases']),
+         'prefix_bytes': result['prefix_bytes'],
+-        'worst_total': max(c['conservative_total'] for c in result['cases']),
+-        'smallest_remaining': min(c['remaining_text_allowance_bytes'] for c in result['cases'])}))
++        'worst_total': max(c['measured_total_tokens'] for c in result['cases']),
++        'smallest_remaining': min(c['remaining_tokens'] for c in result['cases']),
++        'p2_regression_input_tokens': result['p2_regression']['input_tokens'],
++        'tool_round_input_tokens': result['after_tool_regression']['input_tokens']}))
+--- /dev/null
++++ b/tests/test_native_counter.py
+@@ -0,0 +1,145 @@
++"""Offline native-count regressions. Fake token IDs are never provider measurements."""
++from copy import deepcopy
++import json
++from pathlib import Path
++import socket
++import sys
++import unittest
++from unittest.mock import patch
++from urllib.error import HTTPError
++
++STAGE = Path(__file__).resolve().parents[1]
++sys.path[:0] = [str(STAGE), r'C:\IALD\projetos_pyhton\IALD']
++import iald_native_memory as native
++
++
++class CounterTests(unittest.TestCase):
++    def setUp(self):
++        self.block = patch.object(socket.socket, 'connect', side_effect=AssertionError('No network'))
++        self.block.start()
++        self.addCleanup(self.block.stop)
++        self.payload = {'messages': [{'role': 'user', 'content': 'Question'}],
++                        'max_tokens': 4096, 'chat_template_kwargs': {'enable_thinking': False}}
++
++    def measure(self, payload=None, count=20000, serving=131072):
++        calls = []
++        def transport(base_url, endpoint, data=None):
++            calls.append((base_url, endpoint, deepcopy(data)))
++            if endpoint == '/props':
++                return {'default_generation_settings': {'n_ctx': serving}}
++            if endpoint == '/apply-template':
++                return {'prompt': '<|im_start|>rendered fixture<|im_end|>'}
++            if endpoint == '/tokenize':
++                return {'tokens': [1] * count}
++            raise AssertionError(endpoint)
++        with patch.object(native, '_local_json', side_effect=transport):
++            result = native.check_text_window(payload or self.payload, 131072)
++        return result, calls
++
++    def test_twenty_thousand_tokens_survive_large_utf8_payload(self):
++        payload = deepcopy(self.payload)
++        payload['messages'] = [
++            {'role': 'system', 'content': 'server and client prefix ' * 3500},
++            {'role': 'user', 'content': 'a' * 30000},
++            {'role': 'assistant', 'content': 'b' * 30000},
++            {'role': 'user', 'content': 'Continue a resposta.'}]
++        before = deepcopy(payload)
++        self.assertGreater(len(json.dumps(payload).encode()), 131072)
++        result, calls = self.measure(payload, count=20000)
++        self.assertEqual(result['input_tokens'], 20000)
++        self.assertEqual(result['measurement'], 'LLAMA_LOCAL_TEMPLATE_AND_TOKENIZER')
++        self.assertEqual(result['framing_allowance'], 256)
++        self.assertEqual(payload, before)
++        self.assertEqual(calls[1][2]['messages'], before['messages'])
++
++    def test_exact_tools_kwargs_and_special_token_options_reach_counter(self):
++        payload = deepcopy(self.payload)
++        payload['tools'] = [{'type': 'function', 'function': {'name': 'fixture'}}]
++        payload['tool_choice'] = 'auto'
++        payload['parallel_tool_calls'] = True
++        payload['messages'] += [{'role': 'assistant', 'content': None,
++            'tool_calls': [{'id': 'one', 'type': 'function',
++                'function': {'name': 'fixture', 'arguments': '{}'}}]},
++            {'role': 'tool', 'tool_call_id': 'one', 'content': 'Complete uncut result'}]
++        _, calls = self.measure(payload)
++        self.assertEqual([c[1] for c in calls], ['/props', '/apply-template', '/tokenize'])
++        self.assertEqual(calls[1][2], dict(payload, add_generation_prompt=True))
++        self.assertEqual(calls[2][2], {'content': '<|im_start|>rendered fixture<|im_end|>',
++                                    'add_special': True, 'parse_special': True})
++
++    def test_real_token_boundary_not_byte_length(self):
++        boundary = 131072 - 4096 - 256
++        self.measure(count=boundary)
++        with self.assertRaises(native.NativeContextError):
++            self.measure(count=boundary + 1)
++
++    def test_actual_serving_window_can_only_reduce_limit(self):
++        with self.assertRaises(native.NativeContextError):
++            self.measure(count=28000, serving=32000)
++        value, _ = self.measure(count=20000, serving=262144)
++        self.assertEqual(value['effective_window'], 131072)
++
++    def test_tool_round_is_recounted_and_growth_refused(self):
++        count = [20000]
++        calls = []
++        def transport(url, endpoint, data=None):
++            calls.append(endpoint)
++            if endpoint == '/props': return {'default_generation_settings': {'n_ctx': 131072}}
++            if endpoint == '/apply-template': return {'prompt': 'fixture'}
++            return {'tokens': [1] * count[0]}
++        with patch.object(native, '_local_json', side_effect=transport):
++            native.check_text_window(self.payload, 131072)
++            self.payload['messages'].append({'role': 'tool', 'content': 'new data', 'tool_call_id': 'one'})
++            count[0] = 130000
++            with self.assertRaises(native.NativeContextError):
++                native.check_text_window(self.payload, 131072)
++        self.assertEqual(calls.count('/tokenize'), 2)
++
++    def test_counter_failure_never_falls_back_to_estimated_success(self):
++        with patch.object(native, '_local_json', side_effect=OSError('private path')):
++            with self.assertRaises(native.NativeCounterUnavailable) as error:
++                native.check_text_window(self.payload, 131072)
++        self.assertNotIn('private path', str(error.exception))
++
++    def test_invalid_counter_responses_fail_closed(self):
++        for broken in ({'tokens': []}, {'tokens': [True]}, {'tokens': [-1]},
++                       {'tokens': [1.5]}, {'tokens': '123'}, {}, {'tokens': None}):
++            with self.subTest(broken=broken), patch.object(native, '_local_json', side_effect=[
++                    {'default_generation_settings': {'n_ctx': 131072}}, {'prompt': 'fixture'}, broken]):
++                with self.assertRaises(native.NativeCounterUnavailable):
++                    native.check_text_window(self.payload, 131072)
++        for broken in ({}, {'prompt': ''}, {'prompt': 1}):
++            with self.subTest(broken=broken), patch.object(native, '_local_json', side_effect=[
++                    {'default_generation_settings': {'n_ctx': 131072}}, broken]):
++                with self.assertRaises(native.NativeCounterUnavailable):
++                    native.check_text_window(self.payload, 131072)
++
++    def test_media_not_transmitted_to_count_endpoint_or_mutated(self):
++        payload = deepcopy(self.payload)
++        payload['messages'][0]['content'] = [{'type': 'text', 'text': 'Question'},
++            {'type': 'image_url', 'image_url': {'url': 'https://remote.invalid/private.png'}}]
++        original = deepcopy(payload)
++        value, calls = self.measure(payload)
++        self.assertFalse(value['media_tokens_measured'])
++        self.assertEqual(payload, original)
++        self.assertEqual(calls[1][2]['messages'][0]['content'], 'Question')
++        self.assertNotIn('remote.invalid', json.dumps(calls))
++
++    def test_transport_cannot_target_remote_or_generation(self):
++        for base in ('https://127.0.0.1:8081', 'http://example.test:8081',
++                     'http://127.0.0.1:8081@evil.test', 'http://127.0.0.1:8081/path',
++                     'http://127.0.0.1:0', 'http://127.0.0.1:65536'):
++            with self.subTest(base=base), self.assertRaises(native.NativeCounterUnavailable):
++                native._local_json(base, '/props')
++        for endpoint in ('/v1/chat/completions', '/completion', '/tokenize?secret=1'):
++            with self.subTest(endpoint=endpoint), self.assertRaises(native.NativeCounterUnavailable):
++                native._local_json('http://127.0.0.1:8081', endpoint, {})
++
++    def test_redirect_is_rejected(self):
++        request = type('RequestFixture', (), {'full_url': 'http://127.0.0.1:8081/props'})()
++        with self.assertRaises(HTTPError):
++            native._NoRedirect().redirect_request(request, None, 302, 'redirect', {}, 'https://remote.invalid')
++
++
++if __name__ == '__main__':
++    unittest.main(verbosity=2)

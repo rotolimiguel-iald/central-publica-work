@@ -1,0 +1,122 @@
+{
+  "status": "CHANGES_REQUESTED",
+  "scope": "Revisão adversarial somente leitura de native_release_patch versus baseline. Única escrita desta revisão: native_review.json.",
+  "findings": [
+    {
+      "id": "NATIVE-001",
+      "priority": "P2",
+      "title": "O orçamento anunciado mantém conversas que o novo guard nativo recusa",
+      "file": "C:\\IALD\\Central de Patentes\\work\\iald_memory_refresh_20261001\\native_release_patch\\iald_native_memory.py",
+      "start": 100,
+      "end": 105,
+      "related_locations": [
+        {
+          "file": "C:\\IALD\\Central de Patentes\\work\\iald_memory_refresh_20261001\\native_release_patch\\iald_web_server.py",
+          "start": 7824,
+          "end": 7832
+        },
+        {
+          "file": "C:\\IALD\\Central de Patentes\\work\\iald_memory_refresh_20261001\\native_release_patch\\iald_web_server.py",
+          "start": 8350,
+          "end": 8359
+        },
+        {
+          "file": "C:\\IALD\\projetos_pyhton\\IALD\\app\\iald.js",
+          "start": 1750,
+          "end": 1771
+        }
+      ],
+      "trigger": "Uma conversa textual com dois turnos de 30.000 caracteres ASCII e uma pergunta curta, usando o prompt público real, ferramentas reais e o pacote v378 staged.",
+      "observed": "O cliente estima 20.627 tokens de histórico para orçamento anunciado de 103.817 e conserva todos os turnos. O novo guard conta 147.569 bytes/reservas e recusa contra 131.072; api_post devolve 413. Uma nova pergunta curta conserva o mesmo histórico, mantendo a recusa. A compressão ocorre antes da injeção e ainda usa o orçamento anterior.",
+      "impact": "Conversas e anexos admitidos pelo contrato existente param muito antes do limite anunciado. O erro pede reduzir o histórico, mas o recorte automático usa um orçamento incompatível e repete o mesmo envio. Não é uma alegação de overflow real do tokenizer.",
+      "recommendation": "Alinhar o orçamento exposto por /api/contexto e a política de histórico/compressão com a nova admissão, reservando o prefixo e os schemas do servidor na mesma unidade. Manter -c 131072 e a recusa sem truncamento oculto. Cobrir histórico acumulado e anexos em teste de integração.",
+      "evidence_status": "REAL — reprodução local sem servidor, inferência ou rede."
+    }
+  ],
+  "verified": [
+    "Diff preserva MODELS, ACTIVE_MODEL_ID e KERNEL_FILE (v13); janela configurada 131072.",
+    "load_release verifica release/source do core, cluster e catálogo, hashes dos arquivos e estabilidade do manifesto.",
+    "Pacote Haiku exige deployment idêntico; prefixo, medição, reservas 4096/1024 e hash das ferramentas continuam validados.",
+    "Injeção nativa ocorre após autorização por conta e os desvios para provedores externos.",
+    "Novas ferramentas são leitores canônicos públicos; filtro app e allowlist de execução permanecem.",
+    "Dados do contexto novo não incluem caminhos locais; erros HTTP novos usam mensagem genérica para falhas de arquivos.",
+    "Revalidação nativa antecede cada envio do agent_loop; crescimento por ferramentas é recusado visivelmente.",
+    "Não encontrei outro defeito novo demonstrável de segurança/permissão/path ou versão no diff revisado."
+  ],
+  "local_reproduction": {
+    "scope": "READ_ONLY_REAL_STAGED_PUBLIC_ASSETS__NO_AI_CALLS",
+    "configured_window": 131072,
+    "prefix_bytes": 46050,
+    "client_prompt_characters": 24959,
+    "frontend_history_budget_estimate": 103817,
+    "frontend_history_estimate": 20627,
+    "frontend_keeps_whole_history": true,
+    "cases": [
+      {
+        "case": "short",
+        "status": "ACCEPTED",
+        "payload_text_bytes": 81226,
+        "conservative_total": 87434,
+        "decision": {
+          "configured_window": 131072,
+          "text_bytes": 81226,
+          "output_reserve": 4096,
+          "framing_allowance": 2112,
+          "measurement": "CONSERVATIVE_UTF8_BYTES_NOT_NATIVE_TOKENS",
+          "media_tokens_measured": true
+        }
+      },
+      {
+        "case": "history_60000",
+        "status": "REJECTED",
+        "payload_text_bytes": 141297,
+        "conservative_total": 147569,
+        "decision": {
+          "error": "Contexto textual nativo excede a janela conservadora; reduza o histórico ou a saída."
+        }
+      }
+    ],
+    "constants_unchanged": {
+      "MODELS": true,
+      "ACTIVE_MODEL_ID": true,
+      "KERNEL_FILE": true
+    },
+    "release": {
+      "release": "v378",
+      "source_sha256": "f56599bdd93390b57a58eddf3730dcebec94525585688f60f275fdcd229d4ac7",
+      "cluster_sha256": "2ccb5ac5203c9047ae92324d6cb6c93cad0eb69431d433136c4892c5c02a362c",
+      "operational_core_sha256": "db6421816b1fd395f68f16a1fafdc16c4659abe3c1e5a763983317f5747918a5"
+    },
+    "no_network": true
+  },
+  "tests": {
+    "regressions": "Não executadas por esta revisão; agente implementador responsável.",
+    "reviewer_probe": "Importados apenas módulos auxiliares; catálogo e contexto lidos localmente, guard aplicado a payloads sintéticos. Servidor principal não importado, socket bloqueado.",
+    "ai_calls": 0,
+    "network_calls": 0
+  },
+  "limits": [
+    "Sem tokenizer nativo, instância llama-server, browser ou geração real.",
+    "Memória privada do operador e histórico real não lidos.",
+    "Não certifica troca de implantação em andamento nem substitui os testes do agente."
+  ],
+  "created_at": "2026-10-01T12:14:23.480008+00:00",
+  "reviewed_sha256": {
+    "C:\\IALD\\Central de Patentes\\work\\iald_memory_refresh_20261001\\native_release_patch\\iald_release_binding.py": "f34898227ee75942305dcaed8fd9f04c93c3f066cbc2b2b5dd57fa5eebd31ca6",
+    "C:\\IALD\\Central de Patentes\\work\\iald_memory_refresh_20261001\\native_release_patch\\iald_native_memory.py": "106bc29e93ee2e565065bace911aeef73e870cd00dba07f828da89cc3d8a8a5a",
+    "C:\\IALD\\Central de Patentes\\work\\iald_memory_refresh_20261001\\native_release_patch\\claude_memory_package.py": "ed50dbc03a51092f7ffbc958744df73076c2c29dc5a938bfd3f87168c428b528",
+    "C:\\IALD\\Central de Patentes\\work\\iald_memory_refresh_20261001\\native_release_patch\\iald_web_server.py": "f96d1dd494331d674453b411f66daab71ac45b7897cabaed1106f5460dc1763d",
+    "C:\\IALD\\Central de Patentes\\work\\iald_memory_refresh_20261001\\native_release_patch\\baseline\\claude_memory_package.py": "22ad6456999c96ce4d4b7191bd2294302b0878d8f91bd4db68dd419e92640259",
+    "C:\\IALD\\Central de Patentes\\work\\iald_memory_refresh_20261001\\native_release_patch\\baseline\\iald_web_server.py": "ff962f68e20e6762a82adddca75b690010715393ce68489f6f967aee28b88950",
+    "C:\\IALD\\Central de Patentes\\work\\iald_memory_refresh_20261001\\manifest_staged.json": "787e73e3eb63b8ee77ad8dfad74dcd492d69797196ac22f9bba7ad8ce4ae3a7b",
+    "C:\\IALD\\projetos_pyhton\\IALD\\app\\iald.js": "d572222d6ce2becf91c7d17d88f4e2a098201888f11e22928ad74b427c3b6ee7",
+    "C:\\IALD\\projetos_pyhton\\IALD\\app\\kernel_prompt.js": "99b08a845671cb6acc78117c828e2450e53d886873a91025d2c9af55368b447c",
+    "C:\\IALD\\projetos_pyhton\\IALD\\app\\kernel_prompt_loja.js": "5a4c30384b5252cb941501c885b69958d3321a8e51b29ac891a4f9097cdd0580",
+    "C:\\IALD\\projetos_pyhton\\IALD\\IALD_Kernel_v13.txt": "8bb6d8aa08ea3134c592507da8b44150a5df8187d3783941fd98a5c0b76b49b3"
+  },
+  "python_syntax": "PASS — AST parse only, no web-server import",
+  "production_matches_patch_baseline": {
+    "claude_memory_package.py": true,
+    "iald_web_server.py": true
+  }
+}

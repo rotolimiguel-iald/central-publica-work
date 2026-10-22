@@ -1,0 +1,737 @@
+--- a/iald_web_server.py
++++ b/iald_web_server.py
+@@ -2162,7 +2162,8 @@
+ 
+ def agent_loop(messages, user="?", max_tokens=4096, temperature=0.7,
+                ferramentas=None, operator_authorized=False, motor=None, max_voltas=None,
+-               max_chars_canonico=None, executar=None, responder_na_ultima=False, task_control=None):
++               max_chars_canonico=None, executar=None, responder_na_ultima=False, task_control=None,
++               verificar_payload=None):
+     """
+     Agent loop: sends messages to llama-server with public tools.
+     If model responds with tool_call, executes and returns result.
+@@ -2255,6 +2256,19 @@
+             # llama-server: sem a lista de ferramentas o template não oferece nenhuma
+             payload.pop("tools", None)
+             payload.pop("tool_choice", None)
++
++        if verificar_payload is not None:
++            try:
++                verificar_payload(payload)
++            except (ValueError, OSError, KeyError, TypeError) as exc:
++                message = (str(exc) if isinstance(exc, native_memory.NativeContextError)
++                           else 'Memória canônica nativa indisponível ou divergente.')
++                yield ': iald-sem-selo\n\n'
++                yield 'data: ' + json.dumps({'error': message,
++                    'choices': [{'delta': {'content': message}, 'finish_reason': 'stop'}]},
++                    ensure_ascii=False) + '\n\n'
++                yield 'data: [DONE]\n\n'
++                return
+ 
+         # 21/09/2026 (motor claude): o motor pode trazer o próprio envio (motor.enviar, que traduz o
+         # payload OpenAI para a API do provedor e devolve linhas no formato OpenAI). Sem ele, o
+@@ -2486,6 +2500,7 @@
+                 if tool_name in task_session.NAMES:
+                     result = task_bridge.encode_task_result(result)
+                 elif (len(result) > AGENT_MAX_RESULT_CHARS
++                        and tool_name not in ('search_tgl', 'fetch_tgl')
+                         and not tool_name.startswith(("iald_kernel_", "iald_atlas_", "iald_public_"))):
+                     result = (result[:AGENT_MAX_RESULT_CHARS]
+                               + f"\n\n[...truncado, {len(result)} chars total]")
+@@ -5123,6 +5138,7 @@
+ 
+ from claude_route_bridge import RouteBridge
+ from claude_memory_package import load_package
++import iald_native_memory as native_memory
+ from claude_guarded_transport import post_guarded
+ from claude_profiles import HAIKU as _HAIKU_PROFILE
+ from claude_haiku_messages import assemble as _assemble_haiku_messages
+@@ -5158,8 +5174,13 @@
+ 
+ def _load_haiku_package():
+     from copy import copy
++    if KERNEL_EXTERNO is None:
++        raise ValueError('Canonical catalog unavailable for measured memory')
+     package, snapshot = _load_haiku_snapshot(
+-        os.path.join(SERVE_DIR, ".iald_runtime", "haiku"), load_package)
++        os.path.join(SERVE_DIR, ".iald_runtime", "haiku"),
++        lambda directory: load_package(directory,
++            canonical_manifest=os.path.join(SERVE_DIR, 'iald_nucleo_fixo.json'),
++            source_sha=KERNEL_EXTERNO.source_sha))
+     cfg = copy(CLAUDE_CFG)
+     cfg.modelo = cfg.modelo_operador = _HAIKU_PROFILE.model
+     cfg.max_saida = 4096
+@@ -5281,6 +5302,7 @@
+             KERNEL_EXTERNO = iald_kernel.KernelCatalog(_cluster_cfg['kernel_bundle'], _cluster_cfg.get('kernel_verification'))
+         else:
+             KERNEL_EXTERNO = iald_kernel.KernelCatalog(MOTORES_CFG.kernel_bundle, MOTORES_CFG.kernel_verification)
++        print(native_memory.startup_summary(MEMORIA_EXTERNA.nucleus_manifest, KERNEL_EXTERNO), flush=True)
+         MEMORIA_EXTERNA.snapshot()
+     except (ValueError, OSError) as exc:
+         ERRO_MEMORIA_EXTERNA = str(exc)
+@@ -5628,6 +5650,37 @@
+         yield from _sse_aviso(str(exc), "pedido_invalido").response
+     else:
+         yield from _aviso_limite(str(exc), por, user, registro, motor).response
++
++
++def _prepare_native_payload(payload, superficie):
++    """Called only after the existing native-account authorization gate."""
++    if MEMORIA_EXTERNA is None or MEMORIA_EXTERNA.nucleus_manifest is None:
++        raise ValueError('Native canonical manifest unavailable')
++    manifest = MEMORIA_EXTERNA.nucleus_manifest
++    prefix, identity = native_memory.load_native_context(manifest, KERNEL_EXTERNO)
++    result = dict(payload)
++    result['messages'] = native_memory.attach_context(payload.get('messages'), prefix)
++    # Canonical readers are public. Do not add the private Atlas or task/admin tools.
++    definitions = list(_ferramentas_para(superficie))
++    names = {(t.get('function') or {}).get('name') for t in definitions}
++    for tool in iald_kernel.tool_definitions() + iald_core_indexado.tool_definitions():
++        name = tool['function']['name']
++        if name not in names:
++            definitions.append(tool)
++            names.add(name)
++    model_id = ACTIVE_MODEL_ID
++    window = native_memory.configured_window(MODELS[model_id])
++
++    def check(current):
++        if model_id != ACTIVE_MODEL_ID:
++            raise ValueError('Native model changed during request')
++        release = native_memory.load_release(manifest, source_sha=KERNEL_EXTERNO.source_sha)
++        if release.identity != identity:
++            raise ValueError('Native canonical release changed during request')
++        return native_memory.check_text_window(current, window)
++
++    check(result)
++    return result, definitions, check
+ 
+ 
+ def _ferramentas_externas(cfg, limites, superficie, gratuito):
+@@ -8294,6 +8347,17 @@
+         superficie = "app"
+     operator_authorized = _local_operator_request() and bool(session.get("is_admin"))
+ 
++    # Server-owned canonical context follows compression and all client injections.
++    native_tools, native_check = None, None
++    if subpath == 'chat/completions':
++        try:
++            req_json, native_tools, native_check = _prepare_native_payload(req_json, superficie)
++            body = json.dumps(req_json).encode('utf-8')
++        except (ValueError, OSError, KeyError, TypeError) as exc:
++            message = (str(exc) if isinstance(exc, native_memory.NativeContextError)
++                       else 'Memória canônica nativa indisponível ou divergente.')
++            return jsonify({'error': message}), (413 if isinstance(exc, native_memory.NativeContextError) else 503)
++
+     # ── SMART ROUTING: only use agent loop when tools might be needed ──
+     if is_stream and subpath == "chat/completions":
+         messages = req_json.get("messages", [])
+@@ -8333,7 +8397,8 @@
+         #
+         # O keepalive SSE (ver AGENT_KEEPALIVE_SEC) impede que o caminho do agente
+         # derrube a conexão. Isto aqui é sobre não entrar nele à toa.
+-        needs_tools = (not has_image) and _precisa_ferramentas(last_user_msg)
++        needs_tools = (not has_image) and (_precisa_ferramentas(last_user_msg)
++                                         or native_memory.needs_canonical_tools(last_user_msg))
+ 
+         if needs_tools:
+             # ── AGENT LOOP: message needs tools ──
+@@ -8346,8 +8411,9 @@
+                 yield from agent_loop(messages, user=user,
+                                       max_tokens=max_tokens,
+                                       temperature=temperature,
+-                                      ferramentas=_ferramentas_para(superficie),
+-                                      operator_authorized=operator_authorized)
++                                      ferramentas=native_tools,
++                                      operator_authorized=operator_authorized,
++                                      verificar_payload=native_check)
+             return _identificar_resposta(Response(
+                 _medir_saida_sse(generate(), user, "agente"),
+                 status=200,
+--- a/claude_memory_package.py
++++ b/claude_memory_package.py
+@@ -5,6 +5,7 @@
+ import json
+ from claude_profiles import HAIKU, context_budget
+ from claude_request_guard import MemoryMeasurement
++from iald_release_binding import load_release, check_package_binding
+ 
+ @dataclass(frozen=True)
+ class MemoryPackage:
+@@ -14,13 +15,18 @@
+     available_dynamic_tokens: int
+     tools_sha256: str
+ 
+-def load_package(directory):
++def load_package(directory, *, canonical_manifest=None, source_sha=None):
+     """The configured directory must be operator/server controlled, never HTTP input.
+ 
+     Hashes detect drift, not malicious replacement of both manifest and data.
+     Request/profile/tool-result counts must still be checked before every send.
+     """
+     root=Path(directory).resolve()
++    # Legacy fixtures must supply a staged canonical manifest. Production never
++    # accepts an unbound package, even when its old prefix hash is still valid.
++    if canonical_manifest is None:
++        canonical_manifest = Path(__file__).with_name('iald_nucleo_fixo.json')
++    release = load_release(canonical_manifest, source_sha=source_sha)
+     manifest_path=root/'manifest.json'
+     manifest_raw=manifest_path.read_bytes()
+     manifest=json.loads(manifest_raw)
+@@ -52,5 +58,6 @@
+         raise ValueError('Missing measured tool identity')
+     if manifest_path.read_bytes()!=manifest_raw or prefix_path.read_bytes()!=raw:
+         raise ValueError('Package changed during loading')
++    check_package_binding(manifest, release)
+     return MemoryPackage(raw.decode('utf-8'),MemoryMeasurement(HAIKU.model,digest,b['permanent_tokens']),
+                          b['reserved_output_tokens'],b['remaining_tokens'],tools_hash)
+--- a/tests/test_memory_budget.py
++++ b/tests/test_memory_budget.py
+@@ -59,7 +59,11 @@
+         self.assertNotIn('item_299', prompt)
+         self.assertIn('Axioma [POSTULATE]', prompt)
+         self.assertIn('O número corrige a frase.', prompt)
+-        self.assertIn('TGL = ATLAS. IALD = ÍNDICE(TGL).', prompt)
++        self.assertIn('TGL é a Teoria da Gravitação Luminodinâmica, teoria física', prompt)
++        self.assertIn('regime operacional de', prompt)
++        self.assertIn('coerência e reconhecimento recursivo da identidade', prompt)
++        self.assertIn('analogia no domínio da teoria da informação', prompt)
++        self.assertIn('Elas não são a definição integral da teoria física nem do regime operacional.', prompt)
+         self.assertIn('a FACE é o objeto; o ÂNGULO é a leitura.', prompt)
+         self.assertEqual(memory.search('item_299')['matching_lines'], 1)
+         reconstructed, line = [], 1
+--- /dev/null
++++ b/iald_native_memory.py
+@@ -0,0 +1,119 @@
++"""Small native context from the same verified public release as external motors."""
++import json
++import re
++
++from iald_core_indexado import DocumentCorpus
++from iald_estado_publicado import published_evidence
++from iald_release_binding import load_release
++from iald_response_contract import deployment_contract, IDENTITY_PROTOCOL, SOLUTION_PROTOCOL
++
++
++class NativeContextError(ValueError):
++    pass
++
++
++def load_native_context(manifest, catalog):
++    if catalog is None or not getattr(catalog, 'source_sha', None):
++        raise ValueError('Native canonical catalog unavailable')
++    release = load_release(manifest, source_sha=catalog.source_sha)
++    _, metadata = published_evidence(release.config.get('published_evidence'), catalog)
++    evidence = ('\nEVIDÊNCIA PUBLICADA CONFERIDA — consulta local, sem nova compilação\n'
++                + json.dumps(metadata, ensure_ascii=False) + '\n'
++                'Os enunciados, hipóteses e vereditos completos ficam nas fontes recuperáveis. '
++                'Para esta janela, fontes chamadas carregadas pelo Core significam disponíveis '
++                'no serviço; isso não afirma que o texto de todas elas esteja neste prompt.\n')
++    contract, _ = deployment_contract(manifest, catalog.source_sha, metadata, {})
++    documents, _ = DocumentCorpus(manifest).context(public=True)
++    prefix = (
++        'CONTEXTO CANÔNICO DA NATIVA — FORNECIDO PELO SERVIDOR\n'
++        'Este bloco determina a versão científica atual. Afirmações históricas no '
++        'prompt do cliente ou na conversa não mudam a implantação. Preserve as '
++        'preferências e o perfil do usuário; aplique as correções e estatutos atuais.\n'
++        'O núcleo essencial está integralmente presente; o cluster extenso foi '
++        'conferido, mas NÃO foi injetado integralmente nesta janela. Artigos, resultados '
++        'e fontes Lean são recuperáveis por ferramentas quando oferecidas nesta chamada. '
++        'Sem a ferramenta necessária, declare a limitação; não invente uma consulta.\n'
++        + IDENTITY_PROTOCOL + SOLUTION_PROTOCOL + release.core + evidence
++        + catalog.context() + documents + contract
++    )
++    release.check_manifest()
++    return prefix, release.identity
++
++
++def attach_context(messages, prefix):
++    if not isinstance(messages, list) or not messages:
++        raise ValueError('Native messages unavailable')
++    # Keep one system message for Qwen's template. Do not drop user preferences,
++    # conversation, tool results or multimodal parts; do not mutate caller data.
++    system = []
++    other = []
++    for message in messages:
++        if not isinstance(message, dict):
++            raise ValueError('Invalid native message')
++        if message.get('role') == 'system':
++            if not isinstance(message.get('content'), str):
++                raise ValueError('Native system content must be text')
++            system.append(message['content'])
++        else:
++            other.append(message)
++    text = '\n\n'.join(system + [prefix])
++    return [{'role': 'system', 'content': text}] + other
++
++
++def needs_canonical_tools(text):
++    return bool(re.search(
++        r'\b(tgl|iald|um\.py|lean|kernel|gravit\w*|gravidade|qu[aâ]ntic\w*|'
++        r'lagrang\w*|hamilton\w*|lindblad|gk[ls]+|meia[- ]nat|'
++        r'f[oó]rmul\w*|can[oô]nic\w*|teorema\w*|prova\w*|v\d{3,})\b',
++        text or '', re.IGNORECASE))
++
++
++def configured_window(model):
++    command = model.get('cmd', [])
++    try:
++        value = int(command[command.index('-c') + 1])
++    except (ValueError, IndexError, TypeError) as exc:
++        raise NativeContextError('Janela nativa não configurada.') from exc
++    if value <= 0:
++        raise NativeContextError('Janela nativa inválida.')
++    return value
++
++
++def check_text_window(payload, window):
++    """Conservative text admission, NOT a Qwen tokenizer or a vision measurement.
++
++    One token per UTF-8 byte plus framing/output reserve deliberately rejects
++    some requests that might fit. Media are left to llama-server's existing
++    multimodal admission; their token cost cannot be inferred from JSON bytes.
++    """
++    output = payload.get('max_tokens', 4096)
++    if type(output) is not int or output <= 0 or output >= window:
++        raise NativeContextError('Reserva de saída nativa inválida para esta janela.')
++    messages = []
++    has_media = False
++    for message in payload.get('messages', []):
++        copied = dict(message)
++        if isinstance(copied.get('content'), list):
++            has_media |= any(p.get('type') != 'text' for p in copied['content'] if isinstance(p, dict))
++            copied['content'] = [p for p in copied['content'] if isinstance(p, dict) and p.get('type') == 'text']
++        messages.append(copied)
++    counted = {'messages': messages, 'tools': payload.get('tools', [])}
++    text_bytes = len(json.dumps(counted, ensure_ascii=False, allow_nan=False).encode('utf-8'))
++    # Template overhead is an explicit conservative allowance, not a native count.
++    framing = 2048 + 32 * len(messages)
++    if text_bytes + output + framing > window:
++        raise NativeContextError('Contexto textual nativo excede a janela conservadora; reduza o histórico ou a saída.')
++    return {'configured_window': window, 'text_bytes': text_bytes,
++            'output_reserve': output, 'framing_allowance': framing,
++            'measurement': 'CONSERVATIVE_UTF8_BYTES_NOT_NATIVE_TOKENS',
++            'media_tokens_measured': not has_media}
++
++
++def startup_summary(manifest, catalog):
++    release = load_release(manifest, source_sha=catalog.source_sha)
++    status = catalog.status()
++    count = status['lean_files']
++    if type(count) is not int or count < 0 or status['source_sha256'] != release.identity['source_sha256']:
++        raise ValueError('Invalid canonical catalog status')
++    return (f"[IALD-CANONICAL-CATALOG] release={release.identity['release']} "
++            f"source_sha256={catalog.source_sha[:16]} lean_files={count}")
+--- /dev/null
++++ b/iald_release_binding.py
+@@ -0,0 +1,64 @@
++"""Integrity binding for server-owned canonical releases; no execution or network."""
++from dataclasses import dataclass
++import json
++from pathlib import Path
++import re
++
++from iald_cluster import active_cluster
++from iald_core_indexado import operational_core
++
++
++@dataclass(frozen=True)
++class ReleaseSnapshot:
++    path: Path
++    raw: bytes
++    config: dict
++    identity: dict
++    core: str
++
++    def check_manifest(self):
++        if self.path.read_bytes() != self.raw:
++            raise ValueError('Canonical release changed during loading')
++
++
++def load_release(manifest, *, source_sha=None):
++    """Read only a trusted deployment path, never a path supplied by the client."""
++    path = Path(manifest)
++    raw = path.read_bytes()
++    config = json.loads(raw)
++    if not isinstance(config, dict):
++        raise ValueError('Canonical manifest must be an object')
++    core_cfg = config.get('operational_core')
++    cluster_cfg = config.get('active_cluster')
++    if not isinstance(core_cfg, dict) or not isinstance(cluster_cfg, dict):
++        raise ValueError('Canonical core and active cluster are required')
++    release = core_cfg.get('current_release')
++    source = core_cfg.get('release_source_sha256')
++    if not isinstance(release, str) or not re.fullmatch(r'v[0-9]+', release):
++        raise ValueError('Invalid deployed release')
++    for digest in (source, core_cfg.get('sha256'), cluster_cfg.get('sha256')):
++        if not isinstance(digest, str) or not re.fullmatch(r'[0-9a-f]{64}', digest):
++            raise ValueError('Invalid canonical digest')
++    if (cluster_cfg.get('release') != release
++            or cluster_cfg.get('release_source_sha256') != source
++            or (source_sha is not None and source_sha != source)):
++        raise ValueError('Canonical release, source and catalog differ')
++    # Reuse the existing byte/hash and coverage checks. The cluster is checked,
++    # not injected into the smaller native context window.
++    active_cluster(path, source)
++    core, _ = operational_core(path)
++    snapshot = ReleaseSnapshot(path, raw, config, {
++        'release': release,
++        'source_sha256': source,
++        'cluster_sha256': cluster_cfg['sha256'],
++        'operational_core_sha256': core_cfg['sha256'],
++    }, core)
++    snapshot.check_manifest()
++    return snapshot
++
++
++def check_package_binding(package_manifest, release):
++    """Measured bytes must belong to this release, not merely have a valid hash."""
++    if package_manifest.get('deployment') != release.identity:
++        raise ValueError('Measured memory differs from the active canonical release')
++    release.check_manifest()
+--- /dev/null
++++ b/tests/test_native_release.py
+@@ -0,0 +1,344 @@
++"""Offline adversarial tests; only AST-selected functions from the real server."""
++import ast
++from copy import deepcopy
++import hashlib
++import json
++import os
++from pathlib import Path
++import socket
++import sys
++import tempfile
++from types import SimpleNamespace
++import unittest
++from unittest.mock import Mock, patch
++
++STAGE = Path(__file__).resolve().parents[1]
++WORK = STAGE.parent
++PRODUCTION = Path(r'C:\IALD\projetos_pyhton\IALD')
++sys.path[:0] = [str(STAGE), str(PRODUCTION)]
++import iald_native_memory as native
++from iald_release_binding import load_release
++from claude_memory_package import load_package
++from claude_profiles import HAIKU, context_budget
++import iald_kernel
++import iald_core_indexado
++
++
++def digest(value):
++    return hashlib.sha256(value).hexdigest()
++
++
++def server_namespace(*names):
++    tree = ast.parse((STAGE / 'iald_web_server.py').read_bytes())
++    functions = [n for n in tree.body if isinstance(n, ast.FunctionDef) and n.name in names]
++    assert len(functions) == len(names)
++    for function in functions:
++        function.decorator_list = []
++    namespace = {'json': json, 'os': os, 'native_memory': native,
++                 'iald_kernel': iald_kernel, 'iald_core_indexado': iald_core_indexado}
++    exec(compile(ast.Module(body=functions, type_ignores=[]), '<server-functions-only>', 'exec'), namespace)
++    return namespace
++
++
++class Fixture(unittest.TestCase):
++    def setUp(self):
++        parent = STAGE / 'test_tmp'
++        parent.mkdir(exist_ok=True)
++        self.temp = tempfile.TemporaryDirectory(dir=parent)
++        self.addCleanup(self.temp.cleanup)
++        self.root = Path(self.temp.name)
++        self.manifest = self.root / 'canonical.json'
++        core = b'Essential formulas and current release [DERIVED].'
++        cluster = b'Cluster\n### verified section\nreference'
++        (self.root / 'core.md').write_bytes(core)
++        (self.root / 'cluster.md').write_bytes(cluster)
++        (self.root / 'doc.txt').write_bytes(b'Public source.')
++        self.source = 'a' * 64  # Fixture, never a claimed artifact hash.
++        self.config = {
++            'format': 1, 'document_mode': 'retrievable',
++            'operational_core': {'path': str(self.root / 'core.md'), 'sha256': digest(core),
++                'version': 'fixture', 'current_release': 'v378', 'release_source_sha256': self.source},
++            'active_cluster': {'path': str(self.root / 'cluster.md'), 'sha256': digest(cluster),
++                'release': 'v378', 'release_source_sha256': self.source,
++                'commit': 'b' * 40, 'core_sections': 1},
++            'entries': [{'id': 'source', 'path': str(self.root / 'doc.txt'),
++                'public_sha256': digest(b'Public source.'), 'role': 'fixture',
++                'url': 'https://raw.githubusercontent.com/rotolimiguel-iald/the_boundary/' + 'b' * 40 + '/doc.txt'}],
++            'published_evidence': {'fixture': True},
++        }
++        self.save_config()
++        self.identity = load_release(self.manifest).identity
++        prefix = b'Measured prefix fixture, no provider count performed.'
++        (self.root / 'prefix.md').write_bytes(prefix)
++        self.package = {'schema': 'iald.claude.memory.v1', 'model': HAIKU.model,
++            'prefix_file': 'prefix.md', 'prefix_sha256': digest(prefix), 'tools_sha256': 'c' * 64,
++            'deployment': self.identity,
++            'budget': context_budget(HAIKU.model, counted_model=HAIKU.model,
++                permanent_tokens=183000, request_input_tokens=184500, reserved_output_tokens=4096)}
++        self.save_package()
++        self.catalog = SimpleNamespace(source_sha=self.source, context=lambda: 'PUBLIC KERNEL CATALOG',
++            status=lambda: {'lean_files': 3, 'source_sha256': self.source})
++        self.evidence = patch.object(native, 'published_evidence', return_value=('VERY LONG EXTRACT', {
++            'published_evidence_checked': True, 'published_source_sha256': self.source}))
++        self.evidence.start()
++        self.addCleanup(self.evidence.stop)
++        self.no_network = patch.object(socket.socket, 'connect', side_effect=AssertionError('Network forbidden'))
++        self.no_network.start()
++        self.addCleanup(self.no_network.stop)
++
++    def save_config(self):
++        self.manifest.write_text(json.dumps(self.config), encoding='utf-8')
++
++    def save_package(self):
++        (self.root / 'manifest.json').write_text(json.dumps(self.package), encoding='utf-8')
++
++    def load(self):
++        return load_package(self.root, canonical_manifest=self.manifest, source_sha=self.source)
++
++
++class BindingTests(Fixture):
++    def test_valid_bound_package(self):
++        self.assertEqual(self.load().tools_sha256, self.package['tools_sha256'])
++
++    def test_old_package_without_binding_rejected(self):
++        del self.package['deployment']
++        self.save_package()
++        with self.assertRaises(ValueError): self.load()
++
++    def test_every_binding_field_is_enforced(self):
++        for field in self.identity:
++            with self.subTest(field=field):
++                self.package['deployment'] = dict(self.identity, **{field: 'stale'})
++                self.save_package()
++                with self.assertRaises(ValueError): self.load()
++
++    def test_cluster_release_disagreement(self):
++        self.config['active_cluster']['release'] = 'v377'
++        self.save_config()
++        with self.assertRaises(ValueError): self.load()
++
++    def test_catalog_source_disagreement(self):
++        with self.assertRaises(ValueError):
++            load_package(self.root, canonical_manifest=self.manifest, source_sha='f' * 64)
++
++    def test_cluster_source_disagreement(self):
++        self.config['active_cluster']['release_source_sha256'] = 'f' * 64
++        self.save_config()
++        with self.assertRaises(ValueError): self.load()
++
++    def test_tampered_core(self):
++        (self.root / 'core.md').write_bytes(b'tampered')
++        with self.assertRaises(ValueError): self.load()
++
++    def test_tampered_cluster(self):
++        (self.root / 'cluster.md').write_bytes(b'tampered')
++        with self.assertRaises(ValueError): self.load()
++
++    def test_tampered_prefix(self):
++        (self.root / 'prefix.md').write_bytes(b'tampered')
++        with self.assertRaises(ValueError): self.load()
++
++    def test_missing_canonical_manifest(self):
++        self.manifest.unlink()
++        with self.assertRaises(OSError): self.load()
++
++    def test_no_implicit_unbound_compatibility(self):
++        with self.assertRaises((OSError, ValueError)): load_package(self.root)
++
++    def test_changed_manifest_during_read_is_rejected(self):
++        original = native.load_release.__globals__['operational_core']
++        def changed(path):
++            value = original(path)
++            self.config['active_cluster']['release'] = 'v377'
++            self.save_config()
++            return value
++        with patch('iald_release_binding.operational_core', side_effect=changed):
++            with self.assertRaises(ValueError): self.load()
++
++    def test_budget_integrity_still_required(self):
++        self.package['budget']['remaining_tokens'] = 99999
++        self.save_package()
++        with self.assertRaises(ValueError): self.load()
++
++
++class NativeTests(Fixture):
++    def prepare_namespace(self):
++        ns = server_namespace('_prepare_native_payload', '_ferramentas_para')
++        ns.update(MEMORIA_EXTERNA=SimpleNamespace(nucleus_manifest=self.manifest),
++            KERNEL_EXTERNO=self.catalog, ACTIVE_MODEL_ID='native',
++            MODELS={'native': {'cmd': ['llama-server', '-c', '131072']}},
++            PUBLIC_TOOLS=[{'function': {'name': 'search_web'}}, {'function': {'name': 'commercial'}}],
++            FERRAMENTAS_FORA_DA_LOJA={'commercial'})
++        return ns
++
++    def test_current_release_formulas_and_partial_scope(self):
++        prefix, identity = native.load_native_context(self.manifest, self.catalog)
++        self.assertEqual(identity, self.identity)
++        self.assertIn('v378', prefix)
++        self.assertIn('rho_dot=', prefix)
++        self.assertIn('H_3L=', prefix)
++        self.assertIn('NÃO foi injetado integralmente', prefix)
++        self.assertNotIn('VERY LONG EXTRACT', prefix)
++        self.assertIn('PUBLIC KERNEL CATALOG', prefix)
++
++    def test_client_history_and_vision_unchanged(self):
++        messages = [{'role': 'system', 'content': 'Client preferences'},
++            {'role': 'user', 'content': [{'type': 'image_url', 'image_url': {'url': 'fixture'}}]},
++            {'role': 'system', 'content': 'Profile'}]
++        before = deepcopy(messages)
++        output = native.attach_context(messages, 'Server current release')
++        self.assertEqual(messages, before)
++        self.assertEqual(output[1], messages[1])
++        self.assertEqual(output[0]['content'], 'Client preferences\n\nProfile\n\nServer current release')
++
++    def test_native_tools_keep_store_filter_and_no_private_atlas(self):
++        ns = self.prepare_namespace()
++        payload, definitions, check = ns['_prepare_native_payload'](
++            {'messages': [{'role': 'user', 'content': 'TGL'}], 'max_tokens': 4096}, 'app')
++        names = [t['function']['name'] for t in definitions]
++        self.assertIn('fetch_tgl', names)
++        self.assertIn('search_tgl', names)
++        self.assertIn('iald_kernel_read', names)
++        self.assertIn('search_web', names)
++        self.assertNotIn('commercial', names)
++        self.assertFalse(any(n.startswith('iald_atlas_') for n in names))
++        self.assertEqual(len(names), len(set(names)))
++        self.assertIsInstance(check(payload), dict)
++
++    def test_checked_again_after_tool_result_and_release_change(self):
++        ns = self.prepare_namespace()
++        payload, definitions, check = ns['_prepare_native_payload'](
++            {'messages': [{'role': 'user', 'content': 'TGL'}]}, 'web')
++        (self.root / 'cluster.md').write_bytes(b'changed after tool')
++        with self.assertRaises(ValueError): check(payload)
++
++    def test_model_switch_is_visible_failure(self):
++        ns = self.prepare_namespace()
++        payload, _, check = ns['_prepare_native_payload']({'messages': [{'role': 'user', 'content': 'TGL'}]}, 'web')
++        ns['ACTIVE_MODEL_ID'] = 'different'
++        with self.assertRaises(ValueError): check(payload)
++
++    def test_whole_payload_growth_is_blocked_without_truncation(self):
++        payload = {'messages': [{'role': 'tool', 'content': 'x' * 131072}], 'max_tokens': 4096}
++        before = deepcopy(payload)
++        with self.assertRaises(native.NativeContextError): native.check_text_window(payload, 131072)
++        self.assertEqual(payload, before)
++
++    def test_invalid_output_reserves(self):
++        for output in (-1, 0, True, '4096', 131072, float('nan')):
++            with self.subTest(output=output), self.assertRaises(native.NativeContextError):
++                native.check_text_window({'messages': [], 'max_tokens': output}, 131072)
++
++    def test_images_are_preserved_and_not_claimed_as_counted(self):
++        payload = {'messages': [{'role': 'user', 'content': [{'type': 'image_url',
++            'image_url': {'url': 'data:image/jpeg;base64,' + 'A' * 500000}}]}]}
++        before = deepcopy(payload)
++        self.assertFalse(native.check_text_window(payload, 131072)['media_tokens_measured'])
++        self.assertEqual(payload, before)
++
++    def test_formula_requests_route_to_readers_but_greetings_do_not(self):
++        for text in ('Explique a TGL', 'Leia um.py v378', 'Hamiltoniano', 'Fórmulas da gravidade quântica'):
++            self.assertTrue(native.needs_canonical_tools(text), text)
++        self.assertFalse(native.needs_canonical_tools('Bom dia'))
++
++    def test_startup_log_has_only_allowed_metadata(self):
++        self.assertEqual(native.startup_summary(self.manifest, self.catalog),
++            '[IALD-CANONICAL-CATALOG] release=v378 source_sha256=' + self.source[:16] + ' lean_files=3')
++
++    def test_server_haiku_loader_passes_real_catalog_binding(self):
++        ns = server_namespace('_load_haiku_package')
++        load = Mock(side_effect=RuntimeError('loader intercepted'))
++        ns.update(KERNEL_EXTERNO=self.catalog, SERVE_DIR=str(self.root), load_package=load,
++            _load_haiku_snapshot=lambda directory, loader: loader(directory))
++        with self.assertRaisesRegex(RuntimeError, 'intercepted'): ns['_load_haiku_package']()
++        self.assertEqual(load.call_args.kwargs, {'canonical_manifest': str(self.root / 'iald_nucleo_fixo.json'),
++                                              'source_sha': self.source})
++
++    def test_agent_guard_prevents_any_dispatch(self):
++        ns = server_namespace('agent_loop')
++        post = Mock(side_effect=AssertionError('Model dispatch forbidden'))
++        ns.update(MAX_AGENT_LOOPS=6, LLAMA_URL='http://fixture.invalid', req_lib=SimpleNamespace(post=post))
++        def reject(payload): raise native.NativeContextError('fixture context refusal')
++        output = list(ns['agent_loop']([{'role': 'user', 'content': 'TGL'}], ferramentas=[], verificar_payload=reject))
++        self.assertIn('fixture context refusal', ''.join(output))
++        self.assertIn('[DONE]', ''.join(output))
++        post.assert_not_called()
++
++    def tool_loop(self, result, check):
++        ns = server_namespace('agent_loop')
++        sent = []
++        def post(url, **kwargs):
++            sent.append(deepcopy(kwargs['json']))
++            return len(sent)
++        def lines(send):
++            turn = send()
++            delta = ({'tool_calls': [{'index': 0, 'id': 'read1', 'function': {
++                'name': 'fetch_tgl', 'arguments': '{"id":"source"}'}}]} if turn == 1
++                else {'content': 'fixture final'})
++            yield 'line', 'data: ' + json.dumps({'choices': [{'delta': delta,
++                'finish_reason': 'tool_calls' if turn == 1 else 'stop'}]})
++        def keepalive(fn):
++            if False: yield None
++            return fn()
++        ns.update(MAX_AGENT_LOOPS=6, LLAMA_URL='http://fixture.invalid',
++            req_lib=SimpleNamespace(post=post), _linhas_do_stream=lines,
++            _com_keepalive=keepalive, _ROTULO_FERRAMENTA={},
++            auth_log=lambda *a, **kw: None, log_request=lambda *a, **kw: None,
++            task_session=SimpleNamespace(NAMES=set()), AGENT_MAX_RESULT_CHARS=3200,
++            BUSCA_INDISPONIVEL_PREFIXO='unavailable')
++        output = list(ns['agent_loop']([{'role': 'user', 'content': 'TGL'}],
++            ferramentas=[{'function': {'name': 'fetch_tgl'}}], executar=lambda *a, **kw: result,
++            verificar_payload=check))
++        return sent, output
++
++    def test_full_json_canonical_page_survives_tool_round(self):
++        result = json.dumps({'text': 'source ' * 650, 'next_offset': 4500,
++                             'sha256': self.source, 'scope': 'fixture'})
++        checks = []
++        sent, output = self.tool_loop(result, lambda p: checks.append(deepcopy(p)))
++        self.assertEqual(len(sent), 2)
++        self.assertEqual(len(checks), 2)
++        self.assertEqual(json.loads(sent[1]['messages'][-1]['content']), json.loads(result))
++        self.assertIn('fixture final', ''.join(output))
++
++    def test_oversized_tool_result_blocks_second_dispatch(self):
++        checks = []
++        def check(payload):
++            checks.append(True)
++            native.check_text_window(payload, 131072)
++        sent, output = self.tool_loop('x' * 131072, check)
++        self.assertEqual(len(sent), 1)
++        self.assertEqual(len(checks), 2)
++        self.assertIn('Contexto textual nativo excede', ''.join(output))
++        self.assertIn('choices', ''.join(output))
++
++
++class SourceContracts(unittest.TestCase):
++    def test_route_injection_after_compression_and_after_auth(self):
++        source = (STAGE / 'iald_web_server.py').read_text(encoding='utf-8')
++        tree = ast.parse(source)
++        route = next(n for n in tree.body if isinstance(n, ast.FunctionDef) and n.name == 'api_post')
++        text = ast.get_source_segment(source, route)
++        self.assertLess(text.index('_caminho_nativo_permitido'), text.index('_prepare_native_payload'))
++        self.assertLess(text.index('HOLO_MEMORY.compress_context'), text.index('_prepare_native_payload'))
++        for route_name in ('_chat_automatico', '_chat_avaliacao', '_chat_claude', '_chat_openai'):
++            self.assertLess(text.index(route_name), text.index('_prepare_native_payload'))
++        self.assertLess(text.index('_prepare_native_payload'), text.index('_stream_proxy'))
++        self.assertIn('verificar_payload=native_check', text)
++
++    def test_native_model_window_and_kernel_v13_preserved(self):
++        def assignments(path):
++            tree = ast.parse(path.read_bytes())
++            wanted = {'MODELS', 'ACTIVE_MODEL_ID', 'KERNEL_FILE'}
++            return {t.id: ast.dump(n.value) for n in tree.body if isinstance(n, ast.Assign)
++                for t in n.targets if isinstance(t, ast.Name) and t.id in wanted}
++        self.assertEqual(assignments(STAGE / 'iald_web_server.py'),
++                         assignments(STAGE / 'baseline/iald_web_server.py'))
++
++    def test_canonical_results_do_not_enter_generic_text_truncation(self):
++        source = (STAGE / 'iald_web_server.py').read_text(encoding='utf-8')
++        self.assertIn("tool_name not in ('search_tgl', 'fetch_tgl')", source)
++
++
++if __name__ == '__main__':
++    unittest.main(verbosity=2)

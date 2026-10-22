@@ -1,0 +1,78 @@
+ENTREGA BACKEND — PREPARADO, NÃO INSTALADO
+
+[REAL] 43 testes offline aprovados, zero falhas/erros/skips. Seis combinações dos prompts reais web/app/loja e saídas 4096/8192 aprovadas na admissão textual conservadora. Rede bloqueada por mock; nenhuma inferência nem importação do servidor real.
+A primeira rodada do runner encontrou seis erros por tiktoken indisponível no sandbox. A repetição com acesso ao usersite instalado aprovou os 43; o recibo anterior está preservado em test_results.previous.json.
+
+ARQUIVOS E IMPACTO
+- iald_web_server.py: injeta o contexto nativo depois da compressão/injeções existentes; acrescenta leitores canônicos públicos no agente quando aplicáveis; verifica identidade da release e janela antes de cada rodada; preserva JSON de search_tgl/fetch_tgl; passa vínculo canônico ao loader Haiku; registra startup interno seguro.
+- iald_native_memory.py (novo): Core integral, fórmulas já existentes, contratos de identidade/solução, recibo da evidência verificada e catálogo público. A evidência completa é verificada localmente; o extrato longo e o cluster inteiro não entram no prompt. As fontes completas continuam recuperáveis.
+- iald_release_binding.py (novo): confere release, SHA da fonte, catálogo selecionado, hash/bytes/cobertura do cluster e hash/bytes do Core. Falhas são visíveis; não há fallback silencioso.
+- claude_memory_package.py: exige deployment coerente com a release ativa, além dos hashes e contagem existentes. Pacote legado sem vínculo é recusado. Fixtures usam canonical_manifest explícito; não há opt-out de produção.
+- tests/test_memory_budget.py: cópia atualizada apenas no assert de identidade. IALD como regime operacional, TGL como teoria física e analogia informacional delimitada; nenhum prompt foi alterado para acomodar o teste antigo.
+- tests/test_native_release.py: 30 regressões novas de vínculo, adulteração, contexto, preservação de mensagens/imagens, filtros de superfície, duas rodadas de ferramenta, recusa antes de envio, JSON íntegro, log e integração AST.
+
+INSTALAÇÃO POR MAIN
+Os quatro arquivos runtime são iald_web_server.py, iald_native_memory.py, iald_release_binding.py e claude_memory_package.py. A correção de tests/test_memory_budget.py acompanha o patch; os testes novos/runner/medidor/baseline são artefatos desta bancada W e não recursos do app. backend.patch é um diff para revisão, não um instalador.
+As cópias baseline dos três arquivos existentes são byte a byte; patch_receipt.json contém CAS baseline e pins staged. Produção ainda coincidia com o baseline na geração do recibo. Main deve revalidar CAS no ato de instalar.
+Ativar somente junto ao manifesto canônico/catálogo correto e pacote Haiku realmente medido. Este trabalho não produziu nem simulou contagem Anthropic. Não basta rotular o prefixo antigo como v378.
+Campo deployment exigido no manifesto do pacote Haiku:
+{
+  "release": "v378",
+  "source_sha256": "f56599bdd93390b57a58eddf3730dcebec94525585688f60f275fdcd229d4ac7",
+  "cluster_sha256": "2ccb5ac5203c9047ae92324d6cb6c93cad0eb69431d433136c4892c5c02a362c",
+  "operational_core_sha256": "db6421816b1fd395f68f16a1fafdc16c4659abe3c1e5a763983317f5747918a5"
+}
+
+JANELA NATIVA E LIMITES
+Prefixo nativo: 46050 bytes UTF-8. O catálogo e a proveniência dos documentos não duplicam o Core.
+Janela configurada MODELS/ACTIVE_MODEL_ID: 131072. Pior payload-base conservador: 91815. Menor margem textual adicional: 39257 bytes.
+A admissão usa 1 unidade por byte UTF-8 do JSON textual + saída reservada + margem explícita de template. Não é contagem do tokenizer Qwen nem medição do template llama real. Pode recusar pedidos que caberiam na tokenização nativa.
+Histórico real, perfil, memória privada do operador e configuração efetiva dos slots não foram lidos/medidos. A guarda considera o texto final recebido a cada chamada. O cliente ainda pode selecionar um histórico maior que a margem restante; haverá recusa visível, sem corte automático do Core.
+Imagens mantêm o caminho direto preexistente; seu custo em tokens continua a cargo do serving multimodal e não foi medido. Ferramentas canônicas são oferecidas no fluxo streaming textual; não foi acrescentado agente a visão ou chamadas non-stream.
+Legados de 32768/16384 recusaram todas as seis bases, explicitamente. O escopo validado é a nativa atual de 131072.
+Não há mudança em pesos, kernel v13, autorização de contas, matriz de provedores, orçamento, consentimentos ou assets clientes. Build mobile não aplicável; comportamento novo de backend deve ser conferido nos clientes por Main.
+
+LOG INTERNO ESPERADO
+[IALD-CANONICAL-CATALOG] release=v378 source_sha256=f56599bdd93390b5 lean_files=1203
+Origem: manifesto de implantação conferido e KernelCatalog real. 1207 arquivos embutidos = 1203 Lean + 4 metadados. Não equivale aos 1208 arquivos da custódia, que incluem o auxiliar não embutido. Sem tokens/chaves, caminhos privados ou frontend.
+
+ORQUESTRADOR — SOMENTE LEITURA
+Data registrada: 2026-09-28T18:17:12.966157+00:00
+Geração registrada: f86bb852548ef573739ef7fb0aed68e9ae1d6118d626922d2d2af1e7a9353484
+SHA do programa no índice: ba234a6d384cb3f59ced49c94b643a71a002f65d284b01307cb088bbace5e2e0
+SHA alvo da release: f56599bdd93390b57a58eddf3730dcebec94525585688f60f275fdcd229d4ac7
+O SHA diverge: requer refresh separado do índice. Manifesto lido; índice SQLite não reconstruído nem alterado. Não inferir a versão do programa pelo nome/data.
+
+REPRODUÇÃO OFFLINE
+& C:\Python314\python.exe -B -X utf8 "C:\IALD\Central de Patentes\work\iald_memory_refresh_20261001\native_release_patch\run_tests.py"
+Usar o runtime do usuário com tiktoken já instalado; rede é recusada pelo runner. Medidor: measure_native.py --manifest "C:\IALD\Central de Patentes\work\iald_memory_refresh_20261001\manifest_install.json"; ele recusa sobrescrever native_measurement.json para preservar a evidência.
+
+PINS SHA256 (LIDOS DOS ARQUIVOS)
+backend.patch: 38aa86471d070c45a839ab6eec6738222c961fda28fab39ccbdaf656e864b03a
+iald_web_server.py:
+  baseline: ff962f68e20e6762a82adddca75b690010715393ce68489f6f967aee28b88950
+  staged: f96d1dd494331d674453b411f66daab71ac45b7897cabaed1106f5460dc1763d
+  diff: +71 / -5
+claude_memory_package.py:
+  baseline: 22ad6456999c96ce4d4b7191bd2294302b0878d8f91bd4db68dd419e92640259
+  staged: ed50dbc03a51092f7ffbc958744df73076c2c29dc5a938bfd3f87168c428b528
+  diff: +8 / -1
+tests/test_memory_budget.py:
+  baseline: 38d9cf2d2a12d3e38c84d2d6db0f181856990ec2e601a79176a5a996ef75bb95
+  staged: 1c35ac637a1fb0236dc9f8164308e308a86e0eb07b299c148ac23ab1d1601c40
+  diff: +5 / -1
+iald_native_memory.py:
+  baseline: None
+  staged: 106bc29e93ee2e565065bace911aeef73e870cd00dba07f828da89cc3d8a8a5a
+  diff: +119 / -0
+iald_release_binding.py:
+  baseline: None
+  staged: f34898227ee75942305dcaed8fd9f04c93c3f066cbc2b2b5dd57fa5eebd31ca6
+  diff: +64 / -0
+tests/test_native_release.py:
+  baseline: None
+  staged: 7f368d78f201528376680e76244a2375c4fc2434d3851581364ff4ac796372b0
+  diff: +344 / -0
+
+PENDÊNCIAS EXTERNAS A ESTA ENTREGA
+Validação/medição do novo pacote Haiku e revisão adversarial paralela Ampere, conduzidas por Main. Instalação/restart e verificação do processo vivo não foram executados aqui.
