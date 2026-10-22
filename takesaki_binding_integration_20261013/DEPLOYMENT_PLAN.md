@@ -1,0 +1,19 @@
+# Candidato integrado — vínculo científico aditivo
+
+Estatuto [REAL]: Runtime/Coordination candidatos compilados e testados com ACOM real em estado descartável. Nenhuma implantação, fila viva ou chamada real feita por este agente.
+
+Implantar somente scientific_binding.py (novo), coordination.py e runtime.py, após revisão independente dos pins finais do RECIBO_FINAL.json. __init__.py é shim de teste que aponta às dependências instaladas: NÃO IMPLANTAR. Preservar biblioteca ACOM instalada e sua inscrição imutável.
+
+API privilegiada local: Coordination.bind_scientific_contract(job_id, contract_path, contract_sha256, expected_version=0, authority_path=..., authority_sha=..., prepared_supplement=...). A autenticação é responsabilidade do chamador (raiz conferiu mensagem humana oficial). Não registrar operação no bridge HTTP público ou aceitar prova/boolean de modelo como autorização automática.
+
+Primeiro vínculo valida contrato/pins reais, prova separada, quadro e unidade reivindicada, grafo por SQLite read-only, IDs originais e ausência de atividade. Transação única SQLite guarda envelope aditivo, outbox q, evento e CAS; constraints originais ficam null e ACOM {}. Recibo do q obrigatório antecede qualquer despacho. Interrupção após memória/antes ack reexecuta somente checkpoint local idempotente.
+
+Rotas, provider lock, packet, lanes, budget e max_calls recebem constraints efetivas explícitas. Toda fase da memória continua recebendo constraints originais. Custódia guarda bytes do contrato/prova no envelope. Leitura pós-retorno valida custódia sem reabrir fontes externas; ready valida pins vivos antes de chamada. Retorno de executor e tentativa persistem mesmo se fonte mudar durante a chamada. Replay exato normaliza o texto segundo validate_prompt vigente, apenas retorna envelope, sem nova chamada ou dependência do quadro atual. Rebinding recusa.
+
+Projeção com vínculo mede tamanho real em chamada local com orçamento máximo de medição e reapresenta orçamento len(text)+512 (mínimo6500), sem omitir registro obrigatório. Sobreflow superior à medição recusa. Controle com q>6500 e pedido real confirma presença. Pedido real: original1754chars + suplemento19786raw/19785strip = preparado21624chars, abaixo24000; projeção5133chars. Geração canônica permanece a geração realmente recebida no pacote, não v392 inventada. Trechos v392 são suplemento explícito, em ratificação.
+
+Antes de instalar: conferir ocioso no banco, recibos e versões sem envios incertos; criar backup imediato byte a byte de cada módulo substituído na mesma pasta, conferir hashes, escrever temporário/fync/tamanho/CAS/replacement/rehash. Banco: snapshot consistente pela API backup SQLite com origem readonly e destino novo; manter originais e qualquer diário/WAL necessário, sem usar cópia parcial de banco aberto. Migração aditiva não altera original job ou âncora ACOM. Se leitura/backup/revisão falhar, não instalar. Não reiniciar sessões/web/MCP como parte deste candidato; root usará processo CLI novo autorizado.
+
+Depois de instalar em ato separado da raiz: conferir pins instalados, schema aditivo, provar original prompt/constraints/IDs intactos e ACOM verify. Vincular o pedido existente uma vez, aguardar ACK obrigatório do outbox, preparar suplemento e fazer preview. Despachar somente após selected=required_provider e memória/pins/geração real conferidos; nunca repetir resultado incerto. Registrar resultado DECLARADO e distinguir revisão local da execução real.
+
+Validação:21 testes integrados,13 regressões existentes candidato e13 baseline com o mesmo harness de isolamento,1 controle representativo. Transportes externos interceptados; não é benchmark científico nem teste de disponibilidade Kimi. Resíduo: seam privilegiado de autenticação e deployment root, cobertura de nos_packet/route mockada nesta suite (root já mediu preview real separado). ResourceWarning do core instalado foi filtrado no runner; biblioteca core não foi editada.

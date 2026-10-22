@@ -1,0 +1,40 @@
+{
+  "schema": "iald-independent-review-addendum/v1",
+  "at": "2026-10-13T21:22:04.089484+00:00",
+  "reviewer": "binding_independent_review",
+  "verdict": "PASS_WITH_SCOPE",
+  "scope": "New MEDIO replay whitespace finding only; supersedes R2 helper pin and preserves R2 approvals/limits for unchanged coordination/runtime. This is not a third audit round for low residuals.",
+  "resolved_finding": {
+    "id": "REPLAY_WHITESPACE",
+    "severity": "MEDIO",
+    "description": "Initial bind stores validate_prompt.strip output; exact replay now normalizes using stored effective constraints before comparison. Same raw file with final newline replays, substantive changed text still rejected."
+  },
+  "diff": "--- \n+++ \n@@ -103,6 +103,7 @@\n     runtime=coord.runtime\n     with runtime.db() as db:prior=read_binding(db,uid)\n     if prior:\n+        prepared_supplement=validate_prompt(prepared_supplement,controls.prompt_limit(prior['effective_constraints']))\n         if prior['contract_path']!=str(path) or prior['supplement_sha256']!=pin or prior['authority_path']!=str(authority_path) or prior['authority_sha256']!=authority_sha or prior['prepared_supplement']!=prepared_supplement:\n             raise ValueError('Rebinding forbidden')\n         return {'binding':prior,'replay':True}\n",
+  "pins": [
+    {
+      "path": "C:\\IALD\\Central de Patentes\\work\\takesaki_binding_integration_20261013\\candidate\\iald_orchestrator\\scientific_binding.py",
+      "bytes": 12034,
+      "sha256": "19cb11ddcd4ad463b726ba8fbe175b094474267c1a8ed009fa97f63fcf8574a0"
+    },
+    {
+      "path": "C:\\IALD\\Central de Patentes\\work\\takesaki_binding_integration_20261013\\candidate\\iald_orchestrator\\coordination.py",
+      "bytes": 18179,
+      "sha256": "8a59ac2e4ae38eddbf0d2d3361f083821a065feb584b748bb88e5674a2d29372"
+    },
+    {
+      "path": "C:\\IALD\\Central de Patentes\\work\\takesaki_binding_integration_20261013\\candidate\\iald_orchestrator\\runtime.py",
+      "bytes": 30869,
+      "sha256": "a5bac34f81fa52075124e55f3e2f37681d5e6c1ab979cb83394ca07d7b00c224"
+    }
+  ],
+  "test": {
+    "passed": 1,
+    "failed": 0,
+    "tool_chunk": "2a86d2",
+    "elapsed_test_seconds": 0.204,
+    "description": "Real 19786-character prepared supplement with final newline, disposable queue/ACOM: bind once, exact replay twice, version stays1, no extra outbox/events, substantive variation rejects, tasks0/attempts0."
+  },
+  "external_calls": 0,
+  "production_writes": 0,
+  "blocking_findings": []
+}
