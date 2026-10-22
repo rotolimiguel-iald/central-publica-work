@@ -1,0 +1,65 @@
+REVISÃO INDEPENDENTE — tokens_sem_limite / CONVITE RINCON
+
+[REAL] CONCLUSÃO: SEM BLOQUEIOS IDENTIFICADOS no diff revisado para uma conta comum
+assinante, com a flag definida exclusivamente no registro confiável do servidor.
+A isenção remove cotas de tokens por dia/mês; não significa saída, janela técnica,
+orçamento financeiro ou permissões ilimitadas. Nenhuma concessão Sonnet no patch.
+
+CONTROLES CONFERIDOS
+1. config_da_conta copia a configuração e atribui a flag somente quando o valor do
+   registro é o booleano True e a conta não está bloqueada. Não altera admin, plano,
+   somente_limite_global, permissões ou os dicionários compartilhados de planos.
+   O diff não cria um parâmetro de requisição nem endpoint de autoatribuição da flag.
+   Os caminhos consumidores usam o registro obtido pelo servidor.
+2. limites_do_plano devolve None apenas em tokens_dia/tokens_mes; usd_dia, max_saida,
+   agente e pensar são preservados. verificar_permissao mantém as verificações
+   monetárias da conta/chave/global/grupo gratuito e o limitador por minuto.
+   Reservas financeiras seguem independentes do saldo de tokens.
+3. saldo_de_tokens usa inf somente como sentinela interna de ausência de cota. Se
+   apenas um período for ilimitado, o outro continua limitando. SaldoDoPedido mantém
+   o max_completion_tokens finito já montado pelo servidor, sem aumentá-lo ou copiar
+   inf para o payload. Saída ausente/zero/negativa é recusada nessa nova ramificação.
+   ContaComSaldo ainda chama a conta de reserva após verificar saldo.
+4. O servidor monta teto_saida por plano/modelo e mantém a janela antes do envio.
+   Na eventual conta gratuita, min(saída_finita, inf - entrada) continua finito.
+   Para o assinante solicitado, o wrapper especial de saldo gratuito não é usado;
+   a isenção se aplica à admissão diária/mensal, mantendo as demais fronteiras.
+5. estado_da_cota expõe limites None como JSON null, não o saldo inf. O servidor
+   já ignora limite None em _bloqueio_da_cota. periodoDeUso do cliente já apresenta
+   limite null como 'Sem limite individual', sem divisão por zero.
+6. CLAUDE_ROUTES.configuration recebe config_da_conta e mantém os controles de
+   modelo/financeiro; faz deepcopy dos planos antes de ajustar seu orçamento público.
+   A flag não modifica identidade/chave de cota, razão, fontes de memória, permissões
+   nativas, consentimentos ou política de Sonnet. Nenhum dado de outra conta é lido
+   ou incorporado por estas novas linhas.
+
+SONDAGENS OFFLINE INDEPENDENTES
+AST das funções/classes relevantes do próprio stage, com configuração e razão
+sintéticos, sem import do servidor, env ou provedores:
+- Configuração-base e planos inalterados; conta sem flag continua recusada por tokens.
+- Sete casos de valor não autorizado/bloqueio não ativam a flag: False, None, 1,
+  string, objeto, bloqueado e acesso_bloqueado.
+- Token acima das duas cotas é admitido só na configuração com a flag; global,
+  dólares da conta/chave e limite por minuto continuam recusando.
+- Estado de cota serializado com json.dumps(allow_nan=False): null nos dois limites,
+  sem Infinity. Uso em tokens continua registrado e exibido.
+- Saldo ilimitado preservou exatamente saídas 1, 4096 e 8192, sem elevar nenhuma;
+  saída None/0/-1 recusada. O limite técnico vem da montagem normal do servidor,
+  não é inventado nem ampliado pelo saldo.
+- Dois casos com somente um período ilimitado preservaram a restrição do outro.
+- Wrapper ContaComSaldo ainda acionou a reserva com saída finita 4096.
+A primeira montagem da fixture AST omitiu constantes em atribuição múltipla e
+falhou antes dos casos; corrigida em memória, as sondagens acima passaram.
+
+LIMITES DO PARECER
+Revisão de código e sondagens locais; não certifica a futura gravação do usuário,
+seu login ou recebimento do convite. Cadastro, senha individual e envio por Outlook
+ficaram a cargo do implementador. Não li contas reais, segredos ou .env, não executei
+monólito/provedor, não alterei produção e não enviei e-mail. Nenhuma suíte completa
+foi repetida. O financeiro permanece exigível, conforme o escopo autorizado.
+
+Emitido UTC: 2026-10-01T18:55:15.770310+00:00
+Stage: C:\IALD\Central de Patentes\work\iald_rincon_invite_20261001\stage\iald_motores.py
+SHA256 stage: 19a654c9430596cd0106462d573f448165ba2fecc242f089d0b82fbc3194f9e8
+SHA256 produção: 3322a1edd773d664ef6ebd715a4e5052bddcba60c832cfb3399c6272dfd93aa9
+Baseline confere com produção: True
