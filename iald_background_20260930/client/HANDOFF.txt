@@ -1,0 +1,49 @@
+CLIENTE EM STAGING — respostas duráveis
+
+Integrar somente iald.js como app/iald.js. O arquivo contém os auxiliares embutidos;
+não exige rota estática adicional. client.patch é o diff integrável da mesma mudança.
+build_client.py recompõe esses arquivos lendo a origem sem modificá-la. O manifesto
+registra os hashes calculados da origem e do resultado. Os demais .js são fontes do
+builder, não arquivos a publicar separadamente.
+
+Contrato de autenticação:
+- GET /api/chat-jobs/session -> {account: SHA256 opaco estável} antes de begin/discover.
+- POST /api/chat-jobs recebe account original + request_id UUID + corpo legado.
+  O corpo exato é persistido antes de POST. Retry conserva ID, account e corpo.
+- GET coleção deve devolver {account,jobs}; divergência ou 401 desanexa a conta.
+- Nunca usa nome de exibição/sessao-web como identidade dos pedidos.
+
+Contrato de entrega:
+- Poll a cada 1 segundo; páginas has_more são drenadas imediatamente.
+- Replay desde zero em buffer novo; histórico usa marcador por job para deduplicar.
+- Sequências devem ser contíguas, exceto evento iald_aviso.retirar_resposta===true.
+- DONE sozinho não conclui: aguarda status terminal, depois salva antes de ack.
+- ack 409 permanece pendente e é repetido sem refazer a geração/entrega.
+- Failed/cancelled/interrupted e erro de rede não salvam parcial como assistant/selo.
+- Logout/ocultar interrompe só a observação. Parar envia cancel explicitamente.
+- Cancelamento voluntário salva aviso próprio: Resposta interrompida.
+- Excluir conversa/limpar histórico confirma purge remoto antes da remoção local.
+
+Recuperação: inicialização, login, visibilitychange, online, App.appStateChange nativo
+e eventos locais de troca de autenticação. O listener nativo é registrado uma vez;
+ao sair, pausa somente a observação; ao voltar, retoma mesmo se a visibilidade da
+WebView ainda não tiver sido atualizada. Jobs só no servidor são restaurados quando a conversa
+existe na conta autenticada. O histórico e os pedidos novos têm escopo por account.
+Histórico legado é migrado localmente uma vez, sem usar sua identidade em POST.
+Ajuda: respostas criptografadas disponíveis para recuperação por até 7 dias. Esse
+prazo comunica disponibilidade, não garantia de limpeza física no instante exato.
+
+Dependências novas: nenhuma. Builder: Python padrão. Testes: Node, módulos padrão.
+Executar nesta pasta:
+  C:\Python314\python.exe -B build_client.py
+  node --check iald.js
+  node --test test_chat_jobs.mjs
+
+Validação: testes offline de transporte e do iald.js gerado com DOM/fetch simulados.
+Não realizados: QA visual/renderização, servidor real, chamadas de modelos ou teste
+físico de suspensão/background iOS/Android. Produção, nativos e memórias não editados.
+Notificações são uma integração separada; este cliente não adiciona notificações.
+
+Cessão de edição: Faraday assume esta pasta client para integrar o push após a
+entrega final. O builder sobrescreve iald.js/client.patch ao rodar: incorporar as
+novas alterações nas fontes antes de reconstruir, ou preservar a cópia integrada.

@@ -1,0 +1,1501 @@
+--- a/app/iald.js
++++ b/app/iald.js
+@@ -80,6 +80,707 @@
+ // removida, com conferência linha a linha de que nada mais mudou.
+ import { SYSTEM_PROMPT_LOJA } from './kernel_prompt_loja.js';
+ 
++// Durable transport only. All HTTP uses the app's authenticated request function.
++const TERMINAL_JOB_STATUSES = new Set(['completed', 'failed', 'cancelled', 'interrupted', 'expired']);
++const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/;
++const ACCOUNT = /^[0-9a-f]{64}$/;
++const STATUSES = new Set(['queued', 'running', ...TERMINAL_JOB_STATUSES]);
++const copy = (value) => JSON.parse(JSON.stringify(value));
++
++class PendingChatJobError extends Error {
++  constructor(message, extra = {}) {
++    super(message); this.name = 'PendingChatJobError'; this.pending = true;
++    Object.assign(this, extra);
++  }
++}
++class TerminalChatJobError extends Error {
++  constructor(status, message) {
++    super(message); this.name = 'TerminalChatJobError'; this.terminal = true; this.status = status;
++  }
++}
++const detached = () => new PendingChatJobError('Acompanhamento pausado; a resposta permanece no servidor.', { detached: true });
++const defaultSleep = (ms, signal) => new Promise((resolve, reject) => {
++  if (signal?.aborted) { reject(detached()); return; }
++  const finish = () => { signal?.removeEventListener('abort', stop); resolve(); };
++  const timer = setTimeout(finish, ms);
++  const stop = () => { clearTimeout(timer); signal.removeEventListener('abort', stop); reject(detached()); };
++  signal?.addEventListener('abort', stop, { once: true });
++});
++
++function createDurableChatJobs({ request, storage, randomUUID = () => crypto.randomUUID(),
++  sleep = defaultSleep, onPending = () => {}, onSubmitted = () => {}, onScopeLost = () => {}, requestTimeout = 20000 }) {
++  let owner = '', generation = 0;
++  const active = new Set();
++  const key = (account) => 'iald_chat_jobs_v1:' + encodeURIComponent(account);
++  const context = () => {
++    if (!owner) throw detached();
++    return { owner, generation };
++  };
++  const current = (scope) => scope.owner === owner && scope.generation === generation;
++  const check = (scope) => { if (!current(scope)) throw detached(); };
++  function loseScope() {
++    pause(); owner = ''; onScopeLost();
++    throw detached();
++  }
++
++  function read(account = owner) {
++    try {
++      const raw = storage.getItem(key(account));
++      const records = raw == null ? [] : JSON.parse(raw);
++      if (!Array.isArray(records) || records.some((r) => !r || r.owner !== account || !UUID.test(r.request_id)
++        || (r.payload && (r.payload.account !== account || r.payload.request_id !== r.request_id)))) throw new Error();
++      return records;
++    } catch (_) { throw new PendingChatJobError('Não foi possível ler os pedidos pendentes deste usuário.'); }
++  }
++  function write(records, scope) {
++    check(scope);
++    try {
++      const raw = JSON.stringify(records);
++      storage.setItem(key(scope.owner), raw);
++      if (storage.getItem(key(scope.owner)) !== raw) throw new Error();
++    } catch (_) { throw new PendingChatJobError('Sem espaço para guardar o pedido. Nenhum novo envio será iniciado.'); }
++  }
++  function update(record, scope, changes = {}) {
++    check(scope);
++    const records = read(scope.owner);
++    const index = records.findIndex((r) => r.request_id === record.request_id);
++    if (index < 0) throw new PendingChatJobError('O registro local mudou. Retome pela lista de respostas do servidor.');
++    const next = { ...records[index], ...changes };
++    write(records.map((r, i) => i === index ? next : r), scope);
++    Object.assign(record, next);
++    return record;
++  }
++  function assertRecord(record, scope) {
++    check(scope);
++    if (!record || record.owner !== scope.owner || !UUID.test(record.request_id)) throw detached();
++  }
++  async function http(path, options, scope, signal) {
++    check(scope);
++    const controller = new AbortController();
++    const abort = () => controller.abort();
++    if (signal?.aborted) throw detached();
++    signal?.addEventListener('abort', abort, { once: true });
++    active.add(controller);
++    const timer = setTimeout(abort, requestTimeout);
++    try {
++      const response = await request(path, { ...options, cache: 'no-store', signal: controller.signal });
++      check(scope);
++      if (response.status === 401) loseScope();
++      if (response.status === 410 && (!options.method || options.method === 'GET') &&
++          /^\/api\/chat-jobs\/[0-9a-f-]{36}(?:\?after=\d+)?$/.test(path)) {
++        throw new TerminalChatJobError('expired', 'Esta resposta temporária expirou. Nenhum novo pedido foi enviado.');
++      }
++      let body;
++      try { body = await response.json(); } catch (_) { throw new PendingChatJobError('Resposta do servidor ilegível; o pedido continua pendente.'); }
++      check(scope);
++      if (!response.ok) {
++        throw new PendingChatJobError(response.status === 401 ? 'Entre novamente para recuperar sua resposta.'
++          : 'Não foi possível acompanhar a resposta agora. O pedido foi preservado.', {
++          httpStatus: response.status,
++          aviso: body?.bloqueado ? { tipo: 'bloqueado', texto: String(body.error || 'Conta bloqueada.') } : null,
++        });
++      }
++      return body;
++    } catch (error) {
++      if (!current(scope) || signal?.aborted) throw detached();
++      if (error instanceof PendingChatJobError || error instanceof TerminalChatJobError) throw error;
++      throw new PendingChatJobError('Sem conexão. A resposta continua pendente; retomaremos com o mesmo pedido.');
++    } finally {
++      clearTimeout(timer); active.delete(controller);
++      signal?.removeEventListener('abort', abort);
++    }
++  }
++  const post = (path, body, scope, signal) => http(path, {
++    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body),
++  }, scope, signal);
++  async function verifyAccount(scope, signal) {
++    const session = await http('/api/chat-jobs/session', {}, scope, signal);
++    if (!ACCOUNT.test(session?.account || '') || session.account !== scope.owner) loseScope();
++  }
++
++  function checkJob(value, record) {
++    if (!value || !UUID.test(value.id) || !STATUSES.has(value.status)
++      || typeof value.conversation_id !== 'string' || value.conversation_id !== record.conversation_id
++      || (record.id && value.id !== record.id)) {
++      throw new PendingChatJobError('Identidade ou estado da resposta inconsistente; entrega suspensa.');
++    }
++  }
++  async function begin(body) {
++    const scope = context();
++    await verifyAccount(scope);
++    if (!body || typeof body !== 'object' || !/^[A-Za-z0-9_-]{1,64}$/.test(body.iald_conv || '')) {
++      throw new PendingChatJobError('A conversa precisa de um identificador válido antes do envio.');
++    }
++    const request_id = randomUUID();
++    if (!UUID.test(request_id)) throw new PendingChatJobError('Não foi possível criar um identificador seguro.');
++    const records = read();
++    if (records.some((r) => r.conversation_id === body.iald_conv && r.phase !== 'saved')) {
++      throw new PendingChatJobError('Esta conversa já tem uma resposta pendente. Aguarde sua recuperação.');
++    }
++    const record = { owner, request_id, id: null, conversation_id: body.iald_conv,
++      payload: copy({ ...body, request_id, account: scope.owner }), phase: 'pending', attempted: false,
++      cancel_requested: false, created: Date.now() };
++    write([...records, record], scope); // Mandatory verified write BEFORE any submit.
++    return record;
++  }
++  async function submit(record, scope, signal) {
++    assertRecord(record, scope);
++    if (record.id) return;
++    if (!record.payload) throw new PendingChatJobError('Pedido sem corpo local; recupere-o pela lista do servidor.');
++    if (record.payload.account !== scope.owner || record.payload.request_id !== record.request_id) throw detached();
++    await verifyAccount(scope, signal);
++    update(record, scope, { attempted: true });
++    const response = await post('/api/chat-jobs', record.payload, scope, signal);
++    checkJob(response, record);
++    update(record, scope, { id: response.id, phase: 'streaming', status: response.status });
++    onSubmitted(copy(record));
++  }
++  async function cancel(record) {
++    const scope = context();
++    assertRecord(record, scope);
++    update(record, scope, { cancel_requested: true }); // Only explicit user actions call this.
++    if (!record.attempted && !record.id) {
++      update(record, scope, { status: 'cancelled', local_cancel: true });
++      return;
++    }
++    // The implemented server uses request_id as its job ID. Never resubmit a
++    // possibly unsent inference just to cancel it; retry only the cancel action.
++    const response = await post('/api/chat-jobs/' + (record.id || record.request_id) + '/cancel', {}, scope);
++    checkJob(response, record);
++    update(record, scope, { id: response.id, status: response.status });
++  }
++
++  async function* stream(record, { signal } = {}) {
++    const scope = context();
++    assertRecord(record, scope);
++    if (record.status === 'expired') throw new TerminalChatJobError('expired', 'Esta resposta temporária expirou. Nenhum novo pedido foi enviado.');
++    if (record.local_cancel) throw new TerminalChatJobError('cancelled', 'Pedido cancelado antes do envio.');
++    if (record.cancel_requested) await cancel(record);
++    else await submit(record, scope, signal);
++    if (record.local_cancel) throw new TerminalChatJobError('cancelled', 'Pedido cancelado antes do envio.');
++    let cursor = 0, sawDone = false, sawError = false;
++    // Every resumed observer replays from zero into a fresh UI buffer. No partial
++    // answer is persisted as final and no replay appends to an earlier draft.
++    while (true) {
++      check(scope);
++      let page;
++      try { page = await http('/api/chat-jobs/' + record.id + '?after=' + cursor, {}, scope, signal); }
++      catch (error) {
++        if (error instanceof TerminalChatJobError && error.status === 'expired') update(record, scope, { status: 'expired' });
++        throw error;
++      }
++      checkJob(page, record);
++      if (!Array.isArray(page.events) || !Number.isSafeInteger(page.cursor) || typeof page.has_more !== 'boolean') {
++        throw new PendingChatJobError('Página de eventos inválida; a resposta continua pendente.');
++      }
++      const previous = cursor;
++      for (const event of page.events) {
++        if (!event || !Number.isSafeInteger(event.seq) || event.seq <= 0 || typeof event.data !== 'string') {
++          throw new PendingChatJobError('Evento inválido; a resposta continua pendente.');
++        }
++        if (event.seq <= cursor) continue;
++        const data = event.data.trim();
++        let parsed = null;
++        if (data !== '[DONE]') {
++          try { parsed = JSON.parse(data); } catch (_) { throw new PendingChatJobError('Evento de resposta ilegível; entrega suspensa.'); }
++        }
++        const withdrawn = parsed?.iald_aviso?.retirar_resposta === true;
++        if (event.seq !== cursor + 1 && !withdrawn) throw new PendingChatJobError('Faltam eventos da resposta; retomaremos a leitura integral.');
++        cursor = event.seq;
++        // Moderation deliberately removes prior durable events. Only the explicit
++        // withdrawal event may bridge that gap; the UI discards all earlier text.
++        if (withdrawn) { sawDone = false; sawError = false; }
++        if (data === '[DONE]') { sawDone = true; continue; }
++        if (sawDone) throw new PendingChatJobError('Há eventos após a conclusão; entrega suspensa.');
++        if (parsed?.error) sawError = true;
++        yield 'data: ' + event.data;
++        check(scope);
++      }
++      if (page.cursor !== cursor || (page.has_more && cursor === previous)) {
++        throw new PendingChatJobError('Cursor de recuperação inconsistente; entrega suspensa.');
++      }
++      update(record, scope, { status: page.status });
++      if (page.has_more) continue; // Drain all pages immediately before checking completion.
++      if (TERMINAL_JOB_STATUSES.has(page.status)) {
++        if (page.status !== 'completed' || sawError) {
++          throw new TerminalChatJobError(page.status === 'completed' ? 'failed' : page.status,
++            page.status === 'cancelled' ? 'Resposta interrompida a seu pedido.'
++              : 'A geração não concluiu. O pedido não foi reenviado automaticamente.');
++        }
++        if (!sawDone) throw new PendingChatJobError('Conclusão sem marcador final; a resposta permanece pendente.');
++        yield 'data: [DONE]';
++        return;
++      }
++      await sleep(1000, signal);
++    }
++  }
++
++  async function discover(hasConversation) {
++    const scope = context();
++    await verifyAccount(scope);
++    const response = await http('/api/chat-jobs', {}, scope);
++    if (response?.account !== scope.owner) loseScope();
++    if (!response || !Array.isArray(response.jobs)) throw new PendingChatJobError('Lista de respostas inválida.');
++    const records = read();
++    for (const job of response.jobs) {
++      if (!job || !UUID.test(job.id) || !STATUSES.has(job.status) || typeof job.conversation_id !== 'string') {
++        throw new PendingChatJobError('Identidade inválida na lista de respostas.');
++      }
++      if (!hasConversation(job.conversation_id, scope.owner)) continue;
++      let record = records.find((r) => r.id === job.id || r.request_id === job.id);
++      if (record) {
++        if (record.conversation_id !== job.conversation_id) throw new PendingChatJobError('Conversa de recuperação inconsistente.');
++        record.id = job.id; record.status = job.status;
++      } else {
++        record = { owner: scope.owner, request_id: job.id, id: job.id, conversation_id: job.conversation_id,
++          payload: null, phase: 'streaming', attempted: true, cancel_requested: false, status: job.status,
++          created: typeof job.created === 'number' ? job.created * 1000 : Date.now() };
++        records.push(record);
++      }
++    }
++    write(records, scope);
++    return records.filter((r) => hasConversation(r.conversation_id, scope.owner));
++  }
++  async function acknowledge(record) {
++    const scope = context();
++    assertRecord(record, scope);
++    if (record.phase !== 'saved') throw new PendingChatJobError('A resposta precisa ser salva antes da confirmação de entrega.');
++    if (!record.local_cancel && record.status !== 'expired') await post('/api/chat-jobs/' + record.id + '/ack', {}, scope);
++    write(read().filter((r) => r.request_id !== record.request_id), scope);
++  }
++  async function delivered(record, save) {
++    const scope = context();
++    assertRecord(record, scope);
++    await save(); // Must throw if conversation persistence failed.
++    check(scope);
++    update(record, scope, { phase: 'saved', payload: null });
++    await acknowledge(record);
++  }
++  function pause() {
++    generation += 1;
++    for (const controller of active) controller.abort();
++  }
++  async function purgeConversation(conversation) {
++    const scope = context();
++    if (!/^[A-Za-z0-9_-]{1,64}$/.test(conversation)) throw new Error('Conversa inválida.');
++    await post('/api/chat-jobs/conversations/' + encodeURIComponent(conversation) + '/delete', {}, scope);
++    write(read().filter((r) => r.conversation_id !== conversation), scope);
++  }
++  return {
++    begin, stream, cancel, discover, acknowledge, delivered, purgeConversation,
++    pending: () => owner ? read() : [],
++    owner: () => owner,
++    pause,
++    setOwner(account) {
++      if (typeof account !== 'string' || !ACCOUNT.test(account)) account = '';
++      if (account !== owner) { pause(); owner = account; }
++    },
++    forgetOwner() {
++      const scope = context();
++      storage.removeItem(key(scope.owner));
++      pause(); owner = '';
++    },
++    report(error) { if (!error.detached) onPending(error.message); },
++  };
++}
++
++// Called only after a complete stream, never by a network-error finally block.
++// The job marker and the message/notice are one conversation-storage transaction.
++function applyChatJobDelivery(conversation, job, { answer = null, notice = null, status = 'completed' }) {
++  if (conversation.id !== job.conversation_id) throw new Error('Conversa de origem divergente.');
++  const id = job.id || job.request_id;
++  conversation.chat_job_deliveries ||= {};
++  if (conversation.chat_job_deliveries[id]) return false;
++  if (answer && !conversation.mensagens.some((m) => m.chat_job_id === id)) {
++    conversation.mensagens.push({ ...answer, chat_job_id: id });
++  }
++  conversation.chat_job_deliveries[id] = { status, notice, at: new Date().toISOString() };
++  conversation.atualizada = new Date().toISOString();
++  return true;
++}
++
++const NativePushSidecar = (() => {
++/** Native-only notifications. No fetch, storage, provider credentials or job execution.
++ * Dependencies must be bound to ONE authenticated backend binding; see CONTRACT.md.
++ */
++const ID = /^[A-Za-z0-9_-]{1,128}$/;
++const CHANNEL_ID = 'iald_responses_v1';
++const EVENT = 'iald.response_ready';
++
++function parseNotification(data, bindingId) {
++  if (!data || typeof data !== 'object' || Array.isArray(data) ||
++      data.schema_version !== '1' || data.event !== EVENT ||
++      data.binding_id !== bindingId || !ID.test(data.event_id ?? '') ||
++      !ID.test(data.job_id ?? '') || typeof data.event_id !== 'string' ||
++      typeof data.job_id !== 'string') return null;
++  // Deliberately discard URLs, titles, text, owner IDs and every other field.
++  return { eventId: data.event_id, jobId: data.job_id };
++}
++
++function nativePlugins(capacitor = globalThis.Capacitor) {
++  if (!capacitor?.isNativePlatform?.() ||
++      !['ios', 'android'].includes(capacitor.getPlatform()) ||
++      !capacitor.isPluginAvailable('PushNotifications') ||
++      !capacitor.isPluginAvailable('App')) throw new Error('native_push_unavailable');
++  return {
++    platform: capacitor.getPlatform(),
++    push: capacitor.registerPlugin('PushNotifications'),
++    app: capacitor.registerPlugin('App'),
++    readiness: capacitor.isPluginAvailable('IaldPushReadiness')
++      ? capacitor.registerPlugin('IaldPushReadiness') : undefined,
++  };
++}
++
++function createNativeNotifications({ push, app, platform, bindingId,
++  api, openJob, onStatus = () => {}, timeoutMs = 15000 }) {
++  if (!['ios', 'android'].includes(platform) || typeof bindingId !== 'string' ||
++      !ID.test(bindingId) || !Number.isInteger(timeoutMs) || timeoutMs < 1 ||
++      timeoutMs > 60000 || !push?.addListener || !app?.addListener ||
++      !['saveToken', 'revoke', 'getJob', 'reconcile'].every(k => typeof api?.[k] === 'function') ||
++      typeof openJob !== 'function') throw new Error('invalid_notification_configuration');
++
++  let active = false, started = false, state = 'idle', stopPromise;
++  let operation = Promise.resolve(), writes = Promise.resolve();
++  let lastSavedToken = null;
++  const abort = new AbortController(), handles = [], seen = new Set(), opening = new Set();
++  const tasks = new Set();
++  const status = next => {
++    state = next;
++    try { onStatus({ state: next }); } catch { /* UI cannot leak or break cleanup. */ }
++    return { state: next };
++  };
++  const bounded = work => new Promise((resolve, reject) => {
++    const timer = setTimeout(() => reject(new Error('notification_timeout')), timeoutMs);
++    Promise.resolve().then(work).then(resolve, reject).finally(() => clearTimeout(timer));
++  });
++  const guarded = (fn, failure) => {
++    const task = Promise.resolve().then(fn).catch(() => {
++      if (active) status(failure);
++    });
++    tasks.add(task);
++    task.finally(() => tasks.delete(task));
++    return task;
++  };
++  const serial = fn => {
++    operation = operation.then(fn, fn).catch(() => active ? status('operation_failed') : { state });
++    return operation;
++  };
++  const options = () => ({ bindingId, signal: abort.signal });
++
++  function saveToken(value) {
++    const valid = typeof value === 'string' && (platform === 'ios'
++      ? /^[A-Fa-f0-9]{32,512}$/.test(value) && value.length % 2 === 0
++      : /^[A-Za-z0-9_:.-]{16,4096}$/.test(value));
++    if (!active) return;
++    if (!valid) { status('invalid_token'); return; }
++    writes = writes.then(async () => {
++      if (!active || value === lastSavedToken) return;
++      await bounded(() => api.saveToken({ ...options(), token: value,
++        provider: platform === 'ios' ? 'apns' : 'fcm' }));
++      if (active) { lastSavedToken = value; status('registered'); }
++    }).catch(() => { if (active) status('token_sync_failed'); });
++  }
++
++  async function openNotification(action) {
++    if (!active || action?.actionId !== 'tap') return;
++    const event = parseNotification(action.notification?.data, bindingId);
++    if (!event || seen.has(event.eventId) || opening.has(event.eventId)) return;
++    if (opening.size >= 16) { status('notification_busy'); return; }
++    opening.add(event.eventId);
++    try {
++      const job = await bounded(() => api.getJob({ ...options(), jobId: event.jobId }));
++      // The authenticated endpoint enforces ownership. Payload never authorizes access.
++      if (!active) return;
++      if (!job || job.id !== event.jobId || job.state !== 'completed' ||
++          typeof job.conversationId !== 'string' || !/^[A-Za-z0-9_-]{1,64}$/.test(job.conversationId)) {
++        status('response_unavailable'); return;
++      }
++      await bounded(() => openJob({ jobId: event.jobId, conversationId: job.conversationId,
++        signal: abort.signal }));
++      if (!active) return;
++      seen.add(event.eventId);
++      if (seen.size > 128) seen.delete(seen.values().next().value);
++      status('response_opened');
++    } finally { opening.delete(event.eventId); }
++  }
++
++  async function add(plugin, name, callback) {
++    // If teardown races a delayed listener creation, remove that late handle too.
++    const pending = Promise.resolve().then(() => plugin.addListener(name, callback));
++    pending.then(handle => {
++      if (active) handles.push(handle);
++      else Promise.resolve().then(() => handle.remove()).catch(() => {});
++    }, () => {});
++    await bounded(() => pending);
++  }
++
++  async function register(prompt) {
++    if (!active) return { state };
++    let permission = await bounded(() => push.checkPermissions());
++    if (!active) return { state };
++    if (prompt && ['prompt', 'prompt-with-rationale'].includes(permission?.receive)) {
++      permission = await bounded(() => push.requestPermissions());
++    }
++    if (!active) return { state };
++    if (permission?.receive !== 'granted') return status(
++      permission?.receive === 'denied' ? 'permission_denied' : 'permission_required');
++    status('awaiting_token');
++    await bounded(() => push.register());
++    return { state };
++  }
++
++  async function resume() {
++    if (!active) return;
++    // Always reconcile durable jobs, including when push is denied or lost.
++    await bounded(() => api.reconcile(options()));
++    if (active) await register(false);
++  }
++
++  async function cleanup() {
++    const results = await Promise.allSettled(handles.splice(0).map(h => bounded(() => h.remove())));
++    return results.every(r => r.status === 'fulfilled');
++  }
++
++  return {
++    start() {
++      if (started || stopPromise) return operation.then(() => ({ state }));
++      started = true; active = true;
++      return serial(async () => {
++        try {
++          // Capacitor retains a cold-start tap until this listener is attached.
++          await add(push, 'pushNotificationActionPerformed', action =>
++            guarded(() => openNotification(action), 'response_open_failed'));
++          if (!active) return { state };
++          await add(push, 'registration', token => saveToken(token?.value));
++          await add(push, 'registrationError', () => { if (active) status('registration_failed'); });
++          await add(push, 'pushNotificationReceived', notification => {
++            if (active && parseNotification(notification?.data, bindingId))
++              guarded(() => bounded(() => api.reconcile(options())), 'reconcile_failed');
++          });
++          await add(app, 'appStateChange', change => {
++            if (active && change?.isActive === true)
++              guarded(() => serial(resume), 'resume_failed');
++          });
++          if (active) await resume();
++          return { state };
++        } catch {
++          if (active) status('startup_failed');
++          return { state };
++        }
++      });
++    },
++    enable() {
++      // Call ONLY from the authenticated user's explicit enable-notifications gesture.
++      return serial(async () => {
++        if (!active || !started) return { state };
++        try { return await register(true); }
++        catch { return active ? status('registration_failed') : { state }; }
++      });
++    },
++    stop() {
++      if (stopPromise) return stopPromise;
++      active = false; abort.abort(); lastSavedToken = null;
++      // Revoke immediately; a backend tombstone rejects already-in-flight token writes.
++      const revocation = bounded(() => api.revoke({ bindingId })).then(() => true, () => false);
++      stopPromise = serial(async () => {
++        const removed = await cleanup();
++        let unregistered = true;
++        try { await bounded(() => push.unregister()); } catch { unregistered = false; }
++        try { await bounded(() => push.removeAllDeliveredNotifications()); }
++        catch { unregistered = false; }
++        seen.clear(); opening.clear();
++        const revoked = await revocation;
++        return status(!revoked ? 'revocation_pending' :
++          !removed || !unregistered ? 'native_cleanup_failed' : 'stopped');
++      });
++      return stopPromise;
++    },
++    getState() { return { state }; },
++    async settled() { // Bounded local queues, useful for host coordination and fake tests.
++      await operation; await writes; await Promise.allSettled([...tasks]);
++      return { state };
++    },
++  };
++}
++
++
++const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
++
++/** Call from the authenticated host after a user gesture (or restored explicit opt-in).
++ * requestJSON is the existing app's HTTPS/auth/CSRF adapter; it must reject non-2xx,
++ * support AbortSignal, and have its own timeout. Do not create another auth mechanism.
++ * installationId is a random, persistent local UUID, never a user name or credential.
++ */
++async function connectNotifications({ requestJSON, installationId, consent,
++  openJob, onJobs, onStatus, plugins, nativeReady = false, prompt = false }) {
++  if (consent !== true || !UUID.test(installationId ?? '') ||
++      typeof requestJSON !== 'function' || typeof onJobs !== 'function')
++    throw new Error('notification_opt_in_required');
++  const disabled = () => ({ state: 'configuration_disabled' });
++  const inactive = { getState: disabled, start: async () => disabled(), enable: async () => disabled(),
++    stop: async () => disabled(), settled: async () => disabled() };
++  // Rollout flag is false by default. Do not even load/register a native plugin until ready.
++  if (nativeReady !== true) return inactive;
++  plugins ??= nativePlugins();
++  if (plugins.platform === 'android') {
++    let readiness;
++    try { readiness = await plugins.readiness?.getStatus(); }
++    catch { return inactive; }
++    if (readiness?.ready !== true) return inactive;
++  }
++  let binding;
++  try {
++    binding = await requestJSON('/api/native-push/bindings', { method: 'POST',
++      body: { installation_id: installationId, platform: plugins.platform, consent: true } });
++  } catch { throw new Error('notification_binding_failed'); }
++  if (!binding || !UUID.test(binding.id ?? '') || binding.revoked !== false ||
++      binding.platform !== plugins.platform) throw new Error('invalid_notification_binding');
++  const path = '/api/native-push/bindings/' + binding.id;
++  const api = {
++    saveToken: ({ token, provider, signal }) => requestJSON(path + '/token', {
++      method: 'PUT', body: { token, provider }, signal }),
++    revoke: () => requestJSON(path, { method: 'DELETE', body: {} }),
++    getJob: async ({ jobId, signal }) => {
++      const job = await requestJSON('/api/chat-jobs/' + encodeURIComponent(jobId), { method: 'GET', signal });
++      return { id: job?.id, state: job?.status, conversationId: job?.conversation_id };
++    },
++    reconcile: async ({ signal }) => {
++      const result = await requestJSON('/api/chat-jobs', { method: 'GET', signal });
++      if (signal.aborted) return;
++      if (!Array.isArray(result?.jobs)) throw new Error('invalid_jobs_response');
++      await onJobs(result.jobs, { signal });
++    },
++  };
++  const controller = createNativeNotifications({ ...plugins, bindingId: binding.id,
++    api, openJob, onStatus });
++  const initial = await controller.start();
++  if (initial.state === 'startup_failed') {
++    await controller.stop();
++    throw new Error('notification_startup_failed');
++  }
++  if (prompt) await controller.enable();
++  return controller;
++}
++// Dependency-injected settings lifecycle; tokens stay in memory only.
++function createNotificationSettings({ connect, storage, identity, platform,
++  requestFor, openJob, onJobs, onChange, randomUUID }) {
++  let epoch = 0, controller = null, tail = Promise.resolve(), lastScope = '';
++  let revokedScope = '';
++  let view = { configured: false, wanted: false, busy: false, state: 'signed_out' };
++  const key = account => 'iald_native_push_opt_in_v1:' + account;
++  const publish = change => {
++    view = { ...view, ...change };
++    try { onChange({ ...view }); } catch { /* UI errors cannot expose request data. */ }
++    return { ...view };
++  };
++  const valid = value => value && /^[a-f0-9]{64}$/.test(value.account) &&
++    typeof value.token === 'string' && value.token.length > 0;
++  const current = (snapshot, version) => {
++    const now = identity();
++    return version === epoch && valid(now) && now.account === snapshot.account && now.token === snapshot.token;
++  };
++  const queue = fn => {
++    tail = tail.then(fn, fn).catch(() => publish({ busy: false, state: 'unavailable' }));
++    return tail;
++  };
++  const stop = async () => {
++    const previous = controller; controller = null;
++    return previous ? previous.stop() : { state: 'stopped' };
++  };
++  const revokeSession = async snapshot => {
++    if (!valid(snapshot)) return { state: 'stopped' };
++    const scope = snapshot.account + ':' + snapshot.token;
++    if (scope === revokedScope) return { state: 'stopped' };
++    try {
++      const result = await requestFor(snapshot.token)('/api/native-push/revoke-session', { method: 'POST', body: {} });
++      if (result?.revoked !== true) throw new Error();
++      revokedScope = scope;
++      return { state: 'stopped' };
++    } catch { return { state: 'revocation_pending' }; }
++  };
++  function installation() {
++    const idKey = 'iald_native_push_installation_v1';
++    let value = storage.getItem(idKey);
++    if (value == null) { value = randomUUID(); storage.setItem(idKey, value); }
++    if (!/^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$/.test(value) || storage.getItem(idKey) !== value)
++      throw new Error('notification_storage_failed');
++    return value;
++  }
++  async function run(force, prompt) {
++    const snapshot = identity(), version = epoch;
++    if (!valid(snapshot)) { await stop(); lastScope = ''; return publish({ configured: false, wanted: false, busy: false, state: 'signed_out' }); }
++    const scope = snapshot.account + ':' + snapshot.token; // Never persisted or returned.
++    if (!force && scope === lastScope) return { ...view };
++    if (lastScope && scope !== lastScope) await stop();
++    if (!current(snapshot, version)) return { ...view };
++    lastScope = scope;
++    const wanted = storage.getItem(key(snapshot.account)) === '1';
++    publish({ busy: true, wanted });
++    const requestJSON = requestFor(snapshot.token);
++    const readiness = await requestJSON('/api/native-push/status', { method: 'GET' });
++    if (!current(snapshot, version)) return { ...view };
++    const configured = readiness?.[platform()] === true;
++    if (!configured || !wanted) {
++      const result = await stop();
++      if (!current(snapshot, version)) return { ...view };
++      return publish({ configured, wanted, busy: false, state: result.state === 'revocation_pending'
++        ? result.state : configured ? 'off' : 'configuration_disabled' });
++    }
++    publish({ configured: true, busy: true });
++    if (!controller) {
++      revokedScope = '';
++      const next = await connect({ requestJSON, installationId: installation(), consent: true,
++        nativeReady: true, prompt,
++        openJob: async data => { if (current(snapshot, version) && !data.signal?.aborted) await openJob(data, snapshot.account); },
++        onJobs: async (jobs, options) => { if (current(snapshot, version) && !options.signal?.aborted) await onJobs(jobs); },
++        onStatus: result => { if (current(snapshot, version)) publish({ state: result.state }); },
++      });
++      if (!current(snapshot, version)) { await next.stop(); return { ...view }; }
++      controller = next;
++    } else if (prompt) await controller.enable();
++    const result = controller.getState();
++    if (result.state === 'configuration_disabled') { controller = null; return publish({ configured: false, busy: false, state: result.state }); }
++    return publish({ busy: false, state: result.state });
++  }
++  return {
++    refresh(force = false) { return queue(() => run(force, false)); },
++    toggle(enabled) {
++      const snapshot = identity();
++      if (!valid(snapshot) || typeof enabled !== 'boolean') return Promise.resolve({ ...view });
++      // Preference is per authenticated opaque account. New accounts are always opted out.
++      try {
++        storage.setItem(key(snapshot.account), enabled ? '1' : '0');
++        if (storage.getItem(key(snapshot.account)) !== (enabled ? '1' : '0')) throw new Error();
++      } catch { return Promise.resolve(publish({ state: 'storage_unavailable', busy: false })); }
++      if (!enabled) {
++        epoch++; // Invalidate in-flight taps immediately, before queued teardown.
++        const closing = stop();
++        publish({ wanted: false, busy: true });
++        return queue(async () => {
++          await closing;
++          const result = await revokeSession(snapshot);
++          return publish({ wanted: false, busy: false, state: result.state === 'stopped' ? 'off' : result.state });
++        });
++      }
++      return queue(() => run(true, enabled));
++    },
++    disconnect() {
++      const snapshot = identity();
++      epoch++; lastScope = '';
++      publish({ configured: false, wanted: false, busy: false, state: 'signed_out' });
++      // Keep the captured request adapter so DELETE uses the old bearer during logout.
++      const closing = stop();
++      return queue(async () => { await closing; return revokeSession(snapshot); });
++    },
++    getState() { return { ...view }; },
++    settled() { return tail; },
++  };
++}
++
++return { connectNotifications, createNotificationSettings };
++})();
++
++
+ const VERSAO = 'IALD 4.1 · beta';
+ 
+ // β NUNCA literal (régua da casa): calculado em runtime a partir da constante de
+@@ -203,10 +904,12 @@
+ }
+ 
+ export function guardarTokenApp(t) {
++  if (tokenApp() !== (t || '')) desanexarRespostasBackground(true);
+   guardar(K.token, t || '');
+ }
+ 
+ export function limparTokenApp() {
++  desanexarRespostasBackground(true);
+   sheetAfterRegistration = '';
+   registrationIdentity?.reset();
+   try { localStorage.removeItem(K.token); } catch (e) { /* modo privado */ }
+@@ -229,6 +932,309 @@
+   }
+   return response;
+ }
++
++// Embedded into iald.js by build_client.py; this is not an extra served asset.
++let backgroundOwner = '', backgroundEpoch = 0, backgroundRecovery = false;
++let backgroundRecoveryAgain = false;
++let backgroundTimer = null, backgroundNotice = '', activeBackgroundJob = null;
++let backgroundNativeListening = false, backgroundNativeActive = null;
++const backgroundHistoryKey = (owner) => 'iald_conversas_owner_v1:' + encodeURIComponent(owner);
++const backgroundJobs = createDurableChatJobs({
++  request: fetchIALD, storage: localStorage,
++  onPending: avisarBackground,
++  onSubmitted: () => avisarBackground('A resposta continua no servidor. Você pode sair e voltar.'),
++  onScopeLost: () => {
++    desanexarRespostasBackground(true);
++    avisarBackground('A sessão mudou. Entre na conta correta para recuperar suas respostas.');
++  },
++});
++
++function avisarBackground(text) {
++  if (text && text !== backgroundNotice) { backgroundNotice = text; avisar(text); }
++}
++function persistirConversasBackground() {
++  if (!backgroundOwner) throw new PendingChatJobError('A conta precisa ser identificada antes de salvar.');
++  const key = backgroundHistoryKey(backgroundOwner);
++  const raw = JSON.stringify({ conversas: S.conversas, ativa: S.ativaId });
++  try {
++    localStorage.setItem(key, raw);
++    if (localStorage.getItem(key) !== raw) throw new Error();
++  } catch (_) { throw new PendingChatJobError('Não foi possível salvar a resposta neste aparelho. A entrega continua pendente.'); }
++}
++function desanexarRespostasBackground(sair = false) {
++  if (sair) disconnectNativeNotificationsUI();
++  backgroundEpoch += 1;
++  clearTimeout(backgroundTimer); backgroundTimer = null;
++  backgroundJobs.pause();
++  if (S.aborto) S.aborto.abort({ type: 'detach' });
++  S.backgroundTurn = null; S.aborto = null; S.gerando = false;
++  activeBackgroundJob = null;
++  if (sair) {
++    backgroundOwner = ''; backgroundJobs.setOwner('');
++    S.conversas = []; S.ativaId = null;
++    if ($('#conversa-interna')) { listarConversas(); abrirConversa(); }
++  }
++  if ($('#btn-enviar')) atualizarBotaoEnviar();
++}
++
++async function identificarContaBackground() {
++  if (DEMO || portaoNecessario()) throw new PendingChatJobError('Entre para recuperar suas respostas.');
++  const epoch = backgroundEpoch, token = tokenApp();
++  // Only the authenticated, opaque server identity can scope pending payloads.
++  const response = await fetchIALD('/api/chat-jobs/session', { cache: 'no-store', signal: AbortSignal.timeout(10000) });
++  if (response.status === 401) { desanexarRespostasBackground(true); throw detached(); }
++  const data = await response.json();
++  if (epoch !== backgroundEpoch || token !== tokenApp()) throw detached();
++  if (!response.ok || !/^[0-9a-f]{64}$/.test(data.account || '')) {
++    throw new PendingChatJobError('Não foi possível confirmar a conta. O pedido não será enviado até a identificação voltar.');
++  }
++  const account = data.account;
++  if (account !== backgroundOwner) {
++    if (backgroundOwner) desanexarRespostasBackground(true);
++    const raw = localStorage.getItem(backgroundHistoryKey(account));
++    let history;
++    if (raw != null) {
++      history = JSON.parse(raw);
++      if (!history || !Array.isArray(history.conversas)) throw new PendingChatJobError('Histórico desta conta ilegível.');
++    } else {
++      const legacyOwner = localStorage.getItem('iald_conversas_legacy_owner_v1');
++      const legacy = !legacyOwner || legacyOwner === account ? recuperar(K.conversas, []) : [];
++      history = { conversas: legacy, ativa: recuperar(K.ativa, '') };
++      if (!Array.isArray(legacy)) throw new PendingChatJobError('Histórico local ilegível.');
++      if (!legacyOwner) localStorage.setItem('iald_conversas_legacy_owner_v1', account);
++    }
++    backgroundOwner = account; backgroundJobs.setOwner(account);
++    S.conversas = history.conversas.filter((c) => c && (!c.background_owner || c.background_owner === account));
++    for (const c of S.conversas) c.background_owner = account;
++    S.ativaId = S.conversas.some((c) => c.id === history.ativa) ? history.ativa : S.conversas[0]?.id || null;
++    persistirConversasBackground();
++    if (!S.conversas.length) novaConversa({ semFoco: true });
++    else { listarConversas(); abrirConversa(); }
++  }
++  refreshNativeNotificationsUI();
++  return backgroundOwner;
++}
++
++function corpoPedidoBackground(mensagens, selagem) {
++  const modo = modoEfetivo();
++  return {
++    model: 'qwen3', messages: mensagens, max_tokens: modo === 'think' ? 8192 : 4096,
++    temperature: 0.7, stream: true, iald_mode: modo, iald_surface: SUPERFICIE,
++    iald_conv: String(selagem.conv), iald_selo_prev: selagem.prev || '',
++  };
++}
++function conversaDoJob(job) {
++  if (job.owner !== backgroundOwner) return null;
++  return S.conversas.find((c) => c.id === job.conversation_id && c.background_owner === backgroundOwner) || null;
++}
++async function salvarEntregaBackground(job, answer, notice, status) {
++  const c = conversaDoJob(job);
++  if (!c) throw new PendingChatJobError('A conversa de origem não está disponível nesta conta.');
++  await backgroundJobs.delivered(job, () => {
++    applyChatJobDelivery(c, job, { answer, notice, status });
++    persistirConversasBackground(); // Mandatory verified history write before ack.
++  });
++}
++
++function backgroundHidden() {
++  // The native lifecycle can resume before WebView visibility catches up.
++  return backgroundNativeActive === null ? document.hidden : !backgroundNativeActive;
++}
++function agendarRecuperacaoBackground() {
++  if (backgroundTimer || backgroundHidden() || !backgroundOwner || portaoNecessario()) return;
++  try { if (!backgroundJobs.pending().some((job) => conversaDoJob(job))) return; } catch (_) { return; }
++  backgroundTimer = setTimeout(() => { backgroundTimer = null; recuperarRespostasBackground(); }, 1000);
++}
++async function recuperarRespostasBackground() {
++  if (DEMO || backgroundHidden() || portaoNecessario() || S.gerando) return;
++  if (backgroundRecovery) { backgroundRecoveryAgain = true; return; }
++  backgroundRecovery = true;
++  const epoch = backgroundEpoch;
++  try {
++    await identificarContaBackground();
++    const records = await backgroundJobs.discover((id, owner) => S.conversas.some((c) => c.id === id && c.background_owner === owner));
++    for (const job of records.sort((a, b) => a.created - b.created)) {
++      if (backgroundHidden() || portaoNecessario() || S.gerando || job.owner !== backgroundOwner) break;
++      const c = conversaDoJob(job);
++      if (!c) continue;
++      if (job.phase === 'saved' || c.chat_job_deliveries?.[job.id || job.request_id]) {
++        await backgroundJobs.delivered(job, () => persistirConversasBackground());
++        continue;
++      }
++      await transmitir(null, job);
++      if (backgroundJobs.pending().some((r) => r.request_id === job.request_id)) break;
++    }
++  } catch (error) {
++    if (epoch === backgroundEpoch) avisarBackground(error.message || 'Recuperação pendente; nenhuma nova geração foi iniciada.');
++  } finally {
++    backgroundRecovery = false;
++    if (backgroundRecoveryAgain) { backgroundRecoveryAgain = false; recuperarRespostasBackground(); }
++    agendarRecuperacaoBackground();
++  }
++}
++function respostaPendenteBackground() {
++  if (DEMO) return false;
++  if (!backgroundOwner) { recuperarRespostasBackground(); return true; }
++  const pending = backgroundJobs.pending().some((job) => job.conversation_id === S.ativaId && job.phase !== 'saved');
++  if (pending) {
++    avisarBackground('Esta conversa tem uma resposta pendente. Retomando o mesmo pedido.');
++    recuperarRespostasBackground();
++  }
++  return pending;
++}
++
++async function apagarJobsDaConversa(id) {
++  if (DEMO) return true;
++  try {
++    const owner = await identificarContaBackground();
++    if (!S.conversas.some((c) => c.id === id && c.background_owner === owner)) throw new Error('Conversa indisponível nesta conta.');
++    await backgroundJobs.purgeConversation(id);
++    if (activeBackgroundJob?.conversation_id === id) desanexarRespostasBackground();
++    return true;
++  } catch (error) {
++    avisarBackground(error.message || 'Não foi possível apagar a resposta no servidor. Tente novamente com conexão.');
++    return false;
++  }
++}
++function ligarRetomadaNativaBackground() {
++  if (DEMO || SUPERFICIE !== 'app' || backgroundNativeListening) return;
++  const App = plugin('App');
++  if (!App || typeof App.addListener !== 'function') return;
++  backgroundNativeListening = true;
++  try {
++    Promise.resolve(App.addListener('appStateChange', (state) => {
++      if (typeof state?.isActive !== 'boolean') return;
++      backgroundNativeActive = state.isActive;
++      if (state.isActive) return recuperarRespostasBackground();
++      desanexarRespostasBackground(); // Observing stops; only the Stop button cancels.
++    })).catch(() => { backgroundNativeListening = false; backgroundNativeActive = null; });
++  } catch (_) { backgroundNativeListening = false; backgroundNativeActive = null; }
++}
++function ligarRespostasBackground() {
++  ligarRetomadaNativaBackground();
++  document.addEventListener('visibilitychange', () => {
++    if (backgroundHidden()) desanexarRespostasBackground();
++    else recuperarRespostasBackground();
++  });
++  window.addEventListener('online', recuperarRespostasBackground);
++  window.addEventListener('storage', (event) => {
++    if (event.key === K.token || event.key === K.usuario) {
++      desanexarRespostasBackground(true); recuperarRespostasBackground();
++    }
++  });
++  const help = $('#folha-config .folha-corpo');
++  if (help && !$('#ajuda-respostas-background')) {
++    const note = el('p', 'ajuda', 'Respostas continuam no servidor quando você sai. As respostas temporárias são criptografadas e ficam disponíveis para recuperação por até 7 dias, apenas pela sua conta. Parar cancela a geração; sair da conta não cancela. Apagar a conversa ou limpar seu histórico também remove os eventos temporários do servidor.');
++    note.id = 'ajuda-respostas-background'; help.appendChild(note);
++  }
++  recuperarRespostasBackground();
++}
++
++// Embedded in the staged iald.js. No additional static route or automatic permission prompt.
++let nativeNotificationSettings = null;
++let nativePushLogout = null;
++
++function boundNativePushRequest(bearer) {
++  return async (path, { method = 'GET', body, signal } = {}) => {
++    if (!/^\/api\/(native-push\/(status|revoke-session|bindings(?:\/[A-Za-z0-9_-]+(?:\/token)?)?)|chat-jobs(?:\/[A-Za-z0-9_-]+)?)$/.test(path))
++      throw new Error('notification_request_rejected');
++    const abort = new AbortController();
++    const cancel = () => abort.abort();
++    if (signal?.aborted) cancel();
++    signal?.addEventListener('abort', cancel, { once: true });
++    const timer = setTimeout(cancel, 15000);
++    try {
++      const revoking = method === 'DELETE' || path === '/api/native-push/revoke-session';
++      if (!revoking && tokenApp() !== bearer) throw new Error('notification_session_changed');
++      // Capture the authenticated native token for this binding. A new user's token must
++      // never replace it while an old binding is being revoked asynchronously.
++      const response = await fetch(BASE + path, {
++        method, credentials: 'omit', cache: 'no-store', redirect: 'error', signal: abort.signal,
++        headers: { 'Authorization': 'Bearer ' + bearer, 'X-IALD-Context': 'anthropic-native-v1',
++          'Accept': 'application/json', ...(body === undefined ? {} : { 'Content-Type': 'application/json' }) },
++        ...(body === undefined ? {} : { body: JSON.stringify(body) }),
++      });
++      if (!response.ok || (!revoking && tokenApp() !== bearer)) throw new Error('notification_request_failed');
++      return await response.json();
++    } catch { throw new Error('notification_request_failed'); }
++    finally { clearTimeout(timer); signal?.removeEventListener('abort', cancel); }
++  };
++}
++
++function refreshNativeNotificationsUI(force = false) {
++  if (nativeNotificationSettings) void nativeNotificationSettings.refresh(force);
++}
++
++function disconnectNativeNotificationsUI() {
++  return nativeNotificationSettings ? nativeNotificationSettings.disconnect() : Promise.resolve({ state: 'stopped' });
++}
++
++function prepareNativePushLogout() {
++  if (nativePushLogout) return nativePushLogout;
++  nativePushLogout = (async () => {
++    const result = await disconnectNativeNotificationsUI();
++    if (result?.state === 'revocation_pending') {
++      avisar('Não foi possível confirmar a saída dos avisos. Tente novamente com conexão.');
++      return false;
++    }
++    return true;
++  })().catch(() => false).finally(() => { nativePushLogout = null; });
++  return nativePushLogout;
++}
++
++function startNativeNotificationsUI() {
++  if (nativeNotificationSettings || DEMO || SUPERFICIE !== 'app' || !window.Capacitor?.isNativePlatform?.()) return;
++  const platform = () => window.Capacitor.getPlatform();
++  if (!['ios', 'android'].includes(platform())) return;
++  const parent = $('#folha-config .folha-corpo');
++  if (!parent) return;
++  const label = document.createElement('label'); label.className = 'campo';
++  const checkbox = document.createElement('input'); checkbox.type = 'checkbox';
++  checkbox.id = 'cfg-native-response-notifications'; checkbox.disabled = true;
++  checkbox.style.width = 'auto'; checkbox.style.marginRight = '8px';
++  const caption = document.createElement('span'); caption.textContent = 'Avisar quando a resposta estiver pronta';
++  const note = document.createElement('p'); note.id = 'native-response-notifications-status';
++  note.className = 'ajuda'; note.setAttribute('role', 'status'); note.setAttribute('aria-live', 'polite');
++  checkbox.setAttribute('aria-describedby', note.id);
++  label.appendChild(checkbox); label.appendChild(caption); parent.appendChild(label); parent.appendChild(note);
++  const messages = {
++    signed_out: 'Entre na sua conta para ativar os avisos.',
++    configuration_disabled: 'Os avisos ainda não estão disponíveis neste aparelho.',
++    off: 'Avisos desativados. Sua resposta continua disponível ao voltar.',
++    registered: 'Avisos ativados neste aparelho.',
++    awaiting_token: 'Ativando avisos neste aparelho…',
++    permission_required: 'Marque a opção para permitir avisos.',
++    permission_denied: 'Para receber avisos, permita notificações nos ajustes do aparelho.',
++    revocation_pending: 'Não foi possível confirmar a desativação. Tente novamente com conexão.',
++    response_opened: 'Resposta pronta.',
++    response_unavailable: 'Abra a conversa original para consultar sua resposta.',
++    storage_unavailable: 'Não foi possível salvar esta preferência neste aparelho.',
++  };
++  nativeNotificationSettings = NativePushSidecar.createNotificationSettings({
++    connect: NativePushSidecar.connectNotifications, storage: localStorage,
++    identity: () => ({ account: backgroundOwner, token: tokenApp() }), platform,
++    requestFor: boundNativePushRequest, randomUUID: () => crypto.randomUUID(),
++    onJobs: () => { void recuperarRespostasBackground(); },
++    openJob: async ({ conversationId, signal }, account) => {
++      if (signal?.aborted || account !== backgroundOwner) return;
++      const conversation = S.conversas.find(c => c.id === conversationId && c.background_owner === account);
++      if (!conversation) throw new Error('response_unavailable');
++      S.ativaId = conversation.id; salvarConversas(); abrirConversa(); fecharFolhas();
++      void recuperarRespostasBackground();
++    },
++    onChange: state => {
++      checkbox.checked = state.wanted;
++      checkbox.disabled = state.busy || !backgroundOwner || !tokenApp() || (!state.configured && !state.wanted);
++      note.textContent = state.busy ? 'Verificando avisos…' : messages[state.state] ||
++        'Não foi possível atualizar os avisos. A resposta continua disponível ao voltar.';
++    },
++  });
++  checkbox.addEventListener('change', () => { void nativeNotificationSettings.toggle(checkbox.checked); });
++  document.addEventListener('visibilitychange', () => { if (!document.hidden) refreshNativeNotificationsUI(true); });
++  window.addEventListener('online', () => refreshNativeNotificationsUI(true));
++  refreshNativeNotificationsUI();
++}
++
+ 
+ const svg = (d, w) => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="${w || 2}" stroke-linecap="round" stroke-linejoin="round"><path d="${d}"/></svg>`;
+ const ICONE = {
+@@ -866,6 +1872,7 @@
+ }
+ 
+ function salvarConversas() {
++  if (!DEMO && backgroundOwner) { persistirConversasBackground(); return; }
+   guardar(K.conversas, S.conversas);
+   guardar(K.ativa, S.ativaId || '');
+ }
+@@ -890,7 +1897,7 @@
+   const semFoco = !!(opcoes && opcoes.semFoco === true);
+   const id = 'c_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+   const agora = new Date().toISOString();
+-  S.conversas.unshift({ id, titulo: 'Nova conversa', mensagens: [], criada: agora, atualizada: agora });
++  S.conversas.unshift({ id, background_owner: backgroundOwner || undefined, titulo: 'Nova conversa', mensagens: [], criada: agora, atualizada: agora });
+   S.ativaId = id;
+   salvarConversas();
+   listarConversas();
+@@ -973,16 +1980,10 @@
+ let desfazerPendente = null;   // {conversa, antes, depois, indice, eraAtiva, criadaNoLugar, rolagem}
+ let relogioDesfazer = null;
+ 
+-function apagarConversa(id) {
++async function apagarConversa(id) {
++  if (!await apagarJobsDaConversa(id)) return;
+   const indice = S.conversas.findIndex((c) => c.id === id);
+   if (indice < 0) return;
+-  // a resposta em curso é gravada na conversa ATIVA no fim do stream: apagá-la agora mandaria a
+-  // resposta para outra conversa (a mesma trava do trocarConversa)
+-  if (S.gerando && S.ativaId === id) {
+-    desfazerPendente = null;                             // a faixa de um apagar anterior dá lugar a este aviso
+-    mostrarFaixaFlutuante('Aguarde a resposta terminar para apagar esta conversa.');
+-    return;
+-  }
+   const conversa = S.conversas[indice];
+   const lista = $('#conv-lista');
+   const registro = {
+@@ -1088,6 +2089,11 @@
+   atualizarTitulo();
+   if (!c || !c.mensagens.length) { boasVindas(); atualizarDica(); return; }
+   for (const m of c.mensagens) desenharMensagem(m.role === 'assistant' ? 'ai' : 'user', m.content, false, m.modelo);
++  for (const delivery of Object.values(c.chat_job_deliveries || {})) {
++    if (!delivery.notice) continue;
++    const body = desenharMensagem('ai', '', true);
++    pintarAviso(body.parentElement, body.querySelector('.conteudo'), delivery.notice, '');
++  }
+   atualizarDica();
+   requestAnimationFrame(() => { $('#conversa').scrollTop = $('#conversa').scrollHeight; });
+ }
+@@ -1213,8 +2219,8 @@
+   if (dado) rotulo.title = dado.id;
+ }
+ 
+-function desenharMensagem(papel, conteudo, vazia, modelo) {
+-  const area = $('#conversa-interna');
++function desenharMensagem(papel, conteudo, vazia, modelo, destino = null) {
++  const area = destino || $('#conversa-interna');
+   const bv = area.querySelector('.boas-vindas');
+   if (bv) bv.remove();
+ 
+@@ -1315,11 +2321,12 @@
+ // (ver transmitir), então também não entra na conta: sem isto, depois de um aviso, o
+ // Refazer e o Editar das mensagens seguintes apontavam para a mensagem errada.
+ function indiceDaLinha(linha) {
+-  const linhas = Array.from($('#conversa-interna').querySelectorAll('.msg:not([data-aviso])'));
++  const linhas = Array.from($('#conversa-interna').querySelectorAll('.msg:not([data-aviso]):not([data-background-pending])'));
+   return linhas.indexOf(linha);
+ }
+ 
+ function editarMensagem(linha) {
++  if (respostaPendenteBackground()) return;
+   if (S.gerando) return;
+   const c = conversaAtiva(); if (!c) return;
+   const idx = indiceDaLinha(linha);
+@@ -1361,6 +2368,7 @@
+ }
+ 
+ function refazer(linha) {
++  if (respostaPendenteBackground()) return;
+   if (S.gerando) return;
+   // Bolha de aviso (limite, ocupado...): não há resposta a descartar; tentar de novo é
+   // reenviar a última pergunta, que continua no histórico.
+@@ -2274,6 +3282,8 @@
+ // ENVIO E STREAMING
+ // ══════════════════════════════════════════════════════════════
+ function enviar() {
++  if (respostaPendenteBackground()) return;
++  if (!DEMO && !backgroundOwner) { recuperarRespostasBackground(); avisarBackground('Aguarde a identificação da conta antes de enviar.'); return; }
+   const texto = $('#entrada').value.trim();
+   if (!texto || S.gerando) return;
+   if (S.anexos.some((a) => a.pendente)) { avisar('Aguarde a extração dos PDFs terminar.'); return; }
+@@ -2290,6 +3300,8 @@
+ }
+ 
+ function enviarTexto(texto, anexos) {
++  if (respostaPendenteBackground()) return;
++  if (!DEMO && !backgroundOwner) { recuperarRespostasBackground(); return; }
+   const c = conversaAtiva();
+   if (!c) return;
+ 
+@@ -2346,6 +3358,7 @@
+ 
+ // Refaz a última pergunta sem duplicá-la no histórico (usado depois do consentimento).
+ function reenviarUltima() {
++  if (respostaPendenteBackground()) return;
+   const c = conversaAtiva();
+   if (!c || S.gerando) return;
+   const ultima = c.mensagens[c.mensagens.length - 1];
+@@ -2366,20 +3379,28 @@
+   return '';
+ }
+ 
+-async function transmitir(mensagens) {
++async function transmitir(mensagens, retomada = null) {
++  if (S.gerando) return;
+   // 22/09/2026 — Selo IALD. A resposta pertence à conversa de ONDE saiu o pedido (a "origem"):
+   // o selo liga esta resposta à anterior selada DESTA conversa, e é nela que a resposta é gravada
+   // no fim — mesmo que a pessoa tenha aberto outra conversa ("Nova conversa") no meio do stream.
+   // `bruto` junta cada delta.content como veio (com <think>, sem aplicarPtbr): é o texto que o
+   // selo cobre. `selo` = o chunk iald_selo, que o servidor só manda num stream terminado normal.
+-  const origem = conversaAtiva();
++  const origem = retomada ? conversaDoJob(retomada) : conversaAtiva();
++  if (!origem) return;
++  const epoch = backgroundEpoch;
++  const turn = {}; S.backgroundTurn = turn;
++  const currentTurn = () => S.backgroundTurn === turn && epoch === backgroundEpoch;
++  let job = retomada, doneReceived = false, failure = null;
+   const selagem = origem ? { conv: origem.id, prev: ultimoSelo(origem) } : null;
+   let bruto = '', selo = null;
+   S.gerando = true;
+   atualizarBotaoEnviar();
+-  S.aborto = new AbortController();
+-
+-  const corpo = desenharMensagem('ai', '', true);
++  const controller = new AbortController();
++  S.aborto = controller;
++  if (retomada) document.querySelectorAll('[data-background-job="' + retomada.request_id + '"]').forEach((n) => n.remove());
++  const corpo = desenharMensagem('ai', '', true, null, origem.id === S.ativaId ? null : document.createElement('div'));
++  corpo.parentElement.dataset.backgroundPending = '1';
+   const trilha = corpo.querySelector('.trilha');
+   const conteudo = corpo.querySelector('.conteudo');
+ 
+@@ -2405,7 +3426,7 @@
+   let paintTimer = null, streamFinished = false;
+   let answerNode = null;
+   const pintarAgora = () => {
+-    if (retirada) return;
++    if (retirada || !currentTurn()) return;
+     if (pensamento) {
+       if (!detalhesPensamento) {
+         detalhesPensamento = el('details', 'pensamento');
+@@ -2445,16 +3466,30 @@
+   };
+ 
+   try {
+-    const linhas = DEMO
+-      ? fluxoDemo()
+-      : fluxoHttp(mensagens, S.aborto.signal, selagem);
++    if (!DEMO) {
++      if (!backgroundOwner || origem.background_owner !== backgroundOwner) throw detached();
++      persistirConversasBackground();
++      job ||= await backgroundJobs.begin(corpoPedidoBackground(mensagens, selagem));
++      if (!currentTurn()) throw detached();
++      activeBackgroundJob = job;
++      corpo.parentElement.dataset.backgroundJob = job.request_id;
++      const cancelExplicitly = () => {
++        if (controller.signal.reason?.type === 'user_cancel') {
++          backgroundJobs.cancel(job).catch((error) => backgroundJobs.report(error)).finally(agendarRecuperacaoBackground);
++        }
++      };
++      controller.signal.addEventListener('abort', cancelExplicitly, { once: true });
++      if (controller.signal.aborted) { cancelExplicitly(); throw detached(); }
++    }
++    const linhas = DEMO ? fluxoDemo() : fluxoHttp(mensagens, controller.signal, selagem, job);
+ 
+     for await (const linha of linhas) {
+       if (!linha.startsWith('data: ')) continue;       // ":" = keepalive, ignora
+       // 22/09/2026: esta const se chamava `bruto`; com o `bruto` do selo (acima, no escopo da
+       // função) ela o sombrearia e o `bruto += pedaco` lá embaixo cairia nela (const: TypeError).
+       const carga = linha.slice(6).trim();
+-      if (carga === '[DONE]') break;
++      if (!currentTurn()) throw detached();
++      if (carga === '[DONE]') { doneReceived = true; break; }
+ 
+       let ck;
+       try { ck = JSON.parse(carga); } catch (e) { continue; }
+@@ -2500,68 +3535,78 @@
+       if (separated.thinking) pensamento = separated.thinking;
+       pintar();
+     }
+-  } catch (e) {
+-    tirarDigitando();
+-    if (e.name !== 'AbortError') {
+-      const motivo = (S.servidor.estado === 'sem-modelo')
+-        ? 'O servidor respondeu, mas o modelo está fora do ar.'
+-        : 'Não foi possível falar com o servidor.';
+-      avisar(motivo + (e.message ? ` (${e.message})` : ''), 'erro');
++  } catch (error) {
++    failure = error;
++    if (currentTurn() && !error.detached) {
++      avisarBackground(error.message || 'Resposta pendente. Retomaremos o mesmo pedido quando a conexão voltar.');
+     }
+   } finally {
+     if (paintTimer !== null) clearTimeout(paintTimer);
+-    streamFinished = true;
+-    texto = splitThinking(bruto, true).text;
+-    pintarAgora();
++    if (!currentTurn()) { corpo.parentElement.remove(); return; }
++    streamFinished = doneReceived;
+     tirarDigitando();
+     congelarTrilha(trilha);
+-    if (!texto && !pensamento && !aviso) conteudo.appendChild(el('em', null, '(sem resposta)'));
+-
+-    const limpo = aplicarPtbr(texto);
+-    if (aviso) {
+-      const linha = corpo.parentElement;
+-      // um aviso posterior sem a marca não devolve o texto já retirado
+-      pintarAviso(linha, conteudo, retirada ? Object.assign({}, aviso, { retirar_resposta: true }) : aviso, texto);
+-      if (aviso.tipo === 'consentimento_ia') {
+-        S.avisoConsentimento = linha;
+-        const f = folhaDoAviso(aviso);                   // texto, provedor e versão do mesmo lugar
+-        abrirConsentimento(f.texto, f.provedor, f.versao);
+-      } else if (aviso.tipo === 'limite') {
+-        // a folha abre já com a cota que veio no aviso; /api/motor é relido lá dentro
+-        abrirCreditos(aviso);
++    const complete = doneReceived && !failure;
++    texto = complete ? splitThinking(bruto, true).text : '';
++    const limpo = complete ? aplicarPtbr(texto) : '';
++    let answer = null, deliveryNotice = null;
++    if (complete) {
++      delete corpo.parentElement.dataset.backgroundPending;
++      pintarAgora();
++      if (aviso) {
++        const linha = corpo.parentElement;
++        deliveryNotice = retirada ? Object.assign({}, aviso, { retirar_resposta: true }) : aviso;
++        pintarAviso(linha, conteudo, deliveryNotice, texto);
++        if (origem.id === S.ativaId && aviso.tipo === 'consentimento_ia') {
++          S.avisoConsentimento = linha;
++          const f = folhaDoAviso(aviso);
++          abrirConsentimento(f.texto, f.provedor, f.versao);
++        } else if (origem.id === S.ativaId && aviso.tipo === 'limite') abrirCreditos(aviso);
++      } else if (limpo) {
++        answer = { role: 'assistant', content: limpo };
++        if (modeloRespondente) answer.modelo = modeloRespondente;
++        if (selo && /^[0-9a-f]{64}$/.test(selo.link)) {
++          answer.selo = selo;
++          if (bruto !== limpo) answer.bruto = bruto;
++        }
++        corpo.parentElement._bruto = limpo;
++      } else {
++        deliveryNotice = { tipo: 'falha_motor', texto: 'A resposta terminou sem conteúdo.' };
++        pintarAviso(corpo.parentElement, conteudo, deliveryNotice, '');
+       }
+-    } else if (limpo) {
+-      // 22/09/2026: na conversa de ORIGEM (a do pedido), não na que estiver ativa agora. Antes, a
+-      // "Nova conversa" tocada no meio do stream recebia a resposta da outra. Origem apagada no meio
+-      // do caminho: a resposta não é gravada em lugar nenhum (e o selo dela vai junto).
+-      const c = origem ? S.conversas.find((x) => x.id === origem.id) : conversaAtiva();
+-      if (c) {
+-        const resposta = { role: 'assistant', content: limpo };
+-        if (modeloRespondente) resposta.modelo = modeloRespondente;
+-        // Selo IALD: `content` segue sendo o texto da tela; o selo cobre o `bruto`, que só é
+-        // guardado quando difere dele (marcas <think>, aplicarPtbr) — economia de localStorage.
+-        if (selo && /^[0-9a-f]{64}$/.test(selo.link)) {
+-          resposta.selo = selo;
+-          if (bruto !== limpo) resposta.bruto = bruto;
+-        }
+-        c.mensagens.push(resposta);
+-        c.atualizada = new Date().toISOString();
+-        salvarConversas();
+-        listarConversas();
++    } else {
++      // Interrupted network delivery is never a normal answer, sealed or otherwise.
++      bruto = ''; selo = null; pensamento = ''; texto = '';
++      corpo.parentElement._bruto = '';
++      deliveryNotice = failure?.terminal ? {
++        tipo: failure.status === 'cancelled' ? 'resposta_interrompida' : 'falha_motor',
++        texto: failure.message, retirar_resposta: true,
++      } : null;
++      pintarAviso(corpo.parentElement, conteudo, deliveryNotice || failure?.aviso || {
++        tipo: 'em_andamento', retirar_resposta: true,
++        texto: controller.signal.reason?.type === 'user_cancel'
++          ? 'Pedido de parada registrado. A confirmação será recuperada do servidor.'
++          : 'Resposta pendente. Você pode sair e voltar; o pedido não será enviado com outro identificador.',
++      }, '');
++    }
++    try {
++      if (DEMO && answer) {
++        origem.mensagens.push(answer); salvarConversas();
++      } else if (job && (complete || failure?.terminal)) {
++        await salvarEntregaBackground(job, answer, deliveryNotice, complete ? 'completed' : failure.status);
+       }
+-      corpo.parentElement._bruto = limpo;
++      if (currentTurn()) listarConversas();
++    } catch (error) {
++      if (currentTurn()) avisarBackground(error.message || 'Resposta aguardando confirmação de gravação.');
+     }
+-
+-    S.gerando = false; S.aborto = null;
+-    atualizarBotaoEnviar();
+-    atualizarDica();
+-    // com uma folha aberta pelo aviso (limite, consentimento), o foco fica nela: focar o
+-    // campo por trás abriria o teclado do celular por cima da folha
+-    if (!document.querySelector('[data-folha][data-aberta="1"]')) $('#entrada').focus();
+-
+-    // O servidor grava o uso DEPOIS do último pedaço do stream (ContaDoPedido.fechar no
+-    // finally do gerador). Reler /api/motor na hora mostraria a cota de antes da resposta.
+-    if (!DEMO && !(aviso && aviso.tipo === 'limite')) setTimeout(() => { carregarMotor(); }, 1500);
++    if (currentTurn()) {
++      S.gerando = false; S.aborto = null; S.backgroundTurn = null;
++      activeBackgroundJob = null;
++      atualizarBotaoEnviar(); atualizarDica();
++      if (!document.hidden && !document.querySelector('[data-folha][data-aberta="1"]')) $('#entrada').focus();
++      if (!DEMO && !(aviso && aviso.tipo === 'limite')) setTimeout(() => { carregarMotor(); }, 1500);
++      agendarRecuperacaoBackground();
++    }
+   }
+ }
+ 
+@@ -2590,6 +3635,7 @@
+   // servidor recusa sem chamar o modelo; o aviso não entra no histórico (como todo aviso).
+   recurso_indisponivel: ['Recurso indisponível', ICONE.alerta, ''],
+   falha_motor: ['Falha na resposta', ICONE.alerta, 'erro'],
++  resposta_interrompida: ['Resposta interrompida', ICONE.alerta, ''],
+ };
+ 
+ function pintarAviso(linha, conteudo, aviso, texto) {
+@@ -2694,67 +3740,9 @@
+ 
+ // gerador assincrono de linhas do SSE
+ // 22/09/2026: `selagem` = {conv, prev} da conversa de origem (ver transmitir), para o Selo IALD.
+-async function* fluxoHttp(mensagens, signal, selagem) {
+-  const modo = modoEfetivo();
+-  const selar = !!(selagem && /^[A-Za-z0-9_-]{1,64}$/.test(String(selagem.conv || '')));
+-  const r = await fetchIALD('/v1/chat/completions', {
+-    method: 'POST',
+-    headers: { 'Content-Type': 'application/json' },
+-    signal,
+-    body: JSON.stringify({
+-      model: 'qwen3',
+-      messages: mensagens,
+-      max_tokens: modo === 'think' ? 8192 : 4096,
+-      temperature: 0.7,
+-      stream: true,
+-      iald_mode: modo,
+-      iald_surface: SUPERFICIE,
+-      // Selo IALD (22/09/2026): o id da conversa e o elo do último selo dela; o servidor tira os dois
+-      // antes do modelo. Id fora do formato não vai — a resposta sai sem selo, nada mais muda.
+-      ...(selar ? { iald_conv: String(selagem.conv), iald_selo_prev: selagem.prev || '' } : {}),
+-    }),
+-  });
+-
+-  // Conta bloqueada pelo operador (14/09/2026, noite): o servidor responde 403 com
+-  // {bloqueado:true, error}. Não é sessão vencida — a pessoa tem de LER o motivo. Vira a
+-  // mesma bolha de aviso que os avisos do stream, fora do histórico. O token do app não
+-  // é apagado: se o operador desbloquear, ele volta a valer.
+-  if (r.status === 403) {
+-    const j = await r.clone().json().catch(() => ({}));
+-    if (j && j.bloqueado) {
+-      const texto = String(j.error || 'Esta conta foi bloqueada pelo operador da IALD.');
+-      yield 'data: ' + JSON.stringify({ iald_aviso: { tipo: 'bloqueado', texto } });
+-      yield 'data: ' + JSON.stringify({ choices: [{ delta: { content: texto } }] });
+-      yield 'data: [DONE]';
+-      return;
+-    }
+-  }
+-  if (r.status === 401 || r.status === 302 || r.status === 403) {
+-    if (SUPERFICIE !== 'app') location.href = '/login';
+-    throw new DOMException('sessão expirada', 'AbortError');
+-  }
+-  if (!r.ok) throw new Error('HTTP ' + r.status);
+-
+-  if (!r.body) throw new Error('Resposta sem fluxo de dados.');
+-  const leitor = r.body.getReader();
+-  const dec = new TextDecoder();
+-  const parser = createSSEParser();
+-  let complete = false;
+-  try {
+-    for (;;) {
+-      const { done, value } = await leitor.read();
+-      const events = parser.feed(done ? dec.decode() : dec.decode(value, { stream: true }), done);
+-      for (const data of events) {
+-        yield 'data: ' + data;
+-        if (data.trim() === '[DONE]') { complete = true; return; }
+-      }
+-      if (done) break;
+-    }
+-    if (!complete) throw new Error('A resposta foi interrompida antes da conclusão.');
+-  } finally {
+-    try { await leitor.cancel(); } catch (_) { /* already closed/aborted */ }
+-    leitor.releaseLock();
+-  }
++async function* fluxoHttp(mensagens, signal, selagem, job) {
++  if (!job) throw new PendingChatJobError('Pedido durável ausente; nenhum envio foi iniciado.');
++  yield* backgroundJobs.stream(job, { signal });
+ }
+ 
+ // ── modo demonstracao: exercita a interface INTEIRA sem o modelo ──
+@@ -2805,7 +3793,7 @@
+ const espera = (ms) => new Promise((r) => setTimeout(r, ms));
+ 
+ function parar() {
+-  if (S.aborto) S.aborto.abort();
++  if (S.aborto) S.aborto.abort({ type: 'user_cancel' });
+ }
+ 
+ // ══════════════════════════════════════════════════════════════
+@@ -3112,7 +4100,7 @@
+   $('#btn-nova').addEventListener('click', novaConversa);
+   $('#busca-conv').addEventListener('input', listarConversas);
+ 
+-  $('#btn-config').addEventListener('click', () => { pintarUsuario(); abrirFolha('folha-config'); });
++  $('#btn-config').addEventListener('click', () => { pintarUsuario(); abrirFolha('folha-config'); refreshNativeNotificationsUI(true); });
+   const btnApple = $('#btn-apple');
+   if (btnApple) btnApple.addEventListener('click', entrarComApple);
+   // portão (14/09/2026): Google, usuário e senha, pedido pendente, recusado
+@@ -3184,7 +4172,9 @@
+   ['#cfg-nome', '#cfg-area', '#cfg-interesses', '#cfg-contexto', '#cfg-estilo']
+     .forEach((s) => $(s).addEventListener('input', salvarPerfil));
+ 
+-  $('#btn-sair').addEventListener('click', () => {
++  $('#btn-sair').addEventListener('click', async () => {
++    if (SUPERFICIE === 'app' && !await prepareNativePushLogout()) return;
++    desanexarRespostasBackground(true);
+     desfazerPendente = null;
+     esconderFaixaFlutuante();
+     if (SUPERFICIE !== 'app') { location.href = '/logout'; return; }
+@@ -3262,9 +4252,10 @@
+   $('#exp-txt').addEventListener('click', () => exportarPeloServidor('txt'));
+   $('#exp-md').addEventListener('click', () => exportarPeloServidor('md'));
+   $('#exp-print').addEventListener('click', () => exportarPeloServidor('pdf'));
+-  $('#exp-limpar').addEventListener('click', () => {
++  $('#exp-limpar').addEventListener('click', async () => {
+     const c = conversaAtiva();
+-    if (c) { c.mensagens = []; c.titulo = 'Nova conversa'; salvarConversas(); listarConversas(); abrirConversa(); }
++    if (c && !await apagarJobsDaConversa(c.id)) return;
++    if (c) { delete c.chat_job_deliveries; c.mensagens = []; c.titulo = 'Nova conversa'; salvarConversas(); listarConversas(); abrirConversa(); }
+     fecharFolhas();
+   });
+ 
+@@ -3780,6 +4771,11 @@
+     return;
+   }
+   if (!resp.ok) { alert(j.error || `Não foi possível excluir (HTTP ${resp.status}).`); return; }
++  if (backgroundOwner) {
++    localStorage.removeItem(backgroundHistoryKey(backgroundOwner));
++    backgroundJobs.forgetOwner();
++  }
++  desanexarRespostasBackground(true);
+   desfazerPendente = null;                               // conta excluída: nada de conversa para desfazer
+   esconderFaixaFlutuante();
+   for (const k of [K.conversas, K.ativa, K.config, K.usuario, K.pedido, K.pedidoMotivo, K.verificador]) esquecer(k);
+@@ -4148,6 +5144,7 @@
+   carregarMotor({ aoEntrar: true });
+   conferirServidor();
+   verificarIdentificacaoCadastro();
++  recuperarRespostasBackground();
+   $('#entrada').focus();
+ }
+ 
+@@ -4210,6 +5207,8 @@
+   // ir autenticadas, com o estado real em vez do estado de quem ainda não entrou.
+   avaliarPortao();
+   if (!portaoNecessario()) verificarIdentificacaoCadastro();
++  ligarRespostasBackground();
++  startNativeNotificationsUI();
+ }
+ 
+ if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', iniciar);

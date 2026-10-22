@@ -1,0 +1,38 @@
+HANDOFF FINAL — 30/09/2026 — somente staging
+
+Asset público único: W/client/iald.js -> app/iald.js.
+Builder: W/client/build_client.py. Reexecutar preserva push + mudanças finais de Ampere.
+Fontes de integração: notification_settings.js, native_notifications_integration.js;
+fontes do plugin: W/notifications/client/*.mjs. Não publicar como assets separados.
+
+Backend final: W/server/iald_chat_push.py, idêntico a W/notifications/iald_chat_push.py.
+API: register(...) retorna store() lazy; NÃO register_routes.
+ChatJobs notify(owner, job_id) -> store().notify(owner, job_id).
+Novo POST /api/native-push/revoke-session com JSON {} e autenticação nativa existente.
+Registrar pelo mesmo register(...). Retorna {revoked:true}, idempotente e limitado à sessão.
+GET /api/native-push/status permanece a cargo do runtime do pai; ios/android false sem cofre.
+Pai mantém auth, sid canônico, expiração, revogação por senha e cofre DPAPI; nada disso editado aqui.
+
+UI nativa: controle opt-in em configurações, desabilitado sem readiness.
+Nenhuma permissão/registro automático para novo usuário. Preferência por conta.
+Toque consulta GET job autenticado e usa conversation_id da resposta; ignora username/URL do push.
+Logout aguarda revogação antes de limpar bearer; se incerto, mantém login para tentar novamente.
+HTTP410: terminal expired, pendente descartado só após salvar aviso; sem ACK/reenvio.
+
+Validação local: 49/49 cliente integrado, 16/16 sidecar JS, 32/32 backend/patches,
+6/6 adversariais; node --check passou. DPAPI real somente com bytes sintéticos.
+Provedores e assinatura simulados; nenhuma chamada APNs/FCM/IA, nenhuma instalação/deploy.
+O pai informou 7 testes runtime Flask/DPAPI; não contados nos resultados acima.
+
+Patches nativos 01..04 em notifications/patches. Push plugin 8.1.2;
+lock preparado pelo pai em W/native-dependencies. cap sync/build pelo integrador.
+Android padrão desabilitado; -PialdPushEnabled=true exige configuração Firebase.
+iOS capability/entitlements somente após autorização Apple/perfis.
+
+Pendências para push REAL: confirmar gates Apple e Firebase, APNs key/team/key ID,
+FCM OAuth/config Android, dependências do runtime, binários assinados e teste físico.
+Não há garantia de entrega; callback não é outbox transacional. Retomada continua necessária.
+Web pronta em staging; iOS interno/externo sem nova build/distribuição. [INPUT — pai]
+Android debug isolado em W/mobile-review passou 245 tasks com patches + push 8.1.2.
+Isso não comprova envio/recebimento push nem distribuição de release.
+Fontes liberadas ao pai após este handoff; nenhuma alteração posterior sem aviso.

@@ -1,0 +1,117 @@
+diff --git a/android/app/src/main/AndroidManifest.xml b/android/app/src/main/AndroidManifest.xml
+--- a/android/app/src/main/AndroidManifest.xml
++++ b/android/app/src/main/AndroidManifest.xml
+@@ -7,6 +7,11 @@
+         android:roundIcon="@mipmap/ic_launcher_round"
+         android:supportsRtl="true"
+         android:theme="@style/AppTheme">
++        <!-- Disabled until explicit authenticated opt-in. register() enables FCM. -->
++        <meta-data android:name="firebase_messaging_auto_init_enabled" android:value="false" />
++        <meta-data android:name="firebase_analytics_collection_enabled" android:value="false" />
++        <meta-data android:name="com.google.firebase.messaging.default_notification_channel_id" android:value="iald_responses_v1" />
++        <meta-data android:name="com.google.firebase.messaging.default_notification_icon" android:resource="@drawable/ic_stat_iald" />
+         <activity
+             android:configChanges="orientation|keyboardHidden|keyboard|screenSize|locale|smallestScreenSize|screenLayout|uiMode|navigation|density"
+             android:name=".MainActivity"
+@@ -38,6 +43,8 @@
+         </provider>
+     </application>
+ 
++    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
++
+     <!-- Permissions -->
+ 
+     <uses-permission android:name="android.permission.INTERNET" />
+diff --git a/android/app/build.gradle b/android/app/build.gradle
+--- a/android/app/build.gradle
++++ b/android/app/build.gradle
+@@ -79,11 +79,13 @@
+ 
+ apply from: 'capacitor.build.gradle'
+ 
+-try {
+-    def servicesJSON = file('google-services.json')
+-    if (servicesJSON.text) {
+-        apply plugin: 'com.google.gms.google-services'
++// Default builds keep push disabled and do not require Firebase configuration.
++def ialdPushEnabled = project.findProperty('ialdPushEnabled') == 'true'
++android.defaultConfig.resValue 'bool', 'iald_push_enabled', ialdPushEnabled.toString()
++if (ialdPushEnabled) {
++    def configFile = file('google-services.json')
++    if (!configFile.isFile() || configFile.length() == 0) {
++        throw new GradleException('Push enabled but google-services.json is missing')
+     }
+-} catch(Exception e) {
+-    logger.info("google-services.json not found, google-services plugin not applied. Push Notifications won't work")
++    apply plugin: 'com.google.gms.google-services'
+ }
+diff --git a/android/app/src/main/java/br/ia/iald/app/MainActivity.java b/android/app/src/main/java/br/ia/iald/app/MainActivity.java
+--- a/android/app/src/main/java/br/ia/iald/app/MainActivity.java
++++ b/android/app/src/main/java/br/ia/iald/app/MainActivity.java
+@@ -1,5 +1,24 @@
+ package br.ia.iald.app;
+ 
++import android.app.Notification;
++import android.app.NotificationChannel;
++import android.app.NotificationManager;
++import android.os.Build;
++import android.os.Bundle;
+ import com.getcapacitor.BridgeActivity;
+ 
+-public class MainActivity extends BridgeActivity {}
++public class MainActivity extends BridgeActivity {
++    @Override
++    public void onCreate(Bundle savedInstanceState) {
++        registerPlugin(IaldPushReadinessPlugin.class);
++        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
++            NotificationChannel channel = new NotificationChannel(
++                "iald_responses_v1", "Respostas prontas", NotificationManager.IMPORTANCE_DEFAULT);
++            channel.setDescription("Avisos de respostas concluídas na IALD");
++            channel.setLockscreenVisibility(Notification.VISIBILITY_PRIVATE);
++            NotificationManager manager = getSystemService(NotificationManager.class);
++            if (manager != null) manager.createNotificationChannel(channel);
++        }
++        super.onCreate(savedInstanceState);
++    }
++}
+diff --git a/android/app/src/main/java/br/ia/iald/app/IaldPushReadinessPlugin.java b/android/app/src/main/java/br/ia/iald/app/IaldPushReadinessPlugin.java
+new file mode 100644
+--- /dev/null
++++ b/android/app/src/main/java/br/ia/iald/app/IaldPushReadinessPlugin.java
+@@ -0,0 +1,27 @@
++package br.ia.iald.app;
++
++import com.getcapacitor.JSObject;
++import com.getcapacitor.Plugin;
++import com.getcapacitor.PluginCall;
++import com.getcapacitor.PluginMethod;
++import com.getcapacitor.annotation.CapacitorPlugin;
++
++@CapacitorPlugin(name = "IaldPushReadiness")
++public class IaldPushReadinessPlugin extends Plugin {
++    @PluginMethod
++    public void getStatus(PluginCall call) {
++        boolean ready = false;
++        if (getContext().getResources().getBoolean(R.bool.iald_push_enabled)) {
++            try {
++                // No Firebase dependency required in disabled builds; never creates a token.
++                Class<?> firebase = Class.forName("com.google.firebase.FirebaseApp");
++                ready = firebase.getMethod("getInstance").invoke(null) != null;
++            } catch (Exception | LinkageError ignored) {
++                // No exception body, config or credential goes to JavaScript/logs.
++            }
++        }
++        JSObject result = new JSObject();
++        result.put("ready", ready);
++        call.resolve(result);
++    }
++}
+diff --git a/android/app/src/main/res/drawable/ic_stat_iald.xml b/android/app/src/main/res/drawable/ic_stat_iald.xml
+new file mode 100644
+--- /dev/null
++++ b/android/app/src/main/res/drawable/ic_stat_iald.xml
+@@ -0,0 +1,4 @@
++<vector xmlns:android="http://schemas.android.com/apk/res/android"
++    android:width="24dp" android:height="24dp" android:viewportWidth="24" android:viewportHeight="24">
++    <path android:fillColor="#FFFFFFFF" android:pathData="M4,3h16v13H9l-5,5zM8,7v2h8V7zM8,11v2h6v-2z" android:fillType="evenOdd" />
++</vector>

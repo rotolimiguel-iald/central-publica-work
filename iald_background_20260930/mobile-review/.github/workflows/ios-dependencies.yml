@@ -1,0 +1,25 @@
+name: Resolve iOS dependencies
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  resolve:
+    runs-on: macos-26
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - run: npm run sync:ios
+      - name: Resolve the shared iOS scheme
+        run: xcodebuild -resolvePackageDependencies -project ios/App/App.xcodeproj -scheme IALD
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ios-swift-package-lock
+          path: ios/App/App.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved
+          if-no-files-found: error
+          retention-days: 7
