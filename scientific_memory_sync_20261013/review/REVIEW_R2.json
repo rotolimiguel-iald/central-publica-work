@@ -1,0 +1,82 @@
+{
+  "schema": "iald-scientific-sync-independent-review/v1",
+  "reviewer": "binding_independent_review",
+  "at": "2026-10-13T22:17:25.957699+00:00",
+  "round": 2,
+  "verdict": "PASS_WITH_SCOPE",
+  "pins": [
+    {
+      "path": "C:\\IALD\\Central de Patentes\\work\\scientific_memory_sync_20261013\\scientific_memory_sync.py",
+      "bytes": 12027,
+      "sha256": "a1416481339cedc1f24afc6ea3fc39fbac0c0f995931dd29a3821ba0f28aa316"
+    },
+    {
+      "path": "C:\\IALD\\Central de Patentes\\work\\scientific_memory_sync_20261013\\candidate\\iald_orchestrator\\canonical_memory.py",
+      "bytes": 22372,
+      "sha256": "7cb8f3225a02c46fc1e225fb451cf1f3a52036a3260d36ef7cdb6b1ace1521cc",
+      "preinstall_source": {
+        "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\IALD_ORQUESTRACAO_20260923\\iald_orchestrator\\canonical_memory.py",
+        "bytes": 21551,
+        "sha256": "76f4238461acf803c18fc8b9c4b8ab76cf888454c2155c632150d7f3613864d1"
+      },
+      "diff": "--- \n+++ \n@@ -160,18 +160,30 @@\n     return path\n \n \n-def activate_release(directory, *, unit, member):\n+def activate_release(directory, *, unit, member, expected_active_sha256=None):\n     from .program_controls import require_claim\n     require_claim(unit, member)\n-    if unit not in ('F0.3', 'F9.2'):\n-        raise ValueError('Ativação pertence a F0.3/F9.2.')\n+    if unit not in ('F0.3', 'F9.2', 'F0.3.MEMORIA_CIENTIFICA_SYNC'):\n+        raise ValueError('Ativação pertence a F0.3/F9.2/F0.3.MEMORIA_CIENTIFICA_SYNC.')\n     directory = Path(directory).resolve(strict=True)\n     _snapshot_path(directory, RELEASES.resolve(strict=True), directory.name)\n     manifest, _ = load(directory, refresh=False)\n     release = _snapshot_json((Path(manifest['snapshot_root'])/'SEALED_SNAPSHOT.json').read_bytes())['release']\n     pointer = {'schema': 1, 'release': release, 'epoch': directory.name,\n         'generation': manifest['generation'], 'manifest_sha256': digest((directory/'manifest.json').read_bytes())}\n-    save_json(ACTIVE, pointer)\n+    if expected_active_sha256 is not None and not re.fullmatch('[0-9a-f]{64}', expected_active_sha256):\n+        raise ValueError('Invalid expected ACTIVE pin.')\n+    from .process_lock import process_lock\n+    with LOCK, process_lock(ACTIVE) as acquired:\n+        if not acquired:\n+            raise ValueError('ACTIVE activation lock unavailable.')\n+        baseline = ACTIVE.read_bytes()\n+        # Exact target already active is a read-only acknowledgment.\n+        if _snapshot_json(baseline) == pointer:\n+            return pointer\n+        if expected_active_sha256 is not None and digest(baseline) != expected_active_sha256:\n+            raise ValueError('ACTIVE advanced since preparation; no overwrite.')\n+        save_json(ACTIVE, pointer, expected_old=baseline)\n     return pointer\n \n \n"
+    },
+    {
+      "path": "C:\\IALD\\Central de Patentes\\work\\scientific_memory_sync_20261013\\candidate\\iald_orchestrator\\safe_files.py",
+      "bytes": 1452,
+      "sha256": "78fc572d31f8fcb093b60db828d54cd2c4391bfae1cbff19979ab22dd0a44d5d",
+      "preinstall_source": {
+        "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\IALD_ORQUESTRACAO_20260923\\iald_orchestrator\\safe_files.py",
+        "bytes": 1029,
+        "sha256": "71e1b4ea59b7a9a82043fe5b6c04241ee3d1f00fc27a0a408bfd9b210e331fd2"
+      },
+      "diff": "--- \n+++ \n@@ -5,12 +5,17 @@\n import os\n \n \n-def replace_bytes(path, data):\n+_UNSPECIFIED = object()\n+\n+\n+def replace_bytes(path, data, *, expected_old=_UNSPECIFIED):\n     path = Path(path)\n     if not data:\n         raise ValueError('Empty replacement refused')\n     path.parent.mkdir(parents=True, exist_ok=True)\n     old = path.read_bytes() if path.exists() else None\n+    if expected_old is not _UNSPECIFIED and old != expected_old:\n+        raise ValueError('Replacement baseline changed; no overwrite')\n     stamp = datetime.now().strftime('%Y%m%d_%H%M%S_%f')\n     if old is not None:\n         backup = path.with_name(path.name + '.bak_' + stamp)\n@@ -19,13 +24,16 @@\n     temp = path.with_name(path.name + '.tmp_' + stamp)\n     temp.write_bytes(data)\n     assert temp.read_bytes() == data\n-    assert (path.read_bytes() if path.exists() else None) == old\n+    current = path.read_bytes() if path.exists() else None\n+    if expected_old is not _UNSPECIFIED and current != expected_old:\n+        raise ValueError('Replacement baseline changed before commit; no overwrite')\n+    assert current == old\n     os.replace(temp, path)\n     assert path.read_bytes() == data\n \n \n-def save_json(path, value):\n-    replace_bytes(path, json.dumps(value, ensure_ascii=False, indent=2).encode('utf-8'))\n+def save_json(path, value, *, expected_old=_UNSPECIFIED):\n+    replace_bytes(path, json.dumps(value, ensure_ascii=False, indent=2).encode('utf-8'), expected_old=expected_old)\n \n \n def utc_now():\n"
+    }
+  ],
+  "test_source": {
+    "path": "C:\\IALD\\Central de Patentes\\work\\scientific_memory_sync_20261013\\test_scientific_memory_sync.py",
+    "bytes": 10828,
+    "sha256": "b0d5eec7232d0f50b1382ab00f7dba599a0a0eab12c00d96022999727394b8eb"
+  },
+  "tests": {
+    "suite_passed": 16,
+    "suite_failed": 0,
+    "suite_elapsed_seconds": 5.373,
+    "suite_tool_chunk": "dcbb45",
+    "independent_writer_control_passed": 1,
+    "independent_writer_tool_chunk": "59f9a6",
+    "external_calls": 0,
+    "production_writes": 0
+  },
+  "resolved_findings": [
+    {
+      "id": "SYNC_ACTIVE_CAS",
+      "severity": "MEDIO",
+      "status": "RESOLVED",
+      "evidence": "Preparation baseline SHA carried into activate_release; cooperating thread/process writers serialize; writer receives exact expected_old bytes and checks before final commit. Stale baseline, earlier and late races, and two competing API threads covered."
+    },
+    {
+      "id": "SYNC_PARTIAL_ALREADY_ACTIVE_ACK",
+      "severity": "MEDIO",
+      "status": "RESOLVED",
+      "evidence": "Helper shortcut removed. API exact pointer acknowledgment includes schema/release/manifest SHA; same epoch/generation with corrupted fields rejected without overwrite."
+    }
+  ],
+  "blocking_findings": [],
+  "preserved_guards": [
+    "Claim and exact unit allowlist",
+    "All thirteen admitted scientific originals, source/snapshot pins and version guards",
+    "No source execution/import",
+    "All snapshot bytes/chunks/line ranges, including CRLF, preserved",
+    "Partial/crashed or tampered immutable release refused, never silently rebuilt",
+    "Default check is read-only",
+    "Earlier releases remain in the versioned tree",
+    "Existing request pins untouched",
+    "Legacy safe_files calls remain compatible; byte backup of exact prior state verified independently"
+  ],
+  "limitations": [
+    "Review covers only pinned candidate bytes and disposable tests; production installation and activation remain root responsibilities after byte backups and source CAS.",
+    "Activation lock is cooperative: updated activation API users share it. External raw-file writers must not bypass the protocol. No new guard service, daemon, MCP restart, provider call or ACOM-library change was performed.",
+    "This is scientific memory packaging and retrieval validation, not independent validation of every scientific statement or mathematical proof."
+  ]
+}

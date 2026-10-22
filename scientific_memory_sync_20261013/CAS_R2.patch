@@ -1,0 +1,78 @@
+--- installed/canonical_memory.py
++++ candidate/canonical_memory.py
+@@ -160,18 +160,30 @@
+     return path
+ 
+ 
+-def activate_release(directory, *, unit, member):
++def activate_release(directory, *, unit, member, expected_active_sha256=None):
+     from .program_controls import require_claim
+     require_claim(unit, member)
+-    if unit not in ('F0.3', 'F9.2'):
+-        raise ValueError('Ativação pertence a F0.3/F9.2.')
++    if unit not in ('F0.3', 'F9.2', 'F0.3.MEMORIA_CIENTIFICA_SYNC'):
++        raise ValueError('Ativação pertence a F0.3/F9.2/F0.3.MEMORIA_CIENTIFICA_SYNC.')
+     directory = Path(directory).resolve(strict=True)
+     _snapshot_path(directory, RELEASES.resolve(strict=True), directory.name)
+     manifest, _ = load(directory, refresh=False)
+     release = _snapshot_json((Path(manifest['snapshot_root'])/'SEALED_SNAPSHOT.json').read_bytes())['release']
+     pointer = {'schema': 1, 'release': release, 'epoch': directory.name,
+         'generation': manifest['generation'], 'manifest_sha256': digest((directory/'manifest.json').read_bytes())}
+-    save_json(ACTIVE, pointer)
++    if expected_active_sha256 is not None and not re.fullmatch('[0-9a-f]{64}', expected_active_sha256):
++        raise ValueError('Invalid expected ACTIVE pin.')
++    from .process_lock import process_lock
++    with LOCK, process_lock(ACTIVE) as acquired:
++        if not acquired:
++            raise ValueError('ACTIVE activation lock unavailable.')
++        baseline = ACTIVE.read_bytes()
++        # Exact target already active is a read-only acknowledgment.
++        if _snapshot_json(baseline) == pointer:
++            return pointer
++        if expected_active_sha256 is not None and digest(baseline) != expected_active_sha256:
++            raise ValueError('ACTIVE advanced since preparation; no overwrite.')
++        save_json(ACTIVE, pointer, expected_old=baseline)
+     return pointer
+ 
+ 
+--- installed/safe_files.py
++++ candidate/safe_files.py
+@@ -5,12 +5,17 @@
+ import os
+ 
+ 
+-def replace_bytes(path, data):
++_UNSPECIFIED = object()
++
++
++def replace_bytes(path, data, *, expected_old=_UNSPECIFIED):
+     path = Path(path)
+     if not data:
+         raise ValueError('Empty replacement refused')
+     path.parent.mkdir(parents=True, exist_ok=True)
+     old = path.read_bytes() if path.exists() else None
++    if expected_old is not _UNSPECIFIED and old != expected_old:
++        raise ValueError('Replacement baseline changed; no overwrite')
+     stamp = datetime.now().strftime('%Y%m%d_%H%M%S_%f')
+     if old is not None:
+         backup = path.with_name(path.name + '.bak_' + stamp)
+@@ -19,13 +24,16 @@
+     temp = path.with_name(path.name + '.tmp_' + stamp)
+     temp.write_bytes(data)
+     assert temp.read_bytes() == data
+-    assert (path.read_bytes() if path.exists() else None) == old
++    current = path.read_bytes() if path.exists() else None
++    if expected_old is not _UNSPECIFIED and current != expected_old:
++        raise ValueError('Replacement baseline changed before commit; no overwrite')
++    assert current == old
+     os.replace(temp, path)
+     assert path.read_bytes() == data
+ 
+ 
+-def save_json(path, value):
+-    replace_bytes(path, json.dumps(value, ensure_ascii=False, indent=2).encode('utf-8'))
++def save_json(path, value, *, expected_old=_UNSPECIFIED):
++    replace_bytes(path, json.dumps(value, ensure_ascii=False, indent=2).encode('utf-8'), expected_old=expected_old)
+ 
+ 
+ def utc_now():
