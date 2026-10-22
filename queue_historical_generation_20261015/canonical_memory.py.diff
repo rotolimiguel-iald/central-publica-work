@@ -1,0 +1,48 @@
+--- installed/canonical_memory.py
++++ candidate/canonical_memory.py
+@@ -144,7 +144,10 @@
+ def resolve_directory(directory=None):
+     if directory is not None:
+         return Path(directory)
+-    active = _snapshot_json(ACTIVE.read_bytes())
++    return _resolve_active_pointer(_snapshot_json(ACTIVE.read_bytes()))
++
++
++def _resolve_active_pointer(active):
+     if set(active) != {'schema', 'release', 'epoch', 'generation', 'manifest_sha256'} or active['schema'] != 1:
+         raise ValueError('Ponteiro de memória ativa inválido.')
+     if not re.fullmatch(r'v[0-9]+_[0-9a-f]{16}', str(active['epoch'])):
+@@ -158,6 +161,33 @@
+             or manifest.get('source_mode') != SNAPSHOT_MODE):
+         raise ValueError('Memória ativa difere do manifesto fixado.')
+     return path
++
++
++def resolve_generation(generation):
++    """Resolve an admitted historical pin without activating or rebuilding it."""
++    if not isinstance(generation, str) or re.fullmatch('[0-9a-f]{64}', generation) is None:
++        raise ValueError('Geração histórica de memória inválida.')
++    parent = ACTIVE.parent.resolve(strict=True)
++    paths = [ACTIVE, *sorted(parent.glob(ACTIVE.name + '.bak_*'))]
++    references = []
++    for pointer_path in paths:
++        pointer_path = _snapshot_path(pointer_path, parent, pointer_path.name)
++        raw = pointer_path.read_bytes()
++        if len(raw) > 100000:
++            raise ValueError('Referência histórica de memória excede o contrato.')
++        pointer = _snapshot_json(raw)
++        if pointer.get('generation') == generation:
++            references.append(pointer)
++    if not references:
++        raise ValueError('Geração histórica sem referência de ativação; sem fallback para ACTIVE.')
++    pointer = references[0]
++    if any(value != pointer for value in references[1:]):
++        raise ValueError('Referências históricas conflitantes para a geração solicitada.')
++    directory = _resolve_active_pointer(pointer)
++    manifest, _ = load(directory, refresh=False)
++    if manifest.get('source_mode') != SNAPSHOT_MODE or manifest['generation'] != generation:
++        raise ValueError('Geração histórica difere do snapshot científico fixado.')
++    return directory
+ 
+ 
+ def activate_release(directory, *, unit, member, expected_active_sha256=None):

@@ -1,0 +1,11 @@
+--- installed/nos_packet.py
++++ candidate/nos_packet.py
+@@ -169,6 +169,8 @@
+                 mode=canonical_memory.mode_for_provider(name,constraints),
+                 max_chars=canonical_memory.packet_char_cap(constraints,system),
+                 prompt_limit=controls.prompt_limit(constraints))
++    if constraints and constraints.get('memory_generation'):
++        kwargs['directory'] = canonical_memory.resolve_generation(constraints['memory_generation'])
+     from . import operational_memory as opmem
+     extra = (opmem.SEPARATOR + operational_projection['text']) if operational_projection else ''
+     if operational_projection:
