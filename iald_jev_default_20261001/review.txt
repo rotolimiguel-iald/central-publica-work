@@ -1,0 +1,140 @@
+AUDITORIA INDEPENDENTE — JEV PADRÃO PARA CONTAS APROVADAS — 01/10/2026
+
+Escopo: produção lida como referência. Autorização posterior exclusiva para
+implementar budget_remaining em stage/iald_auto_router.py; demais módulos apenas
+lidos. Testes próprios e este relatório atualizados no work.
+Autorização corrente: automático para todas as contas aprovadas, incluindo
+alanacaroline/liana; Sonnet somente luiz; matriz, cotas e consentimentos preservados.
+Nenhuma chamada remota, leitura de credenciais/usersfile, import do servidor real,
+alteração científica ou instalação feita por esta auditoria.
+
+PARECER
+[REAL] Os dois bloqueadores de orçamento identificados na produção estão tratados
+no stage revisado. Não demonstrado novo bypass da cota MiMo, do grupo Haiku, da
+matriz de provedores ou do consentimento nas funções exercitadas.
+43/43 testes independentes offline passaram na rodada final. Isso não substitui os testes HTTP
+completos do main, a checagem CAS ou testes reais autorizados separadamente.
+
+ACHADOS DA PRODUÇÃO E CORREÇÕES CONFERIDAS
+
+1. [P1, corrigido no stage] Delegação MiMo sem PublicAccount.
+Produção iald_task_bridge.py/make_scope.delegate chamava Evaluation.stream sem
+spending, embora o gestor público o recebesse em _chat_avaliacao. A remoção da
+restrição de proprietário tornaria possível consumo delegado fora da cota pública.
+Stage: spending_factory injetada por _new_app_task_scope; MiMo não-luiz usa o mesmo
+SHA256(username), banco e limites do caminho principal. O account_key do worker
+continua distinto para não colidir com a trava do gestor; não é a chave financeira.
+Teste: reserva do gestor esgota a margem; delegado não chega ao envio simulado;
+repetição da mesma etapa permanece PREVIOUS_ATTEMPT_UNCERTAIN, sem novo roteamento.
+Referências: stage/iald_task_bridge.py:90,120;
+stage/iald_web_server.py:5831,5841; produção iald_app_spend.py/PublicAccount.
+
+2. [P1, corrigido no stage] Sandbox fora do grupo público Haiku.
+Correção da leitura inicial: RouteBridge.configuration já igualava cota_operador_usd
+e cota_usuario_usd à diária pública. Portanto, não era um teto diário de operador
+mais alto; a falha concreta era omitir group/group_limit e chave de identidade.
+Stage usa haiku_public, cfg.haiku_public_group_limit e task_quota_key obtida por
+_chave_cota_de; o razão recebe chave_cota/plano. O banco Anthropic continua separado
+do banco MiMo, preservando a política existente de compartilhar VALORES de limites,
+não somar os dois provedores no mesmo saldo.
+Testes: grupo já ocupado por outra conta recusa sandbox; mesma identidade com outro
+nome não recebe cota nova; interrupção sem usage conserva a reserva integral;
+luiz não ganha uma nova restrição pública.
+Referências: stage/iald_task_bridge.py:70; stage/iald_web_server.py:5828;
+produção claude_route_bridge.py:107; claude_native_account.py:93.
+
+ACHADO HISTÓRICO E CORREÇÃO POSTERIOR
+
+3. [P2 histórico, corrigido para esgotamento conhecido no stage] JEV era chamado antes da admissão financeira
+do executor. _chat_automatico_autorizado chama choose antes de _chat_avaliacao;
+delegate também escolhe antes de spending.before. O teste de cota esgotada mede
+1 chamada ao seletor simulado e 0 envios ao executor. A trava por conta impede
+paralelismo da mesma conta, mas não limita novos turnos sequenciais nem a soma das
+contas. iald_auto_router.choose registra custo estimado, sem reserva/rate local.
+Assim, a negativa de orçamento do executor não significa custo total zero: novas
+solicitações ainda podem gerar consultas TypeSafe. Não confundir esse ponto com
+repetição automática de uma etapa: a proteção de idempotência foi preservada.
+Recomendação mínima: decidir e testar uma admissão/rate para as chamadas JEV
+antes do envio, reutilizando controle aplicável; não inventar novo valor financeiro
+nem cobrar JEV como MiMo/Anthropic. Sem política de teto JEV fornecida, este parecer
+registra risco de expansão, não declara violação de um limite TypeSafe inexistente.
+Referências históricas: stage/iald_web_server.py/_chat_automatico_autorizado; stage/iald_task_bridge.py/delegate;
+stage/iald_auto_router.py/choose.
+
+ADENDO FINAL — PREFLIGHT AUTORIZADO E TESTADO
+[REAL] budget_remaining valida limites positivos finitos e custos finitos não
+negativos (liquidação zero é válida), respeita guard.check e lê o dia UTC do
+guard.clock. Soma custo real quando conhecido ou cap reservado quando pendente;
+preserva união usuário/chave, grupos e atribuição virtual das linhas legadas de
+chave NULL do usuário. Não cria chamadas/reservas, não liquida nem migra linhas.
+Erro de leitura/dado inválido permanece exceção visível; servidor recusa a opção.
+
+[REAL] A integração do main em _automatic_budget_available foi exercitada por AST
+real: PublicAccount para MiMo público; verificar_permissao/limites_do_plano reais
+para OpenAI/Claude com ledger sintético e leitura SQLite das reservas ativas.
+O limiter passivo não consome uma tentativa de rate; o despacho continua obrigado
+a aplicar seu controle normal. MiMo de luiz e Kimi mantêm a política existente.
+
+[REAL] Gestor sem candidato com saldo retorna aviso limite com ZERO chamadas JEV
+simuladas. Gestor com alternativa remove o candidato esgotado antes da escolha.
+Delegado criado pela fábrica real do servidor recebe options com preflight; sem
+executor elegível produz falha terminal sem JEV e sem repetição da etapa. O bridge
+isolado com options inventado em teste não representa essa integração de produção.
+
+[LIMITE EXPLÍCITO] O preflight é filtro de esgotamento conhecido, não reserva nem
+garantia de admissão da próxima chamada. Saldo positivo pode ser insuficiente para
+o cap seguinte; outra chamada pode consumi-lo depois da leitura. O teste anterior
+com 1 escolha e 0 envios continua válido nesse cenário de margem insuficiente e
+não demonstra que o filtro atual ignora saldo já esgotado. Não prometemos custo
+zero para toda falha posterior ao preflight. A reserva real antes do envio continua
+obrigatória. Nenhum teto financeiro ou rate novo para JEV foi inventado.
+
+[PARECER] O P2 original de continuar roteando com todos os executores já esgotados
+foi tratado no caminho gestor/delegado verificado. Não foi demonstrado novo
+bloqueador dentro deste escopo; instalação e suíte global pertencem ao main.
+
+AUTORIZAÇÃO, PADRÃO E PRIVACIDADE
+
+[REAL] default_for muda a leitura efetiva de contas existentes/novas sem regravar
+usersfile. motor_escolha_versao preserva escolhas manuais posteriores. Ausentes,
+vazias ou bloqueadas não ganham autorização; flags não vêm do corpo do chat.
+[REAL] Matriz preservada: MiMo para aprovados; Kimi/DeepSeek para luiz e familiares;
+Sonnet só luiz, inclusive com flags de disponibilidade favoráveis. DeepSeek continua
+fora da seleção automática; não promover qualquer admin a proprietário Sonnet.
+[REAL] Consentimento JEV continua distinto dos consentimentos de execução. O helper
+de início pede um executor apenas quando nenhum executor permitido/disponível tem
+aceite. Não registra aceite, não torna todos obrigatórios nem reativa um revogado.
+[REAL] Revogação MiMo durante a escolha simulada impede criação/envio do worker.
+checked_authorize agora recusa qualquer retorno vazio, conferido na fonte final.
+[REAL] Journals de tarefas testados guardam hash do proprietário e identificadores
+de etapas, sem nome bruto nem objetivo sintético. Nenhum campo de conta foi
+acrescentado ao payload JEV. A memória fixa pública não foi alterada por estes patches.
+[LIMITE] Não foram lidos dados reais de conta, cofre, memória científica privada ou
+telemetria de produção. Não há conclusão sobre faturamento real nem carga multiusuário.
+
+TESTES EXECUTADOS
+Arquivos: test_public_budgets.py e test_budget_remaining.py, desta auditoria.
+Comando: C:/Python314/python.exe -B -X utf8 -m unittest -v test_public_budgets test_budget_remaining
+Resultado final: 43 testes (25 + 18), 0 falhas, 0 skips, em 12,781 s.
+Python/SQLite reais com arquivos temporários neste
+work; funções do servidor extraídas por AST; seletor e envio substituídos por mocks.
+O módulo completo iald_web_server.py não foi importado. Sem rede ou navegador.
+
+CHECKLIST CURTO PARA A SUÍTE FINAL DO MAIN
+1. GET /api/motor continua identificando consentimento JEV, coerente com revogar;
+   chat sem executor aceito retorna consentimento_ia com detalhe/versão/provedor
+   exatos; POST só aceita o provedor pendente. Rejeitar alvo/versão forjados com 409.
+2. Após JEV+MiMo aceitos, enviar sem segundo clique desnecessário; revogar MiMo
+   mantendo OpenAI aceito não deve exigir MiMo novamente. Zero envio sem aceite.
+3. Perfil comum/família/luiz, bloqueado/excluído, configuração de orçamento ausente,
+   consentimento revogado durante escolha, nome/modelo/owner forjado no JSON.
+4. Reserva pública inválida/zero/NaN e concorrência entre contas; uso ausente,
+   cancelamento/timeout e persistência do ledger não podem devolver saldo indevido.
+5. Cancelar pai com filho ativo conserva lease até worker encerrar/registrar;
+   etapa incerta não repete; trocar manual/automático não evade cota financeira.
+6. Rotas de escolha do usuário e administrador gravam motor_escolha_versao;
+   apagar escolha volta ao padrão; consentimentos/plano/admin não são migrados.
+
+Escritas desta auditoria: helper autorizado em stage/iald_auto_router.py,
+test_public_budgets.py, test_budget_remaining.py e review.txt. Nenhum outro módulo
+staged ou de produção foi editado; nenhuma chamada remota ou instalação realizada.
