@@ -1,0 +1,33 @@
+--- C:\IALD\MEMORIA_IALD\lib\iald_memory\activity.py
++++ C:\IALD\Central de Patentes\work\iald_jev_kimi_repair_20261020\admission_staging\iald_memory\activity.py
+@@ -13,8 +13,8 @@
+ import uuid
+ 
+ from . import guard
+-from .store import ProjectionOverflow, RevisionConflict
+-from .mission import MissionController, is_mission_record, identifier, digest, encoded, evidence_pin
++from .store import ProjectionOverflow, RevisionConflict, MAX_JSON_BYTES
++from .mission import MissionController, MissionError, is_mission_record, identifier, digest, encoded, evidence_pin
+ 
+ PROTOCOL = 'iald-activity/v1'
+ KEY = 'iald_activity_v1'
+@@ -134,7 +134,18 @@
+                        'constraints': snapshot['constraints'], 'steering': records})
+ 
+     def _mission(self, snapshot):
+-        return self.controller.project_snapshot(snapshot, max_chars=2000000)
++        budget = 24000
++        while True:
++            try:
++                return self.controller.project_snapshot(snapshot, max_chars=budget)
++            except MissionError as exc:
++                prefix = 'projection_overflow_required_'
++                if not str(exc).startswith(prefix):
++                    raise
++                required = int(str(exc)[len(prefix):])
++                if required <= budget or required > MAX_JSON_BYTES:
++                    raise ProjectionOverflow(required, MAX_JSON_BYTES) from exc
++                budget = required
+ 
+     def _action(self, operation, snapshot, event_id, **fields):
+         request = dict(operation=operation, actor=self.actor, event_id=event_id,

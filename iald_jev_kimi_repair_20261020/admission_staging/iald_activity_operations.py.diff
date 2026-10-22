@@ -1,0 +1,45 @@
+--- C:\IALD\projetos_pyhton\IALD\iald_activity_operations.py
++++ C:\IALD\Central de Patentes\work\iald_jev_kimi_repair_20261020\admission_staging\iald_activity_operations.py
+@@ -53,15 +53,37 @@
+ 
+     def complete(self, value, *, terminal=False):
+         with self.lifecycle.lock:
+-            result = self.lifecycle.runtime.complete(self.lifecycle.ticket, self.id,
+-                value, terminal=terminal, refresh=True)
++            try:
++                result = self.lifecycle.runtime.complete(self.lifecycle.ticket, self.id,
++                    value, terminal=terminal, refresh=True)
++            except Exception:
++                # Custody may have committed before a freshness/lease error.
++                # Preserve that original error; never relabel a returned op uncertain.
++                self._has_custody()
++                raise
++            self.done = True
+             self.lifecycle.ticket = result.get('ticket') or self.lifecycle.runtime.recover(self.lifecycle.binding.request_id)['ticket']
+-            self.done = True
+             return result
+ 
++    def _has_custody(self):
++        runtime = self.lifecycle.runtime
++        snapshot = runtime._get()
++        request_id = self.lifecycle.binding.request_id
++        handle_id = runtime._operation(request_id, self.id)
++        handle = next((h for h in snapshot['p']['handles'] if h['id'] == handle_id), None)
++        if not handle or handle.get('status') != 'completed':
++            return False
++        record = runtime._record(snapshot, handle.get('result_record_id'))
++        result = runtime._data(record, 'result')  # Verify bytes/pin before recognizing custody.
++        if result['request_id'] != request_id or result['operation_id'] != self.id:
++            raise ValueError('Custody operation identity mismatch')
++        self.done = True
++        return True
++
+     def uncertain(self, reason='Execution did not return a complete result; never replay automatically'):
+-        if not self.done:
+-            return self.lifecycle.runtime.mark_uncertain(self.lifecycle.ticket, self.id, reason)
++        with self.lifecycle.lock:
++            if not self.done and not self._has_custody():
++                return self.lifecycle.runtime.mark_uncertain(self.lifecycle.ticket, self.id, reason)
+ 
+ 
+ def start(binding, label, *, key=None):

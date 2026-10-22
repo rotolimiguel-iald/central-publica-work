@@ -1,0 +1,26 @@
+{
+  "stage": false,
+  "provider_calls": 0,
+  "live_writes_permitted": false,
+  "historical_complete": {
+    "ok": false,
+    "exception": "ActivityError",
+    "message": "stale_result_preserved",
+    "code": "stale_result_preserved",
+    "details": {
+      "candidate_record_id": "activity_result_22e3bc67d4e0a8995411d0fcf590a1c63bf85aef83cb4198c372a8a51310a469",
+      "cause": "projection_overflow_required_2058884"
+    },
+    "traceback": "Traceback (most recent call last):\n  File \"C:\\IALD\\MEMORIA_IALD\\lib\\iald_memory\\activity.py\", line 380, in complete\n    refreshed = self._ticket(core, now)\n  File \"C:\\IALD\\MEMORIA_IALD\\lib\\iald_memory\\activity.py\", line 149, in _ticket\n    projection_sha256=self._mission(snapshot)['projection_sha256'])\n                      ~~~~~~~~~~~~~^^^^^^^^^^\n  File \"C:\\IALD\\MEMORIA_IALD\\lib\\iald_memory\\activity.py\", line 137, in _mission\n    return self.controller.project_snapshot(snapshot, max_chars=2000000)\n           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\IALD\\MEMORIA_IALD\\lib\\iald_memory\\mission.py\", line 284, in project_snapshot\n    return self._project(*self.load_snapshot(snapshot),max_chars)\n           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\IALD\\MEMORIA_IALD\\lib\\iald_memory\\mission.py\", line 274, in _project\n    require(len(text)<=max_chars,f'projection_overflow_required_{len(text)}')\n    ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\IALD\\MEMORIA_IALD\\lib\\iald_memory\\mission.py\", line 41, in require\n    raise MissionError(reason)\niald_memory.mission.MissionError: projection_overflow_required_2058884\n\nThe above exception was the direct cause of the following exception:\n\nTraceback (most recent call last):\n  File \"C:\\IALD\\Central de Patentes\\work\\iald_jev_kimi_repair_20261020\\test_admission_stage.py\", line 56, in capture\n    try:return {'ok':True,'value':fn()}\n                                  ~~^^\n  File \"C:\\IALD\\Central de Patentes\\work\\iald_jev_kimi_repair_20261020\\test_admission_stage.py\", line 70, in <lambda>\n    report['historical_complete']=capture(lambda:op.complete(data['result'],terminal=False))\n                                                 ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\IALD\\projetos_pyhton\\IALD\\iald_activity_operations.py\", line 56, in complete\n    result = self.lifecycle.runtime.complete(self.lifecycle.ticket, self.id,\n        value, terminal=terminal, refresh=True)\n  File \"C:\\IALD\\MEMORIA_IALD\\lib\\iald_memory\\activity.py\", line 383, in complete\n    raise ActivityError('stale_result_preserved', candidate_record_id=rid,\n                        cause=getattr(exc, 'code', str(exc))) from exc\niald_memory.activity.ActivityError: stale_result_preserved\n"
+  },
+  "uncertain_after_complete": {
+    "ok": false,
+    "exception": "ActivityError",
+    "message": "operation_already_returned",
+    "code": "operation_already_returned",
+    "details": {},
+    "traceback": "Traceback (most recent call last):\n  File \"C:\\IALD\\Central de Patentes\\work\\iald_jev_kimi_repair_20261020\\test_admission_stage.py\", line 56, in capture\n    try:return {'ok':True,'value':fn()}\n                                  ~~^^\n  File \"C:\\IALD\\Central de Patentes\\work\\iald_jev_kimi_repair_20261020\\test_admission_stage.py\", line 71, in <lambda>\n    report['uncertain_after_complete']=capture(lambda:op.uncertain())\n                                                      ~~~~~~~~~~~~^^\n  File \"C:\\IALD\\projetos_pyhton\\IALD\\iald_activity_operations.py\", line 64, in uncertain\n    return self.lifecycle.runtime.mark_uncertain(self.lifecycle.ticket, self.id, reason)\n           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\IALD\\MEMORIA_IALD\\lib\\iald_memory\\activity.py\", line 410, in mark_uncertain\n    _need(handle['status'] in {'dispatching', 'uncertain'}, 'operation_already_returned')\n    ~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\IALD\\MEMORIA_IALD\\lib\\iald_memory\\activity.py\", line 31, in _need\n    raise ActivityError(code, **details)\niald_memory.activity.ActivityError: operation_already_returned\n"
+  },
+  "operation_done": false,
+  "candidate_custodied": true
+}

@@ -1,0 +1,20 @@
+--- C:\IALD\MEMORIA_IALD\lib\iald_memory\mission.py
++++ C:\IALD\Central de Patentes\work\iald_jev_kimi_repair_20261020\admission_staging\iald_memory\mission.py
+@@ -269,7 +269,7 @@
+             'next_ready':[] if state['hold'] or done else [r['id'] for r in active if r['ready']],
+             'history':{'operation':'get','context_id':self.context_id,'records':len(snap['q']['records'])},
+             'scope_note':'Operational satisfaction only. Original and history preserved. No scientific gate changes.'}
+-        require(type(max_chars) is int and 256<=max_chars<=2000000,'invalid_projection_budget')
++        require(type(max_chars) is int and 256<=max_chars<=33554432,'invalid_projection_budget')
+         text=encoded(body)
+         require(len(text)<=max_chars,f'projection_overflow_required_{len(text)}')
+         guard.assert_clean_text(text,'mission.project')
+@@ -299,7 +299,7 @@
+     def _current(self,request,snap,state,previous):
+         require(type(request.get('expected_revision')) is int,'expected_revision_required')
+         require(request['expected_revision']==snap['revision'],'stale_revision_refresh_required')
+-        p=self._project(snap,state,previous,2000000)
++        p=self._project(snap,state,previous,33554432)
+         require(request.get('projection_sha256')==p['projection_sha256'],'stale_projection_refresh_required')
+ 
+     def _task(self,state,request):

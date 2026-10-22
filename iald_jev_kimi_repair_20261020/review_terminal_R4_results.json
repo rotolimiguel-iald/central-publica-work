@@ -1,0 +1,66 @@
+{
+  "status": "PASS",
+  "checks": {
+    "break_custody_before_yield": true,
+    "break_exact_observed_wire": true,
+    "break_received_not_uncertain": true,
+    "anthropic_custody_before_yield": true,
+    "anthropic_exact_observed_wire": true,
+    "anthropic_received_not_uncertain": true,
+    "chunk_terminal_custody_before_yield": true,
+    "chunk_terminal_tail_exact": true,
+    "drained_wire_exact": true,
+    "drained_one_result": true,
+    "drained_tail_checkpoint": true,
+    "drained_completed": true,
+    "close_after_tail_exact": true,
+    "close_after_tail_one_result": true,
+    "preterminal_uncertain": true,
+    "preterminal_exact_prefix": true,
+    "partial_terminal_refused": true,
+    "partial_terminal_uncertain": true,
+    "bad_pin_blocks_terminal_delivery": true,
+    "bad_pin_no_completed_result": true,
+    "two_round_full_observe_stream": true,
+    "all_provider_ops_completed": true,
+    "root_response_done": true,
+    "all_operations_completed": true,
+    "semantic_answer_full": true,
+    "review_pending_not_accepted": true
+  },
+  "cases": {
+    "break": {
+      "done_before_terminal_reaches_consumer": true,
+      "done_after_close": true,
+      "wire_bytes": 61,
+      "ref_status": "RECEIVED"
+    },
+    "anthropic": {
+      "done_before_terminal_reaches_consumer": true,
+      "done_after_close": true,
+      "wire_bytes": 78,
+      "ref_status": "RECEIVED"
+    },
+    "badpin": {
+      "ok": false,
+      "type": "ActivityError",
+      "message": "artifact_bytes_mismatch",
+      "code": "artifact_bytes_mismatch",
+      "traceback": "Traceback (most recent call last):\n  File \"C:\\IALD\\Central de Patentes\\work\\iald_jev_kimi_repair_20261020\\patch_R4\\stage\\iald_activity_operations.py\", line 300, in _iterate\n    finish_received()\n    ~~~~~~~~~~~~~~~^^\n  File \"C:\\IALD\\Central de Patentes\\work\\iald_jev_kimi_repair_20261020\\patch_R4\\stage\\iald_activity_operations.py\", line 266, in finish_received\n    self.op.complete({'http_status': self.response.status_code, 'response': receipt})\n    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\IALD\\Central de Patentes\\work\\iald_jev_kimi_repair_20261020\\patch_R4\\stage\\iald_activity_operations.py\", line 134, in complete\n    validate_transport_result(self.lifecycle.binding, value)\n    ~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\IALD\\Central de Patentes\\work\\iald_jev_kimi_repair_20261020\\patch_R4\\stage\\iald_activity_operations.py\", line 90, in validate_transport_result\n    read_wire(binding, response)\n    ~~~~~~~~~^^^^^^^^^^^^^^^^^^^\n  File \"C:\\IALD\\Central de Patentes\\work\\iald_jev_kimi_repair_20261020\\patch_R4\\stage\\iald_activity_operations.py\", line 62, in read_wire\n    raise ValueError('Transport artifact hash mismatch')\nValueError: Transport artifact hash mismatch\n\nDuring handling of the above exception, another exception occurred:\n\nTraceback (most recent call last):\n  File \"C:\\IALD\\Central de Patentes\\work\\iald_jev_kimi_repair_20261020\\test_terminal_R4_final.py\", line 43, in capture\n    try:return {'ok':True,'value':fn()}\n                                  ~~^^\n  File \"C:\\IALD\\Central de Patentes\\work\\iald_jev_kimi_repair_20261020\\test_terminal_R4_final.py\", line 98, in <lambda>\n    failed=capture(lambda:next(r.iter_lines()))\n                          ~~~~^^^^^^^^^^^^^^^^\n  File \"C:\\IALD\\Central de Patentes\\work\\iald_jev_kimi_repair_20261020\\patch_R4\\stage\\iald_activity_operations.py\", line 317, in _iterate\n    self._custody_raw(partial, representation)\n    ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\IALD\\Central de Patentes\\work\\iald_jev_kimi_repair_20261020\\patch_R4\\stage\\iald_activity_operations.py\", line 218, in _custody_raw\n    receipt = archive_wire(self.op.lifecycle.binding, raw, representation, 'UNCERTAIN')\n  File \"C:\\IALD\\Central de Patentes\\work\\iald_jev_kimi_repair_20261020\\test_terminal_R4_final.py\", line 93, in corrupt\n    receipt=original_archive(binding,raw,representation,status)\n  File \"C:\\IALD\\Central de Patentes\\work\\iald_jev_kimi_repair_20261020\\patch_R4\\stage\\iald_activity_operations.py\", line 36, in archive_wire\n    artifact = binding.activity._artifact(payload)\n  File \"C:\\IALD\\MEMORIA_IALD\\lib\\iald_memory\\activity.py\", line 84, in _artifact\n    _need(path.read_bytes() == raw, 'artifact_bytes_mismatch')\n    ~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\IALD\\MEMORIA_IALD\\lib\\iald_memory\\activity.py\", line 31, in _need\n    raise ActivityError(code, **details)\niald_memory.activity.ActivityError: artifact_bytes_mismatch\n"
+    },
+    "tools": {
+      "result": {
+        "ok": true,
+        "value": [
+          "data: {\"choices\":[{\"delta\":{\"content\":\"Luz\"}}]}\n\n",
+          "data: [DONE]\n\n"
+        ]
+      },
+      "provider_count": 3,
+      "response_done": true
+    }
+  },
+  "provider_calls": 0,
+  "runtime_installation": false,
+  "scope": "Only production iald_activity_operations.py changed in staging; actual installed app/shared runtime used in isolated fresh contexts."
+}

@@ -1,0 +1,39 @@
+--- C:\IALD\projetos_pyhton\IALD\iald_app_memory.py
++++ C:\IALD\Central de Patentes\work\iald_jev_kimi_repair_20261020\admission_staging\iald_app_memory.py
+@@ -45,6 +45,7 @@
+ 
+ 
+ from iald_memory import MemoryStore, ContextNotFound, RevisionConflict, ProjectionOverflow
++from iald_memory.store import MAX_JSON_BYTES
+ 
+ # D4 (12/10/2026): fail-closed guard — names/identity for files, content before any provider.
+ 
+@@ -412,7 +413,7 @@
+ 
+         budget = 24000
+ 
+-        for _ in range(3):
++        while True:
+ 
+             try:
+ 
+@@ -424,13 +425,15 @@
+ 
+                 # mandatory ACOM body. Explicit bounded local sizing only.
+ 
+-                budget = exc.required_chars
+-
+-                if budget > 2000000:
++                required = exc.required_chars
++
++                if required <= budget or required > MAX_JSON_BYTES:
+ 
+                     raise
+ 
+-        raise ProjectionOverflow(budget, 2000000)
++                budget = required
++
++        # Provider adapters still admit their own complete final wire payload.
+ 
+ 
+ 

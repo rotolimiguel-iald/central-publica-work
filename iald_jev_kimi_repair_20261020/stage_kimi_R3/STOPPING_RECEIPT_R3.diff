@@ -1,0 +1,17 @@
+--- R2/iald_jev_control.py
++++ R3/iald_jev_control.py
+@@ -532,7 +532,14 @@
+                 raise ControlError("Host transition budget exhausted; no retry")
+         out.update(state=target, candidates=narrowed, history=history + [target])
+         if policy is not None and not GRAPH[target]:
++            reason = {
++                "resolved": "host_graph_resolved_with_nonempty_support",
++                "refused": "host_graph_refused_no_reentry",
++                "uncertain": "host_graph_uncertain_no_retry",
++            }[target]
++            final_state_sha256 = digest(out)
+             out["stopping_receipt"] = dict(verdict=target, transitions=len(history),
++                reason=reason, history=list(out["history"]), final_state_sha256=final_state_sha256,
+                 history_sha256=digest(out["history"]), identity_sha256=out["identity_sha256"],
+                 contract_sha256=policy["contract_sha256"], reentry="forbidden",
+                 estatuto="REAL", inscrito_por={"kind":"host", "id":"iald_jev_control"})

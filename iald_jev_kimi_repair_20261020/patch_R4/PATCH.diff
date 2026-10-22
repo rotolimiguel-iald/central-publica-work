@@ -1,0 +1,59 @@
+--- C:\IALD\projetos_pyhton\IALD\iald_activity_operations.py
++++ C:\IALD\Central de Patentes\work\iald_jev_kimi_repair_20261020\patch_R4\iald_activity_operations.py
+@@ -249,11 +249,28 @@
+         pending = b''
+         sse = self.expect_sse
+         saw_terminal = False
++        archived_sha = None
+         representation = ('requests.iter_lines values joined with LF; original delimiters unavailable'
+             if lines else 'requests content/iter_content bytes')
+         def received():
+             separator = b'\n' if lines else b''
+             return self._decode(separator.join(raw_parts), representation)
++        def finish_received():
++            nonlocal archived_sha
++            raw = (b'\n' if lines else b'').join(raw_parts)
++            sha = hashlib.sha256(raw).hexdigest()
++            if sha == archived_sha:
++                return
++            receipt = archive_wire(self.op.lifecycle.binding, raw, representation, 'RECEIVED')
++            if not self.op.done:
++                self.op.complete({'http_status': self.response.status_code, 'response': receipt})
++            else:
++                # Terminal was already acknowledged. Preserve later received bytes
++                # without a second result identity or a repeated operation.
++                self.op.lifecycle.binding.checkpoint('transport_tail.' + self.op.id,
++                    {'status': 'RECEIVED', 'transport': receipt})
++            archived_sha = sha
++
+         def terminal(line):
+             if not line.startswith(b'data:'):
+                 return False
+@@ -277,6 +294,10 @@
+                     sse = sse or line.startswith((b'data:', b'event:'))
+                     if terminal(line):
+                         saw_terminal = True
++                if saw_terminal and not self.op.done:
++                    # The caller may break/close as soon as it receives this part.
++                    # Custody of all bytes already received MUST precede that yield.
++                    finish_received()
+                 yield part
+             sse = sse or pending.startswith((b'data:', b'event:'))
+             if terminal(pending.rstrip(b'\r')):
+@@ -284,9 +305,14 @@
+             text = received()
+             if sse and not saw_terminal:
+                 raise ValueError('SSE ended without a terminal control frame; result remains uncertain')
+-            self._finish({'stream': text, 'representation': representation})
++            if saw_terminal:
++                finish_received()
++            else:
++                self._finish({'stream': text, 'representation': representation})
+         finally:
+-            if not self.op.done:
++            if saw_terminal and self.op.done:
++                finish_received()
++            elif not self.op.done:
+                 partial = (b'\n' if lines else b'').join(raw_parts)
+                 self._custody_raw(partial, representation)
+ 

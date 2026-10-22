@@ -1,0 +1,105 @@
+{
+  "source_mode": "SQLite ATTACH URI mode=ro; one transaction",
+  "tables": {
+    "metadata": 2,
+    "contexts": 1,
+    "events": 30,
+    "context_state": 1,
+    "snapshots": 0,
+    "snapshot_policy": 1
+  },
+  "schema": [
+    [
+      "table",
+      "metadata",
+      "CREATE TABLE metadata (key TEXT PRIMARY KEY, value TEXT NOT NULL)"
+    ],
+    [
+      "table",
+      "contexts",
+      "CREATE TABLE contexts (\n context_id TEXT PRIMARY KEY, scope_json TEXT NOT NULL, anchor_json TEXT NOT NULL,\n anchor_sha256 TEXT NOT NULL, objective_blob BLOB NOT NULL, objective_sha256 TEXT NOT NULL,\n objective_bytes INTEGER NOT NULL, created_at TEXT NOT NULL)"
+    ],
+    [
+      "table",
+      "events",
+      "CREATE TABLE events (\n context_id TEXT NOT NULL REFERENCES contexts(context_id), revision INTEGER NOT NULL,\n event_id TEXT NOT NULL, actor_json TEXT NOT NULL, changes_json TEXT NOT NULL,\n state_json TEXT NOT NULL, state_sha256 TEXT NOT NULL, previous_hash TEXT NOT NULL,\n event_hash TEXT NOT NULL, created_at TEXT NOT NULL,\n PRIMARY KEY(context_id, revision), UNIQUE(context_id, event_id))"
+    ],
+    [
+      "trigger",
+      "contexts_no_update",
+      "CREATE TRIGGER contexts_no_update BEFORE UPDATE ON contexts BEGIN SELECT RAISE(ABORT,'immutable context'); END"
+    ],
+    [
+      "trigger",
+      "contexts_no_delete",
+      "CREATE TRIGGER contexts_no_delete BEFORE DELETE ON contexts BEGIN SELECT RAISE(ABORT,'immutable context'); END"
+    ],
+    [
+      "trigger",
+      "events_no_update",
+      "CREATE TRIGGER events_no_update BEFORE UPDATE ON events BEGIN SELECT RAISE(ABORT,'append-only event'); END"
+    ],
+    [
+      "trigger",
+      "events_no_delete",
+      "CREATE TRIGGER events_no_delete BEFORE DELETE ON events BEGIN SELECT RAISE(ABORT,'append-only event'); END"
+    ],
+    [
+      "trigger",
+      "metadata_no_delete",
+      "CREATE TRIGGER metadata_no_delete BEFORE DELETE ON metadata BEGIN SELECT RAISE(ABORT,'immutable metadata'); END"
+    ],
+    [
+      "table",
+      "context_state",
+      "CREATE TABLE context_state (\n context_id TEXT PRIMARY KEY REFERENCES contexts(context_id), revision INTEGER NOT NULL,\n state_json TEXT NOT NULL, state_sha256 TEXT NOT NULL, event_hash TEXT NOT NULL,\n updated_at TEXT NOT NULL)"
+    ],
+    [
+      "table",
+      "snapshots",
+      "CREATE TABLE snapshots (\n context_id TEXT NOT NULL REFERENCES contexts(context_id), revision INTEGER NOT NULL,\n state_json TEXT NOT NULL, state_sha256 TEXT NOT NULL, event_hash TEXT NOT NULL,\n created_at TEXT NOT NULL, reason TEXT NOT NULL,\n PRIMARY KEY(context_id, revision))"
+    ],
+    [
+      "table",
+      "snapshot_policy",
+      "CREATE TABLE snapshot_policy (id INTEGER PRIMARY KEY CHECK (id = 1), policy_json TEXT NOT NULL)"
+    ],
+    [
+      "index",
+      "events_chain_idx",
+      "CREATE INDEX events_chain_idx ON events(context_id, revision, event_id, actor_json, changes_json, state_sha256, previous_hash, event_hash, created_at)"
+    ],
+    [
+      "trigger",
+      "context_state_no_delete",
+      "CREATE TRIGGER context_state_no_delete BEFORE DELETE ON context_state BEGIN SELECT RAISE(ABORT,'materialized state is not deletable'); END"
+    ],
+    [
+      "trigger",
+      "snapshot_policy_no_delete",
+      "CREATE TRIGGER snapshot_policy_no_delete BEFORE DELETE ON snapshot_policy BEGIN SELECT RAISE(ABORT,'snapshot policy is not deletable'); END"
+    ],
+    [
+      "trigger",
+      "snapshots_no_update",
+      "CREATE TRIGGER snapshots_no_update BEFORE UPDATE ON snapshots BEGIN SELECT RAISE(ABORT,'append-only snapshot'); END"
+    ],
+    [
+      "trigger",
+      "snapshots_no_delete",
+      "CREATE TRIGGER snapshots_no_delete BEFORE DELETE ON snapshots BEGIN SELECT RAISE(ABORT,'append-only snapshot'); END"
+    ],
+    [
+      "trigger",
+      "metadata_no_update",
+      "CREATE TRIGGER metadata_no_update BEFORE UPDATE ON metadata BEGIN SELECT RAISE(ABORT,'immutable metadata'); END"
+    ]
+  ],
+  "target": {
+    "path": "C:\\IALD\\Central de Patentes\\work\\iald_jev_kimi_repair_20261020\\isolated\\baseline\\memory.sqlite3",
+    "bytes": 9732096,
+    "sha256": "fb1ab8a81222952ed536b6294e52525b1a4b69cb274ef89603ca84c3c29eb8f4"
+  },
+  "only_context": "app_87b4dad2e948f7b97c64fcc0c937af87e3cd6f7ae81b6064451be95a28422ae3",
+  "source_paths_preserved": true
+}
