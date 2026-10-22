@@ -1,0 +1,142 @@
+"""Local read-only layered retrieval. No provider/runtime imports or graph writes.
+Adapted: dobra_nos_vivo c3/c2/c1/c0; consultar mode=ro/whole source rows;
+nos_packet scientific restrictions. Rank is retrieval relevance, never truth.
+"""
+from pathlib import Path
+import hashlib,json,re,sqlite3,unicodedata
+from contextlib import closing
+DB=Path('C:/IALD/NOS_VIVO/nos_vivo.sqlite3')
+CATALOG=Path(__file__).with_name('layered_retrieval_catalog.json')
+CATALOG_SHA256='d430fd4d89ba64b02b97b6dd12d090f4a80d0e09878a70d3b64ef5d86b1c662a'
+ALLOWED_TYPES={'pedra','lean_bancada','entrega_doc','documento_bancada'}
+SCIENCE_ROOTS=(Path('C:/IALD/Central de Patentes/Chatgpt'),Path('C:/IALD/Artigo/Haja_Luz/A Ponte e o Um/Nós/tgl_kernel'))
+DENIED=re.compile(r'(?i)Escritorio|Escritório|Advogados|ePCT|WIPO|GRU_|\bACOM\b|LIVRO_DE_PAGAMENTOS|\.env\b|credential|secret|senha|iald_stack_v7|iald_psion_state')
+FORBIDDEN = re.compile(
+    r"iald_stack_v\d|iald_psion_state|(?:^|[\\/\s])\.env(?:[.\s]|$)|\b(?:sk-|AIza)[A-Za-z0-9_-]{12,}"
+    r"|\bgh[pousr]_[A-Za-z0-9]{20,}|\bxox[abposr]-[A-Za-z0-9-]{10,}|\bbearer\s+[A-Za-z0-9._~+/=-]{16,}"
+    r"|\b[\w\-]+\.(?:key|pem)\b"
+    r"|(?:\b[a-z]:[\\/]+(?:[^\\/\s]+[\\/]+)*|\\\\[^\\/\s]+[\\/]+(?:[^\\/\s]+[\\/]+)*|[\\/])escrit(?:ó|[oó])rio",
+    re.I)
+RESERVE_BYTES=2048
+MAX_SOURCE_BYTES=16*1024*1024
+class Refusal(ValueError):pass
+def require(ok,code):
+    if not ok:raise Refusal(code)
+def wire(value):return json.dumps(value,ensure_ascii=False,separators=(',',':'),allow_nan=False).encode('utf8')
+def digest(raw):return hashlib.sha256(raw).hexdigest()
+def terms(s):return set(re.findall(r'\w+',unicodedata.normalize('NFKC',s).casefold()))
+def rank_nodes(rows,query):
+    """Pure ordering of complete admitted rows; caller retains security and budget."""
+    require(isinstance(query,str),'invalid_query')
+    rows=[dict(r) for r in rows];ids=[r.get('id') for r in rows]
+    require(all(isinstance(i,str) and i for i in ids) and len(set(ids))==len(ids),'invalid_or_duplicate_id')
+    q=terms(query);exact=query.strip().casefold();used={};out=[]
+    def key(r):
+        anchor=int(exact in (r['id'].casefold(),str(r.get('titulo') or '').casefold()))
+        relevance=len(q & terms(str(r.get('titulo') or '')+' '+str(r.get('texto') or '')))
+        centrality=r.get('centrality',0)
+        centrality=centrality if type(centrality) is int and centrality>=0 else 0
+        return (anchor,relevance,-used.get(r.get('tipo'),0),str(r.get('quando') or ''),centrality)
+    # Sort IDs first for a deterministic final tie; no mutation of caller rows.
+    rows.sort(key=lambda r:r['id'])
+    while rows:
+        r=max(rows,key=key);rows.remove(r);out.append(r);used[r.get('tipo')]=used.get(r.get('tipo'),0)+1
+    return out
+
+def _retrieve(query,budget_bytes,mandatory_ids,dbpath,catalog,roots):
+    require(isinstance(query,str) and len(query.encode('utf8'))<=8192,'invalid_query')
+    require(not (DENIED.search(query) or FORBIDDEN.search(query)),'scope_denied')
+    require(type(budget_bytes) is int and 4096<=budget_bytes<=1048576,'invalid_budget')
+    require(isinstance(mandatory_ids,(list,tuple)) and len(mandatory_ids)<=128 and all(isinstance(i,str) for i in mandatory_ids),'invalid_mandatory_ids')
+    entries=catalog['entries'];require(isinstance(entries,dict) and 0<len(entries)<=512,'invalid_catalog')
+    required=set(catalog['required_ids'])|set(mandatory_ids)|{i for i,e in entries.items() if e['role'] in ('mandatory','errata','contradiction')}
+    require(required<=entries.keys(),'required_id_outside_catalog')
+    require(bool(query.strip()) or bool(required),'empty_query')
+    def closure(ids):
+        group=set(ids);pending=list(ids)
+        while pending:
+            i=pending.pop();require(i in entries,'protection_outside_catalog')
+            for other in entries[i]['protected_ids']:
+                require(other in entries,'protection_outside_catalog')
+                if other not in group:group.add(other);pending.append(other)
+        return group
+    required=closure(required)
+    loaded={};missing=[]
+    with closing(sqlite3.connect(Path(dbpath).resolve().as_uri()+'?mode=ro',uri=True)) as db:
+        db.execute('PRAGMA query_only=ON');db.execute('BEGIN');db.row_factory=sqlite3.Row
+        for i,e in entries.items():
+            require(e['scope']=='scientific','catalog_scope_denied')
+            r=db.execute('SELECT * FROM nos WHERE id=?',(i,)).fetchone()
+            if r is None:missing.append(i);continue
+            row=dict(r)
+            require(row['tipo'] in ALLOWED_TYPES and not (DENIED.search(wire(row).decode()) or FORBIDDEN.search(wire(row).decode())),'node_scope_denied')
+            rawpath=row.get('caminho') or ''
+            require(rawpath==e['path'],'catalog_path_changed')
+            if rawpath:
+                path=Path(rawpath)
+                require(path.is_absolute() and any(path.resolve().is_relative_to(root.resolve()) for root in roots),'source_outside_scope')
+                require(path.suffix.lower() in {'.md','.lean','.txt'},'source_extension_denied')
+                require(not any(v in str(path).replace('\\','/').lower() for v in ('/para_chatgpt/','/clients/','/fontes/','/node_modules/','/snapshots/','.bak')),'source_path_denied')
+            loaded[i]=row
+        db.rollback()
+    require(not(required & set(missing)),'mandatory_node_missing')
+    ordered=rank_nodes(loaded.values(),query)
+    # No global graph centrality scan: optional caller rank field only, absent here.
+    cache={}
+    def node(i):
+        require(i in loaded,'protected_node_missing')
+        if i in cache:return cache[i]
+        row=loaded[i];path=Path(row['caminho']) if row['caminho'] else None
+        expected=row.get('sha256');state='MISSING_SOURCE';actual=None
+        if path and path.is_file():
+            require(path.stat().st_size<=MAX_SOURCE_BYTES,'source_too_large')
+            h=hashlib.sha256();count=0
+            with path.open('rb') as f:
+                while chunk:=f.read(65536):
+                    count+=len(chunk);require(count<=MAX_SOURCE_BYTES,'source_too_large');h.update(chunk)
+            actual=h.hexdigest()
+            if not expected:state='MISSING_PIN'
+            elif not re.fullmatch('[a-fA-F0-9]{64}',expected):state='UNSUPPORTED_PIN_FORMAT'
+            else:
+                require(actual==expected.lower(),'source_hash_mismatch');state='VERIFIED_SHA256'
+        value={'row':row,'node_sha256':digest(wire(row)),'source':{'status':state,'expected_sha256':expected,'actual_sha256':actual},'annotation_coverage':entries[i]['annotation_coverage']}
+        cache[i]=value;return value
+    def result(selected):
+        out={'ok':True,'status':'PARTIAL_RETRIEVAL','nodes':[node(i) for i in selected],
+             'omitted':[{'id':i,'reason':'MISSING_NODE' if i in missing else 'NOT_SELECTED','recover':{'mandatory_ids':[i]}} for i in entries if i not in selected],
+             'budget':{'limit_bytes':budget_bytes,'reserve_bytes':RESERVE_BYTES,'serialized_bytes':0,'unit':'UTF8_JSON_BYTES_NOT_TOKENS'},
+             'coverage':{'description':catalog['coverage'],'catalog_nodes':len(entries),'required_ids':sorted(required),'no_hit_means_absent':False,'complete_protection_coverage':False,'layers':['c3 catalog count','c2 recoverable omitted IDs','c1 whole selected nodes','c0 selected source hash only']},
+             'provenance':{'catalog_sha256':digest(wire(catalog)),'selected_rows_sha256':digest(wire([loaded[i] for i in selected])),'read_only':True,'leaf_text_returned':False}}
+        for _ in range(8):
+            size=len(wire(out))
+            if out['budget']['serialized_bytes']==size:return out
+            out['budget']['serialized_bytes']=size
+        raise Refusal('budget_accounting_failed')
+    selected=sorted(required);out=result(selected)
+    require(len(wire(out))+RESERVE_BYTES<=budget_bytes,'mandatory_or_metadata_overflow')
+    for row in ordered:
+        i=row['id']
+        if i in selected:continue
+        if query.strip() and not (terms(query)&terms(row['id']+' '+str(row.get('titulo') or '')+' '+str(row.get('texto') or ''))):continue
+        group=closure([i]);require(group<=loaded.keys(),'protected_node_missing')
+        trial=selected+sorted(group-set(selected));candidate=result(trial)
+        if len(wire(candidate))+RESERVE_BYTES<=budget_bytes:selected=trial;out=candidate
+    return out
+
+def retrieve(query,*,budget_bytes=48000,mandatory_ids=()):
+    """Local operator API. Caller cannot choose DB, roots, catalog or policy."""
+    try:
+        raw=CATALOG.read_bytes();require(digest(raw)==CATALOG_SHA256,'catalog_pin_mismatch')
+        return _retrieve(query,budget_bytes,mandatory_ids,DB,json.loads(raw),SCIENCE_ROOTS)
+    except (Refusal,OSError,ValueError,TypeError,KeyError,sqlite3.Error) as e:
+        code=str(e) if isinstance(e,Refusal) else type(e).__name__
+        return {'ok':False,'status':'REFUSED','error':code,'partial_nodes_returned':False}
+def main():
+    import sys
+    try:
+        raw=sys.stdin.buffer.read(16385);require(len(raw)<=16384,'request_too_large')
+        req=json.loads(raw);require(isinstance(req,dict) and set(req)<={'query','budget_bytes','mandatory_ids'},'unknown_arguments')
+        out=retrieve(req.get('query',''),budget_bytes=req.get('budget_bytes',48000),mandatory_ids=req.get('mandatory_ids',()))
+    except (ValueError,TypeError) as e:out={'ok':False,'status':'REFUSED','error':str(e) if isinstance(e,Refusal) else 'invalid_json'}
+    sys.stdout.buffer.write(wire(out)+b'\n')
+if __name__=='__main__':main()

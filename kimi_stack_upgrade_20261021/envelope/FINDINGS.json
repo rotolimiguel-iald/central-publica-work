@@ -1,0 +1,64 @@
+{
+  "status": "REPRODUCED_AND_FIXED_IN_STAGING",
+  "findings": [
+    {
+      "id": "ENV-01",
+      "severity": "MEDIO",
+      "problem": "Fold clamps negative optional allowance to zero and accepts packet without adding reserved mandatory state to final char cap.",
+      "reproduction": {
+        "case": "installed_folded_char_overflow",
+        "packet_chars": 1996,
+        "reserved_chars": 20911,
+        "total_chars": 22907,
+        "cap": 12000,
+        "fixed": "REFUSED"
+      },
+      "fix": "Mandatory CORE/index/trailer/operator+reserve must fit before and after notice; final aggregate checked too."
+    },
+    {
+      "id": "ENV-02",
+      "severity": "MEDIO",
+      "problem": "Maximum byte overflow not checked in final packet; folded could accept reserved byte budget already exhausted.",
+      "reproductions": [
+        {
+          "case": "installed_maximum_byte_overflow",
+          "total_bytes": 911373,
+          "cap": 909312,
+          "fixed": "REFUSED"
+        },
+        {
+          "case": "installed_deepseek_maximum_byte_overflow",
+          "total_bytes": 649229,
+          "cap": 647168,
+          "fixed": "REFUSED"
+        }
+      ],
+      "fix": "All modes account for final packet bytes plus reserved bytes against original mode-specific bound."
+    },
+    {
+      "id": "ENV-03",
+      "severity": "MEDIO",
+      "problem": "Byte budget excluded trailer; normal maximum retrieval could exceed by trailer UTF8 length.",
+      "reproduction": {
+        "case": "installed_trailer_unaccounted",
+        "overflow_bytes": 49,
+        "fixed": "REFUSED_NO_SAFE_COMPLETE_PASSAGE"
+      },
+      "fix": "Trailer charged to mandatory bytes before whole-passage selection."
+    },
+    {
+      "id": "ENV-04",
+      "severity": "BAIXO",
+      "problem": "Index-only folded packet can have empty admitted source set and lacks explicit zero-retrieval/pin metadata.",
+      "fix": "Empty scientific allowlist refused; receipt adds exact source pins,index SHA,retrieval_scope,skipped count and aggregate limits. Original generation and reference lines retained."
+    }
+  ],
+  "caderno": {
+    "path": "C:\\Users\\rotol\\Documents\\kimi\\workspace\\estudo_iald_qg\\ferramentas\\teste_dobra_envelope.py",
+    "sha256": "5f31500d37639e836082690359236e9e8ae653d945946ad03449de50fa2800fa",
+    "executed": false,
+    "reason": "Original imports live implementation, reads separate real prompt and writes result outside authorized W/envelope. Reproduced its20911/12000 reservation shape with synthetic public prompt instead. Its success assertion checks only packet length, not reserved+packet envelope."
+  },
+  "scope": "False success at preparation is reproduced; downstream gates may still refuse. No real job/provider behavior measured.",
+  "unchanged": "Every definition except prepare is AST-identical; original load/snapshot hash verification/activate/build remain unchanged. Core scientific instruction unchanged; actual source corpus not edited or executed."
+}

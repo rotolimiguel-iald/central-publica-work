@@ -1,0 +1,72 @@
+{
+  "status": "CALLER_ACCOUNTING_VERIFIED_SYNTHETIC_NOT_RUNTIME",
+  "tests": 8,
+  "conclusion": "No double reservation introduced in tested caller paths. Two graph-path prepare calls are replacement attempts; only final canonical packet is attached. Canonical, graph, operational state and original objective each occur once.",
+  "equations": {
+    "no_graph": "prepare reserves operational separator+text; final prompt = canonical + operational. Reserved budget is consumed by later append, not appended a second time.",
+    "with_graph": "prepare reserves graph separator+graph+SYSTEM+operational+256byte margin; final prompt = last canonical + graph + operational; reserved byte total equals final prompt bytes +SYSTEMbytes+256.",
+    "chars": "With explicit max_projection_chars, packet_char_cap already subtracts SYSTEM+TAREFA wrapper; reserved_context_chars excludes SYSTEM, so it is not deducted twice.",
+    "handoff": "coordination.get and runtime.preview/submit pass one operational_projection to prepare_queue; provider reuses supplied memory_packet; augment returns existing graph packet without adding it again."
+  },
+  "residuals": [
+    {
+      "scope": "preexisting_no_graph_byte_reservation",
+      "detail": "No-graph reserve does not include SYSTEM/TAREFA wrapper bytes. Existing opmem.attach/provider guards validate actual assembled size later. This is missing headroom, not a new double count; no correction attempted."
+    },
+    {
+      "scope": "compatibility",
+      "detail": "Maximum-mode <=24000 char-cap sentinel remains original behavior; real explicit envelope controls.enforce_packet still runs downstream. Analysis did not change policy."
+    },
+    {
+      "scope": "metadata",
+      "detail": "New envelope_total_* fields describe the prepare-time estimate including future reserved components; downstream attach updates context_bytes. Do not add reserved fields again to already attached final context_bytes."
+    }
+  ],
+  "source_pins": [
+    {
+      "source": "C:\\IALD\\Central de Patentes\\Chatgpt\\IALD_ORQUESTRACAO_20260923\\iald_orchestrator\\nos_packet.py",
+      "copy": "sources/nos_packet.py",
+      "sha256": "bff56dae47b50b5eba5f3a93819b3821f83e26d1120f45418564eec66f05f256"
+    },
+    {
+      "source": "C:\\IALD\\Central de Patentes\\Chatgpt\\IALD_ORQUESTRACAO_20260923\\iald_orchestrator\\operational_memory.py",
+      "copy": "sources/operational_memory.py",
+      "sha256": "da70ebc1407d507015629b5dbefb7dc384f81f41f64381a039ad1f92ac8e79ae"
+    },
+    {
+      "source": "C:\\IALD\\Central de Patentes\\Chatgpt\\IALD_ORQUESTRACAO_20260923\\iald_orchestrator\\request_controls.py",
+      "copy": "sources/request_controls.py",
+      "sha256": "0f61aa8ad0b98317a1012914f5d4ca53a01fe025b16e6e74b973d8dfb03046da"
+    },
+    {
+      "source": "C:\\IALD\\Central de Patentes\\Chatgpt\\IALD_ORQUESTRACAO_20260923\\iald_orchestrator\\coordination.py",
+      "copy": "sources/coordination.py",
+      "sha256": "8a8698f47584b974075fdf79d7775db9ad6102843e055b0f79916fda0afcb1fa"
+    },
+    {
+      "source": "C:\\IALD\\Central de Patentes\\Chatgpt\\IALD_ORQUESTRACAO_20260923\\iald_orchestrator\\runtime.py",
+      "copy": "sources/runtime.py",
+      "sha256": "86a6616f90bc4ab722f738b325257dc9c2a664d2a4d0930dc6e2e319363f8ef2"
+    },
+    {
+      "source": "C:\\IALD\\Central de Patentes\\Chatgpt\\IALD_ORQUESTRACAO_20260923\\iald_orchestrator\\providers.py",
+      "copy": "sources/providers.py",
+      "sha256": "09cc31defd56082631f43495d96e11a7debb427577b81d6c78a8f20332fa6c2e"
+    }
+  ],
+  "scope": "Actual copied prepare_queue/_attach/augment/opmem.attach/request_controls plus frozen staged prepare, synthetic13source sealed corpus/projection/graph. coordination/runtime/provider call chain inspected statically only; no jobs/providers/graph CLI executed.",
+  "frozen_envelope_unchanged": true,
+  "installer": {
+    "path": "C:\\IALD\\Central de Patentes\\work\\kimi_stack_upgrade_20261021\\envelope\\installer.py",
+    "sha256": "4ef0379ce8444e0a724287b862a6bf10a5de8133c30ccabc0465b17713872e0f",
+    "syntax_check": "AST_PARSE_ONLY_PASS",
+    "executed": false,
+    "tests_executed": false,
+    "contract": "Plan files[source,destination,sha256,baseline(nullnew)]; validates all before mutation, confines destinations, rawbyte backups, cooperative lock/rechecks, atomic replace, rollback guarded by current pins; retains new-file rollback artifacts and writes success/failure pin receipt. Parent executes after authorized GO; no extra human confirmation added."
+  },
+  "effects": {
+    "runtime_edits": 0,
+    "jobs_accessed": 0,
+    "provider_calls": 0
+  }
+}

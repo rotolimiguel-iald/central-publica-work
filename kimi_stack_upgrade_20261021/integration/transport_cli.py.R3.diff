@@ -1,0 +1,28 @@
+--- runtime/transport_cli.py
++++ stage/transport_cli.py
+@@ -1,12 +1,23 @@
+ """JSON stdin bridge for automation; no model is called when checking an empty queue."""
+ import json
+ import sys
+-from iald_orchestrator.transport import Transport
+ 
+ def main():
+     request = json.load(sys.stdin)
++    if not isinstance(request, dict):
++        raise ValueError('Invalid local request object')
++    operation = request.get('operation')
++    if operation == 'retrieve_knowledge':
++        from iald_orchestrator.layered_retrieval import retrieve
++        if set(request) - {'operation','query','budget_bytes','mandatory_ids'}:
++            result = {'ok':False,'status':'REFUSED','error':'unknown_arguments'}
++        else:
++            result = retrieve(request.get('query',''), budget_bytes=request.get('budget_bytes',48000),
++                              mandatory_ids=request.get('mandatory_ids',()))
++        print(json.dumps(result, ensure_ascii=False, separators=(',',':')))
++        return
++    from iald_orchestrator.transport import Transport
+     transport = Transport()
+-    operation = request.get('operation')
+     if operation in ('activity_get','activity_project','activity_reconcile'):
+         from iald_orchestrator.activity_bridge import invoke
+         result=invoke(transport.coordination.runtime,request)

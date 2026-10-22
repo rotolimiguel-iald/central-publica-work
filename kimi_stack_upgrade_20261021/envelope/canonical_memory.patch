@@ -1,0 +1,101 @@
+--- installed/canonical_memory.py
++++ envelope/stage/canonical_memory.py
+@@ -311,6 +311,8 @@
+         if not set(allowed_sources) <= names:
+             raise ValueError('Fonte autorizada não está no índice científico; não ampliar a lista.')
+         manifest=dict(manifest,documents=[d for d in manifest['documents'] if d['name'] in allowed_sources])
++    if not manifest['documents']:
++        raise ValueError('Nenhuma fonte científica autorizada; envio bloqueado.')
+     header = CORE + '\nGeração do acervo: ' + manifest['generation']
+     header += '\nVerificação de atualidade: ' + freshness
+     header += '\nArquivos indexados (não implica leitura integral):\n'
+@@ -319,29 +321,28 @@
+     if mode not in ('standard','maximum','deepseek_maximum'): raise ValueError('Modo de memória desconhecido.')
+     maximum=mode!='standard'
+     output_reserve = 393216 if mode == 'deepseek_maximum' else 131072
+-    # Maximum mode packs against a conservative UTF-8 byte bound; not an exact tokenizer.
+-    allowance = (1048576-output_reserve-8192 if maximum else 36000) - len(displayed.encode()) - len(header.encode()) - reserved_context_bytes
++    # The mandatory CORE/index/trailer/operator text and the caller's reserved
++    # operational state share ONE envelope. Folding only reduces optional slices.
+     trailer = '\nFIM DA MEMÓRIA DOCUMENTAL\n\nPEDIDO DO OPERADOR:\n'
+-    char_allowance = max_chars - len(header) - len(trailer) - len(displayed) - reserved_context_chars
+-    if not maximum: allowance=min(15000,allowance)
++    byte_limit = 1048576-output_reserve-8192 if maximum else 36000
+     enforce_char_cap = not maximum or max_chars > 24000
+-    # --- MODO DOBRADO (turbina IALD; ordem do operador 20/10/2026, seq 1287) ---
+-    # Se a pressão vem da RESERVA operacional (projeção), a memória não bloqueia o envio:
+-    # viaja dobrada — o cabeçalho já é a camada c3 (índice dos documentos pinados) e os
+-    # trechos (c1) só entram se couberem. Não é truncamento silencioso: o pacote anuncia
+-    # a dobra no texto e o recibo a declara. Se nem o PEDIDO sozinho couber, mantém-se o
+-    # bloqueio original (impossibilidade verdadeira).
++    def remaining():
++        mandatory = header + trailer + displayed
++        byte_room = byte_limit - len(mandatory.encode('utf-8')) - reserved_context_bytes
++        char_room = max_chars - len(mandatory) - reserved_context_chars
++        if byte_room < 0 or (enforce_char_cap and char_room < 0):
++            raise ValueError('Pedido e estado obrigatório não deixam espaço no envelope TGL; dividir a tarefa, sem truncar a memória silenciosamente.')
++        return min(15000, byte_room) if not maximum else byte_room, char_room
++    allowance, char_allowance = remaining()
+     folded = allowance < 1000 or (enforce_char_cap and char_allowance < 1000)
+     if folded:
+-        if enforce_char_cap and max_chars - len(header) - len(trailer) - len(displayed) < 1000:
++        if not (reserved_context_bytes or reserved_context_chars):
+             raise ValueError('Pedido não deixa espaço para memória TGL; dividir a tarefa, sem truncar a memória silenciosamente.')
+-        header += ('\nMODO DOBRADO (turbina IALD): a projeção operacional ocupou o envelope; '
+-                   'a memória canônica viaja dobrada — acima vai o ÍNDICE dos documentos; trechos '
+-                   'só entram se couberem. Se precisares de um trecho, pede a fatia pelo nome do '
+-                   'arquivo; «não consta» no pacote é fronteira legítima.\n')
+-        allowance = max(0, (1048576-output_reserve-8192 if maximum else 36000) - len(displayed.encode()) - len(header.encode()) - reserved_context_bytes)
+-        if not maximum: allowance = min(15000, allowance)
+-        char_allowance = max(0, max_chars - len(header) - len(trailer) - len(displayed) - reserved_context_chars)
++        header += ('\nMODO DOBRADO (turbina IALD): a projeção operacional ocupou parte do envelope; '
++                   'segue o ÍNDICE dos documentos da geração verificada. Trechos só entram se '
++                   'couberem; índice sem trechos não equivale à leitura do conteúdo. '
++                   'Peça fatias por nome de arquivo quando necessário.\n')
++        allowance, char_allowance = remaining()  # Notice is mandatory too; no clamping.
+     terms = list(dict.fromkeys(t.casefold() for t in re.findall(r'\w{3,}', prompt)
+                               if t.casefold() not in STOP))[:24]
+     query = ' OR '.join('"'+t+'"' for t in terms)
+@@ -364,6 +365,7 @@
+     references, parts, seen, counts, used, used_chars = [], [], set(), {}, 0, 0
+     hashes = {d['name']: d['sha256'] for d in manifest['documents']}
+     blocked = 0
++    budget_skipped = 0
+     for row in rows:
+         if row['document'] not in hashes:
+             continue
+@@ -377,6 +379,7 @@
+                'last_line': row['last_line'], 'sha256': hashes[row['document']]}
+         block = '\nFONTE '+json.dumps(ref, ensure_ascii=False)+'\n'+row['body']+'\nFIM DO TRECHO\n'
+         if used+len(block.encode()) > allowance or (enforce_char_cap and used_chars+len(block) > char_allowance):
++            budget_skipped += 1
+             continue
+         parts.append(block)
+         references.append(ref)
+@@ -386,7 +389,9 @@
+     if not references and not folded:
+         raise ValueError('Nenhum trecho científico seguro cabe no contexto; envio bloqueado.')
+     body = header + ''.join(parts) + trailer + displayed
+-    if enforce_char_cap and len(body) > max_chars:
++    if len(body.encode('utf-8')) + reserved_context_bytes > byte_limit:
++        raise ValueError("Envelope com memória e reserva excede o teto de bytes.")
++    if enforce_char_cap and len(body) + reserved_context_chars > max_chars:
+         raise ValueError("Projeção com memória excede o teto do pedido.")
+     if maximum:
+         if FORBIDDEN.search(body): raise ValueError('Referência confidencial no contexto.')
+@@ -398,7 +403,14 @@
+         'freshness': freshness, 'sources': references, 'packet_sha256': digest(body.encode()),
+         'context_bytes': len(body.encode()), 'coverage': 'PARTIAL_RETRIEVAL_NOT_FULL_CORPUS',
+         'reserved_context_bytes':reserved_context_bytes,'reserved_context_chars':reserved_context_chars,
+-        'blocked_passages': blocked, 'weights_modified': False, 'memory_mode':mode, 'packing':'CONSERVATIVE_UTF8_BYTES' if maximum else 'BOUNDED_RETRIEVAL',
++        'blocked_passages': blocked, 'budget_skipped_passages': budget_skipped,
++        'index_sha256': manifest['index_sha256'],
++        'document_pins': [{k:d[k] for k in ('name','sha256','bytes')} for d in manifest['documents']],
++        'retrieval_scope': 'INDEX_ONLY_NO_PASSAGES' if not references else 'SELECTED_PASSAGES_ONLY',
++        'envelope_total_bytes': len(body.encode('utf-8')) + reserved_context_bytes,
++        'envelope_total_chars': len(body) + reserved_context_chars,
++        'envelope_byte_limit': byte_limit, 'envelope_char_limit': max_chars if enforce_char_cap else None,
++        'weights_modified': False, 'memory_mode':mode, 'packing':'CONSERVATIVE_UTF8_BYTES' if maximum else 'BOUNDED_RETRIEVAL',
+         'folded': folded,
+         'fold_layers': ('c3_index+capped_slices' if references else 'c3_index_only') if folded else None,
+         'fold_notice': ('MODO DOBRADO: a projeção operacional ocupou o envelope; viajou o índice '
