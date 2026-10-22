@@ -1,0 +1,58 @@
+FASE 9 — AUDITORIA DE SUFICIÊNCIA, 19/10/2026
+Unidade F3.AUDITORIA_20261019; codex-gerente-tgl; reivindicação 1029.
+Escopo: documentação, leitura estática e cálculo algébrico de precisão. Não é execução da V2 observada, congelamento ou aceite da gerência. Nada move o gate.
+
+1. RESPOSTA À PERGUNTA
+[DERIVED] Há capacidade nominal acima de 5 na comparação primária escalar já desenhada: 5,721408–6,623219 com BG1, sob a caixa de covariâncias e a cosmologia fixadas. Isso é separação esperada, calculada só com erros e o fundo preselecionado. Não é o resultado observado V2 nem uma probabilidade de detecção.
+[REAL documental] O histórico V1 conserva z_disc=4,2837356 e INCONCLUSIVE_SYSTEMATICS. O desenho V2 usa cinco masers e outra covariância; não se deve anunciar que uma correção elevou 4,28 para 5,72. Não houve novo composto observado.
+[OPEN] Falta demonstrar suficiência física das sistemáticas e qualificar a execução/calibração estatística que transforma uma saída em evidência discriminante. Aumentar um escore não basta. Um resultado negativo ou abaixo do limiar continua resultado válido; nenhum parâmetro será escolhido para alcançar 5.
+
+2. O QUE JÁ ESTÁ FEITO — NÃO RECONSTRUIR
+[REAL documental/estático] Reutilizados F3.1 R5.2/E1, F3.2 E1 bytes, harness portátil e auditorias da c1. A aprovação do harness é de 08/10, registrada novamente no quadro em 12/10 (evento 679); não é novo teste feito hoje. A auditoria de execução conferiu 46 verificações de integridade; não repetimos os 7 testes nem os 288 ataques já auditados.
+Presentes: cinco masers sem NGC4258; seis como diagnóstico; assimetrias e compressões declaradas; lambda_N comum; pontas da grade e pesos GLS, inclusive negativos; famílias R25/sirenes; rejeição de NaN/booleanos; dispersão ausente recusa; rótulo de poder truncado; gate relê os ancestrais, verifica contexto e sinais das âncoras; leitura única da spec; harness relocável e limpeza sob falha.
+O runner integra um fundo gaussiano comum por S=C+sigma_BG² f f^T, inclui log-det, perfila beta e calcula quadraturas 100/200. Não duplica uma incerteza de fundo independente por leitor. A regra das duas testemunhas F3.4 está incorporada: escalar e conjunta têm vereditos próprios e não se somam.
+
+3. PRECISÃO — CONTA REPRODUZIDA SEM CENTROS DOS LEITORES LOCAIS
+[DERIVED] beta=ALPHA_FINE_CODATA_2018*sqrt(e) e K=E(z*)^(2 beta/3) foram recalculados em runtime; K=1,0838071748529643. Usamos os extremos já registrados, sem procurar uma covariância favorável. Fórmula da separação nominal D:
+D = (K-1) H_BG / sqrt(sigma_local² + K² sigma_BG²).
+12 comparações de extremos conferiram. Fonte, plano anterior ao cálculo e script estão em PRECISION_RESULT_R1.json.
+Família primária / BG1: D=5,721408–6,623219.
+Primária / BG2 (réplica): D=5,061836–5,679237.
+Primária / BG3 (réplica, fonte ainda condicionada): D=4,988891–5,553954.
+Sem Cefeidas / BG1: D=3,937917–4,395122.
+O BG1 foi preselecionado; não se escolhe o fundo pelo maior D.
+No BG1, sigma_local para D=5 é 1,101379835 km/s/Mpc. O primário já tem 0,803456804–0,949355167. O diagnóstico sem Cefeidas tem 1,265389306–1,421531661: precisaria de redução de incerteza local de 12,96%–22,52%, mantendo sinal, fundo e modelo. Isso orienta a aquisição de informação independente; não autoriza encolher erros ou descartar leitores.
+A margem equivalente a 0,558357 km/s/Mpc de erro adicional independente no extremo adverso primário é somente orçamento algébrico. Viés comum, correlações omitidas e mudança de modelo não se resumem automaticamente a esse erro independente.
+D=5 daria 50% de probabilidade de cruzar um limiar unilateral de 5 apenas no teste gaussiano simples de variância conhecida. Nenhum poder probabilístico do pipeline completo foi medido aqui.
+
+4. SISTEMÁTICAS QUE CONTINUAM ABERTAS OU CONDICIONADAS
+S1 — Correlações além de N/T. A caixa contém tetos por componentes e inferências; não é a covariância completa medida. Permanecem SN L1–L2, Pantheon L1–L5, âncoras HST secundárias e decomposição SH0ES por âncora. Velocidades peculiares/ambiente local também não estão demonstrados por essa caixa. Ação: confrontar cada dependência com os bytes publicados e com o construtor conjunto já existente; documentar o que é medido, limitado e desconhecido. Não preencher desconhecidos com zero silencioso.
+S2 — Extremo e pesos. O máximo registrado da grade de 441 pontos está em (lambda_N,lambda_T)=(1,0,25), com peso SBF negativo -0,007556864. Não é o canto de correlação máxima nem um supremo contínuo certificado. Respeitar a grade fixada; se o alvo passar a ser a caixa contínua, a certificação é requisito novo explícito antes do resultado, sem escolha retrospectiva.
+S3 — Fontes e compressões. Há fontes dos leitores pinadas. Rótulos de seções SBF/TDCOSMO sem bytes integrais precisam ser conciliados com o vínculo; isso não significa ausência total de fonte. O 0,031 do SBF continua INPUT com origem OPEN. A sensibilidade pequena já registrada não prova a origem. A divisão CCHP 1,33 em N/T é teto inferido; a nota a não pertence à linha HST+JWST adotada. Compressões gaussianas não recuperam as verossimilhanças originais.
+S4 — Mapa do observável. A spec conserva OPEN_MAP_FOR_ALL_LOCAL_READERS. É necessário justificar como as conversões publicadas para H0, inclusive a hipótese cosmológica da conversão dos masers, entram na lei TGL. Preservar a assimetria publicada e a compressão declarada. Não inferir uma validação de mapas apenas porque os números das fontes conferem.
+S5 — Cosmologia. beta fixo não torna Omega_m, Omega_r e H0 conhecidos sem incerteza. O escalar fixa a forma de E(z), enquanto marginaliza H0 comum. Para conclusão incondicional, a propagação de theta precisa respeitar as covariâncias; alternativamente, manter a conclusão explicitamente condicional. Para m(theta)=H0 K(theta), Var(m)≈grad(m)^T Cov(theta) grad(m), com termos cruzados. Não adicionar sigma_K independente por conveniência. A integração theta da rota conjunta já existe como peça a qualificar, sem misturar as testemunhas.
+S6 — Escada. Sem Cefeidas não atinge D=5 nesta conta. Assim, o primário sozinho não satisfaz hoje o controle de poder previsto para distinguir uma sistemática da escada. Isso não apaga a evidência primária; limita a conclusão específica. Não somar as duas famílias ou convertê-las em réplicas independentes.
+
+5. EXECUÇÃO QUE FALTA LIGAR OU QUALIFICAR
+E1 — Fundo real. synthetic_free_background é mock gaussiano de r_d/H0, marcado NOT_CAMB_OR_REAL_BACKGROUND. Testa o encanamento, não a discriminação física. Reutilizar fornecedores/likelihoods e priors já construídos na Bancada/rota conjunta, com contrato explícito para cada testemunha. A ligação real BG1 e o lnB contra fundo livre não foram executados por este runner.
+E2 — Reprodução do fundo. O contrato exige |H0-68,531|<0,01 para BG1. Isso é teste de reprodução, não alvo de ajuste. Divergência interrompe e exige diagnóstico da versão/entradas, nunca calibração do fundo aos leitores locais.
+E3 — Integração. n>=100 e comparação 100/200 estão implementados, mas o arquivo não contém tolerância que recuse divergência. Fixar tolerância e caminho de falha antes da aplicação observada; confrontar com casos analíticos e os limites já presentes na rota theta. Diferença entre duas quadraturas não é garantia universal de convergência.
+E4 — Admissão. False fixo e rejeição de listas admitidas são guardas intencionais. Falta consumir um registro D-H pinado/autenticado; não trocar False por True. n_alvos conta o inventário inteiro: L1b/L6 continuam pendentes e bloqueiam conforme a regra atual, ainda que só participem de diagnósticos. Não mudar a regra depois de olhar o composto.
+E5 — Modo real. O runner atual recusa execução observacional antes de ler; a integração é futura. Deve preservar PODER_FASE9_ANTES_DE_ABRIR, fonte lida uma vez, pins, funções de veredito, proibição de ALVOS_FASE9_LIDOS.json, separação das famílias e todos os recibos. A presente auditoria não remove essa recusa.
+
+6. O QUE SIGNIFICA “5 SIGMA”
+[DERIVED] O z_disc histórico é um escore prescrito por diferença de formas quadráticas. Ele não é automaticamente um desvio normal padrão de cauda sob a hipótese nula. Exemplo exato, só para mostrar a distinção: duas médias fixas mu0,mu1, mesma covariância Sigma; d=mu1-mu0, D²=d^T Sigma^-1 d, T=Q0-Q1=2d^T Sigma^-1(y-mu0)-D². Sob H0, T tem média -D² e variância 4D². O desvio normal correspondente é (T+D²)/(2D), não sqrt(T) em geral. No caso Asimov y=mu1, ambos valem D. Covariâncias dependentes do modelo mudam essa lei.
+Não recalculamos um p do V1 nem retiramos seu escore oficial. Para uma alegação de 5 sigma de cauda, falta o recibo de calibração do teste efetivamente usado, incluindo sistemáticas e multiplicidade. lnB não se converte automaticamente em sigma.
+A conjunta já prevê cinco testes, p robusto como pior cenário e Bonferroni; a escalar remete a Sidak/livro. Conferir o contrato aplicável e as condições de dependência; não transferir a correção de uma testemunha à outra. O builder conjunto de covariância, a integração theta e os contratos de cauda já estão no acervo; aceites estáticos não são uma execução qualificada.
+
+7. SEQUÊNCIA CONCRETA, SEM AJUSTE AO DADO
+1) Preservar o que passou nas auditorias; manter beta, escolhas de famílias e BG1, limiares e histórico.
+2) Fechar inventário de fontes/orçamentos e limites de dependências; conservar OPEN onde não há informação. Confrontar mapas físicos dos leitores. Não selecionar cenários por seu z observado.
+3) Preparar em cópia a ligação ao fornecedor cosmológico real e ao registro de admissão; qualificar a integração e as caudas em casos sintéticos/analíticos, reaproveitando contratos existentes. Conservar o modo observado bloqueado até os atos aplicáveis.
+4) Registrar o alcance condicional ou propagar a covariância cosmológica, antes do composto. Fixar orçamento numérico e regra de falha. Emitir o poder somente pelas sigmas antes de abrir os centros locais.
+5) Atos documentais pendentes encontrados no quadro/lista: X13 e D-H; token D-J e abertura própria seguem seus atos. F3.4 já está fechada. d72 é qualificação da rota conjunta, não pré-requisito inventado para toda execução escalar. A ausência de novo recibo neste recorte não autoriza presumir um aceite posterior.
+6) Depois de especificação auditada/congelada e abertura autorizada, produzir uma execução observada identificada e relatar separadamente escore, p calibrado/local/global quando aplicável, evidência bayesiana, diagnósticos e limitações. Preservar o resultado mesmo se inferior a 5.
+
+8. EVIDÊNCIAS E LIMITES DA ENTREGA
+SYSTEMATICS_AUDIT_R1.json, com SYSTEMATICS_ANCHOR_CORRECTION_R1.json (âncora histórica corrigida, original preservado); EXECUTION_AUDIT_R1.json; STATISTICAL_SCOPE_R1.json; PRECISION_PLAN_R1.json/script/resultado. Relatórios dos agentes contêm linhas e hashes das fontes. Esta síntese é auditável por esses artefatos; o aceite formal continua com a c1.
+Nenhum dado observado V2 foi composto, nenhum provedor chamado, nenhum teste antigo repetido e nenhum artefato anterior editado. A auditoria responde que há capacidade nominal primária suficiente no desenho condicional, mas não estabelece nova detecção ou que as correções elevarão a significância observada. NOT_FALSIFIED nunca é CONFIRMED.
