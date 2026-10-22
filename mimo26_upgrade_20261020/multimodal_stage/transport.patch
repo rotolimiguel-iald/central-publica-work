@@ -1,0 +1,192 @@
+--- a/iald_app_providers.py
++++ b/iald_app_providers.py
+@@ -88,8 +88,8 @@
+     return rows
+ 
+ 
+-def limits(provider):
+-    return dict(agente=provider != 'kimi', pensar=True, imagens=False,
++def limits(provider, *, media_authorized=False):
++    return dict(agente=provider != 'kimi', pensar=True, imagens=(provider == 'mimo'), audio=(provider == 'mimo' and media_authorized is True), video=(provider == 'mimo' and media_authorized is True),
+         ferramentas=sorted(TOOL_NAMES) if provider != 'kimi' else [],
+         max_saida=MODELS[provider]['output'], janela=WINDOW)
+ 
+@@ -129,7 +129,129 @@
+         super().__init__(code)
+ 
+ 
+-def wire_messages(messages, prefix, profile=''):
++"""Staging-only image boundary. No network, vault or scientific-memory edits."""
++import base64
++import binascii
++
++
++def request_media(client):
++    """Public router projection: latest prompt plus media kinds/counts, no URLs."""
++    import re
++    counts = {'image':0,'audio':0,'video':0}
++    encoded_bytes = 0
++    prompt = ''
++    if not isinstance(client,list): raise ValueError('Invalid message list')
++    for message in client:
++        if not isinstance(message,dict): raise ValueError('Invalid message')
++        if message.get('role') not in ('user','assistant'): continue
++        content = message.get('content')
++        texts=[]
++        if isinstance(content,str): texts=[content]
++        elif isinstance(content,list):
++            for part in content:
++                if not isinstance(part,dict): raise ValueError('Invalid part')
++                kind=part.get('type')
++                if kind=='text':
++                    if not isinstance(part.get('text'),str): raise ValueError('Invalid text')
++                    texts.append(part['text'])
++                elif kind in ('image_url','input_audio','video_url'):
++                    key={'image_url':'image','input_audio':'audio','video_url':'video'}[kind]
++                    counts[key]+=1
++                    field='data' if kind=='input_audio' else 'url'
++                    obj=part.get(kind)
++                    value=obj.get(field) if isinstance(obj,dict) else None
++                    if not isinstance(value,str): raise ValueError('Invalid media')
++                    encoded_bytes+=len(value.encode('utf-8'))
++                else: raise ValueError('Unsupported part')
++        else: raise ValueError('Invalid content')
++        if message.get('role')=='user':
++            prompt=re.sub(r'\[ARQUIVO:[^\n]*\][\s\S]*?\[FIM\]','', '\n'.join(texts)).strip()
++    return dict(kinds=[key for key,value in counts.items() if value],prompt=prompt,counts=counts,encoded_bytes=encoded_bytes)
++
++
++def metric_task(messages):
++    """Classify the latest user text on the host; never accept client task labels."""
++    import re
++    from iald_task_policy import classify
++    for message in reversed(messages):
++        if isinstance(message, dict) and message.get('role') == 'user':
++            content = message.get('content')
++            text = content if isinstance(content,str) else '\n'.join(
++                p['text'] for p in content if isinstance(p,dict) and p.get('type')=='text' and isinstance(p.get('text'),str)) if isinstance(content,list) else ''
++            text = re.sub(r'\[ARQUIVO:[^\n]*\][\s\S]*?\[FIM\]', '', text)
++            return classify(text)
++    return classify('')
++
++
++def transport_response_format(mode=None):
++    """Opt-in JSON object only; not an assertion of JSON Schema enforcement."""
++    if mode is None:
++        return {}
++    if mode != 'json_object':
++        raise ValueError('Unsupported response format')
++    return {'response_format': {'type': 'json_object'}}
++
++
++def transport_tool_options(provider, offered, round_no, rounds):
++    """MiMo ignores tool_choice=none: omit tool definitions in final round."""
++    if not offered or (provider == 'mimo' and round_no == rounds - 1):
++        return {}
++    return dict(tools=offered, tool_choice='none' if round_no == rounds - 1 else 'auto')
++
++
++def image_parts(parts, *, images_authorized=False, media_authorized=False):
++    """Server authorization must follow versioned MiMo image consent.
++
++    Uses the existing Claude attachment signature detector, injected only when
++    called. Never calls its permissive URL/marker conversion.
++    """
++    if images_authorized is not True:
++        raise ValueError('MiMo image consent required')
++    if not isinstance(parts, list) or not 1 <= len(parts) <= 16:
++        raise ValueError('Invalid attachment parts')
++    from iald_motor_claude import _tipo_pelos_bytes
++    result, count, total = [], 0, 0
++    for part in parts:
++        if not isinstance(part, dict):
++            raise ValueError('Invalid attachment part')
++        if part.get('type') in ('input_audio','video_url'):
++            from iald_mimo_multimodal import media_part
++            if any(p.get('type') in ('input_audio','video_url') for p in result):
++                raise ValueError('One audio/video attachment per message')
++            result.append(media_part(part,media_authorized=media_authorized))
++            continue
++        if part.get('type') == 'text' and set(part) == {'type', 'text'}:
++            if not isinstance(part['text'], str):
++                raise ValueError('Invalid attachment text')
++            result.append(dict(part))
++            continue
++        if set(part) != {'type', 'image_url'} or part.get('type') != 'image_url':
++            raise ValueError('Unsupported media part')
++        image = part['image_url']
++        if not isinstance(image, dict) or set(image) != {'url'}:
++            raise ValueError('Invalid image object')
++        url = image['url']
++        if not isinstance(url, str) or not url.startswith('data:image/') or ';base64,' not in url:
++            raise ValueError('Only inline images accepted')
++        header, data = url.split(';base64,', 1)
++        if len(data) > 10_666_668:
++            raise ValueError('Image exceeds local attachment limit')
++        try:
++            raw = base64.b64decode(data, validate=True)
++        except (ValueError, binascii.Error):
++            raise ValueError('Invalid image base64') from None
++        mime = _tipo_pelos_bytes(data)
++        if not raw or mime is None or header != 'data:' + mime:
++            raise ValueError('Image type mismatch or unsupported format')
++        count += 1
++        total += len(raw)
++        if count > 3 or len(raw) > 8_000_000 or total > 24_000_000:
++            raise ValueError('Image attachment budget exceeded')
++        result.append({'type': 'image_url', 'image_url': {'url': url}})
++    return result
++
++
++def wire_messages(messages, prefix, profile='', *, provider=None, images_authorized=False, media_authorized=False):
+     if not isinstance(messages, list) or len(messages) > 400:
+         raise ValueError('Histórico inválido ou muito extenso.')
+     result = [{'role': 'system', 'content': prefix + ('\n\n' + profile if profile else '')}]
+@@ -138,6 +260,10 @@
+             raise ValueError('Mensagem inválida.')
+         if item.get('role') in ('system', 'developer'):
+             continue  # Client cannot replace server-owned memory/instructions.
++        if isinstance(item.get('content'), list) and item.get('role') == 'user' and provider == 'mimo':
++            parts = image_parts(item['content'], images_authorized=images_authorized, media_authorized=media_authorized)
++            result.append({'role': 'user', 'content': parts})
++            continue
+         if item.get('role') not in ('user', 'assistant') or not isinstance(item.get('content'), str):
+             raise ValueError('Este modelo aceita somente texto; remova imagens deste histórico.')
+         result.append({'role': item['role'], 'content': item['content']})
+@@ -238,7 +364,7 @@
+             'note': 'Custos estimados a partir do usage; Kimi é assinatura. Qualidade requer avaliação do operador.',
+             'jev': 'Auxiliar de decisão estruturada; não ativado como chat nem como juiz de provas.'}
+ 
+-    def observe(self, flow, model, *, rates=None, memory_sha256=None):
++    def observe(self, flow, model, *, rates=None, memory_sha256=None, messages=None):
+         """Read-only observer of existing transports; forwards their exact bytes.
+ 
+         Some transports omit usage from public SSE. In that case the dashboard
+@@ -247,7 +373,7 @@
+         started = time.monotonic()
+         record = dict(id=uuid.uuid4().hex, provider=model['motor'], model=model['id'],
+             utc=datetime.now(timezone.utc).isoformat(), status='started', memory_sha256=memory_sha256,
+-            first_text_seconds=None, calls=[], streaming=True, metrics_source='existing_app_sse')
++            first_text_seconds=None, calls=[], streaming=True, metrics_source='existing_app_sse', task=metric_task(messages) if messages is not None else 'unknown')
+         decoder=codecs.getincrementaldecoder('utf-8')()
+         buffer=''
+         error=False
+@@ -307,7 +433,7 @@
+             utc=datetime.now(timezone.utc).isoformat(), status='started', memory_sha256=memory_sha256,
+             memory_scope='SHARED_VERIFIED_FIXED_CORE_AND_CLUSTER', context_count='UTF8_CONSERVATIVE_BOUND',
+             price_source=spec['price_source'], pricing_checked_at='2026-09-30',
+-            streaming=provider != 'kimi', calls=[], first_text_seconds=None)
++            streaming=provider != 'kimi', calls=[], first_text_seconds=None, task=metric_task(messages))
+ 
+         def emit(value):
+             while not cancel.is_set():
+@@ -417,8 +543,7 @@
+             body = dict(model=spec['model'], messages=app_memory.project_messages(messages), stream=True,
+                 stream_options={'include_usage': True}, thinking={'type': 'enabled'})
+             if provider == 'deepseek': body['reasoning_effort'] = 'max'
+-            if offered:
+-                body.update(tools=offered, tool_choice='none' if round_no == rounds-1 else 'auto')
++            body.update(transport_tool_options(provider, offered, round_no, rounds))
+             reserve = output_budget(body, spec['output'])
+             body['max_tokens' if provider == 'deepseek' else 'max_completion_tokens'] = reserve
+             bound = check_window(body, reserve)

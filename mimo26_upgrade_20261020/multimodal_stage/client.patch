@@ -1,0 +1,139 @@
+--- a/app/iald.js
++++ b/app/iald.js
+@@ -2592,7 +2592,9 @@
+   if (Array.isArray(conteudo)) {
+     const t = conteudo.filter((p) => p && p.type === 'text').map((p) => p.text).join('\n');
+     const imgs = conteudo.filter((p) => p && p.type === 'image_url').length;
+-    return (imgs ? `[${imgs} imagem(ns) anexada(s)]\n` : '') + t;
++    const audios = conteudo.filter(p => p?.type === 'input_audio').length;
++    const videos = conteudo.filter(p => p?.type === 'video_url').length;
++    return (audios ? `[${audios} áudio(s) anexado(s)]\n` : '') + (videos ? `[${videos} vídeo(s) anexado(s)]\n` : '') + (imgs ? `[${imgs} imagem(ns) anexada(s)]\n` : '') + t;
+   }
+   return '';
+ }
+@@ -2826,6 +2828,43 @@
+ // ══════════════════════════════════════════════════════════════
+ const LIMITES = { total: 6, imagens: 3, imagemMB: 8, pdfMB: 25, textoMB: 2, orcamentoTokens: 100000 };
+ 
++// Staging R3: local inline media only; server consent and validation authoritative.
++function midiaPermitida(tipo) {
++  return limitesDoPlano()?.[tipo] === true;
++}
++
++function extensoesMidia(tipo) {
++  const caps = limitesDoPlano()?.media_capabilities;
++  const values = tipo === 'audio' ? caps?.audio_formats : caps?.video_formats;
++  return Array.isArray(values) ? values : [];
++}
++
++async function lerMidiaLocal(f, tipo) {
++  if (!midiaPermitida(tipo)) throw new Error('Áudio/vídeo requer MiMo e consentimento atualizado.');
++  if (f.size > 512000) throw new Error('Limite local de 512 KB por mídia. Mesmo abaixo dele, a conversa pode exceder o contexto; a memória TGL será preservada e o envio recusado.');
++  const extension = f.name.split('.').pop().toLowerCase();
++  if (!extensoesMidia(tipo).includes(extension)) throw new Error('Validação deste formato indisponível no servidor. WAV não requer decoder externo.');
++  const mime = ({ wav:'audio/wav',mp3:'audio/mpeg',flac:'audio/flac',ogg:'audio/ogg',m4a:'audio/mp4',
++    mp4:'video/mp4',mov:'video/quicktime',avi:'video/x-msvideo',wmv:'video/x-ms-wmv' })[f.name.split('.').pop().toLowerCase()];
++  if (!mime || !mime.startsWith(tipo + '/')) throw new Error('Formato de mídia não permitido.');
++  const local = URL.createObjectURL(f);
++  try {
++    const duration = await new Promise((resolve,reject) => {
++      const player = document.createElement(tipo);
++      const timer = setTimeout(() => { cleanup(); reject(new Error('Não foi possível conferir a duração.')); },5000);
++      function cleanup() { clearTimeout(timer); player.onloadedmetadata=null; player.onerror=null; player.removeAttribute('src'); player.load(); }
++      player.preload='metadata';
++      player.onloadedmetadata=() => { const d=player.duration; cleanup(); resolve(d); };
++      player.onerror=() => { cleanup(); reject(new Error('Formato não reconhecido neste aparelho.')); };
++      player.src=local;
++    });
++    if (!Number.isFinite(duration) || duration<=0 || duration>(tipo==='audio'?30:10))
++      throw new Error('Duração máxima: áudio 30 s; vídeo 10 s.');
++    const data = await lerComo(new Blob([f],{type:mime}),'dataURL');
++    return {name:f.name,media:data,mediaKind:tipo,kb:Math.round(f.size/1024),duration};
++  } finally { URL.revokeObjectURL(local); }
++}
++
+ function desenharAnexos() {
+   const zona = $('#anexos');
+   zona.innerHTML = '';
+@@ -2834,7 +2873,11 @@
+     chars += (a.content || '').length;
+     const item = el('div', 'anexo');
+ 
+-    if (a.image) {
++    if (a.media) {
++      const player = el(a.mediaKind);
++      player.controls = true; player.preload = 'metadata'; player.src = a.media;
++      item.appendChild(player);
++    } else if (a.image) {
+       const mini = el('img', 'miniatura');
+       mini.src = a.image; mini.alt = '';
+       item.appendChild(mini);
+@@ -2844,7 +2887,7 @@
+ 
+     item.appendChild(el('span', 'nome', a.name));
+     const peso = a.pendente ? 'extraindo…'
+-      : a.image ? `${a.kb} KB`
++      : (a.image || a.media) ? `${a.kb} KB`
+       : `~${num(Math.round((a.content || '').length / 4))} tok${a.truncado ? ', truncado' : ''}`;
+     item.appendChild(el('span', 'peso', peso));
+ 
+@@ -2891,6 +2934,8 @@
+   const permitidas = imagensPermitidas();
+   campo.setAttribute('accept', permitidas ? aceitaOriginal
+     : aceitaOriginal.split(',').filter((ext) => !EXTENSOES_DE_IMAGEM.test(ext.trim())).join(','));
++  const extrasMidia = ['audio','video'].flatMap(tipo => midiaPermitida(tipo) ? extensoesMidia(tipo).map(ext => '.'+ext) : []);
++  if (extrasMidia.length) campo.setAttribute('accept', campo.getAttribute('accept') + ',' + extrasMidia.join(','));
+   botao.dataset.semImagem = permitidas ? '' : '1';
+   const rotulo = permitidas ? 'Anexar PDF, texto ou imagem'
+     : 'Anexar PDF ou texto — ' + textoSemImagens();
+@@ -2905,7 +2950,16 @@
+     if (S.anexos.length >= LIMITES.total) { avisar(`Máximo de ${LIMITES.total} anexos por mensagem.`); break; }
+ 
+     const ehImagem = (f.type && f.type.startsWith('image/')) || /\.(png|jpe?g|webp|gif|bmp)$/i.test(f.name);
+-    const ehPdf = /\.pdf$/i.test(f.name);
++    const ehPdf = /\.pdf$/i.test(f.name);
++    const tipoMidia = /\.(wav|mp3|flac|ogg|m4a)$/i.test(f.name) ? 'audio'
++      : /\.(mp4|mov|avi|wmv)$/i.test(f.name) ? 'video' : null;
++    if (tipoMidia) {
++      if (S.anexos.some(a => a.media)) { avisar('Uma mídia de áudio/vídeo por mensagem.'); continue; }
++      try { S.anexos.push(await lerMidiaLocal(f,tipoMidia)); desenharAnexos(); }
++      catch (e) { avisar(e.message); }
++      continue;
++    }
++    if (/^(audio|video)\//.test(f.type)) { avisar('Formato de mídia não integrado.'); continue; }
+ 
+     if (ehImagem && !imagensPermitidas()) {
+       S.dicaImagem = true;
+@@ -3714,14 +3768,20 @@
+ 
+   let conteudo = texto;
+   const imagens = anexos.filter((a) => a.image).map((a) => a.image);
+-  const arquivos = anexos.filter((a) => !a.image && a.content);
++  if (anexos.some(a => a.media && !midiaPermitida(a.mediaKind))) {
++    avisar('Mídia indisponível: selecione MiMo e confira o consentimento.'); return;
++  }
++  const midias = anexos.filter(a => a.media).map(a => a.mediaKind === 'audio'
++    ? {type:'input_audio',input_audio:{data:a.media}}
++    : {type:'video_url',video_url:{url:a.media}});
++  const arquivos = anexos.filter((a) => !a.image && !a.media && a.content);
+   if (arquivos.length) {
+     const bloco = arquivos.map((a) => `\n\n[ARQUIVO: ${a.name}]\n${a.content}\n[FIM]\n`).join('');
+     conteudo = bloco + '\n' + texto;
+   }
+-  if (imagens.length) {
++  if (imagens.length || midias.length) {
+     conteudo = imagens.map((u) => ({ type: 'image_url', image_url: { url: u } }))
+-      .concat([{ type: 'text', text: conteudo }]);
++      .concat(midias).concat([{ type: 'text', text: conteudo }]);
+   }
+ 
+   c.mensagens.push({ role: 'user', content: conteudo });
+@@ -3757,7 +3817,7 @@
+   // recusada com "recurso_indisponivel"
+   const semImagens = !imagensPermitidas();
+   for (const m of recortar(c.mensagens, sys)) {
+-    const conteudo = (semImagens && Array.isArray(m.content)) ? textoDe(m.content) : m.content;
++    const conteudo = m.content;
+     enviadas.push({ role: m.role === 'assistant' ? 'assistant' : 'user', content: conteudo });
+   }
+   return enviadas;

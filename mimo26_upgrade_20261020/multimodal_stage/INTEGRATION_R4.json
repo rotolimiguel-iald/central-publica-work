@@ -1,0 +1,20 @@
+{
+  "status": "STAGING_ONLY_R4",
+  "supersedes": "R3 decoder PATH policy, public capabilities and static media extensions; provider changes remain R3 baseline pending coordination merge",
+  "scope_this_round": ["iald_mimo_multimodal.py", "client_media.js", "prepare_client.py", "app/iald.js", "client.patch", "test_dependency.py", "INTEGRATION_R4.json", "MANIFEST_R4.json"],
+  "private_manifest_contract": {"path_relative_to_module":"vendor/ffmpeg/manifest.json", "required_field":"ffprobe_sha256", "value":"64 lowercase hexadecimal characters calculated from the installed ffprobe.exe bytes; no hash invented here", "extra_fields":"permitted for license, official download URL and verification receipt; no executable path override accepted"},
+  "dependency_policy": "Fixed vendor/ffmpeg/ffprobe.exe only. Missing/invalid manifest or executable mismatch fails closed. No PATH fallback. Every capability read hashes current executable. Actual execution copies and hashes identical bytes into a new temporary snapshot, validates hash, then launches snapshot without shell; source swap after copy cannot change executable snapshot. Manifest integrity itself belongs to coordinator deployment custody and permissions; replacing both executable and manifest is not prevented by a self-contained hash check.",
+  "public_api": "media_capabilities() -> {'audio':bool,'video':bool,'audio_formats':list[str],'video_formats':list[str],'max_media_bytes':512000,'max_audio_seconds':30,'max_video_seconds':10,'max_media_per_message':1}",
+  "readiness": "audio=True and audio_formats=['wav'] without external dependency. Verified decoder adds mp3/flac/ogg/m4a and video formats mp4/mov/avi/wmv. Readiness describes validator availability, not consent, guaranteed decoding of every codec variant, successful execution of a provider request or browser playback support. Actual probe errors remain visible refusals.",
+  "host_integration": [
+    "from iald_mimo_multimodal import media_capabilities; compute caps=media_capabilities() on host before advertising.",
+    "For eligible consented MiMo, compose provider limits with audio=caps['audio'],video=caps['video'],media_capabilities=caps. For other providers or missing consent2 set audio/video false. Do not let caps bypass authorization.",
+    "Auto owner follows same MiMo eligibility and consent2 rules. JEV receives only metadata projection; attachment bytes remain outside router payload.",
+    "Client reads limitesDoPlano().media_capabilities.audio_formats/video_formats and outer audio/video flags. Formats are extension identifiers, not MIME strings. Missing capability object yields no media picker extensions and rejects local media.",
+    "Use iald_routing_metrics.stamp for provider metric lifecycle per coordination interface; replace R3 metric_task call sites when merging. This R4 deliberately does not edit providers, router, task_policy or webserver.",
+    "Install decoder and license through coordinator plan only, with verified receipt and manifest. No binary downloaded or installed by this front."
+  ],
+  "context_notice": "Client explicitly states 512KB is local media limit, and even smaller input may exceed conversation context; TGL memory is preserved and request refused. No scientific memory, history or input reduction introduced by this round.",
+  "validation": {"dependency_tests":9,"media_tests":9,"client_vm_checks":5,"javascript_syntax":"PASS","initial_dependency_test_attempt":"Windows sandbox denied default temporary directory writes; tests rerun in staging temporary directories and passed","real_ffprobe_execution":"NOT_TESTED_BINARY_RECEIPT_PENDING","browser_device":"NOT_TESTED","provider_calls":0,"credentials_read":0,"production_changes":0},
+  "limits": "Current fixed media512000 bytes, WAV30s and video10s retained. No claim of full 50MB vendor input admission. Structured output/helper and image pipeline remain under prior integration review. Python execution is separate; no native MiMo image/video generation asserted."
+}

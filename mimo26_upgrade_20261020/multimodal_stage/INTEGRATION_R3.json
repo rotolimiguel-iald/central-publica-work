@@ -1,0 +1,30 @@
+{
+  "status": "STAGING_R3_READY_FOR_COORDINATION_NOT_INSTALLED",
+  "supersedes": "R1/R2 handoff capability/audio/video/task fields; older reports retained as history",
+  "provider_api": {
+    "request_media(client)": "Returns kinds:list[image|audio|video],prompt:str,counts:dict,encoded_bytes:int. Scans all user/assistant history for media presence, latest user prompt only, omits system instructions and ARQUIVO blocks. No data URIs or bytes returned. Parser projection is not media validation or consent.",
+    "wire_messages(messages,prefix,profile='',*,provider=None,images_authorized=False,media_authorized=False)": "MiMo user lists only; image flag required for list attachments, media flag additionally required for audio/video. Both flags derive from authenticated server consent v2, never request JSON. Unknown parts and assistant media fail closed. Existing prefix and ACOM projection preserved.",
+    "limits(provider,*,media_authorized=False)": "MiMo imagens=True; audio/video=True only with explicit media_authorized; Kimi/DeepSeek media false. No automatic routing implementation included.",
+    "metric_task(messages)": "Host calls iald_task_policy.classify on last user textual content excluding ARQUIVO blocks. Ignores client task labels, system/developer instructions, tool outputs and media bytes. Produces classification only, no prompt saved.",
+    "Evaluation.stream": "record.task populated by metric_task(messages) before self.save/dispatch; record.model remains exact configured transport model.",
+    "Evaluation.observe(flow,model,*,rates=None,memory_sha256=None,messages=None)": "Optional host messages argument; task classification when supplied; unknown when absent. Coordination must pass actual host conversation, never a client-provided task label."
+  },
+  "new_runtime_module": "iald_mimo_multimodal.py beside iald_app_providers.py",
+  "media_wire": {"audio": {"type":"input_audio","input_audio":{"data":"data:audio/wav;base64,..."}},"video":{"type":"video_url","video_url":{"url":"data:video/mp4;base64,..."}}},
+  "local_limits": "One audio/video per user message; decoded512000bytes; audio30seconds/video10seconds; strict base64, MIME/signature, stream-type and measured-duration gates. Request/context byte admission remains intact, can refuse input that leaves no response budget. No truncation added.",
+  "decoder_dependency": "WAV uses Python wave to measure duration without external executable. Other formats require local ffprobe through PATH, subprocess without shell, file protocol only, timeout5s, temporary directory removed. ffprobe not found in this session PATH. MP3/FLAC/OGG/M4A and video stay visibly refused until trusted decoder available. No install authorized/performed here.",
+  "client": "app/iald.js staged; picker extensions controlled by audio/video flags, local metadata duration and byte bounds, preview player using local data URI, name textContent; object URL revoked after duration check; unsupported browser codec fails visibly. PDF text and images keep existing composer. Audio/video serialized into official parts. montarEnvio retains parts instead of silently flattening when capability changes. No index.html edit needed. Coordinator copies www/iOS assets later.",
+  "webserver_steps_for_coordinator": [
+    "Require MiMo individual consent version2 for every request containing media, including media still in history; recheck at dispatch and on revocation.",
+    "Call request_media(client); give JEV only prompt/kinds/counts/size metadata, never attachment payloads or extracted file data. Non-empty kinds requires eligible MiMo destination and consent2, otherwise visible refusal; do not drop media.",
+    "After choosing MiMo, wire_messages(client,verified_prefix,profile,provider='mimo',images_authorized=True,media_authorized=True) only under the server-owned consent/permission checks. Keep original history outside JEV.",
+    "Expose limits('mimo',media_authorized=consent2_and_decoder_capability) in manual mode; Auto owner composes media availability only when MiMo eligible and consent2 valid. Kimi must remain false.",
+    "Handle ValueError/probe failures before model credential access; preserve current window/spending/ACOM/moderation checks. Do not advertise video/audio codecs whose validator is unavailable.",
+    "For observers pass messages=host_messages so record.task exists for adaptation. Read record.task and record.model; no client label accepted. metric_task excludes ARQUIVO blocks.",
+    "Merge transport.patch and client.patch against pinned source; preserve any other agents' provider changes. No iald_auto_router copy or edits exist in this front."
+  ],
+  "validation": {"transport_tests":21,"media_tests":9,"client_vm_checks":5,"javascript_syntax":"PASS node --check","real_media_test":"WAV synthetic valid container; video probe mocked","browser_device":"NOT_TESTED","full_webserver":"COORDINATION_PENDING","paid_calls":0,"credentials":0,"production_install":false,"independent_review":"PENDING"},
+  "structured": "json_object formatter only, not wired to _api; json_schema unsupported by helper. No new structured workflow claimed.",
+  "tools": "MiMo final round omits tool definitions; host rejects unexpected final tool calls. Existing reasoning_content replay retained and not emitted to user.",
+  "scientific_scope": "No scientific sources, kernel, core, central ACOM or gate edited. No native MiMo image/video generation or hosted Python asserted."
+}

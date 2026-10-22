@@ -1,0 +1,11 @@
+--- production/store.py
++++ staging/store.py
+@@ -706,7 +706,7 @@
+             return current
+         except sqlite3.Error as exc:
+             conn.rollback()
+-            raise IntegrityError('Context transaction failed') from exc
++            raise IntegrityError('Context transaction failed [' + (exc.sqlite_errorname if isinstance(getattr(exc, 'sqlite_errorname', None), str) and exc.sqlite_errorname in vars(sqlite3) and exc.sqlite_errorname.startswith('SQLITE_') else 'SQLITE_ERROR_UNKNOWN') + ']') from exc
+         except BaseException:
+             conn.rollback()
+             raise

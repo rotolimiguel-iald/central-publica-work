@@ -1,0 +1,35 @@
+--- R2/iald_router_media_view.py
++++ R3/iald_router_media_view.py
+@@ -72,14 +72,26 @@
+             # Even JSON-looking base64 (e.g. "1234" or "true") is an exact
+             # payload in this typed transport field, not embedded JSON.
+             return string_fn(value, path, media)
+-        parsed = _json_string(value)
+-        if parsed is not None:
++        parts = []
++        remaining = value
++        index = 0
++        while True:
++            parsed = _json_string(remaining)
++            if parsed is None:
++                parts.append(string_fn(remaining, path + '::tail', media))
++                return ''.join(parts)
+             prefix, obj, suffix, original = parsed
+             transformed = _walk(obj, string_fn, path + '::json', media, depth + 1)
+-            return (string_fn(prefix, path + '::prefix', None)
+-                    + (original if transformed == obj else encode(transformed))
+-                    + (_walk(suffix, string_fn, path + '::suffix', None, depth + 1) if suffix else ''))
+-        return string_fn(value, path, media)
++            parts.extend((string_fn(prefix, path + '::prefix', None),
++                          original if transformed == obj else encode(transformed)))
++            if not suffix:
++                return ''.join(parts)
++            # Sibling JSON fragments are not nested state. Keep the depth bound
++            # for actual JSON nesting without rejecting a long scientific file.
++            if len(suffix) >= len(remaining):
++                raise MediaViewError('Non-progressing JSON media scan')
++            remaining = suffix
++            index += 1
+     return value
+ 
+ 

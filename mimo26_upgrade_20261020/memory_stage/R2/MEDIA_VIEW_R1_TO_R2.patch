@@ -1,0 +1,118 @@
+--- R1/iald_router_media_view.py
++++ R2/iald_router_media_view.py
+@@ -11,12 +11,14 @@
+ import json
+ import re
+ 
+-SCHEMA = 'iald.router-media-view/v1'
++SCHEMA = 'iald.router-media-view/v2'
+ URI = re.compile(r'data:((?:image|audio|video)/[A-Za-z0-9.+-]+);base64,([A-Za-z0-9+/=]+)', re.I)
+ MEDIA_START = re.compile(r'data:(?:image|audio|video)/', re.I)
+ FILE_BLOCK = re.compile(r'\[ARQUIVO:[^\n]*?\][\s\S]*?\[FIM\]')
+ PROV_START = '\n<IALD_ROUTER_MEDIA_VIEW_V1>\n'
+ PROV_END = '\n</IALD_ROUTER_MEDIA_VIEW_V1>'
++ACOM_START = '<IALD_COMMON_MEMORY_V1>'
++ACOM_END = '</IALD_COMMON_MEMORY_V1>'
+ 
+ 
+ class MediaViewError(ValueError):
+@@ -66,6 +68,10 @@
+     if isinstance(value, list):
+         return [_walk(item, string_fn, path + '[' + str(i) + ']', media, depth + 1) for i, item in enumerate(value)]
+     if isinstance(value, str):
++        if media and re.fullmatch(r'[A-Za-z0-9+/]+={0,2}', value):
++            # Even JSON-looking base64 (e.g. "1234" or "true") is an exact
++            # payload in this typed transport field, not embedded JSON.
++            return string_fn(value, path, media)
+         parsed = _json_string(value)
+         if parsed is not None:
+             prefix, obj, suffix, original = parsed
+@@ -91,7 +97,8 @@
+                             state_sha256=self.receipt['state_sha256'],
+                             objective_sha256=snapshot['objective_sha256'])
+         self.inventory = {}
+-        self.tokens = {}
++        self.tokens = {}  # explicit complete URIs and complete attachment blocks ONLY
++        self.typed_payloads = {}  # (media kind, exact value), never substring matching
+ 
+         def collect(text, path, media):
+             for block in FILE_BLOCK.finditer(text):
+@@ -129,20 +136,29 @@
+         item = self.inventory[digest]
+         item['count'] += 1
+         item['locations'].append(dict(json_path_sha256=sha(path)))
+-        self.tokens[whole] = marker
+-        self.tokens[payload] = marker
++        if whole != payload:
++            self.tokens[whole] = marker
++        self.typed_payloads[(mime.split('/', 1)[0].lower(), payload)] = marker
+ 
+     def transform(self, value):
+-        tokens = sorted(self.tokens, key=len, reverse=True)
+-
+         def replace(text, path, media):
+-            for token in tokens:
+-                text = text.replace(token, self.tokens[token])
++            if media:
++                kind = {'image_url': 'image', 'input_audio': 'audio', 'video_url': 'video'}.get(media, media)
++                exact = self.typed_payloads.get((kind, text))
++                if exact is not None:
++                    return exact
++            def explicit(match):
++                marker = self.tokens.get(match.group(0))
++                if marker is None:
++                    raise MediaViewError('Explicit attachment lacks same-scope custody')
++                return marker
++            text = FILE_BLOCK.sub(explicit, text)
++            text = URI.sub(explicit, text)
+             if MEDIA_START.search(text):
+                 raise MediaViewError('Media payload lacks same-scope custody')
+             if '[ARQUIVO:' in text:
+                 raise MediaViewError('Attachment lacks same-scope custody')
+-            if media and text and re.fullmatch(r'[A-Za-z0-9+/]+={0,2}', text):
++            if media and text and not re.fullmatch(r'\[IALD_MEDIA_CUSTODY:[0-9a-f]{64}\]', text):
+                 raise MediaViewError('Unbound media payload')
+             return text
+         result = _walk(value, replace)
+@@ -232,7 +248,13 @@
+     common = body.get('state', {}).get('common_memory')
+     if common is not None:
+         _check_derived(common, view)
++    protected = body.get('state', {}).get('canonical_memory')
++    # Scientific text has no media transport role. Refuse ambiguous embedded
++    # payloads instead of changing any byte of the scientific package.
++    _unbound_text_only(protected)
+     result = view.transform(body)
++    if result.get('state', {}).get('canonical_memory') != protected:
++        raise MediaViewError('Scientific routing text changed during media projection')
+     result['state']['router_media_view'] = view.provenance()
+     view.checked()
+     return result
+@@ -296,8 +318,25 @@
+             if old.get('schema') != SCHEMA or old.get('custody_pointer') != view.pointer:
+                 raise MediaViewError('Stale existing media provenance')
+             message['content'] = prefix + suffix
+-    result = [view.transform(message) if message.get('role') in ('system', 'developer')
+-              else message for message in clean_messages]
++    result = []
++    for message in clean_messages:
++        if message.get('role') in ('system', 'developer'):
++            content = message.get('content')
++            if not isinstance(content, str):
++                raise MediaViewError('Host operational envelope must be textual')
++            if ACOM_START in content:
++                if content.count(ACOM_START) != 1 or content.count(ACOM_END) != 1:
++                    raise MediaViewError('Ambiguous operational memory envelope')
++                prefix, remainder = content.split(ACOM_START, 1)
++                operational, suffix = remainder.split(ACOM_END, 1)
++                _unbound_text_only(prefix)
++                _unbound_text_only(suffix)
++                message['content'] = prefix + ACOM_START + view.transform(operational) + ACOM_END + suffix
++            else:
++                # Preserve science, instructions and protocol text outside the
++                # host ACOM region byte-for-byte; no bare payload scan there.
++                _unbound_text_only(content)
++        result.append(message)
+     # References inside system strings resolve through the unchanged memory
+     # envelope and this scoped pointer, not a fabricated full-state artifact.
+     if view.inventory:

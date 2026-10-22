@@ -1,0 +1,49 @@
+--- a/iald_app_providers.py
++++ b/iald_app_providers.py
+@@ -4,6 +4,7 @@
+ prompts, answers, credentials or account identity. Nothing sends on import.
+ """
+ import iald_app_memory as app_memory
++import iald_routing_metrics as routing_metrics
+ from copy import copy
+ from contextlib import closing
+ from datetime import datetime, timezone
+@@ -169,18 +170,6 @@
+     return dict(kinds=[key for key,value in counts.items() if value],prompt=prompt,counts=counts,encoded_bytes=encoded_bytes)
+ 
+ 
+-def metric_task(messages):
+-    """Classify the latest user text on the host; never accept client task labels."""
+-    import re
+-    from iald_task_policy import classify
+-    for message in reversed(messages):
+-        if isinstance(message, dict) and message.get('role') == 'user':
+-            content = message.get('content')
+-            text = content if isinstance(content,str) else '\n'.join(
+-                p['text'] for p in content if isinstance(p,dict) and p.get('type')=='text' and isinstance(p.get('text'),str)) if isinstance(content,list) else ''
+-            text = re.sub(r'\[ARQUIVO:[^\n]*\][\s\S]*?\[FIM\]', '', text)
+-            return classify(text)
+-    return classify('')
+ 
+ 
+ def transport_response_format(mode=None):
+@@ -373,7 +362,8 @@
+         started = time.monotonic()
+         record = dict(id=uuid.uuid4().hex, provider=model['motor'], model=model['id'],
+             utc=datetime.now(timezone.utc).isoformat(), status='started', memory_sha256=memory_sha256,
+-            first_text_seconds=None, calls=[], streaming=True, metrics_source='existing_app_sse', task=metric_task(messages) if messages is not None else 'unknown')
++            first_text_seconds=None, calls=[], streaming=True, metrics_source='existing_app_sse')
++        routing_metrics.stamp(record, messages)
+         decoder=codecs.getincrementaldecoder('utf-8')()
+         buffer=''
+         error=False
+@@ -433,7 +423,8 @@
+             utc=datetime.now(timezone.utc).isoformat(), status='started', memory_sha256=memory_sha256,
+             memory_scope='SHARED_VERIFIED_FIXED_CORE_AND_CLUSTER', context_count='UTF8_CONSERVATIVE_BOUND',
+             price_source=spec['price_source'], pricing_checked_at='2026-09-30',
+-            streaming=provider != 'kimi', calls=[], first_text_seconds=None, task=metric_task(messages))
++            streaming=provider != 'kimi', calls=[], first_text_seconds=None)
++        routing_metrics.stamp(record, messages)
+ 
+         def emit(value):
+             while not cancel.is_set():
