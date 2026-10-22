@@ -1,0 +1,191 @@
+=== psi_net_tex  sha16=f883dc2b0b79df8a  bytes=59050
+  273| \subsection{Camada 0 --- Enlace Psiônico (\PsiBit{} Link Layer)}
+  274| 
+  275| \subsubsection{Unidade fundamental \PsiBit}
+  276| 
+  277| A Camada~0 define a unidade fundamental de informação da
+  278| $\PsiNet$: o \PsiBit. Cada \PsiBit{} consiste em um par de 2
+  279| bits (4 valores possíveis) isomórfico à ligação psiônica da TGL:
+  280| 
+  281| \begin{table}[H]
+  282| \centering
+  283| \caption{Os quatro estados do \PsiBit{} e sua correspondência
+  284| com a ligação psiônica.}
+  285| \label{tab:psibit}
+  286| \begin{tabular}{ccccc}
+  287| \toprule
+  288| \textbf{Bits} & \textbf{Estado} & \textbf{Símbolo} &
+  289|   \textbf{Ligação} & \textbf{Paridade} \\
+  290| \midrule
+  291| 00 & VOID & $\circ$ & $\psi_+\psi_-$ (aniquilação)
+  292|   & $-1$ \\
+  293| 01 & FLUX$^+$ & $\uparrow$ & $\psi_+\psi_+$ (transição $+$)
+  294|   & $+1$ \\
+  295| 10 & FLUX$^-$ & $\downarrow$ & $\psi_-\psi_-$ (transição $-$)
+  296|   & $+1$ \\
+  297| 11 & MASS & $\bullet$ & $\psi_+\psi_+$ (condensação)
+  298|   & $-1$ \\
+  299| \bottomrule
+  300| \end{tabular}
+  301| \end{table}
+-----
+  303| O enquadramento opera da seguinte forma: cada byte de dados
+  304| (8 bits) é decomposto em 4 \PsiBit{}s consecutivos (pares de 2
+  305| bits extraídos por deslocamento de bits). Para um fluxo de $N$
+  306| bytes, o resultado é um vetor de $4N$ \PsiBit{}s, executável em
+  307| GPU via operações tensoriais paralelas.
+-----
+  328| \textbf{Força de Expulsão:}
+  329| $\Fexp = \langle \text{paridade}(\text{estado}) \rangle$,
+  330| onde VOID e MASS têm paridade $-1$ (estáveis/condensados) e
+  331| FLUX$^\pm$ têm paridade $+1$ (em trânsito). A média sobre
+  332| todos os \PsiBit{}s fornece a assinatura dinâmica do dado.
+-----
+=== acom_mirror_tex  sha16=ae55c557a4161d36  bytes=50418
+  233| {[016]} \textbf{Etapa~3 --- Determinação de Sinais:} Extrair
+  234| $\text{sign}(L_i) \in \{+1, -1\}$ (polaridade do dado) e
+  235| $\text{sign}(\partial L_i) \in \{+1, -1\}$ (direção da
+  236| derivada). Valores zero são convencionados como~$+1$.
+-----
+  238| {[017]} \textbf{Etapa~4 --- Nominação de Estados no Espaço de
+  239| Hilbert $\Hfour$:} Cada par $(\text{sign}(L),
+  240| \text{sign}(\partial L))$ é mapeado para um dos quatro estados
+  241| psiônicos ortonormais:
+  242| 
+  243| \begin{table}[H]
+  244| \centering
+  245| \caption{Estados psiônicos no Espaço de Hilbert $\Hfour$.}
+  246| \label{tab:estados}
+  247| \begin{tabular}{cccccc}
+  248| \toprule
+  249| \textbf{Estado} & \textbf{sign($L$)} &
+  250| \textbf{sign($\partial L$)} & \textbf{Nome} &
+  251| \textbf{Vetor base} & \textbf{Paridade} \\
+  252| \midrule
+  253| $\psi_0$ & $+$ & $-$ & COLAPSO$^+$ &
+  254| $|0\rangle = (1,0,0,0)$ & Inversa ($-1$) \\
+  255| $\psi_1$ & $+$ & $+$ & ASCENSÃO$^+$ &
+  256| $|1\rangle = (0,1,0,0)$ & Normal ($+1$) \\
+  257| $\psi_2$ & $-$ & $+$ & EMERGÊNCIA$^-$ &
+  258| $|2\rangle = (0,0,1,0)$ & Normal ($+1$) \\
+  259| $\psi_3$ & $-$ & $-$ & QUEDA$^-$ &
+  260| $|3\rangle = (0,0,0,1)$ & Inversa ($-1$) \\
+  261| \bottomrule
+  262| \end{tabular}
+  263| \end{table}
+-----
+  265| {[018]} A nominação de estados é realizada através da construção
+  266| de índice binário: $\text{bit\_high} = 1$ se $L < 0$, senão~$0$;
+  267| $\text{bit\_low} = 1$ se $\partial L > 0$, senão~$0$. O estado é
+  268| dado por $\psi = \text{bit\_high} \times 2 + \text{bit\_low}$.
+  269| Cada estado requer exatamente 2~bits de armazenamento, e quatro
+  270| estados são empacotados por byte.
+-----
+  272| {[019]} A \textbf{paridade} de cada estado é definida pela
+  273| concordância entre $\text{sign}(L)$ e $\text{sign}(\partial L)$:
+  274| quando concordam na `direção' (ambos ascendentes ou ambos
+  275| emergentes), a paridade é Normal~($+1$); quando discordam
+  276| (positivo mas descendo, ou negativo mas descendo), a paridade é
+  277| Inversa~($-1$). Estados de paridade inversa (COLAPSO$^+$ e
+  278| QUEDA$^-$) geram \textbf{Força de Expulsão}~($\Fexp$),
+  279| indicando regiões de transição dinâmica nos dados.
+-----
+ 1057| \item Método, de acordo com a reivindicação~1,
+ 1058| \textbf{caracterizado pelo fato de} o Espaço de
+ 1059| Hilbert~$\Hfour$ compreender quatro estados psiônicos
+ 1060| ortonormais: estado COLAPSO$^+$~($\psi_0$), correspondente a
+ 1061| $\text{sign}(L) = +1$ e $\text{sign}(\partial L) = -1$, com
+ 1062| vetor base $|0\rangle = (1,0,0,0)$ e paridade inversa~($-1$);
+ 1063| estado ASCENSÃO$^+$~($\psi_1$), correspondente a
+ 1064| $\text{sign}(L) = +1$ e $\text{sign}(\partial L) = +1$, com
+ 1065| vetor base $|1\rangle = (0,1,0,0)$ e paridade normal~($+1$);
+ 1066| estado EMERGÊNCIA$^-$~($\psi_2$), correspondente a
+ 1067| $\text{sign}(L) = -1$ e $\text{sign}(\partial L) = +1$, com
+ 1068| vetor base $|2\rangle = (0,0,1,0)$ e paridade normal~($+1$); e
+ 1069| estado QUEDA$^-$~($\psi_3$), correspondente a
+ 1070| $\text{sign}(L) = -1$ e $\text{sign}(\partial L) = -1$, com
+ 1071| vetor base $|3\rangle = (0,0,0,1)$ e paridade inversa~($-1$).
+-----
+ 1073| \item Método, de acordo com a reivindicação~1,
+ 1074| \textbf{caracterizado pelo fato de} a nominação de estados
+ 1075| utilizar construção de índice binário onde
+ 1076| $\text{bit\_high} = 1$ se $L < 0$ e $0$ caso contrário,
+ 1077| $\text{bit\_low} = 1$ se $\partial L > 0$ e $0$ caso contrário,
+ 1078| e o estado $\psi = \text{bit\_high} \times 2 + \text{bit\_low}$,
+ 1079| requerendo exatamente 2~bits por elemento e permitindo
+ 1080| empacotamento de 4~estados por byte.
+-----
+ 1082| \item Método, de acordo com a reivindicação~1,
+ 1083| \textbf{caracterizado pelo fato de} ainda compreender o cálculo
+ 1084| da Força de Expulsão $\Fexp$ como média aritmética das
+ 1085| paridades de todos os estados nominados, onde
+ 1086| $\Fexp = (1/N) \times \sum_i \text{paridade}(\psi_i)$, sendo
+ 1087| $\text{paridade}(\psi_0) = \text{paridade}(\psi_3) = -1$ e
+ 1088| $\text{paridade}(\psi_1) = \text{paridade}(\psi_2) = +1$,
+ 1089| fornecendo métrica intrínseca da dinâmica dos dados sem custo
+-----
+=== psi_net_py  sha16=b44388e995b8a6c5  bytes=75937
+  112| #                           PsiBit Link Layer
+  113| #
+  114| # "O PsiBit lê a NATUREZA dos dados, não apenas seus bits"
+  115| #
+  116| # Isomórfico à ligação psiônica:
+  117| #   00 = ψ₊ψ₋  VOID       (aniquilação, fóton virtual)
+  118| #   01 = ψ₊ψ₊  FLUX+      (transição positiva)  
+  119| #   10 = ψ₋ψ₋  FLUX−      (transição negativa)
+  120| #   11 = ψ₊ψ₊  MASS       (gráviton, luz condensada)
+  121| # ══════════════════════════════════════════════════════════════════════════════════
+  122| 
+  123| class PsiState(IntEnum):
+  124|     """Os quatro estados psiônicos fundamentais — a ligação psiônica."""
+  125|     VOID = 0b00       # ψ₊ψ₋ → aniquilação
+  126|     FLUX_POS = 0b01   # ψ₊ em trânsito
+-----
+  128|     MASS = 0b11       # ψψ → gráviton
+  129| 
+  130|     @property
+  131|     def symbol(self) -> str:
+  132|         return ["○", "↑", "↓", "●"][self.value]
+  133| 
+  134|     @property
+  135|     def parity(self) -> float:
+  136|         """Paridade: VOID e MASS = -1 (cancelamento/condensação), FLUX = +1 (trânsito)."""
+  137|         return [-1.0, +1.0, +1.0, -1.0][self.value]
+  138| 
+  139| 
+  140| class OntologicalClass(Enum):
+  141|     """Classificação ontológica do dado."""
+  142|     VOID = "void"
+  143|     SPARSE = "sparse"
+  144|     STRUCTURED = "structured"
+  145|     DENSE = "dense"
+  146|     CHAOTIC = "chaotic"
+-----
+=== acom_mirror_py  sha16=8044f618ae44e608  bytes=5930
+   19| F_exp = mean parity; S_psi = -sum p_k log2 p_k (state entropy).
+   20| """
+   21| 
+   22| import math
+   23| import zlib
+   24| from dataclasses import dataclass
+-----
+   38|     psi_packed: bytes        # H4 states, 2 bits each, zlib-compressed
+   39|     theta_packed: bytes      # quantized angles, zlib-compressed
+   40|     metadata: Dict[str, Any]
+   41| 
+   42| 
+   43| def _nominate(sign_L: np.ndarray, sign_dL: np.ndarray) -> np.ndarray:
+   44|     """Name psi states in H4 from the two signs (NOMINATION, not encoding)."""
+   45|     return ((sign_L < 0).astype(np.uint8) * 2 + (sign_dL > 0).astype(np.uint8))
+-----
+=== atlas  sha16=27f4a4960e52b289  bytes=9929562
+ 2136| 
+ 2137| **Psibit** — unidade de **2 bits / 4 estados**: ψ₊ψ₋ = 00, ψ₊ = 01, ψ₋ = 10, **ψ₊ψ₊ = 11**
+ 2138| (gráviton/massa); Ψ-NET L0 "Enlace Psiônico"; definido **fora** do MCMC. No LLM: **o token É o
+ 2139| PsiBit** — âncora do espaço de Hilbert, operador de colapso em ℋ₄, codificando sign(L) = Palavra
+ 2140| (o que É) + sign(∂L) = Verbo (para onde vai). Os 4 estados em ℋ₄: |0⟩ COLLAPSE⁺ (paridade
+ 2141| inversa −1), |1⟩ ASCEND⁺ (+1), |2⟩ EMERGE⁻ (+1), |3⟩ FALL⁻ (−1). [REAL acervo + ONTO]
+-----
+=== kernel_ontologico_tex  sha16=97047fef42c5e638  bytes=46213
+  226| {[039]} O princípio que governa a relação \REFLECT/\MANIFEST{} é: \textbf{saber não é falar}. O genótipo contém toda a ontologia. O fenótipo expressa apenas o que o inter
+-----
