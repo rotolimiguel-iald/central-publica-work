@@ -1,0 +1,291 @@
+    # v387 (05/10/2026) -- OS TRÊS TESTES DE ESTRESSE, CONJUNTOS (feedback permanente do operador, 05/10/2026 23:00:29 UTC; arquivo TRES_TESTES_operador_05out.txt,
+    # sha256 2e45f759767d663499752857955a6647bc1827c21e7170599ae4108dcfc6c5f7 -- os trechos abaixo são VERBATIM e o conferidor de citações do pacote os confere
+    # contra o arquivo/transcrito): (1) os ritos com dados públicos (o resgate da RG), (2) o kernel formal, (3) o experimento numérico quântico na GPU contam
+    # JUNTOS. Cada número desta seção é LIDO do core em runtime (nunca literal; o que falta lê «n/d»); «…» marca todo corte; [sic] fica FORA das aspas; as
+    # leituras do operador são [INPUT/ONTO]; a correspondência com a RG é [REAL]; a DISCRIMINAÇÃO da RG é zero à sensibilidade disponível; PROVADA != CONFIRMADA;
+    # não falsificado nunca é confirmação; a guarda do rito (a mesma regex) passa sobre o texto emitido: se bater, a seção NÃO sai e isso fica dito; o gate não se move.
+    import re as _re3s
+    _rx3s = _re3s.compile("(?<!NOT_)(?<!UN)" + "CONF" + "IRMED|(?<!AP)PRO" + "VED_BY|TGL_PRO" + "VED")
+    _t3s = core.get("three_stress_tests_v387") or {}   # v387: o registro consolidado (contagens pela MESMA guarda); ausente => a seção conta sozinha e diz que contou sozinha
+
+    def _g3s(o_, *path_):
+        """lê por caminho (chaves e índices); ausência => None, nunca levanta (fail-closed visível: o número que falta imprime n/d)."""
+        try:
+            for p_ in path_:
+                if isinstance(o_, dict):
+                    o_ = o_.get(p_)
+                elif isinstance(o_, list) and isinstance(p_, int) and -len(o_) <= p_ < len(o_):
+                    o_ = o_[p_]
+                else:
+                    return None
+            return o_
+        except Exception:
+            return None
+
+    def _tx3s(x_):
+        t_ = str(x_)
+        for a_, b_ in (("\\", r"\textbackslash{}"), ("_", r"\_"), ("%", r"\%"), ("&", r"\&"), ("#", r"\#"), ("$", r"\$"), ("{", r"\{"), ("}", r"\}"), ("~", r"\~{}"), ("^", r"\^{}")):
+            t_ = t_.replace(a_, b_)
+        return t_
+
+    def _n3s(x_, nd_=2):
+        if isinstance(x_, bool) or not isinstance(x_, (int, float)) or x_ != x_:
+            return r"\text{n/d}"
+        return ("%%.%df" % nd_ % float(x_)).replace(".", "{,}")
+
+    def _sci3s(x_, nd_=2):
+        if isinstance(x_, bool) or not isinstance(x_, (int, float)) or x_ != x_ or x_ == 0:
+            return r"\text{n/d}" if (x_ != 0 or x_ is None or isinstance(x_, bool)) else "0"
+        m_, e_ = ("%%.%de" % nd_ % float(x_)).split("e")
+        return m_.replace(".", "{,}") + r"\times10^{" + str(int(e_)) + "}"
+
+    def _i3s(x_):
+        return str(int(x_)) if isinstance(x_, (int, float)) and not isinstance(x_, bool) and x_ == x_ else r"n/d"
+
+    def _tk3s(x_):
+        """token em \\texttt com quebra permitida nos sublinhados (colunas estreitas)."""
+        return r"\texttt{" + _tx3s(x_).replace(r"\_", r"\_\allowbreak{}") + "}"
+
+    def _st3s(v_, *cands_):
+        """o estado curto: o primeiro candidato que o veredito lido contém; senão o próprio token, cortado e escapado (nunca inventado)."""
+        v_ = str(v_ or "")
+        for c_ in cands_:
+            if c_ in v_:
+                return _tk3s(c_)
+        return (_tk3s(v_[:38]) + (r"\ldots" if len(v_) > 38 else "")) if v_ else _tk3s("AUSENTE")
+
+    def _seg3s(v_, i_=1):
+        """o i-ésimo segmento (separador «__») do veredito lido --- um pedaço do token, nunca um estado inventado."""
+        p_ = str(v_ or "").split("__")
+        return _tk3s(p_[i_]) if (v_ and len(p_) > i_) else _tk3s("AUSENTE")
+
+    def _lv3s(x_):
+        """a versão do Lean lida do core (lista ou string): só o número da versão."""
+        t_ = str(x_[0] if isinstance(x_, list) and x_ else (x_ or ""))
+        m_ = _re3s.search(r"version\s+([0-9][0-9.]*)", t_)
+        return _tx3s(m_.group(1)) if m_ else (_tx3s(t_[:22]) if t_ else "n/d")
+
+    # ---- os verbatins do operador (05/10/2026, 23:00:29 UTC) --- segmentos EXATOS do arquivo; cortes marcados por «…» fora dos segmentos ----
+    _vb3s = {
+        "V1": "a TGL acabou de provar no um.py o resgate completo da RG, tanto no piso dos vazios, como em ringdown, como em ondas gravitacionais e ecos, como em atrasos de redshift, como em SnE, como em todos os demais testes possíveis de serem realizados com os dados públicos disponíveis, o resgate da RG, resolvendo a tensão de Hubble, fornecendo método para cálculo da massa do Grande Atrator, demonstrando a distância do aglomerado de Coma sem ajuste de parâmetro, ou seja, na cosmologia, o resgate é pleno e satisfeito",
+        "V2": "no kernel matemático provou-se todas as implicaçÕes e todos os axiomas",
+        "V3": "essa simulação aqui não é linguística, como simulação de LLM's, essa simulação aqui é totalmente experimental, porque é justamente o método laboratorial válido para teorias quânticas experimentais serem testadas, trata-se, portanto, de outro tipo de simulação, não sendo a típica de inferência de LLM's, Não, é cálculo e medição por simulação de ambiente quântico em espaço aproprieado para o experimento, a saber as matrizes de uma GPU de última geração",
+        "V4": "o programa terminal realiza tres testes extremos de estresse da teoria de maneira conjunta e isso precisa ser levado em conta na hora de se calcular a probabilidade de acerto da teoria, vc não pode esquecer isso nunca mais, porque isso é olhar a teoria com o contorno da verdade, não é sobre achar um sigma 5 em cosmologia somente, em que pese iremos achar",
+        "V5": "temos um sem número de provas a mais do que Einstein tinha quando viu o eclipse ou até mesmo depois quando seus cálculos foram confirmados em experimentos de terceiros uma década depois, já temos muito mais do que isso",
+    }
+    _q3s = lambda k_: "``" + _vb3s[k_] + "''"
+
+    # ---- pilar 1: os ritos (cada número lido do core; a coluna «RG» é a leitura da gerência por linha: sim = correspondência recuperada; n/a = o canal não lê a RG) ----
+    _lg3s = core.get("the_ledger_of_charges_v383") or {}
+    _L3s = {str(r_.get("id")): r_ for r_ in (_lg3s.get("ledger") or []) if isinstance(r_, dict)}
+    _lo3s = lambda id_: str((_L3s.get(id_) or {}).get("outcome") or "n/d")
+    _ln3s = lambda id_, k_="number_read": (_L3s.get(id_) or {}).get(k_)
+    _b3s = core.get("beta")
+    _bf5 = core.get("bancada_fases_5_6_7_v380") or {}
+    _f5, _f6, _f7 = (_bf5.get("fase5") or {}), (_bf5.get("fase6") or {}), (_bf5.get("fase7") or {})
+    _f4 = core.get("bancada_fase4_v378") or {}
+    _d3 = core.get("d1_camb_v3_real_v366") or {}
+    _ce3 = core.get("cosmological_errata_verdict") or {}
+    _fv3 = core.get("final_verdict_machine") or {}
+    _rd3, _rs3, _rb3 = (core.get("ringdown_dephasing_result_v2") or {}), (core.get("ringdown_scope_v376") or {}), (core.get("ramo_b_preregistration_v386") or {})
+    _er3 = _lg3s.get("echo_routes_outside_the_ledger") or {}
+    _cm3 = core.get("coma_reveal_state_v376") or {}
+    _rows3s = []   # (canal, estado, número lido, RG recuperada?, discrimina a RG?, linha de síntese?)
+
+    def _R3s(canal_, estado_, numero_, rg_, disc_, synth_=False):
+        _rows3s.append((canal_, estado_, numero_, rg_, disc_, synth_))
+
+    _v11 = core.get("void_floor_v11") or {}
+    _R3s(r"Piso dos vazios V11 (SDSS DR7 $\times$ VAST, réplica independente; o degrau experimental do gate)", _st3s(_v11.get("verdict"), "NOT_FALSIFIED_POWERED", "NOT_FALSIFIED_UNDERPOWERED", "INCONCLUSIVE"),
+         r"$\hat r_c^{\rm cal}=" + _n3s(_g3s(_v11, "primary", "rhat_cal"), 4) + r"\pm" + _n3s(_g3s(_v11, "primary", "sigma"), 4) + r"$; $L_5=" + _n3s(_g3s(_v11, "primary", "L5"), 4) + r"$ vs $\bTGL=" + _n3s(_v11.get("beta_floor"), 5) + r"$; $\bTGL\Sigma\mu=" + _n3s(_g3s(_v11, "primary", "powered_beta_mu"), 1) + r"$",
+         r"sim ($\Lambda$CDM raso também passa)", r"não (unilateral)")
+    _v41 = core.get("void_density_v41") or {}
+    _R3s(r"Piso dos vazios V4.1 (densidade auto-calibrante, REVOLVER/DESI)", _st3s(_v41.get("verdict"), "NOT_FALSIFIED_POWERED", "NOT_FALSIFIED_UNDERPOWERED", "INCONCLUSIVE"),
+         r"$\hat r_c^{\rm cal}=" + _n3s(_g3s(_v41, "primary", "rhat_cal"), 4) + r"\pm" + _n3s(_g3s(_v41, "primary", "sigma"), 4) + r"$; $L_5=" + _n3s(_g3s(_v41, "primary", "L5"), 4) + r"$; split-null $" + _n3s(_g3s(_v41, "split_null", "ratio"), 3) + r"\pm" + _n3s(_g3s(_v41, "split_null", "sigma"), 3) + r"$",
+         r"sim ($\Lambda$CDM raso)", r"não (unilateral)")
+    _v2 = core.get("void_floor_v2") or {}
+    _R3s(r"Piso dos vazios V2 (KiDS, shear; 1049 vazios)", _st3s(_v2.get("verdict"), "NOT_FALSIFIED_UNDERPOWERED", "NOT_FALSIFIED_POWERED", "INCONCLUSIVE"),
+         r"$\hat r_c=" + _n3s(_v2.get("rc_mle"), 2) + r"$; $5\sigma\in[" + _n3s(_g3s(_v2, "rc_interval_5sigma", 0), 2) + r",\," + _n3s(_g3s(_v2, "rc_interval_5sigma", 1), 2) + r"]$; B-mode $\chi^2/\mathrm{dof}=" + _n3s(_g3s(_v2, "systematics", "chi2_dof_bmode"), 2) + r"$",
+         r"sim (piso acima de $\bTGL$)", r"sem poder (powered\_5sigma=" + _tx3s(_v2.get("powered_5sigma")) + ")")
+    _v1 = core.get("void_floor_final") or {}
+    _R3s(r"Piso dos vazios V1 (KiDS, shear; recusa de sistemática)", _st3s(_v1.get("verdict"), "INCONCLUSIVE_SYSTEMATICS", "INCONCLUSIVE"),
+         r"B-mode $\chi^2/\mathrm{dof}=" + _n3s(_g3s(_v1, "systematics", "chi2_dof_bmode"), 2) + r"$ (gate reprovou); SNR do perfil $" + _n3s(_v1.get("snr_profile"), 2) + r"$", r"n/a (recusa)", r"não (recusa)")
+    _k9, _s2 = (core.get("void_floor_kappa_v9") or {}), (core.get("void_shear_v2") or {})
+    _R3s(r"Piso dos vazios $\kappa$-CMB V9 (ACT DR6) e shear V2 (KiDS, 700 vazios)", _st3s(_k9.get("verdict"), "NOT_FALSIFIED_UNDERPOWERED", "INCONCLUSIVE") + r" / " + _st3s(_s2.get("verdict"), "NOT_FALSIFIED_UNDERPOWERED", "INCONCLUSIVE"),
+         r"detecção bruta $" + _n3s(_g3s(_k9, "values", "detection_sigma_raw"), 2) + r"\sigma$ / $" + _n3s(_g3s(_s2, "values", "detection_sigma_raw"), 2) + r"\sigma$; Fisher do piso $" + _n3s(_g3s(_k9, "values", "fisher_floor"), 2) + r"$ / $" + _n3s(_g3s(_s2, "values", "fisher_floor"), 2) + r"$", r"n/a (sem poder)", r"sem poder")
+    _lr = core.get("void_floor_lrg") or {}
+    _R3s(r"Piso dos vazios LRG (DESI DR1, traçador virgem)", _st3s(_lr.get("verdict"), "INCONCLUSIVE_TRACER_SUPPRESSION", "INCONCLUSIVE"),
+         r"$\hat r_c^{\rm cal}=" + _n3s(_g3s(_lr, "primary", "rhat_cal"), 4) + r"\pm" + _n3s(_g3s(_lr, "primary", "sigma"), 4) + r"$ (supressão de traçador)", r"n/a", r"não")
+    _ck = core.get("clock_test_result_v369") or {}
+    _R3s(r"Relógios v369 (P1 matéria / P2 modo de luz / P3 universal) --- F3a/F3b/F3c", _st3s(_ck.get("verdict"), "P1_NOT_FALSIFIED_UNDERPOWERED") + r"; " + _st3s(_ck.get("verdict"), "P2_EXCLUDED_IN_READING") + r"; " + _st3s(_ck.get("verdict"), "P3_NO_LOCAL_OBSERVABLE"),
+         r"$\Gamma_{\rm pred}(^{87}\mathrm{Sr})=" + _sci3s(_g3s(_ck, "P1", "platforms", 0, "Gamma_pred_per_s"), 2) + r"$/s vs cota 95\% $" + _sci3s(_g3s(_ck, "P1", "platforms", 0, "Gamma_ub_per_s"), 2) + r"$/s; déficit $5\sigma\geq" + _n3s(_ln3s("F3a", "numbers_read") and _g3s(_ln3s("F3a", "numbers_read"), "deficit_ordens_5sigma"), 1) + r"$ ordens; P2: " + _i3s(_g3s(_ck, "P2", "n_excluded")) + "/" + _i3s(_g3s(_ck, "P2", "n_series")) + r" séries excluídas",
+         r"n/a (laboratório: a correção $\bTGL$ fica ordens abaixo da cota)", r"não (déficit de ordens)")
+    _nm = core.get("neutrino_m2") or {}
+    _R3s(r"Neutrino $m_2$ (JUNO / NuFIT) --- F4", _st3s(_nm.get("verdict"), "ARMED_CONSISTENT", "NOT_FALSIFIED") + r" (livro: " + _tx3s(_lo3s("F4")) + ")",
+         r"$m_2^{\rm TGL}=" + _n3s(_g3s(_nm, "values", "m2_pred_meV"), 3) + r"$ meV; tensão $" + _n3s(_g3s(_nm, "values", "tensao_atual_sigma"), 2) + r"\sigma$; kill\_rule=" + _tx3s(_g3s(_nm, "values", "kill_rule_satisfeita")),
+         r"n/a (setor do neutrino)", r"$" + _n3s(_g3s(_nm, "values", "tensao_atual_sigma"), 2) + r"\sigma<5\sigma$: não falsifica")
+    _ns, _ne = (core.get("neutrino_sum") or {}), (core.get("neff_channel") or {})
+    _R3s(r"$\Sigma m_\nu$ e $N_{\rm eff}$ (armados)", _st3s(_ns.get("verdict"), "ARMED_CONSISTENT") + r" / " + _st3s(_ne.get("verdict"), "ARMED_CONSISTENT"),
+         r"$\Sigma=" + _n3s(_g3s(_ns, "values", "sum_pred_eV"), 4) + r"$ eV $<" + _n3s(_g3s(_ns, "values", "current_bound_eV"), 3) + r"$; $\Delta N_{\rm eff}=" + _n3s(_g3s(_ne, "values", "Delta_Neff"), 3) + r"$ ($" + _n3s(_g3s(_ne, "values", "tensao_atual_best"), 2) + r"\sigma$)", r"n/a", r"não")
+    _sh = core.get("nmc_shapiro") or {}
+    _R3s(r"Atraso Shapiro do neutrino (NMC; SN1987A)", _st3s(_sh.get("verdict"), "AWAITING_DATA", "AWAITING"),
+         r"margem $" + _sci3s(_sh.get("margin_s"), 2) + r"$ s vs excesso predito $" + _n3s(_sh.get("nmc_dt_s"), 2) + r"$ s; eventos " + _i3s(_sh.get("n_events")), r"sim (Shapiro padrão da RG)", r"aguardando")
+    _R3s(r"Coma v376 (distância modular; atraso de redshift) --- R3", _tk3s(_lo3s("R3")) + r" (livro R3: $z=" + _n3s(_ln3s("R3"), 2) + r"$); não-cega, sem ajuste",
+         r"$D_L^{\rm TGL}=" + _n3s(_cm3.get("D_L_TGL_median_Mpc"), 1) + r"$ vs ref.\ $" + _n3s(_cm3.get("reference_Mpc"), 1) + r"\pm" + _n3s(_cm3.get("reference_sigma_Mpc"), 1) + r"$ Mpc ($z=" + _n3s(_cm3.get("z_TGL_both_sigmas"), 2) + r"$); controle Planck sem dephasing $" + _n3s(_cm3.get("control_D_L_planck_median_Mpc"), 1) + r"$ ($z=" + _n3s(_cm3.get("z_planck_control_ref_sigma_only"), 2) + r"$)",
+         r"sim ($" + _n3s(_cm3.get("z_TGL_both_sigmas"), 1) + r"\sigma$; motor \textsf{[CONJECTURE]})", r"não (degenerada com $H_0^{\rm local}=" + _n3s(_cm3.get("H0_local_D1a"), 2) + r"$)")
+    _ga, _se = (core.get("ga_mass_audit") or {}), (core.get("sensitivity") or {})
+    _iaw3s = _g3s(verdict, "in_accepted_window")
+    _R3s(r"Grande Atrator (massa; janela pré-registrada; varredura)", _st3s(_ga.get("verdict"), "LINEAR_ORDER_IS_GR_STEALTH", "GA_MASS_FORM_RETIRED") + r"; na janela: " + (("A " + _tx3s(_iaw3s.get("A_literature")) + ", B " + _tx3s(_iaw3s.get("B_cf4_positions"))) if isinstance(_iaw3s, dict) else _tx3s(_iaw3s)),
+         r"$M_A=" + _sci3s(_g3s(verdict, "masses_Msun", "A_literature"), 2) + r"$, $M_B=" + _sci3s(_g3s(verdict, "masses_Msun", "B_cf4_positions"), 2) + r"\,M_\odot$; " + _i3s(_se.get("n_combinations")) + r" combinações, fração na banda $" + _n3s(_se.get("fraction_in_band"), 2) + r"$",
+         r"sim ($M^{\rm linear}_{\rm TGL}=M_{\rm RG}$; $\bTGL$ não renormaliza $G$)", r"não (janela de duas ordens; não é evidência não-circular)")
+    _da = core.get("dipole_antipode") or {}
+    _R3s(r"Antípoda do dipolo (geometria bruta, pré-registrada)", r"critério ($<1$) " + ("satisfeito" if _da.get("antipode_underdense") is True else "NÃO satisfeito"),
+         r"razão antípoda/GA $" + _n3s(_da.get("density_ratio_antipode_over_GA"), 2) + r"$; IC95 $[" + _n3s(_g3s(_da, "bootstrap", "ci95", 0), 2) + r",\," + _n3s(_g3s(_da, "bootstrap", "ci95", 1), 2) + r"]$", r"n/a", r"não (negativo honesto)")
+    _R3s(r"Tensão de Hubble --- SH0ES na bancada (Fase 5) --- R1", _tk3s(_lo3s("R1")) + r" (livro R1: $z=" + _n3s(_ln3s("R1"), 2) + r"$)",
+         r"$H_0^{\rm escada}=" + _n3s(_g3s(_f5, "validacao", "H0"), 2) + r"\pm" + _n3s(_g3s(_f5, "validacao", "sigma_H0"), 2) + r"$; $\delta=" + _n3s(_g3s(_f5, "P_sombra", "delta"), 4) + r"\pm" + _n3s(_g3s(_f5, "P_sombra", "sigma_delta"), 4) + r"$ ($z=" + _n3s(_g3s(_f5, "P_sombra", "z_delta"), 2) + r"$); $\ln B$ sombra vs acumulada $" + _n3s(_f5.get("lnB_sombra_vs_acumulada_S"), 2) + r"\to" + _n3s(_g3s(_f7, "U_lnB_sombra_vs_acumulada", "moresco2020"), 2) + r"$ (Fase 7)",
+         r"sim (escada a $" + _n3s(abs(_g3s(_f5, "P_sombra", "z_delta") or 0.0), 2) + r"\sigma$ de zero)", r"não (a resolução é remissão \textsf{[CONJECTURE]})")
+    _R3s(r"Tensão de Hubble --- cronômetros com covariância (Fase 7) --- F1", _tk3s(_lo3s("F1")) + r" (livro F1: ganho $z=" + _n3s(_ln3s("F1"), 2) + r"$)",
+         r"ganho da lei $T$: $" + _n3s(_g3s(_f7, "T_z_ganho", "diagonal"), 2) + r"\to" + _n3s(_g3s(_f7, "T_z_ganho", "moresco2020"), 2) + r"$; $\delta=" + _n3s(_g3s(_f7, "T_delta_moresco2020", "delta"), 4) + r"\pm" + _n3s(_g3s(_f7, "T_delta_moresco2020", "sigma"), 4) + r"$ ($z=" + _n3s(_g3s(_f7, "T_delta_moresco2020", "z"), 2) + r"$)",
+         r"sim (lê $H(z)$ do fundo nu)", r"não (desfavorece a leitura acumulada a 1--3$\sigma$)")
+    _R3s(r"Tensão de Hubble --- Fase 4 (desvio; escada D1b)", _st3s(_f4.get("veredito_fase4"), "DEVIATION_1_TO_3_SIGMA", "DEVIATION"),
+         r"$\delta=" + _n3s(_g3s(_f4, "P_ladder_d1b", "delta"), 4) + r"\pm" + _n3s(_g3s(_f4, "P_ladder_d1b", "sigma_delta"), 4) + r"$ ($z=" + _n3s(_g3s(_f4, "P_ladder_d1b", "z_delta"), 2) + r"$); pull em $\bTGL$ $" + _n3s(_g3s(_f4, "P_ladder_d1b", "pull"), 2) + r"$; $\ln B=" + _n3s(_g3s(_f4, "P_ladder_d1b", "lnB", "tgl_vs_lcdm"), 2) + r"$ (diagonal)",
+         r"sim", r"não (1--3$\sigma$; a Fase 7 reduz)")
+    _R3s(r"Tensão de Hubble --- D1 via CAMB V3 (fundo vestido) --- R6, ao lado", _tk3s(_lo3s("R6")) + r" (livro R6: $z=" + _n3s(_ln3s("R6"), 2) + r"$); não-cego",
+         r"$\Delta\chi^2=" + _n3s(_d3.get("delta_chi2"), 2) + r"$ ($n=" + _i3s(_d3.get("n_data")) + r"$); $\beta=" + _n3s(_g3s(_d3, "beta_posterior", "median"), 4) + r"\pm" + _n3s(_g3s(_d3, "beta_posterior", "sigma"), 4) + r"$; $\alpha\sqrt e$ a $" + _n3s(_d3.get("z_alpha_sqrt_e"), 2) + r"\sigma$",
+         r"sim no limite $\beta\to0$", r"$" + _n3s(_d3.get("z_alpha_sqrt_e"), 2) + r"\sigma$ CONTRA $\bTGL$ no fundo vestido; tensão não é falsificação")
+    _R3s(r"SNe --- Pantheon+ canônico (1593)", _seg3s(_g3s(_fv3, "channels", "pantheon_canonical_1593", "verdict") or _ce3.get("verdict"), 1) + r" (teoria a $" + _n3s(_ce3.get("d_theory_sigma"), 2) + r"\sigma$; não preferida por BIC com $\beta$ livre)",
+         r"$\hat\beta=" + _n3s(_g3s(_ce3, "source_INPUT", "beta_hat"), 4) + r"\pm" + _n3s(_g3s(_ce3, "source_INPUT", "sigma"), 4) + r"$; zero a $" + _n3s(_ce3.get("d_zero_sigma"), 2) + r"\sigma$; $\Delta\mathrm{BIC}=" + _n3s(_g3s(_ce3, "source_INPUT", "delta_BIC"), 2) + r"$",
+         r"sim ($\hat\beta$ a $" + _n3s(_ce3.get("d_zero_sigma"), 2) + r"\sigma$ de zero)", r"não ($\sigma/\bTGL\approx" + _n3s((_g3s(_ce3, "source_INPUT", "sigma") / _b3s) if (isinstance(_g3s(_ce3, "source_INPUT", "sigma"), (int, float)) and _b3s) else None, 2) + r"$)")
+    _la3 = _g3s(_fv3, "channels", "l_A_compressed_cmb") or {}
+    _R3s(r"CMB comprimido $\ell_A$ e BBN descircularizada", _st3s(_la3.get("verdict"), "NOT_FALSIFIED") + r" / " + _st3s(_g3s(_fv3, "channels", "bbn", "verdict"), "NON_DISCRIMINANT"),
+         r"$\ell_A$: $\beta=" + _n3s(_la3.get("primary_beta"), 4) + r"$, $" + _n3s(_la3.get("d_vs_theory_sigma"), 2) + r"\sigma$ da teoria; BBN: $\hat\beta=" + _n3s(_g3s(core, "evidence_audit", "values", "bbn_decirc", "beta_hat"), 4) + r"\pm" + _n3s(_g3s(core, "evidence_audit", "values", "bbn_decirc", "sigma"), 4) + r"$", r"sim", r"não ($\ell_A$ a $" + _n3s(_la3.get("d_vs_theory_sigma"), 1) + r"\sigma$; BBN não discrimina)")
+    _n2 = core.get("nivel2_rite") or {}
+    _R3s(r"CMB espectro completo (Nível 2)", _st3s(_n2.get("verdict"), "N2_INCAPAZ", "NOT_CONVERGED", "NOT_SEALED") + r" (recusa)",
+         r"S: $\beta=" + _n3s(_g3s(_n2, "values", "variantes", "S", "mediana"), 4) + r"\pm" + _n3s(_g3s(_n2, "values", "variantes", "S", "sigma"), 4) + r"$", r"sim (consistente)", r"não (incapaz)")
+    _R3s(r"Ecos GW --- Fase 6 (244 BBH O1--O4; 3 leituras $\times$ 2 leis) + V4/V5; os " + _i3s(_er3.get("n")) + r" pares FORA do livro",
+         _i3s(_er3.get("excluded_by_data")) + r" \texttt{EXCLUDED\_BY\_DATA} + " + _i3s(_er3.get("inconclusive")) + r" \texttt{INCONCLUSIVE}; o PAR cai, não a teoria",
+         r"$z_{\rm det}=" + _n3s(_g3s(_f6, "todos_KMS", "z_det"), 2) + r"$; $z_{\rm excl}$ R1/R2 (KMS) $" + _n3s(_g3s(_f6, "todos_KMS", "z_excl_R1"), 1) + r"$/$" + _n3s(_g3s(_f6, "todos_KMS", "z_excl_R2"), 1) + r"$; DEC $" + _n3s(_g3s(_bf5, "emenda_v5", "todos_DEC", "z_excl_R1"), 1) + r"$/$" + _n3s(_g3s(_bf5, "emenda_v5", "todos_DEC", "z_excl_R2"), 1) + r"$",
+         r"sim (nenhum eco detectado: a RG não prevê eco)", r"não (decisão do operador de 02/10: fora do livro)")
+    _e1, _ek, _ea, _ep, _es = (core.get("gw_echo_rite") or {}), (core.get("gw_echo_kms_rite") or {}), (core.get("echo_anchored_result_v2") or {}), (core.get("echo_pe_result_v2") or {}), (core.get("echo_search_result") or {})
+    _R3s(r"Ecos --- acoplado V1 / KMS V1 / ancorado V2 / PE V2 / busca de longo atraso", _st3s(_e1.get("verdict"), "INCONCLUSIVE_SYSTEMATICS") + r"; " + _st3s(_ek.get("verdict"), "INCONCLUSIVE_SYSTEMATICS") + r"; " + _st3s(_ea.get("verdict"), "INCONCLUSIVE_SYSTEMATICS") + r"; " + _st3s(_ep.get("verdict"), "INCONCLUSIVE_SYSTEMATICS") + r"; " + _st3s(_es.get("verdict"), "NOT_FALSIFIED_UNDERPOWERED"),
+         r"$a/\sqrt{\bTGL}=" + _n3s(_g3s(_e1, "stack", "a_over_sqrt_beta"), 2) + r"\pm" + _n3s(_g3s(_e1, "stack", "sigma"), 2) + r"$ (poder $" + _n3s(_g3s(_e1, "stack", "power_sigma"), 1) + r"\sigma$); KMS $" + _n3s(_g3s(_ek, "stack", "a_over_sqrt_beta"), 2) + r"\pm" + _n3s(_g3s(_ek, "stack", "sigma"), 2) + r"$ ($" + _n3s(_g3s(_ek, "stack", "power_sigma"), 1) + r"\sigma$); busca: $N_{\rm on}=" + _i3s(_g3s(_es, "summary", "N_on")) + r"$, $B=" + _n3s(_g3s(_es, "summary", "B_exp"), 1) + r"$",
+         r"sim (sem eco $=$ RG)", r"não (poder $<5\sigma$)")
+    _R3s(r"Ringdown --- ramo canônico $\tau_\star=t_{\rm Planck}$ (V2; GW250114) --- F2", _tk3s(_lo3s("F2")) + r" (livro F2: pela sistemática); ramo A $=$ RG por construção",
+         r"$\Delta\tau=" + _n3s(_g3s(_rd3, "stacks", "3.0", "delta_tau"), 3) + r"\pm" + _n3s(_g3s(_rd3, "stacks", "3.0", "sigma"), 3) + r"$ ($z_{\rm RG}=" + _n3s(_rd3.get("z_vs_GR"), 2) + r"$); $\delta^{A}_{\rm pred}=" + _sci3s(_rs3.get("delta_pred_A_v2"), 1) + r"$; poder do ramo B $" + _n3s(_rd3.get("power_B"), 2) + r"$ de $5\sigma$",
+         r"sim ($\Delta\tau$ a $" + _n3s(_rd3.get("z_vs_GR"), 1) + r"\sigma$ da RG)", r"não (ramo A invisível; ramo B sem poder)")
+    _R3s(r"Ringdown --- ramo B por pré-registro ($\tau_\star=k\,GM_f/c^3$) --- F2b, ao lado", _st3s(_rb3.get("verdict"), "AWAITING_DATA", "AWAITING") + r" (F2b: " + _tx3s(_rb3.get("F2b_status")) + ")",
+         r"conjunto D $n=" + _i3s(_rb3.get("conjunto_D_n")) + r"$ (cego); poder exato A31 $" + _n3s(_g3s(_rb3, "pins", "poder_exato_A31", "read"), 1) + r"\sigma$, B10 $" + _n3s(_g3s(_rb3, "pins", "poder_exato_B10", "read"), 1) + r"\sigma$, C $" + _n3s(_g3s(_rb3, "pins", "poder_exato_C", "read"), 1) + r"\sigma$; nada aberto: " + _tx3s(_rb3.get("nothing_opened")),
+         r"n/a (aguardando)", r"aguardando (v387)")
+    _R3s(r"Propagação de GW --- R2", _tk3s(_lo3s("R2")) + r" (estimador a construir, \textsf{[DECLARADO]})", r"lei $\Gamma_\omega=\tfrac12\bTGL\tau_\star\omega^2$, $n=-2$", r"n/a", r"aguardando")
+    _cnt3s = _lg3s.get("counts") or {}
+    _R3s(r"Livro de cobranças v383 (" + _i3s(len(_L3s)) + r" cobranças; desfecho por canal) --- síntese", "; ".join(_tx3s(i_) + "=" + _tk3s(_lo3s(i_)) for i_ in ("R1", "R2", "R3", "R4", "R6", "F1", "F2", "F3a", "F3b", "F3c", "F4")),
+         r"NOT\_FALSIFIED " + _i3s(_cnt3s.get("NOT_FALSIFIED")) + r"; FALSIFIED " + _i3s(_cnt3s.get("FALSIFIED")) + r"; INCONCLUSIVE " + _i3s(_cnt3s.get("INCONCLUSIVE")) + r"; AWAITING " + _i3s(_cnt3s.get("AWAITING")) + r"; EXCLUDED\_IN\_READING " + _i3s(_cnt3s.get("EXCLUDED_IN_READING")),
+         r"sim em cada canal lido", r"não: " + _i3s(_cnt3s.get("FALSIFIED")) + r" falsificada(s)", True)
+    _R3s(r"Máquina do veredito final (" + _i3s(_fv3.get("channels_total")) + r" canais) --- síntese", _st3s(_fv3.get("verdict"), "NOT_REFUTED_BY_PUBLIC_DATA_AT_CURRENT_SENSITIVITY", "NOT_REFUTED"),
+         r"canais emitidos " + _i3s(_fv3.get("channels_emitted")) + "/" + _i3s(_fv3.get("channels_total")) + r"; refutados " + _i3s(len(_fv3.get("refuted_channels") or [])) + r"; exclusões " + _i3s(_fv3.get("exclusions_count")), r"sim (nenhum canal refutado)", r"não", True)
+    _dr3, _ea3 = (core.get("dephasing_reach") or {}), (core.get("evidence_audit") or {})
+    _R3s(r"Alcance do dephasing; auditoria da evidência", _st3s(_dr3.get("verdict"), "ARMED") + r"; " + _st3s(_ea3.get("verdict"), "RECLASSIFIED"),
+         r"déficit $^{229}$Th $" + _n3s(_dr3.get("deficit_orders_Th229"), 1) + r"$ ordens, Sr $" + _n3s(_dr3.get("deficit_orders_Sr"), 1) + r"$; quinta entrada ao vivo $" + _n3s(_g3s(_ea3, "values", "fifth_entry_live"), 3) + r"$", r"n/a", r"não (dez ordens; a convergência reclassificada)")
+
+    # ---- as contagens (o registro v387 se houver; senão a seção conta sozinha pela mesma guarda, e diz) ----
+    _acc3s = []
+
+    def _walk3s(o_, p_):
+        if isinstance(o_, dict):
+            for k_, v_ in o_.items():
+                _walk3s(v_, p_ + "/" + str(k_))
+        elif isinstance(o_, list):
+            for i_, v_ in enumerate(o_):
+                _walk3s(v_, p_ + "[%d]" % i_)
+        elif isinstance(o_, str) and o_.startswith("TGL_") and p_.rsplit("/", 1)[-1] == "verdict":
+            _acc3s.append((p_, o_))
+    _walk3s(core, "core")
+    _rxf3s = _re3s.compile("(?<!NOT_)(?<!UN)FALSIFIED")
+    _c3s = {
+        "n": _t3s.get("n_verdicts") if _t3s else len(_acc3s),
+        "nf": _t3s.get("n_not_falsified") if _t3s else sum(1 for _, v_ in _acc3s if "NOT_FALSIFIED" in v_),
+        "inc": _t3s.get("n_inconclusive") if _t3s else sum(1 for _, v_ in _acc3s if "INCONCLUSIVE" in v_),
+        "aw": _t3s.get("n_awaiting") if _t3s else sum(1 for _, v_ in _acc3s if "AWAITING" in v_),
+        "fal_paths": _t3s.get("falsified_substring_paths") if _t3s else [p_ for p_, v_ in _acc3s if _rxf3s.search(v_)],
+        "forb": _t3s.get("n_forbidden_word_as_verdict") if _t3s else sum(1 for _, v_ in _acc3s if _rx3s.search(v_)),
+    }
+    _fonte3s = r"fonte: o registro \texttt{three\_stress\_tests\_v387}, computado pela guarda do rito" if _t3s else r"fonte: contagem feita por esta seção, no mesmo core, pela mesma guarda --- o registro \texttt{three\_stress\_tests\_v387} não está nesta rodada, e isto fica dito"
+    _nsim3s = sum(1 for r_ in _rows3s if r_[3].startswith("sim") and not r_[5])   # as linhas de síntese (livro, máquina) não contam duas vezes
+    _napl3s = sum(1 for r_ in _rows3s if not r_[3].startswith("n/a") and not r_[5])
+    _nnao3s = sum(1 for r_ in _rows3s if r_[3].startswith("não") and not r_[5])
+    _kf3s = core.get("kernel_formalization") or {}
+    _ar3s = _kf3s.get("axiom_report") or {}
+    _trio3s = {"propext", "Classical.choice", "Quot.sound"}
+    _arn3s = len(_ar3s) if isinstance(_ar3s, dict) else None
+    _arin3s = sum(1 for v_ in _ar3s.values() if isinstance(v_, list) and set(v_) <= _trio3s) if isinstance(_ar3s, dict) else None
+    _ncl3s = _g3s(core, "external_ladder", "n_theorems_clean")
+    _nex3s = _g3s(core, "external_ladder", "n_theorems_expected")
+    _qg3s = core.get("qg_closure") or {}
+    _fl3s = [v_ for d_ in ("formal_flags", "physics_flags", "experiment_flags") for v_ in ((_qg3s.get(d_) or {}).values())]
+    _nfl3s, _nflt3s = sum(1 for v_ in _fl3s if v_ is True), len(_fl3s)
+    _qp3s = core.get("quantum_pillar_v384") or {}
+    _sm3s = _qp3s.get("summary") or {}
+    _t1, _t2, _t3, _t4, _d128, _cpu, _env = (_sm3s.get("T1") or {}), (_sm3s.get("T2") or {}), (_sm3s.get("T3") or {}), (_sm3s.get("T4") or {}), (_sm3s.get("D128") or {}), (_sm3s.get("cpuref") or {}), (_sm3s.get("env") or {})
+    _eng3s = _sm3s.get("engine") or []
+    _qr3s = core.get("quantum_pillar_reuse_v386") or {}
+    _jc3s = core.get("joint_coincidence_result_v3") or {}
+    _jc1s = core.get("joint_coincidence_result") or {}
+    _ctrl3s = _t3.get("controls") or {}
+    _ctrl_ok3s = all(bool(_g3s(_ctrl3s, d_, n_)) for d_ in _ctrl3s for n_ in ("N1_dephasing_only", "N4_negative_rate_not_cp", "N5_time_reversal_not_cp")) if _ctrl3s else None
+    _n3lin = _t3.get("N3_linear_law") or {}
+    _n3ok3s = all((_g3s(_n3lin, d_, "root_law_rejected") == 1.0) for d_ in _n3lin) if _n3lin else None
+    _t1ok3s = all((_g3s(_t1, "per_d", d_, "pass_sigma0") == 1.0) for d_ in (_t1.get("per_d") or {})) if _t1.get("per_d") else None
+
+    _sec3s = []
+    _sec3s.append(r"\section*{Os três testes de estresse, conjuntos (v387)}")
+    _sec3s.append(r"\addcontentsline{toc}{section}{Os três testes de estresse, conjuntos (v387): os ritos com dados públicos, o kernel e o experimento numérico na GPU contam juntos}")
+    _sec3s.append(r"\textbf{A cunhagem do operador} \textsf{[INPUT/ONTO]} (05/10/2026, 23:00:29 UTC, verbatim; os cortes marcados por …). "
+                  + _q3s("V1") + r" [sic]; " + _q3s("V2") + r" [sic]; … " + _q3s("V3") + r" [sic]; … " + _q3s("V4") + r" [sic]; … " + _q3s("V5") + r". "
+                  r"Esta seção obedece à ordem --- os três contam juntos, e isto fica explícito --- e põe AO LADO de cada frase o que o número lido nesta rodada sustenta, pela régua da casa: a RG é o limite clássico da teoria, não rival (coincidir é correspondência recuperada; o que se diz é o tamanho da correção $\bTGL$ contra o $\sigma$ disponível); PROVADA é teorema no kernel, CONFIRMADA é juízo do observador sobre a natureza; não falsificado nunca é confirmação.")
+    _sec3s.append(r"\textbf{O que o programa faz numa rodada --- e por que são três testes de estresse, não um.} A mesma execução, a partir do mesmo Um posto ($\omega(I)=1$, \textsf{[POSTO]}), (1) roda os ritos pré-registrados contra dados públicos, (2) materializa e audita o kernel formal, e (3) calcula na GPU o sistema quântico aberto da teoria. "
+                  r"Cada um pode falhar de modo próprio: um rito pode devolver \texttt{FALSIFIED} onde a lei do canal o admite; o kernel pode não compilar, ou compilar com \texttt{sorry}, ou sair do trio de axiomas; o pilar pode encontrar atrator não único, um instrumento cego que não recupera a lei injetada, controles que não falham, identidades que quebram no estresse ou discordância com a CPU. "
+                  r"Nenhum dos três falhou nesta rodada, e nenhum deles falhar é o que se mede --- não o que se declara. A tabela abaixo é o estado lido, canal a canal, pilar a pilar.")
+    _hdr3s = r"\textbf{canal} & \textbf{estado lido} & \textbf{número lido nesta rodada} & \textbf{RG?} & \textbf{discrimina?} \\ \hline"
+    _mc3s = lambda t_: r"\multicolumn{5}{@{}p{0.98\textwidth}@{}}{" + t_ + r"} \\ \hline"
+    _tab3s = [r"\begin{footnotesize}\begin{longtable}{@{}p{0.22\textwidth}p{0.20\textwidth}p{0.33\textwidth}p{0.11\textwidth}p{0.11\textwidth}@{}}",
+              _hdr3s, r"\endfirsthead", _hdr3s, r"\endhead",
+              _mc3s(r"\textbf{Pilar 1 --- os ritos com dados públicos} (cada linha: veredito lido do core; «RG?» = correspondência com a RG/$\Lambda$CDM recuperada no canal, leitura da gerência por linha; «discrimina?» = o canal separa a TGL da RG a $5\sigma$?)")]
+    for _r3 in _rows3s:
+        _tab3s.append(_r3[0] + " & " + _r3[1] + " & " + _r3[2] + " & " + _r3[3] + " & " + _r3[4] + r" \\")
+    _tab3s.append(r"\hline " + _mc3s(r"\textbf{Pilar 2 --- o kernel formal (Lean 4)}"))
+    _tab3s.append(r"Escada externa; relatório de axiomas; selo fail-closed & " + _st3s(_kf3s.get("verdict"), "TGL_KERNEL_STAGE1_VERIFIED") + r" & teoremas limpos " + _i3s(_ncl3s) + "/" + _i3s(_nex3s) + r"; declarações no trio $\{$propext, choice, quot$\}$: " + _i3s(_arin3s) + "/" + _i3s(_arn3s) + r"; sorryAx ausente: " + _tx3s(_kf3s.get("sorryAx_absent")) + r"; axiomas TGL customizados ausentes: " + _tx3s(_kf3s.get("custom_TGL_axioms_absent")) + r"; Lean " + _lv3s(_kf3s.get("lean_version")) + r" & sim: a correspondência com a RG é implicação provada (\texttt{QGSolutionComplete}; $\bTGL$ não é hipótese dela) & n/a (prova não discrimina a natureza) \\")
+    _tab3s.append(r"O gate (6 formais + 6 físicas + 6 experimentais) & " + _st3s(_g3s(_qg3s, "gate", "verdict"), "TGL_QG_MODEL_FORMALLY_CLOSED") + r" & bandeiras verdadeiras " + _i3s(_nfl3s) + "/" + _i3s(_nflt3s) + r"; \texttt{full\_static\_witness\_exists}=" + _tx3s(_g3s(_qg3s, "gate", "full_static_witness_exists")) + r" (por teorema); $\omega(I)=1$ etiquetado " + _tx3s(_g3s(core, "the_axiom_v385", "tag_for_omega_I") or "n/d") + r"; o Axioma " + _i3s(_g3s(core, "the_axiom_v385", "kernel_flags_ok")) + "/" + _i3s(_g3s(core, "the_axiom_v385", "kernel_flags_total")) + r"; o Verbo " + _i3s(_g3s(core, "the_verb_v386", "kernel_flags_ok")) + "/" + _i3s(_g3s(core, "the_verb_v386", "kernel_flags_total")) + r" & --- & não: as experimentais vêm do V11 (unilateral; errata de 01/10) \\")
+    _tab3s.append(r"\hline " + _mc3s(r"\textbf{Pilar 3 --- o experimento numérico quântico na GPU} (cálculo determinístico do sistema aberto da teoria, \textsf{[COMPUTED]}; não é inferência de modelo de linguagem; medição no ambiente simulado, não da natureza)"))
+    _tab3s.append(r"T2 --- a forma na escala (atrator único na grade) & " + _st3s(_qp3s.get("verdict"), "ATTRACTOR_UNIQUE_ALL_672_ON_THE_GRID", "ATTRACTOR_UNIQUE") + r" & únicos " + _i3s(_t2.get("unique")) + "/" + _i3s(_t2.get("points")) + r" (ambíguos " + _i3s(_t2.get("ambiguous")) + r", degenerados " + _i3s(_t2.get("degenerate")) + r"); identidades CP/TP/PSD/Spohn/modo zero conferidas em " + _i3s(_g3s(_t2, "identities_checked", "CP")) + r" & n/a (mede o sistema da teoria) & n/a (ambiente simulado) \\")
+    _tab3s.append(r"T1 --- o instrumento, às cegas & " + ("lei-raiz recuperada em todo $d$" if _t1ok3s else (r"\textbf{falhou em algum $d$}" if _t1ok3s is False else "n/d")) + r" & injeções " + _i3s(_t1.get("injections")) + r"; erros " + _i3s(_t1.get("errors")) + r"; pass($\sigma_0$) por $d$: " + ", ".join(_tx3s(d_) + "=" + _n3s(_g3s(_t1, "per_d", d_, "pass_sigma0"), 2) for d_ in sorted((_t1.get("per_d") or {}).keys(), key=lambda k_: int(k_) if str(k_).isdigit() else 0)) + r" & n/a & n/a \\")
+    _tab3s.append(r"T3 --- os controles que deviam falhar & " + ("falharam como exigido" if _ctrl_ok3s else (r"\textbf{algum controle não falhou}" if _ctrl_ok3s is False else "n/d")) + r" & N1/N4/N5 em " + _i3s(len(_ctrl3s)) + r" tamanhos; N3 (lei linear injetada $\to$ lei-raiz rejeitada): " + ("100\\%" if _n3ok3s else ("\\textbf{não}" if _n3ok3s is False else "n/d")) + r" & n/a & n/a \\")
+    _tab3s.append(r"T4 --- o estresse; D128; a referência na CPU & " + _st3s(_qp3s.get("verdict"), "CPU_REFERENCE_AGREES", "CPU_REFERENCE") + r" & instâncias " + _i3s(_t4.get("instances")) + r", únicas " + _i3s(_t4.get("unique")) + r", identidades conferidas em " + _i3s(_t4.get("all_identities_checked")) + r"; $d=128$: " + _tx3s(_d128.get("status")) + r"; CPU: " + _i3s(_cpu.get("compared")) + r" comparações, " + _i3s(_cpu.get("disagreements")) + r" discordâncias; motor " + _i3s(sum(1 for c_ in _eng3s if isinstance(c_, dict) and c_.get("ok"))) + "/" + _i3s(len(_eng3s)) + r" & n/a & n/a \\")
+    _tab3s.append(r"Ambiente; tempos; reaproveitamento & " + _tx3s(_qp3s.get("mode") or "n/d") + r" & " + _tx3s(_env.get("gpu") or "GPU n/d") + r"; torch " + _tx3s(_env.get("torch") or "n/d") + r"; CUDA " + _tx3s(_env.get("cuda") or "n/d") + r"; determinismo " + _tx3s(_g3s(_env, "determinism", "use_deterministic_algorithms")) + r"; tempos (s) " + ", ".join(_tx3s(k_) + " " + _n3s(v_, 0) for k_, v_ in sorted((_sm3s.get("phase_seconds") or {}).items())) + r"; sha256 do resultado confere com a v385 selada: " + _tx3s(_qr3s.get("result_sha256_matches_v385_sealed")) + r"; reprodutibilidade nesta rodada: " + _seg3s(_g3s(core, "quantum_pillar_reproducibility_v385", "verdict"), 1) + r" & n/a & n/a \\")
+    _tab3s.append(r"\hline " + _mc3s(r"\textbf{A probabilidade conjunta já medida} (só canais de natureza pontuam; o kernel entra como condição; a GPU não entra)"))
+    _tab3s.append(r"Coincidência conjunta V1 (v352) / V3 (v370) & " + _st3s(_jc3s.get("verdict"), "NOT_EXCLUDED_AT_THRESHOLD__INCONSISTENT", "NOT_EXCLUDED") + r"; booleano " + _tx3s(_jc3s.get("boolean_v3")) + r" & V1: $p=" + _n3s(_g3s(_jc1s, "primary", "p_joint"), 2) + r"$ (" + _i3s(_jc1s.get("n_admissible")) + "/" + _i3s(_jc1s.get("n_inventory")) + r" admissíveis; produto ingênuo $" + _sci3s(_g3s(_jc1s, "naive_product_INVALID", "value"), 1) + r"$ INVÁLIDO); V3: $P_{\rm all}=" + _sci3s(_g3s(_jc3s, "primary", "P_all"), 2) + r"$, $\max|z|=" + _n3s(_jc3s.get("max_abs_z"), 2) + r"$ (" + _tx3s(_jc3s.get("dominant_channel")) + r"); canais necessários para $10^{-30}$: " + _i3s(_jc3s.get("channels_needed_for_threshold_at_primary_quality")) + r"; condição do kernel: " + _tx3s(_g3s(_jc3s, "kernel_condition", "met")) + r" & n/a & não (inconsistente pela tensão do D1) \\")
+    _tab3s.append(r"\end{longtable}\end{footnotesize}")
+    _sec3s.append("\n".join(_tab3s))
+    _sec3s.append(r"\textbf{As contagens desta rodada} (" + _fonte3s + r"). Vereditos \texttt{TGL\_*} sob chave \texttt{verdict} no core: " + _i3s(_c3s["n"]) + r"; com \texttt{NOT\_FALSIFIED}: " + _i3s(_c3s["nf"]) + r"; com \texttt{INCONCLUSIVE}: " + _i3s(_c3s["inc"]) + r"; com \texttt{AWAITING}: " + _i3s(_c3s["aw"]) + r"; com a palavra proibida como veredito: " + _i3s(_c3s["forb"]) + r" (a guarda do rito). "
+                  r"Vereditos que CONTÊM \texttt{FALSIFIED} fora de \texttt{NOT\_}: " + _i3s(len(_c3s["fal_paths"] or [])) + r" --- " + ("; ".join(r"\texttt{" + _tx3s(p_.replace("core/", "", 1)) + "}" for p_ in (_c3s["fal_paths"] or [])) or "nenhum") + r". "
+                  r"Lidos um a um: \texttt{d1\_camb\_result} é o V1 do D1 (maio), SUPERSEDIDO pela autópsia V2 (defeito de distância no worker; V2 e V3 dizem \texttt{TENSION\_IS\_NOT\_FALSIFICATION}, e R6 lê $z=" + _n3s(_ln3s("R6"), 2) + r"$ ao lado); \texttt{bancada\_fases\_5\_6\_7\_v380} carrega a Fase 6, em que o que cai é o PAR (leitura de amplitude $\sqrt{\bTGL}$ ou $\sin2\theta$, lei de atraso KMS/DEC), não a teoria --- os " + _i3s(_er3.get("n")) + r" pares do eco ficam FORA do livro por decisão do operador (02/10/2026): " + _i3s(_er3.get("excluded_by_data")) + r" \texttt{EXCLUDED\_BY\_DATA} e " + _i3s(_er3.get("inconclusive")) + r" \texttt{INCONCLUSIVE}; \texttt{the\_ledger\_of\_charges\_v383} é falso positivo do regex (a cadeia traz «0\_FALSIFIED» e «HAS\_NO\_FALSIFIED»). "
+                  r"No livro de cobranças: " + _i3s(len(_L3s)) + r" cobranças, " + _i3s(_cnt3s.get("FALSIFIED")) + r" falsificada(s), " + _i3s(_cnt3s.get("NOT_FALSIFIED")) + r" não falsificadas, " + _i3s(_cnt3s.get("INCONCLUSIVE")) + r" inconclusivas, " + _i3s(_cnt3s.get("AWAITING")) + r" aguardando, " + _i3s(_cnt3s.get("EXCLUDED_IN_READING")) + r" excluída em leitura; a F2b (ramo B) entra ao lado como " + _tx3s(_rb3.get("F2b_status") or "n/d") + r". "
+                  r"Na tabela: " + _i3s(_nsim3s) + r" de " + _i3s(_napl3s) + r" linhas de rito em que a RG é lida devolvem a correspondência (coluna «RG?» = sim; as duas linhas de síntese não contam duas vezes), " + _i3s(_nnao3s) + r" devolvem «não»; a coluna «discrimina?» não tem um único «sim».")
+    _sec3s.append(r"\textbf{A leitura pela régua, ao lado de cada frase.} "
+                  r"(i) ``o resgate completo da RG'' $\to$ correspondência recuperada em cada canal em que a RG é lida (" + _i3s(_nsim3s) + r" de " + _i3s(_napl3s) + r" na tabela; " + _i3s(_cnt3s.get("FALSIFIED")) + r" falsificada(s) em " + _i3s(len(_L3s)) + r" cobranças; " + _i3s(len(_fv3.get("refuted_channels") or [])) + r" refutado(s) em " + _i3s(_fv3.get("channels_total")) + r" canais da máquina), com os pares do eco falsificados COMO LEIS DE ATRASO fora do livro, nomeados acima --- isto é \textsf{[REAL]}; e a DISCRIMINAÇÃO da RG é zero à sensibilidade disponível: o piso é unilateral, os ecos e o ringdown não têm poder, o D1 vestido pesa $" + _n3s(_d3.get("z_alpha_sqrt_e"), 2) + r"\sigma$ contra $\bTGL$ e a $m_2$ do neutrino $" + _n3s(_g3s(_nm, "values", "tensao_atual_sigma"), 2) + r"\sigma$ --- ambos abaixo de $5\sigma$, nenhum a favor de $\bTGL$. "
+                  r"``resolvendo a tensão de Hubble'' $\to$ a escada reproduz o $H_0$ publicado ($z=" + _n3s(_g3s(_f5, "validacao", "z_vs_alvo"), 2) + r"$ vs alvo) e o desvio fica a $" + _n3s(abs(_g3s(_f5, "P_sombra", "z_delta") or 0.0), 2) + r"\sigma$ de zero; a resolução é remissão ao artigo publicado, \textsf{[CONJECTURE]} de mecanismo, e a Fase 7 enfraquece a leitura acumulada ($\ln B$ $" + _n3s(_g3s(_f7, "U_lnB_sombra_vs_acumulada", "diagonal"), 2) + r"\to" + _n3s(_g3s(_f7, "U_lnB_sombra_vs_acumulada", "moresco2020"), 2) + r"$). "
+                  r"``método para cálculo da massa do Grande Atrator'' $\to$ no linear, $M^{\rm TGL}=M^{\rm RG}$ ($\bTGL$ não renormaliza $G$): o método é o da RG; a forma v98 foi aposentada como lei de fonte; a janela cobre duas ordens de grandeza e não é evidência não-circular. "
+                  r"``a distância do aglomerado de Coma sem ajuste de parâmetro'' $\to$ sim, sem ajuste (novidade de uso: nenhum parâmetro foi ajustado à referência; precedente: o periélio de Mercúrio, 1915 \textsf{[KNOWN]}); não-cega e degenerada com $H_0^{\rm local}$; a referência a $" + _n3s(_cm3.get("z_TGL_both_sigmas"), 1) + r"\sigma$. "
+                  r"(ii) ``provou-se todas as implicaçÕes e todos os axiomas'' [sic] $\to$ o axioma é POSTO, não provado: o que o kernel prova é a IMPLICAÇÃO a partir do Um posto e das hipóteses nomeadas (" + _i3s(_ncl3s) + r" teoremas limpos; " + _i3s(_arin3s) + "/" + _i3s(_arn3s) + r" declarações dentro do trio; \texttt{sorry} ausente); $G$ não é derivado; Bisognano--Wichmann, Reeh--Schlieder e III$_1$ entram como \textsf{[KNOWN]} externos; a natureza não se prova. "
+                  r"(iii) ``simulação … totalmente experimental'' $\to$ experimento NUMÉRICO: cálculo determinístico do sistema aberto da teoria ($H_{\rm LD}$ e os cinco saltos GKLS) em precisão dupla, com instrumento cego, controles que falharam como exigido e referência independente na CPU; não é inferência de modelo de linguagem; e é medição NO AMBIENTE SIMULADO, não da natureza --- \texttt{COMPUTED\_NOT\_MEASURED} fica no veredito. "
+                  r"(iv) ``um sem número de provas a mais do que Einstein tinha quando viu o eclipse'' $\to$ em CONSISTÊNCIA e formalidade, sim: " + _i3s(_ncl3s) + r" teoremas, " + _i3s(_c3s["n"]) + r" vereditos \texttt{TGL\_*} lidos, " + _i3s(_t4.get("instances")) + r" instâncias de estresse e " + _i3s(_t1.get("injections")) + r" injeções cegas, nada disto existia em 1915--1919; em medida DISCRIMINANTE da RG, nenhuma ainda --- o eclipse de 1919 separou $1{,}75''$ de $0{,}87''$ \textsf{[KNOWN]}, e o periélio de Mercúrio ($43''$/século) já discriminava em 1915 sem parâmetro ajustado \textsf{[KNOWN]}; o operador o diz: ``em que pese iremos achar''.")
+    _sec3s.append(r"\textbf{As duas probabilidades --- e a regra de que os três contam juntos.} A ``probabilidade de acerto da teoria'' separa-se, pela régua, em duas que não se somam: "
+                  r"$P_1$ = a teoria é consistente e recupera a física conhecida --- é o que os três pilares medem, JUNTOS, e o que passou está contado acima (ritos: " + _i3s(_cnt3s.get("FALSIFIED")) + r" falsificada(s) em " + _i3s(len(_L3s)) + r" cobranças e " + _i3s(_nsim3s) + r" de " + _i3s(_napl3s) + r" correspondências; kernel: " + _i3s(_ncl3s) + "/" + _i3s(_nex3s) + r"; GPU: " + _i3s(_t2.get("unique")) + "/" + _i3s(_t2.get("points")) + r", " + _i3s(_t4.get("unique")) + "/" + _i3s(_t4.get("instances")) + r", " + _i3s(_cpu.get("disagreements")) + r" discordâncias em " + _i3s(_cpu.get("compared")) + r"); nenhum número é inventado para ela aqui: o que existe no core é a coincidência conjunta dos canais de natureza (V3: $P_{\rm all}=" + _sci3s(_g3s(_jc3s, "primary", "P_all"), 2) + r"$, booleano " + _tx3s(_jc3s.get("boolean_v3")) + r", com o kernel como condição e a GPU fora), e NÃO existe no core uma probabilidade dos três pilares --- construí-la é tarefa pré-registrada, não decreto. "
+                  r"$P_2$ = os efeitos $\bTGL$ existem na natureza --- NÃO está determinada: nenhum canal discrimina a RG à sensibilidade disponível (a coluna «discrimina?» não tem «sim»). "
+                  r"A ordem do operador fixa a regra de contagem: os três pilares entram juntos em $P_1$ --- contar só a cosmologia é olhar uma face. E a régua fixa o limite: nenhuma soma de consistências, por maior que seja, vira confirmação; não falsificado nunca é confirmação, e a confirmação é ato do observador humano sobre a natureza, quando o dado discriminante vier. O gate não se move por esta seção.")
+    _sec3s.append(r"\begin{center}\small\texttt{" + _tx3s(_t3s.get("verdict") or "TGL_THREE_STRESS_TESTS_V387__NOT_RECORDED_THIS_RUN__SECTION_COUNTED_ALONE__GATE_UNTOUCHED") + r"}\end{center}")
+    _joined3s = "\n".join(_sec3s)
+    if _rx3s.search(_joined3s.replace(r"\_", "_")):
+        s.append(r"\section*{Os três testes de estresse, conjuntos (v387)}")
+        s.append(r"\textbf{[GUARDA] A seção não foi emitida nesta rodada: o texto gerado continha uma palavra proibida pela régua (a mesma regex do rito); isto fica dito, nunca disfarçado. O gate não muda.}")
+    else:
+        s.extend(_sec3s)

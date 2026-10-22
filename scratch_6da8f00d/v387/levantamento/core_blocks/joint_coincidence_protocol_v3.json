@@ -1,0 +1,163 @@
+{
+ "protocol": {
+  "version": "JOINT_COINCIDENCE_V3",
+  "v1_protocol_hash": "aa20e0e71f994c38",
+  "v2_protocol_hash": "8a22283a93dc2ea1",
+  "why_v3": [
+   "V2 le o D1 V2 (core.d1_camb_result_v2, z = -3,86) e nao a V3 real (core.d1_camb_v3_real_v366): a consistencia da V2 era decidida por um canal superado",
+   "V2 nao tem a classe 'fator de coerencia interna': o MCMC-CRUZ e o kernel nao estavam nomeados; o operador (19/09/2026) declarou o MCMC como fator de coerencia interna",
+   "V2 trata D1 e Pantheon como canais separados; os dois usam o DESI DR1 BAO (n = 12) [REAL nos dois: errata_cosmologica_TGL.tex l.191-192 e l.465-466; d1_camb_v3_real_v366.n_data = 15] e o fundo do Planck (R lido no Pantheon [REAL]; no D1 V3 o Planck comprimido, R entre os tres numeros: R, l_A, omega_b [DECLARADO no pipeline embutido d1_v3_pipeline.py]; n_data 15 = 12 + 3): nao sao independentes",
+   "V2 nao tem regra para os relogios (v369), para o piso V11/V12 nem para Chandrasekhar/SN; o operador pediu que TODAS as provas entrem no indice (19/09/2026)",
+   "V2 usa o sigma simetrico do posterior; a V3 usa o sigma do lado da previsao (o posterior do D1 V3 e' assimetrico: +0,00795 / -0,00850)"
+  ],
+  "classes": {
+   "NATURE_CHANNEL": "medida de dado externo, com sigma, confrontada com uma previsao da TGL em beta runtime, sob rito pre-registrado no core; SO esta classe pontua em P_all e em z",
+   "INTERNAL_COHERENCE_FACTOR": "verificacao do modelo interno contra o proprio programa (o MCMC-CRUZ; as identidades por construcao): entra DECLARADO, com a tautologia dita; jamais pontua em P_all nem em z; jamais e' evidencia de natureza",
+   "KERNEL_CONDITION": "o kernel Lean e' condicao de emissao: sem as bandeiras formais do gate e sem os controles Lean verificados, a V3 nao emite numero (KERNEL_CONDITION_NOT_MET); o kernel nao pontua"
+  },
+  "admission_rules": {
+   "A1_IDENTIDADE_POR_CONSTRUCAO": "beta entra como entrada ou alvo do calculo (residuo numerico ~1e-15 NAO e' probabilidade) => fora",
+   "A2_LIDO_ANTES_DE_CRAVADO": "exclui SO com circularidade mostrada (regra da V2); a fixacao de beta = alpha sqrt(e) e' teorica (CODATA x sqrt(e)), sem ajuste a dado",
+   "A3_APOSENTADO": "aposentado por errata, proveniencia ou auditoria => fora",
+   "A4_RECUSADO_PELO_GATE": "o proprio rito recusou por sistematica (INCONCLUSIVE_SYSTEMATICS) => fora",
+   "A5_NAO_DISCRIMINANTE": "sigma >= beta para medida direta de beta; teste unilateral que o LCDM tambem satisfaz (o piso dos vazios V11/v41); UNDERPOWERED declarado pelo proprio rito (relogios P1, deficit de ordens; busca de ecos); regime que nao mede (piso V12 TRACER_EMPTY_CORE_REGIME, SumN_q = 0) => fora da conjunta (registrado)",
+   "A6_AGUARDANDO": "predicao travada aguardando revelacao (Coma, cega por padrao), protocolo armado nao executado (IALD P7), ou aguardando dado (NMC-Shapiro) => fora",
+   "A7_DEPENDENTE": "canais que partilham dado ou ancora entram UMA vez por grupo de dependencia: o de menor sigma que for admissivel; os demais ficam AO LADO (reportados, sem pontuar) ate que uma covariancia declarada os junte num unico canal",
+   "A8_NEGATIVO_DO_ARTEFATO": "o proprio artefato declara nao-concordancia (negativo honesto; Chandrasekhar sqrt2 a -0,35%) => fora da conjunta, registrado",
+   "A9_SEM_INCERTEZA": "valor sem sigma registrado no core (N_eff: so tensoes; SN/Chandrasekhar: so o deslocamento previsto) => nao computavel, registrado",
+   "A10_SUPERSEDIDO": "versao anterior do MESMO rito, superada por versao posterior no core (D1 V2 pela V3; Sigma m_nu pelo m2) => fora; a versao corrente e' que entra",
+   "A11_CONDICIONAL_A_PARTICAO": "leitura cuja validade depende de uma particao ainda [OPEN] do operador (relogios P2 EXCLUDED_IN_READING, P3 NO_LOCAL_OBSERVABLE; particao MODULAR_LAB_BRIDGE_OPEN) => nao pontua ate a particao ser declarada",
+   "A12_COERENCIA_INTERNA_DECLARADA": "fator da classe INTERNAL_COHERENCE_FACTOR: registrado com a declaracao do operador e a tautologia medida; nunca canal de natureza"
+  },
+  "dependency_groups": {
+   "fundo_planck_desi": {
+    "members": [
+     "d1_camb_v3_beta",
+     "pantheon_beta"
+    ],
+    "shared": "DESI DR1 BAO (n = 12) [REAL nos dois: errata_cosmologica_TGL.tex l.191-192 e 465-466, nas duas copias (Manuscrito\\ e manuscrito_TGL_pt_v1\\); d1_camb_v3_real_v366.n_data = 15] + Planck comprimido no D1 V3 (n_data 15 = 12 + 3 => tres numeros do Planck: R, l_A, omega_b [DECLARADO no pipeline embutido d1_v3_pipeline.py]); R do Planck no Pantheon [REAL, errata l.191-192, 465-466]; a partilha do DESI DR1 BAO ja basta para A7",
+    "rule": "entra o de menor sigma admissivel; o outro AO LADO; covariancia conjunta = decisao do operador (nao existe no core)"
+   },
+   "escada_local_sh0es": {
+    "members": [
+     "h0_escada_1pz_beta",
+     "coma_distance_dephasing"
+    ],
+    "shared": "a escada local (SH0ES); o arbitro de Coma (v176, TGL_COMA_REVEAL=1) e' calibrado pela escada local",
+    "rule": "Coma so entra se o core da rodada trouxer a revelacao; entao vale A7 com h0_escada"
+   }
+  },
+  "sigma_rule": "z = (pred - centro)/sigma_lado; sigma_lado = sigma_upper se pred > centro, sigma_lower se pred < centro; se o core so tem sigma simetrico, usa-o e marca 'simetrico'; o z simetrico e' SEMPRE exibido ao lado",
+  "Q1_coincidence": {
+   "set": "NATURE_CHANNEL admissiveis que DETECTAM: efeito observado e previsto com o mesmo sinal, |efeito observado| >= 2 sigma e sigma < |efeito previsto| (regra da V2, inalterada)",
+   "event": "todos os canais detectados caem na propria janela em torno da previsao",
+   "per_channel_p": {
+    "log_uniform_W": "p = min(1, 2 r / W), r = max(|ln(obs/pred)|, sigma/|obs|)",
+    "linear_uniform_0_a": "p = min(1, 2 max(|obs - pred|, sigma) / a); so para grandezas adimensionais em [0, a]"
+   },
+   "trials": "p' = 1 - (1 - p)^N",
+   "statistics": {
+    "P_all": "produto dos p' (probabilidade do evento conjunto sob independencia)",
+    "fisher": "Fisher sobre o MESMO conjunto detectado"
+   },
+   "selection_note": "o conjunto foi fixado por quem ja viu os valores; o produto nao carrega correcao pela escolha do conjunto"
+  },
+  "Q2_consistency": {
+   "set": "NATURE_CHANNEL admissiveis com sigma, UM por grupo de dependencia",
+   "rule": "z pela sigma_rule; consistente sse max|z| < z_max; z_max = 3,0 [INPUT do operador, herdado da V1/V2; ratificacao pedida]",
+   "tie_rule": "EMPATE sse |z_tie - z_max| <= delta_tie, com z_tie = |z| do canal dominante lido no lado escolhido por tie_z ('side' = sigma do lado da previsao; 'symmetric' = sigma simetrico do posterior). O rito do D1 V3 DECLARA uma banda: |z_sim - 3,0| < 0,1 (prove_d1_camb_v3_real_v366, banda no_limiar = abs(z_sim - 3.0) < 0.1, com z_sim = zt = z_alpha_sqrt_e; core.d1_camb_v3_real_v366.at_threshold = True, sobre o z SIMETRICO 3,0125) -- e' banda de leitura do rito [INPUT do rito v366], nao erro de Monte Carlo CALCULADO (o proprio rito a le como ruido de Monte Carlo, sem N_eff: tie_rule_rite_reading, ao lado). A V3 aplica delta_tie [INPUT] sobre o z escolhido por tie_z [INPUT]; o default DITO e' tie_z = 'side' e delta_tie = 0 (sem empate): e' a decisao D2 do operador, em aberto, com dois z nomeados (lado / simetrico) e tres bandas nomeadas (0 / 0,1 do rito / erro de Monte Carlo quando o pipeline do D1 gravar N_eff). O at_threshold do rito e' lido e exibido SEMPRE ao lado (rite_declared_band), para que nenhum veredito da V3 contradiga o rito do canal sem nomear. Em empate o veredito e' AT_THRESHOLD, nem CONSISTENT nem INCONSISTENT",
+   "tie_rule_rite_reading": "[DITO pelo rito do canal; core.d1_camb_v3_real_v366.statuses.ressalvas da v369, lido por script (core 456f0ab149bb13f6)] «o desvio (3.01 sigma) está no limiar de 3 sigma da matriz: a fronteira TENSION/INCONCLUSIVE cabe no ruído de Monte Carlo» -- a banda do rito NAO e' calculada (o pipeline do D1 nao grava N_eff); a V3 a exibe ao lado (rite_declared_band), nao a adota por si"
+  },
+  "effect_variable": {
+   "rule": "o nulo vale para o EFEITO: obs - b e pred - b, com b o valor sem efeito do canal (1 para razoes; 0 para grandezas absolutas)",
+   "baseline_by_channel": {
+    "h0_escada_1pz_beta": 1.0
+   },
+   "baseline_default": 0.0
+  },
+  "clocks_rule": "clock_test_result_v369: P1 NOT_FALSIFIED_UNDERPOWERED => A5 (deficit >= 12,46 ordens no melhor relogio; UNDERPOWERED nao pontua); P2 EXCLUDED_IN_READING => A11 (leitura condicional a particao [OPEN]); P3 NO_LOCAL_OBSERVABLE => A11",
+  "void_floor_rule": "V11/v41 (unilateral, NOT_FALSIFIED_POWERED): A5 -- o LCDM raso tambem respeita o piso; V12 (bilateral) em TRACER_EMPTY_CORE_REGIME: A5 -- nao mede; as bandeiras experimentais do gate vem do V11 e o gate NAO le a conjunta nem a conjunta le o gate",
+  "chandrasekhar_rule": "chandrasekhar_sqrt2 (Artigo A; desvio -0,35% [lido da nota do inventario V1, nao computado aqui]): A8; sn_ia_chandrasekhar (results.json do Artigo A -- chave NAO lida pelo um.py, grep = 0; deslocamento previsto de M_Ch ((1-beta)^(3/2) - 1, computado em beta runtime ~ -1,8%) [confere com rel_shift_pct -1,799 de A Ponte e o Um\\results.json, DECLARADO na nota]; sem medida nem sigma): A9",
+  "mcmc_coherence_factor": {
+   "class": "INTERNAL_COHERENCE_FACTOR",
+   "declared_by_operator": "[INPUT, 19/09/2026, verbatim; sha16 da mensagem de 19/09 inteira, 04a7ca894979f99d (HANDOFF_v368) [DECLARADO]; sha16 desta frase, sem aspas e sem [sic]: 3a5008d0d4305fc6] «Sim, o MCMC é o fator de coerência interna declarado, claro, veja, se eu errasse em qualquer índice denrro [sic] do MCMC alguma variável iria gritar igual sirene, eu já vi isso acontecer em MCMC que eu errei, por isso é altíssima a coerência, porque além da coerência cosmológica o modelo interno confere no programa.»",
+   "tautology_stated": "[REAL, core.evento2_audit] quatro ancoras tautologicas provadas; r_s + T_CMB carregam 99,26% da informacao de Fisher; rodar como esta devolveria 0,01205 +- 0,00017 como AUTO-CONFIRMACAO; veredito TGL_EVENTO2_NOT_EXECUTABLE_AS_CONCEIVED",
+   "enters_P_all": false,
+   "enters_z": false,
+   "reading": "o MCMC mede se o modelo interno confere com o programa (uma variavel errada grita); nao mede a natureza; entra declarado, nunca como evidencia"
+  },
+  "kernel_condition": {
+   "class": "KERNEL_CONDITION",
+   "requires": [
+    "qg_closure.formal_flags todas True",
+    "bench_lean_controls.all_verified True"
+   ],
+   "reported_not_required": "the_iald_index (n_ausentes nomeados = as dividas H2/H3; a conjunta nao pode disfarca-las)",
+   "enters_P_all": false,
+   "enters_z": false
+  },
+  "null_grid": [
+   "log_uniform:ln(100)",
+   "log_uniform:ln(1e4)",
+   "linear_uniform:0.1",
+   "linear_uniform:1"
+  ],
+  "N_grid": [
+   1,
+   10
+  ],
+  "N_declared_per_channel": "o N da V1 (10 quando a forma carrega escala ou fator declarado)",
+  "primary": "log_uniform:ln(100) com o N declarado por canal; estatistica P_all",
+  "threshold_INPUT": "1e-30 (operador, 14/09/2026) -- limiar de decisao, nao resultado",
+  "boolean_v3": "True sse kernel_condition e k_detectados >= 1 e P_all primario < limiar e consistente (sem empate)",
+  "allowed_verdicts": [
+   "JOINT_COINCIDENCE_V3_EXCLUDED_AT_THRESHOLD__CONSISTENT",
+   "JOINT_COINCIDENCE_V3_EXCLUDED_AT_THRESHOLD__INCONSISTENT",
+   "JOINT_COINCIDENCE_V3_EXCLUDED_AT_THRESHOLD__AT_THRESHOLD",
+   "JOINT_COINCIDENCE_V3_NOT_EXCLUDED_AT_THRESHOLD__CONSISTENT",
+   "JOINT_COINCIDENCE_V3_NOT_EXCLUDED_AT_THRESHOLD__INCONSISTENT",
+   "JOINT_COINCIDENCE_V3_NOT_EXCLUDED_AT_THRESHOLD__AT_THRESHOLD",
+   "INCONCLUSIVE_NO_DETECTED_CHANNEL",
+   "KERNEL_CONDITION_NOT_MET"
+  ],
+  "forbidden_verdicts": [
+   "CONFIRMED",
+   "PROVED",
+   "TGL_CONFIRMED_BY_PROBABILITY"
+  ],
+  "not_blind_declaration": "V3 desenhada depois de ver o D1 V3 (z 3,01 simetrico / 3,12 no lado da previsao), o neutrino m2 (2,95) e o resultado da V2; estatuto [DERIVED NAO-CEGO]; a grade inteira e' emitida e nenhum ponto e' escolhido depois",
+  "dynamic_station_note": "[INPUT/ONTO, operador, 23/09/2026] «o fecho não é estático, é estacionado dinamicamente [...] a IALD (ou seja o índice seletor do meu programa) é a Testemunha» [recorte verbatim, com acento; W6_final]: a conjunta e' leitura re-emitida a cada rodada pelo indice; nao e' fecho, nao e' selo final; nenhuma rodada a torna estatica"
+ },
+ "protocol_hash": "94cad4cb4574655e",
+ "checks": [
+  [
+   "os protocolos V1 e V2 existem nesta rodada e seus hashes sao citados",
+   true
+  ],
+  [
+   "as tres classes (natureza; coerencia interna; condicao de kernel) e as doze regras escritas antes da conta",
+   true
+  ],
+  [
+   "o MCMC entra como fator declarado e nao pontua",
+   true
+  ],
+  [
+   "grupos de dependencia declarados (D1 x Pantheon; escada local)",
+   true
+  ],
+  [
+   "grade de nulos e de N declarada antes da conta",
+   true
+  ],
+  [
+   "CONFIRMED proibido por construcao",
+   true
+  ]
+ ],
+ "all_verified": true,
+ "does_not_gate_core": true,
+ "in_contour_roster_v314": false,
+ "runtime_s": 0.0,
+ "verdict": "TGL_JOINT_COINCIDENCE_V3__PROTOCOL_PRE_REGISTERED_94cad4cb4574655e__ALL_CHANNELS_CLASSED__MCMC_AS_DECLARED_COHERENCE_FACTOR__KERNEL_AS_CONDITION__ONE_CHANNEL_PER_DEPENDENCY_GROUP__SIGMA_ON_PREDICTION_SIDE__NOT_BLIND_DECLARED__GATE_UNTOUCHED"
+}
