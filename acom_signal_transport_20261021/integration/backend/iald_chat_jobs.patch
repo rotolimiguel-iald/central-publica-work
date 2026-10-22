@@ -1,0 +1,159 @@
+--- runtime/iald_chat_jobs.py
++++ staging/iald_chat_jobs.py
+@@ -6,6 +6,7 @@
+ idempotency receipts remain as tombstones until account deletion.
+ """
+ import codecs
++import chat_wire_codec as chat_wire
+ import iald_app_memory as app_memory
+ from contextlib import contextmanager
+ import ctypes
+@@ -23,6 +24,10 @@
+ TERMINAL = frozenset(('completed', 'failed', 'cancelled', 'interrupted'))
+ MAX_EVENT_BYTES = 16 * 1024 * 1024
+ RETENTION = 7 * 86400
++
++# Bound concurrent inflate/encode work across all Flask app instances in this process.
++# Busy POST is refused BEFORE admission; polling safely keeps its identity page.
++CHAT_WIRE_SLOTS = threading.BoundedSemaphore(2)
+ 
+ 
+ class JobError(Exception):
+@@ -347,6 +352,24 @@
+ 
+     app.extensions['iald_chat_jobs'] = store
+ 
++    def wire_failure(code, status):
++        response = jsonify(error='Transporte recusado antes da admissão.',
++                           code=code, no_dispatch_this_submission=True,
++                           automatic_retry=False)
++        response.status_code = status
++        response.headers['Cache-Control'] = 'private, no-store'
++        return response
++
++    def envelope_csrf_ok():
++        # Existing require_auth middleware remains authoritative. Bearer identity
++        # is request-local; cookie transport additionally requires exact Origin.
++        if not session.get('authenticated') or not session.get('username'):
++            return False
++        if getattr(g, 'app_bearer', False):
++            return True
++        return (request.headers.get('Origin', '') == request.host_url.rstrip('/')
++                and request.headers.get('Sec-Fetch-Site') != 'cross-site')
++
+     def result(fn):
+         try: response=jsonify(fn())
+         except JobError as exc: response=jsonify(error=str(exc));response.status_code=exc.status
+@@ -355,7 +378,8 @@
+ 
+     @app.route('/api/chat-jobs/session')
+     def chat_jobs_session():
+-        return result(lambda:{'account':account_key(session.get('username',''))})
++        return result(lambda:{'account':account_key(session.get('username','')),
++                              'transport':chat_wire.capabilities()})
+ 
+     @app.route('/api/chat-jobs',methods=['GET','POST'])
+     def chat_jobs_collection():
+@@ -364,10 +388,49 @@
+         if not request.is_json: return jsonify(error='Envie application/json.'),415
+         data=request.get_json(silent=True)
+         if not isinstance(data,dict): return jsonify(error='Envie um objeto JSON.'),400
+-        if data.pop('account',None) != account_key(user):
+-            return jsonify(error='A conta mudou. Entre novamente antes de enviar.'),409
++        enveloped = 'iald_transport' in data
++        if enveloped:
++            # No body fallback, no automatic retry, and no admission side effect.
++            if not envelope_csrf_ok():
++                return wire_failure('transport_auth_or_csrf', 403)
++            principal = account_key(user)
++            if data.get('account') != principal:
++                return wire_failure('account_changed', 409)
++            if not CHAT_WIRE_SLOTS.acquire(blocking=False):
++                return wire_failure('transport_busy', 503)
++            try:
++                if request.content_length is not None and request.content_length > chat_wire.WIRE_LIMIT:
++                    return wire_failure('wire_limit', 413)
++                raw = request.get_data(cache=True)
++                if len(raw) > chat_wire.WIRE_LIMIT:
++                    return wire_failure('wire_limit', 413)
++                _, data = chat_wire.decode_request(raw, principal)
++                # The registered pre-route guard saw only the envelope. Reuse its
++                # actual policy, preserving historic AV and images/documents.
++                from private_media_routes import has_new_audio_video, NEW_AV_CODE, NEW_AV_ERROR
++                try:
++                    blocked = has_new_audio_video(data)
++                except ValueError:
++                    return wire_failure('invalid_attachment_structure', 400)
++                if blocked:
++                    response = wire_failure(NEW_AV_CODE, 415)
++                    response.set_data(app.json.dumps(dict(error=NEW_AV_ERROR,
++                        code=NEW_AV_CODE, no_dispatch_this_submission=True,
++                        automatic_retry=False)))
++                    return response
++                if account_key(user) != principal:
++                    return wire_failure('account_changed', 409)
++            except chat_wire.WireError as exc:
++                return wire_failure(exc.code, exc.status)
++            finally:
++                CHAT_WIRE_SLOTS.release()
++            data.pop('account')
++        else:
++            # Do not apply new transport byte/structure/CSRF limits to old clients.
++            if data.pop('account',None) != account_key(user):
++                return jsonify(error='A conta mudou. Entre novamente antes de enviar.'),409
++            principal = account_key(user)
+         # Authentication is revalidated by existing middleware inside the worker.
+-        principal = account_key(user)
+         snapshot=dict(session)
+         headers={k:request.headers[k] for k in ('Authorization','Origin','X-IALD-Context','User-Agent') if k in request.headers}
+ 
+@@ -392,6 +455,8 @@
+                     response.close()
+ 
+         def admit(job_id, body):
++            if enveloped and account_key(user) != principal:
++                raise PermissionError('Account generation changed before admission')
+             # Client key only selects an idempotent job. The server derives and
+             # persists the activity request identity under this account generation.
+             request_id = 'job_' + app_memory.digest(principal + ':' + job_id)
+@@ -410,7 +475,39 @@
+             try: cursor=int(request.args.get('after','0'))
+             except ValueError: raise JobError('Cursor inválido.') from None
+             return store().get(session.get('username',''),job_id,cursor)
+-        return result(read)
++        opts = request.args.getlist('iald_transport')
++        principal = account_key(session.get('username', '')) if opts == [chat_wire.QUERY] else None
++        response = result(read)
++        if response.status_code != 200 or opts != [chat_wire.QUERY]:
++            return response
++        # Ownership/account are resolved BEFORE page compression. Each cursor
++        # page stands alone; SSE/event accumulation and original cursors stay put.
++        if account_key(session.get('username', '')) != principal:
++            changed = jsonify(error='A conta mudou. Entre novamente antes de consultar.')
++            changed.status_code = 409
++            changed.headers['Cache-Control'] = 'private, no-store'
++            return changed
++        cursor = int(request.args.get('after', '0'))
++        if cursor < 0 or cursor > 2**53-1 or not CHAT_WIRE_SLOTS.acquire(blocking=False):
++            return response
++        try:
++            raw = response.get_data()
++            if len(raw) > chat_wire.PAGE_LIMIT:
++                return response  # Never truncate or reject a pre-existing page.
++            packed = chat_wire.page_candidate(raw, principal,
++                dict(kind='page', job_id=job_id, after=cursor))
++            if account_key(session.get('username', '')) != principal:
++                changed = jsonify(error='A conta mudou. Entre novamente antes de consultar.')
++                changed.status_code = 409
++                changed.headers['Cache-Control'] = 'private, no-store'
++                return changed
++            response.set_data(packed)
++        except chat_wire.WireError:
++            # Local pre-response compression failure: retain original page bytes.
++            pass
++        finally:
++            CHAT_WIRE_SLOTS.release()
++        return response
+ 
+     @app.route('/api/chat-jobs/<job_id>/<action>',methods=['POST'])
+     def chat_jobs_action(job_id,action):

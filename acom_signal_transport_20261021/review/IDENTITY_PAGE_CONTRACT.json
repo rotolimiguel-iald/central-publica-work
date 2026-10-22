@@ -1,0 +1,106 @@
+{
+  "status": "PROPOSED_REVIEW_CRITERION_NOT_APPROVAL",
+  "reviewer": "codex-readability-reviewer",
+  "created_utc": "2026-10-21T12:34:11.967903+00:00",
+  "reference": "C:\\IALD\\Central de Patentes\\work\\acom_signal_transport_20261021\\SESSION_REFERENCE.json",
+  "observed_revision": 21,
+  "finding": "INT-02",
+  "scope": "Critério para cliente R2 preservar páginas de identidade; sem alteração do backend/cliente nem aceite.",
+  "recommended_limits": {
+    "ENVELOPE_WIRE_LIMIT": 20971520,
+    "ENVELOPE_PAGE_DECODED_LIMIT": 33816576,
+    "IDENTITY_PAGE_WIRE_LIMIT": 100925440,
+    "formula": "6 * MAX_EVENT_BYTES + 256 KiB = 100925440 bytes (96.25 MiB)",
+    "finite_bound_not_target_allocation": true
+  },
+  "derivation": {
+    "source": {
+      "path": "C:\\IALD\\projetos_pyhton\\IALD\\iald_chat_jobs.py",
+      "sha256": "cde5baea0e1e8861e3d6257afd18ecff5e62bda73368f2d988230e50bc6b3a12"
+    },
+    "facts": [
+      "append limita soma de bytes cifrados retidos a16777216; retirada por moderação apaga eventos anteriores e reinicia tamanho.",
+      "get busca até200eventos; sempre admite primeiro mesmo se ultrapassa256000caracteres, portanto256000 não é teto rígido da página.",
+      "DPAPI atual é cifra sem compressão; teto de bytes plaintext requer hipótese de não redução pelo cipher. O teste sintético não deve substituir cipher por compressor e alegar o mesmo limite.",
+      "JSON ensure_ascii pode expandir um byte de controle em6bytes; BMP/astral UTF8 podem expandir até3x; aspas/backslash até2x. Fator6 é conservador e não depende de o conteúdo SSE ser JSON válido.",
+      "Margem256KiB cobre até200metadados seq/data, campos fixos _public e terminador sob esquema atual; não é licença para campos extensíveis ilimitados."
+    ],
+    "assumptions": [
+      "No armazenamento atual, len(plaintext UTF8) <= len(ciphertext DPAPI); isto não foi ensaiado por nova chamada DPAPI nesta revisão.",
+      "Esquema/limites/paginação/cipher e política de serialização mantidos; se mudarem, recalcular limite.",
+      "Não cobre banco corrompido ou modificado fora dos produtores autorizados."
+    ],
+    "escape_measurements": [
+      {
+        "codepoint": "U+0061",
+        "utf8_bytes": 1,
+        "escaped_content_bytes": 1,
+        "ratio": 1.0
+      },
+      {
+        "codepoint": "U+0001",
+        "utf8_bytes": 1,
+        "escaped_content_bytes": 6,
+        "ratio": 6.0
+      },
+      {
+        "codepoint": "U+0022",
+        "utf8_bytes": 1,
+        "escaped_content_bytes": 2,
+        "ratio": 2.0
+      },
+      {
+        "codepoint": "U+005C",
+        "utf8_bytes": 1,
+        "escaped_content_bytes": 2,
+        "ratio": 2.0
+      },
+      {
+        "codepoint": "U+00E9",
+        "utf8_bytes": 2,
+        "escaped_content_bytes": 6,
+        "ratio": 3.0
+      },
+      {
+        "codepoint": "U+4E2D",
+        "utf8_bytes": 3,
+        "escaped_content_bytes": 6,
+        "ratio": 2.0
+      },
+      {
+        "codepoint": "U+1F600",
+        "utf8_bytes": 4,
+        "escaped_content_bytes": 12,
+        "ratio": 3.0
+      }
+    ],
+    "counterexample_already_reproduced": {
+      "stored_event_bytes": 12000038,
+      "actual_route_identity_page_bytes": 36000224,
+      "old_reader_limit": 33816576
+    }
+  },
+  "identity_contract": [
+    "Leitor acumula no máximo IDENTITY_PAGE_WIRE_LIMIT, cancela ao exceder, não usa apenas Content-Length e não pré-aloca96MiB para toda página.",
+    "Classificar wrapper por JSON real/objeto próprio; não por regex/substrings, nomes não escapados ou presença textual dentro de events.data.",
+    "Ramo identidade usa semântica JSON.parse do legado. Não impor MAX_NODES500000/depth128 do codec a páginas/eventos legados.",
+    "Ainda aplicar todas as validações legadas de job/conversa/events/seq/cursor/has_more, retirada por moderação/DONE/status; parsing nativo não autoriza pular essas verificações.",
+    "Ramo envelope permanece estrito: wrapper exato, WIRE_LIMIT20MiB, decodedPAGE_LIMIT33816576, UTF8/base64/zlib/hash/scope/job/after e limites estruturais do codec. Nenhum limite de envelope deve aumentar para corrigir identidade.",
+    "decodePage e strictJSON antigos não podem ser chamados incondicionalmente no ramo identidade: continuam recusando a página válida mesmo se apenas boundedResponse for ampliado.",
+    "Envelope malformado não vira identidade/fallback silencioso. Falha não avança cursor, não salva como final, não dá ack e não reenvia POST.",
+    "Identidade plain continua válida após negociação; indisponibilidade do módulo/API antes do envio segue legado, sem reload nem retry remoto."
+  ],
+  "minimal_acceptance_controls": [
+    "Reusar regressão INT-02 já existente com página válida de36MB: parse e entrega agora sucedem, preservando events/cursor/DONE.",
+    "Controle estrutural legado >500000nós ou profundidade>128 no limite finito: não herdar restrições codec, mantendo validadores de entrega.",
+    "Overflow de identidade cancela reader; envelope continua recusando excesso dos limites originais.",
+    "Harness conjunto deve usar exatamente a query que cliente envia contra a rota backend final."
+  ],
+  "pending": [
+    "Bytes/manifesta R2 e regressões dirigidas",
+    "Revisão integrada separada; nenhum PASS automático"
+  ],
+  "network_calls": 0,
+  "provider_calls": 0,
+  "runtime_changes": false
+}

@@ -1,0 +1,110 @@
+{
+  "status": "PREPARED_WAITING_FROZEN_DELIVERIES",
+  "integration_approved": false,
+  "reviewer": "codex-readability-reviewer",
+  "unit": "F9.ACOM_SIGNAL_TRANSPORT_20261021",
+  "created_utc": "2026-10-21T12:24:22.788744+00:00",
+  "reference": "C:\\IALD\\Central de Patentes\\work\\acom_signal_transport_20261021\\SESSION_REFERENCE.json",
+  "observed_memory_revision": 18,
+  "observed_event": "acom-integration-deploy-claim",
+  "scope": "Leitura dirigida do plano e pontos de integração; sem auditoria dos bytes ainda em edição.",
+  "observed_stage_files": [
+    "integration\\backend\\chat_wire_codec.py",
+    "integration\\backend\\iald_chat_jobs.py",
+    "integration\\backend\\MISSION_PREFLIGHT.json",
+    "integration\\backend\\SOURCE_PINS.json",
+    "integration\\client\\ASSET_ALLOWLIST.json",
+    "integration\\client\\BASELINE.json",
+    "integration\\client\\chat_wire_codec.mjs",
+    "integration\\client\\iald.js",
+    "integration\\client\\iald_transport.mjs",
+    "integration\\client\\index.html",
+    "integration\\client\\PROJECT.json",
+    "integration\\client\\sw.js",
+    "integration\\client\\test_client.mjs",
+    "integration\\client\\TEST_RESULTS.json"
+  ],
+  "sources": [
+    {
+      "path": "C:\\IALD\\Central de Patentes\\work\\acom_signal_transport_20261021\\client_server_stage\\ADAPTER_PLAN.json",
+      "sha256": "ea6d39f057e953afb9751923d0fe0f34057882fbd2be3b7168b30f4005fdc2a1",
+      "bytes": 3649
+    },
+    {
+      "path": "C:\\IALD\\Central de Patentes\\work\\acom_signal_transport_20261021\\review\\INTEROP_FINAL_R1.json",
+      "sha256": "fd331d789a727d53f969b1bf200407ae5b97862424bfdb8127015ef9e14d7cd0",
+      "bytes": 20714
+    },
+    {
+      "path": "C:\\IALD\\projetos_pyhton\\IALD\\iald_chat_jobs.py",
+      "sha256": "cde5baea0e1e8861e3d6257afd18ecff5e62bda73368f2d988230e50bc6b3a12",
+      "bytes": 22003
+    },
+    {
+      "path": "C:\\IALD\\projetos_pyhton\\IALD\\iald_web_server.py",
+      "sha256": "0f05364f61b19d938add98208ddb53818395720dd54d2094d768fb76a3b7f3f3",
+      "bytes": 768586
+    },
+    {
+      "path": "C:\\IALD\\projetos_pyhton\\IALD\\app\\iald.js",
+      "sha256": "6c2cf21976e07a8a7453f5e6cc33ea7b641ddb178bda5b1cb61c4f9353ecc11b",
+      "bytes": 310285
+    },
+    {
+      "path": "C:\\IALD\\projetos_pyhton\\IALD\\private_media_routes.py",
+      "sha256": "e08d6d01776a8f4b0416097ff06005e755d45779f6d425bed3a44c5b509c0bc0",
+      "bytes": 5496
+    }
+  ],
+  "controls": [
+    {
+      "id": "AUTH_CSRF",
+      "required": "Demonstrar ordem real dos guards: cookie/origem-CSRF e bearer nativo, conta bloqueada e geração autenticada antes de inflação/admissão. O plano pressupõe CSRF; o callback de upload privado não comprova proteção de chat-jobs. Negativos dirigidos devem produzir zero admissão/worker."
+    },
+    {
+      "id": "STRICT_DECODED_LIMITS",
+      "required": "Limitar bytes externos e expandidos independentemente; parser estrito para envelope e conteúdo, UTF8/duplicatas/números/profundidade, stream único completo. Manter limite canônico de ChatJobs e recusar antes de app_memory.begin, wallet ou submit; não confiar em tamanho/hash declarado."
+    },
+    {
+      "id": "MEDIA_WALL",
+      "required": "O before_request atual vê o wrapper compactado, não o payload. Reaplicar has_new_audio_video após decode e antes de admissão, com erro sanitizado; preservar semântica somente nova mídia do turno atual, histórico, referências e documentos/imagens/múltiplos. Testar um caso novo AV compactado e um legado permitido."
+    },
+    {
+      "id": "AUTH_SCOPE_RACE",
+      "required": "Revalidar scope/epoch/token após awaits de capacidade/compactação e decode; account vem da sessão autenticada. Preservar rechecagem da geração no worker e direitos/consentimento/carteira/atividade existentes."
+    },
+    {
+      "id": "CURSOR_AND_DELIVERY",
+      "required": "Validar envelope completo e binding account/job/after antes de parse/consumo/cursor. Manter sequências, retirada por moderação, DONE, expiração/cancelamento e save-before-ack. Falha não pode finalizar nem apagar pendência; não acumular SSE inteiro para compactar."
+    },
+    {
+      "id": "LEGACY_COMPATIBILITY",
+      "required": "Servidor antigo/plain JSON e ausência/falha local de codecs seguem caminho legado antes do envio; resposta plain continua válida com negociação. Query extra não pode quebrar identificação de HTTP410. Node não certifica Safari/WebView."
+    },
+    {
+      "id": "IDEMPOTENCY",
+      "required": "Preservar request_id, payload original persistido e attempted durável; apenas transformação outbound. Falha após invocação não cria segundo POST/fallback ou nova identidade. no_dispatch refere-se apenas à tentativa recusada, não a execuções anteriores."
+    },
+    {
+      "id": "HTTP_AND_PACKAGING",
+      "required": "Erros preservam status/autorização sem dados privados; páginas só após autorização store.get, private/no-store e Vary corretos; sem Content-Encoding para envelope JSON. Manifestos devem cobrir imports, index/service-worker/cache e dependências novas; plano de instalação separado da aprovação de código."
+    }
+  ],
+  "findings": [],
+  "interpretation": "Controles de risco/precondições; não são achados confirmados na implementação não congelada.",
+  "pending": [
+    "DELIVERY e manifesto congelado backend",
+    "DELIVERY e manifesto congelado cliente",
+    "Revisão distinta dos diffs finais e testes novos das interfaces de integração",
+    "Plano de instalação e autorização operacional em etapa separada"
+  ],
+  "execution": {
+    "new_tests": 0,
+    "network": false,
+    "models": false,
+    "runtime_writes": false,
+    "author_stage_writes": false,
+    "memory_or_board_writes": false
+  },
+  "round_policy": "Até duas rodadas para achados baixos; reutilizar 88 verificações isoladas, executar somente novidades das interfaces integradas."
+}

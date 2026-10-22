@@ -1,0 +1,69 @@
+{
+  "status": "PROPOSED_MINIMAL_CHAT_CONTRACT_V1_REVIEW_REQUIRED",
+  "protocol": "iald-byte-envelope/1",
+  "codec": "deflate-base64",
+  "envelope_fields": [
+    "protocol",
+    "codec",
+    "scope",
+    "binding",
+    "raw_bytes",
+    "sha256",
+    "data"
+  ],
+  "binary": "zlib-wrapped DEFLATE standard (not raw deflate or gzip), base64 strict; exact original UTF8 JSON bytes reconstructed.",
+  "negotiation": {
+    "route": "GET /api/chat-jobs/session",
+    "capability_key": "transport",
+    "extra_round_trip": false,
+    "bases_enabled": false,
+    "client_fallback": "If codec APIs unavailable or full envelope not smaller BEFORE send, send original JSON. Never fallback/retry after send uncertainty."
+  },
+  "POST": {
+    "route": "POST /api/chat-jobs",
+    "outer_fields": [
+      "account",
+      "request_id",
+      "iald_conv",
+      "iald_transport"
+    ],
+    "inner": "Original full body including account/request_id/iald_conv/messages and all task controls, exact bytes.",
+    "scope": "server account_key generation; compare outer+envelope+inner account; request_id/conversation must agree.",
+    "binding": {
+      "kind": "request",
+      "request_id": "original request_id",
+      "conversation": "iald_conv"
+    },
+    "before": "Existing auth+origin/CSRF+body bound before decode; bounded decompress/hash/UTF8/strict JSON before ChatJobs.submit; no codec field passed into worker digest."
+  },
+  "GET_page": {
+    "route": "GET /api/chat-jobs/<id>?after=<cursor>&transport=iald-byte-envelope-v1",
+    "outer_fields": [
+      "iald_transport"
+    ],
+    "binding": {
+      "kind": "page",
+      "job_id": "URL job_id",
+      "after": "integer requested after cursor"
+    },
+    "scope": "authenticated account_key generation",
+    "page": "Compress existing result response bytes, not whole answer/SSE; omit wrapper when <5percent or <1024B saving. Cache-Control private,no-store unchanged."
+  },
+  "bounds": {
+    "request_decoded_bytes": 20971520,
+    "page_decoded_bytes": 33816576,
+    "wire_bytes": 20971520,
+    "header_note": "Prototype8MiB block limit is not used for chat envelope. Page bound covers one oversized first legacy event (current soft256000char page is not a hard bytes limit)."
+  },
+  "savings": "Only envelope bytes <=raw_bytes-max(1024,ceil(raw_bytes*0.05)). Count full JSON wrapper and base64 metadata.",
+  "integrity": "Check declared bytes before inflate, cap decoder output, require EOF of single deflate stream, no unused/trailing stream, exact UTF8 byte hash, reject duplicate JSON keys/nonfinite schema.",
+  "idempotency": "Canonical restored body feeds unchanged ChatJobs.submit digest. No new request keys/cache/keys/accounts. Plain legacy request path unchanged.",
+  "failure": "Explicit no_dispatch_this_submission before submit. Does not resolve or repeat any earlier uncertain job.",
+  "authentication": "No new header/CORS permission; negotiation field/GET query only. Existing cookie/native bearer and CSRF/origin guard mandatory.",
+  "not_enabled": [
+    "base RAM cache",
+    "new attachment endpoint",
+    "new media types",
+    "HTTP Content-Encoding request acceptance"
+  ]
+}

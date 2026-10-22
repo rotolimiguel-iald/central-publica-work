@@ -1,0 +1,363 @@
+{
+  "schema": "iald-science-source-findings/2",
+  "unit": "F9.ACOM_SIGNAL_TRANSPORT_20261021",
+  "created_at": "2026-10-21T11:57:11.292740+00:00",
+  "status": "SOURCE_LOCATED_STATIC_EVALUATION",
+  "prior_report": {
+    "path": "C:\\IALD\\Central de Patentes\\work\\acom_signal_transport_20261021\\science\\SOURCE_FINDINGS.json",
+    "sha256": "f1b69634d84796f1df233cd89c38fd9d7f866bdd70b902d327c4e0a451cc7a48",
+    "preserved": true
+  },
+  "operator_direction": "Buscar luminídio usado no ACOM em toda C:/IALD/projetos_pyhton; distinção entre átomos de representação e elemento Z156.",
+  "search": {
+    "inventory_path": "C:\\IALD\\Central de Patentes\\work\\acom_signal_transport_20261021\\science\\SEARCH_R2_INVENTORY.json",
+    "inventory_sha256": "856c641a43fb4425dd4bc4f3b934b268413e1e9d55bb2558d265155d42349f5c",
+    "allowed_files": 12970,
+    "matching_files": 81,
+    "variants": "luminidio|luminídio|luminodio|luminódio|luminidium",
+    "excluded_pattern": "(?i)(^|[/\\\\])(?:\\.git|\\.venv|venv|env|envs|node_modules|__pycache__|cache|caches|\\.cache|modelweights|weights|models|checkpoints|site-packages)([/\\\\]|$)|(?:\\.env|credential|secret|token|chave|senha|confiden|iald_stack_v7|iald_psion_state|escritorio|escritório)",
+    "coverage": "rg inventory da raiz toda, extensões textuais/código permitidas; leitura dirigida das implementações ACOM. Inventário de matches não equivale a auditoria integral de todos os arquivos. Erros individuais das buscas em lotes não foram preservados; não alegar cobertura absoluta.",
+    "additional_identifiers": [
+      "LUMINIDIC_CHIRP",
+      "ENVELOPE_CHIRP",
+      "AtomType",
+      "Hilbert",
+      "pacote"
+    ],
+    "executed_or_imported_source": false
+  },
+  "sources": [
+    {
+      "id": "ACOMV13.py",
+      "path": "C:\\IALD\\projetos_pyhton\\acom\\ACOMV13.py",
+      "sha256": "2da56ed7f7f149ea3aff858431bcc5d3ee380c6841d163e46ed272c653d920ef",
+      "bytes": 90884,
+      "line_count": 1973,
+      "statute": "REAL_SOURCE_TEXT_NOT_EXECUTED",
+      "excerpts": [
+        {
+          "start_line": 1136,
+          "end_line": 1156,
+          "text": "        # Detectar dados ruidosos\n        is_noisy = (delta_efficiency > 0.3 and autocorr < 0.2 and delta_entropy > 0.6)\n        \n        return {\n            'sparsity': sparsity,\n            'delta_efficiency': max(0, delta_efficiency),\n            'delta_autocorr': autocorr,\n            'delta_entropy': delta_entropy,\n            'is_noisy_data': is_noisy\n        }\n    \n    def choose_strategy(self, analysis: Dict) -> CompressionStrategy:\n        \"\"\"Escolhe estratégia baseado na análise.\"\"\"\n        if analysis.get('is_noisy_data', False):\n            return CompressionStrategy.LUMINIDIO\n        elif analysis['sparsity'] > 0.5:\n            return CompressionStrategy.SPARSE\n        elif analysis['delta_efficiency'] > 0.3 and analysis.get('delta_autocorr', 0) > 0.2:\n            return CompressionStrategy.DELTA\n        else:\n            return CompressionStrategy.STANDARD"
+        },
+        {
+          "start_line": 1179,
+          "end_line": 1192,
+          "text": "        elif strategy == CompressionStrategy.LUMINIDIO:\n            g_mean = g.mean().item()\n            g_std = g.std().item()\n            psi_mean = psi.mean().item()\n            psi_std = psi.std().item()\n            \n            g_to_compress = (g - g_mean) / (g_std + EPSILON)\n            psi = (psi - psi_mean) / (psi_std + EPSILON)\n            \n            luminidio_envelope = {\n                'g_mean': g_mean, 'g_std': g_std,\n                'psi_mean': psi_mean, 'psi_std': psi_std,\n                'normalized': True\n            }"
+        },
+        {
+          "start_line": 1217,
+          "end_line": 1229,
+          "text": "        elif strategy == CompressionStrategy.LUMINIDIO:\n            # LUMINIDIO: dados já normalizados (Z-score), não precisa de muitos bits\n            # v12 usava 8 bits e funcionava perfeitamente\n            # Usar max_bits=10 (não 12) para melhor compressão\n            g_quant, g_meta = self._quantize_adaptive(g_to_compress, min_bits=8, max_bits=10)\n            psi_quant, psi_meta = self._quantize_adaptive(psi, min_bits=8, max_bits=10)\n        else:\n            g_quant, g_meta = self._quantize_adaptive(g_to_compress)\n            psi_quant, psi_meta = self._quantize_adaptive(psi, min_bits=4)\n        \n        # Empacotar s\n        s_flat = ((s + 1) / 2).to(torch.uint8).cpu().numpy()\n        s_packed = np.packbits(s_flat).tobytes()"
+        },
+        {
+          "start_line": 1249,
+          "end_line": 1258,
+          "text": "        # Metadata\n        metadata = {\n            'strategy': strategy.value,\n            'g_meta': g_meta,\n            'psi_meta': psi_meta,\n            's_len': len(s),\n            'original_shape': list(psibit.original_shape),\n            'psibit_metadata': psibit.metadata,\n            'sparse_length': sparse_info[1] if sparse_info else 0,\n            'luminidio_envelope': luminidio_envelope"
+        },
+        {
+          "start_line": 1331,
+          "end_line": 1348,
+          "text": "        elif strategy == CompressionStrategy.LUMINIDIO:\n            envelope = metadata.get('luminidio_envelope', {})\n            if envelope.get('normalized', False):\n                g = g * envelope['g_std'] + envelope['g_mean']\n        \n        # Dequantizar psi\n        psi = self._dequantize(psi_quant, metadata['psi_meta'])\n        \n        if strategy == CompressionStrategy.LUMINIDIO:\n            envelope = metadata.get('luminidio_envelope', {})\n            if envelope.get('normalized', False):\n                psi = psi * envelope['psi_std'] + envelope['psi_mean']\n        \n        # Desempacotar s\n        s_bits = np.unpackbits(np.frombuffer(s_packed, dtype=np.uint8))\n        s = torch.tensor(\n            s_bits[:metadata['s_len']].astype(np.float64) * 2 - 1,\n            dtype=torch.float64, device=DEVICE"
+        },
+        {
+          "start_line": 1673,
+          "end_line": 1681,
+          "text": "        # LUMINIDIO: normalização prévia\n        luminidio_pre_norm = None\n        tensor_for_tgl = tensor\n        \n        if strategy == CompressionStrategy.LUMINIDIO:\n            L_mean = tensor.mean().item()\n            L_std = tensor.std().item()\n            tensor_for_tgl = (tensor - L_mean) / (L_std + EPSILON)\n            luminidio_pre_norm = {'L_mean': L_mean, 'L_std': L_std}"
+        },
+        {
+          "start_line": 1756,
+          "end_line": 1758,
+          "text": "        # Desnormalizar LUMINIDIO\n        if strategy == CompressionStrategy.LUMINIDIO and luminidio_pre_norm:\n            reconstructed = reconstructed * luminidio_pre_norm['L_std'] + luminidio_pre_norm['L_mean']"
+        }
+      ]
+    },
+    {
+      "id": "acom_trinity_v7.py",
+      "path": "C:\\IALD\\projetos_pyhton\\acom\\acom_trinity_v7.py",
+      "sha256": "2e6d589c92250103a5c5972e2e3387d84a2a271a414b3f497c76087a6a1543e8",
+      "bytes": 55511,
+      "line_count": 1258,
+      "statute": "REAL_SOURCE_TEXT_NOT_EXECUTED",
+      "excerpts": [
+        {
+          "start_line": 131,
+          "end_line": 133,
+          "text": "    # ═══ LUMINÍDIO (2) ═══\n    LUMINIDIC_CHIRP = auto()\n    ENVELOPE_CHIRP = auto()"
+        },
+        {
+          "start_line": 438,
+          "end_line": 439,
+          "text": "        # 7. LUMINÍDIO\n        atoms_list.extend(self._generate_luminidio())"
+        },
+        {
+          "start_line": 692,
+          "end_line": 723,
+          "text": "    def _generate_luminidio(self) -> List[torch.Tensor]:\n        atoms = []\n        t = self.t\n        \n        for pos in self.positions:\n            for scale in self.scales:\n                for f0 in [5, 10, 15]:\n                    for alpha in self.chirp_rates[:4]:\n                        xi = (t - pos) / scale\n                        \n                        # Luminidic Chirp\n                        envelope_base = torch.exp(-torch.abs(xi))\n                        coupling = 1 - ALPHA2 * torch.exp(-torch.abs(xi) / (ALPHA2 * 10))\n                        envelope = envelope_base * coupling\n                        tau = t - pos\n                        phase = 2 * np.pi * (f0 * tau + alpha * tau ** 2 / 2)\n                        atoms.append(self._add_atom(\n                            envelope * torch.sin(phase),\n                            AtomType.LUMINIDIC_CHIRP, position=pos, scale=scale,\n                            f_start=f0, chirp_rate=alpha\n                        ))\n                        \n                        # Envelope Chirp\n                        envelope2 = torch.exp(-xi ** 2)\n                        phase2 = 2 * np.pi * (f0 * t + alpha * t ** 2 / 2)\n                        atoms.append(self._add_atom(\n                            envelope2 * torch.sin(phase2),\n                            AtomType.ENVELOPE_CHIRP, position=pos, scale=scale,\n                            f_start=f0, chirp_rate=alpha\n                        ))\n        \n        return atoms"
+        },
+        {
+          "start_line": 871,
+          "end_line": 884,
+          "text": "        elif atom.atom_type == AtomType.LUMINIDIC_CHIRP:\n            xi = (t - atom.position) / atom.scale\n            envelope_base = torch.exp(-torch.abs(xi))\n            coupling = 1 - ALPHA2 * torch.exp(-torch.abs(xi) / (ALPHA2 * 10))\n            envelope = envelope_base * coupling\n            tau = t - atom.position\n            phase = 2 * np.pi * (atom.f_start * tau + atom.chirp_rate * tau ** 2 / 2)\n            return envelope * torch.sin(phase)\n        \n        elif atom.atom_type == AtomType.ENVELOPE_CHIRP:\n            xi = (t - atom.position) / atom.scale\n            envelope = torch.exp(-xi ** 2)\n            phase = 2 * np.pi * (atom.f_start * t + atom.chirp_rate * t ** 2 / 2)\n            return envelope * torch.sin(phase)"
+        },
+        {
+          "start_line": 946,
+          "end_line": 978,
+          "text": "        for iteration in range(self.max_atoms):\n            current_energy = float(torch.sum(residual ** 2).item())\n            current_resistance = current_energy / initial_energy\n            \n            if current_resistance < TETELESTAI:\n                break\n            \n            # Calcular correlações em batch\n            correlations = torch.matmul(atoms_matrix, residual)\n            \n            # Encontrar melhor átomo\n            best_idx = int(torch.argmax(torch.abs(correlations)).item())\n            best_corr = float(correlations[best_idx].item())\n            \n            if abs(best_corr) < EPSILON:\n                break\n            \n            # Calcular coeficiente e sinal\n            best_atom_vec = atoms_matrix[best_idx]\n            coefficient = abs(best_corr)\n            sign = 1 if best_corr > 0 else -1\n            \n            # Obter átomo com parâmetros completos\n            selected_atom = self.generator.get_atom_from_index(best_idx, coefficient, sign)\n            selected_atoms.append(selected_atom)\n            \n            # Atualizar contagens\n            category_counts[selected_atom.category] += 1\n            reduction = coefficient ** 2 / initial_energy\n            category_contributions[selected_atom.category] += reduction\n            \n            # Atualizar resíduo\n            residual = residual - sign * coefficient * best_atom_vec"
+        }
+      ]
+    },
+    {
+      "id": "acom_unified.py",
+      "path": "C:\\IALD\\projetos_pyhton\\acom\\acom_unified.py",
+      "sha256": "abdd6e1314ba5158bd59f3c4fe0268c3329c21e9a9351cf5a6f960a94d53d754",
+      "bytes": 77978,
+      "line_count": 1639,
+      "statute": "REAL_SOURCE_TEXT_NOT_EXECUTED",
+      "excerpts": [
+        {
+          "start_line": 145,
+          "end_line": 147,
+          "text": "    # LUMINÍDIO (2)\n    LUMINIDIC_CHIRP = auto()\n    ENVELOPE_CHIRP = auto()"
+        },
+        {
+          "start_line": 456,
+          "end_line": 485,
+          "text": "    def luminidic_chirp(self, position: float, scale: float, f_start: float, chirp_rate: float, amplitude: float = 1.0):\n        \"\"\"Chirp luminídico (envelope baseado em α²).\"\"\"\n        scale = max(scale, EPSILON)\n        xi = (self.t - position) / scale\n        \n        # Envelope LUMINÍDICO\n        envelope_base = self._exp(-self._abs(xi))\n        coupling_correction = 1 - ALPHA2 * self._exp(-self._abs(xi) / (ALPHA2 * 10))\n        envelope = envelope_base * coupling_correction\n        \n        tau = self.t - position\n        phase = 2 * self.pi * (f_start * tau + chirp_rate * tau ** 2 / 2)\n        \n        return amplitude * envelope * self._sin(phase)\n    \n    def envelope_chirp(self, position: float, scale: float, f_start: float, chirp_rate: float, \n                       envelope_freq: float, amplitude: float = 1.0):\n        \"\"\"Chirp com envelope modulado.\"\"\"\n        scale = max(scale, EPSILON)\n        xi = (self.t - position) / scale\n        \n        # Envelope modulado\n        base_envelope = self._exp(-0.5 * xi ** 2)\n        modulation = 0.5 * (1 + self._cos(2 * self.pi * envelope_freq * (self.t - position)))\n        envelope = base_envelope * modulation\n        \n        tau = self.t - position\n        phase = 2 * self.pi * (f_start * tau + chirp_rate * tau ** 2 / 2)\n        \n        return amplitude * envelope * self._sin(phase)"
+        },
+        {
+          "start_line": 709,
+          "end_line": 725,
+          "text": "        # LUMINIDIO (2 tipos)\n        # ═══════════════════════════════════════════════════════════════════\n        \n        for pos in self.positions[::2]:\n            for scale in self.scales:\n                for f0 in self.frequencies[::2]:\n                    for chirp in self.chirp_rates[::2]:\n                        # Luminidic chirp\n                        atoms.append(gen.luminidic_chirp(pos, scale, f0, chirp))\n                        categories.append(\"LUMINIDIO\")\n                        types.append(AtomType.LUMINIDIC_CHIRP)\n                        \n                        # Envelope chirp\n                        for env_freq in [1, 2, 5]:\n                            atoms.append(gen.envelope_chirp(pos, scale, f0, chirp, env_freq))\n                            categories.append(\"LUMINIDIO\")\n                            types.append(AtomType.ENVELOPE_CHIRP)"
+        },
+        {
+          "start_line": 804,
+          "end_line": 816,
+          "text": "        for iteration in range(self.max_atoms):\n            # Energia atual\n            if self.use_torch:\n                current_energy = (residual ** 2).sum().item()\n            else:\n                current_energy = np.sum(residual ** 2)\n            \n            current_resistance = current_energy / initial_energy\n            \n            if current_resistance < TETELESTAI:\n                if verbose:\n                    print(f\"    Iteração {iteration}: TETELESTAI!\")\n                break"
+        },
+        {
+          "start_line": 855,
+          "end_line": 886,
+          "text": "            if reduction <= 0:\n                break\n            \n            # Atualizar\n            residual = new_residual\n            category = self.categories[best_idx]\n            atom_type = self.types[best_idx]\n            \n            selected_atoms.append({\n                'index': best_idx,\n                'coefficient': coef,\n                'category': category,\n                'type': atom_type,\n                'reduction': reduction\n            })\n            \n            category_counts[category] += 1\n            category_contributions[category] += reduction\n            \n            if verbose and (iteration < 3 or iteration % 5 == 0):\n                print(f\"    Iter {iteration}: ν={current_resistance:.2e}, {atom_type.name}, Δ={reduction:.4f}\")\n        \n        # Métricas finais\n        if self.use_torch:\n            final_energy = (residual ** 2).sum().item()\n        else:\n            final_energy = np.sum(residual ** 2)\n        \n        resistance = final_energy / initial_energy\n        state = classify_state(resistance)\n        \n        return selected_atoms, resistance, state, category_counts, category_contributions"
+        },
+        {
+          "start_line": 888,
+          "end_line": 904,
+          "text": "    def reconstruct(self, selected_atoms):\n        \"\"\"Reconstrói o sinal a partir dos átomos selecionados.\"\"\"\n        if self.use_torch:\n            result = torch.zeros(self.n, device=self.device, dtype=torch.float64)\n            for atom_info in selected_atoms:\n                idx = atom_info['index']\n                coef = atom_info['coefficient']\n                result += coef * self.atoms_matrix[idx]\n            return result\n        else:\n            result = np.zeros(self.n)\n            for atom_info in selected_atoms:\n                idx = atom_info['index']\n                coef = atom_info['coefficient']\n                result += coef * self.atoms_matrix[idx]\n            return result\n"
+        }
+      ]
+    },
+    {
+      "id": "Acom_psi_internet_v3.py",
+      "path": "C:\\IALD\\projetos_pyhton\\acom\\Acom_psi_internet_v3.py",
+      "sha256": "52b8a79735f5a05c42c4b308c4be4d8a39adbabce56e7fd86402ec241d67aa88",
+      "bytes": 55827,
+      "line_count": 1270,
+      "statute": "REAL_SOURCE_TEXT_NOT_EXECUTED",
+      "excerpts": [
+        {
+          "start_line": 85,
+          "end_line": 87,
+          "text": "ALPHA2 = 0.012031                    # Constante de Miguel (α²)\nCCI = 1.0 - ALPHA2                   # Índice de Coerência Consciente (0.987969)\nALPHA = math.sqrt(ALPHA2)            # √α²"
+        },
+        {
+          "start_line": 140,
+          "end_line": 165,
+          "text": "class AtomType(Enum):\n    # Clássicos\n    CONSTANT = auto()\n    LINEAR = auto()\n    SINE = auto()\n    COSINE = auto()\n    GAUSSIAN = auto()\n    DAMPED_SINE = auto()\n    \n    # Wavelets\n    MORLET = auto()\n    MEXICAN_HAT = auto()\n    HAAR = auto()\n    GABOR = auto()\n    \n    # Splines\n    CUBIC_SPLINE = auto()\n    \n    # Ondas Gravitacionais / Chirps\n    CHIRP = auto()\n    GLOBAL_CHIRP = auto()\n    GW_INSPIRAL = auto()\n    GW_RINGDOWN = auto()\n\n\n# ══════════════════════════════════════════════════════════════════════════════════"
+        },
+        {
+          "start_line": 269,
+          "end_line": 282,
+          "text": "    def encode(self, L: np.ndarray) -> Tuple[bytes, Dict[str, Any]]:\n        \"\"\"Codifica sinal com 3 dobras.\"\"\"\n        n = len(L)\n        \n        # DOBRA 1.1: PSIBIT\n        s = np.sign(L)\n        g = np.sqrt(np.abs(L) + EPSILON)\n        g_max = float(g.max()) + EPSILON\n        \n        # DOBRA 1.2: ANGULAR\n        g_normalized = np.clip(g / g_max, 0, 1)\n        theta = np.arcsin(g_normalized)\n        theta_normalized = theta / (np.pi / 2)\n        theta_quantized = np.round(theta_normalized * (self.n_angles - 1)).astype(np.uint16)"
+        },
+        {
+          "start_line": 519,
+          "end_line": 540,
+          "text": "class LayerC2:\n    \"\"\"\n    CAMADA c2: MATÉRIA — Representação esparsa.\n    \n    2 DOBRAS (substrato holográfico 2D):\n        DOBRA 2.1: GAUGE      Normalização (offset, scale)\n        DOBRA 2.2: LAGRANGIANA  Matching Pursuit → Σ αᵢ × átomo_i\n    \n    Esta camada é para sinais ESTRUTURADOS.\n    Transforma N amostras em M átomos (M << N).\n    \"\"\"\n    \n    def __init__(self, max_atoms: int = 20, resistance_threshold: float = ALPHA2):\n        self.max_atoms = max_atoms\n        self.resistance_threshold = resistance_threshold\n        self.n_folds = FOLDS_C2\n        \n        # Templates de átomos\n        self.atom_templates = [\n            AtomType.SINE, AtomType.COSINE, AtomType.GAUSSIAN,\n            AtomType.MORLET, AtomType.MEXICAN_HAT, AtomType.HAAR,\n            AtomType.GLOBAL_CHIRP, AtomType.DAMPED_SINE"
+        },
+        {
+          "start_line": 684,
+          "end_line": 699,
+          "text": "        # Serializar sinais s (run-length se esparso)\n        s_encoded = np.where(s > 0, 1, np.where(s < 0, 2, 0)).astype(np.uint8)\n        s_compressed = zlib.compress(s_encoded.tobytes(), level=9)\n        \n        # Serializar resíduo (se necessário)\n        if not is_tetelestai and resistance > ALPHA2:\n            residual_data = self._encode_residual(residual, scale)\n        else:\n            residual_data = b''\n        \n        # Montar pacote\n        header = struct.pack('<I', n)\n        header += struct.pack('<III', len(lag_bytes), len(s_compressed), len(residual_data))\n        header += struct.pack('<f?', resistance, is_tetelestai)\n        \n        data = header + lag_bytes + s_compressed + residual_data"
+        },
+        {
+          "start_line": 746,
+          "end_line": 762,
+          "text": "    def _encode_residual(self, residual: np.ndarray, scale: float) -> bytes:\n        \"\"\"Codifica resíduo quantizado.\"\"\"\n        # Quantizar em 8 bits\n        r_min, r_max = float(residual.min()), float(residual.max())\n        if r_max - r_min < EPSILON:\n            r_max = r_min + EPSILON\n        r_norm = (residual - r_min) / (r_max - r_min)\n        r_quant = np.round(r_norm * 255).astype(np.uint8)\n        \n        header = struct.pack('<dd', r_min, r_max)\n        return header + zlib.compress(r_quant.tobytes(), level=6)\n    \n    def _decode_residual(self, data: bytes, scale: float) -> np.ndarray:\n        \"\"\"Decodifica resíduo.\"\"\"\n        r_min, r_max = struct.unpack('<dd', data[:16])\n        r_quant = np.frombuffer(zlib.decompress(data[16:]), dtype=np.uint8)\n        residual = r_quant.astype(np.float64) / 255 * (r_max - r_min) + r_min"
+        },
+        {
+          "start_line": 1053,
+          "end_line": 1097,
+          "text": "    def send(self, data: Union[bytes, np.ndarray], tunnel: TunnelConfig,\n             verbose: bool = False) -> bytes:\n        \"\"\"Envia dados através do túnel.\"\"\"\n        # Converter bytes para sinal se necessário\n        if isinstance(data, bytes):\n            signal = np.frombuffer(data, dtype=np.uint8).astype(np.float64)\n        else:\n            signal = np.asarray(data, dtype=np.float64)\n        \n        # Codificar via c3\n        encoded, metrics = self.c3.encode(signal, verbose=verbose)\n        \n        # Adicionar header de túnel\n        header = MAGIC + tunnel.tunnel_id + struct.pack('<I', len(encoded))\n        packet = header + encoded\n        \n        # Hash de integridade\n        integrity = hashlib.sha256(packet).digest()\n        \n        self.global_stats['packets_sent'] += 1\n        \n        return packet + integrity\n    \n    def receive(self, packet: bytes, tunnel: TunnelConfig) -> np.ndarray:\n        \"\"\"Recebe dados do túnel.\"\"\"\n        # Verificar integridade\n        integrity = packet[-32:]\n        content = packet[:-32]\n        \n        if hashlib.sha256(content).digest() != integrity:\n            raise ValueError(\"Falha de integridade\")\n        \n        # Verificar magic e túnel\n        if content[:4] != MAGIC:\n            raise ValueError(\"Magic inválido\")\n        \n        tunnel_id = content[4:20]\n        if tunnel_id != tunnel.tunnel_id:\n            raise ValueError(\"Túnel não corresponde\")\n        \n        data_len = struct.unpack('<I', content[20:24])[0]\n        encoded = content[24:24+data_len]\n        \n        # Decodificar via c3\n        signal = self.c3.decode(encoded)"
+        }
+      ]
+    },
+    {
+      "id": "Acom_psi_protocol_v2.py",
+      "path": "C:\\IALD\\projetos_pyhton\\acom\\Acom_psi_protocol_v2.py",
+      "sha256": "63997b9b9be27ba7e7aa0034781830efc9415ef0191b5be6dcad9ca4edbd87ac",
+      "bytes": 39222,
+      "line_count": 784,
+      "statute": "REAL_SOURCE_TEXT_NOT_EXECUTED",
+      "excerpts": [
+        {
+          "start_line": 152,
+          "end_line": 175,
+          "text": "    def fold(self, g: np.ndarray) -> Tuple[np.ndarray, float]:\n        \"\"\"g → (θ_quantized, g_max)\"\"\"\n        g_max = float(np.max(g)) + EPSILON\n        \n        # Normalizar e aplicar arcsin\n        g_normalized = np.clip(g / g_max, 0, 1)\n        theta = np.arcsin(g_normalized)  # θ ∈ [0, π/2]\n        \n        # Normalizar para [0, 1] e quantizar\n        theta_normalized = theta / (np.pi / 2)\n        theta_quantized = np.round(theta_normalized * (self.n_levels - 1)).astype(np.uint16)\n        \n        return theta_quantized, g_max\n    \n    def unfold(self, theta_quantized: np.ndarray, g_max: float) -> np.ndarray:\n        \"\"\"(θ_quantized, g_max) → g\"\"\"\n        # Dequantizar\n        theta_normalized = theta_quantized.astype(np.float64) / (self.n_levels - 1)\n        theta = theta_normalized * (np.pi / 2)\n        \n        # Aplicar sin para recuperar g\n        g = g_max * np.sin(theta)\n        \n        return g"
+        },
+        {
+          "start_line": 182,
+          "end_line": 196,
+          "text": "class NominationFold:\n    \"\"\"\n    DOBRA 3: Nominação no Espaço de Hilbert ℋ₄.\n    \n    Cada ponto recebe um NOME (estado ψ) baseado em:\n        - sign(L): sinal do valor\n        - sign(dL): sinal da derivada (direção do movimento)\n    \n    Os 4 estados:\n        ψ = 0 (COLLAPSE+): L > 0, dL < 0  → Positivo, descendo\n        ψ = 1 (ASCEND+):   L > 0, dL > 0  → Positivo, subindo\n        ψ = 2 (EMERGE-):   L < 0, dL > 0  → Negativo, subindo\n        ψ = 3 (FALL-):     L < 0, dL < 0  → Negativo, descendo\n    \n    Isso captura a DINÂMICA do sinal, não só seu valor."
+        }
+      ]
+    },
+    {
+      "id": "acom_universal_mk3.py",
+      "path": "C:\\IALD\\projetos_pyhton\\acom\\acom_universal_mk3.py",
+      "sha256": "8f95bb974d14b4af5db3bdbea287e6b4288ba5746ce9b39bf5c71573805ee7b9",
+      "bytes": 48134,
+      "line_count": 1166,
+      "statute": "REAL_SOURCE_TEXT_NOT_EXECUTED",
+      "excerpts": [
+        {
+          "start_line": 377,
+          "end_line": 391,
+          "text": "    def _bytes_to_pairs(self, data: bytes) -> np.ndarray:\n        \"\"\"Converte bytes em estados psiônicos (0-3)\"\"\"\n        bits = np.unpackbits(np.frombuffer(data, dtype=np.uint8))\n        if len(bits) % 2 != 0:\n            bits = np.append(bits, 0)\n        pairs = bits.reshape(-1, 2)\n        return (pairs[:, 0] * 2 + pairs[:, 1]).astype(np.uint8)\n    \n    def _pairs_to_bytes(self, states: np.ndarray, original_length: int) -> bytes:\n        \"\"\"Converte estados psiônicos de volta para bytes\"\"\"\n        bit0 = (states >> 1) & 1\n        bit1 = states & 1\n        bits = np.column_stack([bit0, bit1]).flatten()\n        bits = bits[:original_length * 8]\n        return np.packbits(bits).tobytes()[:original_length]"
+        },
+        {
+          "start_line": 474,
+          "end_line": 527,
+          "text": "    def compress(self, data: bytes) -> ACOMBitPackage:\n        \"\"\"Comprime dados binários escolhendo melhor método\"\"\"\n        original_bytes = len(data)\n        states = self._bytes_to_pairs(data)\n        n_pairs = len(states)\n        \n        dist, entropy, fase_dom = self._analyze(states)\n        \n        # Tentar ambos métodos\n        rle_data, rle_runs = self._compress_rle(states)\n        rle_size = len(rle_data)\n        \n        fase_data, n_desvios = self._compress_fase(states, fase_dom)\n        fase_size = len(fase_data)\n        \n        # Escolher melhor\n        if rle_size < fase_size and rle_size < original_bytes:\n            method = 'rle'\n            compressed_data = rle_data\n            # Adicionar n_runs no início\n            compressed_data = rle_runs.to_bytes(4, 'little') + compressed_data\n        elif fase_size < original_bytes:\n            method = 'fase'\n            compressed_data = fase_data\n        else:\n            # Nenhum comprime - armazenar original\n            method = 'raw'\n            compressed_data = data\n        \n        checksum = hashlib.md5(data).hexdigest()[:8]\n        \n        return ACOMBitPackage(\n            method=method,\n            compressed_data=compressed_data,\n            original_length=original_bytes,\n            n_pairs=n_pairs,\n            fase_dominante=fase_dom,\n            distribuicao=dist,\n            entropia=entropy,\n            original_bytes=original_bytes,\n            checksum=checksum\n        )\n    \n    def decompress(self, pkg: ACOMBitPackage) -> bytes:\n        \"\"\"Descomprime dados binários\"\"\"\n        if pkg.method == 'raw':\n            return pkg.compressed_data\n        elif pkg.method == 'rle':\n            n_runs = int.from_bytes(pkg.compressed_data[:4], 'little')\n            states = self._decompress_rle(pkg.compressed_data[4:], n_runs)\n        elif pkg.method == 'fase':\n            states = self._decompress_fase(pkg.compressed_data, pkg.n_pairs)\n        \n        return self._pairs_to_bytes(states, pkg.original_length)"
+        }
+      ]
+    },
+    {
+      "id": "ACOMv6bootstrap.py",
+      "path": "C:\\IALD\\projetos_pyhton\\acom\\ACOMv6bootstrap.py",
+      "sha256": "949d73fb0c164c10bd402eb12a3b5e3c8fdb559d568e4f2591a0242ff1af6e32",
+      "bytes": 57279,
+      "line_count": 1280,
+      "statute": "REAL_SOURCE_TEXT_NOT_EXECUTED",
+      "excerpts": [
+        {
+          "start_line": 699,
+          "end_line": 720,
+          "text": "# LUMINÍDIO\n# ============================================================================\n\nclass LuminidioPhysics:\n    B_CRITICAL = 4.02e14\n    \n    SPECTRAL_LINES = {\n        'K_alpha': 433.26,\n        'K_beta': 487.12,\n        'L_edge': 341.57,\n        'L_alpha': 89.45,\n        'M_edge': 126.19,\n        'M_alpha': 28.73,\n        'nuclear_gamma': 5.31,\n    }\n    \n    MAGNETARS = {\n        'SGR_1806-20': {'B': 2.0e15, 'd_kpc': 15.1, 'desc': 'Magnetar mais intenso'},\n        'SGR_1900+14': {'B': 7.0e14, 'd_kpc': 12.5, 'desc': 'Giant flare'},\n        'SGR_0501+4516': {'B': 1.9e14, 'd_kpc': 2.0, 'desc': 'Típico'},\n        '1E_2259+586': {'B': 5.9e13, 'd_kpc': 3.2, 'desc': 'AXP'},\n        '4U_0142+61': {'B': 1.3e14, 'd_kpc': 3.6, 'desc': 'AXP'},"
+        },
+        {
+          "start_line": 1035,
+          "end_line": 1039,
+          "text": "    def test_luminidio(self) -> TGLTestResult:\n        \"\"\"Análise do Luminídio\"\"\"\n        analysis = LuminidioPhysics.analyze()\n        \n        print(f\"\\n  Predição TGL: Luminídio (Z=156) estável se B > {LuminidioPhysics.B_CRITICAL:.2e} G\")"
+        }
+      ]
+    }
+  ],
+  "findings": [
+    {
+      "id": "F1",
+      "statute": "REAL_STATIC",
+      "sources": [
+        "ACOMV13.py:1136-1258",
+        "acom_trinity_v7.py:692-723",
+        "acom_unified.py:456-485"
+      ],
+      "claim": "A indicação do operador é sustentada pelo código: LUMINIDIO é estratégia ACOM e categoria de átomos implementada. A pesquisa anterior fora desta raiz era insuficiente para localizar esse uso; o artigo do elemento Z156 não representa este mecanismo."
+    },
+    {
+      "id": "F2",
+      "statute": "REAL_STATIC",
+      "sources": [
+        "ACOMV13.py:1179-1222",
+        "ACOMV13.py:1331-1342",
+        "ACOMV13.py:1673-1681"
+      ],
+      "claim": "V13 seleciona LUMINIDIO para dados classificados ruidosos, normaliza g e psi por média/desvio e guarda luminidio_envelope; também pré-normaliza L. Reconstrução usa metadados para desfazer escala/offset. O ramo quantiza g/psi entre 8 e 10 bits; não é preservação universal dos bytes originais."
+    },
+    {
+      "id": "F3",
+      "statute": "REAL_STATIC",
+      "sources": [
+        "acom_trinity_v7.py:692-723",
+        "acom_trinity_v7.py:871-884",
+        "acom_unified.py:456-485"
+      ],
+      "claim": "Átomo luminídico: envelope exp(-abs(xi)) vezes (1-ALPHA2*exp(-abs(xi)/(10*ALPHA2))), modulando sin de chirp com fase quadrática. Trinity implementa geração e reconstrução por parâmetros. São funções de representação de sinal, não instâncias do elemento químico."
+    },
+    {
+      "id": "F4",
+      "statute": "REAL_STATIC",
+      "sources": [
+        "acom_trinity_v7.py:714-720",
+        "acom_unified.py:471-485"
+      ],
+      "claim": "ENVELOPE_CHIRP não é idêntico entre arquivos: Trinity usa exp(-xi²) e fase em t; Unified usa exp(-xi²/2) com modulação cosseno adicional e fase em tau. Não trocar implementações pelo mesmo nome."
+    },
+    {
+      "id": "F5",
+      "statute": "DERIVED_FROM_STATIC_CODE",
+      "sources": [
+        "acom_trinity_v7.py:946-978",
+        "acom_unified.py:804-886",
+        "acom_unified.py:888-904"
+      ],
+      "claim": "Matching pursuit seleciona átomos por correlação, reduz resíduo e termina por limiar/max_atoms. Reconstrução soma átomos selecionados. Resistência pequena não demonstra resíduo zero nem igualdade byte a byte; reaproveitamento para texto exige preservar correção exata ou raw e testar comparação integral."
+    },
+    {
+      "id": "F6",
+      "statute": "REAL_STATIC",
+      "sources": [
+        "Acom_psi_internet_v3.py:140-165",
+        "Acom_psi_protocol_v2.py:182-196"
+      ],
+      "claim": "v3 contém átomos genéricos e camadas c1/c2/c3, mas enum consultado não nomeia LUMINIDIO. v2 nomeia Hilbert H4 para quatro estados dos sinais L/dL. Esta nominação não prova proteção quântica de um pacote arbitrário."
+    },
+    {
+      "id": "F7",
+      "statute": "REAL_STATIC",
+      "sources": [
+        "Acom_psi_internet_v3.py:1053-1097",
+        "acom_universal_mk3.py:474-527"
+      ],
+      "claim": "v3 verifica SHA256 do pacote codificado antes de decodificar: integridade dos bytes codificados não demonstra igualdade com os bytes de origem nem autenticação criptográfica. ACOMBit de mk3 oferece pares de bits, RLE/fase e raw, candidato distinto para lossless; calcula MD5 truncado mas decompress mostrado não verifica esse checksum. Nenhum foi executado nesta revisão."
+    },
+    {
+      "id": "F8",
+      "statute": "OPEN",
+      "sources": [
+        "ACOMV13.py",
+        "acom_trinity_v7.py",
+        "acom_unified.py"
+      ],
+      "claim": "Uso computacional localizado. Nos trechos examinados não foi localizada demonstração de proteção física/criptográfica ou preservação universal byte-exata do pacote Hilbert por estes átomos. Não transformar esta lacuna localizada em negação da existência de outras provas no acervo."
+    },
+    {
+      "id": "F9",
+      "statute": "REAL_STATIC",
+      "sources": [
+        "ACOMv6bootstrap.py:699-720"
+      ],
+      "claim": "ACOMv6bootstrap LuminidioPhysics refere-se ao elemento Z156; separado do ramo codec encontrado."
+    }
+  ],
+  "mirror": {
+    "path": "C:\\IALD\\projetos_pyhton\\IALD\\files\\acom_trinity_v7.py",
+    "sha256": "2e6d589c92250103a5c5972e2e3387d84a2a271a414b3f497c76087a6a1543e8",
+    "same_bytes_as_acom_trinity": true
+  },
+  "contract_candidates": [
+    "Preservar separadamente conteúdo e metadados suficientes de reconstrução (parâmetros do átomo, escala, offset, fase, coeficiente, sinal e comprimento); identificar versão exata do gerador.",
+    "Não portar quantização 8-10 bits/limiares ALPHA2 para payload textual. Um futuro preditor por átomos só entra com correção lossless exata, limites e teste roundtrip integral; caso contrário raw.",
+    "Verificar tamanho e SHA dos bytes originais reconstruídos, além do frame; integridade sem segredo não substitui autenticação do canal.",
+    "Constantes literais históricas permanecem evidência da origem, não norma nova; não transpor ALPHA2=0.012031 nem confundir seu nome histórico com beta atual.",
+    "Não mudar iald-signal-blocks/1 por inferência científica. Comunicar achados por este arquivo e aguardar contrato final Helmholtz para JS."
+  ],
+  "limits": {
+    "no_scientific_source_modified": true,
+    "no_runtime_modified": true,
+    "no_network": true,
+    "no_program_import_or_execution": true,
+    "no_empirical_or_crypto_proof_claimed": true,
+    "interop_status": "WAIT_FINAL_CONTRACT"
+  }
+}

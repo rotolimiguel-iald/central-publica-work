@@ -1,0 +1,208 @@
+{
+  "schema": "iald-client-design/1",
+  "unit": "F9.ACOM_SIGNAL_TRANSPORT_20261021",
+  "status": "WAIT_FINAL_CONTRACT",
+  "statute": "DECLARADO_DESIGN_NOT_IMPLEMENTED",
+  "created_at": "2026-10-21T11:51:29.091497+00:00",
+  "scope": "Desenho browser isolado; nenhuma alteração de app/runtime, chamada remota ou execução/importação do protótipo.",
+  "coordination": {
+    "owner_of_wire_contract": "Helmholtz / parent",
+    "user_final_contract_required": true,
+    "codec_implementation": "DEFERRED_BY_OPERATOR_UNTIL_FINAL_CONTRACT",
+    "planned_module": "isolated browser JS module, filename to be agreed",
+    "prototype_rename": "signal.py -> acom_signal_codec.py solicitado pelo operador; confirmar arquivo final e hash antes de implementar",
+    "do_not_define_parallel_protocol": true
+  },
+  "memory_projection": {
+    "reference": "C:\\IALD\\Central de Patentes\\work\\acom_signal_transport_20261021\\SESSION_REFERENCE.json",
+    "context_id": "277001ae-1121-55b7-97e9-8f6458973cc3",
+    "revision_observed": 3,
+    "ok": true,
+    "shared_transition": "Não realizada por esta subtarefa; coordenação por arquivo conforme pedido."
+  },
+  "sources": [
+    {
+      "path": "C:\\IALD\\Central de Patentes\\work\\acom_signal_transport_20261021\\prototype\\signal.py",
+      "sha256": "55b88e1f6888dd3e49e7ed33cf47ffbc232af908e497a69d68fa88e5381aecbc",
+      "bytes": 13638,
+      "anchors": [
+        {
+          "match": "PROTOCOL=",
+          "lines": [
+            19
+          ]
+        },
+        {
+          "match": "BLOCK=",
+          "lines": [
+            11
+          ]
+        },
+        {
+          "match": "MAX_OBJECT=",
+          "lines": [
+            12
+          ]
+        },
+        {
+          "match": "def canonical",
+          "lines": [
+            27
+          ]
+        },
+        {
+          "match": "def unacom1",
+          "lines": [
+            49
+          ]
+        },
+        {
+          "match": "def pack",
+          "lines": [
+            59
+          ]
+        },
+        {
+          "match": "def encode",
+          "lines": [
+            89
+          ]
+        },
+        {
+          "match": "def receive",
+          "lines": [
+            147
+          ]
+        },
+        {
+          "match": "PROVISIONAL",
+          "lines": [
+            194
+          ]
+        }
+      ]
+    },
+    {
+      "path": "C:\\IALD\\projetos_pyhton\\IALD\\app\\iald.js",
+      "sha256": "6c2cf21976e07a8a7453f5e6cc33ea7b641ddb178bda5b1cb61c4f9353ecc11b",
+      "bytes": 310285,
+      "anchors": [
+        {
+          "match": "async function fetchIALD",
+          "lines": [
+            1244
+          ]
+        },
+        {
+          "match": "/api/chat-jobs/session",
+          "lines": [
+            197,
+            1313
+          ]
+        },
+        {
+          "match": "?after=",
+          "lines": [
+            170,
+            267
+          ]
+        },
+        {
+          "match": "page.has_more",
+          "lines": [
+            273,
+            299,
+            303
+          ]
+        },
+        {
+          "match": "response.json()",
+          "lines": [
+            174,
+            916,
+            1315,
+            1492,
+            3025,
+            3095,
+            4923,
+            4947
+          ]
+        }
+      ]
+    }
+  ],
+  "observed_contract": {
+    "statute": "REAL_STATIC_SOURCE_ONLY_NOT_FINAL",
+    "protocol": "iald-signal-blocks/1",
+    "frame": "uint32 big-endian header UTF8 byte length + JSON header + payload length from block.wire",
+    "sequence": [
+      "begin",
+      "block*",
+      "end"
+    ],
+    "codecs": [
+      "raw",
+      "acom1",
+      "ref"
+    ],
+    "acom1": "6-byte ACOM1 NUL magic + uint64le original length + uint32le CRC32 + 32 raw SHA256 bytes + zlib-wrapped deflate",
+    "prototype_limits_only": {
+      "block_bytes": 32768,
+      "object_bytes": 8388608,
+      "header_bytes": 2048,
+      "max_frames": 258,
+      "max_wire_bytes": 8918024
+    },
+    "root": "SHA256 of Python canonical JSON manifest: scope, sha, bytes, blocks; sorted keys, compact separators, UTF8, no NaN",
+    "integrity": "CRC32 and SHA256 detect alteration against expected values; neither authenticates peer or encrypts payload."
+  },
+  "browser_design": {
+    "byte_preservation": "Codec input/output Uint8Array. Preserve supplied bytes, BOM, CRLF, whitespace and Unicode normalization. Never JSON.parse/stringify payload to calculate its hash. TextEncoder only once at caller boundary if source is a JS string; malformed surrogate policy must be explicit. Decode textual payload only after complete verification, strict UTF8 with BOM preservation policy.",
+    "hash": "crypto.subtle.digest SHA-256 for individual blocks and bounded complete object. WebCrypto has no incremental digest API: do not claim constant-memory object hashing. Reject over limit before concatenation/digest, account for copies and outputs; agree peak-memory budget.",
+    "compression": "Feature detect secure-context crypto.subtle, TextEncoder/TextDecoder, Uint8Array/DataView, readable streams and construct CompressionStream/DecompressionStream with deflate (zlib wrapper, not deflate-raw/gzip). Probe tiny fixed offline vector. No UA-version inference; no arbitrary JS polyfill.",
+    "encode": "Validate full input limits and hash before any POST. Use fixed block slicing from final contract. ACOM1 only if complete compressed frame payload smaller than raw according to reference rule; CRC32 exactly reference. Preconstruct bounded body for portable fetch; no request-stream/duplex dependence.",
+    "decode": "Bound cumulative wire bytes, frame/header count, header length, block wire size and cumulative output before allocations/concatenation. Split fetch chunks locally into bounded parser views; network chunks need not follow prototype Reader chunk boundary. Decompress incrementally with output cap, cancel on cap breach. Validate each header exact fields/types/integers, duplicate keys, sequence, offsets, hashes, final root and EOF. Do not trust Content-Length.",
+    "strict_json": "JSON.parse alone silently accepts duplicate keys; final codec requires duplicate-key detection or reviewed strict parser. Number.isSafeInteger and type checks; bool is not integer. Header nesting must have a small agreed bound.",
+    "zlib_open": "Verify browser decompressor enforces checksum, end-of-stream and no trailing/concatenated streams against Python negatives; if strict parity cannot be established, compressed codec capability remains disabled. Bounded JS reader limits retained output, not an audited bound on internal browser codec allocations.",
+    "canonicalization": "Implement only fixed manifest/context schema needed by frozen contract, ASCII keys with explicit ordered serialization. Check Python-vs-JS UTF8/string escaping and number vectors; do not assume arbitrary JSON canonicalization equivalence.",
+    "refs": "References only from acknowledged exact scope/root and verified byte cache. Partition by authenticated account/generation/conversation, invalidate on logout/account changes, bound cache bytes/count. Wire scope is not authority. No unacknowledged or guessed hashes; no persistence design assumed.",
+    "visibility": "Decoded blocks remain provisional until end hash/root/EOF verification. Commit cache/object and expose complete response page only after success; discard provisional data on failure."
+  },
+  "http_integration_proposal_not_wire_contract": {
+    "negotiation": "Authenticated /api/chat-jobs/session may advertise final protocol/capabilities/limits. Exact field names, media type, headers, CSRF and endpoint behavior belong to final server contract; not invented here. Preserve fetchIALD auth/credentials/account-generation checks.",
+    "unsupported": "If capability/API/strict-decoder support absent before submission, use existing JSON protocol. Never infer support from prototype existence; protocol disabled by default pending final review.",
+    "query_full_delta": "Full and delta encode the same original serialized request bytes. Delta requires explicit acknowledged base before sending. A missing base discovered before POST can select full before the first send; no automatic resend after attempt.",
+    "responses": "Each existing cursor page is an independently complete verified payload. Retain event seq, cursor, has_more, terminal status, DONE and withdrawal handling. No delta across response pages unless final contract explicitly adds it; current pages already incrementally deliver events.",
+    "uncertain_send": "Once fetch is invoked for POST, timeout/disconnect/abort/unsupported response/decode failure leaves request pending or uncertain. Do not change protocol, base or request ID and repost. Recovery observes existing identity/job only under server status contract; transport receipt is not provider admission.",
+    "refusal": "Clear local error for excess bounds/corrupt or missing ref. No truncated payload, silent omission, fabricated success or automatic remote repair."
+  },
+  "required_final_contract_inputs": [
+    "Final filename and SHA plus explicit final-contract signal",
+    "Exact canonical schema and cross-language vectors",
+    "Final object/wire/header/frame/cache and peak-memory limits; 8MiB is provisional",
+    "Negotiation fields/media types, authenticated scope binding, capability downgrade rules",
+    "Typed no-dispatch vs pending/uncertain responses and status-only recovery",
+    "Reference offer/ack lifecycle, account changes, eviction and missing-base behavior",
+    "Strict zlib EOF/trailing semantics across browser engines",
+    "Policy for invalid UTF8/BOM/lone surrogates and duplicate JSON keys"
+  ],
+  "offline_acceptance_plan": [
+    "Bidirectional Python-to-JS and JS-to-Python vectors; compare decoded bytes/SHA/root, not compressed byte identity (deflate implementation may differ).",
+    "Empty, ASCII, accents, emoji split across blocks, CRLF, BOM, combining forms, all byte values when binary kind, repetitive and incompressible data; exact limit and limit+1.",
+    "raw/acom1/ref, full/delta, duplicate blocks, absent/foreign/tampered base and account/generation changes.",
+    "1-byte and arbitrary network splits, malformed length/endian/header/duplicate keys/types/order/offsets, truncation, extra frame, CRC/SHA/root mismatch, zlib expansion bomb/trailing streams.",
+    "Feature absent and constructor failure before send -> current protocol; simulated lost POST response -> zero reposts or protocol downgrade.",
+    "Complete response pages keep cursors/events/DONE/withdrawal semantics; no UI/cache commit before verification.",
+    "Measure peak retained JS bytes, total wire bytes including headers and CPU; test actual WebView/browser capabilities offline before claiming support."
+  ],
+  "validation": {
+    "prototype_executed": false,
+    "codec_written": false,
+    "interop_executed": false,
+    "browser_support_measured": false,
+    "runtime_changed": false,
+    "network_calls": 0,
+    "design_json_roundtrip": "checked on write"
+  },
+  "science_boundary": "Engenharia de transporte byte-lossless proposta. Sem prova física, criptográfica ou ganho cognitivo/compactação garantido. Não altera kernel/gate; relatório científico anterior é referência separada."
+}

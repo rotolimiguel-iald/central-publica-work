@@ -1,0 +1,316 @@
+{
+  "status": "BLOCK",
+  "scope": "FROZEN_GENERIC_CONTROL_ONLY_NOT_ATOM_OR_RUNTIME",
+  "reviewer": "codex-readability-reviewer",
+  "unit": "F9.ACOM_SIGNAL_TRANSPORT_20261021",
+  "created_at": "2026-10-21T12:04:28.651746+00:00",
+  "manifest_sha256": "eb49d50f5cdff2cf7e47dd404d9da1aee8bf3a1c55d1488217dd30d493cb8abb",
+  "code_sha256": "f9680c7b3c4b72c77ae0b43da5d9fe7344196cfba838982ef1fbf20cc0c75077",
+  "benchmark_R3_sha256": "e1c15699a7a0a39032e5fa9847938f65b893725e478e59d6a3f3207543be6357",
+  "frozen_files": [
+    {
+      "path": "C:\\IALD\\Central de Patentes\\work\\acom_signal_transport_20261021\\transport_design.json",
+      "bytes": 18614,
+      "sha256": "0c7d75c2d8e2a0561fc945b9ace5fc0f27547f559487983919f8742b69295a9c",
+      "verified": true
+    },
+    {
+      "path": "C:\\IALD\\Central de Patentes\\work\\acom_signal_transport_20261021\\PROTOTYPE_CONTRACT.json",
+      "bytes": 2621,
+      "sha256": "66451825cac06a918c1fcbdd1e9441bfbc63ae5dbc14357340296e75b622ce72",
+      "verified": true
+    },
+    {
+      "path": "C:\\IALD\\Central de Patentes\\work\\acom_signal_transport_20261021\\CHAT_WIRE_CONTRACT.json",
+      "bytes": 3139,
+      "sha256": "15c1b0db55ae08b44838913e6283d35d77573d410aa218197d534ca8786af227",
+      "verified": true
+    },
+    {
+      "path": "C:\\IALD\\Central de Patentes\\work\\acom_signal_transport_20261021\\prototype\\acom_signal_codec.py",
+      "bytes": 13703,
+      "sha256": "f9680c7b3c4b72c77ae0b43da5d9fe7344196cfba838982ef1fbf20cc0c75077",
+      "verified": true
+    },
+    {
+      "path": "C:\\IALD\\Central de Patentes\\work\\acom_signal_transport_20261021\\prototype\\test_benchmark.py",
+      "bytes": 16784,
+      "sha256": "5dc28b79163e90538ae2db052bc890515f65cbc35d391d12cc31d3bb3a70dd82",
+      "verified": true
+    },
+    {
+      "path": "C:\\IALD\\Central de Patentes\\work\\acom_signal_transport_20261021\\prototype_tests_R2.json",
+      "bytes": 4175,
+      "sha256": "c1972846892d0b1bd039398ecc1054a5da230f4c03b7026c169cb70f852328a5",
+      "verified": true
+    },
+    {
+      "path": "C:\\IALD\\Central de Patentes\\work\\acom_signal_transport_20261021\\benchmark_R2.json",
+      "bytes": 17854,
+      "sha256": "6422ac1029c2fe96a6954f21121ec56b1629242a288df9c1382f5cd4358dfb09",
+      "verified": true
+    },
+    {
+      "path": "C:\\IALD\\Central de Patentes\\work\\acom_signal_transport_20261021\\benchmark_R3.json",
+      "bytes": 19797,
+      "sha256": "e1c15699a7a0a39032e5fa9847938f65b893725e478e59d6a3f3207543be6357",
+      "verified": true
+    },
+    {
+      "path": "C:\\IALD\\Central de Patentes\\work\\acom_signal_transport_20261021\\CONTROL_DELIVERY_R1.json",
+      "bytes": 1897,
+      "sha256": "e25ad10d0b47095eed5dd3f13f4d29d16f9c9273480c2f1dabb41ab5f5b239ca",
+      "verified": true
+    }
+  ],
+  "findings": [
+    {
+      "id": "CONTROL-01",
+      "severity": "MEDIO",
+      "status": "OPEN",
+      "file": "C:\\IALD\\Central de Patentes\\work\\acom_signal_transport_20261021\\prototype\\acom_signal_codec.py",
+      "line": 138,
+      "title": "Temporário de bloco órfão impede recuperação após interrupção",
+      "reproduction": "Injeção local de interrupção entre fsync e os.rename no primeiro bloco de Store._put; fechar/reabrir SQLite e reapresentar exatamente os mesmos frames/ID. O .tmp permanece; tmp.open(xb) levanta FileExistsError. requests não contém a unidade.",
+      "impact": "Store durável não consegue concluir essa unidade após interrupção sem intervenção manual. Nenhum byte incorreto foi admitido e nenhum modelo foi chamado; falha é de recuperação/disponibilidade, dentro do controle C06.",
+      "required_fix": "Implementar recuperação idempotente de temporário local no escopo exclusivo do protótipo: validar destino/temporário por tamanho e hash, publicar ou substituir com segurança, preservar conflito e isolamento. Não converter a correção local em retry de execução remota. Acrescentar regressão neste ponto antes de novo congelamento.",
+      "evidence": "C:\\IALD\\Central de Patentes\\work\\acom_signal_transport_20261021\\review\\r1\\independent_checks.json"
+    },
+    {
+      "id": "CONTROL-02",
+      "severity": "BAIXO",
+      "status": "DECLARED_RESIDUAL",
+      "file": "C:\\IALD\\Central de Patentes\\work\\acom_signal_transport_20261021\\prototype\\test_benchmark.py",
+      "line": 158,
+      "title": "Decomposição de framing usa ID diferente do pacote medido",
+      "evidence": "manifest_framing_bytes+payload_bytes fica8–20bytes abaixo de binary_packet_bytes nos12casos cold/warm: contador usa counts e medição usa fixture_mode_k.",
+      "impact": "Totais de wire, escolhas e tamanhos de arquivos foram reproduzidos; inconsistência restrita à decomposição de metadados.",
+      "recommendation": "Derivar componentes dos frames exatos medidos ou identificar explicitamente a diferença; corrigir aritmética junto à próxima entrega, sem rodada exclusiva por achado baixo."
+    }
+  ],
+  "validation": {
+    "author_checks_reproduced": 55,
+    "synthetic_fixtures_reproduced": 6,
+    "independent_checks": [
+      {
+        "name": "empty",
+        "passed": true
+      },
+      {
+        "name": "one_byte",
+        "passed": true
+      },
+      {
+        "name": "unicode_exact",
+        "passed": true
+      },
+      {
+        "name": "all_bytes",
+        "passed": true
+      },
+      {
+        "name": "max8MiB",
+        "passed": true
+      },
+      {
+        "name": "over8MiB",
+        "passed": true,
+        "error": "invalid_declared_size"
+      },
+      {
+        "name": "recover_interrupted_block_publish",
+        "passed": false,
+        "error_type": "FileExistsError",
+        "error": "[Errno 17] File exists: 'C:\\\\IALD\\\\Central de Patentes\\\\work\\\\acom_signal_transport_20261021\\\\review\\\\r1\\\\i_d1a4xddy\\\\s\\\\1beca236ce30780eed7defff52e07e63cf99d8cfb5730c12fd3099217f8f8d82\\\\blocks\\\\163e26b3924ed283a0b96f033e0df3bbc6f9fccf5f7d0a7bcb55e8b0ed9d152d.tmp'",
+        "pending_block_files": 1,
+        "request_committed": false
+      },
+      {
+        "name": "six_fixture_byte_counts_reproduced",
+        "passed": true
+      },
+      {
+        "name": "packet_components_sum",
+        "passed": false,
+        "details": [
+          {
+            "fixture": "messages_json",
+            "mode": "cold",
+            "packet": 8733,
+            "components": 8719,
+            "delta": 14
+          },
+          {
+            "fixture": "messages_json",
+            "mode": "warm",
+            "packet": 3255,
+            "components": 3241,
+            "delta": 14
+          },
+          {
+            "fixture": "text_utf8",
+            "mode": "cold",
+            "packet": 11682,
+            "components": 11672,
+            "delta": 10
+          },
+          {
+            "fixture": "text_utf8",
+            "mode": "warm",
+            "packet": 4987,
+            "components": 4977,
+            "delta": 10
+          },
+          {
+            "fixture": "png_raw",
+            "mode": "cold",
+            "packet": 297289,
+            "components": 297281,
+            "delta": 8
+          },
+          {
+            "fixture": "png_raw",
+            "mode": "warm",
+            "packet": 2403,
+            "components": 2395,
+            "delta": 8
+          },
+          {
+            "fixture": "pdf_raw",
+            "mode": "cold",
+            "packet": 1097,
+            "components": 1089,
+            "delta": 8
+          },
+          {
+            "fixture": "pdf_raw",
+            "mode": "warm",
+            "packet": 645,
+            "components": 637,
+            "delta": 8
+          },
+          {
+            "fixture": "random_raw",
+            "mode": "cold",
+            "packet": 1053937,
+            "components": 1053926,
+            "delta": 11
+          },
+          {
+            "fixture": "random_raw",
+            "mode": "warm",
+            "packet": 5295,
+            "components": 5284,
+            "delta": 11
+          },
+          {
+            "fixture": "messages_png_base64",
+            "mode": "cold",
+            "packet": 300124,
+            "components": 300104,
+            "delta": 20
+          },
+          {
+            "fixture": "messages_png_base64",
+            "mode": "warm",
+            "packet": 3056,
+            "components": 3036,
+            "delta": 20
+          }
+        ]
+      }
+    ],
+    "source_and_prototype_execution": "Somente codec congelado stdlib e testes em W/review; nenhuma fonte científica executada/importada.",
+    "environment_note": "Primeira cópia isolada excedeu comprimento de caminho Windows e falhou no fixture; reprodução em W/review/r1 com os mesmos bytes passou. Artefatos congelados preservados."
+  },
+  "measurement_assessment": [
+    "R3 corrige contabilização de setup binary/JSON e declara que cold não era store/disco vazio. Medianas são3observações locais; setup não teve tempo registrado.",
+    "Os6fixtures e totais de bytes foram reproduzidos. Textos sintéticos muito repetidos favorecem gzip; referências ganham sobretudo em reuso de dados incompressíveis quando setup/cache são contabilizados.",
+    "2/10/50Mbps são cálculos de serialização, não medições de rede/TTFB/provedor. Tracemalloc mede decoder Python, excluindo buffers completos do harness. Nenhum ganho causal do átomo ou de tokens demonstrado.",
+    "CHAT_WIRE_CONTRACT é proposta distinta do controle de blocos: não foi implementada/testada nem autorizada por este parecer."
+  ],
+  "science_update": {
+    "source_findings_R2_sha256": "435a32576a57183e2f1ef4571ffa13ec72a83d0738e55038a3a93eba0cf9d3af",
+    "source_pins": [
+      {
+        "id": "ACOMV13.py",
+        "path": "C:\\IALD\\projetos_pyhton\\acom\\ACOMV13.py",
+        "sha256": "2da56ed7f7f149ea3aff858431bcc5d3ee380c6841d163e46ed272c653d920ef",
+        "matches": true
+      },
+      {
+        "id": "acom_trinity_v7.py",
+        "path": "C:\\IALD\\projetos_pyhton\\acom\\acom_trinity_v7.py",
+        "sha256": "2e6d589c92250103a5c5972e2e3387d84a2a271a414b3f497c76087a6a1543e8",
+        "matches": true
+      },
+      {
+        "id": "acom_unified.py",
+        "path": "C:\\IALD\\projetos_pyhton\\acom\\acom_unified.py",
+        "sha256": "abdd6e1314ba5158bd59f3c4fe0268c3329c21e9a9351cf5a6f960a94d53d754",
+        "matches": true
+      },
+      {
+        "id": "Acom_psi_internet_v3.py",
+        "path": "C:\\IALD\\projetos_pyhton\\acom\\Acom_psi_internet_v3.py",
+        "sha256": "52b8a79735f5a05c42c4b308c4be4d8a39adbabce56e7fd86402ec241d67aa88",
+        "matches": true
+      },
+      {
+        "id": "Acom_psi_protocol_v2.py",
+        "path": "C:\\IALD\\projetos_pyhton\\acom\\Acom_psi_protocol_v2.py",
+        "sha256": "63997b9b9be27ba7e7aa0034781830efc9415ef0191b5be6dcad9ca4edbd87ac",
+        "matches": true
+      },
+      {
+        "id": "acom_universal_mk3.py",
+        "path": "C:\\IALD\\projetos_pyhton\\acom\\acom_universal_mk3.py",
+        "sha256": "8f95bb974d14b4af5db3bdbea287e6b4288ba5746ce9b39bf5c71573805ee7b9",
+        "matches": true
+      },
+      {
+        "id": "ACOMv6bootstrap.py",
+        "path": "C:\\IALD\\projetos_pyhton\\acom\\ACOMv6bootstrap.py",
+        "sha256": "949d73fb0c164c10bd402eb12a3b5e3c8fdb559d568e4f2591a0242ff1af6e32",
+        "matches": true
+      }
+    ],
+    "assessment": "R2 localiza o uso computacional LUMINIDIO V13 e LUMINIDIC_CHIRP Trinity/Unified; corrige a lacuna de localização do uso ACOM em R1. ENVELOPE_CHIRP tem variantes distintas, exigindo gerador/versionamento explícitos. A localização não demonstra proteção quântica ou bytes exatos; predictor+resíduo ainda não é artefato final e não foi auditado aqui.",
+    "prior_science_contract": "review/SCIENCE_CONTRACT.json preservado como retrato anterior; esta atualização vai ao lado, sem negar outras provas no acervo."
+  },
+  "limits": [
+    "Context autenticado/CSRF é simulador confiável, não implementação de autenticação.",
+    "Store é protótipo single-process sem cifragem, quotas/GC e locks multiworker; esses limites já são declarados.",
+    "8MiB é testcap; não altera contrato de produção.",
+    "Não confundir replay de recibo de transporte com autorização/reexecução de chamada remota; ledger do app continua necessário."
+  ],
+  "evidence": [
+    {
+      "path": "C:\\IALD\\Central de Patentes\\work\\acom_signal_transport_20261021\\review\\r1\\prototype_tests_R2.json",
+      "sha256": "c1972846892d0b1bd039398ecc1054a5da230f4c03b7026c169cb70f852328a5"
+    },
+    {
+      "path": "C:\\IALD\\Central de Patentes\\work\\acom_signal_transport_20261021\\review\\r1\\benchmark_R2.json",
+      "sha256": "06570aa0ed92ba1d7363d8a61063d88f8d7544150af061d270dc5e452729d9d8"
+    },
+    {
+      "path": "C:\\IALD\\Central de Patentes\\work\\acom_signal_transport_20261021\\review\\r1\\independent_checks.json",
+      "sha256": "aaa47d25b52b2cab8a5fa218b083561230f881e9dc0ce4673ffd7dc30f39fd4c"
+    },
+    {
+      "path": "C:\\IALD\\Central de Patentes\\work\\acom_signal_transport_20261021\\review\\control_independent.py",
+      "sha256": "250f6081ee79458a64b11970de95ba74beec9bbcf0e820a0985a8d127666bb94"
+    },
+    {
+      "path": "C:\\IALD\\Central de Patentes\\work\\acom_signal_transport_20261021\\science\\SOURCE_FINDINGS_R2.json",
+      "sha256": "435a32576a57183e2f1ef4571ffa13ec72a83d0738e55038a3a93eba0cf9d3af"
+    }
+  ],
+  "integration_approved": false,
+  "atom_implementation_approved": false,
+  "runtime_modified": false,
+  "memory_modified": false,
+  "board_modified": false,
+  "network_calls": 0,
+  "provider_calls": 0
+}

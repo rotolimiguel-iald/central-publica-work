@@ -1,0 +1,16 @@
+{
+  "status": "STAGED_INTERFACE_REVIEW_REQUIRED",
+  "session": "GET /api/chat-jobs/session returns account plus transport={protocol,codec,query,bases:false,request_decoded_bytes,page_decoded_bytes,wire_bytes,...}",
+  "post": "POST /api/chat-jobs, Content-Type application/json, unchanged credentials/Origin. Outer exact {account,request_id,iald_conv,iald_transport}. Original whole JSON UTF8 is compressed. No POST query required.",
+  "envelope": "iald-byte-envelope/1, deflate-base64: zlib-wrapped DEFLATE, strict canonical base64, raw_bytes/SHA256/account scope and request binding checked before admission.",
+  "csrf": "New cookie-envelope POST requires authenticated session plus exact Origin=request.host_url without trailing slash; Sec-Fetch-Site cross-site rejected. Existing authenticated native bearer g.app_bearer accepted. Legacy plain path unchanged.",
+  "poll": "GET /api/chat-jobs/<job_id>?after=<cursor>&iald_transport=iald-byte-envelope-v1. Query must occur exactly once. Success page may be original JSON or exact {iald_transport: envelope}. Binding {kind:page,job_id,after:<requested cursor>}, NOT returned cursor. Errors remain ordinary JSON with original HTTP status.",
+  "busy": "New envelope POST 503 {code:transport_busy,no_dispatch_this_submission:true,automatic_retry:false}; do not retry automatically. Busy page compression returns original identity page.",
+  "limits": "No new raw/structure limits for plain requests. Envelope decoded/wire20MiB; original canonical body20MiB still enforced after decode. No cache/base/delta.",
+  "safety": "SHA256 is integrity, not authentication. No dispatch fallback after send uncertainty; retain existing idempotent request_id and canonical digest. Client must advance cursor only after page hash/binding validation.",
+  "page_identity": "Identity may be selected for no gain, local encoding refusal, over PAGE_LIMIT, duplicate/missing opt-in or busy slot. Parse identity using existing legacy page semantics; transport decoded bound applies only to compressed envelope. No truncation.",
+  "files": [
+    "iald_chat_jobs.py",
+    "chat_wire_codec.py"
+  ]
+}

@@ -1,0 +1,15 @@
+import net from 'node:net';
+import tls from 'node:tls';
+import http from 'node:http';
+import https from 'node:https';
+import dns from 'node:dns';
+import child from 'node:child_process';
+import {syncBuiltinESMExports} from 'node:module';
+const deny=()=>{throw new Error('REVIEW_OFFLINE_ONLY');};
+globalThis.fetch=deny;globalThis.WebSocket=class {constructor(){deny();}};
+net.connect=net.createConnection=net.createServer=deny;net.Socket.prototype.connect=deny;
+tls.connect=tls.createServer=deny;http.request=http.get=http.createServer=deny;https.request=https.get=https.createServer=deny;
+for(const key of Object.keys(dns))if(typeof dns[key]==='function')dns[key]=deny;
+for(const key of Object.keys(dns.promises))if(typeof dns.promises[key]==='function')dns.promises[key]=deny;
+for(const key of ['spawn','spawnSync','exec','execSync','execFile','execFileSync','fork'])child[key]=deny;
+syncBuiltinESMExports();

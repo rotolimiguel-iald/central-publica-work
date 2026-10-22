@@ -1,0 +1,29 @@
+--- client/iald_transport.mjs
++++ client_R2/iald_transport.mjs
+@@ -1,6 +1,6 @@
+ // Browser-only integration. The pinned codec owns the wire format.
+-import {PROTOCOL,CODEC,QUERY,PAGE_LIMIT,codecAvailable,prepareRequest,
+-        decodePage,strictJSON,WireError} from './chat_wire_codec.mjs';
++import {PROTOCOL,CODEC,QUERY,IDENTITY_PAGE_LIMIT,codecAvailable,prepareRequest,
++        decodePage,identityPageJSON,WireError} from './chat_wire_codec.mjs';
+ 
+ async function boundedResponse(response) {
+   if (!response.body?.getReader) throw new WireError('response_stream_unavailable');
+@@ -11,7 +11,7 @@
+       const {value,done}=await reader.read();
+       if (done) break;
+       size+=value.byteLength;
+-      if (size>PAGE_LIMIT) throw new WireError('page_wire_limit');
++      if (size>IDENTITY_PAGE_LIMIT) throw new WireError('page_wire_limit');
+       parts.push(value);
+     }
+   } catch (error) {
+@@ -36,7 +36,7 @@
+     async readPage(response,binding) {
+       const wire=await boundedResponse(response);
+       const raw=await decodePage(wire,snapshot.account,binding);
+-      return strictJSON(raw,PAGE_LIMIT);
++      return identityPageJSON(raw);
+     },
+   });
+ }

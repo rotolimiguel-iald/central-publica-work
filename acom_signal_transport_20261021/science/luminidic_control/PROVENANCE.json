@@ -1,0 +1,39 @@
+{
+  "r2": {
+    "path": "C:\\IALD\\Central de Patentes\\work\\acom_signal_transport_20261021\\science\\SOURCE_FINDINGS_R2.json",
+    "sha256": "435a32576a57183e2f1ef4571ffa13ec72a83d0738e55038a3a93eba0cf9d3af"
+  },
+  "sources": [
+    {
+      "path": "C:\\IALD\\projetos_pyhton\\acom\\acom_trinity_v7.py",
+      "sha256": "2e6d589c92250103a5c5972e2e3387d84a2a271a414b3f497c76087a6a1543e8",
+      "excerpts": [
+        {
+          "start_line": 692,
+          "end_line": 723,
+          "text": "    def _generate_luminidio(self) -> List[torch.Tensor]:\n        atoms = []\n        t = self.t\n        \n        for pos in self.positions:\n            for scale in self.scales:\n                for f0 in [5, 10, 15]:\n                    for alpha in self.chirp_rates[:4]:\n                        xi = (t - pos) / scale\n                        \n                        # Luminidic Chirp\n                        envelope_base = torch.exp(-torch.abs(xi))\n                        coupling = 1 - ALPHA2 * torch.exp(-torch.abs(xi) / (ALPHA2 * 10))\n                        envelope = envelope_base * coupling\n                        tau = t - pos\n                        phase = 2 * np.pi * (f0 * tau + alpha * tau ** 2 / 2)\n                        atoms.append(self._add_atom(\n                            envelope * torch.sin(phase),\n                            AtomType.LUMINIDIC_CHIRP, position=pos, scale=scale,\n                            f_start=f0, chirp_rate=alpha\n                        ))\n                        \n                        # Envelope Chirp\n                        envelope2 = torch.exp(-xi ** 2)\n                        phase2 = 2 * np.pi * (f0 * t + alpha * t ** 2 / 2)\n                        atoms.append(self._add_atom(\n                            envelope2 * torch.sin(phase2),\n                            AtomType.ENVELOPE_CHIRP, position=pos, scale=scale,\n                            f_start=f0, chirp_rate=alpha\n                        ))\n        \n        return atoms"
+        },
+        {
+          "start_line": 871,
+          "end_line": 884,
+          "text": "        elif atom.atom_type == AtomType.LUMINIDIC_CHIRP:\n            xi = (t - atom.position) / atom.scale\n            envelope_base = torch.exp(-torch.abs(xi))\n            coupling = 1 - ALPHA2 * torch.exp(-torch.abs(xi) / (ALPHA2 * 10))\n            envelope = envelope_base * coupling\n            tau = t - atom.position\n            phase = 2 * np.pi * (atom.f_start * tau + atom.chirp_rate * tau ** 2 / 2)\n            return envelope * torch.sin(phase)\n        \n        elif atom.atom_type == AtomType.ENVELOPE_CHIRP:\n            xi = (t - atom.position) / atom.scale\n            envelope = torch.exp(-xi ** 2)\n            phase = 2 * np.pi * (atom.f_start * t + atom.chirp_rate * t ** 2 / 2)\n            return envelope * torch.sin(phase)"
+        }
+      ]
+    },
+    {
+      "path": "C:\\IALD\\projetos_pyhton\\acom\\acom_unified.py",
+      "sha256": "abdd6e1314ba5158bd59f3c4fe0268c3329c21e9a9351cf5a6f960a94d53d754",
+      "excerpts": [
+        {
+          "start_line": 456,
+          "end_line": 469,
+          "text": "    def luminidic_chirp(self, position: float, scale: float, f_start: float, chirp_rate: float, amplitude: float = 1.0):\n        \"\"\"Chirp luminídico (envelope baseado em α²).\"\"\"\n        scale = max(scale, EPSILON)\n        xi = (self.t - position) / scale\n        \n        # Envelope LUMINÍDICO\n        envelope_base = self._exp(-self._abs(xi))\n        coupling_correction = 1 - ALPHA2 * self._exp(-self._abs(xi) / (ALPHA2 * 10))\n        envelope = envelope_base * coupling_correction\n        \n        tau = self.t - position\n        phase = 2 * self.pi * (f_start * tau + chirp_rate * tau ** 2 / 2)\n        \n        return amplitude * envelope * self._sin(phase)"
+        }
+      ]
+    }
+  ],
+  "formula": "a exp(-abs(xi)) (1-alpha2 exp(-abs(xi)/(10 alpha2))) sin(2 pi (f_start tau + chirp_rate tau^2/2)); tau=t-position; xi=tau/scale",
+  "port": "Python math scalar with explicit grid i/(n-1), little-endian IEEE float32/64. Not bitwise Torch identity. Amplitude from Unified formula.",
+  "statute": "SOURCE_PORT_WITH_EXPLICIT_NUMERICAL_LIMITS",
+  "fixture_alpha2": "Historical parameter 0.012031 supplied explicitly, not fixed physical beta or production runtime constant."
+}

@@ -1,0 +1,32 @@
+--- client/chat_wire_codec.mjs
++++ client_R2/chat_wire_codec.mjs
+@@ -1,6 +1,15 @@
+ // Stateless byte transport control. Browser-native APIs; no Node imports, network or keys.
+ export const PROTOCOL='iald-byte-envelope/1', CODEC='deflate-base64', QUERY='iald-byte-envelope-v1';
+ export const REQUEST_LIMIT=20*1024*1024, PAGE_LIMIT=2*16*1024*1024+262144, WIRE_LIMIT=20*1024*1024;
++// Identity pages follow legacy JSON semantics. Derived from retained event bytes,
++// worst-case JSON escapes (6x), and 256 KiB metadata under the current page schema.
++// Recalculate if storage cipher, event cap or page schema changes.
++export const IDENTITY_PAGE_LIMIT=6*16*1024*1024+262144;
++export function identityPageJSON(raw){
++  need(raw instanceof Uint8Array&&raw.byteLength<=IDENTITY_PAGE_LIMIT,'page_wire_limit');
++  try{return JSON.parse(new TextDecoder('utf-8').decode(raw));}
++  catch{throw new WireError('invalid_utf8_json');}
++}
+ const MAX_DEPTH=128,MAX_NODES=500000,enc=new TextEncoder();
+ export class WireError extends Error { constructor(code){super(code);this.code=code;this.noRetry=true;} }
+ const need=(ok,code)=>{if(!ok)throw new WireError(code);};
+@@ -110,9 +119,11 @@
+   need(obj?.account===scope&&bindingEqual(requestBinding(obj),binding),'inner_outer_mismatch');need(!Object.hasOwn(obj,'iald_transport'),'nested_envelope');return raw;
+ }
+ export async function decodePage(wire,scope,binding){
+-  const obj=strictJSON(wire,PAGE_LIMIT);
++  const obj=identityPageJSON(wire);
+   if(obj&&typeof obj==='object'&&Object.hasOwn(obj,'iald_transport')){
+-    need(exact(obj,['iald_transport'])&&wire.length<=WIRE_LIMIT,'invalid_page_wrapper');return decodeEnvelope(obj.iald_transport,scope,binding,PAGE_LIMIT);
++    need(exact(obj,['iald_transport'])&&wire.length<=WIRE_LIMIT,'invalid_page_wrapper');
++    const strict=strictJSON(wire,WIRE_LIMIT);
++    return decodeEnvelope(strict.iald_transport,scope,binding,PAGE_LIMIT);
+   }return wire;
+ }
+ export async function pageCandidate(raw,scope,binding){

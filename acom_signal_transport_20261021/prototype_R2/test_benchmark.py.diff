@@ -1,0 +1,48 @@
+--- prototype/test_benchmark.py
++++ prototype_R2/test_benchmark.py
+@@ -2,7 +2,7 @@
+ import sys,os,io,json,ast,struct,zlib,gzip,hashlib,random,time,statistics,tempfile,base64,tracemalloc,copy
+ from pathlib import Path
+ from dataclasses import dataclass
+-S=Path(__file__).resolve().parent;W=S.parent
++S=Path(__file__).resolve().parent;W=S.parent/'control_run_R2';W.mkdir(exist_ok=False)
+ sys.dont_write_bytecode=True
+ def audit(event,args):
+     if event in ('socket.connect','socket.getaddrinfo','subprocess.Popen'):raise RuntimeError('OFFLINE_DENIED')
+@@ -41,7 +41,7 @@
+     except classes as exc:checks[name]=True;errors[name]=str(exc)
+     else:raise AssertionError('NOT REFUSED: '+name)
+ 
+-root=Path(tempfile.mkdtemp(prefix='signal_',dir=W));store=p.Store(root/'store')
++root=Path(tempfile.mkdtemp(prefix='s',dir=W));store=p.Store(root/'store')
+ a=p.Context('alice','g1','c1');bob=p.Context('bob','g1','c1');revoked=p.Context('alice','g2','c1');other=p.Context('alice','g1','c2')
+ raw=('Comando íntegro: ação, revisão e decisão.\r\n'*2000).encode()+bytes(range(256))
+ wire=frames(a,'first',raw,declared_sha=p.sha(raw),declared_bytes=len(raw));receipt=decode(a,store,wire)
+@@ -142,7 +142,7 @@
+ for name,body in fixtures.items():
+     # Base is a real prior transfer of the exact prefix, not free pre-shared data.
+     prefix=body[:(len(body)//p.BLOCK)*p.BLOCK] or body
+-    sr=p.Store(root/('bench_'+name));base_id='base_'+name
++    sr=p.Store(root/('b'+str(len(rows))));base_id='base_'+name
+     base_packet=b''.join(p.encode(a,base_id,'attachment',p.slices(prefix),declared_sha=p.sha(prefix),declared_bytes=len(prefix)))
+     seed=sr.receive(a,p.slices(base_packet));known=sr.offer(a,seed['root'])
+     samples=[];measure={}
+@@ -150,13 +150,15 @@
+         times=[];encode_times=[];decode_times=[];peaks=[]
+         for k in range(3):
+             request=f'{name}_{mode}_{k}';t0=time.perf_counter()
+-            packet=b''.join(p.encode(a,request,'attachment',p.slices(body),known=known if mode=='warm' else None,declared_sha=p.sha(body),declared_bytes=len(body)))
++            measured_frames=list(p.encode(a,request,'attachment',p.slices(body),known=known if mode=='warm' else None,declared_sha=p.sha(body),declared_bytes=len(body)))
++            packet=b''.join(measured_frames)
+             t1=time.perf_counter();tracemalloc.start()
+             receipt=sr.receive(a,p.slices(packet));_,peak=tracemalloc.get_traced_memory();tracemalloc.stop();t2=time.perf_counter()
+             assert same_file(receipt['path'],body)
+             encode_times.append((t1-t0)*1000);decode_times.append((t2-t1)*1000);times.append((t2-t0)*1000);peaks.append(peak)
+-        hs=headers(list(p.encode(a,'counts','attachment',p.slices(body),known=known if mode=='warm' else None,declared_sha=p.sha(body),declared_bytes=len(body))))
+-        metadata=sum(4+len(p.canonical(h)) for h,data in hs)
++        hs=headers(measured_frames)
++        metadata=sum(len(frame)-len(data) for frame,(h,data) in zip(measured_frames,hs))
++        assert metadata+sum(len(data) for h,data in hs)==len(packet)
+         capabilities=p.canonical({'transport':p.PROTOCOL,'scope':a.key,'bases':[known['root']] if mode=='warm' else []})
+         # Conservative negotiation includes full offered block list; optimized
+         # session root-only advert is reported separately and never hidden.

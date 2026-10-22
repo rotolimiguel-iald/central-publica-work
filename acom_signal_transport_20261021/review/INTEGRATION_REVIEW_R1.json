@@ -1,0 +1,253 @@
+{
+  "status": "BLOCK",
+  "scope": "Integração autenticada cliente/backend R1, não implantação",
+  "reviewer": "codex-readability-reviewer",
+  "created_utc": "2026-10-21T12:31:07.520386+00:00",
+  "findings": [
+    {
+      "id": "INT-01",
+      "severity": "MEDIO",
+      "file": "integration/client/iald.js",
+      "line": 174,
+      "title": "Query incompatível entre cliente e servidor",
+      "evidence": "Cliente envia transport; servidor getlist(iald_transport). Página real medida: 12358 bytes pelo parâmetro do cliente versus 685 pelo parâmetro do backend.",
+      "required": "Unificar nome no contrato, código e testes; verificar cliente contra rota real, não mocks com contratos distintos."
+    },
+    {
+      "id": "INT-02",
+      "severity": "MEDIO",
+      "file": "integration/client/iald_transport.mjs",
+      "line": 14,
+      "title": "Limite novo recusa página legada válida",
+      "evidence": "Evento JSON UTF8 de 12000038 bytes cabe em MAX_EVENT_BYTES=16777216; serialização ASCII Flask produz página de 36000224 bytes na rota real. Backend preserva JSON legado, mas leitor negociado recusa page_wire_limit em 33816576. Parse legado funciona.",
+      "impact": "Sem apagamento do armazenamento; impede entrega/continuação dessa resposta válida.",
+      "required": "Separar limites de envelope e caminho identidade, preservando capacidade legada com limite finito justificado pelo serializador. Conferir decodePage/strictJSON além do leitor, pois ambos aplicam PAGE_LIMIT."
+    },
+    {
+      "id": "INT-03",
+      "severity": "MEDIO",
+      "file": "integration/backend/iald_chat_jobs.py",
+      "line": 370,
+      "title": "CSRF exige host_url incompatível com TLS terminado no proxy",
+      "evidence": "Servidor atual inicia waitress HTTP sem ProxyFix/trusted_proxy/url_scheme. Simulação autenticada Origin=https://demo.iald.ia.br e host_url=http://demo.iald.ia.br recusa403 antes de decode. X-Forwarded-Proto não resolve sem middleware confiável.",
+      "required": "Passar allowlist explícita de origens de confiança, incluindo URL_PUBLICA configurada; preservar recusa estrangeira e bearer autenticado. Não confiar cegamente em X-Forwarded-*."
+    },
+    {
+      "id": "INT-04",
+      "severity": "BAIXO",
+      "file": "integration/backend/iald_chat_jobs.py",
+      "line": 389,
+      "title": "Limite de20MiB e semáforo posteriores ao parse externo",
+      "evidence": "20972165 bytes chegam a app.json.loads antes da recusa413; guard de mídia também faz get_json antes da rota. Teto global real30MiB permanece.",
+      "required": "Documentar alcance real do semáforo (inflate/encode somente) e limite externo30MiB, ou antecipar controle compatível com legado no ponto anterior ao parse. Não alegar que20MiB/2slots protegem todo parsing HTTP.",
+      "blocking": false
+    }
+  ],
+  "manifest_checks": [
+    {
+      "path": "C:\\IALD\\Central de Patentes\\work\\acom_signal_transport_20261021\\integration\\client\\ASSET_ALLOWLIST.json",
+      "ok": true
+    },
+    {
+      "path": "C:\\IALD\\Central de Patentes\\work\\acom_signal_transport_20261021\\integration\\client\\BASELINE.json",
+      "ok": true
+    },
+    {
+      "path": "C:\\IALD\\Central de Patentes\\work\\acom_signal_transport_20261021\\integration\\client\\chat_wire_codec.mjs",
+      "ok": true
+    },
+    {
+      "path": "C:\\IALD\\Central de Patentes\\work\\acom_signal_transport_20261021\\integration\\client\\CLIENT_DELIVERY_R1.json",
+      "ok": true
+    },
+    {
+      "path": "C:\\IALD\\Central de Patentes\\work\\acom_signal_transport_20261021\\integration\\client\\iald.js",
+      "ok": true
+    },
+    {
+      "path": "C:\\IALD\\Central de Patentes\\work\\acom_signal_transport_20261021\\integration\\client\\iald.js.diff",
+      "ok": true
+    },
+    {
+      "path": "C:\\IALD\\Central de Patentes\\work\\acom_signal_transport_20261021\\integration\\client\\iald_transport.mjs",
+      "ok": true
+    },
+    {
+      "path": "C:\\IALD\\Central de Patentes\\work\\acom_signal_transport_20261021\\integration\\client\\index.html",
+      "ok": true
+    },
+    {
+      "path": "C:\\IALD\\Central de Patentes\\work\\acom_signal_transport_20261021\\integration\\client\\PROJECT.json",
+      "ok": true
+    },
+    {
+      "path": "C:\\IALD\\Central de Patentes\\work\\acom_signal_transport_20261021\\integration\\client\\sw.js",
+      "ok": true
+    },
+    {
+      "path": "C:\\IALD\\Central de Patentes\\work\\acom_signal_transport_20261021\\integration\\client\\test_client.mjs",
+      "ok": true
+    },
+    {
+      "path": "C:\\IALD\\Central de Patentes\\work\\acom_signal_transport_20261021\\integration\\client\\TEST_RESULTS.json",
+      "ok": true
+    },
+    {
+      "path": "C:\\IALD\\Central de Patentes\\work\\acom_signal_transport_20261021\\integration\\backend\\chat_wire_codec.py",
+      "ok": true
+    },
+    {
+      "path": "C:\\IALD\\Central de Patentes\\work\\acom_signal_transport_20261021\\integration\\backend\\CLIENT_INTERFACE.json",
+      "ok": true
+    },
+    {
+      "path": "C:\\IALD\\Central de Patentes\\work\\acom_signal_transport_20261021\\integration\\backend\\fixtures\\MEDIA_SOURCE_PIN.json",
+      "ok": true
+    },
+    {
+      "path": "C:\\IALD\\Central de Patentes\\work\\acom_signal_transport_20261021\\integration\\backend\\fixtures\\private_media_routes.py",
+      "ok": true
+    },
+    {
+      "path": "C:\\IALD\\Central de Patentes\\work\\acom_signal_transport_20261021\\integration\\backend\\iald_chat_jobs.patch",
+      "ok": true
+    },
+    {
+      "path": "C:\\IALD\\Central de Patentes\\work\\acom_signal_transport_20261021\\integration\\backend\\iald_chat_jobs.py",
+      "ok": true
+    },
+    {
+      "path": "C:\\IALD\\Central de Patentes\\work\\acom_signal_transport_20261021\\integration\\backend\\INSTALL_PLAN.json",
+      "ok": true
+    },
+    {
+      "path": "C:\\IALD\\Central de Patentes\\work\\acom_signal_transport_20261021\\integration\\backend\\MISSION_PREFLIGHT.json",
+      "ok": true
+    },
+    {
+      "path": "C:\\IALD\\Central de Patentes\\work\\acom_signal_transport_20261021\\integration\\backend\\SOURCE_PINS.json",
+      "ok": true
+    },
+    {
+      "path": "C:\\IALD\\Central de Patentes\\work\\acom_signal_transport_20261021\\integration\\backend\\test_backend.py",
+      "ok": true
+    },
+    {
+      "path": "C:\\IALD\\Central de Patentes\\work\\acom_signal_transport_20261021\\integration\\backend\\TEST_RESULTS.json",
+      "ok": true
+    }
+  ],
+  "manifests": [
+    {
+      "path": "C:\\IALD\\Central de Patentes\\work\\acom_signal_transport_20261021\\integration\\client\\MANIFEST_R1.json",
+      "sha256": "df382d95fd310f7905a93988d18cde970816bb9ccfc7b1b2ed7ed91711fa2395",
+      "bytes": 2999
+    },
+    {
+      "path": "C:\\IALD\\Central de Patentes\\work\\acom_signal_transport_20261021\\integration\\backend\\FROZEN_MANIFEST.json",
+      "sha256": "4ce7f7cebc7087b0d67c2405ba56259ed3be345cdfa5a2cd4d639b5c85483611",
+      "bytes": 1838
+    }
+  ],
+  "reviewed_code": [
+    {
+      "path": "C:\\IALD\\Central de Patentes\\work\\acom_signal_transport_20261021\\review\\integration_r1\\client\\iald.js",
+      "sha256": "b049e8275d92d34f458fa269dddd961ba25240ada7a81f7354b8001797d65bb9",
+      "bytes": 312764
+    },
+    {
+      "path": "C:\\IALD\\Central de Patentes\\work\\acom_signal_transport_20261021\\review\\integration_r1\\client\\iald_transport.mjs",
+      "sha256": "2bd80bf0b07bdcf4473eccd553c9999e466e97381cfd96e7957dbdf5a5ebff62",
+      "bytes": 1563
+    },
+    {
+      "path": "C:\\IALD\\Central de Patentes\\work\\acom_signal_transport_20261021\\review\\integration_r1\\backend\\iald_chat_jobs.py",
+      "sha256": "b33f2195f19dd3379f251c57ae31c036c33947fea850c5cd2d5ce71e07c4e7fa",
+      "bytes": 27321
+    },
+    {
+      "path": "C:\\IALD\\Central de Patentes\\work\\acom_signal_transport_20261021\\review\\integration_r1\\backend\\chat_wire_codec.py",
+      "sha256": "6e5b8e6ed516525df677cb4ed5da2f83fac25f753915ef8b539ef78a1fbe445c",
+      "bytes": 6879
+    }
+  ],
+  "evidence": [
+    {
+      "path": "C:\\IALD\\Central de Patentes\\work\\acom_signal_transport_20261021\\review\\integration_r1\\client\\TEST_RESULTS.json",
+      "sha256": "fb1db14a3db71dfe357ffbda15785e3e79c0162aa6c017693ee3c707ff59646d",
+      "bytes": 1690
+    },
+    {
+      "path": "C:\\IALD\\Central de Patentes\\work\\acom_signal_transport_20261021\\review\\integration_r1\\DIRECTED_RESULTS.json",
+      "sha256": "8e3762ccae63d11625b9068f901bdafedb93c5949421301cd1d50dde7af7bd61",
+      "bytes": 1209
+    },
+    {
+      "path": "C:\\IALD\\Central de Patentes\\work\\acom_signal_transport_20261021\\review\\integration_r1\\LEGACY_PAGE_RESULT.json",
+      "sha256": "977251d9312f5b47529ae71022662d0f1849cdf1094db4ab39f42ae72ae73cb3",
+      "bytes": 174
+    },
+    {
+      "path": "C:\\IALD\\Central de Patentes\\work\\acom_signal_transport_20261021\\review\\integration_r1\\PROXY_RESULT.json",
+      "sha256": "a89209bcb466155739b5edda42175d0b1466e364230db50bcc5e2b4d33ed1923",
+      "bytes": 428
+    },
+    {
+      "path": "C:\\IALD\\Central de Patentes\\work\\acom_signal_transport_20261021\\review\\integration_r1\\directed_review.py",
+      "sha256": "01cb3d47454a954f61596527f9776e6334cce748102a6ff6a689c259d6701dd2",
+      "bytes": 6308
+    },
+    {
+      "path": "C:\\IALD\\Central de Patentes\\work\\acom_signal_transport_20261021\\review\\integration_r1\\proxy_review.py",
+      "sha256": "9d7c7fd5cfe0a1f8d1694da679a05f3e7d7599f8e7d878bae1d96422dda0e025",
+      "bytes": 2164
+    },
+    {
+      "path": "C:\\IALD\\Central de Patentes\\work\\acom_signal_transport_20261021\\review\\integration_r1\\client\\legacy_page_review.mjs",
+      "sha256": "194fabbb50ae1cfc72dedb31808123273d522ed4015c55f5baa0feab83a6b69e",
+      "bytes": 953
+    }
+  ],
+  "verified": [
+    "14 testes cliente reproduzidos em VM/Node com módulos reais e fetch sintético",
+    "6 testes backend dirigidos, preservando testes codec prévios sem repetir bateria",
+    "Middleware auth/CORS real extraído por AST:6 cenários com contas sintéticas; servidor não importado",
+    "Método PUT405; content-type inválido415; identidade ausente409",
+    "Binding scope/job/cursor, mídia pósdecode, legado AV, concorrência local e semáforo avaliados",
+    "fetchIALD mantém credenciais; falha do import/API local retorna legado antes do envio; incerteza não gera rePOST"
+  ],
+  "limits": [
+    "Nenhuma execução Safari/WebView; Node não certifica plataforma nativa",
+    "Concorrência multiaba depende de idempotência servidor; localStorage não é trava atômica entre abas",
+    "Wallet/provedor/memória sintéticos nos testes; nenhum ledger ou modelo real acessado",
+    "Topologia proxy simulada a partir do código; nenhum request live",
+    "Harness inicial teve erro de caminho Node e dependência re ausente; corrigidos somente em review, execuções finais concluídas"
+  ],
+  "runtime_sources": [
+    {
+      "path": "C:\\IALD\\projetos_pyhton\\IALD\\iald_web_server.py",
+      "sha256": "0f05364f61b19d938add98208ddb53818395720dd54d2094d768fb76a3b7f3f3",
+      "bytes": 768586
+    },
+    {
+      "path": "C:\\IALD\\projetos_pyhton\\IALD\\iald_chat_jobs.py",
+      "sha256": "cde5baea0e1e8861e3d6257afd18ecff5e62bda73368f2d988230e50bc6b3a12",
+      "bytes": 22003
+    },
+    {
+      "path": "C:\\IALD\\projetos_pyhton\\IALD\\app\\iald.js",
+      "sha256": "6c2cf21976e07a8a7453f5e6cc33ea7b641ddb178bda5b1cb61c4f9353ecc11b",
+      "bytes": 310285
+    },
+    {
+      "path": "C:\\IALD\\projetos_pyhton\\IALD\\private_media_routes.py",
+      "sha256": "e08d6d01776a8f4b0416097ff06005e755d45779f6d425bed3a44c5b509c0bc0",
+      "bytes": 5496
+    }
+  ],
+  "network_calls": 0,
+  "provider_calls": 0,
+  "runtime_or_author_writes": false,
+  "accept_performed": false,
+  "next": "Revisão dirigida das correções R2 e plano integrado; mobile em recibo separado."
+}

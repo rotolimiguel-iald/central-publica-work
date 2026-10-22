@@ -1,0 +1,60 @@
+{
+  "status": "MINIMAL_STAGING_ONLY_REQUIRES_INDEPENDENT_REVIEW",
+  "sourcepins": [
+    {
+      "path": "C:\\IALD\\projetos_pyhton\\IALD\\iald_chat_jobs.py",
+      "sha256": "cde5baea0e1e8861e3d6257afd18ecff5e62bda73368f2d988230e50bc6b3a12",
+      "bytes": 22003,
+      "matches_parent_baseline": true
+    },
+    {
+      "path": "C:\\IALD\\projetos_pyhton\\IALD\\app\\iald.js",
+      "sha256": "6c2cf21976e07a8a7453f5e6cc33ea7b641ddb178bda5b1cb61c4f9353ecc11b",
+      "bytes": 310285,
+      "matches_parent_baseline": true
+    },
+    {
+      "path": "C:\\IALD\\projetos_pyhton\\IALD\\iald_web_server.py",
+      "sha256": "0f05364f61b19d938add98208ddb53818395720dd54d2094d768fb76a3b7f3f3",
+      "bytes": 768586,
+      "matches_parent_baseline": true
+    }
+  ],
+  "modules": [
+    "chat_wire_codec.py",
+    "chat_wire_codec.mjs",
+    "jobs_transport_adapter.py",
+    "client_transport_adapter.mjs"
+  ],
+  "server": [
+    {
+      "anchor": "iald_chat_jobs.register / chat_jobs_session",
+      "action": "Add transport capabilities to existing authenticated session response. Keep account generation and private,no-store headers."
+    },
+    {
+      "anchor": "chat_jobs_collection POST: after existing auth/CSRF, before data account pop, produce/admit closures or store.submit",
+      "action": "Read bounded outer wire <=20MiB for envelope. Decode via authenticated account_key(session.username); validate identities; apply existing private_media_routes.has_new_audio_video to reconstructed payload before admission. Preserve plain legacy path. Recheck account generation, all original body/canonical guards, wallet, activity and idempotency before dispatch. Never pass envelope to worker."
+    },
+    {
+      "anchor": "chat_jobs_item GET: after store.get authorization and before response bytes sent",
+      "action": "For exact query opt-in only, encode that existing JSON page independently with authenticated generation/job id/after binding. Preserve response status, cursor values, content type, and cache headers; omit Content-Encoding because encoding is in JSON. Identity if no gain. No full SSE accumulation."
+    }
+  ],
+  "client": [
+    {
+      "anchor": "app/iald.js fetchIALD and existing session verification before POST",
+      "action": "Use session capability and local codecAvailable probe. Serialize original payload once to UTF8; prepareRequest locally then invoke existing authenticated fetch once. Do not change fetch credentials/CSRF headers. Persist original request_id, do not retry or fall back after invocation."
+    },
+    {
+      "anchor": "existing result polling GET after cursor",
+      "action": "Add query opt-in only after pollingOptIn succeeds. Decode and verify independent page before existing parse/consume/cursor advance. Failure is visible and cursor remains unadvanced; no automatic recovery request introduced."
+    }
+  ],
+  "security": [
+    "Existing authentication/authorization/CSRF remain mandatory before decode, not supplied by SHA256. No new key/CORS permission.",
+    "Reject malformed envelope before dispatch with no_dispatch_this_submission marker limited to this attempted submission, not proof another prior request never ran. Preserve canonical duplicate/conflict behavior.",
+    "Never echo compressed payload, secret or complete conversation in error response. Scope is authenticated account generation.",
+    "No new attachment storage, conversion or upload policy; preserve original image/document bytes and historic custody. New AV guard must run after decode."
+  ],
+  "execution": "No runtime patch/install/remote/restart/model executed; parent integrates after independent review."
+}

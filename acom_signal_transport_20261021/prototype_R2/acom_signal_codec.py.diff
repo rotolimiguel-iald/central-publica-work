@@ -1,0 +1,50 @@
+--- prototype/acom_signal_codec.py
++++ prototype_R2/acom_signal_codec.py
+@@ -132,12 +132,34 @@
+     def _path(self,ctx,kind,digest):
+         need(type(digest)is str and SHA.fullmatch(digest),'invalid_hash')
+         return self.root/ctx.key/kind/digest
+-    def _put(self,path,raw):
++    def _put(self,ctx,path,raw):
++        # Single-process local recovery only; never dispatch a provider.
++        ctx.authorize()
++        need(type(raw)is bytes and len(raw)<=BLOCK,'block_limit')
++        expected=self.root.resolve()/ctx.key/'blocks'/sha(raw)
++        path=Path(path)
++        need(path.absolute()==expected and path.resolve()==expected,'block_scope_path')
+         path.parent.mkdir(parents=True,exist_ok=True)
+-        if path.exists():need(path.read_bytes()==raw,'existing_content_corrupt');return
+         tmp=path.with_name(path.name+'.tmp')
+-        with tmp.open('xb') as out:out.write(raw);out.flush();os.fsync(out.fileno())
+-        need(tmp.read_bytes()==raw,'write_verification');os.rename(tmp,path)
++        need(not tmp.is_symlink() and tmp.resolve()==tmp.absolute(),'temp_scope_path')
++        def valid(file):
++            need(file.is_file() and file.stat().st_size==len(raw),'local_content_size')
++            data=file.read_bytes()
++            need(sha(data)==path.name and data==raw,'local_content_corrupt')
++        if path.exists():
++            valid(path)
++            if tmp.exists():
++                valid(tmp)
++                tmp.unlink()
++            return
++        if tmp.exists():
++            valid(tmp)  # Conflicting orphan remains intact for diagnosis.
++        else:
++            with tmp.open('xb') as out:
++                out.write(raw);out.flush();os.fsync(out.fileno())
++            valid(tmp)
++        os.rename(tmp,path)
++        valid(path)
+     def offer(self,ctx,root):
+         ctx.authorize();need(type(root)is str and SHA.fullmatch(root),'invalid_base')
+         row=self.db.execute('SELECT manifest FROM objects WHERE scope=? AND root=?',(ctx.key,root)).fetchone()
+@@ -203,7 +225,7 @@
+             else:os.rename(temp,object_path)
+             # Commit only verified blocks; bounded reads from the spooled object.
+             with object_path.open('rb') as src:
+-                for block_hash,n in blocks:self._put(self._path(ctx,'blocks',block_hash),src.read(n))
++                for block_hash,n in blocks:self._put(ctx,self._path(ctx,'blocks',block_hash),src.read(n))
+             result=dict(protocol=PROTOCOL,scope=ctx.key,request_id=begin['id'],kind=begin['kind'],root=root,
+                 sha=digest,bytes=total,path=str(object_path),replayed=False,dispatch_allowed=True,
+                 reader_peak=reader.peak,status='TRANSPORT_RECONSTRUCTED_NOT_EXECUTED')

@@ -1,0 +1,128 @@
+--- runtime/app/iald.js
++++ integration/client/iald.js
+@@ -80,6 +80,13 @@
+ // removida, com conferência linha a linha de que nada mais mudou.
+ import { SYSTEM_PROMPT_LOJA } from './kernel_prompt_loja.js';
+ 
++// Optional local module: a failed import stays unavailable for this page lifetime.
++let byteTransportModule;
++function loadByteTransport() {
++  if (!byteTransportModule) byteTransportModule = import('./iald_transport.mjs').catch(() => null);
++  return byteTransportModule;
++}
++
+ // Durable transport only. All HTTP uses the app's authenticated request function.
+ const TERMINAL_JOB_STATUSES = new Set(['completed', 'failed', 'cancelled', 'interrupted', 'expired']);
+ const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/;
+@@ -109,7 +116,7 @@
+ 
+ function createDurableChatJobs({ request, storage, randomUUID = () => crypto.randomUUID(),
+   sleep = defaultSleep, onPending = () => {}, onSubmitted = () => {}, onScopeLost = () => {}, requestTimeout = 20000 }) {
+-  let owner = '', generation = 0;
++  let owner = '', generation = 0, byteTransport = null;
+   const active = new Set();
+   const key = (account) => 'iald_chat_jobs_v1:' + encodeURIComponent(account);
+   const context = () => {
+@@ -154,7 +161,7 @@
+     check(scope);
+     if (!record || record.owner !== scope.owner || !UUID.test(record.request_id)) throw detached();
+   }
+-  async function http(path, options, scope, signal) {
++  async function http(path, options, scope, signal, pageBinding = null) {
+     check(scope);
+     const controller = new AbortController();
+     const abort = () => controller.abort();
+@@ -163,7 +170,9 @@
+     active.add(controller);
+     const timer = setTimeout(abort, requestTimeout);
+     try {
+-      const response = await request(path, { ...options, cache: 'no-store', signal: controller.signal });
++      const transport = pageBinding ? byteTransport : null;
++      const wirePath = transport ? path + '&transport=' + encodeURIComponent(transport.query) : path;
++      const response = await request(wirePath, { ...options, cache: 'no-store', signal: controller.signal });
+       check(scope);
+       if (response.status === 401) loseScope();
+       if (response.status === 410 && (!options.method || options.method === 'GET') &&
+@@ -171,7 +180,9 @@
+         throw new TerminalChatJobError('expired', 'Esta resposta temporária expirou. Nenhum novo pedido foi enviado.');
+       }
+       let body;
+-      try { body = await response.json(); } catch (_) { throw new PendingChatJobError('Resposta do servidor ilegível; o pedido continua pendente.'); }
++      try { body = response.ok && transport
++        ? await transport.readPage(response, pageBinding) : await response.json();
++      } catch (_) { throw new PendingChatJobError('Resposta do servidor ilegível; o pedido continua pendente.', { noRetry: true }); }
+       check(scope);
+       if (!response.ok) {
+         throw new PendingChatJobError(response.status === 401 ? 'Entre novamente para recuperar sua resposta.'
+@@ -196,6 +207,14 @@
+   async function verifyAccount(scope, signal) {
+     const session = await http('/api/chat-jobs/session', {}, scope, signal);
+     if (!ACCOUNT.test(session?.account || '') || session.account !== scope.owner) loseScope();
++    byteTransport = null;
++    if (session.transport) {
++      const module = await loadByteTransport();
++      check(scope);
++      const negotiated = module ? await module.createSessionTransport(session) : null;
++      check(scope);
++      byteTransport = negotiated;
++    }
+   }
+ 
+   function checkJob(value, record) {
+@@ -229,8 +248,25 @@
+     if (!record.payload) throw new PendingChatJobError('Pedido sem corpo local; recupere-o pela lista do servidor.');
+     if (record.payload.account !== scope.owner || record.payload.request_id !== record.request_id) throw detached();
+     await verifyAccount(scope, signal);
++    // An uncertain POST is recovered by identity, never by resubmitting its body.
++    if (record.attempted || read(scope.owner).some((r) => r.request_id === record.request_id && r.attempted)) {
++      const recovered = await http('/api/chat-jobs/' + record.request_id, {}, scope, signal);
++      checkJob(recovered, record);
++      update(record, scope, { id: recovered.id, phase: 'streaming', status: recovered.status });
++      return;
++    }
++    const fullJSON = JSON.stringify(record.payload);
++    const prepared = byteTransport
++      ? await byteTransport.prepare(new TextEncoder().encode(fullJSON)) : { body: fullJSON };
++    check(scope);
++    if (signal?.aborted) throw detached();
++    if (read(scope.owner).some((r) => r.request_id === record.request_id && r.attempted)) {
++      throw new PendingChatJobError('O envio deste pedido já foi iniciado; recupere-o pelo identificador.', { noRetry: true });
++    }
+     update(record, scope, { attempted: true });
+-    const response = await post('/api/chat-jobs', record.payload, scope, signal);
++    const response = await http('/api/chat-jobs', {
++      method: 'POST', headers: { 'Content-Type': 'application/json' }, body: prepared.body,
++    }, scope, signal);
+     checkJob(response, record);
+     update(record, scope, { id: response.id, phase: 'streaming', status: response.status });
+     onSubmitted(copy(record));
+@@ -256,7 +292,10 @@
+     if (record.status === 'expired') throw new TerminalChatJobError('expired', 'Esta resposta temporária expirou. Nenhum novo pedido foi enviado.');
+     if (record.local_cancel) throw new TerminalChatJobError('cancelled', 'Pedido cancelado antes do envio.');
+     if (record.cancel_requested) await cancel(record);
+-    else await submit(record, scope, signal);
++    else {
++      if (record.id) await verifyAccount(scope, signal);
++      await submit(record, scope, signal);
++    }
+     if (record.local_cancel) throw new TerminalChatJobError('cancelled', 'Pedido cancelado antes do envio.');
+     let cursor = 0, sawDone = false, sawError = false;
+     // Every resumed observer replays from zero into a fresh UI buffer. No partial
+@@ -264,7 +303,8 @@
+     while (true) {
+       check(scope);
+       let page;
+-      try { page = await http('/api/chat-jobs/' + record.id + '?after=' + cursor, {}, scope, signal); }
++      try { page = await http('/api/chat-jobs/' + record.id + '?after=' + cursor, {}, scope, signal,
++        { kind: 'page', job_id: record.id, after: cursor }); }
+       catch (error) {
+         if (error instanceof TerminalChatJobError && error.status === 'expired') update(record, scope, { status: 'expired' });
+         throw error;
+@@ -357,6 +397,7 @@
+     await acknowledge(record);
+   }
+   function pause() {
++    byteTransport = null;
+     generation += 1;
+     for (const controller of active) controller.abort();
+   }

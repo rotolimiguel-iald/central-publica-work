@@ -1,0 +1,60 @@
+{
+  "status": "FROZEN_ISOLATED_PROTOTYPE_V1_NOT_PRODUCTION",
+  "transport_version": "iald-signal-blocks/1",
+  "block_codec_name": "legacy_app_acom1_block",
+  "legacy_block_layout": "ACOM1\\x00 + little-endian u64 length + little-endian u32 CRC32 +32SHA256bytes + zlib/DEFLATE. ONLY compatible with app iald_web/app/patents/acom_codec.py. Central dispositivo/acom_codec.py has a different JSON-header layout.",
+  "framing": "u32 big-endian canonical JSON header bytes, then exactly header.wire payload bytes for block; begin/end have no payload.",
+  "headers": {
+    "begin": [
+      "t=begin",
+      "v",
+      "scope",
+      "id",
+      "kind",
+      "base",
+      "sha",
+      "bytes"
+    ],
+    "block": [
+      "t=block",
+      "n",
+      "offset",
+      "sha",
+      "bytes",
+      "codec=raw|legacy_app_acom1_block|ref",
+      "wire"
+    ],
+    "end": [
+      "t=end",
+      "n",
+      "bytes",
+      "sha",
+      "root"
+    ]
+  },
+  "state": "Server-scoped immutable manifest root over scope,object hash,length,ordered block(hash,length). References only from explicitly declared base. No arbitrary cache existence probe.",
+  "limits": {
+    "prototype_only_max_object_bytes": 8388608,
+    "block_bytes": 32768,
+    "header_bytes": 2048,
+    "not_production_limits": "Existing chat20MiB and document/media limits are separate; prototype must not lower production limits."
+  },
+  "stream": "Receiver spools bytes to isolated disk; verified block callback provisional until valid end/root. require_eof=False completes on explicit end without waiting EOF; request mode rejects trailing bytes.",
+  "security": "Trusted server Context flags are synthetic test adapter only; not real login/CSRF. Hash integrity is not authentication. No provider calls or integration.",
+  "eviction": "Missing base/block refuses before dispatch. Explicit cold transfer only; no automatic retry after uncertain send. RAM lease option NOT implemented.",
+  "code": {
+    "path": "C:\\IALD\\Central de Patentes\\work\\acom_signal_transport_20261021\\prototype\\acom_signal_codec.py",
+    "bytes": 13703,
+    "sha256": "f9680c7b3c4b72c77ae0b43da5d9fe7344196cfba838982ef1fbf20cc0c75077"
+  },
+  "tests": {
+    "path": "C:\\IALD\\Central de Patentes\\work\\acom_signal_transport_20261021\\prototype_tests_R2.json",
+    "bytes": 4175,
+    "sha256": "c1972846892d0b1bd039398ecc1054a5da230f4c03b7026c169cb70f852328a5"
+  },
+  "benchmark": {
+    "path": "C:\\IALD\\Central de Patentes\\work\\acom_signal_transport_20261021\\benchmark_R2.json",
+    "bytes": 17854,
+    "sha256": "6422ac1029c2fe96a6954f21121ec56b1629242a288df9c1382f5cd4358dfb09"
+  }
+}

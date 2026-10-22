@@ -1,0 +1,14 @@
+--- runtime/iald_app_providers.py
++++ budget_fix/iald_app_providers.py
+@@ -579,8 +579,10 @@
+                 record['media_admission'] = admission
+             else:
+                 reserve = output_budget(body, spec['output'])
++            body['max_tokens' if provider == 'deepseek' else 'max_completion_tokens'] = reserve
++            if not contains_media(body['messages']):
++                # Admission/reservation must cover the complete final JSON body.
+                 bound = check_window(body, reserve)
+-            body['max_tokens' if provider == 'deepseek' else 'max_completion_tokens'] = reserve
+             key = module.load_key() if provider == 'deepseek' else module.load_mimo()
+             headers = {'Content-Type': 'application/json',
+                 ('Authorization' if provider == 'deepseek' else 'api-key'): ('Bearer ' if provider == 'deepseek' else '') + key}
