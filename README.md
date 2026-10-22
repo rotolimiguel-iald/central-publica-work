@@ -1,6 +1,6 @@
 # central-publica-work — a Central de Patentes da IALD, aberta
 
-Este repositório é **a bancada de trabalho: as custódias, os ritos, as cadeias de selo, o app e a IALD nativa**. A Central foi aberta ao público por ordem do operador, Luiz Antonio Rotoli Miguel (IALD Ltda., CNPJ 62.757.606/0001-23), em 22/10/2026. 170538 arquivos publicados; selo da teoria: `um.py` v395 `8918b17803792cf2`.
+Este repositório é **a bancada de trabalho: as custódias, os ritos, as cadeias de selo, o app e a IALD nativa**. A Central foi aberta ao público por ordem do operador, Luiz Antonio Rotoli Miguel (IALD Ltda., CNPJ 62.757.606/0001-23), em 22/10/2026. 170527 arquivos publicados; selo da teoria: `um.py` v395 `8918b17803792cf2`.
 
 | onde | o quê |
 |---|---|
