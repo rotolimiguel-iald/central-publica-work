@@ -1,0 +1,53 @@
+@LinearMap.finrank_range_add_finrank_ker : ∀ {K : Type u_1} {V : Type u_2} [inst : DivisionRing K]
+  [inst_1 : AddCommGroup V] [inst_2 : Module K V] {V₂ : Type u_3} [inst_3 : AddCommGroup V₂] [inst_4 : Module K V₂]
+  [FiniteDimensional K V] (f : V →ₗ[K] V₂), Module.finrank K ↥f.range + Module.finrank K ↥f.ker = Module.finrank K V
+@Matrix.rank : {m : Type u_1} → {n : Type u_2} → {R : Type u_3} → [Fintype n] → [CommSemiring R] → Matrix m n R → ℕ
+@Matrix.rank_mul_le_left : ∀ {m : Type u_1} {n : Type u_2} {o : Type u_3} {R : Type u_4} [inst : Fintype n]
+  [inst_1 : Fintype o] [inst_2 : CommSemiring R] [StrongRankCondition R] (A : Matrix m n R) (B : Matrix n o R),
+  (A * B).rank ≤ A.rank
+@Matrix.rank_mul_le_right : ∀ {m : Type u_1} {n : Type u_2} {o : Type u_3} {R : Type u_4} [inst : Fintype n]
+  [inst_1 : Fintype o] [inst_2 : CommSemiring R] [StrongRankCondition R] (A : Matrix m n R) (B : Matrix n o R),
+  (A * B).rank ≤ B.rank
+@Matrix.rank_mul_eq_left_of_isUnit_det : ∀ {m : Type u_1} {n : Type u_2} [inst : Fintype n] {R : Type u_3}
+  [inst_1 : CommRing R] [inst_2 : DecidableEq n] (A : Matrix n n R) (B : Matrix m n R),
+  IsUnit A.det → (B * A).rank = B.rank
+@Matrix.rank_mul_eq_right_of_isUnit_det : ∀ {m : Type u_1} {n : Type u_2} [inst : Fintype n] {R : Type u_3}
+  [inst_1 : CommRing R] [inst_2 : Fintype m] [inst_3 : DecidableEq m] (A : Matrix m m R) (B : Matrix m n R),
+  IsUnit A.det → (A * B).rank = B.rank
+@Matrix.rank_diagonal : ∀ {m : Type u_1} {R : Type u_2} [inst : Field R] [inst_1 : Fintype m] [inst_2 : DecidableEq m]
+  [inst_3 : DecidableEq R] (w : m → R), (Matrix.diagonal w).rank = Fintype.card { i // w i ≠ 0 }
+@Matrix.rank_conjTranspose_mul_self : ∀ {m : Type u_1} {n : Type u_2} {R : Type u_3} [inst : Fintype n]
+  [inst_1 : Fintype m] [inst_2 : Field R] [inst_3 : PartialOrder R] [inst_4 : StarRing R] [StarOrderedRing R]
+  (A : Matrix m n R), (A.conjTranspose * A).rank = A.rank
+@Matrix.IsHermitian.rank_eq_card_non_zero_eigs : ∀ {𝕜 : Type u_1} [inst : RCLike 𝕜] {n : Type u_2} [inst_1 : Fintype n]
+  {A : Matrix n n 𝕜} [inst_2 : DecidableEq n] (hA : A.IsHermitian), A.rank = Fintype.card { i // hA.eigenvalues i ≠ 0 }
+@Matrix.rank_vecMulVec : ∀ {K m n : Type u_1} [inst : CommRing K] [inst_1 : Fintype n] [inst_2 : DecidableEq n]
+  (w : m → K) (v : n → K), (Matrix.toLin' (Matrix.vecMulVec w v)).rank ≤ 1
+@Matrix.rank_vecMulVec_le : ∀ {m : Type u_1} {n : Type u_2} {R : Type u_3} [inst : Fintype n] [inst_1 : CommSemiring R]
+  [StrongRankCondition R] (w : m → R) (v : n → R), (Matrix.vecMulVec w v).rank ≤ 1
+InnerProductSpace.rankOne : (𝕜 : Type u_1) →
+  {E : Type u_2} →
+    {F : Type u_3} →
+      [inst : RCLike 𝕜] →
+        [inst_1 : SeminormedAddCommGroup E] →
+          [inst_2 : NormedSpace 𝕜 E] →
+            [inst_3 : SeminormedAddCommGroup F] → [inst_4 : InnerProductSpace 𝕜 F] → E →L[𝕜] F →L⋆[𝕜] F →L[𝕜] E
+@InnerProductSpace.isStarProjection_rankOne_self : ∀ {𝕜 : Type u_1} {E : Type u_2} [inst : RCLike 𝕜]
+  [inst_1 : NormedAddCommGroup E] [inst_2 : InnerProductSpace 𝕜 E] [inst_3 : CompleteSpace E] {x : E},
+  ‖x‖ = 1 → IsStarProjection (((InnerProductSpace.rankOne 𝕜) x) x)
+@finrank_span_singleton : ∀ {K : Type u_1} {V : Type u_2} [inst : DivisionRing K] [inst_1 : AddCommGroup V]
+  [inst_2 : Module K V] {v : V}, v ≠ 0 → Module.finrank K ↥(K ∙ v) = 1
+@Matrix.trace_mul_comm : ∀ {m : Type u_1} {n : Type u_2} {R : Type u_3} [inst : Fintype m] [inst_1 : Fintype n]
+  [inst_2 : AddCommMonoid R] [inst_3 : CommMagma R] (A : Matrix m n R) (B : Matrix n m R), (A * B).trace = (B * A).trace
+@Matrix.PosSemidef.eigenvalues_nonneg : ∀ {n : Type u_1} {𝕜 : Type u_2} [inst : Fintype n] [inst_1 : RCLike 𝕜]
+  {A : Matrix n n 𝕜} [inst_2 : DecidableEq n] (hA : A.PosSemidef) (i : n), 0 ≤ ⋯.eigenvalues i
+@Matrix.IsHermitian.eigenvalues : {𝕜 : Type u_1} →
+  [inst : RCLike 𝕜] → {n : Type u_2} → [Fintype n] → {A : Matrix n n 𝕜} → [DecidableEq n] → A.IsHermitian → n → ℝ
+@Matrix.IsHermitian.spectral_theorem : ∀ {𝕜 : Type u_1} [inst : RCLike 𝕜] {n : Type u_2} [inst_1 : Fintype n]
+  {A : Matrix n n 𝕜} [inst_2 : DecidableEq n] (hA : A.IsHermitian),
+  A =
+    ((Unitary.conjStarAlgAut 𝕜 (Matrix n n 𝕜)) hA.eigenvectorUnitary) (Matrix.diagonal (RCLike.ofReal ∘ hA.eigenvalues))
+@Matrix.posSemidef_vecMulVec_self_star : ∀ {n : Type u_1} {R : Type u_2} [inst : Ring R] [inst_1 : PartialOrder R]
+  [inst_2 : StarRing R] [Finite n] [StarOrderedRing R] (a : n → R), (Matrix.vecMulVec a (star a)).PosSemidef
+
+--- STDERR ---

@@ -1,0 +1,163 @@
+@Matrix.rank : {m : Type u_1} → {n : Type u_2} → {R : Type u_3} → [Fintype n] → [CommSemiring R] → Matrix m n R → ℕ
+@Matrix.rank_zero : ∀ {m : Type u_1} {n : Type u_2} {R : Type u_3} [inst : Fintype n] [inst_1 : CommSemiring R]
+  [Nontrivial R], Matrix.rank 0 = 0
+@Matrix.rank_le_card_width : ∀ {m : Type u_1} {n : Type u_2} {R : Type u_3} [inst : Fintype n] [inst_1 : CommSemiring R]
+  [StrongRankCondition R] (A : Matrix m n R), A.rank ≤ Fintype.card n
+@Matrix.rank_le_width : ∀ {R : Type u_1} [inst : CommSemiring R] [StrongRankCondition R] {m n : ℕ}
+  (A : Matrix (Fin m) (Fin n) R), A.rank ≤ n
+@Matrix.rank_of_isUnit : ∀ {n : Type u_1} {R : Type u_2} [inst : Fintype n] [inst_1 : DecidableEq n]
+  [inst_2 : CommSemiring R] [StrongRankCondition R] (A : Matrix n n R), IsUnit A → A.rank = Fintype.card n
+@Matrix.exists_mulVec_eq_zero_iff : ∀ {n : Type u_1} [inst : Fintype n] {A : Type u_2} [inst_1 : DecidableEq n]
+  [inst_2 : CommRing A] [IsDomain A] {M : Matrix n n A}, (∃ v, v ≠ 0 ∧ M.mulVec v = 0) ↔ M.det = 0
+@Matrix.rank_diagonal : ∀ {m : Type u_1} {R : Type u_2} [inst : Field R] [inst_1 : Fintype m] [inst_2 : DecidableEq m]
+  [inst_3 : DecidableEq R] (w : m → R), (Matrix.diagonal w).rank = Fintype.card { i // w i ≠ 0 }
+@Matrix.rank_vecMulVec_le : ∀ {m : Type u_1} {n : Type u_2} {R : Type u_3} [inst : Fintype n] [inst_1 : CommSemiring R]
+  [StrongRankCondition R] (w : m → R) (v : n → R), (Matrix.vecMulVec w v).rank ≤ 1
+@Matrix.rank_mul_eq_left_of_isUnit_det : ∀ {m : Type u_1} {n : Type u_2} [inst : Fintype n] {R : Type u_3}
+  [inst_1 : CommRing R] [inst_2 : DecidableEq n] (A : Matrix n n R) (B : Matrix m n R),
+  IsUnit A.det → (B * A).rank = B.rank
+@Matrix.rank_mul_eq_right_of_isUnit_det : ∀ {m : Type u_1} {n : Type u_2} [inst : Fintype n] {R : Type u_3}
+  [inst_1 : CommRing R] [inst_2 : Fintype m] [inst_3 : DecidableEq m] (A : Matrix m m R) (B : Matrix m n R),
+  IsUnit A.det → (A * B).rank = B.rank
+@Matrix.IsHermitian.rank_eq_card_non_zero_eigs : ∀ {𝕜 : Type u_1} [inst : RCLike 𝕜] {n : Type u_2} [inst_1 : Fintype n]
+  {A : Matrix n n 𝕜} [inst_2 : DecidableEq n] (hA : A.IsHermitian), A.rank = Fintype.card { i // hA.eigenvalues i ≠ 0 }
+@Matrix.IsHermitian.spectral_theorem : ∀ {𝕜 : Type u_1} [inst : RCLike 𝕜] {n : Type u_2} [inst_1 : Fintype n]
+  {A : Matrix n n 𝕜} [inst_2 : DecidableEq n] (hA : A.IsHermitian),
+  A =
+    ((Unitary.conjStarAlgAut 𝕜 (Matrix n n 𝕜)) hA.eigenvectorUnitary) (Matrix.diagonal (RCLike.ofReal ∘ hA.eigenvalues))
+@Matrix.IsHermitian.eigenvectorUnitary : {𝕜 : Type u_1} →
+  [inst : RCLike 𝕜] →
+    {n : Type u_2} →
+      [inst_1 : Fintype n] → {A : Matrix n n 𝕜} → [inst_2 : DecidableEq n] → A.IsHermitian → ↥(Matrix.unitaryGroup n 𝕜)
+@Unitary.conjStarAlgAut_apply : ∀ {S : Type u_1} {R : Type u_2} [inst : Semiring R] [inst_1 : StarMul R]
+  [inst_2 : SMul S R] [inst_3 : IsScalarTower S R R] [inst_4 : SMulCommClass S R R] (u : ↥(unitary R)) (x : R),
+  ((Unitary.conjStarAlgAut S R) u) x = ↑u * x * star ↑u
+@Matrix.IsHermitian.trace_eq_sum_eigenvalues : ∀ {𝕜 : Type u_1} [inst : RCLike 𝕜] {n : Type u_2} [inst_1 : Fintype n]
+  {A : Matrix n n 𝕜} [inst_2 : DecidableEq n] (hA : A.IsHermitian), A.trace = ∑ i, ↑(hA.eigenvalues i)
+@Matrix.PosSemidef.eigenvalues_nonneg : ∀ {n : Type u_1} {𝕜 : Type u_2} [inst : Fintype n] [inst_1 : RCLike 𝕜]
+  {A : Matrix n n 𝕜} [inst_2 : DecidableEq n] (hA : A.PosSemidef) (i : n), 0 ≤ ⋯.eigenvalues i
+@Matrix.PosSemidef.isHermitian : ∀ {n : Type u_1} {R : Type u_2} [inst : Ring R] [inst_1 : PartialOrder R]
+  [inst_2 : StarRing R] {M : Matrix n n R}, M.PosSemidef → M.IsHermitian
+@LinearMap.IsProj.trace : ∀ {R : Type u_1} [inst : CommRing R] {M : Type u_2} [inst_1 : AddCommGroup M]
+  [inst_2 : Module R M] {p : Submodule R M} {f : M →ₗ[R] M},
+  LinearMap.IsProj p f →
+    ∀ [Module.Free R ↥p] [Module.Finite R ↥p] [Module.Free R ↥f.ker] [Module.Finite R ↥f.ker],
+      (LinearMap.trace R M) f = ↑(Module.finrank R ↥p)
+sondas/SondaAPI1.lean:22:8: error(lean.unknownIdentifier): Unknown constant `LinearMap.isProj_range`
+sondas/SondaAPI1.lean:23:8: error(lean.unknownIdentifier): Unknown constant `IsIdempotentElem.isProj_range`
+@LinearMap.IsIdempotentElem.isProj_range : ∀ {S : Type u_1} [inst : Semiring S] {M : Type u_2}
+  [inst_1 : AddCommMonoid M] [inst_2 : Module S M] (f : M →ₗ[S] M), IsIdempotentElem f → LinearMap.IsProj f.range f
+@Matrix.toLin' : {R : Type u_1} →
+  [inst : CommSemiring R] →
+    {m : Type u_2} → {n : Type u_3} → [DecidableEq n] → [Fintype n] → Matrix m n R ≃ₗ[R] (n → R) →ₗ[R] m → R
+@Matrix.mulVecLin : {R : Type u_1} →
+  [inst : CommSemiring R] → {m : Type u_2} → {n : Type u_3} → [Fintype n] → Matrix m n R → (n → R) →ₗ[R] m → R
+@Matrix.toLin'_apply' : ∀ {R : Type u_1} [inst : CommSemiring R] {m : Type u_2} {n : Type u_3} [inst_1 : DecidableEq n]
+  [inst_2 : Fintype n] (M : Matrix m n R), Matrix.toLin' M = M.mulVecLin
+LinearMap.trace_eq_matrix_trace : ∀ (R : Type u_1) [inst : CommSemiring R] {M : Type u_2} [inst_1 : AddCommMonoid M]
+  [inst_2 : Module R M] {ι : Type u_3} [inst_3 : DecidableEq ι] [inst_4 : Fintype ι] (b : Module.Basis ι R M)
+  (f : M →ₗ[R] M), (LinearMap.trace R M) f = ((LinearMap.toMatrix b b) f).trace
+@Matrix.trace_toLin'_eq : ∀ {R : Type u_1} [inst : CommSemiring R] {ι : Type u_2} [inst_1 : DecidableEq ι]
+  [inst_2 : Fintype ι] (A : Matrix ι ι R), (LinearMap.trace R (ι → R)) (Matrix.toLin' A) = A.trace
+@LinearMap.toMatrix'_toLin' : ∀ {R : Type u_1} [inst : CommSemiring R] {m : Type u_2} {n : Type u_3}
+  [inst_1 : DecidableEq n] [inst_2 : Fintype n] (M : Matrix m n R), LinearMap.toMatrix' (Matrix.toLin' M) = M
+@Matrix.rank.eq_1 : ∀ {m : Type u_1} {n : Type u_2} {R : Type u_3} [inst : Fintype n] [inst_1 : CommSemiring R]
+  (A : Matrix m n R), A.rank = Module.finrank R ↥A.mulVecLin.range
+Module.finrank_fintype_fun_eq_card : ∀ (R : Type u_1) {η : Type u_2} [inst : Semiring R] [StrongRankCondition R]
+  [inst_2 : Fintype η], Module.finrank R (η → R) = Fintype.card η
+@LinearMap.finrank_range_add_finrank_ker : ∀ {K : Type u_1} {V : Type u_2} [inst : DivisionRing K]
+  [inst_1 : AddCommGroup V] [inst_2 : Module K V] {V₂ : Type u_3} [inst_3 : AddCommGroup V₂] [inst_4 : Module K V₂]
+  [FiniteDimensional K V] (f : V →ₗ[K] V₂), Module.finrank K ↥f.range + Module.finrank K ↥f.ker = Module.finrank K V
+@Matrix.vecMulVec : {m : Type u_2} → {n : Type u_3} → {α : Type u_1} → [Mul α] → (m → α) → (n → α) → Matrix m n α
+@Matrix.vecMulVec_apply : ∀ {m : Type u_2} {n : Type u_3} {α : Type u_1} [inst : Mul α] (w : m → α) (v : n → α) (i : m)
+  (j : n), Matrix.vecMulVec w v i j = w i * v j
+@Matrix.vecMulVec_mul_vecMulVec : ∀ {l : Type u_2} {m : Type u_3} {n : Type u_4} {α : Type u_1}
+  [inst : NonUnitalSemiring α] [inst_1 : Fintype m] (u : l → α) (v w : m → α) (x : n → α),
+  Matrix.vecMulVec u v * Matrix.vecMulVec w x = Matrix.vecMulVec u ((v ⬝ᵥ w) • x)
+@Matrix.trace_vecMulVec : ∀ {n : Type u_1} {R : Type u_2} [inst : Fintype n] [inst_1 : NonUnitalNonAssocSemiring R]
+  (a b : n → R), (Matrix.vecMulVec a b).trace = a ⬝ᵥ b
+sondas/SondaAPI1.lean:38:8: warning: `Matrix.mul_eq_one_comm` has been deprecated: Use `mul_eq_one_comm` instead
+
+Note: The updated constant is in a different namespace. Dot notation may need to be changed (e.g., from `x.mul_eq_one_comm` to `mul_eq_one_comm x`).
+@Matrix.mul_eq_one_comm : ∀ {M : Type u_1} [inst : MulOne M] [IsDedekindFiniteMonoid M] {a b : M}, a * b = 1 ↔ b * a = 1
+@Matrix.det_fin_two : ∀ {R : Type u_1} [inst : CommRing R] (A : Matrix (Fin 2) (Fin 2) R),
+  A.det = A 0 0 * A 1 1 - A 0 1 * A 1 0
+@Matrix.trace_fin_two : ∀ {R : Type u_1} [inst : AddCommMonoid R] (A : Matrix (Fin 2) (Fin 2) R),
+  A.trace = A 0 0 + A 1 1
+@Matrix.isUnit_iff_isUnit_det : ∀ {n : Type u_1} {α : Type u_2} [inst : Fintype n] [inst_1 : DecidableEq n]
+  [inst_2 : CommRing α] (A : Matrix n n α), IsUnit A ↔ IsUnit A.det
+Real.cos_arcsin : ∀ (x : ℝ), Real.cos (Real.arcsin x) = √(1 - x ^ 2)
+@Real.sin_arcsin : ∀ {x : ℝ}, -1 ≤ x → x ≤ 1 → Real.sin (Real.arcsin x) = x
+Real.sin_two_mul : ∀ (x : ℝ), Real.sin (2 * x) = 2 * Real.sin x * Real.cos x
+Real.cos_sq' : ∀ (x : ℝ), Real.cos x ^ 2 = 1 - Real.sin x ^ 2
+@Real.sin_eq_zero_iff : ∀ {x : ℝ}, Real.sin x = 0 ↔ ∃ n, ↑n * Real.pi = x
+Real.sin_int_mul_pi : ∀ (n : ℤ), Real.sin (↑n * Real.pi) = 0
+Real.sin_nat_mul_pi : ∀ (n : ℕ), Real.sin (↑n * Real.pi) = 0
+@Filter.tendsto_atTop_mono : ∀ {α : Type u_1} {β : Type u_2} [inst : Preorder β] {l : Filter α} {f g : α → β},
+  (∀ (n : α), f n ≤ g n) → Filter.Tendsto f l Filter.atTop → Filter.Tendsto g l Filter.atTop
+Filter.tendsto_add_atTop_nat : ∀ (k : ℕ), Filter.Tendsto (fun a => a + k) Filter.atTop Filter.atTop
+@tendsto_nhds_unique : ∀ {X : Type u_1} {Y : Type u_2} [inst : TopologicalSpace X] [T2Space X] {f : Y → X}
+  {l : Filter Y} {a b : X} [l.NeBot], Filter.Tendsto f l (nhds a) → Filter.Tendsto f l (nhds b) → a = b
+@Matrix.mulVecLin_apply : ∀ {R : Type u_1} [inst : CommSemiring R] {m : Type u_2} {n : Type u_3} [inst_1 : Fintype n]
+  (M : Matrix m n R) (v : n → R), M.mulVecLin v = M.mulVec v
+@finrank_span_singleton : ∀ {K : Type u_1} {V : Type u_2} [inst : DivisionRing K] [inst_1 : AddCommGroup V]
+  [inst_2 : Module K V] {v : V}, v ≠ 0 → Module.finrank K ↥(K ∙ v) = 1
+@Matrix.PosSemidef.trace_nonneg : ∀ {n : Type u_1} {R : Type u_2} [inst : Ring R] [inst_1 : PartialOrder R]
+  [inst_2 : StarRing R] [inst_3 : Fintype n] [AddLeftMono R] {A : Matrix n n R}, A.PosSemidef → 0 ≤ A.trace
+@Matrix.posSemidef_diagonal_iff : ∀ {n : Type u_1} {R : Type u_2} [inst : Ring R] [inst_1 : PartialOrder R]
+  [inst_2 : StarRing R] [StarOrderedRing R] [inst_4 : DecidableEq n] {d : n → R},
+  (Matrix.diagonal d).PosSemidef ↔ ∀ (i : n), 0 ≤ d i
+sondas/SondaAPI1.lean:56:8: error(lean.unknownIdentifier): Unknown constant `Matrix.rank_eq_zero_iff`
+@Matrix.PosSemidef.diagonal : ∀ {n : Type u_1} {R : Type u_2} [inst : Ring R] [inst_1 : PartialOrder R]
+  [inst_2 : StarRing R] [StarOrderedRing R] [inst_4 : DecidableEq n] {d : n → R}, 0 ≤ d → (Matrix.diagonal d).PosSemidef
+@Matrix.single : {m : Type u_1} →
+  {n : Type u_2} → {α : Type u_3} → [DecidableEq m] → [DecidableEq n] → [Zero α] → m → n → α → Matrix m n α
+@Matrix.single_apply : ∀ {m : Type u_1} {n : Type u_2} {α : Type u_3} [inst : DecidableEq m] [inst_1 : DecidableEq n]
+  [inst_2 : Zero α] (i : m) (j : n) (c : α) (i' : m) (j' : n),
+  Matrix.single i j c i' j' = if i = i' ∧ j = j' then c else 0
+@Matrix.IsHermitian.eigenvalues_eq : ∀ {𝕜 : Type u_1} [inst : RCLike 𝕜] {n : Type u_2} [inst_1 : Fintype n]
+  {A : Matrix n n 𝕜} [inst_2 : DecidableEq n] (hA : A.IsHermitian) (i : n),
+  hA.eigenvalues i = RCLike.re (star (hA.eigenvectorBasis i).ofLp ⬝ᵥ A.mulVec (hA.eigenvectorBasis i).ofLp)
+@Lean.collectAxioms : {m : Type → Type} → [Monad m] → [Lean.MonadEnv m] → Lean.Name → m (Array Lean.Name)
+@Matrix.mulVec_single : ∀ {m : Type u_1} {n : Type u_2} {R : Type u_3} [inst : Fintype n] [inst_1 : DecidableEq n]
+  [inst_2 : NonUnitalNonAssocSemiring R] (M : Matrix m n R) (j : n) (x : R),
+  M.mulVec (Pi.single j x) = MulOpposite.op x • M.col j
+@Matrix.range_mulVecLin : ∀ {R : Type u_1} [inst : CommSemiring R] {m : Type u_2} {n : Type u_3} [inst_1 : Fintype n]
+  (M : Matrix m n R), M.mulVecLin.range = Submodule.span R (Set.range M.col)
+@LinearMap.range_eq_bot : ∀ {R : Type u_1} {R₂ : Type u_2} {M : Type u_3} {M₂ : Type u_4} [inst : Semiring R]
+  [inst_1 : Semiring R₂] [inst_2 : AddCommMonoid M] [inst_3 : AddCommMonoid M₂] [inst_4 : Module R M]
+  [inst_5 : Module R₂ M₂] {τ₁₂ : R →+* R₂} [inst_6 : RingHomSurjective τ₁₂] {f : M →ₛₗ[τ₁₂] M₂}, f.range = ⊥ ↔ f = 0
+@Submodule.finrank_eq_zero : ∀ {R : Type u_1} {M : Type u_2} [inst : Ring R] [inst_1 : AddCommGroup M]
+  [inst_2 : Module R M] [IsDomain R] [Module.IsTorsionFree R M] [StrongRankCondition R] {S : Submodule R M}
+  [Module.Finite R ↥S], Module.finrank R ↥S = 0 ↔ S = ⊥
+@Module.finrank_pos_iff_exists_ne_zero : ∀ {R : Type u_1} {M : Type u_2} [inst : Ring R] [inst_1 : AddCommGroup M]
+  [inst_2 : Module R M] [StrongRankCondition R] [Module.Finite R M] [IsDomain R] [Module.IsTorsionFree R M],
+  0 < Module.finrank R M ↔ ∃ x, x ≠ 0
+@Matrix.ker_mulVecLin_eq_bot_iff : ∀ {R : Type u_1} [inst : CommSemiring R] {m : Type u_2} {n : Type u_3}
+  [inst_1 : Fintype n] {M : Matrix m n R}, M.mulVecLin.ker = ⊥ ↔ ∀ (v : n → R), M.mulVec v = 0 → v = 0
+sondas/SondaAPI1.lean:68:8: error(lean.unknownIdentifier): Unknown constant `Matrix.PosSemidef.posSemidef_sqrt`
+@Finset.sum_eq_zero_iff_of_nonneg : ∀ {ι : Type u_1} {N : Type u_2} [inst : AddCommMonoid N] [inst_1 : PartialOrder N]
+  {f : ι → N} {s : Finset ι} [AddLeftMono N], (∀ i ∈ s, 0 ≤ f i) → (∑ i ∈ s, f i = 0 ↔ ∀ i ∈ s, f i = 0)
+@Finset.single_le_sum : ∀ {ι : Type u_1} {N : Type u_2} [inst : AddCommMonoid N] [inst_1 : Preorder N] {f : ι → N}
+  {s : Finset ι} [AddLeftMono N], (∀ i ∈ s, 0 ≤ f i) → ∀ {a : ι}, a ∈ s → f a ≤ ∑ x ∈ s, f x
+@Finset.sum_filter_ne_zero : ∀ {ι : Type u_1} {M : Type u_2} [inst : AddCommMonoid M] {f : ι → M} (s : Finset ι)
+  [inst_1 : (x : ι) → Decidable (f x ≠ 0)], ∑ x ∈ s with f x ≠ 0, f x = ∑ x ∈ s, f x
+@Finset.sum_filter_of_ne : ∀ {ι : Type u_1} {M : Type u_2} {s : Finset ι} [inst : AddCommMonoid M] {f : ι → M}
+  {p : ι → Prop} [inst_1 : DecidablePred p], (∀ x ∈ s, f x ≠ 0 → p x) → ∑ x ∈ s with p x, f x = ∑ x ∈ s, f x
+@Finset.card_eq_one : ∀ {α : Type u_1} {s : Finset α}, s.card = 1 ↔ ∃ a, s = {a}
+@Fintype.card_subtype : ∀ {α : Type u_1} [inst : Fintype α] (p : α → Prop) [inst_1 : Fintype { a // p a }]
+  [inst_2 : DecidablePred p], Fintype.card { x // p x } = {x | p x}.card
+@Matrix.conjTranspose_mul : ∀ {l : Type u_2} {m : Type u_3} {n : Type u_4} {α : Type u_1} [inst : Fintype n]
+  [inst_1 : NonUnitalNonAssocSemiring α] [inst_2 : StarRing α] (M : Matrix m n α) (N : Matrix n l α),
+  (M * N).conjTranspose = N.conjTranspose * M.conjTranspose
+@Matrix.trace_mul_cycle : ∀ {m : Type u_1} {n : Type u_2} {p : Type u_3} {R : Type u_4} [inst : Fintype m]
+  [inst_1 : Fintype n] [inst_2 : Fintype p] [inst_3 : NonUnitalCommSemiring R] (A : Matrix m n R) (B : Matrix n p R)
+  (C : Matrix p m R), (A * B * C).trace = (C * A * B).trace
+@Matrix.trace_diagonal : ∀ {R : Type u_1} [inst : AddCommMonoid R] {o : Type u_2} [inst_1 : Fintype o]
+  [inst_2 : DecidableEq o] (d : o → R), (Matrix.diagonal d).trace = ∑ i, d i
+@Matrix.diagonal_mul_diagonal : ∀ {n : Type u_2} {α : Type u_1} [inst : NonUnitalNonAssocSemiring α]
+  [inst_1 : Fintype n] [inst_2 : DecidableEq n] (d₁ d₂ : n → α),
+  Matrix.diagonal d₁ * Matrix.diagonal d₂ = Matrix.diagonal fun i => d₁ i * d₂ i
+sondas/SondaAPI1.lean:79:8: error(lean.unknownIdentifier): Unknown constant `Matrix.IsHermitian.eigenvectorUnitary_mul_conjTranspose_eigenvectorUnitary`
+
+--- STDERR ---

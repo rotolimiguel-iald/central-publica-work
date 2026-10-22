@@ -1,0 +1,54 @@
+{
+ "documento": "ADENDO - PRE-REGISTRO ADITIVO da F1.FREQUENCIA (trilha POSTO), proposto na RODADA 3, 13/10/2026",
+ "estatuto": "PROPOSTA de pre-registro aditivo, congelada por hash em FREEZE_R3.json; SEM prova nova nesta rodada; a pedra r3 nao contem nenhum destes termos; o FREEZE original (1_PREREGISTRO\\FREEZE.json, sha16 4d8f97537eb04cd5) nao muda; entrar na v392 e decisao do operador",
+ "autor": "redator da gerencia c1 (subagente), em nome proprio",
+ "gemeo_md": "ADENDO_PREREGISTRO_ADITIVO_R3.md",
+ "base": "[INPUT da gerencia] base canonica de Fin 2, a base de rho* = diag(1, 0)",
+ "objetos": {
+  "rhoStar": "TGLExt.TheUnitIsTheRank.rhoStar (pedra r3)",
+  "Q0": "TGLExt.TheUnitIsTheRank.Q0 (pedra r3)",
+  "rhoOut": "TGLExt.rhoOut (TGLExt/SMatrix.lean l.263)",
+  "diagExpect": "TGLExt.diagExpect (TGLExt/CondExpect.lean l.87)",
+  "qubitReduction": "ChatgptAudit.Collapse057.qubitReduction (TGLExt/QuantumCollapseWitness.lean l.48)",
+  "readoutZero": "ChatgptAudit.Collapse057.readoutZero (l.41)",
+  "plusDensity": "ChatgptAudit.Collapse057.plusDensity (l.43)",
+  "mixedDensity": "ChatgptAudit.Collapse057.mixedDensity (l.45)",
+  "nameOp": "TGLExt.nameOp (TGLExt/TheNameOperator.lean l.49)",
+  "selective_branch_formula": "ChatgptAudit.Collapse057.selective_branch_formula (l.146)"
+ },
+ "partes": [
+  {"id": "A1.a", "enunciado": "readoutZero = rhoStar", "esperado": "PASSA_K"},
+  {"id": "A1.b", "enunciado": "forall x : Matrix (Fin 2) (Fin 2) C, qubitReduction x = diagExpect x", "esperado": "PASSA_K"},
+  {"id": "A1.c", "enunciado": "forall x : Matrix (Fin 2) (Fin 2) C, nameOp rhoStar x = diagExpect x", "esperado": "PASSA_K"},
+  {"id": "A1.d", "enunciado": "forall theta : R, diagExpect (rhoOut theta) = nameOp rhoStar (rhoOut theta)", "esperado": "PASSA_K"},
+  {"id": "A2", "enunciado": "plusDensity.rank = 1 and (qubitReduction plusDensity).rank = 2 and (qubitReduction plusDensity).trace = plusDensity.trace", "esperado": "PASSA_K", "leitura": "o colapso tipado sobe o posto da superposicao pura e preserva o traco"},
+  {"id": "A3", "enunciado": "rhoOut 0 = rhoStar and rhoOut (pi/2) = Q0 and rhoStar.trace = 1 and rhoStar.rank = 1 and Q0.trace = 1 and Q0.rank = 1", "esperado": "PASSA_K", "leitura": "os dois polos da nao-defasagem, rho* e Q0, tem traco 1 e posto 1"},
+  {"id": "A4", "enunciado": "not forall theta : R, (diagExpect (rhoOut theta)).rank = (rhoOut theta).rank  [sem c : TGLCoupling; testemunha theta = pi/4]", "esperado": "PASSA_K"},
+  {"id": "A5", "enunciado": "(qubitReduction mixedDensity).rank = 2 and mixedDensity.rank = 2", "esperado": "PASSA_K", "papel": "controle: sobre a mistura o colapso tipado nao muda o posto"}
+ ],
+ "regras": {
+  "face": "K (sandbox: toolchain v4.31.0, .lake do Nos so-leitura, EXIT 0, zero sorry, zero aviso, #print axioms no trio propext/Classical.choice/Quot.sound)",
+  "vereditos_permitidos": ["PASSA_K", "FALHA_K", "NAO_COMPILA"],
+  "face_O": "opcional (A2 e A5 tem conferencia numerica trivial em numpy); regra (f): onde ha uma face so, ela decide",
+  "beta": "nunca entra no Lean como numero; theta_M nao e usado neste adendo",
+  "proibido": "qualquer palavra do gate; a palavra vedada pela regua"
+ },
+ "medicao_anterior_nao_repetida": {
+  "sonda": "4_RELATORIO\\auditorias_copia\\POSTO_AUD_ESTATUTO\\r2\\sandbox\\AuditorEstatutoR2.lean",
+  "sonda_sha16": "512ea820918c178f",
+  "recibo": "4_RELATORIO\\auditorias_copia\\POSTO_AUD_ESTATUTO\\r2\\logs\\sonda_estatuto_t01_RECIBO.json",
+  "saida_sha16": "f80797f9180d27ff",
+  "cobre": ["A1.a", "A1.b", "A1.c", "A1.d", "A2", "A3"],
+  "A4": "sonda S3 do auditor de reproducao da rodada 2 (theta = pi/4 basta), relatorio final secao 2",
+  "estatuto": "[REAL no sandbox do auditor; copiada em bytes pelo redator da rodada 2]; nao conta como ensaio deste adendo"
+ },
+ "leitura_R5": {
+  "fonte": "V1 OPERADOR_10out_posto_rank_texto_verbatim.txt sha16 8d252f24e2806ff3 l.7",
+  "bytes": "Ao colapsar a superposição, a matriz deixa de ter um núcleo vazio (nullity) de indefinição teórica e ganha posto definido.",
+  "vale_lendo": "colapsar = ramo selecionado (P3; selective_branch_formula) e a superposicao = mistura de posto cheio (I/2 -> P)",
+  "sobre_a_superposicao_pura": "o colapso tipado do canone (A1.b = D_inf) sobe o posto 1 -> 2 e preserva so o traco (A2)",
+  "decisao": "qual das duas leituras vai ao texto da v392 e do operador (relatorio final secao 10, item 5)"
+ },
+ "nao_afirma": ["colapso fisico, selecao na natureza, medicao real", "nameOp = D_inf em dimensao geral (so M2(C), p = rho*)", "que o posto se perca em toda base", "que diag(1-beta, beta) seja ponto fixo de canal iterado", "palavra do gate", "palavra vedada"],
+ "como_se_ensaia": "sandbox como nas rodadas 1-3; arquivo candidato TGLExt/TheUnitIsTheRankAddendum.lean (nome provisorio) importando TheUnitIsTheRank, TGLExt.QuantumCollapseWitness e TGLExt.TheNameOperator; #print axioms de cada termo; .olean por sha256; impressao digital do tgl_kernel antes/depois; registro no mapa ao lado de formal.posto_e_defasagem_da_unidade"
+}

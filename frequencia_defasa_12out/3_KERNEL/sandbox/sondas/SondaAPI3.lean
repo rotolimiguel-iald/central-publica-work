@@ -1,0 +1,14 @@
+import Mathlib
+#check @Matrix.isUnit_det_of_left_inverse
+#check @Matrix.isUnit_det_of_right_inverse
+#check @Complex.zero_le_real
+#check @Complex.sin_sq_add_cos_sq
+#check @IsUnit.of_mul_eq_one
+#check @Matrix.PosSemidef.one
+#check @Matrix.diagonal_conjTranspose
+#check @Matrix.rank_one
+#check @Matrix.trace_one
+#check @Matrix.posSemidef_vecMulVec_self_star
+#check @Real.pi_gt_three
+#check @Real.sin_pi_div_four
+#check @not_or

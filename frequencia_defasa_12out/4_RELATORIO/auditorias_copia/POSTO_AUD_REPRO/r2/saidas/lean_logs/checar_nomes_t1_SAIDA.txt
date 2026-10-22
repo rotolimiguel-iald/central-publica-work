@@ -1,0 +1,380 @@
+TGLExt.TheUnitIsTheRank.Qtheta_eq : ∀ (θ : ℝ),
+  TGLExt.TheUnitIsTheRank.Qtheta θ =
+    !![↑(Real.sin θ) ^ 2, -(↑(Real.sin θ) * ↑(Real.cos θ)); -(↑(Real.cos θ) * ↑(Real.sin θ)), ↑(Real.cos θ) ^ 2]
+TGLExt.TheUnitIsTheRank.Qtheta_eq_rot : ∀ (θ : ℝ),
+  TGLExt.TheUnitIsTheRank.Qtheta θ =
+    TGLExt.TheUnitIsTheRank.Rot θ * TGLExt.TheUnitIsTheRank.Q0 * (TGLExt.TheUnitIsTheRank.Rot θ).transpose
+TGLExt.TheUnitIsTheRank.Qtheta_zero : TGLExt.TheUnitIsTheRank.Qtheta 0 = TGLExt.TheUnitIsTheRank.Q0
+TGLExt.TheUnitIsTheRank.Rot_eq_conjTranspose : ∀ (θ : ℝ), TGLExt.TheUnitIsTheRank.Rot θ = (TGLExt.Smat θ).conjTranspose
+TGLExt.TheUnitIsTheRank.Smat_pow : ∀ (θ : ℝ) (k : ℕ), TGLExt.Smat θ ^ k = TGLExt.Smat (↑k * θ)
+@TGLExt.TheUnitIsTheRank.ad_projection : ∀ {n : Type} [inst : Fintype n] [inst_1 : DecidableEq n] (u P : Matrix n n ℂ),
+  u.conjTranspose * u = 1 →
+    P * P = P →
+      P.conjTranspose = P →
+        u * P * u.conjTranspose * (u * P * u.conjTranspose) = u * P * u.conjTranspose ∧
+          (u * P * u.conjTranspose).conjTranspose = u * P * u.conjTranspose
+@TGLExt.TheUnitIsTheRank.ad_rank : ∀ {n : Type} [inst : Fintype n] [inst_1 : DecidableEq n] (u ρ : Matrix n n ℂ),
+  u.conjTranspose * u = 1 → (u * ρ * u.conjTranspose).rank = ρ.rank
+TGLExt.TheUnitIsTheRank.ad_rhoStar : ∀ (u : Matrix (Fin 2) (Fin 2) ℂ),
+  u.conjTranspose * u = 1 →
+    (u * TGLExt.TheUnitIsTheRank.rhoStar * u.conjTranspose).trace = 1 ∧
+      (u * TGLExt.TheUnitIsTheRank.rhoStar * u.conjTranspose).rank = 1
+@TGLExt.TheUnitIsTheRank.ad_trace : ∀ {n : Type} [inst : Fintype n] [inst_1 : DecidableEq n] (u ρ : Matrix n n ℂ),
+  u.conjTranspose * u = 1 → (u * ρ * u.conjTranspose).trace = ρ.trace
+TGLExt.TheUnitIsTheRank.angular_leak_no_limit : ∀ (θ : ℝ),
+  Real.sin θ ≠ 0 → ¬∃ L, Filter.Tendsto (fun k => Real.sin (↑k * θ) ^ 2) Filter.atTop (nhds L)
+TGLExt.TheUnitIsTheRank.angular_leak_zero_at_pi : ∀ (k : ℕ), Real.sin (↑k * Real.pi) ^ 2 = 0
+TGLExt.TheUnitIsTheRank.angular_leak_zero_converges : ∀ (θ : ℝ),
+  Real.sin θ = 0 →
+    (∀ (k : ℕ), Real.sin (↑k * θ) ^ 2 = 0) ∧ Filter.Tendsto (fun k => Real.sin (↑k * θ) ^ 2) Filter.atTop (nhds 0)
+TGLExt.TheUnitIsTheRank.angular_reflected_weight_no_limit : ∀ (θ : ℝ),
+  Real.sin θ ≠ 0 →
+    ¬∃ L, Filter.Tendsto (fun k => Complex.normSq ((TGLExt.Smat θ ^ k).mulVec TGLExt.e1 1)) Filter.atTop (nhds L)
+TGLExt.TheUnitIsTheRank.anticomm_at_thetaMiguel : ∀ (c : TGLExt.TGLCoupling),
+  TGLExt.TheUnitIsTheRank.anticomm (TGLExt.TheUnitIsTheRank.Qtheta (TGLExt.thetaMiguel c.beta))
+        TGLExt.TheUnitIsTheRank.rhoStar ≠
+      0 ∧
+    (TGLExt.TheUnitIsTheRank.anticomm (TGLExt.TheUnitIsTheRank.Qtheta (TGLExt.thetaMiguel c.beta))
+            TGLExt.TheUnitIsTheRank.rhoStar).trace =
+        2 * ↑c.beta ∧
+      TGLExt.purityR
+          (TGLExt.TheUnitIsTheRank.anticomm (TGLExt.TheUnitIsTheRank.Qtheta (TGLExt.thetaMiguel c.beta))
+            TGLExt.TheUnitIsTheRank.rhoStar) =
+        2 * c.beta * (1 + c.beta)
+TGLExt.TheUnitIsTheRank.anticomm_dephased_entry00 : ∀ (θ : ℝ) (g : Fin 2 → Fin 2 → ℝ) (t : ℝ),
+  TGLExt.TheUnitIsTheRank.anticomm (TGLExt.dephase g t (TGLExt.TheUnitIsTheRank.Qtheta θ))
+      TGLExt.TheUnitIsTheRank.rhoStar 0 0 =
+    2 * (↑(Real.exp (-(t * g 0 0))) * ↑(Real.sin θ) ^ 2)
+TGLExt.TheUnitIsTheRank.anticomm_dephased_eq : ∀ (θ : ℝ) (g : Fin 2 → Fin 2 → ℝ),
+  (∀ (i : Fin 2), g i i = 0) →
+    ∀ (t : ℝ),
+      TGLExt.TheUnitIsTheRank.anticomm (TGLExt.dephase g t (TGLExt.TheUnitIsTheRank.Qtheta θ))
+          TGLExt.TheUnitIsTheRank.rhoStar =
+        !![2 * ↑(Real.sin θ) ^ 2, ↑(Real.exp (-(t * g 0 1))) * -(↑(Real.sin θ) * ↑(Real.cos θ));
+          ↑(Real.exp (-(t * g 1 0))) * -(↑(Real.cos θ) * ↑(Real.sin θ)), 0]
+TGLExt.TheUnitIsTheRank.anticomm_dephased_zero_iff : ∀ (θ : ℝ) (g : Fin 2 → Fin 2 → ℝ) (t : ℝ),
+  TGLExt.TheUnitIsTheRank.anticomm (TGLExt.dephase g t (TGLExt.TheUnitIsTheRank.Qtheta θ))
+        TGLExt.TheUnitIsTheRank.rhoStar =
+      0 ↔
+    Real.sin θ = 0
+TGLExt.TheUnitIsTheRank.anticomm_eq : ∀ (θ : ℝ),
+  TGLExt.TheUnitIsTheRank.anticomm (TGLExt.TheUnitIsTheRank.Qtheta θ) TGLExt.TheUnitIsTheRank.rhoStar =
+    !![2 * ↑(Real.sin θ) ^ 2, -(↑(Real.sin θ) * ↑(Real.cos θ)); -(↑(Real.cos θ) * ↑(Real.sin θ)), 0]
+TGLExt.TheUnitIsTheRank.anticomm_frob : ∀ (θ : ℝ),
+  TGLExt.purityR (TGLExt.TheUnitIsTheRank.anticomm (TGLExt.TheUnitIsTheRank.Qtheta θ) TGLExt.TheUnitIsTheRank.rhoStar) =
+    2 * Real.sin θ ^ 2 * (1 + Real.sin θ ^ 2)
+TGLExt.TheUnitIsTheRank.anticomm_limit : ∀ (θ : ℝ),
+  TGLExt.TheUnitIsTheRank.anticomm (TGLExt.diagExpect (TGLExt.TheUnitIsTheRank.Qtheta θ))
+      TGLExt.TheUnitIsTheRank.rhoStar =
+    Matrix.diagonal ![2 * ↑(Real.sin θ) ^ 2, 0]
+TGLExt.TheUnitIsTheRank.anticomm_trace : ∀ (θ : ℝ),
+  (TGLExt.TheUnitIsTheRank.anticomm (TGLExt.TheUnitIsTheRank.Qtheta θ) TGLExt.TheUnitIsTheRank.rhoStar).trace =
+    2 * ↑(Real.sin θ) ^ 2
+TGLExt.TheUnitIsTheRank.anticomm_zero_at_zero : TGLExt.TheUnitIsTheRank.anticomm (TGLExt.TheUnitIsTheRank.Qtheta 0)
+    TGLExt.TheUnitIsTheRank.rhoStar =
+  0
+TGLExt.TheUnitIsTheRank.anticomm_zero_iff : ∀ (θ : ℝ),
+  TGLExt.TheUnitIsTheRank.anticomm (TGLExt.TheUnitIsTheRank.Qtheta θ) TGLExt.TheUnitIsTheRank.rhoStar = 0 ↔
+    Real.sin θ = 0
+@TGLExt.TheUnitIsTheRank.compression_by_rank_one : ∀ {n : Type} [inst : Fintype n] [DecidableEq n] (a : n → ℂ)
+  (X : Matrix n n ℂ),
+  Matrix.vecMulVec a (star a) * X * Matrix.vecMulVec a (star a) = (star a ⬝ᵥ X.mulVec a) • Matrix.vecMulVec a (star a) ∧
+    (Matrix.vecMulVec a (star a) * X).trace = star a ⬝ᵥ X.mulVec a
+@TGLExt.TheUnitIsTheRank.compression_by_rank_one_literal : ∀ {n : Type} [inst : Fintype n] [DecidableEq n] (a : n → ℂ),
+  star a ⬝ᵥ a = 1 →
+    ∀ (X : Matrix n n ℂ),
+      (Matrix.vecMulVec a (star a) * X * Matrix.vecMulVec a (star a) =
+            (star a ⬝ᵥ X.mulVec a) • Matrix.vecMulVec a (star a) ∧
+          (Matrix.vecMulVec a (star a) * X).trace = star a ⬝ᵥ X.mulVec a) ∧
+        (star a ⬝ᵥ X.mulVec a ≠ 0 →
+          (star a ⬝ᵥ X.mulVec a)⁻¹ • (Matrix.vecMulVec a (star a) * X * Matrix.vecMulVec a (star a)) =
+            Matrix.vecMulVec a (star a))
+@TGLExt.TheUnitIsTheRank.cos_thetaMiguel : ∀ {b : ℝ}, 0 ≤ b → Real.cos (TGLExt.thetaMiguel b) = √(1 - b)
+TGLExt.TheUnitIsTheRank.dephase_rhoStar : ∀ (g : Fin 2 → Fin 2 → ℝ),
+  (∀ (i : Fin 2), g i i = 0) →
+    ∀ (t : ℝ), TGLExt.dephase g t TGLExt.TheUnitIsTheRank.rhoStar = TGLExt.TheUnitIsTheRank.rhoStar
+TGLExt.TheUnitIsTheRank.dephased_Qtheta_eq : ∀ (θ : ℝ) (g : Fin 2 → Fin 2 → ℝ) (t : ℝ),
+  TGLExt.dephase g t (TGLExt.TheUnitIsTheRank.Qtheta θ) =
+    !![↑(Real.exp (-(t * g 0 0))) * ↑(Real.sin θ) ^ 2, ↑(Real.exp (-(t * g 0 1))) * -(↑(Real.sin θ) * ↑(Real.cos θ));
+      ↑(Real.exp (-(t * g 1 0))) * -(↑(Real.cos θ) * ↑(Real.sin θ)), ↑(Real.exp (-(t * g 1 1))) * ↑(Real.cos θ) ^ 2]
+TGLExt.TheUnitIsTheRank.dephased_det : ∀ (θ : ℝ) (g : Fin 2 → Fin 2 → ℝ),
+  (∀ (i : Fin 2), g i i = 0) →
+    ∀ (t : ℝ),
+      (TGLExt.dephase g t (TGLExt.rhoOut θ)).det =
+        ↑(Real.cos θ ^ 2 * Real.sin θ ^ 2 * (1 - Real.exp (-(t * (g 0 1 + g 1 0)))))
+TGLExt.TheUnitIsTheRank.dephased_rank_at_zero : ∀ (θ : ℝ) (g : Fin 2 → Fin 2 → ℝ),
+  (TGLExt.dephase g 0 (TGLExt.rhoOut θ)).rank = 1
+TGLExt.TheUnitIsTheRank.dephased_rank_two_iff : ∀ (θ : ℝ) (g : Fin 2 → Fin 2 → ℝ),
+  (∀ (i : Fin 2), g i i = 0) →
+    0 < g 0 1 → 0 < g 1 0 → ∀ {t : ℝ}, 0 < t → ((TGLExt.dephase g t (TGLExt.rhoOut θ)).rank = 2 ↔ Real.sin (2 * θ) ≠ 0)
+TGLExt.TheUnitIsTheRank.dephased_rhoOut_eq : ∀ (θ : ℝ) (g : Fin 2 → Fin 2 → ℝ),
+  (∀ (i : Fin 2), g i i = 0) →
+    ∀ (t : ℝ),
+      TGLExt.dephase g t (TGLExt.rhoOut θ) =
+        !![↑(Real.cos θ) ^ 2, ↑(Real.exp (-(t * g 0 1))) * -(↑(Real.cos θ) * ↑(Real.sin θ));
+          ↑(Real.exp (-(t * g 1 0))) * -(↑(Real.sin θ) * ↑(Real.cos θ)), ↑(Real.sin θ) ^ 2]
+TGLExt.TheUnitIsTheRank.dephased_trace : ∀ (θ : ℝ) (g : Fin 2 → Fin 2 → ℝ),
+  (∀ (i : Fin 2), g i i = 0) → ∀ (t : ℝ), (TGLExt.dephase g t (TGLExt.rhoOut θ)).trace = 1
+TGLExt.TheUnitIsTheRank.dephasingActs_iff : ∀ (g : Fin 2 → Fin 2 → ℝ) (θ : ℝ),
+  TGLExt.TheUnitIsTheRank.dephasingActs g θ ↔ ¬∀ (t : ℝ), TGLExt.dephase g t (TGLExt.rhoOut θ) = TGLExt.rhoOut θ
+TGLExt.TheUnitIsTheRank.dephasing_acts_iff_transmits_and_leaks : ∀ (θ : ℝ) (g : Fin 2 → Fin 2 → ℝ),
+  (∀ (i : Fin 2), g i i = 0) →
+    0 < g 0 1 →
+      0 < g 1 0 →
+        (TGLExt.TheUnitIsTheRank.dephasingActs g θ ↔
+          0 < Complex.normSq ((TGLExt.Smat θ).mulVec TGLExt.e1 0) ∧
+            0 < Complex.normSq ((TGLExt.Smat θ).mulVec TGLExt.e1 1))
+@TGLExt.TheUnitIsTheRank.dephasing_has_limit : ∀ {n : Type} [Fintype n] [inst : DecidableEq n] (g : n → n → ℝ),
+  (∀ (i : n), g i i = 0) →
+    (∀ (i j : n), i ≠ j → 0 < g i j) →
+      ∀ (x : Matrix n n ℂ), Filter.Tendsto (fun t => TGLExt.dephase g t x) Filter.atTop (nhds (TGLExt.diagExpect x))
+TGLExt.TheUnitIsTheRank.dephasing_trivial_at_thetaMiguel : ∀ (b : ℝ),
+  0 ≤ b →
+    b ≤ 1 →
+      ∀ (g : Fin 2 → Fin 2 → ℝ),
+        (∀ (i : Fin 2), g i i = 0) →
+          0 < g 0 1 →
+            0 < g 1 0 →
+              ((∀ (t : ℝ),
+                    TGLExt.dephase g t (TGLExt.rhoOut (TGLExt.thetaMiguel b)) = TGLExt.rhoOut (TGLExt.thetaMiguel b)) ↔
+                  b = 0 ∨ b = 1) ∧
+                (TGLExt.rhoOut (TGLExt.thetaMiguel b)).rank = 1
+TGLExt.TheUnitIsTheRank.dephasing_trivial_iff : ∀ (θ : ℝ) (g : Fin 2 → Fin 2 → ℝ),
+  (∀ (i : Fin 2), g i i = 0) →
+    0 < g 0 1 → 0 < g 1 0 → ((∀ (t : ℝ), TGLExt.dephase g t (TGLExt.rhoOut θ) = TGLExt.rhoOut θ) ↔ Real.sin (2 * θ) = 0)
+TGLExt.TheUnitIsTheRank.diagExpect_Qtheta : ∀ (θ : ℝ),
+  TGLExt.diagExpect (TGLExt.TheUnitIsTheRank.Qtheta θ) = !![↑(Real.sin θ) ^ 2, 0; 0, ↑(Real.cos θ) ^ 2]
+TGLExt.TheUnitIsTheRank.endpoint_at_thetaMiguel : ∀ (c : TGLExt.TGLCoupling),
+  TGLExt.diagExpect (TGLExt.rhoOut (TGLExt.thetaMiguel c.beta)) = Matrix.diagonal ![↑(1 - c.beta), ↑c.beta] ∧
+    (TGLExt.diagExpect (TGLExt.rhoOut (TGLExt.thetaMiguel c.beta))).rank = 2 ∧
+      (TGLExt.diagExpect (TGLExt.rhoOut (TGLExt.thetaMiguel c.beta)) ^ 2).trace = ↑(1 - 2 * c.beta * (1 - c.beta)) ∧
+        1 - 2 * c.beta * (1 - c.beta) < 1
+TGLExt.TheUnitIsTheRank.endpoint_det : ∀ (θ : ℝ),
+  (TGLExt.diagExpect (TGLExt.rhoOut θ)).det = ↑(Real.cos θ) ^ 2 * ↑(Real.sin θ) ^ 2
+TGLExt.TheUnitIsTheRank.endpoint_eq : ∀ (θ : ℝ),
+  TGLExt.diagExpect (TGLExt.rhoOut θ) = Matrix.diagonal ![↑(Real.cos θ) ^ 2, ↑(Real.sin θ) ^ 2]
+TGLExt.TheUnitIsTheRank.endpoint_purity : ∀ (θ : ℝ),
+  (TGLExt.diagExpect (TGLExt.rhoOut θ) ^ 2).trace = ↑(1 - 2 * Real.sin θ ^ 2 * Real.cos θ ^ 2) ∧
+    (1 - 2 * Real.sin θ ^ 2 * Real.cos θ ^ 2 < 1 ↔ Real.sin (2 * θ) ≠ 0)
+TGLExt.TheUnitIsTheRank.endpoint_rank_one_at_poles : (TGLExt.diagExpect (TGLExt.rhoOut 0) = TGLExt.rhoOut 0 ∧
+    (TGLExt.diagExpect (TGLExt.rhoOut 0)).rank = 1) ∧
+  TGLExt.diagExpect (TGLExt.rhoOut (Real.pi / 2)) = TGLExt.rhoOut (Real.pi / 2) ∧
+    (TGLExt.diagExpect (TGLExt.rhoOut (Real.pi / 2))).rank = 1
+TGLExt.TheUnitIsTheRank.endpoint_rank_one_iff : ∀ (θ : ℝ),
+  (TGLExt.diagExpect (TGLExt.rhoOut θ)).rank = 1 ↔ Real.sin (2 * θ) = 0
+TGLExt.TheUnitIsTheRank.endpoint_rank_two_iff : ∀ (θ : ℝ),
+  (TGLExt.diagExpect (TGLExt.rhoOut θ)).rank = 2 ↔ Real.sin (2 * θ) ≠ 0
+TGLExt.TheUnitIsTheRank.endpoint_trace : ∀ (θ : ℝ), (TGLExt.diagExpect (TGLExt.rhoOut θ)).trace = 1
+TGLExt.TheUnitIsTheRank.fractal_one_is_rank_one : ∀ (θ : ℝ),
+  (TGLExt.rhoOut θ).rank = 1 ∧
+    (TGLExt.rhoOut θ).trace = 1 ∧
+      TGLExt.rhoOut θ * TGLExt.rhoOut θ = TGLExt.rhoOut θ ∧
+        (TGLExt.rhoOut θ).conjTranspose = TGLExt.rhoOut θ ∧ (TGLExt.rhoOut θ ^ 2).trace = 1
+TGLExt.TheUnitIsTheRank.half_identity_rank_nullity : TGLExt.TheUnitIsTheRank.halfId.rank = 2 ∧
+  TGLExt.TheUnitIsTheRank.nullity TGLExt.TheUnitIsTheRank.halfId = 0
+TGLExt.TheUnitIsTheRank.inscription_at_thetaMiguel : ∀ (c : TGLExt.TGLCoupling) (g : Fin 2 → Fin 2 → ℝ),
+  (∀ (i : Fin 2), g i i = 0) →
+    0 < g 0 1 →
+      0 < g 1 0 →
+        TGLExt.TheUnitIsTheRank.dephasingActs g (TGLExt.thetaMiguel c.beta) ∧
+          TGLExt.diagExpect (TGLExt.rhoOut (TGLExt.thetaMiguel c.beta)) 1 1 = ↑c.beta
+TGLExt.TheUnitIsTheRank.leak_after_n_passes : ∀ (θ : ℝ) (k : ℕ),
+  Complex.normSq ((TGLExt.Smat θ ^ k).mulVec TGLExt.e1 1) = Real.sin (↑k * θ) ^ 2
+TGLExt.TheUnitIsTheRank.leak_at_thetaMiguel : ∀ (c : TGLExt.TGLCoupling),
+  (TGLExt.TheUnitIsTheRank.rhoStar * TGLExt.TheUnitIsTheRank.Qtheta (TGLExt.thetaMiguel c.beta)).trace = ↑c.beta
+TGLExt.TheUnitIsTheRank.leak_eq : ∀ (θ : ℝ),
+  (TGLExt.TheUnitIsTheRank.rhoStar * TGLExt.TheUnitIsTheRank.Qtheta θ).trace = ↑(Real.sin θ) ^ 2
+TGLExt.TheUnitIsTheRank.leak_eq_reflected_weight : ∀ (θ : ℝ),
+  (TGLExt.TheUnitIsTheRank.rhoStar * TGLExt.TheUnitIsTheRank.Qtheta θ).trace =
+    ↑(Complex.normSq ((TGLExt.Smat θ).mulVec TGLExt.e1 1))
+TGLExt.TheUnitIsTheRank.leak_eq_rhoOut : ∀ (θ : ℝ),
+  (TGLExt.TheUnitIsTheRank.rhoStar * TGLExt.TheUnitIsTheRank.Qtheta θ).trace =
+      (TGLExt.rhoOut θ * TGLExt.TheUnitIsTheRank.Q0).trace ∧
+    (TGLExt.rhoOut θ * TGLExt.TheUnitIsTheRank.Q0).trace = TGLExt.rhoOut θ 1 1
+TGLExt.TheUnitIsTheRank.leak_survives_dephasing : ∀ (θ : ℝ) (g : Fin 2 → Fin 2 → ℝ),
+  (∀ (i : Fin 2), g i i = 0) →
+    ∀ (t : ℝ),
+      (TGLExt.TheUnitIsTheRank.rhoStar * TGLExt.dephase g t (TGLExt.TheUnitIsTheRank.Qtheta θ)).trace =
+        ↑(Real.sin θ) ^ 2
+TGLExt.TheUnitIsTheRank.leak_without_dephasing_at_half_pi : ∀ (g : Fin 2 → Fin 2 → ℝ),
+  (∀ (i : Fin 2), g i i = 0) →
+    Complex.normSq ((TGLExt.Smat (Real.pi / 2)).mulVec TGLExt.e1 1) = 1 ∧
+      ¬TGLExt.TheUnitIsTheRank.dephasingActs g (Real.pi / 2)
+TGLExt.TheUnitIsTheRank.literal_leak_does_not_force_dephasing : ∀ (g : Fin 2 → Fin 2 → ℝ),
+  (∀ (i : Fin 2), g i i = 0) →
+    ¬∀ (θ : ℝ), 0 < Complex.normSq ((TGLExt.Smat θ).mulVec TGLExt.e1 1) → TGLExt.TheUnitIsTheRank.dephasingActs g θ
+TGLExt.TheUnitIsTheRank.literal_transmission_does_not_force_dephasing : ∀ (g : Fin 2 → Fin 2 → ℝ),
+  (∀ (i : Fin 2), g i i = 0) →
+    ¬∀ (θ : ℝ), 0 < Complex.normSq ((TGLExt.Smat θ).mulVec TGLExt.e1 0) → TGLExt.TheUnitIsTheRank.dephasingActs g θ
+@TGLExt.TheUnitIsTheRank.name_meets_rank_only_at_the_atom : ∀ {n : Type} [inst : Fintype n] [inst_1 : DecidableEq n]
+  (P : Matrix n n ℂ), P * P = P → 1 ≤ P.rank → ((((↑P.rank)⁻¹ • P) ^ 2).trace = ((↑P.rank)⁻¹ • P).trace ↔ P.rank = 1)
+TGLExt.TheUnitIsTheRank.nondiagonal_reader_sees_time : ∀ (c : TGLExt.TGLCoupling),
+  (TGLExt.TheUnitIsTheRank.plusReader *
+        TGLExt.dephase TGLExt.TheUnitIsTheRank.unitRates 0
+          (TGLExt.TheUnitIsTheRank.Qtheta (TGLExt.thetaMiguel c.beta))).trace ≠
+    (TGLExt.TheUnitIsTheRank.plusReader *
+        TGLExt.dephase TGLExt.TheUnitIsTheRank.unitRates 1
+          (TGLExt.TheUnitIsTheRank.Qtheta (TGLExt.thetaMiguel c.beta))).trace
+TGLExt.TheUnitIsTheRank.nonunitary_changes_trace : (TGLExt.TheUnitIsTheRank.C6mat * TGLExt.TheUnitIsTheRank.rhoStar *
+        TGLExt.TheUnitIsTheRank.C6mat.conjTranspose).trace =
+    4 ∧
+  TGLExt.TheUnitIsTheRank.C6mat.conjTranspose * TGLExt.TheUnitIsTheRank.C6mat ≠ 1
+TGLExt.TheUnitIsTheRank.normalization_is_necessary : (2⁻¹ • TGLExt.TheUnitIsTheRank.rhoStar).PosSemidef ∧
+  (2⁻¹ • TGLExt.TheUnitIsTheRank.rhoStar).rank = 1 ∧ ((2⁻¹ • TGLExt.TheUnitIsTheRank.rhoStar) ^ 2).trace = 4⁻¹
+TGLExt.TheUnitIsTheRank.normalization_is_necessary' : ¬∀ (ρ : Matrix (Fin 2) (Fin 2) ℂ),
+    ρ.PosSemidef → ρ.rank = 1 → (ρ ^ 2).trace = 1
+@TGLExt.TheUnitIsTheRank.normalized_projection_index : ∀ {n : Type} [inst : Fintype n] [inst_1 : DecidableEq n]
+  (P : Matrix n n ℂ), P * P = P → 1 ≤ P.rank → (((↑P.rank)⁻¹ • P) ^ 2).trace = (↑P.rank)⁻¹
+@TGLExt.TheUnitIsTheRank.normalized_projection_literal : ∀ {n : Type} [inst : Fintype n] [inst_1 : DecidableEq n]
+  (P : Matrix n n ℂ),
+  P * P = P →
+    P.conjTranspose = P →
+      1 ≤ P.rank →
+        P.trace = ↑P.rank ∧
+          ((↑P.rank)⁻¹ • P).trace = 1 ∧
+            (((↑P.rank)⁻¹ • P) ^ 2).trace = (↑P.rank)⁻¹ ∧
+              ((((↑P.rank)⁻¹ • P) ^ 2).trace = ((↑P.rank)⁻¹ • P).trace ↔ P.rank = 1)
+@TGLExt.TheUnitIsTheRank.normalized_projection_name : ∀ {n : Type} [inst : Fintype n] [DecidableEq n]
+  (P : Matrix n n ℂ), P * P = P → 1 ≤ P.rank → ((↑P.rank)⁻¹ • P).trace = 1
+TGLExt.TheUnitIsTheRank.nothing_branch : (TGLExt.TheUnitIsTheRank.rhoStar * TGLExt.TheUnitIsTheRank.Q0).trace = 0 ∧
+  TGLExt.TheUnitIsTheRank.anticomm TGLExt.TheUnitIsTheRank.Q0 TGLExt.TheUnitIsTheRank.rhoStar = 0 ∧
+    TGLExt.rhoOut 0 = TGLExt.TheUnitIsTheRank.rhoStar ∧
+      (∀ (g : Fin 2 → Fin 2 → ℝ),
+          (∀ (i : Fin 2), g i i = 0) → ∀ (t : ℝ), TGLExt.dephase g t (TGLExt.rhoOut 0) = TGLExt.rhoOut 0) ∧
+        TGLExt.TheUnitIsTheRank.rhoStar.rank = 1 ∧ (TGLExt.TheUnitIsTheRank.rhoStar ^ 2).trace = 1
+TGLExt.TheUnitIsTheRank.plus_reader_value : ∀ (θ t : ℝ),
+  (TGLExt.TheUnitIsTheRank.plusReader *
+        TGLExt.dephase TGLExt.TheUnitIsTheRank.unitRates t (TGLExt.TheUnitIsTheRank.Qtheta θ)).trace =
+    2⁻¹ - ↑(Real.exp (-t)) * (↑(Real.sin θ) * ↑(Real.cos θ))
+TGLExt.TheUnitIsTheRank.psd_is_necessary : TGLExt.TheUnitIsTheRank.C1mat.trace = 1 ∧
+  (TGLExt.TheUnitIsTheRank.C1mat ^ 2).trace = 1 ∧
+    TGLExt.TheUnitIsTheRank.C1mat.rank = 3 ∧ ¬TGLExt.TheUnitIsTheRank.C1mat.PosSemidef
+TGLExt.TheUnitIsTheRank.psd_is_necessary' : ¬∀ (ρ : Matrix (Fin 3) (Fin 3) ℂ),
+    ρ.trace = 1 → (ρ ^ 2).trace = 1 → ρ.rank = 1
+@TGLExt.TheUnitIsTheRank.pure_core : ∀ {n : Type} [inst : Fintype n] [inst_1 : DecidableEq n] {ρ : Matrix n n ℂ}
+  (hρ : ρ.PosSemidef),
+  ρ.trace = 1 →
+    ((ρ ^ 2).trace = 1 ↔ ∀ (i : n), ⋯.eigenvalues i ^ 2 = ⋯.eigenvalues i) ∧
+      (ρ.rank = 1 ↔ ∀ (i : n), ⋯.eigenvalues i ^ 2 = ⋯.eigenvalues i) ∧
+        (ρ ^ 2 = ρ ↔ ∀ (i : n), ⋯.eigenvalues i ^ 2 = ⋯.eigenvalues i)
+@TGLExt.TheUnitIsTheRank.pure_iff_idempotent : ∀ {n : Type} [inst : Fintype n] [inst_1 : DecidableEq n]
+  {ρ : Matrix n n ℂ}, ρ.PosSemidef → ρ.trace = 1 → ((ρ ^ 2).trace = 1 ↔ ρ ^ 2 = ρ)
+@TGLExt.TheUnitIsTheRank.pure_iff_rank_one : ∀ {n : Type} [inst : Fintype n] [inst_1 : DecidableEq n]
+  {ρ : Matrix n n ℂ}, ρ.PosSemidef → ρ.trace = 1 → ((ρ ^ 2).trace = 1 ↔ ρ.rank = 1)
+TGLExt.TheUnitIsTheRank.pure_iff_rank_one_fin_two : ∀ (M : Matrix (Fin 2) (Fin 2) ℂ),
+  M.trace = 1 → ((M ^ 2).trace = 1 ↔ M.rank = 1)
+TGLExt.TheUnitIsTheRank.range_rhoStar : TGLExt.TheUnitIsTheRank.rhoStar.mulVecLin.range = ℂ ∙ TGLExt.e1 ∧
+  TGLExt.TheUnitIsTheRank.rhoStar.rank = Module.finrank ℂ ↥(ℂ ∙ TGLExt.e1) ∧ Module.finrank ℂ ↥(ℂ ∙ TGLExt.e1) = 1
+@TGLExt.TheUnitIsTheRank.rankOne_density : ∀ {n : Type} [inst : Fintype n] [DecidableEq n] (ψ : n → ℂ),
+  ψ ≠ 0 → (Matrix.vecMulVec ψ (star ψ)).rank = 1
+@TGLExt.TheUnitIsTheRank.rankOne_density_normalized : ∀ {n : Type} [inst : Fintype n] [inst_1 : DecidableEq n]
+  (ψ : n → ℂ),
+  star ψ ⬝ᵥ ψ = 1 →
+    (Matrix.vecMulVec ψ (star ψ)).trace = 1 ∧
+      Matrix.vecMulVec ψ (star ψ) ^ 2 = Matrix.vecMulVec ψ (star ψ) ∧
+        (Matrix.vecMulVec ψ (star ψ) ^ 2).trace = 1 ∧ (Matrix.vecMulVec ψ (star ψ)).rank = 1
+@TGLExt.TheUnitIsTheRank.rank_add_nullity : ∀ {n : Type} [inst : Fintype n] [DecidableEq n] (A : Matrix n n ℂ),
+  A.rank + TGLExt.TheUnitIsTheRank.nullity A = Fintype.card n
+TGLExt.TheUnitIsTheRank.rank_diag_one_at_ends : ∀ (b : ℝ), b = 0 ∨ b = 1 → (Matrix.diagonal ![↑(1 - b), ↑b]).rank = 1
+TGLExt.TheUnitIsTheRank.rank_diag_two_iff : ∀ (b : ℝ),
+  0 ≤ b → b ≤ 1 → ((Matrix.diagonal ![↑(1 - b), ↑b]).rank = 2 ↔ 0 < b ∧ b < 1)
+TGLExt.TheUnitIsTheRank.rank_not_preserved_by_dephasing : ∀ (c : TGLExt.TGLCoupling),
+  ¬∀ (θ : ℝ), (TGLExt.diagExpect (TGLExt.rhoOut θ)).rank = (TGLExt.rhoOut θ).rank
+@TGLExt.TheUnitIsTheRank.rank_one_iff_nullity : ∀ {n : Type} [inst : Fintype n] [DecidableEq n] {ρ : Matrix n n ℂ},
+  ρ.trace = 1 → (ρ.rank = 1 ↔ TGLExt.TheUnitIsTheRank.nullity ρ = Fintype.card n - 1)
+@TGLExt.TheUnitIsTheRank.rank_one_iff_nullity_succ : ∀ {n : Type} [inst : Fintype n] [DecidableEq n] (ρ : Matrix n n ℂ),
+  ρ.rank = 1 ↔ TGLExt.TheUnitIsTheRank.nullity ρ + 1 = Fintype.card n
+TGLExt.TheUnitIsTheRank.reading_needs_rank_one : (1 * TGLExt.TheUnitIsTheRank.halfId).trace⁻¹ •
+      (1 * TGLExt.TheUnitIsTheRank.halfId * 1) =
+    TGLExt.TheUnitIsTheRank.halfId ∧
+  TGLExt.TheUnitIsTheRank.halfId.rank = 2 ∧ Matrix.rank 1 = 2
+TGLExt.TheUnitIsTheRank.reading_needs_weight : (TGLExt.TheUnitIsTheRank.rhoStar * TGLExt.TheUnitIsTheRank.Q0).trace =
+    0 ∧
+  TGLExt.TheUnitIsTheRank.rhoStar * TGLExt.TheUnitIsTheRank.Q0 * TGLExt.TheUnitIsTheRank.rhoStar = 0 ∧
+    (TGLExt.TheUnitIsTheRank.rhoStar * TGLExt.TheUnitIsTheRank.Q0).trace⁻¹ •
+        (TGLExt.TheUnitIsTheRank.rhoStar * TGLExt.TheUnitIsTheRank.Q0 * TGLExt.TheUnitIsTheRank.rhoStar) ≠
+      TGLExt.TheUnitIsTheRank.rhoStar
+TGLExt.TheUnitIsTheRank.reading_of_the_attractor_state : (TGLExt.TheUnitIsTheRank.rhoStar *
+        TGLExt.TheUnitIsTheRank.halfId).trace =
+    2⁻¹ ∧
+  (TGLExt.TheUnitIsTheRank.rhoStar * TGLExt.TheUnitIsTheRank.halfId).trace⁻¹ •
+      (TGLExt.TheUnitIsTheRank.rhoStar * TGLExt.TheUnitIsTheRank.halfId * TGLExt.TheUnitIsTheRank.rhoStar) =
+    TGLExt.TheUnitIsTheRank.rhoStar
+@TGLExt.TheUnitIsTheRank.reading_returns_the_post : ∀ {n : Type} [inst : Fintype n] [DecidableEq n] (a : n → ℂ)
+  (X : Matrix n n ℂ),
+  star a ⬝ᵥ X.mulVec a ≠ 0 →
+    (star a ⬝ᵥ X.mulVec a)⁻¹ • (Matrix.vecMulVec a (star a) * X * Matrix.vecMulVec a (star a)) =
+      Matrix.vecMulVec a (star a)
+TGLExt.TheUnitIsTheRank.reading_weights_are_truth_and_cost : ∀ (b : ℂ),
+  (TGLExt.TheUnitIsTheRank.rhoStar * Matrix.diagonal ![1 - b, b]).trace = 1 - b ∧
+    (TGLExt.TheUnitIsTheRank.Q0 * Matrix.diagonal ![1 - b, b]).trace = b
+TGLExt.TheUnitIsTheRank.reading_weights_at_theta : ∀ (θ : ℝ),
+  (TGLExt.TheUnitIsTheRank.rhoStar * TGLExt.diagExpect (TGLExt.rhoOut θ)).trace =
+      ↑(Complex.normSq ((TGLExt.Smat θ).mulVec TGLExt.e1 0)) ∧
+    (TGLExt.TheUnitIsTheRank.Q0 * TGLExt.diagExpect (TGLExt.rhoOut θ)).trace =
+      ↑(Complex.normSq ((TGLExt.Smat θ).mulVec TGLExt.e1 1))
+TGLExt.TheUnitIsTheRank.reading_weights_at_thetaMiguel : ∀ (c : TGLExt.TGLCoupling),
+  (TGLExt.TheUnitIsTheRank.rhoStar * Matrix.diagonal ![↑(1 - c.beta), ↑c.beta]).trace =
+      ↑(Complex.normSq ((TGLExt.Smat (TGLExt.thetaMiguel c.beta)).mulVec TGLExt.e1 0)) ∧
+    (TGLExt.TheUnitIsTheRank.Q0 * Matrix.diagonal ![↑(1 - c.beta), ↑c.beta]).trace =
+        ↑(Complex.normSq ((TGLExt.Smat (TGLExt.thetaMiguel c.beta)).mulVec TGLExt.e1 1)) ∧
+      Complex.normSq ((TGLExt.Smat (TGLExt.thetaMiguel c.beta)).mulVec TGLExt.e1 0) = 1 - c.beta ∧
+        Complex.normSq ((TGLExt.Smat (TGLExt.thetaMiguel c.beta)).mulVec TGLExt.e1 1) = c.beta
+TGLExt.TheUnitIsTheRank.rhoOut_eq_diag_iff : ∀ (θ : ℝ),
+  TGLExt.rhoOut θ = TGLExt.diagExpect (TGLExt.rhoOut θ) ↔ Real.sin (2 * θ) = 0
+TGLExt.TheUnitIsTheRank.rhoOut_zero : TGLExt.rhoOut 0 = TGLExt.TheUnitIsTheRank.rhoStar
+TGLExt.TheUnitIsTheRank.rhoStar_herm : TGLExt.TheUnitIsTheRank.rhoStar.conjTranspose = TGLExt.TheUnitIsTheRank.rhoStar
+TGLExt.TheUnitIsTheRank.rhoStar_idem : TGLExt.TheUnitIsTheRank.rhoStar * TGLExt.TheUnitIsTheRank.rhoStar =
+  TGLExt.TheUnitIsTheRank.rhoStar
+TGLExt.TheUnitIsTheRank.rhoStar_rank : TGLExt.TheUnitIsTheRank.rhoStar.rank = 1
+TGLExt.TheUnitIsTheRank.rhoStar_rank_nullity : TGLExt.TheUnitIsTheRank.rhoStar.rank = 1 ∧
+  TGLExt.TheUnitIsTheRank.nullity TGLExt.TheUnitIsTheRank.rhoStar = 1
+TGLExt.TheUnitIsTheRank.rhoStar_trace : TGLExt.TheUnitIsTheRank.rhoStar.trace = 1
+TGLExt.TheUnitIsTheRank.rhoStar_unit : TGLExt.TheUnitIsTheRank.rhoStar.trace = 1 ∧
+  TGLExt.TheUnitIsTheRank.rhoStar.rank = 1 ∧
+    TGLExt.TheUnitIsTheRank.rhoStar * TGLExt.TheUnitIsTheRank.rhoStar = TGLExt.TheUnitIsTheRank.rhoStar ∧
+      TGLExt.TheUnitIsTheRank.rhoStar.conjTranspose = TGLExt.TheUnitIsTheRank.rhoStar
+TGLExt.TheUnitIsTheRank.sin_sq_double : ∀ (x : ℝ), Real.sin (2 * x) ^ 2 = 4 * Real.sin x ^ 2 * (1 - Real.sin x ^ 2)
+TGLExt.TheUnitIsTheRank.sin_sq_shift_identity : ∀ (x θ : ℝ),
+  Real.sin (x + θ) ^ 2 + Real.sin (x - θ) ^ 2 =
+    2 * Real.sin x ^ 2 * Real.cos θ ^ 2 + 2 * Real.cos x ^ 2 * Real.sin θ ^ 2
+TGLExt.TheUnitIsTheRank.sin_two_thetaMiguel_eq_zero_iff : ∀ (b : ℝ),
+  0 ≤ b → b ≤ 1 → (Real.sin (2 * TGLExt.thetaMiguel b) = 0 ↔ b = 0 ∨ b = 1)
+TGLExt.TheUnitIsTheRank.singular_kills_rank : TGLExt.TheUnitIsTheRank.Q0 * TGLExt.TheUnitIsTheRank.rhoStar *
+      TGLExt.TheUnitIsTheRank.Q0.conjTranspose =
+    0 ∧
+  (TGLExt.TheUnitIsTheRank.Q0 * TGLExt.TheUnitIsTheRank.rhoStar * TGLExt.TheUnitIsTheRank.Q0.conjTranspose).rank = 0
+@TGLExt.TheUnitIsTheRank.spiral_with_rate_converges : ∀ {V : Type} [inst : NormedAddCommGroup V]
+  [inst_1 : NormedSpace ℂ V] (P : V →ₗ[ℂ] V) {r : ℝ},
+  0 < r → ∀ (ω : ℝ) (v : V), Filter.Tendsto (fun s => TGLExt.IALDJones.orbit P r ω s v) Filter.atTop (nhds (P v))
+@TGLExt.TheUnitIsTheRank.spiral_without_rate_has_no_limit : ∀ {V : Type} [inst : NormedAddCommGroup V]
+  [inst_1 : NormedSpace ℂ V] (P : V →ₗ[ℂ] V) (ω : ℝ) (v : V),
+  v ≠ P v → ¬Filter.Tendsto (fun s => TGLExt.IALDJones.orbit P 0 ω s v) Filter.atTop (nhds (P v))
+@TGLExt.TheUnitIsTheRank.spiral_without_rate_is_periodic : ∀ {V : Type} [inst : NormedAddCommGroup V]
+  [inst_1 : NormedSpace ℂ V] (P : V →ₗ[ℂ] V) {ω : ℝ},
+  ω ≠ 0 → ∀ (s : ℝ) (v : V), TGLExt.IALDJones.orbit P 0 ω (s + 2 * Real.pi / ω) v = TGLExt.IALDJones.orbit P 0 ω s v
+TGLExt.TheUnitIsTheRank.trace_and_purity_one_fin_two : ∀ (M : Matrix (Fin 2) (Fin 2) ℂ),
+  M.trace = 1 → (M ^ 2).trace = 1 → M.det = 0 ∧ M.rank = 1
+@TGLExt.TheUnitIsTheRank.trace_eq_rank_of_projection : ∀ {n : Type} [inst : Fintype n] [DecidableEq n]
+  (P : Matrix n n ℂ), P * P = P → P.trace = ↑P.rank
+TGLExt.TheUnitIsTheRank.trace_one_not_rank_one : TGLExt.TheUnitIsTheRank.halfId.trace = 1 ∧
+  TGLExt.TheUnitIsTheRank.halfId.rank = 2 ∧ TGLExt.TheUnitIsTheRank.halfId.PosSemidef
+TGLExt.TheUnitIsTheRank.trace_one_not_rank_one' : ¬∀ (ρ : Matrix (Fin 2) (Fin 2) ℂ), ρ.trace = 1 → ρ.rank = 1
+@TGLExt.TheUnitIsTheRank.trace_one_rank_pos : ∀ {n : Type} [inst : Fintype n] [DecidableEq n] {ρ : Matrix n n ℂ},
+  ρ.trace = 1 → 1 ≤ ρ.rank
+TGLExt.TheUnitIsTheRank.trace_sq_fin_two : ∀ (M : Matrix (Fin 2) (Fin 2) ℂ), (M ^ 2).trace = M.trace ^ 2 - 2 * M.det
+TGLExt.TheUnitIsTheRank.trace_survives_dephasing : ∀ (θ : ℝ),
+  (TGLExt.diagExpect (TGLExt.rhoOut θ)).trace = (TGLExt.rhoOut θ).trace
+@TGLExt.TheUnitIsTheRank.transmission_dephases_reexport : ∀ {A : Type u_1} [inst : Ring A] [inst_1 : Algebra ℂ A]
+  {P : A},
+  IsIdempotentElem P → ∀ (t : ℝ), TGLExt.TheAxiomAndTheFalseWitness.axiomFlow P t * (1 - P) = ↑(Real.exp (-t)) • (1 - P)
+TGLExt.TheUnitIsTheRank.transmission_without_dephasing_at_zero : ∀ (g : Fin 2 → Fin 2 → ℝ),
+  (∀ (i : Fin 2), g i i = 0) →
+    Complex.normSq ((TGLExt.Smat 0).mulVec TGLExt.e1 0) = 1 ∧ ¬TGLExt.TheUnitIsTheRank.dephasingActs g 0
+TGLExt.TheUnitIsTheRank.zero_rank_nullity : Matrix.rank 0 = 0 ∧ TGLExt.TheUnitIsTheRank.nullity 0 = 2
+TGLExt.TheUnitIsTheRank.zero_rate_no_dephasing : (∀ (t : ℝ) (x : Matrix (Fin 2) (Fin 2) ℂ),
+    TGLExt.dephase (fun x x_1 => 0) t x = x) ∧
+  ¬Filter.Tendsto (fun t => TGLExt.dephase (fun x x_1 => 0) t (TGLExt.rhoOut (Real.pi / 4))) Filter.atTop
+      (nhds (TGLExt.diagExpect (TGLExt.rhoOut (Real.pi / 4))))
+
+--- STDERR ---
