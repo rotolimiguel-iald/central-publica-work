@@ -1,0 +1,77 @@
+REVISÃO FINAL — BANCADA OPERADOR
+
+[REAL] CINCO ACHADOS ORIGINAIS FECHADOS nos hashes abaixo.
+29 testes offline aprovados: 16 adversariais independentes + 13 do transporte.
+ZERO falhas, ZERO erros; AST dos sete módulos staged válido. Os hashes das fontes
+foram reconferidos depois dos testes e coincidem com os recibos finais.
+Não há bloqueio remanescente entre os achados reproduzidos nesta auditoria.
+Este parecer fecha esses achados; não afirma teste de implantação ou bancada real.
+
+FECHAMENTOS
+1. P1 DNS rebinding: stage/iald_public_fetch.py resolve uma vez, exige todos os
+   endereços públicos e conecta por literal numérico, sem segunda resolução DNS.
+   Host/SNI permanecem no hostname original; TLS usa PROTOCOL_TLS_CLIENT,
+   CERT_REQUIRED e check_hostname=True, com certificados de confiança do sistema.
+   Proxies ambientais, cookies e autenticação ambiental não participam. Redirects
+   continuam manuais e revalidam cada salto. Certificado recusado não envia HTTP.
+   Os 13 testes montam HTTP real sobre sockets simulados; nenhum servidor TLS/DNS
+   ou destino malicioso real foi consultado. Incluem IPv6, IP misto público/privado,
+   rebinding, redirects, Host/SNI, falha TLS, proxies, gzip/deflate, limite de corpo
+   e URL Unicode. Fallback entre IPs públicos ocorre só antes do envio HTTP.
+2. P2 STALE_PLAN: transição condicional stale_unclaimed e verificação do estado
+   no claim impedem um leitor atrasado de sobrescrever COMPLETED concorrente.
+   A reprodução original passou. O claim de outra rota ainda incompleta/incerta
+   também bloqueia novo despacho após reabrir a base.
+3. P2 envelope: _bounded mede o JSON final e conserva status/route_id/referências.
+   O caso original com 24 campos extensos agora cabe nos 24.000 caracteres, sem
+   truncar JSON nem perder o artefato completo.
+4. P2 carga assíncrona: LOADING deixa de ser COMPLETED; permanece PENDING_BACKEND,
+   com claim global retido. O código de acompanhamento é leitura de status e
+   compara domínio/load_id/generation. ACK parcial/falho é distinto de conclusão.
+   A regressão de falso COMPLETED passou; não foi iniciada nem acompanhada uma
+   carga real de RAM nesta revisão.
+5. P2 histórico: inquiry_events e seus vínculos passam a ser importados. O evento
+   sintético de retirada ficou recuperável pelo mapa, preservando bytes da fonte.
+
+OUTROS CONTROLES QUE CONTINUARAM APROVADOS
+Papel exato luiz/admin True/classe operador; exclusão pública; revogação antes de
+run; convergência de planos idênticos; proibição de reenvio de claim já existente;
+comandos/paths/URLs arbitrários recusados pelo catálogo; RAM pronta não recarregada;
+RAM parcial não liberada; recibo sobrevive à falha do artifact store; owner luiz
+fixo e ticket mobile excluído da resposta ao modelo.
+
+ARQUIVOS DE RUNTIME ALTERADOS POR ESTE REVISOR
+- stage/iald_public_fetch.py: NOVO. INCLUIR NO MANIFESTO/INSTALAÇÃO.
+- stage/iald_web_server.py: somente _buscar_url_segura e comentário do transporte
+  antigo na minha mutação. Patch aplicado por trecho com CAS, escrita atômica e
+  comparação AST, sem reconstruir a integração dos outros agentes.
+O stage pode incluir alterações posteriores dos demais agentes; os pins finais
+representam os arquivos completos atuais. P2 core/catalog foram corrigidos pelo
+main/outro agente e verificados aqui. P1 foi implementado aqui; o main informou
+inspeção independente do transporte (declaração dele, não teste adicional meu).
+
+BASELINE / EVIDÊNCIAS
+validation/public_fetch_baseline.json: hashes de produção e stage antes da mutação.
+validation/iald_web_server.before_public_fetch.py: cópia exata anterior do stage.
+validation/test_public_fetch_pinning.py + public_fetch_run_final.txt: 13 aprovados.
+validation/test_independent_bench.py + audit_run_final.txt: 16 aprovados.
+Recibos iniciais de falhas foram preservados. A primeira rodada após as correções
+teve um erro de fixture: o catálogo passou a exigir load_id UUID4 e o mock antigo
+não o fornecia. Fixture ajustada ao contrato atual; rodada final sem erros.
+
+LIMITES
+Nenhuma modificação/instalação em produção, chamada remota, experimento, mudança de
+RAM, provedor pago, leitura de env/credenciais/cadastro real ou import do monólito.
+A validação TLS usa contexto real seguro, mas handshake e sockets são simulados.
+Não há alegação de QA visual/mobile nem de desempenho ou prova científica.
+Os clientes não foram alterados por este patch de servidor.
+
+Emitido UTC: 2026-10-02T10:57:10.867466+00:00
+SHA256 stage/iald_public_fetch.py: 98a7255a8b2228ef7a2a9155eef61aa32cf5c36c2baee8c64c6abda7b96c683f
+SHA256 stage/iald_web_server.py: 21150d59c56963b1f5c75166fa4b50bdb32995c672197a346140ef3b336cbb68
+SHA256 stage/iald_operator_bench.py: 9713a3fed94a06f81cd5d697777f6d3e047d3baf57caa1046235b86a364e3621
+SHA256 stage/iald_research_routes.py: 3bfb7ac0f9b664c382e3dc978163ed90f9c33f7ca8d6c668403015f8143fe675
+SHA256 stage/iald_bench_catalog.py: 5a526b252252905efac11c9648153c88d23bc80e22822b35e5c5cd53c7497e1e
+SHA256 stage/iald_auto_router.py: 0c57bb1abb3263d0c345e1efd22a9ea0798f71289bad108dd98d27a223592a4a
+SHA256 stage/iald_app_providers.py: 872c2dd08027289ac2119ac8f759c596c70ee4691942cebb7bd74154d0bebce1
+SHA256 produção iald_web_server.py (inalterado): 394fcc0fc4e8f4b87e613d7ca5c03afeb133cc2437866cb8f0bfdba0bec8521c

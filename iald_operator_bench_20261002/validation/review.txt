@@ -1,0 +1,113 @@
+REVISÃO INDEPENDENTE — BANCADA OPERADOR / STAGE
+
+[REAL] NÃO LIBERAR COMO EXCLUSIVA DO OPERADOR enquanto permanecer o bypass de
+fetch_url descrito abaixo. Revisão read-only dos módulos novos, catálogo e diff
+de integração; testes somente com transportes/estado sintéticos em validation.
+16 testes: 11 aprovados, 5 falhas de comportamento reproduzidas, ZERO erros.
+Nenhuma conexão DNS/HTTP, experimento, provedor ou import do servidor monolítico.
+
+1. [P1] FETCH_URL PÚBLICO PODE LER A BANCADA POR DNS REBINDING
+Arquivo: stage/iald_web_server.py, _url_permitida (1515+) e _buscar_url_segura (1541+).
+O DNS é validado e descartado; req_lib.get(atual,...) reconecta pelo hostname,
+permitindo uma segunda resolução para 127.0.0.1. As portas são livres. Os GETs de
+BANCADA_OFICIAL/app.py não validam papel, token ou Host. Assim, um usuário público
+pode induzir leitura de /api/universe/status, /api/runs ou /api/inquiries por domínio
+que alterne endereço público e loopback; /api/universe/event também tem efeito de
+inicialização de cache reconhecido em catalog.writes(). A autorização de bench_*
+não participa desse caminho. É uma lacuna preexistente explicitamente documentada
+no servidor (1476-1478), relevante à exclusividade exigida nesta entrega.
+Reprodução offline: primeira resolução 8.8.8.8, segunda 127.0.0.1, resposta HTTP
+sintética aceita pelo próprio _buscar_url_segura. Bloqueios literal/IPv6/NAT64
+passaram, mas não cobrem rebinding. A reprodução não é uma sondagem de produção.
+Correção: conectar ao IP público validado e conservar Host/SNI e verificação TLS,
+com a mesma regra em cada redirect e sem proxy ambiental que reabra o caminho;
+alternativamente retirar temporariamente esse fetch arbitrário da superfície
+pública até existir transporte que imponha a fronteira. Só comparar DNS novamente
+não fecha a corrida. Fetch público é GET: não foi alegado POST arbitrário.
+Teste: PublicFetchBoundary.test_rebinding_cannot_return_loopback_bench_content.
+
+2. [P2] STALE_PLAN DE UMA CHAMADA ATRASADA SOBRESCREVE ESTADO CONCORRENTE
+Arquivo: stage/iald_operator_bench.py, OperatorBench.run, antes do bloco _LOCK.
+A rota é lida PLANNED; depois provenance é consultada sem transição condicional.
+Outra chamada pode obter claim e concluir. Se a primeira detectar uma mudança de
+proveniência ao retornar, anexa STALE_PLAN mesmo depois de COMPLETED. Routes.get
+usa o último evento como estado; a rota concluída passa a STALE_PLAN e result()
+perde a referência ao artefato do último evento COMPLETED. Também pode ocultar
+DISPATCHING/UNCERTAIN do filtro global recém-adicionado e admitir outra rota.
+Reprodução determinística: durante a consulta de provenance, outra sequência
+registra claim/RESULT_RECEIVED/COMPLETED; a chamada atrasada troca o estado final
+para STALE_PLAN. Nenhum despacho real foi necessário.
+Correção: conferir estado e ausência de claim na mesma transação que registra
+STALE_PLAN, retornando o estado atual se outra chamada já ganhou a rota. O lock
+Python sozinho não resolve a exclusão entre processos.
+Teste: IndependentBench.test_stale_check_cannot_overwrite_concurrent_completion.
+
+3. [P2] _BOUNDED AINDA ULTRAPASSA O CONTRATO DO APP
+Arquivo: stage/iald_operator_bench.py, _bounded/_small.
+Preservar status/route_id foi corrigido e passou. Contudo 24 campos com textos de
+1500 caracteres produzem envelope de 29.699 caracteres nesta fixture. A resposta
+original cabe no limite admitido de 16 MiB. encode_task_result recusa mais de
+24.000 caracteres: a conversa falha após salvar o artefato, sem entregá-lo ao modelo.
+Correção: medir o JSON final; reduzir/omitir somente o resumo até caber, preservando
+status, route_id, referências de artefato e paginação. Não cortar JSON serializado.
+Teste: IndependentBench.test_summary_fits_app_transport.
+
+4. [P2] ACK LOADING É REGISTRADO COMO COMPLETED
+Arquivo: stage/iald_operator_bench.py, _work (ramificação de sucesso).
+O contrato real resident_worker.load inicia uma thread e retorna status LOADING
+(resident_worker.py:74-92), propagado por resident_bridge.load e app.py:492-497.
+_work aceita essa resposta como conclusão e grava COMPLETED. Uma carga ainda
+incompleta, que pode falhar depois, aparece terminada no mapa; a exclusão deixa de
+representar o trabalho residente pendente. A resposta completa é preservada, mas
+o status terminal externo a contradiz.
+Correção mínima: diferenciar aceite/carga pendente de conclusão e exigir consulta
+universe_status para declarar término. Não repetir o POST para acompanhar a carga.
+Teste: IndependentBench.test_load_acknowledgement_is_not_finished_research.
+
+5. [P2] IMPORTAÇÃO HISTÓRICA OMITE EVENTOS DE INVESTIGAÇÃO
+Arquivo: stage/iald_research_routes.py, Routes.import_history.
+A mesma runs.sqlite3 contém inquiry_events (app.py:127-138): anotações, correções e
+related_inquiry_id. O importador lê runs/inquiries, mas não inquiry_events. O GET
+/api/inquiries existente incorpora esses eventos (app.py:444-456); bench_map não.
+Uma investigação importada pode perder a correção/retirada e ligação posterior.
+Reprodução: banco sintético com pergunta e evento contendo marcador único; import
+preserva o banco em bytes, mas nenhuma busca encontra o evento. READ_ONLY_IMPORTED
+por arquivo e ressalva genérica de cobertura parcial não identificam essa omissão.
+Correção: importar/vincular esses eventos sem alterar originais; enquanto não
+suportado, declarar a tabela explicitamente excluída e evitar apresentar o registro
+como histórico completo daquela investigação.
+Teste: IndependentBench.test_inquiry_followup_history_is_not_silently_lost.
+
+CONTROLES APROVADOS NESTA RODADA
+- Papel exato luiz/admin is True/classe operador; outras contas/admin=1/classe
+  ausente não recebem ferramentas; revogação é reavaliada antes do run.
+- Integração continua com operator_authorized=False nas ferramentas públicas;
+  contexto de operador vem do registro autenticado, não de mensagens.
+- Claim durável impede repetição da mesma rota após reabertura; o novo bloqueio
+  de rota distinta com claim ainda pendente também passou.
+- Planos concorrentes idênticos convergem para um único identificador.
+- Catálogo rejeita shell/URL/caminho/IDs arbitrários. RAM READY completa retorna
+  ALREADY_RESIDENT sem POST; PARTIAL recusa recarga sem liberar dados residentes.
+- Conteúdo recebido sobrevive à falha do artifact store e não é reenviado.
+- Artefato usa owner luiz fixo no bridge; app_url é preservado e mobile_url/ticket
+  não entra no recibo/modelo. Autorização real de download herdada do ArtifactStore
+  foi inspecionada em código, sem requisição real nem nova auditoria completa.
+- Conexões históricas agora usam closing(); originais sintéticos ficaram intactos.
+- Falta acesso_bloqueado em is_operator isolado, mas authorize do servidor já nega
+  essa condição. Não foi contado como bypass demonstrado na integração atual.
+
+LIMITES / CUSTÓDIA
+Testes criados somente em validation/test_independent_bench.py. Fixtures temporárias
+somente sob validation; não alterei stage, produção, RAM, fontes ou memória canônica.
+Não executei suites de outros agentes: a revisão não substitui seus testes de
+integração/catálogo. Resultados científicos históricos não foram promovidos a prova.
+Os hashes abaixo são dos arquivos carregados nos testes. Alterações posteriores
+precisam de fechamento focal, sem transformar esta rodada em aprovação do novo diff.
+
+Emitido UTC: 2026-10-02T10:35:55.534796+00:00
+SHA256 testado iald_research_routes.py: 19edef8c9f5250bf32aec25e970026d3d560688d247b6fab82836055be474050
+SHA256 testado iald_operator_bench.py: bde54e7005782f99398bc741ca026a7f681a42582a2f92073c0f525d9f4eb65d
+SHA256 testado iald_bench_catalog.py: a6500eaeec3c6037d1323fe9b95eb6b9c006b0b2a968785d6298769a0ebabb70
+SHA256 testado iald_web_server.py: 0d3aa9903501a0091774095775c1f824ba52e2bbc1a6c883cb620ade2158f26c
+Mudanças durante testes: []
+Mudanças após testes até este parecer: ["iald_bench_catalog.py"]
