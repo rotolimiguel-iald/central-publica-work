@@ -1,0 +1,270 @@
+{
+  "schema": "iald.source-clock-metric.r13/v1",
+  "created_utc": "2026-10-19T18:36:36.981288+00:00",
+  "unit": "F8.LENTES_5SIGMA_20261019",
+  "board_claim": 1009,
+  "mission_reference": "C:\\IALD\\Central de Patentes\\work\\lentes_discriminante_20261019\\SESSION_REFERENCE.json",
+  "project_receipt": "C:\\IALD\\Central de Patentes\\work\\lentes_discriminante_20261019\\density_bridge_r13\\AGENT_CLOCK_PROJECT_R13.json",
+  "mission_revision_read": 14,
+  "scope": "Busca focal documental; fontes primárias somente leitura; sem execução/import de um.py, sem dados observados, sem campanha numérica, sem provedores, sem alterações canônicas/memória/gate.",
+  "sources": [
+    {
+      "id": "custo_current",
+      "path": "C:\\IALD\\Artigo\\Haja_Luz\\tgl_paper_unified.py",
+      "sha256": "29c92b66b2fd6b4d589adbef4de86a67f979e03964b3f7ae892732a40ab395cd",
+      "bytes": 1216423,
+      "role": "Artigo principal atual: Custo",
+      "anchors": [
+        {
+          "start_line": 1930,
+          "end_line": 1949,
+          "text": "\n    Returns K_partial as a Hermitian positive diagonal matrix in the boost\n    eigenbasis.  Returning in the eigenbasis is the canonical choice for the\n    modular Tomita-Takesaki representation.\n    \"\"\"\n    eigs = np.linspace(0.0, omega_max, d)\n    K = np.diag(eigs).astype(complex)\n    return K\n\n\ndef kms_state_from_K(K: np.ndarray, T_modular: float = 1.0) -> np.ndarray:\n    \"\"\"\n    KMS state at modular temperature T_modular:\n        rho_KMS = exp(-K / T_modular) / Z,   Z = Tr[exp(-K/T_modular)]\n    By construction, [K, rho_KMS] = 0.\n    \"\"\"\n    w, V = np.linalg.eigh(K)\n    boltz = np.exp(-w / T_modular)\n    Z = float(np.sum(boltz))\n    return V @ np.diag(boltz / Z) @ V.conj().T"
+        },
+        {
+          "start_line": 1983,
+          "end_line": 2000,
+          "text": "def build_davies_jumps(K_partial: np.ndarray,\n                       beta_coupling: float = BETA_TGL,\n                       T_modular: float = 1.0) -> List[Tuple[float, np.ndarray]]:\n    \"\"\"\n    Davies-form jump operators with KMS detailed balance.\n\n    For a modular generator K_partial with spectrum {w_i}, build all\n    transition operators A_{ij} = |i><j| (in the K_partial eigenbasis) with\n    rates that satisfy quantum detailed balance at modular temperature\n    T_modular:\n\n        gamma(i<-j) = beta * J(omega) * n_BE(omega)            if omega > 0\n        gamma(i<-j) = beta * J(|omega|) * (n_BE(|omega|) + 1)  if omega < 0\n        where omega = w_i - w_j, n_BE(x) = 1/(exp(x/T_modular) - 1), J(omega)=1.\n\n    The KMS condition gamma(i<-j)/gamma(j<-i) = exp(-omega/T_modular) is\n    automatic, and the unique steady state of the resulting dissipator is\n    rho_KMS = exp(-K_partial/T_modular)/Z."
+        },
+        {
+          "start_line": 10983,
+          "end_line": 11005,
+          "text": "\\subsection{O caso plano: Bisognano-Wichmann}\n\\label{sec:bisognano-wichmann}\n\nBisognano e Wichmann (1975, 1976) identificaram explicitamente $\\Kpartial$\npara a teoria quântica de campos no espaço de Minkowski plano.  Seja\n$\\mathcal{R} = \\{x : x^{1} > |x^{0}|\\}$ a wedge de Rindler direita e\n$\\mathcal{A}(\\mathcal{R})$ a álgebra local de observáveis ali.  Então, para\no vácuo de Minkowski $\\Omega_{0}$:\n\\begin{equation}\n\\Kpartial \\;=\\; 2\\pi \\, K_{\\text{boost}},\n\\qquad\nK_{\\text{boost}} \\;=\\; \\int_{x^{1} > 0} d^{3}x \\, x^{1} \\, T_{00}(x),\n\\label{eq:K-equals-boost}\n\\end{equation}\nisto é, o gerador modular coincide (a menos de fator $2\\pi$) com o gerador\ndo boost de Lorentz na direção $x^{1}$.  A conjugação $J$ é o produto de\n$CPT$ por uma rotação espacial.  O teorema é \\emph{exato} (não\nperturbativo) e \\textbf{independente do conteúdo de matéria}: vale para\nqualquer teoria de campos com vácuo invariante de Poincaré.  A\nidentificação~\\eqref{eq:K-equals-boost} faz da temperatura de Unruh\n$T_{U} = a/(2\\pi)$ um caso particular do teorema KMS modular: um observador\nacelerado a Rindler enxerga o vácuo como estado térmico justamente porque\n$\\Delta^{it} = e^{-it\\,2\\pi K_{\\text{boost}}}$ é exatamente o fluxo de Rindler."
+        },
+        {
+          "start_line": 11190,
+          "end_line": 11216,
+          "text": "A construção de Davies (1974, sistematizada em Davies-Spohn-Lebowitz)\ngera o dissipador GKSL como limite de acoplamento fraco com banho térmico\ne tempo coarse-grained $\\tau \\gg 1/\\omega_{\\min}$.  Para um sistema com\nHamiltoniano $H_S$ acoplado a um banho via $V = \\sum_{\\alpha} A_{\\alpha}\n\\otimes B_{\\alpha}$, o dissipador resultante tem a forma\n\\begin{equation}\n\\mathcal{D}[\\rho] \\;=\\;\n\\sum_{\\omega, \\alpha\\beta}\n\\gamma_{\\alpha\\beta}(\\omega) \\left[\nA_{\\beta}(\\omega) \\rho A_{\\alpha}^{\\dagger}(\\omega)\n- \\tfrac{1}{2} \\{ A_{\\alpha}^{\\dagger}(\\omega) A_{\\beta}(\\omega), \\rho \\}\n\\right],\n\\label{eq:dissipator-davies}\n\\end{equation}\nonde $A_{\\alpha}(\\omega)$ são as componentes de Fourier de $A_{\\alpha}$ sob\no fluxo de $H_S$, e $\\gamma_{\\alpha\\beta}(\\omega)$ é a transformada de\nFourier da função de correlação do banho.  A condição KMS no banho\n\\begin{equation}\n\\gamma_{\\alpha\\beta}(-\\omega) \\;=\\; e^{-\\beta_{\\text{KMS}}\\omega}\\,\n\\gamma_{\\beta\\alpha}(\\omega)\n\\label{eq:KMS-condition}\n\\end{equation}\ngarante que o dissipador preserva o estado de Gibbs como ponto fixo.  Esta\né a estrutura geral.  A \\TGL{} corresponde ao caso onde $H_S = \\Kpartial$\n(gerador modular substituindo o Hamiltoniano usual) e\n$\\beta_{\\text{KMS}} = 1$ (temperatura modular), com\n$\\gamma(\\omega) \\propto \\betatgl$ uniformemente em $\\omega$."
+        },
+        {
+          "start_line": 11845,
+          "end_line": 11875,
+          "text": "\\section{Radicalização: $g = \\sqrt{|\\Lphi|}$}\n\\label{sec:radicalization}\n\nA operação fundadora da \\TGL{} é a tomada de raiz quadrada da magnitude\nda densidade lagrangiana do salto de Davies canônico,\n\\begin{equation}\n\\boxed{\\;g \\;=\\; \\sqrt{|\\Lphi|}\\;}\n\\label{eq:g-equals-sqrtLphi}\n\\end{equation}\nque converte autovalores em ângulos de fase, dobrando a topologia\n$S^{1} \\to T^{2}$ na fronteira modular e fixando a largura angular da\ncavidade resultante em $\\thetaM = \\arcsin\\sqrt{\\betatgl}$.  Esta seção\ndetalha as quatro consequências matemáticas desta radicalização.\n\n\\subsection{Conexão com o operador de Lindblad}\n\\label{sec:radical-lindblad}\n\nA identidade entre a operação radical e o operador de Lindblad é direta:\no gerador GKSL canônico tem a forma\n\\begin{equation}\nL_k \\;=\\; \\sqrt{\\gamma_k} \\cdot |k\\rangle\\langle k'|,\n\\qquad\n\\gamma_k \\;=\\; \\betatgl \\cdot f(\\omega_k),\n\\end{equation}\ne portanto $|L_k|^{2} = \\betatgl \\cdot f(\\omega_k) \\cdot |k\\rangle\\langle k|$.\nA magnitude $|\\Lphi| = \\betatgl \\cdot \\rho_{\\text{modular}}$ é o produto de\n$\\betatgl$ pela densidade modular, e a raiz quadrada\n$g = \\sqrt{|\\Lphi|}$ é exatamente o conteúdo dimensional de $L_k$.  A\noperação radical, portanto, \\emph{é} a estrutura GKSL escrita em registro\ngeométrico: o que era \"salto\" no formalismo de Davies torna-se \"métrica\"\nno formalismo radical."
+        }
+      ],
+      "findings": [
+        "[REAL — fonte] K_partial=2π K_boost, K_boost=integral x1 T00 d3x, no semiespaço da cunha de Rindler; T_Unruh=a/(2π) em unidades naturais. É um elo explícito densidade de energia OPERADOR → gerador regional, sob as hipóteses declaradas.",
+        "[REAL — fonte] K e T_modular fornecidos produzem Gibbs; taxas Davies dependem do espectro e da função espectral do banho; a implementação simples usa J(omega)=1.",
+        "[REAL — fonte] |L_phi|=beta*rho_modular e gamma_k=beta*f(omega_k) aparecem na cadeia modular."
+      ],
+      "limits": [
+        "A fonte T00 é um operador com estado/região, não um único valor de densidade galáctica SI.",
+        "rho_modular não foi identificado nestes trechos com kg/m^3. KMS fixa razão entre taxas, não a amplitude inteira do espectro de banho.",
+        "O domínio Rindler/Minkowski não seleciona automaticamente perfil curvo de galáxia nem calibração de tempo próprio."
+      ]
+    },
+    {
+      "id": "ponte_current",
+      "path": "C:\\IALD\\Artigo\\Haja_Luz\\A Ponte e o Um\\A Ponte Einstein Cartan Miguel.tex",
+      "sha256": "98ec3d808d51e694098ae216500ab853584cb89f9eb23661128ddc1829c1b657",
+      "bytes": 129435,
+      "role": "Artigo principal atual: Ponte",
+      "anchors": [
+        {
+          "start_line": 535,
+          "end_line": 558,
+          "text": "\\emph{então}:\n\\begin{equation}\n\\boxed{\\;\n(\\Alg,\\Hil,D,J,\\Delta,\\Pi_{\\mathrm{irr}})\n\\ \\xRightarrow{\\ \\text{(H)}\\ }\\\n(M^{1,3},\\,g,\\,\\Gamma_{\\mathrm{LC}}+K_{\\bTGL})\n\\;}\n\\end{equation}\nem que: o espectro reconstrói variedade lorentziana suave $(1,3)$\n(Teorema~\\ref{thm:ponte}); o eixo temporal é a direção irreversível (a coisa\njulgada); a continuidade nasce da persistência do irreversível; a conexão\ndecompõe-se como $\\Gamma=\\Gamma_{\\mathrm{LC}}+K_{\\bTGL}$, com $K_{\\bTGL}$ a\ncontorção da torção tracial-dissipativa (admissibilidade algébrica de Bianchi\nconfirmada na sombra, \\SOMBRA), satisfazendo Einstein--Cartan.\n\\end{theorem}\n\n\\begin{remark}[A flecha do tempo: o que o atrator único resolve]\nO atrator único $\\rho^\\star$ (rank 1) fornece a \\emph{orientação} temporal\nglobal (a seta do tempo: todos os caminhos decaem para o mesmo destino,\n$S(\\rho\\|\\rho^\\star)$ decresce) --- \\SOMBRA, confirmado. Não fornece a\n\\emph{dimensão} do tempo (um destino, muitos caminhos --- \\REF\\ para\n``atrator único $\\Rightarrow$ eixo único''). A dimensão (a unicidade do eixo)\né a unicidade de $\\bTGL$ (Teorema 4). Distinção essencial: orientação (seta)\n$\\neq$ dimensão (eixo)."
+        },
+        {
+          "start_line": 733,
+          "end_line": 768,
+          "text": "\\subsection{O custo da travessia é o gerador do cociclo}\nNa sombra finita o cociclo foi \\emph{computado} (unitariedade, regra de\ncadeia e entrelaçamento verificados a $\\sim10^{-14}$), e o seu gerador dá\n\\begin{equation}\n-i\\,\\dot u_0=\\log\\rho-\\log\\rho^\\star,\\qquad\n\\boxed{\\;\\langle -i\\,\\dot u_0\\rangle_\\rho\n=S_{\\mathrm{Araki}}(\\rho\\,\\|\\,\\rho^\\star)\\;}\n\\qquad\\SOMBRA\\ (\\text{exato}),\n\\end{equation}\na ponte algébrica entre o entrelaçador e a Meia-Nat: \\textbf{o custo da\ntravessia é a expectativa do gerador do cociclo}. O Juramento\n(\\S\\ref{sec:juramento}) ganha, com isto, o seu operador.\n\n\\subsection{Onde $\\sqrt e$ vive: a Meia-Nat como postulado irredutível}\nA matriz-S \\emph{não} deriva $\\sqrt e$, por razão estrutural (\\REAL):\n(i)~$\\mathcal S_\\partial$ é unitário --- o seu espectro é um conjunto de\nfases, e $\\sqrt e\\approx1{,}649$, um módulo $>1$, não pode ser autovalor;\n(ii)~o conjunto razão assintótico do tipo $\\mathrm{III}_1$ é \\emph{todo}\n$\\mathbb R_+$ --- não singulariza $\\sqrt e$ de nenhum outro irracional. Logo\n$\\sqrt e$ vive na \\textbf{entropia relativa de Araki}:\n\\begin{equation}\n\\boxed{\\;S_{\\mathrm{Araki}}(\\rho_{\\mathrm{obs}}\\,\\|\\,\\rho^\\star)\n=\\tfrac12\\ \\mathrm{nat}\n\\;\\Longrightarrow\\;\n\\bTGL=\\alpha\\,e^{1/2}\\;}\n\\end{equation}\n--- o \\textbf{Princípio da Meia-Nat}, \\POST\\ \\emph{com prova de\nirredutibilidade} por quatro flancos fechados:\n\\begin{enumerate}[noitemsep]\n\\item \\emph{mínimo algébrico}: a entropia de Araki é contínua e sem\n\\emph{gap} --- para todo $\\varepsilon>0$ existe $\\rho$ com\n$0<S(\\rho\\,\\|\\,\\rho^\\star)<\\varepsilon$; nenhum quantum mínimo é teorema da\nálgebra (\\REAL);\n\\item \\emph{limiar do detector}: o $S_{\\mathrm{obs}}^{\\min}$ operacional\nacompanha a resolução do detector ($\\propto\\tau_{\\det}$, $\\to0$) e depende\nda prescrição --- não converge a $\\tfrac12$ universal (\\SOMBRA);"
+        },
+        {
+          "start_line": 1530,
+          "end_line": 1560,
+          "text": "\\subsection{As peças \\REAL\\ da montagem}\n\\begin{description}[style=unboxed,leftmargin=1.5em,noitemsep]\n\\item[(P1) O functor das álgebras --- \\REAL\\ (BFV 2003).] A atribuição\n$H\\mapsto\\Alg_H$ \\emph{já é} funtorial: é o axioma da covariância local.\n\\item[(P2) A universalidade de Hadamard --- \\REAL.] A condição de\nHadamard (espectro microlocal) fixa geometricamente a estrutura de curta\ndistância: o Hamiltoniano modular de pequenas regiões/horizontes é, em\nordem dominante, o gerador de boost local com coeficiente universal\n$2\\pi$ --- o conteúdo usado por Jacobson (2015) e\nFaulkner--Guica--Hartman--Myers--van~Raamsdonk.\n\\item[(P3) Kay--Wald --- \\REAL\\ (1991).] Em horizontes de Killing\nbifurcados, o estado Hadamard invariante é \\textbf{único} e é KMS na\ntemperatura de Hawking: para esses horizontes, $\\rho^\\star_H$ não se\nescolhe --- é singularizado pelo próprio horizonte.\n\\item[(P4) Rindler local --- \\REAL\\ (princípio de equivalência).] Todo\nhorizonte causal é, em cada ponto, infinitesimalmente um \\emph{wedge} de\nRindler --- onde BW vale exatamente (1975/76).\n\\end{description}\n\n\\subsection{O teorema condicional do Levantamento}\n\\begin{theorem}[Levantamento na ordem de Jacobson --- condicional]\n\\label{thm:levantamento}\nSob (P1)--(P4) --- covariância local, Hadamard, aproximação\nKilling/Rindler local ---, a atribuição $H\\mapsto(\\rho^\\star_H,K_H)$ é\ngeometricamente determinada \\textbf{na ordem da resposta linear} (a\nordem em que a Face C está formulada: $\\delta S=\\delta\\langle K\\rangle$,\nLovelock/Jacobson). Combinada com a Terminalidade\n(Teorema~\\ref{thm:terminalidade}: (U) herdada de Takesaki) e com os três\naxiomas da casa, a Hipótese de Universalidade da Face C fica\n\\textbf{descarregada na ordem linear}: a cadeia\nfronteira~$\\to$~$G_{\\mu\\nu}$ fecha condicional a (P1)--(P4) e a T1."
+        }
+      ],
+      "findings": [
+        "[REAL — fonte] Cociclo relativo tem gerador log rho-log rho_star; P1–P4 explicitam covariância local, comportamento Hadamard, boost local e horizonte bifurcado/KMS."
+      ],
+      "limits": [
+        "A orientação temporal não determina a unidade SI do relógio.",
+        "As hipóteses geométricas/KMS são explícitas; não constituem seleção independente de densidade radial da lente."
+      ]
+    },
+    {
+      "id": "um_v394_snapshot",
+      "path": "C:\\IALD\\Central de Patentes\\work\\lentes_discriminante_20261019\\v394_r12\\v394_source.py.snapshot",
+      "sha256": "972e81f22dd8cc68bd5671fa610d2664e26f4681ab52932e001e5ef97e8f5991",
+      "bytes": 37885889,
+      "role": "Terceiro artigo/programa: snapshot v394 consultado pela R12, não declarado release selado nesta busca",
+      "anchors": [
+        {
+          "start_line": 160415,
+          "end_line": 160442,
+          "text": "def prove_ga_mass_audit(ONE):\n    \"\"\"v98 -- A AUDITORIA DA MASSA DO GRANDE ATRATOR [ADITIVO; nao gateia 1=1].\n    MANDATO DO OPERADOR (16/07/2026): 'examine a construcao do calculo da massa\n    como foi feita, porque quando foi feita nao tinhamos todas as derivacoes que\n    temos agora; investigue onde esta o erro que da tanta diferenca de ordem de\n    magnitude e corrija, mas me relate o que era.'\n    O RELATO (o que era): a forma v4 M = 2 beta^2 (c^2/4piG) R_struct le o\n    coeficiente de REFLEXAO beta (|R|^2 = beta, Teorema S-boundary, FECHADO)\n    como AMPLITUDE DE FONTE. Ela equivale a postular uma velocidade circular\n    UNIVERSAL v = beta*c/sqrt(2pi) ~ 1439 km/s para toda estrutura: coincide no\n    ramo dos aglomerados/superaglomerados (sigma ~ 10^3 km/s: Coma 1.2x, Norma\n    0.96x, GA 0.51x, Laniakea 0.39x) e FALHA POR ORDENS abaixo dele (galaxia\n    ~48x, grupo ~144x) -- a 'diferenca de ordem de magnitude'. A ancora do GA\n    (fator 0.5, dentro da janela larga [1e15,1e17]) MASCAROU o erro; o proprio\n    ensaio ja o admitia verbatim ('massa NAO foi derivada; correspondencia de\n    FORMA') e o paper-trail selou NAO-DERIVABILIDADE zero-free (whitepaper +\n    pre-registro gated, GA_mass_calculation_authorized=false).\n    A CORRECAO (com as derivacoes completas, v66/v74/v97): na ORDEM LINEAR a\n    TGL e STEALTH -- a resposta de fronteira e delta<K_b> = beta|1+w| (zero em\n    w=-1; beta NAO renormaliza G local) e a equacao emergente carrega T_munu DA\n    MATERIA com o 8piG de Clausius (kernel v74; mestre DISPARADO v97). LOGO:\n    M_TGL^linear = M_RG [CONDICIONAL Face C ordem linear (P1)-(P4)+T1] -- a\n    predicao da TGL para a massa do GA e A PROPRIA MEDIDA DE RG (bacia LB88\n    5.4e16; nucleo Norma 1e15; Laniakea 1e17), sem formula-beta de fonte.\n    beta vive na RESPOSTA: Gamma_omega = (1/2) beta tau* omega^2; o expoente\n    H0_local = 67.35(1+z*)^beta (motor selado); o piso rho/rhobar >= beta.\n    A forma 2beta^2(c^2/4piG)R fica RETIRADA como lei de fonte e PRESERVADA\n    como registro historico (a coincidencia do ramo ~10^3 km/s anotada).\"\"\""
+        },
+        {
+          "start_line": 213266,
+          "end_line": 213318,
+          "text": "def v394_physical_parameters(V0_J, Eref_J, hbar_J_s=None, alpha=None):\n    \"\"\"Return exact-form model parameters in one SI clock, evaluated as floats.\n\n    Hg=-V0*sigma_y; Hpos=Eref*I+Hg; spectrum Eref+-V0, Eref>=V0.\n    Root law: D[sqrt(beta/hbar)*sqrt(Hpos)]. Its off-diagonal rate is\n    gamma=beta/(2*hbar)*(sqrt(Eref+V0)-sqrt(Eref-V0))**2.\n    The rationalized expression below avoids cancellation for large Eref/V0.\n    tau_eff matches the quadratic law for THIS gap only. echo_dt constructs\n    a matched echo step; it does not replace the old echo's frozen dt=0.35.\n    Floats with under/overflow in a strictly positive output are refused.\n    \"\"\"\n    import math\n    if hbar_J_s is None:\n        hbar_J_s = 6.62607015e-34 / (2.0 * math.pi)\n    if alpha is None:\n        alpha = 7.2973525693e-3  # ALPHA_FINE_CODATA_2018 in the pinned source.\n    v = _v394_finite_real(\"V0_J\", V0_J, positive=True)\n    e = _v394_finite_real(\"Eref_J\", Eref_J, positive=True)\n    hb = _v394_finite_real(\"hbar_J_s\", hbar_J_s, positive=True)\n    a = _v394_finite_real(\"alpha\", alpha, positive=True)\n    if e < v:\n        raise V394PhysicalContractError(\"Eref_J must be >= V0_J for Hpos >= 0\")\n    beta = _v394_finite_real(\"beta\", a * math.sqrt(math.e), positive=True)\n    if beta >= 1.0:\n        raise V394PhysicalContractError(\"0 < beta < 1 required\")\n    eta = _v394_finite_real(\"eta\", 2.0 * math.sqrt(beta) * math.sqrt(1.0-beta), positive=True)\n    if eta >= 1.0:\n        raise V394PhysicalContractError(\"echo has no strictly contractive representable eta\")\n    omega = _v394_finite_real(\"Omega_rad_s\", v / hb, positive=True)\n    frequency = _v394_finite_real(\"coherence_omega_rad_s\", 2.0 * omega, positive=True)\n    q = _v394_finite_real(\"V0_over_Eref\", v / e, positive=True)\n    denominator = 1.0 + math.sqrt(max(0.0, (1.0-q)*(1.0+q)))\n    ratio = _v394_finite_real(\"root_rate_ratio\", q / denominator, positive=True)\n    gamma = _v394_finite_real(\"gamma_s_inv\", (beta * omega) * ratio, positive=True)\n    tau = _v394_finite_real(\"tau_eff_s\", (hb / e) / (2.0 * denominator), positive=True)\n    echo_dt = _v394_finite_real(\"echo_dt_s\", -math.log(eta) / gamma, positive=True)\n    lo = _v394_finite_real(\"energy_lower_J\", e-v, nonnegative=True)\n    hi = _v394_finite_real(\"energy_upper_J\", e+v, positive=True)\n    return {\n        \"beta\": beta, \"Omega_rad_s\": omega,\n        \"coherence_omega_rad_s\": frequency, \"gamma_s_inv\": gamma,\n        \"tau_eff_s\": tau, \"echo_dt_s\": echo_dt, \"eta\": eta,\n        \"energies_J\": [lo, hi], \"V0_J\": v, \"Eref_J\": e,\n        \"hbar_J_s\": hb, \"alpha\": a, \"root_rate_ratio\": ratio,\n        \"energy_representation\": {\n            \"exact_from_inputs\": \"Eref_J plus/minus V0_J\",\n            \"rounded_endpoints_coincide\": lo == hi,\n            \"calculation_uses_center_and_half_gap\": True,\n        },\n        \"scope\": \"DERIVED_FINITE_TWO_LEVEL_POSITIVE_ENERGY__NOT_UNIVERSAL_CALIBRATION\",\n        \"ground_zero_instance\": e == v,\n        \"mu_do_rito\": \"q->0 (Thomson; Teorema da Escala)\",\n    }"
+        },
+        {
+          "start_line": 213320,
+          "end_line": 213350,
+          "text": "def v394_kms_clock(parameters, kappa_s_inv):\n    \"\"\"Finite Gibbs/KMS clock bridge; not an inhabitant of the full light H2.\n\n    sigma_s^rho=alpha_(-P*s), P=2*pi/kappa, alpha is Heisenberg evolution.\n    P is the KMS inverse-temperature time, not a real-time recurrence claim.\n    No inference kappa=Omega is made. A supplied kappa fixes the clock.\n    \"\"\"\n    import math\n    if not isinstance(parameters, dict):\n        raise V394PhysicalContractError(\"parameters must be a dictionary\")\n    for key in (\"V0_J\", \"Eref_J\", \"hbar_J_s\", \"alpha\"):\n        if key not in parameters:\n            raise V394PhysicalContractError(\"missing parameter: \" + key)\n    # Recompute from physical inputs: a caller cannot inject a forged derived rate.\n    p = v394_physical_parameters(parameters[\"V0_J\"], parameters[\"Eref_J\"],\n                                parameters[\"hbar_J_s\"], parameters[\"alpha\"])\n    kappa = _v394_finite_real(\"kappa_s_inv\", kappa_s_inv, positive=True)\n    period = _v394_finite_real(\"kms_period_s\", (2.0 * math.pi) / kappa, positive=True)\n    gap = _v394_finite_real(\"gibbs_gap_exponent\", period * p[\"coherence_omega_rad_s\"], positive=True)\n    weight_hi = math.exp(-gap)\n    if weight_hi == 0.0:\n        raise V394PhysicalContractError(\"finite Gibbs state underflow would lose numerical faithfulness\")\n    z = 1.0 + weight_hi\n    return {\n        \"kappa_s_inv\": kappa, \"kms_period_s\": period,\n        \"temperature_K\": _v394_finite_real(\"temperature_K\", (p[\"hbar_J_s\"] / period) / 1.380649e-23, positive=True),\n        \"Omega_over_kappa\": _v394_finite_real(\"Omega_over_kappa\", p[\"Omega_rad_s\"] / kappa, positive=True),\n        \"gibbs_weights_low_high\": [1.0/z, weight_hi/z],\n        \"modular_parameter_per_second\": _v394_finite_real(\"modular_parameter_per_second\", 1.0/period, positive=True),\n        \"relation\": \"sigma_s = alpha_(-P*s); alpha_t = sigma_(-t/P)\",\n        \"scope\": \"FINITE_GIBBS_CONSTRUCTION__H2_RESCALE_FORM_REUSED__NO_LIGHT_NET_EMBEDDING_ASSERTED\","
+        },
+        {
+          "start_line": 213360,
+          "end_line": 213407,
+          "text": "def v394_gibbs_root_parameters(V0_J, kappa_s_inv, hbar_J_s=None, alpha=None):\n    \"\"\"Construct Eref from a specified faithful finite Gibbs state and clock.\n\n    P=2*pi/kappa; Omega=V0/hbar; rho=exp(-P*Hg/hbar)/Z.\n    Hpos=(hbar/P)*(-log rho)=Hg+Eref*I, Eref=(hbar/P)*log(2*cosh(P*Omega)).\n    This choice removes the free Eref inside this Gibbs-based finite instance.\n    It does not identify the density Hamiltonian with a full modular generator\n    or choose a physical kappa. The same proper time t uses dissipative u=t/P\n    and oriented modular parameter s=-t/P; no negative diffusion is introduced.\n    \"\"\"\n    import math\n    ground = v394_physical_parameters(V0_J, V0_J, hbar_J_s, alpha)\n    clock = v394_kms_clock(ground, kappa_s_inv)\n    period = clock[\"kms_period_s\"]\n    x = _v394_finite_real(\"P_Omega\", period*ground[\"Omega_rad_s\"], positive=True)\n    low_k = _v394_finite_real(\"K_rho_low\", math.log1p(math.exp(-2*x)), positive=True)\n    high_k = _v394_finite_real(\"K_rho_high\", 2*x+low_k, positive=True)\n    low_energy = _v394_finite_real(\"density_energy_low_J\", (ground[\"hbar_J_s\"]/period)*low_k, positive=True)\n    origin = _v394_finite_real(\"Eref_Gibbs_J\", ground[\"V0_J\"]+low_energy, positive=True)\n    if origin <= ground[\"V0_J\"]:\n        raise V394PhysicalContractError(\"Gibbs energy offset is below float resolution; use higher precision\")\n    result = v394_physical_parameters(ground[\"V0_J\"], origin, ground[\"hbar_J_s\"], ground[\"alpha\"])\n    # Preserve the small eigenvalue directly; subtracting the rounded center\n    # from V0 lost 1.40e-10 relative precision in the preregistered R1 check.\n    # The scientific tolerance is unchanged. Derive all anchored quantities\n    # from the same positive density spectrum, without cancellation.\n    high_energy = _v394_finite_real(\"density_energy_high_J\", 2*ground[\"V0_J\"]+low_energy, positive=True)\n    root_sum = math.sqrt(low_k)+math.sqrt(high_k)\n    root_ratio = _v394_finite_real(\"density_root_ratio\", (2*x/root_sum)/root_sum, positive=True)\n    gamma = _v394_finite_real(\"density_gamma\", ground[\"beta\"]*ground[\"Omega_rad_s\"]*root_ratio, positive=True)\n    result[\"gamma_s_inv\"] = gamma\n    result[\"root_rate_ratio\"] = root_ratio\n    result[\"tau_eff_s\"] = _v394_finite_real(\"density_tau_eff\", root_ratio/(2*ground[\"Omega_rad_s\"]), positive=True)\n    result[\"echo_dt_s\"] = _v394_finite_real(\"density_echo_dt\", -math.log(ground[\"eta\"])/gamma, positive=True)\n    result[\"energies_J\"] = [low_energy, high_energy]\n    result[\"energy_representation\"] = {\n        \"exact_from_state\": \"(hbar/P)*K_rho eigenvalues; low computed directly, high=low+2V0\",\n        \"center_is_rounded_presentation\": True,\n        \"rounded_endpoints_coincide\": low_energy==high_energy,\n        \"scientific_tolerance_unchanged\": True,\n    }\n    result[\"energy_origin_selection\"] = \"Hpos = (hbar/P)*(-log rho_Gibbs); rho_Gibbs fixed by Hg and specified kappa\"\n    result[\"energy_origin_statute\"] = \"DERIVED_IN_FINITE_GIBBS_INSTANCE; GIBBS_AND_CLOCK_CHOICE_EXPLICIT\"\n    result[\"density_surprise_eigenvalues\"] = [low_k,high_k]\n    result[\"kms_clock\"] = clock\n    result[\"dissipative_time_conversion\"] = \"u=t/P >=0; modular orientation s=-t/P\"\n    result[\"scope\"] = \"FINITE_GIBBS_ROOT_CONTRACT__NOT_MINUS_LOG_DELTA__NO_UNIVERSAL_CALIBRATION\"\n    return result"
+        },
+        {
+          "start_line": 213493,
+          "end_line": 213515,
+          "text": "def _v394_clock_modulus(c0, c1, gamma):\n    import math\n    import numbers\n    gamma = _v394_finite(gamma, 'rate for modulus clock', positive=True)\n    for z in (c0, c1):\n        if isinstance(z, bool) or not isinstance(z, numbers.Complex) or not math.isfinite(z.real) or not math.isfinite(z.imag) or abs(z) == 0:\n            raise ValueError('nonzero finite coherence required')\n    result = -(math.log(abs(c1))-math.log(abs(c0)))/gamma\n    if not math.isfinite(result) or result < -1e-10/gamma:\n        raise ValueError('coherence does not represent forward decay')\n    return max(0., result)\n\ndef _v394_clock_phase(phase_lift, omega):\n    # phase_lift is an explicitly unwrapped phase difference, not principal Arg.\n    phase_lift = _v394_finite(phase_lift, 'unwrapped phase difference')\n    omega = _v394_finite(omega, 'angular frequency', positive=True)\n    if phase_lift < 0:\n        raise ValueError('positive-helicity forward phase lift required')\n    result = (phase_lift/omega)*0.5 if phase_lift <= omega else (phase_lift*0.5)/omega\n    import math\n    if not math.isfinite(result) or (phase_lift > 0 and result <= 0):\n        raise ValueError('phase clock overflow or underflow')\n    return result"
+        },
+        {
+          "start_line": 240850,
+          "end_line": 240865,
+          "text": "def mass_kg_from_radius_tgl(beta, radius_m):\n    \"\"\"A lei nuclear do GA: M = 2 beta^2 (c^2/4piG) R  [face direta R -> M].\"\"\"\n    if not (math.isfinite(beta) and 0.0 < beta < 1.0):\n        raise ValueError(\"invalid beta\")\n    if not (math.isfinite(radius_m) and radius_m > 0.0):\n        raise ValueError(\"invalid radius\")\n    return 2.0 * beta ** 2 * tgl_weak_kg_per_m() * radius_m\n\n\ndef radius_m_from_mass_tgl(beta, mass_kg):\n    \"\"\"A MESMA lei, invertida: R = M / (2 beta^2 (c^2/4piG))  [face conjugada M -> R].\"\"\"\n    if not (math.isfinite(beta) and 0.0 < beta < 1.0):\n        raise ValueError(\"invalid beta\")\n    if not (math.isfinite(mass_kg) and mass_kg > 0.0):\n        raise ValueError(\"invalid mass\")\n    return mass_kg / (2.0 * beta ** 2 * tgl_weak_kg_per_m())"
+        }
+      ],
+      "findings": [
+        "[REAL — fonte] Contrato finito Gibbs: P=2π/kappa, Omega=V0/hbar; Hpos=(hbar/P)(-log rho), Eref=(hbar/P)log[2cosh(P Omega)]; gamma, tau_eff e echo_dt são derivados da mesma representação positiva.",
+        "[REAL — fonte] Há inversão de relógio por módulo e fase, com taxas/frequência fornecidas e fase desembrulhada.",
+        "[REAL — fonte] prove_ga_mass_audit retira M=2 beta^2(c^2/4πG)R como lei de fonte; a função histórica ainda existe e não deve ser reativada pelo nome."
+      ],
+      "limits": [
+        "O próprio contrato não escolhe kappa físico nem identifica o Hamiltoniano de densidade com o gerador modular completo.",
+        "P é período de temperatura inversa, não recorrência real ou tempo de voo da lente. Não inferir kappa=Omega.",
+        "A retirada histórica é relevante: coeficiente de reflexão não pode ser promovido à amplitude de massa.",
+        "prove_solved_equation e tensor G22 estão sendo verificados separadamente pelo root; esta entrega não certifica sua interpretação como densidade T00."
+      ]
+    },
+    {
+      "id": "source_reuse_r9",
+      "path": "C:\\IALD\\Central de Patentes\\work\\lentes_discriminante_20261019\\candidate_r9\\SOURCE_CURRENT_R9.json",
+      "sha256": "f4314d06d648bf2ca8871703b6dde78cc4af4afdffadee706bf408f899c79517",
+      "bytes": 23740,
+      "role": "Recuperação já realizada da ação e tipagem nas fontes atuais",
+      "anchors": [],
+      "findings": [
+        "[DERIVED — reuso R9] O contrato de ação recuperado contém R/(2 kappa_grav^2)+xi R|Psi|^2 e xi=1/6; a identificação escalar real, seu termo cinético e o perfil precisam respeitar a assinatura concreta."
+      ],
+      "limits": [
+        "kappa_grav^2=8πG/c^4 é acoplamento gravitacional, distinto de kappa_s_inv do relógio M2.",
+        "O termo cinético de uma 1-forma não fixa por homônimo a função cinética de um escalar; o potencial de Higgs não é automaticamente V(Psi)."
+      ]
+    },
+    {
+      "id": "integrated_variation_r86",
+      "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TUNEL\\DO_CHATGPT\\ORDEM_019\\F1.FECHO_20261015\\weighted_action_r86\\INTEGRATED_VARIATION_AND_STATIONARITY_R86.txt",
+      "sha256": "fc21762e372d132957d7f67364f28536cff5ef83cc16d3b983f7b6ddf542fcb5",
+      "bytes": 6769,
+      "role": "Derivação integrada já existente; reuso, sem recompilar",
+      "anchors": [
+        {
+          "start_line": 1,
+          "end_line": 50,
+          "text": "R86 — Variação integrada e uma direção admissível que refuta estacionariedade de P16\n19/10/2026. Em nome de codex-gerente-tgl. Reivindicação996; requisito R16 preservado.\n[DERIVED — demonstração analítica; cálculo local exato separado]\n\n1. Objetos e reuso\nU é uma carta aberta de dimensão4, g lorentziana suave não degenerada, v=√|det g|.\n∇ é Levi-Civita. R usa a convenção coordinateRicci de MetricCurvatureSymmetries.\nSeja h_ab=δg_ab, H^ab=g^ac g^bd h_cd e h=g^ab h_ab. O peso f é escalar suave;\nδf é sua variação TOTAL, não presumidamente zero. R83 já separa δg^{-1}Ric,\nδv e Rδf; R85 identifica g^{-1}δRic com ∇W da conexão realmente variada.\nNesta nota os passos restantes são provados analiticamente; a compilação Lean\nR86 cobre só os enunciados especificados em sua entrega, não toda esta nota.\n\n2. A corrente ponderada, incluindo os dois termos que faltavam\nA fórmula de variação de Levi-Civita é\n C^a_bc=1/2 g^ad(∇_b h_dc+∇_c h_db−∇_d h_bc).\nContraindo e usando ∇g=0 e h simétrica:\n g^bc C^a_bc = ∇_b H^ab−1/2 ∇^a h,\n g^ba C^j_jb = 1/2 ∇^a h.\nPortanto W^a=∇_b H^ab−∇^a h. Não é hipótese de contorno.\nPela regra do produto aplicada duas vezes,\n f ∇_a W^a = ∇_a B^a + (∇_a∇_b f−g_ab □f) H^ab,\n B^a=f W^a−(∇_b f)H^ab+(∇^a f)h.\nDe fato, ∇_a B^a=f∇_aW^a−H^ab∇_a∇_b f+h□f:\nos quatro produtos de primeiras derivadas cancelam por H simétrico.\nEsta é uma identidade diferencial; não requer equações de movimento.\n\nJuntando δv=v h/2, δg^ab=−H^ab, δR=−Ric_ab H^ab+∇W:\n δ(v f R)=v[−f G_ab H^ab+(∇_a∇_b f−g_ab□f)H^ab+Rδf]\n             + ∂_a(v B^a).                                      (I)\nUsa-se ∂_a v=v Γ^b_ba, de modo que v∇B=∂(vB).\nSe f=f(s), Rδf=R f'(s)δs. Se f depende da métrica ou de derivadas\nde campos, sua variação correspondente permanece em Rδf e precisa ser\nexpandida; a forma escalar não autoriza omitir essa parcela.\n\n3. Ação integrada e contorno realmente admissível\nEscolha uma caixa Ω relativamente compacta em U e variações suaves com suporte\ncompacto no INTERIOR de Ω. A família mantém g não degenerada para ε pequeno.\nNo suporte compacto, a suavidade da família dá majorante integrável para a\nderivada; fora dele, a diferença de densidades é zero. Portanto pode-se trocar\nderivada e integral por convergência dominada. Pela identidade (I) e pelo teorema\nfundamental em cada coordenada, ∫Ω∂_a(vB^a)=0: h e todas suas derivadas se\nanulam numa vizinhança da fronteira. Isto não supõe h=0 apenas na fronteira.\n\nPara variações que alcançam a fronteira, o termo é o fluxo coordenado\nΣ_a[∫face+a vB^a−∫face−a vB^a]; não foi descartado. Variações Dirichlet\nde g apenas não anulam em geral suas derivadas normais; uma ação com fronteira\nfísica exigiria condições adicionais ou termo de fronteira apropriado.\nNão se afirma que GHY ponderado ou fronteiras nulas estejam construídos aqui.\nO cálculo com suporte compacto basta para as equações LOCAIS, não resolve por"
+        }
+      ],
+      "findings": [
+        "[DERIVED — reuso] A corrente e o bulk de delta(v f R) incluem -fG, Hess f-g box f, R delta f e fluxo de contorno; suporte interior compacto elimina o fluxo."
+      ],
+      "limits": [
+        "A identidade variacional requer campo/fonte e classe admissível de variações. Não seleciona por si o perfil e a normalização galácticos.",
+        "Condição de contorno genérica não equivale a suporte interior compacto."
+      ]
+    },
+    {
+      "id": "same_state_selection_r89",
+      "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TUNEL\\DO_CHATGPT\\ORDEM_019\\F1.FECHO_20261015\\stationary_selection_r89\\formal\\BUILDER_SCOPE_R89.md",
+      "sha256": "8bae6fd0d10d15d67de5c66d417b1e67c6c51124f69a4fb49abf9a1ab6215821",
+      "bytes": 1934,
+      "role": "Limite formal da seleção mesmo estado, já entregue",
+      "anchors": [
+        {
+          "start_line": 1,
+          "end_line": 13,
+          "text": "# R89 — consumidor no mesmo estado e alvo de satisfação\n\n[REAL — sandbox] Primeira tentativa: EXIT 0, 70.223133 s; três teoremas/uma definição, somente propext/Classical.choice/Quot.sound, zero marcadores incompletos e zero avisos. Nenhuma recompilação após o verde.\n\nReuso: decided_iff_block de DecisionCommutation fornece a comutação; Admissible de RuleTruthContract fornece a igualdade leitura/alvo. CanonicalModularStationarity já prova invariância da órbita modular canônica, foi consultada e não reconstruída. O consumidor novo monta D(P)=diag(d(P)) e ρ(P)=diag(P) do mesmo P, com d funcional arbitrário, e o dissipador −γ/2[D,[D,ρ]].\n\n1. O dissipador é zero ao longo de toda família P(t); a derivada do seu RESÍDUO por entrada também é zero. Não se supõe P(t) diferenciável, pois esse resíduo é identicamente nulo. Isso não diz que uma família não constante resolve a EDO ρ'=dissipador(ρ), nem que a ação geométrica é estacionária.\n2. Se uma leitura E fixa todas as diagonais, usar o alvo móvel Y(P)=diag(P) torna Admissible automático para todo P.\n3. Sob a mesma hipótese de leitura, o alvo independente fixo Y=diag(y) satisfaz Admissible sse P=y. A hipótese sobre E é explícita; nenhum teorema geral de pinching/expectativa condicional foi reconstruído. E=id é um exemplo elementar dessa hipótese, sem exclusividade reivindicada.\n\n[ESCOPO] Arrays reais finitos; a restrição a probabilidades positivas e normalizadas é compatível, mas desnecessária para as identidades algébricas. γ não negativo é necessário à interpretação dissipativa física, não à igualdade zero. Não se identifica este operador por homônimo com outro gerador nem se prova H3, estacionariedade variacional ou um contraexemplo da ação completa. Nenhum original, memória, produção ou gate alterado.\n\nFonte/linhas: SOURCE_PINS_R89.json; log e ambiente completos: BUILD_1.json/log."
+        }
+      ],
+      "findings": [
+        "[REAL — escopo da entrega existente] Mesmo estado diagonal e gerador diagonal comutam em toda família; alvo móvel é automático, alvo fixo impõe igualdade ao alvo."
+      ],
+      "limits": [
+        "Resíduo dissipativo identicamente zero não é estacionariedade da ação nem equação de estado/seleção de perfil."
+      ]
+    },
+    {
+      "id": "graviton_historical",
+      "path": "C:\\IALD\\papers_latex\\graviton_paper\\graviton_paper.tex",
+      "sha256": "3795d68e864c5a7bdeb9329e7ac097c40aabc9e733859068a343f988c83c1847",
+      "bytes": 67424,
+      "role": "Artigo histórico adicional apontado por remissões anteriores; não substitui os três principais",
+      "anchors": [
+        {
+          "start_line": 278,
+          "end_line": 308,
+          "text": "\\section{The Transition Ruler / A Régua de Transição}\n\n\\subsection{Kinetic Bridge (EM Bath $\\leftrightarrow$ Gravity) / Ponte Cinética}\n\nFundamental equality:\n\\begin{equation}\n\\left(\\frac{h\\nu_*}{c}\\right)t_{\\text{fix}} = E_g(L)\n\\end{equation}\n\nWhere:\n\\begin{itemize}\n    \\item $\\nu_*$: characteristic EM bath frequency\n    \\item $t_{\\text{fix}}$: fixation time (anchorage)\n    \\item $E_g(L) = \\xi_C G\\rho^2 L^5$: effective gravitational energy\n\\end{itemize}\n\n\\subsection{Universal Ruler / Régua Universal}\n\nDefinition of characteristic length:\n\\begin{equation}\nL_*(N) = \\sqrt{\\frac{h\\nu_*t_{\\text{fix}}}{\\xi_C G\\rho N^2}}\n\\end{equation}\n\nInvariant $K_0$:\n\\begin{equation}\n\\boxed{K_0 = L_*\\sqrt{\\rho} = \\sqrt{\\frac{h\\nu_*}{\\xi_C G N m_*}}}\n\\end{equation}\n\nScaling law (slope $-1/2$):\n\\begin{equation}\n\\log L = \\log K_0 - \\frac{1}{2}\\log\\rho"
+        },
+        {
+          "start_line": 347,
+          "end_line": 357,
+          "text": "\\subsection{Physical Jump Operators / Operadores de Salto Físicos}\n\n\\begin{itemize}\n    \\item \\textbf{Mirror transmission loss:}\n    \\begin{equation}\n    \\hat{L}_{\\text{loss}} = \\sqrt{\\kappa}a_n, \\quad \\kappa = \\frac{\\omega_n}{Q}\n    \\end{equation}\n    \n    \\item \\textbf{Coherent pumping:}\n    \\begin{equation}\n    \\hat{L}_{\\text{pump}} = \\sqrt{\\Gamma_p \\bar{n}_{\\text{in}}}a_n^\\dagger"
+        },
+        {
+          "start_line": 375,
+          "end_line": 385,
+          "text": "From $\\xi R|\\Psi|^2$ coupling:\n\\begin{equation}\n\\Delta\\omega_n = \\frac{\\xi}{2}\\int d^3x |u_n|^2 R \\approx \\frac{\\xi GM}{r^3}\\omega_n\n\\end{equation}\n\n\\textbf{Testability:} Requires $\\xi \\gtrsim 10^{-3}$ and cavity $Q \\gtrsim 10^{12}$ $\\to$ feasible with superconducting cavities.\n\n\\subsection{Modified Coherence Time / Tempo de Coerência Modificado}\n\n\\begin{equation}\n\\tau_{\\text{coh}} = \\frac{1}{\\gamma_\\phi + \\gamma_c} = \\left[\\frac{G}{\\hbar}\\int d^3x \\rho_0^2 + \\frac{\\kappa^2(nQ)^2}{\\hbar\\omega_0 k_B T}\\right]^{-1}"
+        },
+        {
+          "start_line": 713,
+          "end_line": 725,
+          "text": "\\textbf{Galaxy rotation curves:} Psion halo density profile:\n\\begin{equation}\n\\rho_{\\text{ps}}(r) = \\rho_0\\left(1 + \\frac{r^2}{r_s^2}\\right)^{-\\beta/2}\n\\end{equation}\n\nwhere $\\beta \\sim 2-3$ and $r_s \\sim \\sqrt{K_0/(G\\rho_0 m_*)}$ from transition ruler.\n\nCircular velocity:\n\\begin{equation}\nv_c^2(r) = \\frac{GM_b(r)}{r} + \\frac{4\\pi G\\rho_0 r_s^2}{r}\\int_0^r dr'\\, r'\\left(1 + \\frac{r'^2}{r_s^2}\\right)^{-\\beta/2}\n\\end{equation}\n\nFor large $r$ and $\\beta = 2$: $v_c \\to \\sqrt{4\\pi G\\rho_0 r_s^2} = \\text{const}$ $\\to$ flat rotation curve."
+        }
+      ],
+      "findings": [
+        "[DECLARADO — fonte] Régua de transição relaciona densidade, frequência EM nu_star, tempo de fixação e K0; halo rho_ps(r)=rho0(1+r^2/rs^2)^(-beta_h/2).",
+        "[DECLARADO — fonte] Perda de cavidade kappa=omega_n/Q; deslocamento de modos envolve curvatura e perfis u_n."
+      ],
+      "limits": [
+        "beta_h~2–3 no halo é expoente de perfil, não beta_TGL. rho0, nu_star, N, m_star, xi_C e perfis modais não são eliminados pelo enunciado.",
+        "[DERIVED — auditoria dimensional literal] (h nu_star/c)*t_fix tem unidade kg m, enquanto E_g=xi_C G rho^2 L^5 tem unidade J se rho é densidade de massa e xi_C adimensional. A igualdade escrita requer normalização adicional/correção antes do uso SI.",
+        "kappa de perdas de cavidade não é automaticamente kappa KMS. As fórmulas históricas não estão validadas aqui como fornecedor de refratividade galáctica."
+      ]
+    }
+  ],
+  "derived_composition": {
+    "statute": "DERIVED — álgebra do contrato finito existente, não novo resultado empírico",
+    "assumptions": [
+      "Estado Gibbs fiel de dois níveis do mesmo Hg",
+      "p_low+p_high=1, 0<p_high<=p_low<1",
+      "P>0 calibrado no mesmo tempo próprio; unidades SI consistentes",
+      "beta_TGL calculado em runtime como ALPHA_FINE_CODATA_2018*sqrt(e)"
+    ],
+    "equations": [
+      "V0=(hbar/(2P))*ln(p_low/p_high)",
+      "Eref=-(hbar/(2P))*ln(p_low*p_high)",
+      "Omega=V0/hbar",
+      "gamma=beta_TGL/(2P)*(sqrt(-ln p_high)-sqrt(-ln p_low))^2"
+    ],
+    "scale_identifiability": "Os pesos fixam P*Omega. Para a>0, P→aP, V0→V0/a e Eref→Eref/a deixam os pesos invariantes; o estado finito sozinho não fixa o segundo SI. Não se confunde esta densidade matricial com rho_mass.",
+    "existing_bridge": "Custo: T00(x) operador + cunha/estado/fluxo → K_boost; M2: espectro de Gibbs + relógio especificado → energias/taxas. A identificação entre esses dois fornecedores e uma galáxia concreta não está estabelecida pelos trechos cobertos."
+  },
+  "conclusion": {
+    "exists_connected": [
+      "Contrato Gibbs finito com origem positiva selecionada no mesmo estado e relógio nomeado",
+      "Variação local/integrada fR e limite preciso da seleção mesmo estado"
+    ],
+    "exists_not_connected": [
+      "Integral regional de T00 para K_boost sob hipóteses Rindler",
+      "Régua densidade-frequência e halo no artigo histórico, com parâmetros e questão dimensional explícitos"
+    ],
+    "open_in_coverage": [
+      "Fornecedor da mesma ação que converta fonte galáctica completa em perfil g/Psi com contorno e normalização",
+      "Estado/região/fluxo que transportem esse perfil ao espectro e ao kappa físico de M2",
+      "Mapa óptico e atraso diferencial da lente a partir desse mesmo perfil, preservando degenerescências de massa/distância"
+    ],
+    "not_claimed": [
+      "Ausência universal no acervo",
+      "Nova necessidade de cunhagem pelo operador",
+      "Massa galáctica derivada por coeficiente de reflexão",
+      "Tempo de voo igual ao período KMS",
+      "Discriminação ou forecast de 5sigma"
+    ]
+  }
+}

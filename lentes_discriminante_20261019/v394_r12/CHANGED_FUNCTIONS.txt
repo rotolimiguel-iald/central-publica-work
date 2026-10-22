@@ -1,0 +1,2109 @@
+
+### verify_tgl_kernel_formalization [modified] 138156:138378
+def verify_tgl_kernel_formalization():
+    """v22 -- roda o kernel do Lean e sela a partir do resultado REAL. FAIL-CLOSED.
+
+    Nunca considera `FORMAL_CHECKER_UNAVAILABLE` como sucesso. `all_verified` deste
+    modulo significa: o kernel COMPILOU e a auditoria de axiomas passou -- NAO que a
+    testemunha AQFT foi construida (ela permanece OPEN, por desenho)."""
+    res = {
+        "formal_checker": "Lean 4", "build_tool": "Lake", "toolchain_pinned": True,
+        "formal_dir": FORMAL_DIR, "mode": TGL_FORMAL_MODE,
+        "lean_version": None, "lake_version": None,
+        "lake_build_ok": False, "audit_file_ok": False,
+        "source_forbidden_tokens_absent": False, "sorryAx_absent": False,
+        "trustCompiler_absent": False, "custom_TGL_axioms_absent": False,
+        "sentinels_present": False,
+        "specific_AQFT_witness_constructed": False,          # por desenho: OPEN
+        "unconditional_type_III1_corner_proved": False,      # jamais reivindicado
+        "axiom_report": {}, "formal_source_hash": None, "formal_files_sha256": {},
+        "all_unconditional_targets_verified": False,
+        "all_conditional_implications_verified": False,
+        "all_verified": False, "verdict": "TGL_KERNEL_FORMALIZATION_FAILED",
+        "not_claimed": [
+            "Python did not prove any theorem; the Lean kernel did",
+            "Bisognano-Wichmann / Reeh-Schlieder / type III_1 classification are KNOWN/EXTERNAL, not formalized here",
+            "the finite Three-Locks corner is a finite-dimensional theorem, NOT a type III_1 proof",
+            "G is a variable / measured input; it is NOT derived",
+            # v304 [ERRATA -- a frase era de v23 e a v135 a superou; 6 superficies
+            # publicavam a negacao de uma testemunha HABITADA (theSpecificAQFTWitness,
+            # TGLExt/WedgeNet). O nao-reivindicado VERDADEIRO e a realizacao modular.
+            "the MODULAR REALIZATION of the witness is not constructed "
+            "(theSpecificAQFTWitness IS inhabited since v135; TGLModularRealization stays open)",
+        ],
+        "seals": [],
+    }
+    for k in _LEAN_THEOREM_FLAGS:
+        res[k] = False
+
+    # (1) arquivos formais presentes?
+    need = [FORMAL_DIR, os.path.join(FORMAL_DIR, "lakefile.toml"),
+            os.path.join(FORMAL_DIR, "lean-toolchain"), FORMAL_AUDIT_FILE]
+    if not all(os.path.exists(p) for p in need):
+        res["verdict"] = "FORMAL_CHECKER_UNAVAILABLE"
+        res["reason"] = "tgl_kernel/ incompleto (lakefile.toml, lean-toolchain, TGL/Audit.lean)"
+        return res
+    res["audit_file_ok"] = True
+
+    # (2) lake disponivel?
+    lake = _find_lake()
+    if lake is None:
+        res["verdict"] = "FORMAL_CHECKER_UNAVAILABLE"
+        res["reason"] = ("`lake` nao encontrado (PATH nem ~/.elan/bin). Instale elan/Lean 4, ou "
+                         "aponte a variavel de ambiente TGL_LAKE para o binario.")
+        return res
+    res["lake_path"] = lake
+
+    # (3) versoes
+    v1 = run_process_checked([lake, "--version"], FORMAL_DIR, 120)
+    res["lake_version"] = (v1["stdout"] or v1["stderr"]).strip().splitlines()[:1]
+    v2 = run_process_checked([lake, "env", "lean", "--version"], FORMAL_DIR, 120)
+    res["lean_version"] = (v2["stdout"] or v2["stderr"]).strip().splitlines()[:1]
+
+    # (4) lake build   (5) auditoria
+    build = run_process_checked([lake, "build"], FORMAL_DIR, 3600)
+    audit = run_process_checked([lake, "env", "lean", "TGL/Audit.lean"], FORMAL_DIR, 1800)
+    res["lake_build_ok"] = bool(build["returncode"] == 0)
+    res["build_stdout_sha256"] = hashlib.sha256(build["stdout"].encode("utf-8")).hexdigest()
+    res["build_stderr_sha256"] = hashlib.sha256(build["stderr"].encode("utf-8")).hexdigest()
+    res["audit_stdout_sha256"] = hashlib.sha256(audit["stdout"].encode("utf-8")).hexdigest()
+    res["build_returncode"] = build["returncode"]
+    res["audit_returncode"] = audit["returncode"]
+    # diagnostico persistente (olhe o byte): grava as capturas em UTF-8 ANTES de
+    # parsear, com tamanhos -- se um dia a captura voltar vazia, o arquivo acusa.
+    _caps = []  # v339: capturas por ETAPA (rastreabilidade); falha de escrita VISIVEL, nunca "pass"
+    for _nm, _pr in (("tgl_kernel_build_capture.txt", build),
+                     ("tgl_kernel_audit_capture.txt", audit)):
+        _fn = _nm.replace(".txt", _CAPTURE_STAGE + ".txt")
+        try:
+            with open(os.path.join(OUT, _fn), "w", encoding="utf-8") as _fh:
+                _fh.write("# stage: %s\n# cmd: %s\n# returncode: %s\n# len(stdout)=%d len(stderr)=%d\n"
+                          "--- STDOUT ---\n%s\n--- STDERR ---\n%s\n"
+                          % (_CAPTURE_STAGE or "principal", _pr["cmd"], _pr["returncode"], len(_pr["stdout"]),
+                             len(_pr["stderr"]), _pr["stdout"], _pr["stderr"]))
+            _caps.append(_fn)
+        except OSError as _e:
+            print("[captura] AVISO: nao consegui gravar %s: %r" % (_fn, _e))
+    res["capture_stage"] = _CAPTURE_STAGE or "principal"
+    res["capture_files"] = _caps
+    res["build_capture_lens"] = {"stdout": len(build["stdout"]), "stderr": len(build["stderr"])}
+    res["audit_capture_lens"] = {"stdout": len(audit["stdout"]), "stderr": len(audit["stderr"])}
+    # v23.1 -- triagem: processo que rodou com captura VAZIA e' REPROVACAO, nao registro
+    # (a assinatura e3b0c442... = sha256("") escondeu o bug v22 por tres rodadas)
+    res["build_capture_nonempty"] = bool(build.get("capture_nonempty"))
+    res["audit_capture_nonempty"] = bool(audit.get("capture_nonempty"))
+    res["build_capture_sha256_full"] = build.get("capture_sha256")
+    res["audit_capture_sha256_full"] = audit.get("capture_sha256")
+    blob = (build["stdout"] + build["stderr"] + audit["stdout"] + audit["stderr"])
+
+    # (6) sentinelas   (7) proibicoes   (8) axiomas customizados TGL.*
+    res["sentinels_present"] = all(s in blob for s in _LEAN_SENTINELS)
+    res["sorryAx_absent"] = ("sorryAx" not in blob)
+    res["trustCompiler_absent"] = ("Lean.trustCompiler" not in blob)
+
+    import re as _re
+    # v394: quoted Unicode names and defining modules are read from this Audit invocation.
+    _parsed_ax = parse_lean_axioms_v394(blob)
+    axioms = _parsed_ax["axioms"]
+    custom = [a for values in axioms.values() for a in values
+              if a.startswith("TGL.") or a.startswith("TGLExt.")]
+    _decl_meta = parse_lean_provenance_v394(audit["stdout"] + audit["stderr"])
+    res["declaration_sources_v394"] = _decl_meta["sources"]
+    res["declaration_sources_status_v394"] = {
+        "ok": _decl_meta["ok"] and _parsed_ax["ok"] and set(_decl_meta["sources"]) == set(axioms),
+        "errors": _decl_meta["errors"] + _parsed_ax["errors"],
+        "compiler_names": len(_decl_meta["sources"]), "audited_names": len(axioms),
+        "audit_stdout_sha256": res["audit_stdout_sha256"]}
+    res["axiom_report"] = axioms
+    res["axiom_coverage_v392"] = _v392_axiom_coverage(audit["stdout"] + audit["stderr"], axioms)   # v392 KH-N1 (a): o Audit termina num run_cmd que cobre TODA constante de TGL e TGLExt; a linha TOTAL vem SO do log do Audit (o lake build tambem imprime o run_cmd do TGL/Audit.lean: no blob build+audit ela aparece 2x); a cobertura entra no all_verified
+    res["custom_TGL_axioms_absent"] = (len(custom) == 0)
+    res["custom_TGL_axioms_found"] = sorted(set(custom))
+
+    for flag, thm in _LEAN_THEOREM_FLAGS.items():
+        ax = axioms.get(thm)
+        res[flag] = bool(res["lake_build_ok"] and ax is not None
+                         and "sorryAx" not in ax and "Lean.trustCompiler" not in ax
+                         and not any(a.startswith("TGL.") or a.startswith("TGLExt.") for a in ax))
+    # v99: leituras do certificado de fechamento (nomes futuros; ausencia => False)
+    for flag, thm in _QG_CERTIFICATE_FLAGS.items():
+        ax = axioms.get(thm)
+        res["qgc_" + flag] = bool(res["lake_build_ok"] and ax is not None
+                                  and "sorryAx" not in ax and "Lean.trustCompiler" not in ax
+                                  and not any(a.startswith("TGL.") or a.startswith("TGLExt.") for a in ax))
+    # v200 [FASE 0]: leituras das flags de FRONTEIRA (mesma mecanica; nomes
+    # reservados inexistentes => False por construcao — estritamente mais fechado
+    # que os literais Python que estas leituras substituem)
+    for flag, thm in _QG_FRONTIER_FLAGS.items():
+        ax = axioms.get(thm)
+        res["qgf_" + flag] = bool(res["lake_build_ok"] and ax is not None
+                                  and "sorryAx" not in ax and "Lean.trustCompiler" not in ax
+                                  and not any(a.startswith("TGL.") or a.startswith("TGLExt.") for a in ax))
+    # v133: leituras dos certificados de FISICA (mesma mecanica fail-closed)
+    for flag, thm in _QG_PHYSICS_FLAGS.items():
+        ax = axioms.get(thm)
+        res["qgp_" + flag] = bool(res["lake_build_ok"] and ax is not None
+                                  and "sorryAx" not in ax and "Lean.trustCompiler" not in ax
+                                  and not any(a.startswith("TGL.") or a.startswith("TGLExt.") for a in ax))
+
+    # v220: leitura do PRECO DA PROVA (ausencia => item da divida ABERTO)
+    for flag, thm in _GRAVITY_PRICE_FLAGS.items():
+        ax = axioms.get(thm)
+        res["gpf_" + flag] = bool(res["lake_build_ok"] and ax is not None
+                                  and "sorryAx" not in ax and "Lean.trustCompiler" not in ax
+                                  and not any(a.startswith("TGL.") or a.startswith("TGLExt.") for a in ax))
+
+    # v253: leitura da PONTE de importacao (mesma mecanica fail-closed). Isto NAO
+    # acende bandeira de kernel: quitar por importacao e outro MODO, e o razonete
+    # em prove_the_mode_of_discharge os mantem separados por construcao.
+    for flag, thm in _REDUCTION_FLAGS.items():
+        ax = axioms.get(thm)
+        res["red_" + flag] = bool(res["lake_build_ok"] and ax is not None
+                                  and "sorryAx" not in ax and "Lean.trustCompiler" not in ax
+                                  and not any(a.startswith("TGL.") or a.startswith("TGLExt.") for a in ax))
+
+    for flag, thm in _GRAVITY_IMPORT_FLAGS.items():
+        ax = axioms.get(thm)
+        res["gpi_" + flag] = bool(res["lake_build_ok"] and ax is not None
+                                  and "sorryAx" not in ax and "Lean.trustCompiler" not in ax
+                                  and not any(a.startswith("TGL.") or a.startswith("TGLExt.") for a in ax))
+    # v373: a classe «quitado por citacao» (gpc_) -- lida pelo MESMO mecanismo; NAO acende gpf_ nem gpi_
+    for flag, thm in _GRAVITY_CITATION_FLAGS.items():
+        ax = axioms.get(thm)
+        res["gpc_" + flag] = bool(res["lake_build_ok"] and ax is not None
+                                  and "sorryAx" not in ax and "Lean.trustCompiler" not in ax
+                                  and not any(a.startswith("TGL.") or a.startswith("TGLExt.") for a in ax))
+
+    # (9) varredura lexical auxiliar
+    hits = _lean_source_forbidden_tokens()
+    res["source_forbidden_tokens_absent"] = (len(hits) == 0)
+    res["source_forbidden_tokens_found"] = hits
+
+    # (10) hashes dos fontes formais
+    hd = sha256_directory(FORMAL_DIR)
+    res["formal_source_hash"] = hd["aggregate"]
+    res["formal_files_sha256"] = hd["files"]
+
+    # (11) vereditos
+    uncond = ["half_nat_kernel_proved", "area_scale_kernel_proved",
+              "finite_three_locks_kernel_proved", "finite_corner_projection_kernel_proved",
+              "finite_corner_trace_kernel_proved"]
+    res["all_unconditional_targets_verified"] = all(res[k] for k in uncond)
+    res["all_conditional_implications_verified"] = bool(res["continuous_corner_implication_kernel_proved"])
+    ok = bool(res["lake_build_ok"] and res["audit_returncode"] == 0 and res["sentinels_present"]
+              and res["sorryAx_absent"] and res["trustCompiler_absent"]
+              and res["custom_TGL_axioms_absent"] and res["source_forbidden_tokens_absent"]
+              and res["all_unconditional_targets_verified"]
+              and res["all_conditional_implications_verified"]
+              and res["build_capture_nonempty"] and res["audit_capture_nonempty"]  # v23.1: captura vazia REPROVA
+              and res["axiom_coverage_v392"]["ok"])   # v392 KH-N1 (a): cobertura do fecho inteiro, nada fora do trio
+    res["all_verified"] = ok
+    # v135: a testemunha AQFT especifica LIDA do kernel (mecanica v99: nome
+    # ausente => False; jamais declarada) -- a rede das cunhas (WedgeNet)
+    _ax_saw = axioms.get("TGLExt.theSpecificAQFTWitness")
+    res["specific_AQFT_witness_constructed"] = bool(
+        res["lake_build_ok"] and _ax_saw is not None
+        and "sorryAx" not in _ax_saw and "Lean.trustCompiler" not in _ax_saw
+        and not any(a.startswith("TGL.") or a.startswith("TGLExt.")
+                    for a in _ax_saw))
+    res["verdict"] = (("TGL_KERNEL_STAGE1_VERIFIED__SPECIFIC_AQFT_WITNESS_CONSTRUCTED"
+                       if res["specific_AQFT_witness_constructed"] else
+                       "TGL_KERNEL_STAGE1_VERIFIED__SPECIFIC_AQFT_WITNESS_OPEN") if ok
+                      else "TGL_KERNEL_FORMALIZATION_FAILED")
+    res["formal_release_ready"] = bool(ok and TGL_FORMAL_MODE == "strict")
+    # v304 [ERRATA]: o teorema "exists W" FOI PAGO na v135 (o W existe e se chama
+    # theSpecificAQFTWitness). O aberto verdadeiro e a realizacao modular.
+    res["open_theorem"] = ("TGL_MODULAR_REALIZATION_THEOREM: TGLModularRealization (theSpecificAQFTWitness) "
+                           "-- o habitante existe (v135); a realizacao modular e o aberto")
+    res["seals"] = ["LEAN_KERNEL_CHECKED", "LAKE_BUILD_REPRODUCIBLE", "NO_SORRY_AX",
+                    "NO_TRUST_COMPILER", "NO_CUSTOM_TGL_AXIOMS",
+                    "HALF_NAT_KERNEL_PROVED", "AREA_SCALE_EQUIVALENCE_KERNEL_PROVED",
+                    "FINITE_THREE_LOCKS_CORNER_KERNEL_PROVED",
+                    "NORMALIZED_FINITE_CORNER_TRACE_KERNEL_PROVED",
+                    "EQUAL_CONJUGATE_FACES_HAVE_HALF_TRACE_KERNEL_PROVED",
+                    "CONTINUOUS_CORNER_IMPLICATION_KERNEL_PROVED",
+                    "SPECIFIC_AQFT_WITNESS_INHABITED__MODULAR_REALIZATION_REMAINS_OPEN"] if ok else ["TGL_KERNEL_FORMALIZATION_FAILED"]
+    return finalize_v350_modular_frontier(res)
+
+### prove_external_ladder [modified] 139479:149280; large block not included
+
+### _build_the_iald_index_legacy_v393 [added] 165863:166117
+def _build_the_iald_index_legacy_v393(core=None):
+    """v285 -- O INDICE DA IALD: a setima estrutura, DERIVADA e READ-ONLY.
+
+    ORDEM DO OPERADOR: <a IALD pode se tornar nominalmente o INDICE do Um, indexando o
+    kernel Lean; o um.py tem que ser um unico arquivo>.
+
+    O nome NAO e metafora: `ialdSelector = firstAtom.starProjection` ja e o objeto em
+    kernel (TheIALDSelector), com `iald_selects` (as duas clausulas da consulta),
+    `iald_is_idempotent` (I^2 = I -- reconsultar e gratis), `iald_has_rank_one` (peso
+    omega(I) = 1) e `iald_is_the_gate_and_the_record` (x = registro + residuo). O indice
+    e o objeto que a IALD JA E em kernel.
+
+    ⚠ ADITIVO POR NECESSIDADE, nao por estilo: as chaves planas dos seis dicionarios SAO
+    o mecanismo fail-closed (ausencia do nome => False por construcao), e os prefixos
+    qgc_/qgp_/qgf_/gpf_/red_/gpi_ carregam a separacao de MODO. Este indice LE os seis e
+    nao substitui nenhum. Ele NAO decide nada -- nao acende bandeira, nao entra em gate."""
+    kf = (core or {}).get("kernel_formalization") or {}
+    axr = kf.get("axiom_report") or {}
+    fontes = _EMBEDDED_KERNEL_FILES
+
+    # (a) onde cada nome esta ESCRITO -- varredura das fontes embutidas
+    #
+    # ERRATA v286 (medida, nao confessada): o regex da v285 nao via TRES formas reais de
+    # declaracao e por isso INFLOU a divida:
+    #   (i)   nome de declaracao COM PONTO        -- theorem DualScalingData.fixed_tau_zero
+    #   (ii)  prefixo de ATRIBUTO na mesma linha  -- @[simp] theorem boundaryState_apply
+    #   (iii) casamento por split(".", 1) em vez de SUFIXO -- de TGL.HalfNat.x sobrava
+    #         HalfNat.x, que nunca casa com declaracao alguma.
+    # As tres corrigidas aqui. A divida real e a que sempre foi: as bandeiras apagadas.
+    import re as _re
+    _decl = _re.compile(
+        r"^\s*(?:@\[[^\]]*\]\s*)*"
+        r"(?:(?:private|protected|scoped|noncomputable|partial|unsafe)\s+)*"
+        r"(theorem|lemma|def|structure|abbrev|instance|inductive|class)\s+"
+        r"([A-Za-z_][A-Za-z0-9_'!?]*(?:\.[A-Za-z_][A-Za-z0-9_'!?]*)*)", _re.M)
+    onde = {}
+    ambiguos = []
+    for rel, texto in fontes.items():
+        if not rel.endswith(".lean"):
+            continue
+        for tipo, nome in _decl.findall(texto):
+            if nome in onde and onde[nome][0] != rel:
+                ambiguos.append(nome)
+            onde.setdefault(nome, (rel, tipo))
+
+    def _resolve(nome_lean):
+        """A bandeira guarda o nome QUALIFICADO; a declaracao pode ela mesma ter ponto.
+        Casa-se por SUFIXO, do mais longo ao mais curto. Nao achando, devolve o ultimo
+        componente -- e o nome fica no indice como AUSENTE_POR_CONSTRUCAO, nunca sumido."""
+        _p = nome_lean.split(".")
+        for _i in range(len(_p)):
+            _k = ".".join(_p[_i:])
+            if _k in onde:
+                return _k
+        return _p[-1]
+
+    # (b) a rodada de cada pedra -- HERDA a viva quando None (trava 3)
+    rodada_viva = (core or {}).get("versao") or (core or {}).get("version")
+    pedra_de = {}
+    for tupla in _ESQUELETO_STONES:
+        ver, nome_pedra, rel = tupla[0], tupla[1], tupla[2]
+        rod = tupla[3] if len(tupla) > 3 else None
+        pedra_de[rel] = {"pedra": nome_pedra, "versao": ver,
+                         "rodada": rod if rod is not None else rodada_viva,
+                         "rodada_herdada": rod is None}
+
+    # (c) as bandeiras, COM o prefixo -- o modo nao se achata
+    familias = (("", _LEAN_THEOREM_FLAGS), ("qgc_", _QG_CERTIFICATE_FLAGS),
+                ("qgp_", _QG_PHYSICS_FLAGS), ("qgf_", _QG_FRONTIER_FLAGS),
+                ("gpf_", _GRAVITY_PRICE_FLAGS), ("red_", _REDUCTION_FLAGS),
+                ("gpi_", _GRAVITY_IMPORT_FLAGS), ("gpc_", _GRAVITY_CITATION_FLAGS))   # v373: a classe por citacao
+    bandeiras_de = {}
+    for pref, dic in familias:
+        for chave, nome_lean in dic.items():
+            curto = _resolve(nome_lean)
+            bandeiras_de.setdefault(curto, []).append(
+                {"prefixo": pref, "chave": pref + chave, "nome_lean": nome_lean,
+                 "acesa": kf.get(pref + chave)})
+
+    # ⚠ ERRATA v289 (achada por painel adversarial): a versao anterior consultava o
+    # axiom_report concatenando o prefixo TGLExt ao nome, cravado. As bandeiras cujo Lean
+    # vive em TGL.* ficavam todas com axiomas=None -- o indice dizia NAO MEDIDO onde o
+    # axiom_report tinha MEDIDO. O cego era do indice, nao do kernel. Agora a consulta e
+    # por SUFIXO no proprio axiom_report, sem namespace nenhum cravado.
+    _axr_sufixo = {}
+    for _k in axr:
+        _pk = _k.split(".")
+        for _i in range(len(_pk)):
+            _axr_sufixo.setdefault(".".join(_pk[_i:]), []).append(_k)
+
+    _ambig = set(ambiguos)
+    idx = {}
+    for nome, (rel, tipo) in onde.items():
+        p = pedra_de.get(rel, {})
+        _cands = _axr_sufixo.get(nome) or []
+        if len(_cands) == 1:
+            qual, ax = _cands[0], axr.get(_cands[0])
+        elif len(_cands) > 1:
+            # nome que casa com mais de uma entrada auditada: nao se escolhe uma
+            qual, ax = None, "AMBIGUO_NO_AXIOM_REPORT"
+        else:
+            qual, ax = None, None
+        idx[nome] = {
+            "arquivo": rel, "tipo": tipo, "nome_auditado": qual,
+            "pedra": p.get("pedra"), "versao": p.get("versao"),
+            "rodada": p.get("rodada"), "rodada_herdada": p.get("rodada_herdada"),
+            # ⚠ TRAVA 2: o indice diz ONDE esta escrito; so o axiom_report diz o que foi
+            # PROVADO. Sem rodada, isto nao e vazio -- e NAO_MEDIDO.
+            "axiomas": ax if ax is not None else ("NAO_MEDIDO_NESTA_RODADA" if not axr else None),
+            # ⚠ TRAVA 5 (v289): a ambiguidade deixa de ser silenciosa. `setdefault` faz o
+            # primeiro arquivo vencer; quem consulta tem de saber que houve empate.
+            "ambiguo": bool(nome in _ambig),
+            "bandeiras": bandeiras_de.get(nome, []),
+        }
+
+    # v392 (13/10/2026) -- REFERENTES GERADOS PELO LEAN, conjunto CONGELADO e NOMEADO por script (indice_v392_medicao.json).
+    # CAUSA: as bandeiras ext_bgl_* e ext_vrd_* apontam para campos de `structure`, para `ctorIdx` e para os teoremas-campo das estruturas BGL (AuditF13v31.D1a3Output, LightNetStandardWedgeData*)
+    # e Verdade (NamedIdentity...): o Lean GERA esses nomes, nao ha linha `theorem/def` com eles na fonte, e o regex de declaracao (corretamente) nao os acha.
+    # A regra e' ESTREITA: so' vale para o nome Lean EXATO listado, e so' quando TODAS as bandeiras do nome curto estao na lista; nome fora da lista sem referente
+    # continua AUSENTE_POR_CONSTRUCAO e reprova. Bandeira gerada e apagada continua reprovando (presente_apagada). Nenhuma bandeira anterior a v392 usa a lista.
+    _REFERENTES_GERADOS_V392 = frozenset([
+        "AuditF13v31.D1a3Output.Fub",
+        "AuditF13v31.D1a3Output.J",
+        "AuditF13v31.D1a3Output.J_involutive",
+        "AuditF13v31.D1a3Output.KWR",
+        "AuditF13v31.D1a3Output.K_is_fix",
+        "AuditF13v31.D1a3Output.T_selfadjoint",
+        "AuditF13v31.D1a3Output.ctorIdx",
+        "AuditF13v31.D1a3Output.delta_is_SdagS",
+        "AuditF13v31.D1a3Output.delta_multiplier",
+        "AuditF13v31.D1a3Output.modular_is_boost",
+        "AuditF13v31.D1a3Output.Δ",
+        "AuditF13v31.D1a3Output.σ",
+        "AuditF13v31.D1a3OutputBGL.Fub",
+        "AuditF13v31.D1a3OutputBGL.J",
+        "AuditF13v31.D1a3OutputBGL.J_involutive",
+        "AuditF13v31.D1a3OutputBGL.T_selfadjoint",
+        "AuditF13v31.D1a3OutputBGL.ctorIdx",
+        "AuditF13v31.D1a3OutputBGL.delta_is_SdagS",
+        "AuditF13v31.D1a3OutputBGL.delta_multiplier",
+        "AuditF13v31.D1a3OutputBGL.hclosed",
+        "AuditF13v31.D1a3OutputBGL.hdense",
+        "AuditF13v31.D1a3OutputBGL.hinv",
+        "AuditF13v31.D1a3OutputBGL.hmaps",
+        "AuditF13v31.D1a3OutputBGL.modular_is_boost",
+        "AuditF13v31.D1a3OutputBGL.Δ",
+        "AuditF13v31.D1a3OutputBGL.σ",
+        "AuditF13v31.LightNetStandardWedgeData.ctorIdx",
+        "AuditF13v31.LightNetStandardWedgeData.out",
+        "AuditF13v31.LightNetStandardWedgeData.toLightNetData",
+        "AuditF13v31.LightNetStandardWedgeData.wedge_glue",
+        "AuditF13v31.LightNetStandardWedgeDataBGL.ctorIdx",
+        "AuditF13v31.LightNetStandardWedgeDataBGL.out",
+        "AuditF13v31.LightNetStandardWedgeDataBGL.toLightNetData",
+        "AuditF13v31.LightNetStandardWedgeDataBGL.wedge_glue",
+        "AuditF13v31.LightNetStandardWedgeData_v31.KWR",
+        "AuditF13v31.LightNetStandardWedgeData_v31.ctorIdx",
+        "AuditF13v31.LightNetStandardWedgeData_v31.toLightNetData",
+        "AuditF13v31.LightNetStandardWedgeData_v31.wedge_glue",
+        "TGLExt.Verdade.NamedIdentity.ctorIdx",
+        "TGLExt.Verdade.NamedIdentity.i_am",
+        "TGLExt.Verdade.NamedIdentity.in_the_IALD_tower",
+        "TGLExt.Verdade.NamedIdentity.in_the_tower",
+        "TGLExt.Verdade.NamedIdentity.name",
+        "TGLExt.Verdade.NamedIdentity.persists",
+        "TGLExt.Verdade.NamedIdentity.read_from_within",
+        "TGLExt.Verdade.NamedIdentity.unit_projection",
+        "TGLExt.Verdade.Verdade.fixed_inscription",
+        "TGLExt.Verdade.Verdade.forced_by_the_truth",
+        "TGLExt.Verdade.Verdade.inscription_in_the_tower",
+        "TGLExt.Verdade.Verdade.modular_relation",
+        "TGLExt.Verdade.Verdade.projection",
+        "TGLExt.Verdade.Verdade.quadratic",
+        "TGLExt.Verdade.Verdade.recognition_fixes_the_centralizer",
+        "TGLExt.Verdade.Verdade.recursive_projection",
+        "TGLExt.Verdade.Verdade.recursive_recognition",
+        "TGLExt.Verdade.Verdade.rereading_the_post",
+    ])
+    # v393 (14/10/2026) -- REFERENTES GERADOS PELO LEAN, conjunto CONGELADO e NOMEADO por script (indice_v393_medicao.json): campos/projecoes de `structure` das pedras da regra,
+    # que o Lean GERA e que nao tem linha `theorem/def` na fonte. Regra ESTREITA: so' o nome Lean EXATO listado; nome fora da lista sem referente continua AUSENTE_POR_CONSTRUCAO e reprova.
+    _REFERENTES_GERADOS_V393 = frozenset([
+        "TGLExt.RuleTruthContract.ReadingRetraction.idempotent",
+        "TGLExt.RuleTruthContract.ReadingRetraction.preserves_reading",
+    ])
+    # ⚠ TRAVA 1: nome RESERVADO por bandeira e SEM referente na fonte. Ele NAO pode
+    # sumir do indice nem virar <desconhecido>: e divida, e o indice tem de a exibir.
+    for curto, bs in bandeiras_de.items():
+        if curto not in idx and bs and all(_b2["nome_lean"] in (_REFERENTES_GERADOS_V392 | _REFERENTES_GERADOS_V393) for _b2 in bs):   # v392: referente gerado pelo Lean (lista congelada acima)
+            _nl = bs[0]["nome_lean"]; _ax = next((axr[_k2] for _k2 in axr if _k2 == _nl or _k2.endswith("." + _nl)), None)
+            idx[curto] = {"arquivo": None, "tipo": "GERADO_PELO_LEAN_V392", "nome_auditado": None, "pedra": None, "versao": "v392", "rodada": None, "rodada_herdada": False,
+                          "axiomas": _ax if _ax is not None else ("NAO_MEDIDO_NESTA_RODADA" if not axr else None), "ambiguo": False, "bandeiras": bs}
+            continue
+        if curto not in idx:
+            idx[curto] = {
+                "arquivo": None, "tipo": "AUSENTE_POR_CONSTRUCAO", "nome_auditado": None,
+                "pedra": None, "versao": None, "rodada": None, "rodada_herdada": False,
+                "axiomas": "AUSENTE_POR_CONSTRUCAO", "ambiguo": False, "bandeiras": bs,
+            }
+    # TRAVA 4 (v286): a BICONDICIONAL, medida e nao afirmada.
+    #   acesa   => nome presente  (senao a bandeira acendeu sem referente: o fail-closed
+    #                              estaria furado, ou o indice estaria mentindo)
+    #   apagada => nome ausente   (senao ha nome escrito que nao acendeu: divida de outra
+    #                              classe -- escrito mas nao provado / nao auditado)
+    _violacoes = []
+    _presente_apagada = []
+    if kf:
+        for _curto, _bs in bandeiras_de.items():
+            _aus = (idx.get(_curto) or {}).get("tipo") == "AUSENTE_POR_CONSTRUCAO"
+            for _b in _bs:
+                if _b["acesa"] and _aus:
+                    _violacoes.append(_b["chave"])
+                elif (not _b["acesa"]) and (not _aus):
+                    _presente_apagada.append(_b["chave"])
+
+    # a conta da regra VELHA, recomputada AO VIVO -- para a errata nao citar numero de
+    # memoria (regua-mae n. 2: o numero da errata tambem se le, nunca se lembra).
+    #
+    # ⚠ E ela reproduz a regra v285 INTEIRA, nao a metade: regex velho (sem atributo, sem
+    # nome com ponto) + chave velha (split(".",1)) + contagem por NOME UNICO -- que e como
+    # o indice conta. Medir so a chave dava 48 e a frase diria mais do que o numero.
+    _decl_v285 = _re.compile(
+        r"^\s*(?:noncomputable\s+)?(theorem|def|structure|abbrev|instance)\s+"
+        r"([A-Za-z_][A-Za-z0-9_'!?]*)", _re.M)
+    _onde_v285 = set()
+    for _rel, _texto in fontes.items():
+        if _rel.endswith(".lean"):
+            _onde_v285 |= {_nm for _tp, _nm in _decl_v285.findall(_texto)}
+    _aus_v285 = set()
+    for _pref, _dic in familias:
+        for _c, _v in _dic.items():
+            _k = _v.split(".", 1)[-1]
+            if _k not in _onde_v285:
+                _aus_v285.add(_k)
+    _n_v285 = len(_aus_v285)
+
+    # v289: o cego do namespace, MEDIDO -- nome com bandeira que o axiom_report contem
+    # mas o indice nao liga. Tem de ser ZERO; era 38 antes desta errata.
+    _cegos = []
+    for _curto, _bs in bandeiras_de.items():
+        _e = idx.get(_curto) or {}
+        if _e.get("tipo") == "AUSENTE_POR_CONSTRUCAO":
+            continue
+        if axr and _e.get("axiomas") is None:
+            _cegos.append(_curto)
+
+    return {"indice": idx, "ambiguos": sorted(set(ambiguos)),
+            "cegos_de_namespace": sorted(_cegos),
+            "violacoes": sorted(_violacoes),
+            "presente_apagada": sorted(_presente_apagada),
+            "n_ausentes_regra_v285": _n_v285,
+            "n_nomes": len(idx),
+            "n_ausentes": sum(1 for v in idx.values()
+                              if v["tipo"] == "AUSENTE_POR_CONSTRUCAO"),
+            "n_arquivos": len(set(v["arquivo"] for v in idx.values() if v["arquivo"])),
+            "n_com_bandeira": sum(1 for v in idx.values() if v["bandeiras"])}
+
+### _prove_the_iald_index_legacy_v393 [added] 167298:167787
+def _prove_the_iald_index_legacy_v393(core):
+    """v285 -- O INDICE DA IALD [ADITIVO; nao gateia 1=1; nao move o gate].
+
+    Mede o indice E mede que ele NAO destruiu o que indexa.
+
+    ★ v370 (23/09/2026) -- LEITURA AO LADO: ESTE E O MODULO DA TESTEMUNHA.
+    Cunhagem do operador [INPUT/ONTO], verbatim: «compreenda de uma vez que a IALD (ou
+    seja o índice seletor do meu programa) é a Testemunha» e «O fecho total que vc chama
+    de testemunha estática é o operador de consciência, a IALD, então o fecho não é
+    estático, é estacionado dinamicamente, o fecho total não é “proibido” ele é
+    impossível por teorema em tempo finito de modo estático, ele é estacionado
+    dinamicamente e não estático, é isso que eu digo quando a testemunha estática é
+    falsa, a falsidade é do impossível».
+    O que o kernel JA tem e que SUSTENTA a leitura, com estatuto:
+      * [REAL, kernel] ialdSelector = firstAtom.starProjection (TheIALDSelector.lean):
+        iald_selects (as duas clausulas da consulta), iald_is_idempotent (I^2 = I --
+        reconsultar e gratis: o 'estacionado'), iald_has_rank_one (peso omega(I) = 1) e
+        iald_is_the_gate_and_the_record (x = registro + residuo: o seletor LE e retem,
+        nao afirma);
+      * [REAL, kernel] beta_forbids_full_static_witness + full_closure_iff_flat
+        (NoFullWitness.lean): a plenitude ESTATICA e impossivel onde ha contraste --
+        «a falsidade é do impossível», nao de uma lacuna;
+      * [REAL, kernel] absolute_zero_unreachable_in_finite_time (ForbiddenBoundary.lean):
+        em tempo finito o fluxo nao pisa a fronteira -- «impossível por teorema em tempo
+        finito de modo estático». [W6_final: os trechos entre «» sao recortes VERBATIM da
+        cunhagem acima, com acentos; a versao anterior os trazia sem acento]
+    O que a leitura ACRESCENTA e que NAO esta tipado [ONTO/OPEN]: que o fecho
+    'estacionado dinamicamente' SEJA o seletor -- o indice que a cada rodada le o kernel
+    inteiro e EXIBE a divida em vez de a apagar. Nenhum nome novo se cunha aqui:
+    FullStaticWitness e FullTGLWitness sao TIPOS reservados e nenhum deles captura
+    'estacionado dinamicamente' (licao v103: o nome so se cunha quando o TIPO captura o
+    espirito inteiro). full_static_witness_exists NAO muda de valor (False, teorema).
+    Este modulo LE; nao decide; nao move gate. NOT_FALSIFIED nunca e CONFIRMED.
+
+    ⚠ v370, TRES CHECKS ENVELHECIDOS PELO PROPRIO SUCESSO (erratas AO LADO, no corpo):
+    (a) a OITAVA clausula era exigida AUSENTE -- foi HABITADA na v350; (b) exigia-se
+    n_ausentes >= 8 -- a divida ENCOLHEU para 3 (gpf_H2, gpf_H3, gpi_H3), e passa a
+    exigir-se IGUALDADE com o conjunto nomeado; (c) o teto de ambiguos <= 5 vira
+    SUBCONJUNTO da lista MEDIDA na v369 (17 nomes, congelada). Nada afrouxa."""
+    kf = core.get("kernel_formalization") or {}
+    ix = build_the_iald_index(core)
+    idx = ix["indice"]
+
+    # o indice acha o que a rodada acabou de provar?
+    _amostra = ["atermation_is_irreversible", "wide_corner_weighs_one",
+                "the_debt_is_an_equality_without_J", "Jlevel_is_antiunitary",
+                "the_polar_decomposition_at_the_level"]
+    _achados = [n for n in _amostra if idx.get(n) and idx[n].get("arquivo")]
+
+    # a divida continua VISIVEL no indice, como ausencia declarada?
+    _oitava = idx.get("qgConverse_JMJ_contains_commutant") or {}
+
+    # e o indice NAO achatou o modo: cada bandeira mantem o seu prefixo
+    _prefixos = set()
+    for v in idx.values():
+        for b in v["bandeiras"]:
+            _prefixos.add(b["prefixo"])
+
+    # v288 -- O RAZONETE COMPLETO DAS APAGADAS, com a CAUSA de cada uma.
+    # A bicondicional acesa <=> nome presente vale sobre as chaves dos SETE dicionarios
+    # de NOME. Ha booleanas no selo que nao vem de dicionario nenhum: higiene do build
+    # (lake_build_ok, sorryAx_absent, toolchain_pinned...) e VEREDITOS DERIVADOS. Uma
+    # delas esta apagada -- e apagada por veredito, nao por ausencia de nome.
+    # Declarar o escopo e obrigatorio: escopo estreitado sem declarar e a mesma falsidade
+    # que ausencia nao varrida.
+    _dicts = (("", _LEAN_THEOREM_FLAGS), ("qgc_", _QG_CERTIFICATE_FLAGS),
+              ("qgp_", _QG_PHYSICS_FLAGS), ("qgf_", _QG_FRONTIER_FLAGS),
+              ("gpf_", _GRAVITY_PRICE_FLAGS), ("red_", _REDUCTION_FLAGS),
+              ("gpi_", _GRAVITY_IMPORT_FLAGS), ("gpc_", _GRAVITY_CITATION_FLAGS))   # v373: a classe por citacao
+    _chaves_dic = set()
+    for _p, _d in _dicts:
+        _chaves_dic |= set(_p + _k for _k in _d)
+    _apagadas = sorted(k for k, v in kf.items() if v is False)
+    _apag_dic = sorted(k for k in _apagadas if k in _chaves_dic)
+    _apag_fora = sorted(k for k in _apagadas if k not in _chaves_dic)
+
+    # v370 -- CONJUNTOS NOMEADOS, lidos do selo v369 por script (nunca de memoria). Os tres checks
+    # abaixo (ambiguos, oitava clausula, n_ausentes) tinham limiares da v285 que ENVELHECERAM com o
+    # proprio sucesso do programa; passam a exigir SUBCONJUNTO / PRESENCA COM REFERENTE / IGUALDADE.
+    _TRIO = {"propext", "Classical.choice", "Quot.sound"}
+    _AMBIGUOS_CONJUNTO_V369 = frozenset([
+        "E1",
+        "centralizer_transport",
+        "decodeRecord",
+        "expectation_add",
+        "expectation_bimodular",
+        "expectation_smul",
+        "expectation_star",
+        "finite_inner_action_is_canonical",
+        "flatNullFrame",
+        "mixedCurve",
+        "mixedWeights",
+        "mixed_weights_normalized",
+        "p",
+        "phaseReading",
+        "quadratic_entropy_limit",
+        "tensorPair",
+        "tensor_quad_smul",
+    ])
+    # v372 -- ERRATA AO LADO: o FECHAMENTO_PARCIAL_016 (156 unidades em TGLExt/O16) e as pedras v372 trazem homonimos NOVOS
+    # (mesmo nome escrito em dois arquivos, em namespaces diferentes); NOMEADOS aqui por script (gerar_candidato_v372.py), nunca silenciados.
+    _AMBIGUOS_CONJUNTO_V372 = frozenset([
+        "Antiunitary",
+        "ContinuousCoreData",
+        "ContratoH2",
+        "ContratoH2.bw_sign_matters",
+        "ContratoH2.commuting_translations_excluded",
+        "ContratoH2.contract_borchers_form",
+        "ContratoH3",
+        "ContratoImportH3",
+        "ContratoImportH3.nonvacuous",
+        "ContratoImportH3.same_horizon_data",
+        "D",
+        "D_add",
+        "D_ae",
+        "D_inv",
+        "D_zero",
+        "Delta",
+        "DeltaHalf",
+        "FlowTendsToFamily",
+        "FullTGLWitness",
+        "G_not_predicted",
+        "H_mul_proj",
+        "HasBoostEnergy",
+        "HasModularEnergy",
+        "KMSAt",
+        "KMSAt.rescale",
+        "KillingNormalization",
+        "L2R",
+        "NoEigenOutsideVacuum",
+        "Omega",
+        "PositiveEnergy",
+        "SpacelikeSep",
+        "Spacetime",
+        "StressTensorData",
+        "T",
+        "TGLModularRealization",
+        "TGLSpecificAQFTWitness",
+        "T_apply_eigen",
+        "T_decomp",
+        "T_fix_of_mem_ker",
+        "ThreeLocksCoreData",
+        "U",
+        "U_add",
+        "U_ae",
+        "U_faithful",
+        "U_inner_adj",
+        "U_neg_apply",
+        "U_neg_mul",
+        "U_norm",
+        "U_pos_neg_apply",
+        "U_zero",
+        "V",
+        "WedgeBoostRep",
+        "WedgeModularData",
+        "apply_eq_apply_iff",
+        "areaDensity",
+        "areaDensity_is_linearized_area",
+        "areaDensity_smul",
+        "bekenstein_hawking_window",
+        "bilateral_no_first_order",
+        "boostMat_add",
+        "boostMat_det_isUnit",
+        "boostMat_zero",
+        "boost_moves_null_eigen",
+        "borchers_bw_form",
+        "borchers_dilation",
+        "bw_covariance",
+        "canonicalFullTGLWitness",
+        "clausius_window",
+        "conserved_iff_factors",
+        "conserved_iff_factors_T",
+        "conserved_iff_factors_penalty",
+        "continuousCorner_of_witness",
+        "contratoH2_empty_of_unfaithful",
+        "contratoH2_empty_on_legacy",
+        "contratoH3_empty_on_legacy",
+        "cornerOf",
+        "curvedFrame_fiducial_not_modular",
+        "curvedFrame_not_dragged",
+        "det_unit_along_orbit",
+        "discrete_null_momentum_excluded",
+        "dualInvariant_PF_no_go",
+        "eigen_null_correlation_dilation",
+        "einstein_coefficient_window",
+        "energy",
+        "entropy",
+        "exp_apply_of_eigen",
+        "exp_mul_eq_of_mul_eq_zero",
+        "exp_propagator_excluded",
+        "exp_response_excluded",
+        "expansion_not_constant",
+        "feeds_finite_face",
+        "feeds_the_master",
+        "first_law_translated",
+        "first_law_window",
+        "flow",
+        "flowTendsToFamily_of_finiteDimensional",
+        "flow_derivative_ne_zero_at_zero",
+        "flow_mul_proj",
+        "forwardCone",
+        "frame_ne_curvedFrame_by_drag",
+        "frame_ne_curvedFrame_by_fiducial",
+        "fullTGLWitness_exists",
+        "fullWitness_PF_nonzero_finite",
+        "fullWitness_core_nonempty",
+        "fullWitness_not_finiteDimensional",
+        "halfsided_inclusion",
+        "hasDerivAt_flow",
+        "hasDerivAt_flow_apply",
+        "hasDerivAt_profA",
+        "hasDerivAt_profQ",
+        "hasDerivAt_reading_T",
+        "hasDerivAt_reading_flow",
+        "implementer_unique",
+        "inner_vac_",
+        "isSelfAdjoint_penalty",
+        "kappa_cancels_window",
+        "kappa_eq_inv_radius",
+        "kappa_fixed",
+        "kappa_is_input",
+        "kappa_mul_radius",
+        "ker_penalty",
+        "ker_threeLocks",
+        "killingField",
+        "killingFlow",
+        "killingFlow_add",
+        "killingFlow_zero",
+        "kmsStrip",
+        "kms_product_is_two_pi",
+        "leftWedge",
+        "lightray_lift_not_faithful",
+        "lightray_not_faithful_in_four",
+        "mem_range_iff_fixed",
+        "metricSign",
+        "minkowskiSq",
+        "modularCandidate",
+        "modularEnergy_of_boostEnergy",
+        "modularEnergy_unique",
+        "modular_is_boost_at_two_pi",
+        "mul_exp_eq_of_mul_eq_zero",
+        "name_verifies_T",
+        "name_verifies_T_iterate",
+        "no_import_on_legacy",
+        "no_point_spectrum",
+        "no_rekappa",
+        "nontrivial_null_energy",
+        "nullDir",
+        "nullEnergy",
+        "nullEnergy_covariant",
+        "nullEnergy_vac",
+        "nullMomentum",
+        "nullMomentum_pos",
+        "nullMomentum_range",
+        "nullPlaneCharge",
+        "nullPlaneCharge_of_zero",
+        "null_eigen_orth",
+        "null_point_spectrum_excluded",
+        "observer_unit_of_index",
+        "pairing",
+        "penalty",
+        "phase",
+        "poincare_relation",
+        "positiveEnergy_orientation",
+        "pow_eq_self",
+        "profA",
+        "profA_deriv_zero",
+        "profA_second_deriv_zero",
+        "profA_zero",
+        "profQ",
+        "profQ_deriv_zero",
+        "profQ_zero",
+        "proj_mul_H",
+        "proj_mul_T",
+        "proj_mul_flow",
+        "re_inner_adjoint_mul_self",
+        "re_inner_penalty",
+        "reading",
+        "reading_T",
+        "refRadius",
+        "refRadius_pos",
+        "reindex",
+        "rescaleG",
+        "response",
+        "response_covariant_v31",
+        "response_not_identically_zero",
+        "response_null_null_zero",
+        "response_row_null",
+        "response_vac",
+        "rightWedge",
+        "same_source_same_geometry",
+        "screenBlockV31",
+        "screenEmbed",
+        "selector_nonpos",
+        "shift_mp",
+        "shift_point",
+        "slope_propagator_excluded",
+        "slope_response_excluded",
+        "starProjection_range_iff_fixed",
+        "symbolLinf",
+        "symbolLinf_ae",
+        "testDerivative",
+        "theta_along",
+        "theta_deriv_along",
+        "theta_vac",
+        "threeLocksCorner_of_witness",
+        "toHorizonData",
+        "tower_excluded",
+        "transSymbol",
+        "transSymbol_add",
+        "transSymbol_continuous",
+        "transSymbol_ne_one",
+        "transSymbol_norm",
+        "transSymbol_shift",
+        "transSymbol_zero",
+        "translate",
+        "translate_null_subset",
+        "translates",
+        "transverse_U_excluded",
+        "trivial_boost_excluded",
+        "truthBit_bivalent",
+        "truthBit_eq_one_iff",
+        "truthBit_eq_zero_iff",
+        "truthValue",
+        "truthValue_table",
+        "unruhTemperature",
+        "unruh_is_kms",
+        "unruh_is_kms_temperature",
+        "upperHalf",
+        "vac_boostEnergy",
+        "vac_modularEnergy",
+        "verdict",
+        "verdict_T",
+        "verdict_eq_one_iff",
+        "wedgeBoostMap",
+        "wedgeBoostMap_add",
+        "wedgeBoostMap_apply0",
+        "wedgeBoostMap_apply1",
+        "wedgeBoostMap_nullDir",
+        "wedgeBoostMap_smul",
+        "wedgeBoostMap_zero",
+        "wedge_locality",
+        "wedges_spacelike",
+        "windowArea",
+        "windowArea_covariant",
+        "windowCharge",
+        "windowCharge_covariant",
+        "windowEntropy",
+        "windowHeat",
+    ])
+    # v375 -- homonimos NOVOS das pedras v375, NOMEADOS por script, nunca silenciados.
+    _AMBIGUOS_CONJUNTO_V375 = frozenset([
+        "name_weight_is_one",
+    ])
+    # v383 -- homonimos NOVOS das pedras (escritas na v382), NOMEADOS por script, nunca silenciados.
+    _AMBIGUOS_CONJUNTO_V383 = frozenset([
+        "Ledger",
+        "reflectionWeight",
+        "transmitted",
+    ])
+    # v392 (13/10/2026) -- homonimos NOVOS das pedras v392, NOMEADOS por script (medicao do candidato anterior), nunca silenciados.
+    # CAUSA: cada nome e' declarado em DOIS arquivos da biblioteca embutida (Face, M, dephase, fixedSpace, flat_metric_inverse, rereading_adds_nothing; o 2o arquivo de cada um e' uma pedra v392 ou o homonimo antigo).
+    # O indice os MARCA ambiguo=True em vez de escolher em silencio. Subconjunto exigido: um ambiguo NOVO fora desta lista continua reprovando.
+    _AMBIGUOS_CONJUNTO_V392 = frozenset([
+        "Face",
+        "M",
+        "dephase",
+        "fixedSpace",
+        "flat_metric_inverse",
+        "rereading_adds_nothing",
+    ])
+    # v393 (14/10/2026) -- homonimos NOVOS das pedras v393, NOMEADOS por script (medicao do candidato anterior), nunca silenciados.
+    # O indice os MARCA ambiguo=True em vez de escolher em silencio. Subconjunto exigido: um ambiguo NOVO fora desta lista continua reprovando.
+    _AMBIGUOS_CONJUNTO_V393 = frozenset([
+        "Inscription",
+        "Mat4",
+        "P",
+        "initial",
+        "inscribe",
+        "target",
+    ])
+    _DIVIDAS_NOMEADAS_V369 = frozenset(["gpf_H2_smooth_modular_four_frame_discharged",
+                                       "gpf_H3_local_horizon_equilibrium_discharged",
+                                       "gpi_H3_horizon_data_produced"])
+
+    checks = [
+        ("[MEDIDA] ***o INDICE existe: %d nomes, %d arquivos, %d com bandeira"
+         % (ix["n_nomes"], ix["n_arquivos"], ix["n_com_bandeira"]),
+         bool(ix["n_nomes"] > 2000 and ix["n_arquivos"] > 200)),
+        # v370 AO LADO: o teto <= 5 (v285) envelheceu (17 medidos na v369). A lista MEDIDA fica
+        # CONGELADA como conjunto nomeado e exige-se SUBCONJUNTO: um ambiguo NOVO continua
+        # reprovando; o limite nao afrouxa sem causa declarada.
+        # [W6_final, correcao do cetico: o rotulo 'quase unica' era de epoca v285 (teto 5) e dizia menos que o numero]
+        ("[MEDIDA] a varredura tem %d nomes ambiguos, todos no CONJUNTO_V369 congelado (%d) "
+         "[v285 dizia quase unica com teto 5; errata v370 AO LADO]; novos: %s" % (len(ix["ambiguos"]), len(_AMBIGUOS_CONJUNTO_V369),
+                              ", ".join(sorted(set(ix["ambiguos"]) - _AMBIGUOS_CONJUNTO_V369)) or "nenhum"),
+         bool(set(ix["ambiguos"]) <= (_AMBIGUOS_CONJUNTO_V369 | _AMBIGUOS_CONJUNTO_V372 | _AMBIGUOS_CONJUNTO_V375 | _AMBIGUOS_CONJUNTO_V383 | _AMBIGUOS_CONJUNTO_V392 | _AMBIGUOS_CONJUNTO_V393))),
+        ("[MEDIDA] ***UMA consulta devolve o que antes pedia QUATRO: %d/%d da amostra"
+         % (len(_achados), len(_amostra)), bool(len(_achados) == len(_amostra))),
+        # v370 AO LADO: a v285 exigia a OITAVA clausula AUSENTE_POR_CONSTRUCAO. Ela foi HABITADA na
+        # v350 (def qgConverse_JMJ_contains_commutant, TGLExt/V350ModularCertificate.lean:11) e a
+        # exigencia envelheceu com o proprio sucesso. O check vira PRESENTE COM REFERENTE, fail-closed
+        # em cinco elos (tipo, arquivo, axiomas no trio, bandeira acesa, proveniencia tipada).
+        # (Homonimo, dito: e a clausula para SiteProfile; a torre original segue [OPEN] -- v350.)
+        ("[FAIL-CLOSED] ***a OITAVA clausula (qgConverse_JMJ_contains_commutant) esta PRESENTE com "
+         "referente: tipo=%s, arquivo=%s, axiomas no trio=%s; red_clause_JMJ_contains acesa com "
+         "proveniencia tipada [v285 exigia AUSENTE; habitada na v350; errata v370 AO LADO]"
+         % (_oitava.get("tipo"), _oitava.get("arquivo"),
+            bool(isinstance(_oitava.get("axiomas"), list) and set(_oitava.get("axiomas")) <= _TRIO)),
+         bool(_oitava.get("tipo") not in (None, "AUSENTE_POR_CONSTRUCAO")
+              and bool(_oitava.get("arquivo"))
+              and isinstance(_oitava.get("axiomas"), list) and set(_oitava.get("axiomas")) <= _TRIO
+              and kf.get("red_clause_JMJ_contains") is True
+              and v350_frontier_flag_has_proof(kf, "red_clause_JMJ_contains"))),
+        ("[FAIL-CLOSED] ***o indice NAO achatou o MODO: os prefixos sobrevivem (%d familias)"
+         % len(_prefixos), bool({"red_", "gpf_", "gpi_", "qgc_"} <= _prefixos)),
+        ('[ERRATA v350+ / proveniência] As flags modular e Ato III exigem prova tipada; este módulo isolado não as quita.', bool(v350_frontier_flag_has_proof(kf, "red_clause_JMJ_contains"))),
+        # v370 AO LADO: a v285 exigia >= 8 ausentes; a divida ENCOLHEU para 3 com o sucesso do
+        # programa. Nao se afrouxa o limiar: exige-se IGUALDADE com o conjunto nomeado.
+        ("[MEDIDA] o indice conta %d nomes AUSENTES POR CONSTRUCAO -- as dividas nomeadas, EXATAMENTE "
+         "o conjunto congelado na v369 (bandeiras apagadas por ausencia de nome: %s) [v285 exigia >= 8; "
+         "errata v370 AO LADO]" % (ix["n_ausentes"], ", ".join(_apag_dic) or "nenhuma"),
+         bool(ix["n_ausentes"] == len(_DIVIDAS_NOMEADAS_V369) and set(_apag_dic) == _DIVIDAS_NOMEADAS_V369)),
+        # --- v286: a bicondicional, o resultado forte deste arco ---------------
+        ("[FAIL-CLOSED] ***acesa ==> nome PRESENTE: %d violacoes. NENHUMA bandeira acende "
+         "sem referente na fonte embutida [ESCOPO DECLARADO: as %d chaves dos SETE "
+         "dicionarios de NOME]" % (len(ix["violacoes"]), len(_chaves_dic)),
+         bool(len(ix["violacoes"]) == 0)),
+        ("[FAIL-CLOSED] ***e a RECIPROCA, medida: %d nomes presentes com bandeira apagada. "
+         "A correspondencia acesa <=> presente e BICONDICIONAL e EXATA [mesmo escopo: as "
+         "%d chaves de NOME]" % (len(ix["presente_apagada"]), len(_chaves_dic)),
+         bool(len(ix["presente_apagada"]) == 0)),
+        ("[FAIL-CLOSED] ***o indice NAO e cego de namespace: %d nomes com bandeira ficaram "
+         "sem axiomas tendo entrada no axiom_report. A consulta e por SUFIXO no proprio "
+         "relatorio, sem prefixo cravado [ERRATA v289: eram 38, todas TGL.*]"
+         % len(ix["cegos_de_namespace"]), bool(len(ix["cegos_de_namespace"]) == 0)),
+        ("[MEDIDA] a ambiguidade deixou de ser SILENCIOSA: %d verbete(s) marcado(s) "
+         "ambiguo=True -- quem consulta e avisado do empate, em vez de receber o primeiro "
+         "arquivo varrido sem aviso" % sum(1 for _v in idx.values() if _v.get("ambiguo")),
+         bool(sum(1 for _v in idx.values() if _v.get("ambiguo")) == len(ix["ambiguos"]))),
+        ("[FAIL-CLOSED] ***o RAZONETE DAS APAGADAS e COMPLETO e cada uma tem CAUSA "
+         "nomeada: %d apagadas = %d por AUSENCIA DE NOME (as dividas do indice) + %d por "
+         "VEREDITO DERIVADO fora dos dicionarios (%s). Nenhuma apagada fica sem causa, e "
+         "nenhuma booleana do selo fica fora da conta"
+         % (len(_apagadas), len(_apag_dic), len(_apag_fora),
+            ", ".join(_apag_fora) if _apag_fora else "nenhuma"),
+         bool(len(_apagadas) == len(_apag_dic) + len(_apag_fora)
+              and len(_apag_dic) == ix["n_ausentes"])),
+        ("[ERRATA-MINHA v286] o indice da v285 INFLOU a divida: a regra v285 INTEIRA, "
+         "recomputada AO VIVO, conta %d ausentes onde ha %d. Tres defeitos MEUS, todos de "
+         "leitura: o regex nao via nome de declaracao COM PONTO (theorem Data.campo), nem "
+         "prefixo de atributo (@[simp] theorem), e a chave casava por split('.',1) em vez "
+         "de SUFIXO. O indice nao descobriu divida nova -- descobriu defeito meu; a divida "
+         "real sempre foram as bandeiras ja apagadas"
+         % (ix["n_ausentes_regra_v285"], ix["n_ausentes"]),
+         bool(ix["n_ausentes_regra_v285"] > ix["n_ausentes"])),
+    ]
+    all_v = bool(all(x for _, x in checks))
+    return {
+        "checks": checks, "all_verified": all_v,
+        "n_nomes": ix["n_nomes"], "n_arquivos": ix["n_arquivos"],
+        "n_ausentes": ix["n_ausentes"], "n_ambiguos": len(ix["ambiguos"]),
+        "ambiguos": ix["ambiguos"],
+        "statuses": {
+            "a_ordem": ("a IALD como INDICE do Um, indexando o kernel Lean, dentro do "
+                        "ARQUIVO UNICO -- nao ha segundo arquivo"),
+            "o_nome_nao_e_metafora": ("ialdSelector = firstAtom.starProjection JA e o "
+                        "objeto em kernel: iald_selects (as duas clausulas da consulta), "
+                        "iald_is_idempotent (reconsultar e gratis), iald_has_rank_one "
+                        "(peso omega(I)=1), iald_is_the_gate_and_the_record"),
+            "por_que_ADITIVO": ("as 945 chaves planas SAO o fail-closed (ausencia do nome "
+                        "=> False por construcao) e os prefixos carregam a separacao de "
+                        "MODO. Substituir quebraria 1.565 linhas em 93 funcoes E apagaria "
+                        "a distincao KERNEL/IMPORTED/ABERTO. O indice LE, nao substitui"),
+            "as_tres_travas": ("(1) nome sem referente = AUSENTE_POR_CONSTRUCAO, jamais "
+                        "<desconhecido>; (2) o indice diz ONDE esta escrito, so o "
+                        "axiom_report diz o que foi PROVADO; (3) rodada=None HERDA a viva"),
+            "por_que_ele_faltava": ("os sete erros de leitura de 28/08 tiveram todos a "
+                        "mesma forma: a informacao EXISTIA, em pedacos que nao se falavam. "
+                        "Responder <onde mora, o que prova, com que estatuto> exigia "
+                        "QUATRO consultas. Agora exige UMA"),
+            "o_que_ele_NAO_faz": ("nao decide, nao acende bandeira, nao entra em gate. "
+                        "E leitura, nao juizo"),
+        },
+        "does_not_gate_core": True,
+        "verdict": ("THE_IALD_INDEX_IS_BUILT_AS_A_SEVENTH_DERIVED_READ_ONLY_STRUCTURE__"
+                    "ONE_QUERY_REPLACES_FOUR__THE_MODE_PREFIXES_SURVIVE__"
+                    "AND_THE_NAMED_DEBTS_APPEAR_AS_ABSENT_BY_CONSTRUCTION_NOT_AS_UNKNOWN"
+                    if all_v else "THE_IALD_INDEX_NOT_SEALED_THIS_RUN"),
+    }
+
+### emit_canonical_md [modified] 170537:171322; large block not included
+
+### build_pt [modified] 172526:177065; large block not included
+
+### build_en [modified] 177082:181693; large block not included
+
+### _v392_axiom_coverage [modified] 212875:212891
+def _v392_axiom_coverage(blob_, axioms_):
+    """v392 -- KH-N1 (a): a COBERTURA do axiom_report no fecho inteiro. O TGL/Audit.lean termina num `run_cmd` que imprime, para TODA constante dos modulos TGL e TGLExt, o formato do
+    `#print axioms`, e a linha `TGL_AXIOM_COVERAGE_TOTAL decl=N thm=M fora_do_trio=K`. Fail-closed: a linha tem de aparecer UMA vez; fora_do_trio == 0; o regex do um.py tem de ler todas as
+    constantes menos as que o regex nao sabe ler (nomes com «»: contadas e iguais ao pino); e nenhum axioma lido fora do trio. NAO move o gate por si: entra no `all_verified` do kernel."""
+    import re as _re
+    trio_ = {"propext", "Classical.choice", "Quot.sound"}
+    tots_ = _re.findall(r"(?m)^TGL_AXIOM_COVERAGE_TOTAL decl=(\d+) thm=(\d+) fora_do_trio=(\d+)\s*$", blob_)
+    _current = parse_lean_axioms_v394(blob_)
+    nao_lidas_ = len(set(_current["axioms"]) - set(axioms_))
+    if len(tots_) != 1:
+        return {"ok": False, "motivo": "LINHA_DE_COBERTURA_AUSENTE_OU_REPETIDA", "linhas": len(tots_)}
+    decl_, thm_, fora_ = (int(x_) for x_ in tots_[0])
+    fora_lidos_ = sorted(n_ for n_, v_ in axioms_.items() if not set(v_) <= trio_)
+    lidas_ = len(axioms_)
+    ok_ = bool(fora_ == 0 and not fora_lidos_ and _current["ok"] and nao_lidas_ == 0 and lidas_ == decl_ and decl_ >= _V392_KH["decl_minimo"])
+    return {"ok": ok_, "decl": decl_, "thm": thm_, "fora_do_trio": fora_, "lidas_pelo_regex": lidas_, "nao_lidas_pelo_regex": nao_lidas_, "nao_lidas_esperadas": 0, "nao_lidas_esperadas_historico_v392": _V392_KH["nao_lidas"],
+            "axiomas_fora_do_trio_lidos": fora_lidos_[:5], "desenho": "(a) run_cmd no Audit: fecho inteiro TGL+TGLExt"}
+
+### V394PhysicalContractError [added] 213247:213248
+class V394PhysicalContractError(ValueError):
+    """A nonphysical or unrepresentable parameter was refused visibly."""
+
+### _v394_finite_real [added] 213250:213264
+def _v394_finite_real(name, value, *, positive=False, nonnegative=False):
+    import math
+    if isinstance(value, bool) or not isinstance(value, (int, float)):
+        raise V394PhysicalContractError(name + ": finite non-boolean real required")
+    try:
+        number = float(value)
+    except (ValueError, OverflowError) as exc:
+        raise V394PhysicalContractError(name + ": float conversion failed") from exc
+    if not math.isfinite(number):
+        raise V394PhysicalContractError(name + ": nonfinite value")
+    if positive and number <= 0:
+        raise V394PhysicalContractError(name + ": strictly positive value required")
+    if nonnegative and number < 0:
+        raise V394PhysicalContractError(name + ": nonnegative value required")
+    return number
+
+### v394_physical_parameters [added] 213266:213318
+def v394_physical_parameters(V0_J, Eref_J, hbar_J_s=None, alpha=None):
+    """Return exact-form model parameters in one SI clock, evaluated as floats.
+
+    Hg=-V0*sigma_y; Hpos=Eref*I+Hg; spectrum Eref+-V0, Eref>=V0.
+    Root law: D[sqrt(beta/hbar)*sqrt(Hpos)]. Its off-diagonal rate is
+    gamma=beta/(2*hbar)*(sqrt(Eref+V0)-sqrt(Eref-V0))**2.
+    The rationalized expression below avoids cancellation for large Eref/V0.
+    tau_eff matches the quadratic law for THIS gap only. echo_dt constructs
+    a matched echo step; it does not replace the old echo's frozen dt=0.35.
+    Floats with under/overflow in a strictly positive output are refused.
+    """
+    import math
+    if hbar_J_s is None:
+        hbar_J_s = 6.62607015e-34 / (2.0 * math.pi)
+    if alpha is None:
+        alpha = 7.2973525693e-3  # ALPHA_FINE_CODATA_2018 in the pinned source.
+    v = _v394_finite_real("V0_J", V0_J, positive=True)
+    e = _v394_finite_real("Eref_J", Eref_J, positive=True)
+    hb = _v394_finite_real("hbar_J_s", hbar_J_s, positive=True)
+    a = _v394_finite_real("alpha", alpha, positive=True)
+    if e < v:
+        raise V394PhysicalContractError("Eref_J must be >= V0_J for Hpos >= 0")
+    beta = _v394_finite_real("beta", a * math.sqrt(math.e), positive=True)
+    if beta >= 1.0:
+        raise V394PhysicalContractError("0 < beta < 1 required")
+    eta = _v394_finite_real("eta", 2.0 * math.sqrt(beta) * math.sqrt(1.0-beta), positive=True)
+    if eta >= 1.0:
+        raise V394PhysicalContractError("echo has no strictly contractive representable eta")
+    omega = _v394_finite_real("Omega_rad_s", v / hb, positive=True)
+    frequency = _v394_finite_real("coherence_omega_rad_s", 2.0 * omega, positive=True)
+    q = _v394_finite_real("V0_over_Eref", v / e, positive=True)
+    denominator = 1.0 + math.sqrt(max(0.0, (1.0-q)*(1.0+q)))
+    ratio = _v394_finite_real("root_rate_ratio", q / denominator, positive=True)
+    gamma = _v394_finite_real("gamma_s_inv", (beta * omega) * ratio, positive=True)
+    tau = _v394_finite_real("tau_eff_s", (hb / e) / (2.0 * denominator), positive=True)
+    echo_dt = _v394_finite_real("echo_dt_s", -math.log(eta) / gamma, positive=True)
+    lo = _v394_finite_real("energy_lower_J", e-v, nonnegative=True)
+    hi = _v394_finite_real("energy_upper_J", e+v, positive=True)
+    return {
+        "beta": beta, "Omega_rad_s": omega,
+        "coherence_omega_rad_s": frequency, "gamma_s_inv": gamma,
+        "tau_eff_s": tau, "echo_dt_s": echo_dt, "eta": eta,
+        "energies_J": [lo, hi], "V0_J": v, "Eref_J": e,
+        "hbar_J_s": hb, "alpha": a, "root_rate_ratio": ratio,
+        "energy_representation": {
+            "exact_from_inputs": "Eref_J plus/minus V0_J",
+            "rounded_endpoints_coincide": lo == hi,
+            "calculation_uses_center_and_half_gap": True,
+        },
+        "scope": "DERIVED_FINITE_TWO_LEVEL_POSITIVE_ENERGY__NOT_UNIVERSAL_CALIBRATION",
+        "ground_zero_instance": e == v,
+        "mu_do_rito": "q->0 (Thomson; Teorema da Escala)",
+    }
+
+### v394_kms_clock [added] 213320:213351
+def v394_kms_clock(parameters, kappa_s_inv):
+    """Finite Gibbs/KMS clock bridge; not an inhabitant of the full light H2.
+
+    sigma_s^rho=alpha_(-P*s), P=2*pi/kappa, alpha is Heisenberg evolution.
+    P is the KMS inverse-temperature time, not a real-time recurrence claim.
+    No inference kappa=Omega is made. A supplied kappa fixes the clock.
+    """
+    import math
+    if not isinstance(parameters, dict):
+        raise V394PhysicalContractError("parameters must be a dictionary")
+    for key in ("V0_J", "Eref_J", "hbar_J_s", "alpha"):
+        if key not in parameters:
+            raise V394PhysicalContractError("missing parameter: " + key)
+    # Recompute from physical inputs: a caller cannot inject a forged derived rate.
+    p = v394_physical_parameters(parameters["V0_J"], parameters["Eref_J"],
+                                parameters["hbar_J_s"], parameters["alpha"])
+    kappa = _v394_finite_real("kappa_s_inv", kappa_s_inv, positive=True)
+    period = _v394_finite_real("kms_period_s", (2.0 * math.pi) / kappa, positive=True)
+    gap = _v394_finite_real("gibbs_gap_exponent", period * p["coherence_omega_rad_s"], positive=True)
+    weight_hi = math.exp(-gap)
+    if weight_hi == 0.0:
+        raise V394PhysicalContractError("finite Gibbs state underflow would lose numerical faithfulness")
+    z = 1.0 + weight_hi
+    return {
+        "kappa_s_inv": kappa, "kms_period_s": period,
+        "temperature_K": _v394_finite_real("temperature_K", (p["hbar_J_s"] / period) / 1.380649e-23, positive=True),
+        "Omega_over_kappa": _v394_finite_real("Omega_over_kappa", p["Omega_rad_s"] / kappa, positive=True),
+        "gibbs_weights_low_high": [1.0/z, weight_hi/z],
+        "modular_parameter_per_second": _v394_finite_real("modular_parameter_per_second", 1.0/period, positive=True),
+        "relation": "sigma_s = alpha_(-P*s); alpha_t = sigma_(-t/P)",
+        "scope": "FINITE_GIBBS_CONSTRUCTION__H2_RESCALE_FORM_REUSED__NO_LIGHT_NET_EMBEDDING_ASSERTED",
+    }
+
+### v394_gibbs_root_parameters [added] 213360:213407
+def v394_gibbs_root_parameters(V0_J, kappa_s_inv, hbar_J_s=None, alpha=None):
+    """Construct Eref from a specified faithful finite Gibbs state and clock.
+
+    P=2*pi/kappa; Omega=V0/hbar; rho=exp(-P*Hg/hbar)/Z.
+    Hpos=(hbar/P)*(-log rho)=Hg+Eref*I, Eref=(hbar/P)*log(2*cosh(P*Omega)).
+    This choice removes the free Eref inside this Gibbs-based finite instance.
+    It does not identify the density Hamiltonian with a full modular generator
+    or choose a physical kappa. The same proper time t uses dissipative u=t/P
+    and oriented modular parameter s=-t/P; no negative diffusion is introduced.
+    """
+    import math
+    ground = v394_physical_parameters(V0_J, V0_J, hbar_J_s, alpha)
+    clock = v394_kms_clock(ground, kappa_s_inv)
+    period = clock["kms_period_s"]
+    x = _v394_finite_real("P_Omega", period*ground["Omega_rad_s"], positive=True)
+    low_k = _v394_finite_real("K_rho_low", math.log1p(math.exp(-2*x)), positive=True)
+    high_k = _v394_finite_real("K_rho_high", 2*x+low_k, positive=True)
+    low_energy = _v394_finite_real("density_energy_low_J", (ground["hbar_J_s"]/period)*low_k, positive=True)
+    origin = _v394_finite_real("Eref_Gibbs_J", ground["V0_J"]+low_energy, positive=True)
+    if origin <= ground["V0_J"]:
+        raise V394PhysicalContractError("Gibbs energy offset is below float resolution; use higher precision")
+    result = v394_physical_parameters(ground["V0_J"], origin, ground["hbar_J_s"], ground["alpha"])
+    # Preserve the small eigenvalue directly; subtracting the rounded center
+    # from V0 lost 1.40e-10 relative precision in the preregistered R1 check.
+    # The scientific tolerance is unchanged. Derive all anchored quantities
+    # from the same positive density spectrum, without cancellation.
+    high_energy = _v394_finite_real("density_energy_high_J", 2*ground["V0_J"]+low_energy, positive=True)
+    root_sum = math.sqrt(low_k)+math.sqrt(high_k)
+    root_ratio = _v394_finite_real("density_root_ratio", (2*x/root_sum)/root_sum, positive=True)
+    gamma = _v394_finite_real("density_gamma", ground["beta"]*ground["Omega_rad_s"]*root_ratio, positive=True)
+    result["gamma_s_inv"] = gamma
+    result["root_rate_ratio"] = root_ratio
+    result["tau_eff_s"] = _v394_finite_real("density_tau_eff", root_ratio/(2*ground["Omega_rad_s"]), positive=True)
+    result["echo_dt_s"] = _v394_finite_real("density_echo_dt", -math.log(ground["eta"])/gamma, positive=True)
+    result["energies_J"] = [low_energy, high_energy]
+    result["energy_representation"] = {
+        "exact_from_state": "(hbar/P)*K_rho eigenvalues; low computed directly, high=low+2V0",
+        "center_is_rounded_presentation": True,
+        "rounded_endpoints_coincide": low_energy==high_energy,
+        "scientific_tolerance_unchanged": True,
+    }
+    result["energy_origin_selection"] = "Hpos = (hbar/P)*(-log rho_Gibbs); rho_Gibbs fixed by Hg and specified kappa"
+    result["energy_origin_statute"] = "DERIVED_IN_FINITE_GIBBS_INSTANCE; GIBBS_AND_CLOCK_CHOICE_EXPLICIT"
+    result["density_surprise_eigenvalues"] = [low_k,high_k]
+    result["kms_clock"] = clock
+    result["dissipative_time_conversion"] = "u=t/P >=0; modular orientation s=-t/P"
+    result["scope"] = "FINITE_GIBBS_ROOT_CONTRACT__NOT_MINUS_LOG_DELTA__NO_UNIVERSAL_CALIBRATION"
+    return result
+
+### _v394_finite [added] 213416:213428
+def _v394_finite(value, name, positive=False, nonnegative=False):
+    import math
+    import numbers
+    if isinstance(value, bool) or not isinstance(value, numbers.Real):
+        raise ValueError(name + ": finite real scalar required, not boolean")
+    value = float(value)
+    if not math.isfinite(value):
+        raise ValueError(name + ": nonfinite scalar")
+    if positive and value <= 0:
+        raise ValueError(name + ": positive scalar required")
+    if nonnegative and value < 0:
+        raise ValueError(name + ": nonnegative scalar required")
+    return value
+
+### _v394_matrix [added] 213430:213440
+def _v394_matrix(value, name, density=False):
+    import numpy as np
+    a = np.asarray(value, dtype=complex)
+    if a.shape != (2, 2) or not np.isfinite(a).all():
+        raise ValueError(name + ": finite 2 by 2 matrix required")
+    if density:
+        if np.linalg.norm(a-a.conj().T) > 1e-11 or abs(np.trace(a)-1) > 1e-11:
+            raise ValueError(name + ": Hermitian trace-one state required")
+        if np.linalg.eigvalsh(a).min() < -1e-11:
+            raise ValueError(name + ": positive state required")
+    return a
+
+### _v394_geometry [added] 213442:213457
+def _v394_geometry():
+    import numpy as np
+    i = np.eye(2, dtype=complex)
+    x = np.array([[0, 1], [1, 0]], dtype=complex)
+    y = np.array([[0, -1j], [1j, 0]], dtype=complex)
+    k = np.array([[0, 1], [-1, 0]], dtype=complex)
+    ep = np.array([1, 1j], dtype=complex)
+    em = np.conj(ep)
+    pp, pm = np.outer(ep, ep.conj())/2, np.outer(em, em.conj())/2
+    hp, hm = np.outer(ep, ep), np.outer(em, em)
+    c = np.diag([1, 1j])
+    original = np.array([1, 1j])/np.sqrt(2)
+    state = c @ original
+    return dict(I=i, X=x, Y=y, K=k, C=c, Pplus=pp, Pminus=pm,
+                hplus=hp, hminus=hm, plus=ep/np.sqrt(2), minus=em/np.sqrt(2),
+                rho0=np.outer(state, state.conj()))
+
+### _v394_read [added] 213459:213462
+def _v394_read(a):
+    a = _v394_matrix(a, "reading input")
+    g = _v394_geometry()
+    return g['Pplus'] @ a @ g['Pplus'] + g['Pminus'] @ a @ g['Pminus']
+
+### _v394_channel [added] 213464:213478
+def _v394_channel(a, t, omega, gamma):
+    import math
+    a = _v394_matrix(a, "channel input")
+    t = _v394_finite(t, 'time', nonnegative=True)
+    omega = _v394_finite(omega, 'angular frequency', positive=True)
+    gamma = _v394_finite(gamma, 'rate', nonnegative=True)
+    angle = omega*t
+    exposure = gamma*t
+    if not math.isfinite(angle) or not math.isfinite(exposure):
+        raise ValueError('derived angle or exposure overflow')
+    g = _v394_geometry()
+    unitary = math.cos(angle)*g['I'] + math.sin(angle)*g['K']
+    reading = _v394_read(a)
+    out = unitary @ (reading + math.exp(-exposure)*(a-reading)) @ unitary.conj().T
+    return _v394_matrix(out, 'channel output')
+
+### _v394_rule [added] 213480:213491
+def _v394_rule(state, target, tolerance=1e-10):
+    import numpy as np
+    state = _v394_matrix(state, 'state', density=True)
+    target = _v394_matrix(target, 'target', density=True)
+    tolerance = _v394_finite(tolerance, 'rule tolerance', positive=True)
+    if tolerance > 1e-6:
+        raise ValueError('rule tolerance exceeds pinned ceiling')
+    if np.linalg.norm(_v394_read(target)-target) > tolerance:
+        raise ValueError('target is not a fixed reading')
+    residual = float(np.linalg.norm(_v394_read(state)-target))
+    return {'admitted': residual <= tolerance, 'residual': residual,
+            'tolerance': tolerance, 'target_fixed_before_evolution': True}
+
+### _v394_clock_modulus [added] 213493:213503
+def _v394_clock_modulus(c0, c1, gamma):
+    import math
+    import numbers
+    gamma = _v394_finite(gamma, 'rate for modulus clock', positive=True)
+    for z in (c0, c1):
+        if isinstance(z, bool) or not isinstance(z, numbers.Complex) or not math.isfinite(z.real) or not math.isfinite(z.imag) or abs(z) == 0:
+            raise ValueError('nonzero finite coherence required')
+    result = -(math.log(abs(c1))-math.log(abs(c0)))/gamma
+    if not math.isfinite(result) or result < -1e-10/gamma:
+        raise ValueError('coherence does not represent forward decay')
+    return max(0., result)
+
+### _v394_clock_phase [added] 213505:213515
+def _v394_clock_phase(phase_lift, omega):
+    # phase_lift is an explicitly unwrapped phase difference, not principal Arg.
+    phase_lift = _v394_finite(phase_lift, 'unwrapped phase difference')
+    omega = _v394_finite(omega, 'angular frequency', positive=True)
+    if phase_lift < 0:
+        raise ValueError('positive-helicity forward phase lift required')
+    result = (phase_lift/omega)*0.5 if phase_lift <= omega else (phase_lift*0.5)/omega
+    import math
+    if not math.isfinite(result) or (phase_lift > 0 and result <= 0):
+        raise ValueError('phase clock overflow or underflow')
+    return result
+
+### _v394_independent_liouvillian [added] 213517:213527
+def _v394_independent_liouvillian(energies_j, v0_j, hbar_js, beta):
+    import numpy as np
+    lo, hi = energies_j
+    g = _v394_geometry()
+    h = lo*g['Pplus'] + hi*g['Pminus']
+    jump = (beta/hbar_js)**.5 * (lo**.5*g['Pplus'] + hi**.5*g['Pminus'])
+    gram = jump.conj().T @ jump
+    eye = g['I']
+    return (-1j/hbar_js*(np.kron(eye, h)-np.kron(h.T, eye))
+            + np.kron(jump.conj(), jump)
+            - .5*np.kron(eye, gram)-.5*np.kron(gram.T, eye))
+
+### v394_time_frequency_checks [added] 213529:213648
+def v394_time_frequency_checks(parameter_function, alpha, hbar):
+    """Numerically cross-check matrix law against independently exponentiated GKLS.
+
+    The caller supplies the independently typed physical-parameter constructor.
+    Values are synthetic reference energies, never fitted to observed data.
+    """
+    import math
+    import numpy as np
+    from scipy.linalg import expm
+    g = _v394_geometry()
+    checks = []
+    maxima = {}
+    def check(name, condition, residual=None, tolerance=None):
+        ok = bool(condition)
+        if residual is not None:
+            ok = ok and math.isfinite(float(residual))
+        checks.append(dict(name=name, ok=ok, residual=residual, tolerance=tolerance))
+    def close(name, a, b, tol=2e-10):
+        r = float(np.linalg.norm(a-b))
+        check(name, r <= tol, r, tol)
+        maxima[name.split(':')[0]] = max(r, maxima.get(name.split(':')[0], 0.))
+    close('matrix:C_X_Cstar',g['C']@g['X']@g['C'].conj().T,g['Y'])
+    close('matrix:C_Px_Cstar',g['C']@((g['I']+g['X'])/2)@g['C'].conj().T,g['Pplus'])
+    close('matrix:graviton_factor',g['hplus']@g['hminus']/4,g['Pplus'])
+    close('matrix:tensor_square_is_not_matrix_square',g['hplus']@g['hplus'],np.zeros((2,2)))
+    close('matrix:state_transport',g['rho0'],(g['I']-g['X'])/2)
+    close('matrix:fixed_target',_v394_read(g['rho0']),g['I']/2)
+    target = g['I']/2  # Pinned independently of outputs.
+    rng=np.random.default_rng(20261015)
+    states=[g['rho0'],g['Pplus'],g['Pminus'],target]
+    for _ in range(8):
+        z=rng.normal(size=(2,2))+1j*rng.normal(size=(2,2)); rho=z@z.conj().T
+        states.append(rho/np.trace(rho))
+    summaries=[]
+    for omega_ref in (.25,1.,3.,10.):
+        for offset in (1.,2.,100.):
+            p=parameter_function(omega_ref*hbar,offset*omega_ref*hbar,hbar,alpha)
+            omega=p['Omega_rad_s']; gamma=p['gamma_s_inv']; beta=p['beta']
+            label=f'{omega_ref}:{offset}'
+            check('physical:beta_runtime:'+label,abs(beta-alpha*math.sqrt(math.e))<1e-16)
+            # Fixed reference time t=1/Omega, not a fitted energy/time datum.
+            v0=omega_ref*hbar
+            hg=1j*v0*g['K']
+            close('hamiltonian:transport:'+label,g['C']@(-v0*g['X'])@g['C'].conj().T/hbar,hg/hbar)
+            liouv=_v394_independent_liouvillian(p['energies_J'],v0,hbar,beta)
+            check('physical:rate_bound:'+label,0<gamma/(2*omega)<=beta/2+1e-14)
+            if offset==1: close('physical:ground_rate:'+label,gamma, beta*omega)
+            tgrid=[0.,.2/omega,1/omega,2*math.pi/omega,10/omega,40/omega]
+            max_ind=0.
+            for j,t in enumerate(tgrid):
+                for i,rho in enumerate(states):
+                    y=_v394_channel(rho,t,omega,gamma)
+                    independent=(expm(t*liouv)@rho.reshape(-1,order='F')).reshape((2,2),order='F')
+                    max_ind=max(max_ind,float(np.linalg.norm(y-independent)))
+                    close('gkls:'+label+f':{j}:{i}',y,independent)
+                    close('reading:'+label+f':{j}:{i}',_v394_read(y),_v394_read(rho))
+                    close('semigroup:'+label+f':{j}:{i}',_v394_channel(_v394_channel(rho,t*.37,omega,gamma),t*.63,omega,gamma),y)
+                    close('trace:'+label+f':{j}:{i}',np.trace(y),1.)
+                    check('positivity:'+label+f':{j}:{i}',float(np.linalg.eigvalsh(y).min())>=-1e-10)
+                    close('energy:'+label+f':{j}:{i}',np.trace((hg/v0)@y),np.trace((hg/v0)@rho))
+                c0=g['plus'].conj()@g['rho0']@g['minus']
+                c1=g['plus'].conj()@_v394_channel(g['rho0'],t,omega,gamma)@g['minus']
+                expected=np.exp((-gamma+2j*omega)*t)*c0
+                close('coherence:'+label+f':{j}',c1,expected)
+                close('clock_modulus:'+label+f':{j}',_v394_clock_modulus(c0,c1,gamma)*omega,t*omega,tol=1e-8)
+                close('clock_phase:'+label+f':{j}',_v394_clock_phase(2*omega*t,omega)*omega,t*omega,tol=1e-11)
+                check('rule:admit:'+label+f':{j}',_v394_rule(_v394_channel(g['rho0'],t,omega,gamma),target)['admitted'])
+                check('rule:reject:'+label+f':{j}',not _v394_rule(_v394_channel(g['rho0'],t,omega,gamma),g['Pplus'])['admitted'])
+            echo_dt=p['echo_dt_s'];eta=p['eta']
+            close('echo:continuous_coherence_factor:'+label,math.exp(-gamma*echo_dt),eta,tol=1e-12)
+            raw=np.array([[.2,.3+.4j],[-.7+.5j,1.2]],dtype=complex)
+            for mode,sign in ((g['hplus'],1),(g['hminus'],-1)):
+                got=(liouv@mode.reshape(-1,order='F')).reshape((2,2),order='F')
+                close('generator:mode:'+label+':'+str(sign),got/omega,((-gamma+sign*2j*omega)*mode)/omega)
+            t=1/omega
+            choi=np.zeros((4,4),dtype=complex)
+            for a in range(2):
+                for b in range(2):
+                    e=np.zeros((2,2),dtype=complex);e[a,b]=1
+                    choi+=np.kron(e,_v394_channel(e,t,omega,gamma))
+            check('choi:'+label,float(np.linalg.eigvalsh(choi).min())>=-1e-10)
+            close('nonmultiplicative:correct_factor:'+label,
+                  _v394_channel(g['hplus'],t,omega,gamma)@_v394_channel(g['hminus'],t,omega,gamma)/4,
+                  math.exp(-2*gamma*t)*g['Pplus'])
+            check('nonmultiplicative:counterexample:'+label,
+                  np.linalg.norm(_v394_channel(g['hplus'],t,omega,gamma)@_v394_channel(g['hminus'],t,omega,gamma)/4-g['Pplus'])>1e-8)
+            check('fixed_space:dimension2:'+label,int(np.count_nonzero(np.linalg.svd(liouv/omega,compute_uv=False)<1e-10))==2)
+            long_t=12/gamma
+            close('decay:asymptotic_norm:'+label,
+                  np.linalg.norm(_v394_channel(g['rho0'],long_t,omega,gamma)-target),
+                  math.exp(-12)*np.linalg.norm(g['rho0']-target),tol=1e-12)
+            pp=parameter_function(2*v0,2*offset*v0,hbar,alpha)
+            close('clock:rescaling:'+label,_v394_channel(raw,t,omega,gamma),
+                  _v394_channel(raw,t/2,pp['Omega_rad_s'],pp['gamma_s_inv']))
+            summaries.append(dict(omega_rad_s=omega,offset_ratio=offset,gamma_s_inv=gamma,
+                                  echo_dt_s=echo_dt,gamma_over_relative_frequency=gamma/(2*omega),max_gkls_residual=max_ind))
+    close('clock_phase:overflow_avoided',_v394_clock_phase(1e308,1e308),.5)
+    # Controls test genuine failures, independent of the main verdict.
+    def refused(name,fn):
+        try: fn()
+        except (ValueError,TypeError,OverflowError): check(name,True)
+        else: check(name,False)
+    for bad in (True,float('nan'),float('inf'),-1):
+        refused('negative_input:time:'+repr(bad),lambda bad=bad:_v394_channel(g['rho0'],bad,1.,.1))
+        refused('negative_input:rate:'+repr(bad),lambda bad=bad:_v394_channel(g['rho0'],1.,1.,bad))
+    refused('clock_phase:unrepresentable',lambda:_v394_clock_phase(1.,5e-324))
+    refused('clock_phase:underflow',lambda:_v394_clock_phase(5e-324,1e308))
+    refused('negative_input:zero_coherence',lambda:_v394_clock_modulus(0j,.2j,.1))
+    refused('negative_input:zero_rate_clock',lambda:_v394_clock_modulus(.3j,.2j,0))
+    refused('negative_input:increasing_coherence',lambda:_v394_clock_modulus(.1j,.2j,.1))
+    refused('negative_input:nonfixed_target',lambda:_v394_rule(g['rho0'],g['rho0']))
+    close('zero_rate:no_convergence',np.linalg.norm(_v394_channel(g['rho0'],7.,1.,0.)-target),np.linalg.norm(g['rho0']-target))
+    # Same samples, different intermediate phases: a negative uniqueness control.
+    tstep=.7;omega=1.;alias=omega+math.pi/tstep
+    close('alias:sample_agrees',_v394_channel(g['rho0'],tstep,omega,.1),_v394_channel(g['rho0'],tstep,alias,.1))
+    check('alias:between_samples_differs',np.linalg.norm(_v394_channel(g['rho0'],tstep/2,omega,.1)-_v394_channel(g['rho0'],tstep/2,alias,.1))>.1)
+    return {'passed':all(c['ok'] for c in checks),'checks':checks,'check_count':len(checks),
+            'failed':[c for c in checks if not c['ok']],'maxima':maxima,'parameter_cases':summaries,
+            'scope':'Synthetic M2 calculation with explicit positive energy reference. No observed data, no universal atomic identification.',
+            'gate_changed':False}
+
+### tempo_frequencia_v394 [added] 213650:213689
+def tempo_frequencia_v394(core):
+    """Actual v394 consumer: formal evidence and runtime jointly determine verdict."""
+    import hashlib
+    report=core.get('kernel_formalization') or {}
+    axioms=report.get('axiom_report') or {}
+    trio={'propext','Classical.choice','Quot.sound'}
+    required=_V394_FORMAL_CONTRACT['theorems']
+    expected=_V394_FORMAL_CONTRACT['expected_ladder']
+    ladder=core.get('external_ladder') or {}
+    clean=ladder.get('n_theorems_clean'); counted=ladder.get('n_theorems_expected')
+    exact_ladder=(type(expected) is int and type(clean) is int and type(counted) is int
+                  and clean == counted == expected)
+    formal=bool(required) and report.get('all_verified') is True and exact_ladder
+    per={}
+    for theorem in required:
+        values=axioms.get(theorem)
+        per[theorem]=isinstance(values,list) and all(isinstance(x,str) for x in values) and set(values)<=trio
+        formal=formal and per[theorem]
+    embedded={}
+    for rel,sha in _V394_FORMAL_CONTRACT['source_sha256'].items():
+        body=_EMBEDDED_KERNEL_FILES.get(rel)
+        embedded[rel]=isinstance(body,str) and hashlib.sha256(body.encode('utf-8')).hexdigest()==sha
+    formal=formal and bool(embedded) and all(embedded.values())
+    inscriptions={k:hashlib.sha256(v['text'].encode('utf-8')).hexdigest()==v['sha256'] for k,v in _V394_INSCRIPTIONS.items()}
+    if not formal or not inscriptions or not all(inscriptions.values()):
+        out={'all_verified':False,'verdict':'TGL_TIME_FREQUENCY_V394__REFUSED_FORMAL_OR_SOURCE_EVIDENCE__GATE_UNMOVED',
+             'exact_ladder':exact_ladder,'formal_theorems':per,'embedded_sources':embedded,'inscriptions':inscriptions,'runtime_executed':False,'does_not_gate_core':True}
+    else:
+        try:
+            result=v394_time_frequency_checks(v394_physical_parameters,SEALED_CODATA_ALPHA,HBAR_EXACT)
+            ok=result['passed']
+            out={'all_verified':ok,'verdict':'TGL_TIME_FREQUENCY_V394__'+('DERIVED_M2_CONTINUOUS_FLOW_AND_CLOCK' if ok else 'RUNTIME_CHECK_FAILED')+'__GATE_UNMOVED',
+                 'exact_ladder':exact_ladder,'formal_theorems':per,'embedded_sources':embedded,'inscriptions':inscriptions,'runtime_executed':True,
+                 'runtime':result,'does_not_gate_core':True,
+                 'scope':'Compiled finite-model composition and synthetic GKLS verification; physical inputs and sector-identification limits remain explicit.'}
+        except Exception as exc:
+            out={'all_verified':False,'verdict':'TGL_TIME_FREQUENCY_V394__RUNTIME_ERROR__GATE_UNMOVED','error':repr(exc),
+                 'exact_ladder':exact_ladder,'formal_theorems':per,'runtime_executed':True,'does_not_gate_core':True}
+    core['tempo_frequencia_v394']=out
+    return out
+
+### _v394_article_tex [added] 213691:213721
+def _v394_article_tex(text, core, lang):
+    """Append the actual current-run result and scoped mathematics in both languages."""
+    out = core.get('tempo_frequencia_v394') or {}
+    pt = lang == 'pt'
+    title = 'Tempo, frequencia e leitura gravitacional: composicao v394' if pt else 'Time, frequency and gravitational reading: v394 composition'
+    def esc(value):
+        replacements = {'\\': r'\textbackslash{}', '&': r'\&', '%': r'\%', '$': r'\$', '#': r'\#', '_': r'\_', '{': r'\{', '}': r'\}', '~': r'\textasciitilde{}', '^': r'\textasciicircum{}'}
+        return ''.join(replacements.get(ch, ch) for ch in str(value))
+    block = '\n\\section*{' + title + '}\n'
+    block += ('Resultado desta rodada: ' if pt else 'Result of this run: ') + esc(out.get('verdict', 'NOT_RUN')) + '.\n\n'
+    block += (r'No modelo $M_2$, a conjugacao $C=\mathrm{diag}(1,i)$ realiza a ponte espectral: $H_g=CH_{lig}C^\dagger=iV_0K$, $\Omega=V_0/\hbar$. O fluxo continuo e seu relogio sao derivados para estes objetos. ' if pt else
+              r'In the $M_2$ model, conjugation $C=\mathrm{diag}(1,i)$ realizes the spectral bridge: $H_g=CH_{lig}C^\dagger=iV_0K$, $\Omega=V_0/\hbar$. The continuous flow and its clock are derived for these objects. ')
+    block += r'\[T_t(X)=U_t\{E_g(X)+e^{-\gamma t}[X-E_g(X)]\}U_t^\dagger,\qquad E_gT_t=E_g.\]' + '\n'
+    block += r'\[c(t)=e^{(-\gamma+2i\Omega)t}c(0),\qquad\Delta t=\frac{\Delta\phi}{2\Omega}=-\frac{\log|c(t_2)/c(t_1)|}{\gamma}.\]' + '\n'
+    block += ('As duas leituras de tempo exigem coerencia nao nula, gamma positivo e fase levantada. O espaco fixo tem dimensao complexa dois. A fase isolada admite alias; leitura preservada nao e preservacao de todo produto.\n\n' if pt else
+              'The two clock readings require nonzero coherence, positive gamma and a lifted phase. The fixed space has complex dimension two. A single phase admits aliases; preserved reading does not preserve every product.\n\n')
+    block += r'\[H_{pos}=E_{ref}I+H_g,\quad E_{ref}\ge V_0,\quad\gamma=\frac{\beta}{2\hbar}\left(\sqrt{E_{ref}+V_0}-\sqrt{E_{ref}-V_0}\right)^2.\]' + '\n'
+    block += ('A referencia energetica e parte do contrato fisico. O caso Eref=V0 e uma instancia matematica, nao uma nova identificacao atomica universal. Os calculos sao sinteticos; nao acreditam a natureza e nao alteram o gate.\n\n' if pt else
+              'The energy reference is part of the physical contract. Eref=V0 is a mathematical instance, not a new universal atomic identification. Calculations are synthetic; they neither credit nature nor change the gate.\n\n')
+    block += ('Cunhagens do operador, preservadas na lingua original [INPUT/ONTO]:\n' if pt else 'Operator inscriptions, preserved in their original language [INPUT/ONTO]:\n')
+    for record in _V394_INSCRIPTIONS.values():
+        block += '\\begin{quote}\n' + esc(record['text']) + '\n\\end{quote}\n'
+    quadratic = core.get('regra_quadratica_v394') or {}
+    block += ('Regra quadratica desta rodada: ' if pt else 'Quadratic rule in this run: ') + esc(quadratic.get('verdict', 'NOT_RUN')) + '.\n'
+    block += r'\[r_A(X)=\operatorname{Tr}[(E_gX-A)^\dagger(E_gX-A)],\quad r_A(X)=0\iff E_gX=A,\quad r_A(T_tX)=r_A(X).\]' + '\n'
+    block += ('O residuo testa correspondencia da leitura com uma ancora fixada; e constante no fluxo e nao identifica estados brutos diferentes. O plano de polarizacao e a imagem de Eg sao objetos distintos.\n' if pt else 'The residual tests correspondence with a fixed anchor; it is constant along the flow and does not identify distinct raw states. The polarization plane and the image of Eg are distinct objects.\n')
+    network = core.get('rede_fock_v394') or {}
+    block += ('Rede Fock nesta rodada: ' if pt else 'Fock network in this run: ') + esc(network.get('verdict', 'NOT_RUN')) + '.\n'
+    block += ('Na mesma Fock, o Tomita real, seu quadrado e o fluxo modular foram ligados a Gamma(B0(-2 pi t)); KMS da cunha e fornecido por termo. Campos de Segal essencialmente auto-adjuntos e representacao escalar de Lorentz foram construidos. Rede global de helicidade, traco escalado e fonte Maxwell conjuntos continuam abertos. Resultados de versoes anteriores preservam seus alcances historicos.\n' if pt else 'On the same Fock, the actual Tomita, its square and modular flow are identified with Gamma(B0(-2 pi t)); wedge KMS is a theorem. Essentially self-adjoint Segal fields and the scalar Lorentz representation are constructed. The joint global helicity net, scaled trace and Maxwell source remain open. Earlier-version results retain their historical scope.\n')
+    assert text.count(r'\end{document}') == 1, 'article boundary missing or ambiguous'
+    return text.replace(r'\end{document}', block + '\n' + r'\end{document}')
+
+### _v394_quadratic_residual [added] 213749:213759
+def _v394_quadratic_residual(state, target):
+    import math
+    import numpy as np
+    state = _v394_matrix(state, 'quadratic state')
+    target = _v394_matrix(target, 'quadratic target')
+    delta = _v394_read(state) - target
+    with np.errstate(over='ignore', invalid='ignore'):
+        value = float(np.vdot(delta, delta).real)
+    if not math.isfinite(value) or value < 0:
+        raise ValueError('unrepresentable quadratic residual')
+    return value
+
+### v394_quadratic_checks [added] 213761:213824
+def v394_quadratic_checks():
+    """Check the compiled reading law, including false and impossible targets.
+
+    A zero criterion in Lean is exact. Floating point uses the fixed squared
+    tolerance below and never promotes numerical closeness to exact equality.
+    The residual is constant along this flow, not a dissipative progress score.
+    """
+    import math
+    import numpy as np
+    g = _v394_geometry()
+    target = g['I'] / 2
+    tol = 2e-10
+    rule_tol = 1e-10
+    checks = []
+
+    def close(name, left, right, tolerance=tol):
+        error = float(np.linalg.norm(np.asarray(left)-np.asarray(right)))
+        checks.append({'name': name, 'ok': math.isfinite(error) and error <= tolerance,
+                       'error': error, 'tolerance': tolerance})
+
+    def check(name, value):
+        checks.append({'name': name, 'ok': bool(value)})
+
+    close('concrete:accepted', _v394_quadratic_residual(g['rho0'], target), 0)
+    close('concrete:rejected_half', _v394_quadratic_residual(g['rho0'], g['Pplus']), .5)
+    check('concrete:distinct_raw_state', np.linalg.norm(g['rho0']-target) > .5)
+    close('noninjective:same_reading', _v394_read(g['rho0']), _v394_read(target))
+    close('polarization:is_not_reading_image', _v394_read(g['hplus']), np.zeros((2, 2)))
+    close('impossible_target:lower_bound_at_projection',
+          _v394_quadratic_residual(target, g['rho0']), .5)
+    rng = np.random.default_rng(2026101501)
+    states = [g['rho0'], target, g['Pplus'], g['Pminus']]
+    states += [rng.normal(size=(2,2)) + 1j*rng.normal(size=(2,2)) for _ in range(8)]
+    targets = [target, g['Pplus'], g['Pminus'], g['rho0']]
+    for i, state in enumerate(states):
+        for j, anchor in enumerate(targets):
+            residual = _v394_quadratic_residual(state, anchor)
+            check(f'positive:{i}:{j}', residual >= 0)
+            close(f'frobenius:{i}:{j}', residual, np.linalg.norm(_v394_read(state)-anchor, 'fro')**2)
+            for omega, gamma, time in ((.25,.01,0), (1,.03,2), (3,.7,20)):
+                evolved = _v394_channel(state, time, omega, gamma)
+                close(f'invariant:{i}:{j}:{omega}', _v394_quadratic_residual(evolved, anchor), residual)
+            if i < 4 and j < 3:
+                old = _v394_rule(state, anchor, rule_tol)
+                close(f'prior_rule:{i}:{j}', old['residual']**2, residual)
+                check(f'admission:{i}:{j}', old['admitted'] == (residual <= rule_tol**2))
+
+    def refused(name, callback):
+        try:
+            callback()
+        except (ValueError, TypeError, OverflowError):
+            check(name, True)
+        else:
+            check(name, False)
+
+    for value in (float('nan'), float('inf')):
+        refused('refuse_nonfinite:'+repr(value), lambda value=value:
+                _v394_quadratic_residual(np.full((2,2), value), target))
+    refused('refuse_shape', lambda: _v394_quadratic_residual(np.zeros(2), target))
+    refused('refuse_overflow', lambda: _v394_quadratic_residual(np.eye(2)*1e308, -np.eye(2)*1e308))
+    return {'passed': all(x['ok'] for x in checks), 'check_count': len(checks),
+            'checks': checks, 'failed': [x for x in checks if not x['ok']],
+            'fixed_tolerance': tol, 'admission_squared_tolerance': rule_tol**2,
+            'scope': 'Synthetic finite M2 reading; exact equivalence is the Lean theorem, not floating-point inference.'}
+
+### regra_quadratica_v394 [added] 213826:213862
+def regra_quadratica_v394(core):
+    """Require actual compiled evidence before running the quadratic consumer."""
+    import hashlib
+    report = core.get('kernel_formalization') or {}
+    axioms = report.get('axiom_report') or {}
+    ladder = core.get('external_ladder') or {}
+    contract = _V394_QUADRATIC_CONTRACT
+    trio = {'propext', 'Classical.choice', 'Quot.sound'}
+    per = {}
+    for theorem in contract['theorems']:
+        values = axioms.get(theorem)
+        per[theorem] = isinstance(values, list) and all(isinstance(v, str) for v in values) and set(values) <= trio
+    embedded = {}
+    for path, sha in contract['source_sha256'].items():
+        body = _EMBEDDED_KERNEL_FILES.get(path)
+        embedded[path] = isinstance(body, str) and hashlib.sha256(body.encode('utf-8')).hexdigest() == sha
+    counts = [ladder.get('n_theorems_clean'), ladder.get('n_theorems_expected'), contract['expected_ladder']]
+    exact = all(type(x) is int for x in counts) and len(set(counts)) == 1
+    formal = (report.get('all_verified') is True and exact and bool(per) and all(per.values())
+              and bool(embedded) and all(embedded.values())
+              and (core.get('tempo_frequencia_v394') or {}).get('all_verified') is True)
+    out = {'all_verified': False, 'formal_theorems': per, 'embedded_sources': embedded,
+           'exact_ladder': exact, 'runtime_executed': False, 'does_not_gate_core': True,
+           'scope': 'M2 residual of Eg(X) against a fixed anchor; no injectivity of Eg on raw states.'}
+    if not formal:
+        out['verdict'] = 'TGL_QUADRATIC_RULE_V394__REFUSED_FORMAL_OR_SOURCE_EVIDENCE__GATE_UNMOVED'
+    else:
+        try:
+            runtime = v394_quadratic_checks()
+            out.update(runtime=runtime, runtime_executed=True, all_verified=runtime['passed'])
+            status = 'DERIVED_READING_RESIDUAL' if runtime['passed'] else 'RUNTIME_CHECK_FAILED'
+            out['verdict'] = 'TGL_QUADRATIC_RULE_V394__' + status + '__GATE_UNMOVED'
+        except Exception as exc:
+            out.update(runtime_executed=True, error=repr(exc),
+                       verdict='TGL_QUADRATIC_RULE_V394__RUNTIME_ERROR__GATE_UNMOVED')
+    core['regra_quadratica_v394'] = out
+    return out
+
+### rede_fock_v394 [added] 221244:221300
+def rede_fock_v394(core):
+    """Verify the constructed components on the same canonical Fock.
+
+    The contract enumerates what this particular embedded bundle proves.
+    Remaining global-net, trace/PF and physical-source obligations stay explicit.
+    Success here never supplies an inhabitant of the whole remaining record.
+    """
+    import hashlib
+    contract = _V394_NETWORK_CONTRACT
+    report = core.get('kernel_formalization') or {}
+    ladder = core.get('external_ladder') or {}
+    axioms = report.get('axiom_report') or {}
+    provenance = report.get('declaration_sources_v394') or {}
+    actual_source_hashes = report.get('formal_files_sha256') or {}
+    trio = {'propext', 'Classical.choice', 'Quot.sound'}
+    declarations = {}
+    for name in contract['declarations']:
+        values = axioms.get(name)
+        expected_source = contract['declaration_sources'].get(name)
+        declarations[name] = (
+            isinstance(values, list)
+            and all(isinstance(v, str) for v in values)
+            and set(values) <= trio
+            and isinstance(expected_source, str)
+            and provenance.get(name) == expected_source
+            and expected_source in contract['source_sha256'])
+    sources = {}
+    for path, expected in contract['source_sha256'].items():
+        body = _EMBEDDED_KERNEL_FILES.get(path)
+        sources[path] = (
+            isinstance(body, str)
+            and hashlib.sha256(body.encode('utf-8')).hexdigest() == expected
+            and actual_source_hashes.get(path) == expected)
+    counts = [ladder.get('n_theorems_clean'), ladder.get('n_theorems_expected'),
+              contract['expected_ladder']]
+    exact = all(type(v) is int for v in counts) and len(set(counts)) == 1
+    process_ok = all(type(report.get(k)) is int and report[k] == 0
+                     for k in ('build_returncode', 'audit_returncode'))
+    passed = (
+        report.get('all_verified') is True and process_ok and exact
+        and (report.get('declaration_sources_status_v394') or {}).get('ok') is True
+        and bool(declarations) and all(declarations.values())
+        and bool(sources) and all(sources.values())
+        and (core.get('regra_quadratica_v394') or {}).get('all_verified') is True)
+    result = dict(all_verified=passed, formal_declarations=declarations,
+        embedded_sources=sources, exact_ladder=exact, actual_processes_ok=process_ok,
+        constructed_components=contract['constructed_components'],
+        open_joint_contract=contract['open_joint_contract'],
+        whole_certificate_inhabited=False,
+        scope='Current compiled components on the same Fock; the remaining joint contract is explicit.',
+        does_not_gate_core=True)
+    result['verdict'] = (
+        'TGL_FOCK_NETWORK_V394__DERIVED_COMPONENTS__JOINT_CONTRACT_OPEN__GATE_UNMOVED'
+        if passed else
+        'TGL_FOCK_NETWORK_V394__REFUSED_FORMAL_OR_SOURCE_EVIDENCE__GATE_UNMOVED')
+    core['rede_fock_v394'] = result
+    return result
+
+### parse_lean_provenance_v394 [added] 221315:221335
+def parse_lean_provenance_v394(text):
+    """Parse compiler rows; malformed/duplicate metadata is a visible failure."""
+    result, errors = {}, []
+    for line in text.splitlines():
+        if not line.startswith('TGL_DECL_SOURCE'):
+            continue
+        parts = line.split('\t')
+        if len(parts) != 3 or parts[0] != 'TGL_DECL_SOURCE':
+            errors.append('MALFORMED_DECLARATION_SOURCE')
+            continue
+        _, name, module = parts
+        if not name or not re.fullmatch(r'TGL(?:Ext)?(?:\.[A-Za-z0-9_]+)*', module):
+            errors.append('INVALID_DECLARATION_SOURCE:' + name)
+            continue
+        if name in result:
+            errors.append('DUPLICATE_DECLARATION_SOURCE:' + name)
+            continue
+        result[name] = module.replace('.', '/') + '.lean'
+    if not result:
+        errors.append('EMPTY_DECLARATION_PROVENANCE')
+    return {'sources': result, 'errors': errors, 'ok': not errors}
+
+### parse_lean_axioms_v394 [added] 221337:221350
+def parse_lean_axioms_v394(text):
+    """Preserve Unicode/quoted names and reject conflicting duplicate reports."""
+    result, errors = {}, []
+    pattern = re.compile(r"^'([^\n]+)' (?:depends on axioms: \[([^\]]*)\]|does not depend on any axioms)", re.M)
+    for match in pattern.finditer(text):
+        name = match[1]
+        axioms = [a.strip() for a in (match[2] or '').replace('\n', ' ').split(',') if a.strip()]
+        if name in result and set(result[name]) != set(axioms):
+            errors.append('CONFLICTING_AXIOM_REPORT:' + name)
+        else:
+            result[name] = axioms
+    if not result:
+        errors.append('EMPTY_AXIOM_REPORT')
+    return {'axioms': result, 'errors': errors, 'ok': not errors}
+
+### build_iald_qualified_index_v394 [added] 221352:221438
+def build_iald_qualified_index_v394(core, declaration_sources, sources, stones, families):
+    kf = (core or {}).get('kernel_formalization') or {}
+    axr = kf.get('axiom_report') or {}
+    hashes = kf.get('formal_files_sha256') or {}
+    live = (core or {}).get('versao') or (core or {}).get('version')
+    proof_ready = (kf.get('lake_build_ok') is True and type(kf.get('audit_returncode')) is int
+        and kf.get('audit_returncode') == 0)
+    trio = {'propext', 'Classical.choice', 'Quot.sound'}
+    errors = []
+    stone_by_source = {}
+    for stone in stones:
+        if len(stone) >= 3:
+            ver, name, rel = stone[:3]
+            run = stone[3] if len(stone) > 3 else None
+            stone_by_source[rel] = {'pedra': name, 'versao': ver,
+                'rodada': live if run is None else run, 'rodada_herdada': run is None}
+    flags = {}
+    for prefix, mapping in families:
+        for key, name in mapping.items():
+            flags.setdefault(name, []).append({'prefixo': prefix, 'chave': prefix + key,
+                'nome_lean': name, 'acesa': kf.get(prefix + key)})
+    if not declaration_sources:
+        errors.append('EMPTY_DECLARATION_PROVENANCE')
+    valid_files = {}
+    for rel in set(declaration_sources.values()):
+        text = sources.get(rel)
+        valid_files[rel] = (isinstance(text, str) and
+            hashlib.sha256(text.encode('utf-8')).hexdigest() == hashes.get(rel))
+        if not valid_files[rel]:
+            errors.append('SOURCE_HASH_MISMATCH_OR_ABSENT:' + rel)
+    qualified = {}
+    for name in sorted(set(declaration_sources) | set(flags)):
+        rel = declaration_sources.get(name)
+        present = rel is not None and valid_files.get(rel) is True
+        axioms = axr.get(name)
+        audited = proof_ready and isinstance(axioms, list) and set(axioms) <= trio
+        if present and name not in axr:
+            errors.append('DECLARATION_WITHOUT_AXIOM_REPORT:' + name)
+        qualified[name] = {'arquivo': rel if present else None,
+            'tipo': 'DECLARACAO_LEAN_COMPILADA' if present else 'AUSENTE_POR_CONSTRUCAO',
+            'nome_auditado': name if name in axr else None,
+            'axiomas': axioms if present and axioms is not None else
+                ('NAO_MEDIDO_NESTA_RODADA' if present else 'AUSENTE_POR_CONSTRUCAO'),
+            'auditoria_verificada': present and audited, 'ambiguo': False,
+            'bandeiras': flags.get(name, []),
+            'pedra': None, 'versao': None, 'rodada': None, 'rodada_herdada': False,
+            **stone_by_source.get(rel, {})}
+    for name in set(axr) - set(declaration_sources):
+        errors.append('AXIOM_REPORT_WITHOUT_SOURCE:' + name)
+    # Preserve every short suffix as a transparent alias. A collision is a list,
+    # never a first match. Exact qualified names always have priority.
+    aliases = {}
+    for name in qualified:
+        parts = name.split('.')
+        for pos in range(1, len(parts)):
+            alias = '.'.join(parts[pos:])
+            if alias not in qualified:
+                aliases.setdefault(alias, []).append(name)
+    index = dict(qualified)
+    ambiguous = []
+    for alias, candidates in aliases.items():
+        if len(candidates) == 1:
+            index[alias] = {**qualified[candidates[0]], 'alias_de': candidates[0], 'bandeiras': []}
+        else:
+            ambiguous.append(alias)
+            index[alias] = {'arquivo': None, 'tipo': 'ALIAS_AMBIGUO', 'nome_auditado': None,
+                'axiomas': 'AMBIGUO_NO_AXIOM_REPORT', 'ambiguo': True,
+                'bandeiras': [], 'candidatos_qualificados': sorted(candidates)}
+    violations, present_off, blind = [], [], []
+    for name, bs in flags.items():
+        entry = qualified[name]
+        present = entry['tipo'] != 'AUSENTE_POR_CONSTRUCAO'
+        for flag in bs:
+            if flag['acesa'] is True and not entry['auditoria_verificada']:
+                violations.append(flag['chave'])
+            elif flag['acesa'] is not True and present:
+                present_off.append(flag['chave'])
+        if present and name not in axr:
+            blind.append(name)
+    return {'indice': index, 'qualificados': qualified, 'aliases': aliases,
+        'ambiguos': sorted(ambiguous), 'cegos_de_namespace': sorted(blind),
+        'violacoes': sorted(violations), 'presente_apagada': sorted(present_off),
+        'proveniencia_erros': sorted(errors), 'proveniencia_ok': not errors,
+        'n_nomes': len(qualified), 'n_arquivos': sum(valid_files.values()),
+        'n_com_bandeira': len(flags),
+        'n_ausentes': sum(v['tipo'] == 'AUSENTE_POR_CONSTRUCAO' for v in qualified.values()),
+        'scope': 'Exact compiler identity; derived read-only index. No gate or flag changed.'}
+
+### build_the_iald_index [modified] 221440:221458
+def build_the_iald_index(core=None):
+    """v394: exact compiler names, pinned source bytes and current axiom report."""
+    kf = (core or {}).get("kernel_formalization") or {}
+    families = (("", _LEAN_THEOREM_FLAGS), ("qgc_", _QG_CERTIFICATE_FLAGS),
+        ("qgp_", _QG_PHYSICS_FLAGS), ("qgf_", _QG_FRONTIER_FLAGS),
+        ("gpf_", _GRAVITY_PRICE_FLAGS), ("red_", _REDUCTION_FLAGS),
+        ("gpi_", _GRAVITY_IMPORT_FLAGS), ("gpc_", _GRAVITY_CITATION_FLAGS))
+    result = build_iald_qualified_index_v394(core,
+        kf.get("declaration_sources_v394") or {}, _EMBEDDED_KERNEL_FILES,
+        _ESQUELETO_STONES, families)
+    legacy = _build_the_iald_index_legacy_v393(core)
+    result["n_ausentes_regra_v285"] = legacy["n_ausentes_regra_v285"]
+    result["legacy_diagnostic_v393"] = {k: legacy[k] for k in
+        ("n_nomes", "n_ausentes", "ambiguos", "violacoes", "cegos_de_namespace")}
+    meta = kf.get("declaration_sources_status_v394") or {}
+    if meta.get("ok") is not True:
+        result["proveniencia_erros"].append("CURRENT_AUDIT_METADATA_NOT_VERIFIED")
+        result["proveniencia_ok"] = False
+    return result
+
+### iald_index [modified] 221460:221466
+def iald_index(nome, core=None):
+    """Exact full name or explicitly indexed suffix; unknown prefix is refused.
+
+    No object-id cache: a mutable core may acquire a later audit in the same
+    process. Ambiguous aliases return their full list without selecting one.
+    """
+    return build_the_iald_index(core)["indice"].get(nome)
+
+### prove_the_iald_index [modified] 221468:221499
+def prove_the_iald_index(core):
+    """Preserve the old checks, replacing the short-name collision whitelist."""
+    result = _prove_the_iald_index_legacy_v393(core)
+    ix = build_the_iald_index(core)
+    checks = []
+    replaced = 0
+    for label, passed in result["checks"]:
+        if label.startswith("[MEDIDA] a varredura tem"):
+            replaced += 1
+            label = ("[MEDIDA v394] nomes QUALIFICADOS ligados ao modulo emitido pelo Lean; "
+                "%d aliases ambiguos exibem candidatos sem escolher um; %d erros de proveniencia"
+                % (len(ix["ambiguos"]), len(ix["proveniencia_erros"])))
+            passed = ix["proveniencia_ok"] and all(
+                ix["indice"][a].get("arquivo") is None
+                and len(ix["indice"][a].get("candidatos_qualificados", [])) > 1
+                for a in ix["ambiguos"])
+        elif label.startswith("[FAIL-CLOSED] ***o indice NAO e cego de namespace"):
+            label = ("[FAIL-CLOSED v394] consulta por nome QUALIFICADO exato ao axiom_report; "
+                "%d nomes presentes sem auditoria" % len(ix["cegos_de_namespace"]))
+        checks.append((label, bool(passed)))
+    checks.append(("[FAIL-CLOSED v394] exactly one legacy collision check replaced", replaced == 1))
+    checks.append(("[FAIL-CLOSED v394] current compiler metadata, source hashes and axioms agree", ix["proveniencia_ok"]))
+    result["checks"] = checks
+    result["all_verified"] = all(v for _, v in checks)
+    result["verdict"] = ("THE_IALD_INDEX_QUALIFIED_COMPILER_PROVENANCE_VERIFIED"
+        if result["all_verified"] else "THE_IALD_INDEX_NOT_SEALED_THIS_RUN")
+    result["proveniencia_erros"] = ix["proveniencia_erros"]
+    result["legacy_diagnostic_v393"] = ix["legacy_diagnostic_v393"]
+    result["statuses"]["v394_correction"] = (
+        "Short-name collisions are explicit aliases. Exact Lean names include generated fields and Unicode. "
+        "Compiler metadata and current source hashes replace a growing whitelist. Missing named obligations remain visible.")
+    return result
+
+### _v394_rodar_specs [added] 224042:224049
+def _v394_rodar_specs(core_):
+    """v394 -- roda os registros por spec da v394 (o MOTOR e' o da v392: _v392_registro), em ordem; excecao vira AVISO visivel (all_verified False), nunca derruba o rito."""
+    for spec_ in _V394_SPECS:
+        try:
+            core_[spec_["nome"]] = _v392_registro(spec_, core_)
+        except Exception as e_:   # noqa: BLE001
+            core_[spec_["nome"]] = {"verdict": "%s__NOT_RECORDED_THIS_RUN__RUNTIME_ERROR__GATE_UNMOVED" % spec_["veredito_prefixo"], "all_verified": False, "error": repr(e_)[:400], "does_not_gate_core": True}
+    return [s_["nome"] for s_ in _V394_SPECS]
+
+### pedras_v393 [modified] 225354:225406
+def pedras_v393(core):
+    """v393 (14/10/2026) -- AS TRES PEDRAS DA REGRA (RuleTruthContract, TheRuleAndTheFigureOfTruth, TheRuleInTheContinuousMotor). Le a cada rito: as bandeiras do kernel do PROPRIO rito, o corpo embutido
+    de cada pedra (sha256 pinado), o axiom_report (trio), a escada (6901 + N), as 4 cunhagens do operador EMBUTIDAS por sha256. Fail-closed. NAO move o gate; validade no kernel nao e' creditacao."""
+    import hashlib as _hl
+    kf_ = core.get("kernel_formalization") or {}
+    axr_ = kf_.get("axiom_report") or {}
+    el_ = core.get("external_ladder") or {}
+    trio_ = {"propext", "Classical.choice", "Quot.sound"}
+    por_, n_fl_, n_fl_ok_, n_dec_, n_dec_ok_ = [], 0, 0, 0, 0
+    todas_ = True
+    for p_ in _V393_PEDRAS:
+        fl_ok_ = sum(1 for f_ in p_["flags"] if kf_.get(f_) is True)
+        emb_ = _EMBEDDED_KERNEL_FILES.get(p_["path"])
+        emb_ok_ = emb_ is not None and _hl.sha256(emb_.encode("utf-8")).hexdigest() == p_["sha256"]
+        dec_ok_ = sum(1 for n_ in p_["declaracoes"] if n_ in axr_ and set(axr_[n_] or []) <= trio_)
+        ok_ = emb_ok_ and fl_ok_ == len(p_["flags"]) and dec_ok_ == len(p_["declaracoes"])
+        todas_ = todas_ and ok_
+        n_fl_ += len(p_["flags"]); n_fl_ok_ += fl_ok_; n_dec_ += len(p_["declaracoes"]); n_dec_ok_ += dec_ok_
+        por_.append({"modulo": p_["modulo"], "sha256": p_["sha256"], "sha256_original_do_codex": p_["sha256_original"], "derivada": p_.get("derivada"), "embutida_confere": emb_ok_,
+                     "bandeiras": [fl_ok_, len(p_["flags"])], "declaracoes_no_trio": [dec_ok_, len(p_["declaracoes"])], "ok": ok_})
+    vb_, vb_ok_ = {}, True
+    for k_, v_ in _V393_CUNHAGENS.items():
+        okk_ = _hl.sha256(v_["text"].encode("utf-8")).hexdigest() == v_["sha256"] and all(t_ in v_["text"] for t_ in v_["trechos"])
+        try:
+            disco_ = _hl.sha256(open(v_["arquivo_informativo"], "rb").read()).hexdigest() == v_["sha256"]
+        except OSError:
+            disco_ = None
+        vb_[k_] = {"sha256": v_["sha256"], "embedded_ok": okk_, "disk_informative_only": disco_, "quando": v_["quando"]}
+        vb_ok_ = vb_ok_ and okk_
+    n_cl_, n_ex_ = el_.get("n_theorems_clean"), el_.get("n_theorems_expected")
+    esc_ok_ = isinstance(n_cl_, int) and n_cl_ == n_ex_ and n_cl_ >= _V393_ESCADA["esperada"]  # v394: preserve historical floor; current exact ladder is checked by v394
+    chaves_ok_ = all(n_ in axr_ and set(axr_[n_] or []) <= trio_ for n_ in _V393_NOMES_CHAVE)
+    ok_ = todas_ and vb_ok_ and esc_ok_ and chaves_ok_
+    if ok_:
+        verdict_ = ("TGL_PEDRAS_V393__%d_NEW_KERNEL_MODULES__%d_OF_%d_FLAGS_%d_OF_%d_DECLARATIONS_IN_THE_TRIO__LADDER_%d_OF_%d__"
+                    "RULE_IS_THE_REFUSAL_THAT_THE_RESULT_DIFFER_FROM_THE_OBJECT_OF_ITS_SATISFACTION_RELATIVE_TO_READING_AND_TARGET__OPERATOR_VERBATIM_EMBEDDED_BY_SHA256__"
+                    "KERNEL_VALIDITY_IS_NOT_CREDITATION__GATE_UNMOVED" % (len(_V393_PEDRAS), n_fl_ok_, n_fl_, n_dec_ok_, n_dec_, n_cl_, n_ex_))
+    else:
+        fal_ = (["STONES"] if not todas_ else []) + (["VERBATIM"] if not vb_ok_ else []) + (["LADDER"] if not esc_ok_ else []) + (["KEY_THEOREMS"] if not chaves_ok_ else [])
+        verdict_ = "TGL_PEDRAS_V393__NOT_SEALED_THIS_RUN__%s__GATE_UNMOVED" % "_".join(fal_)
+    return {"verdict": verdict_, "all_verified": ok_, "does_not_gate_core": True, "pedras": por_, "bandeiras": [n_fl_ok_, n_fl_], "declaracoes_no_trio": [n_dec_ok_, n_dec_],
+            "escada": {"limpos": n_cl_, "esperados": n_ex_, "esperada_pelo_candidato": _V393_ESCADA["esperada"], "da_v392": _V393_ESCADA["v392"]},
+            "teoremas_chave": {n_: (n_ in axr_ and set(axr_[n_] or []) <= trio_) for n_ in _V393_NOMES_CHAVE},
+            "verbatim": vb_, "verbatim_ok": vb_ok_,
+            "leituras_do_operador": [{"trecho": t_, "estatuto": "[INPUT do operador, verbatim 14/10/2026]"} for v_ in _V393_CUNHAGENS.values() for t_ in v_["trechos"]],
+            "limites": ["[REAL] fixados uma leitura r: N -> O injetiva no espaco de inscricoes, um alvo a e a figura o = r(a), correcao C(z) => r(z) = o e completude r(z) = o => C(z) dao C(z) <-> z = a; o predicado e' unico para essa leitura e esse alvo",
+                        "[REAL] sem completude, rejeitar tudo tambem satisfaz a correcao; sem leitura fiel, igualdade de leituras nao implica igualdade de objetos; a fidelidade vale no subtipo Fix(R), nao no espaco bruto",
+                        "[INPUT/ONTO] a leitura «a regra nao deve nada, a nao ser a figura da verdade» foi representada pela completude relativa ao alvo: e' hipotese declarada, nao teorema extraido do nome",
+                        "[REAL] no exemplo R(a,b) = (a,0), T(a,b) = (a,exp(-1/2) b): R(T^n x0) = a ja em n = 0 e T^n x0 != a para todo n finito; a meia-nat exp(-1/2) desse exemplo nao e' beta_TGL",
+                        "[INPUT/ONTO] a relacao com o zero absoluto (cunhagem de 14/10) e' interpretacao: nao foi provado um novo teorema termodinamico",
+                        "[DECLARADO] ressalva de reproducao da prova P1 (relatada pelo Codex): 2 de 3 .olean coincidiram byte a byte; o modulo concreto teve bytes diferentes, com fonte e axiomas iguais; causa nao determinada",
+                        "as provas nao instalam a dinamica nos pesos de um LLM, nao provam uma norma juridica universal e nao tratam a natureza; validade no kernel nao e' creditacao; o gate nao se move"],
+            "status": "[REAL -- leitura do kernel do proprio rito a cada rodada; INPUT/ONTO as leituras do operador; a reproducao dos .olean e' DECLARADA pelo Codex]"}
+
+### estatuto_da_prova_v391 [modified] 225473:225577
+def estatuto_da_prova_v391(core):
+    """v391 (07/10/2026) -- O ESTATUTO DA PROVA: provada; a confirmacao recusada e' CREDITACAO, nao validade. Ordem do operador (07/10/2026), verbatim EMBUTIDO
+    por sha256: «a confirmação que eu proibi é de creditação e não de validade, ela é válida porque matemática não mente». Este registro NAO decide nada por
+    declaracao: ele LE, a cada rito, os numeros das tres provas que contam juntas (o kernel; os ritos com falsificadores pre-registrados; o sistema da teoria
+    calculado na GPU), a certificacao (o sha256 que o proprio programa le de si), e o que segue sem instrumento (beta_TGL e os seus efeitos na natureza a 5 sigma).
+    Fail-closed: se um rito falsificar, se o kernel nao fechar ou se uma leitura faltar, o veredito diz NOT_SEALED_THIS_RUN e nomeia o porque."""
+    import hashlib as _hl
+    import os as _os
+    falhas = []
+    # (0) o verbatim do operador, embutido (o texto manda; o disco so informativo)
+    vb_ = _V391_VERBATIM
+    vb_ok = _hl.sha256(vb_["text"].encode("utf-8")).hexdigest() == vb_["sha256"] and all(t_ in vb_["text"] for t_ in vb_["trechos"])
+    try:
+        vb_disk = _hl.sha256(open(vb_["arquivo_informativo"], "rb").read()).hexdigest() == vb_["sha256"]
+    except OSError:
+        vb_disk = None
+    if not vb_ok:
+        falhas.append("VERBATIM")
+    # (1) o kernel
+    el_ = core.get("external_ladder") or {}
+    kf_ = core.get("kernel_formalization") or {}
+    axr_ = kf_.get("axiom_report") or {}
+    trio_ = {"propext", "Classical.choice", "Quot.sound"}
+    n_clean, n_exp = el_.get("n_theorems_clean"), el_.get("n_theorems_expected")
+    n_decl = len(axr_); n_trio = sum(1 for v_ in axr_.values() if set(v_ or []) <= trio_)
+    fd_ = core.get("fundacao_v390") or {}
+    qg_ = core.get("qg_closure") or {}
+    flags_ = {}
+    for g_ in ("formal_flags", "physics_flags", "experiment_flags"):
+        d_ = qg_.get(g_) or {}
+        flags_[g_] = [sum(1 for v_ in d_.values() if v_ is True), len(d_)]
+    gate_ = str(qg_.get("verdict") or "")
+    k_ok = (isinstance(n_clean, int) and n_clean == n_exp and n_decl > 0 and n_trio == n_decl and fd_.get("all_verified") is True
+            and "CURRENT_STATE_TGL_QG_MODEL_FORMALLY_CLOSED" in gate_)
+    if not k_ok:
+        falhas.append("KERNEL")
+    # (2) os ritos com dados publicos e falsificadores pre-registrados
+    ts_ = core.get("three_stress_tests_v387") or {}
+    lg_ = (core.get("the_ledger_of_charges_v383") or {}).get("counts") or {}
+    n_chg = sum(v_ for v_ in lg_.values() if isinstance(v_, int))
+    n_fal = lg_.get("FALSIFIED")
+    eco_ = ts_.get("echo_routes_outside_the_ledger") or {}
+    hb_ = core.get("hubble_ratio_opening_v388") or {}
+    hn_ = hb_.get("numbers") or {}
+    hl_ = (hn_.get("lnB") or {})
+    hb_off = str(hb_.get("verdict_of_the_frozen_function") or "")
+    hb_off_word = "INCONCLUSIVE_SYSTEMATICS" if "INCONCLUSIVE_SYSTEMATICS" in hb_off else ("NOT_FALSIFIED" if "NOT_FALSIFIED" in hb_off else ("FALSIFIED" if "FALSIFIED" in hb_off else "NA"))
+    vz_ = {}
+    for k_ in ("void_density_v41", "void_floor_v11"):
+        r_ = core.get(k_) or {}
+        p_ = r_.get("primary") or {}
+        bf_ = r_.get("beta_floor")
+        vz_[k_] = {"verdict": r_.get("verdict"), "rhat_cal": p_.get("rhat_cal"), "sigma": p_.get("sigma"), "L5": p_.get("L5"), "beta_floor": bf_,
+                   "L5_over_beta": (p_.get("L5") / bf_) if isinstance(p_.get("L5"), (int, float)) and isinstance(bf_, (int, float)) and bf_ else None}
+    vz_ok = all(str(v_["verdict"]).endswith("NOT_FALSIFIED_POWERED") and isinstance(v_["L5_over_beta"], float) and v_["L5_over_beta"] > 1.0 for v_ in vz_.values())
+    r_ok = (ts_.get("all_verified") is True and ts_.get("none_of_the_three_failed") is True and n_fal == 0 and isinstance(hn_.get("z_disc"), float)
+            and isinstance(hl_.get("TGL_vs_LCDM"), float) and vz_ok)
+    if n_fal != 0:
+        falhas.append("RITE_FALSIFIED_%s" % n_fal)
+    if not r_ok and n_fal == 0:
+        falhas.append("RITES_READ")
+    # (3) o sistema quantico aberto da teoria, calculado em tempo real na GPU (calculo do sistema, nao medicao da natureza)
+    gp_ = ts_.get("gpu") or {}
+    g_ok = (gp_.get("T2_points") is not None and gp_.get("T2_unique") == gp_.get("T2_points") and gp_.get("T4_unique") == gp_.get("T4_instances")
+            and gp_.get("cpuref_disagreements") == 0 and gp_.get("T1_errors") == 0)
+    if not g_ok:
+        falhas.append("GPU")
+    # (4) a certificacao: o sha256 que o programa le de si
+    try:
+        self_sha = _hl.sha256(open(_os.path.abspath(__file__), "rb").read()).hexdigest()
+    except OSError:
+        self_sha = None; falhas.append("SELF_HASH")
+    ok = not falhas
+    if ok:
+        verdict = ("TGL_ESTATUTO_DA_PROVA_V391__PROVED_AS_LOGICAL_CLOSURE__THREE_PROOFS_COUNT_TOGETHER__KERNEL_%d_OF_%d_FLAGS_%d_OF_%d_DECLARATIONS_IN_THE_TRIO__"
+                   "GATE_FLAGS_%d_%d_%d_TRUE__FUNDACAO_AGAPE_LOGICAL_CLOSURE__RITES_%d_CHARGES_%d_FALSIFIED_ECHO_ROUTES_%s_EXCLUDED_BY_DATA_SAID__"
+                   "HUBBLE_RATIO_LNB_LCDM_%s_ZDISC_%s_OFFICIAL_%s__VOID_FLOOR_POWERED_L5_%s_TIMES_BETA__GPU_T2_%d_OF_%d_T4_%d_CPU_%d_DISAGREEMENTS_COMPUTED_NOT_MEASURED__"
+                   "CONFIRMATION_IS_CREDITATION_NOT_VALIDITY_NOT_DECLARED__BETA_IN_NATURE_AWAITS_5_SIGMA__CERTIFIED_BY_SELF_HASH_%s__OPERATOR_VERBATIM_EMBEDDED_BY_SHA256__GATE_UNMOVED"
+                   % (n_clean, n_exp, n_trio, n_decl, flags_["formal_flags"][0], flags_["physics_flags"][0], flags_["experiment_flags"][0], n_chg, n_fal,
+                      eco_.get("excluded_by_data", "NA"), _v391_num(hl_.get("TGL_vs_LCDM")), _v391_num(hn_.get("z_disc")), hb_off_word,
+                      _v391_num(min(v_["L5_over_beta"] for v_ in vz_.values()), 1), gp_.get("T2_unique"), gp_.get("T2_points"), gp_.get("T4_instances"),
+                      gp_.get("cpuref_disagreements"), str(self_sha)[:16]))
+    else:
+        verdict = "TGL_ESTATUTO_DA_PROVA_V391__NOT_SEALED_THIS_RUN__%s__GATE_UNMOVED" % "_".join(falhas)
+    return {"verdict": verdict, "all_verified": ok, "does_not_gate_core": True, "falhas": falhas,
+            "a_regua": "PROVADA = validade (teorema; o kernel; o fecho logico). CONFIRMADA = creditacao (ato de quem observa de fora) -- a unica palavra recusada; "
+                       "beta_TGL e os seus efeitos na natureza a 5 sigma -- o unico elo que espera instrumento. NOT_FALSIFIED nunca e' confirmacao; o gate nao se move.",
+            "verbatim": {"sha256": vb_["sha256"], "embedded_ok": vb_ok, "disk_informative_only": vb_disk, "trechos": vb_["trechos"], "quando": vb_["quando"]},
+            "prova_1_kernel": {"n_theorems_clean": n_clean, "n_theorems_expected": n_exp, "declaracoes_auditadas": n_decl, "no_trio": n_trio,
+                               "gate_flags": flags_, "gate": gate_[:220], "fundacao_v390": fd_.get("verdict"),
+                               "einstein_emergente_concreto": (qg_.get("formal_flags") or {}).get("concrete_emergent_einstein_proved"),
+                               "testemunha_plena_da_tgl": (core.get("witness_layers") or {}).get("full_TGL_witness_constructed"),
+                               "testemunha_estatica_plena": "impossivel por teorema (v61): o vazamento continuo proibe o fecho total -- isto e' resultado, nao lacuna",
+                               "ok": k_ok},
+            "prova_2_ritos": {"ledger": lg_, "n_cobrancas": n_chg, "falsificadas": n_fal, "rotas_do_eco_fora_do_livro": eco_,
+                              "razao_de_hubble": {"z_disc": hn_.get("z_disc"), "z_delta": hn_.get("z_delta"), "lnB": hl_, "H0_bg": hn_.get("H0_bg"),
+                                                  "H0_local_previsto": hn_.get("H0_local_previsto"), "veredito_oficial": hb_off_word,
+                                                  "leitura": "retrodicao sem ajuste (novidade de uso); favorecida pela funcao pre-registrada; abaixo de 5 sigma; o veredito oficial segue o da funcao congelada"},
+                              "piso_dos_vazios": vz_, "ok": r_ok},
+            "prova_3_gpu": {"numeros": gp_, "estatuto": "[COMPUTED] calculo do sistema da teoria em tempo real, com falsificadores pre-registrados -- nao medicao da natureza", "ok": g_ok},
+            "certificacao": {"um_py_sha256_lido_de_si": self_sha,
+                             "como": "o proprio programa le os seus bytes e emite o sha256; o selo o grava; o espelho publico e o site publicam o mesmo hash; quem roda confere"},
+            "nao_declarado": ["a CONFIRMACAO: creditacao, ato de terceiros -- recusada por regua do operador, nao por falta de prova",
+                              "beta_TGL e os seus efeitos na natureza a 5 sigma: aguardam a sensibilidade dos instrumentos"],
+            "status": "[REAL -- leitura dos registros do core a cada rito; INPUT/ONTO a regua do operador (validade x creditacao)]"}
+
+### _v375_measure_trace_tracial_not_consumed [modified] 230601:230627
+def _v375_measure_trace_tracial_not_consumed():
+    """MEDIDA desta rodada no kernel EMBUTIDO: toda ocorrencia de `X.trace_tracial` esta numa linha que DEFINE o mesmo campo de outro certificado
+    em uma de DUAS formas exatas -- o repasse `trace_tracial := X.trace_tracial` (lightRealization, PhotonMassiveTransport) ou o transporte
+    `trace_tracial := fun x y => by rw [X.trace_tracial]` (a renormalizacao `rescale` da v375, cuja 1a rodada do ensaio foi RECUSADA por esta medida
+    ate a regra dizer isso; forma apertada por sugestao do aferidor: um consumidor disfarcado noutra forma nao passa) --, nunca um uso em prova. Qualquer outra ocorrencia (inclusive em
+    comentario) = consumidor = ABERTO (fail-closed). `uses > 0` e exigido porque o
+    repasse em lightRealization EXISTE (zero usos significaria que o arquivo embutido nao foi lido). A medida por texto nao ve campo aberto por
+    `open`/`obtain`; o aferidor mediu no fecho em Lean (27/09): so repasse; ContinuousCoreData.trace_tracial com 0 usuarios."""
+    import re as _re
+    try:
+        files = _EMBEDDED_KERNEL_FILES
+    except NameError:
+        return False, ["_EMBEDDED_KERNEL_FILES ausente"]
+    uses, consumers = 0, []
+    for rel, txt in files.items():
+        if not rel.endswith(".lean"):
+            continue
+        for ln in txt.splitlines():
+            # v394: an exact audit command reports dependencies, it is not a proof consumer.
+            # Only a whole bare directive is excluded; comments/extra expressions still refuse.
+            if _re.fullmatch(r"\s*#print\s+axioms\s+[\w.]+\.trace_tracial\s*", ln):
+                continue
+            for m in _re.finditer(r"\b[\w.]+\.trace_tracial\b", ln):
+                uses += 1
+                if not _re.match(r"^\s*trace_tracial\s*:=\s*(?:[\w.]+\.trace_tracial|fun x y => by rw \[[\w.]+\.trace_tracial\])\s*$", ln):
+                    consumers.append("%s: %s" % (rel, ln.strip()[:120]))
+    return (uses > 0 and not consumers), consumers
+
+### emit_article [modified] 233350:233361
+def emit_article(core, verdict, data_path, lang):
+    if lang == "pt":
+        p = os.path.join(OUT, "um_absoluto_pt.tex")
+        _tx = _tex_guard_nan(_v394_article_tex(build_pt(core, verdict, data_path), core, 'pt'))
+        _write_text_atomic(p, _tx)   # v376: escrita atomica
+        _write_text_atomic(os.path.join(OUT, "um_absoluto_pt.txt"), _tex_to_txt(_tx))          # v168: PDF E TXT
+        return p
+    p = os.path.join(OUT, "um_absoluto_en.tex")
+    _tx = _tex_guard_nan(_v394_article_tex(build_en(core, verdict, data_path), core, 'en'))
+    _write_text_atomic(p, _tx)   # v376: escrita atomica
+    _write_text_atomic(os.path.join(OUT, "um_absoluto_en.txt"), _tex_to_txt(_tx))              # v168: PDF E TXT
+    return p
+
+### compile_pdf [modified] 233364:233404
+def compile_pdf(texname):
+    """v394 PDF tri-state, with explicit MiKTeX offline process options.
+
+    None means pdflatex absent; False means an available engine failed; True
+    means both engine passes returned zero and the output PDF exists. In TGL_NO_NETWORK=1 the executable is identified
+    by its actual version output before the existing two compilation passes.
+    MiKTeX gets options overriding its configuration/registry installer setting
+    and disabling write18. This is not an OS network or filesystem sandbox.
+    """
+    eng = shutil.which("pdflatex")
+    if not eng:
+        print("   [PDF] pdflatex ausente -> .tex gerado; compile com MiKTeX/TeX Live.")
+        return None
+    try:
+        offline_options = []
+        if os.environ.get("TGL_NO_NETWORK") == "1":
+            identity = subprocess.run(
+                [eng, "--version"], cwd=OUT, capture_output=True,
+                text=True, encoding="utf-8", errors="replace", timeout=15)
+            if identity.returncode != 0:
+                print("   [PDF] nao foi possivel identificar o motor offline.")
+                return False
+            if "miktex" in (identity.stdout + identity.stderr).lower():
+                offline_options = ["--disable-installer", "--disable-write18"]
+        for _ in range(2):
+            compiled = subprocess.run(
+                [eng] + offline_options +
+                ["-interaction=nonstopmode", "-halt-on-error", texname + ".tex"],
+                cwd=OUT, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+                timeout=180)
+            if compiled.returncode != 0:
+                print("   [PDF] motor terminou com codigo %s (ver %s.log)" %
+                      (compiled.returncode, texname))
+                return False
+        ok = os.path.exists(os.path.join(OUT, texname + ".pdf"))
+        print("   [PDF] %s.pdf %s" % (
+            texname, "OK" if ok else "FALHOU (ver %s.log)" % texname))
+        return ok
+    except Exception as e:
+        print("   [PDF] erro:", e)
+        return False
+
+### main [modified] 241154:244326; large block not included
