@@ -1,0 +1,1 @@
+candidate iald-app/android/app/src/main/assets/public/iald.js

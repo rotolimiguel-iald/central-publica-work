@@ -1,0 +1,14 @@
+--- runtime/new_private_media_host.py
++++ staging/new_private_media_host.py
+@@ -27,8 +27,9 @@
+     """Explicit full-duration policies; JEV selects, never a silent frame cap."""
+     durations = [item['duration_seconds'] for item in metadata if item['kind'] == 'video']
+     if not durations:
+-        return {'standard': {'fps': 2., 'media_resolution': 'default'},
+-                'detail': {'fps': 2., 'media_resolution': 'max'}}
++        # Audio has no FPS/resolution quality alternatives. The backend policy
++        # shape stays canonical, but never invent a video choice for audio.
++        return {'audio_full': {'fps': 2., 'media_resolution': 'default'}}
+     if any(type(value) not in (int, float) or not math.isfinite(value) or value <= 0 for value in durations):
+         raise MediaError('Invalid measured video duration')
+     duration = max(durations)

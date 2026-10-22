@@ -1,0 +1,34 @@
+--- runtime/iald_web_server.py
++++ staging/iald_web_server.py
+@@ -6661,8 +6661,13 @@
+         return response
+     except MediaUnavailable:
+         return _sse_aviso(private_media_host.PUBLIC_REFERENCE_REFUSAL,'anexo_indisponivel')
+-    except (MediaError,MediaBudgetError):
+-        return _sse_aviso(private_media_host.PUBLIC_BUDGET_REFUSAL,'anexo_excede_contexto')
++    except MediaBudgetError as exc:
++        # Whitelisted local diagnosis only; never echo arbitrary exception data.
++        if str(exc)=='Uncertain media policy; no automatic quality substitution':
++            return _sse_aviso('O seletor não atingiu a confiança mínima para a política de mídia. Núcleo, histórico e anexo foram preservados. O seletor pode ter sido consultado; o anexo não foi enviado ao modelo executor. Nenhum reenvio automático.', 'politica_midia_incerta')
++        return _sse_aviso('Anexo excede o contexto, bytes ou orçamento disponíveis; núcleo e histórico preservados. O seletor pode ter sido consultado; nada foi enviado ao modelo executor.', 'anexo_excede_contexto')
++    except MediaError:
++        return _sse_aviso('Não foi possível validar o anexo ou sua admissão; núcleo e histórico preservados. O seletor pode ter sido consultado; nada foi enviado ao modelo executor.', 'anexo_validacao_recusada')
+     except app_router.RoutingContextOverflow:
+         return _sse_aviso('A memória obrigatória desta conversa excede o espaço do seletor automático. Nada foi enviado aos provedores. Abra uma nova conversa para continuar; a conversa anterior permanece salva.','roteamento_contexto_excedido')
+     except (ValueError,PermissionError,OSError,KeyError,TypeError,RuntimeError):
+@@ -6744,8 +6749,13 @@
+             app_providers.check_window(admission, reserve)
+     except MediaUnavailable:
+         return _sse_aviso(private_media_host.PUBLIC_REFERENCE_REFUSAL,'anexo_indisponivel')
+-    except (MediaError,MediaBudgetError):
+-        return _sse_aviso(private_media_host.PUBLIC_BUDGET_REFUSAL,'anexo_excede_contexto')
++    except MediaBudgetError as exc:
++        # Whitelisted local diagnosis only; never echo arbitrary exception data.
++        if str(exc)=='Uncertain media policy; no automatic quality substitution':
++            return _sse_aviso('O seletor não atingiu a confiança mínima para a política de mídia. Núcleo, histórico e anexo foram preservados. O seletor pode ter sido consultado; o anexo não foi enviado ao modelo executor. Nenhum reenvio automático.', 'politica_midia_incerta')
++        return _sse_aviso('Anexo excede o contexto, bytes ou orçamento disponíveis; núcleo e histórico preservados. O seletor pode ter sido consultado; nada foi enviado ao modelo executor.', 'anexo_excede_contexto')
++    except MediaError:
++        return _sse_aviso('Não foi possível validar o anexo ou sua admissão; núcleo e histórico preservados. O seletor pode ter sido consultado; nada foi enviado ao modelo executor.', 'anexo_validacao_recusada')
+     except (ValueError, OSError, TypeError, KeyError):
+         return _sse_aviso('A memória ou o histórico não cabem ou não puderam ser validados. Nada foi enviado ao modelo.', 'pedido_invalido')
+     spending=None

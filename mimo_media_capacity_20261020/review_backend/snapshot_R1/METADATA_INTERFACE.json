@@ -1,0 +1,13 @@
+{
+  "status": "CONTRACT_IMPLEMENTED_PENDING_OFFLINE_TEST_COMPLETION",
+  "module":"private_media_store.py",
+  "resolver":"resolve_media_metadata(messages, *, store, scope:Scope, provider='mimo', worker=False) -> list[dict]",
+  "scope":"Scope(owner=<host authenticated principal>,generation=<host current generation>,conversation=<host authorized owner-scoped conversationID; no prior job required>)",
+  "fields":"type=iald_media, media_ref, kind, mime, bytes, duration_seconds, sha256, expires_at=null, width, height, has_audio, encoded_bytes_upper (including128header margin)",
+  "guarantees":"Read-only SQLite SELECT metadata, no payload file opens/decrypt, no HTTP/Bancada calls. Owner+generation+conversation authorization checked before lookup; client facts mismatching server metadata refused. Worker/nonMiMo references refuse before blob/credential/network operations.",
+  "upload_limits":{"max_raw_bytes":37499904,"max_full_data_uri_bytes":50000000,"header_margin_bytes":128,"final_provider_http_budget":64000000,"chat_json_budget":2000000},
+  "goodall":"Use canonical trusted metadata for modality estimates and JEV state, never raw Base64 or client-supplied dimensions/duration. Existing MiMo2/Auto3/permissions/wallet remain at dispatch. Metrics compatibility view is PrivateMediaRuntime.metrics_view(messages); no payload bytes in ledger.",
+  "hipatia":"Upload binary then retain the canonical returned iald_media part. No raw media in localStorage/chat JSON. IndexedDB local blob/reference allowed. Read max_media_bytes from server capabilities, not hardcoded.",
+  "retention":"No automatic expiry. Blob lifecycle follows explicit authenticated conversation/account deletion hooks; quotas/rate/disk refusal visible and history preserved.",
+  "runtime":"PrivateMediaRuntime(store,scope,authorize_dispatch=<local host consent+wallet+rights recheck>,worker=False) passed explicitly to wire_messages(...private_media=runtime) and Evaluation.stream(...private_media=runtime). Context does not inherit automatically into threads. No callback may call Bancada or a remote provider."
+}

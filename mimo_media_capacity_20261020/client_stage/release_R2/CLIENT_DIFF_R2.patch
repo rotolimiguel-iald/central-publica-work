@@ -1,0 +1,567 @@
+--- baseline/app/iald.js
++++ candidate/app/iald.js
+@@ -1280,6 +1280,7 @@
+ }
+ function persistirConversasBackground() {
+   if (!backgroundOwner) throw new PendingChatJobError('A conta precisa ser identificada antes de salvar.');
++  mediaAssertHistory(S.conversas);
+   const key = backgroundHistoryKey(backgroundOwner);
+   const raw = JSON.stringify({ conversas: S.conversas, ativa: S.ativaId });
+   try {
+@@ -1288,6 +1289,7 @@
+   } catch (_) { throw new PendingChatJobError('Não foi possível salvar a resposta neste aparelho. A entrega continua pendente.'); }
+ }
+ function desanexarRespostasBackground(sair = false) {
++  if (sair) { mediaDetach(); mediaCapsAccount = ''; }
+   if (sair) artifactAccessUI?.reset();
+   if (sair) disconnectNativeNotificationsUI();
+   backgroundEpoch += 1;
+@@ -1334,10 +1336,13 @@
+     S.conversas = history.conversas.filter((c) => c && (!c.background_owner || c.background_owner === account));
+     for (const c of S.conversas) c.background_owner = account;
+     S.ativaId = S.conversas.some((c) => c.id === history.ativa) ? history.ativa : S.conversas[0]?.id || null;
++    await carregarMotor();
++    await mediaMigrateLegacy(S.conversas, account);
+     persistirConversasBackground();
+     if (!S.conversas.length) novaConversa({ semFoco: true });
+     else { listarConversas(); abrirConversa(); }
+   }
++  if (await mediaMigrateLegacy(S.conversas, account)) persistirConversasBackground();
+   refreshNativeNotificationsUI();
+   artifactAccessUI?.authenticated();
+   return backgroundOwner;
+@@ -1416,7 +1421,8 @@
+   try {
+     const owner = await identificarContaBackground();
+     if (!S.conversas.some((c) => c.id === id && c.background_owner === owner)) throw new Error('Conversa indisponível nesta conta.');
+-    await backgroundJobs.purgeConversation(id);
++    await backgroundJobs.purgeConversation(id);
++    await mediaClearConversationLocal(owner, id);
+     if (activeBackgroundJob?.conversation_id === id) desanexarRespostasBackground();
+     return true;
+   } catch (error) {
+@@ -2213,6 +2219,7 @@
+ 
+ function salvarConversas() {
+   if (!DEMO && backgroundOwner) { persistirConversasBackground(); return; }
++  mediaAssertHistory(S.conversas);
+   guardar(K.conversas, S.conversas);
+   guardar(K.ativa, S.ativaId || '');
+ }
+@@ -2344,7 +2351,7 @@
+   }
+   if (lista) lista.scrollTop = registro.rolagem;
+   desfazerPendente = registro;
+-  mostrarFaixaFlutuante('Conversa apagada.', { rotulo: 'Desfazer', acao: desfazerApagar });
++  mostrarFaixaFlutuante('Conversa apagada. Anexos privados excluídos não são recuperados por Desfazer.', { rotulo: 'Desfazer', acao: desfazerApagar });
+ }
+ 
+ function desfazerApagar() {
+@@ -2426,7 +2433,8 @@
+   const area = $('#conversa-interna');
+   area.innerHTML = '';
+   const c = conversaAtiva();
+-  atualizarTitulo();
++  atualizarTitulo();
++  mediaRestoreDrafts(c).catch(error => avisar(error.message));
+   if (!c || !c.mensagens.length) { boasVindas(); atualizarDica(); return; }
+   for (const m of c.mensagens) desenharMensagem(m.role === 'assistant' ? 'ai' : 'user', m.content, false, m.modelo);
+   for (const delivery of Object.values(c.chat_job_deliveries || {})) {
+@@ -2577,7 +2585,8 @@
+     corpo.appendChild(el('div', 'conteudo'));
+     if (!vazia) corpo.querySelector('.conteudo').appendChild(renderMarkdown(textoDe(conteudo)));
+   } else {
+-    corpo.textContent = textoDe(conteudo);
++    corpo.textContent = textoDe(conteudo);
++    mediaHistoryControls(corpo, conteudo, conversaAtiva()?.id, backgroundOwner);
+   }
+   linha.appendChild(corpo);
+ 
+@@ -2592,8 +2601,8 @@
+   if (Array.isArray(conteudo)) {
+     const t = conteudo.filter((p) => p && p.type === 'text').map((p) => p.text).join('\n');
+     const imgs = conteudo.filter((p) => p && p.type === 'image_url').length;
+-    const audios = conteudo.filter(p => p?.type === 'input_audio').length;
+-    const videos = conteudo.filter(p => p?.type === 'video_url').length;
++    const audios = conteudo.filter(p => p?.type === 'input_audio' || (['iald_media','iald_local_media'].includes(p?.type) && p.kind === 'audio')).length;
++    const videos = conteudo.filter(p => p?.type === 'video_url' || (['iald_media','iald_local_media'].includes(p?.type) && p.kind === 'video')).length;
+     return (audios ? `[${audios} áudio(s) anexado(s)]\n` : '') + (videos ? `[${videos} vídeo(s) anexado(s)]\n` : '') + (imgs ? `[${imgs} imagem(ns) anexada(s)]\n` : '') + t;
+   }
+   return '';
+@@ -2731,7 +2740,7 @@
+     c.mensagens = c.mensagens.slice(0, idx);
+     salvarConversas();
+     abrirConversa();
+-    enviarTexto(novo, []);
++    enviarTexto(novo, []).catch(error => avisar(error.message));
+   });
+   ta.addEventListener('keydown', (ev) => {
+     if (ev.isComposing || ev.keyCode === 229) return;
+@@ -2754,7 +2763,7 @@
+   c.mensagens = c.mensagens.slice(0, idx - 1);
+   salvarConversas();
+   abrirConversa();
+-  enviarTexto(textoDe(anterior.content), []);
++  enviarTexto(textoDe(anterior.content), []).catch(error => avisar(error.message));
+ }
+ 
+ // ══════════════════════════════════════════════════════════════
+@@ -2828,7 +2837,257 @@
+ // ══════════════════════════════════════════════════════════════
+ const LIMITES = { total: 6, imagens: 3, imagemMB: 8, pdfMB: 25, textoMB: 2, orcamentoTokens: 100000 };
+ 
+-// Staging R3: local inline media only; server consent and validation authoritative.
++// Embedded private-media integration. No upload is performed by the file picker.
++const MEDIA_RAW_MAX = 37_499_904;
++const MEDIA_BASE64_MAX = 50_000_000;
++const MEDIA_LIMIT_TEXT = 'Áudio/vídeo: até 50 MB em base64 (aproximadamente 37,5 MB de arquivo). O servidor verifica o contexto preservando a memória TGL; não há limite fixo de duração.';
++let mediaDraftDatabase = null, mediaPendingConsent = null, mediaSending = false;
++let mediaCapsAccount = '';
++const mediaDraftURLs = new Map();
++const mediaRAM = new Map();
++function mediaStorageScope() {
++  if (!backgroundOwner || mediaCapsAccount !== backgroundOwner) return null;
++  const value = limitesDoPlano()?.media_capabilities?.media_scope;
++  return typeof value === 'string' && value.length >= 16 && value.length <= 512 ? value : null;
++}
++function mediaKey(owner, conversation, id) {
++  if ([owner, conversation, id].some(x => typeof x !== 'string' || !x || x.length > 512)) throw Error('Conta ou conversa de mídia indisponível.');
++  return JSON.stringify([mediaStorageScope(), owner, conversation, id]);
++}
++async function mediaDatabase() {
++  if (mediaDraftDatabase) return mediaDraftDatabase;
++  if (!globalThis.indexedDB) throw Error('Armazenamento local indisponível. Nenhuma mídia foi enviada.');
++  mediaDraftDatabase = new Promise((resolve, reject) => {
++    const request = indexedDB.open('iald-private-media-local-v2', 1);
++    request.onupgradeneeded = () => {
++      const store = request.result.createObjectStore('drafts', { keyPath: 'key' });
++      store.createIndex('conversation', ['storageScope', 'owner', 'conversation']);
++    };
++    request.onerror = request.onblocked = () => reject(Error('Não foi possível abrir a mídia local.'));
++    request.onsuccess = () => {
++      const db = request.result;
++      db.onversionchange = () => { db.close(); mediaDraftDatabase = null; };
++      resolve(db);
++    };
++  }).catch(error => { mediaDraftDatabase = null; throw error; });
++  return mediaDraftDatabase;
++}
++async function mediaLocal(mode, operation) {
++  if (!mediaStorageScope()) {
++    const store = {
++      put(record) { mediaRAM.set(record.key, record); return { value: record.key }; },
++      get(key) { return { value: mediaRAM.get(key) }; },
++      delete(key) { mediaRAM.delete(key); return { value: undefined }; },
++      index() { return { getAll(query) { return { value: [...mediaRAM.values()].filter(r => r.storageScope === query[0] && r.owner === query[1] && r.conversation === query[2]) }; } }; },
++    };
++    return operation(store).value;
++  }
++  const db = await mediaDatabase();
++  return new Promise((resolve, reject) => {
++    const tx = db.transaction('drafts', mode); let result;
++    tx.oncomplete = () => resolve(result);
++    tx.onabort = tx.onerror = () => reject(Error('Falha ao guardar ou recuperar mídia local.'));
++    try { const request = operation(tx.objectStore('drafts')); request.onsuccess = () => { result = request.result; }; }
++    catch (error) { tx.abort(); reject(error); }
++  });
++}
++function mediaScope(owner, conversation) {
++  if (!owner || owner !== backgroundOwner || !S.conversas.some(c => c.id === conversation && c.background_owner === owner))
++    throw Error('A conta ou conversa mudou. A mídia não será enviada nesta conversa.');
++}
++function mediaLimits(tipo) {
++  const caps = limitesDoPlano()?.media_capabilities;
++  if (!midiaPermitida(tipo) || caps?.private_upload !== true || !Number.isSafeInteger(caps.max_media_bytes) || !Number.isSafeInteger(caps.max_encoded_bytes))
++    throw Error('Envio privado de mídia indisponível nesta conta ou versão do servidor.');
++  return { raw: Math.min(MEDIA_RAW_MAX, caps.max_media_bytes), encoded: Math.min(MEDIA_BASE64_MAX, caps.max_encoded_bytes) };
++}
++function mediaValidateSize(size, limits) {
++  if (!Number.isSafeInteger(size) || size <= 0 || size > limits.raw || 4 * Math.ceil(size / 3) + 128 > limits.encoded)
++    throw Error('A mídia ultrapassa 50 MB em base64 (aproximadamente 37,5 MB de arquivo), ou está vazia.');
++}
++function canonicalMediaPart(value) {
++  const keys = ['type', 'media_ref', 'kind', 'mime', 'bytes', 'duration_seconds', 'sha256', 'expires_at', 'width', 'height', 'has_audio'];
++  if (!value || typeof value !== 'object' || Array.isArray(value) || Object.keys(value).some(k => !keys.includes(k)) ||
++      value.type !== 'iald_media' || !/^[0-9a-f]{32}$/.test(value.media_ref || '') || !['audio', 'video'].includes(value.kind) ||
++      typeof value.mime !== 'string' || !value.mime.startsWith(value.kind + '/') ||
++      !Number.isSafeInteger(value.bytes) || value.bytes <= 0 || value.bytes > MEDIA_RAW_MAX ||
++      !Number.isFinite(value.duration_seconds) || value.duration_seconds <= 0 ||
++      !/^[0-9a-f]{64}$/.test(value.sha256 || '') || value.expires_at !== null)
++    throw Error('O servidor não confirmou a referência privada. Nenhum conteúdo será acrescentado ao histórico.');
++  if (value.kind === 'video' && (!Number.isSafeInteger(value.width) || !Number.isSafeInteger(value.height) || value.width <= 0 || value.height <= 0))
++    throw Error('Metadados do vídeo incompletos.');
++  return Object.fromEntries(keys.filter(k => Object.hasOwn(value, k)).map(k => [k, value[k]]));
++}
++async function mediaLoad(owner, conversation, id) {
++  const record = await mediaLocal('readonly', store => store.get(mediaKey(owner, conversation, id)));
++  if (!record || record.storageScope !== mediaStorageScope() || record.owner !== owner || record.conversation !== conversation || record.id !== id || !(record.blob instanceof Blob))
++    throw Error('Arquivo local não encontrado nesta conta/conversa. Selecione-o novamente.');
++  return record;
++}
++function mediaURL(record) {
++  if (!mediaDraftURLs.has(record.key)) mediaDraftURLs.set(record.key, URL.createObjectURL(record.blob));
++  return mediaDraftURLs.get(record.key);
++}
++async function mediaRemoveLocal(owner, conversation, id) {
++  const key = mediaKey(owner, conversation, id);
++  await mediaLocal('readwrite', store => store.delete(key));
++  if (mediaDraftURLs.has(key)) { URL.revokeObjectURL(mediaDraftURLs.get(key)); mediaDraftURLs.delete(key); }
++}
++async function mediaClearConversationLocal(owner, conversation) {
++  const records = await mediaLocal('readonly', store => store.index('conversation').getAll([mediaStorageScope(), owner, conversation]));
++  for (const record of records) await mediaRemoveLocal(owner, conversation, record.id);
++}
++function mediaDetach() {
++  mediaPendingConsent = null;
++  for (const url of mediaDraftURLs.values()) URL.revokeObjectURL(url);
++  mediaDraftURLs.clear(); mediaRAM.clear(); S.anexos = [];
++}
++async function mediaRestoreDrafts(conversation) {
++  if (!conversation || !backgroundOwner || conversation.background_owner !== backgroundOwner) return;
++  const owner = backgroundOwner, id = conversation.id;
++  const records = await mediaLocal('readonly', store => store.index('conversation').getAll([mediaStorageScope(), owner, id]));
++  if (owner !== backgroundOwner || S.ativaId !== id) return;
++  const drafts = records.filter(r => r.selected === true);
++  S.anexos = S.anexos.filter(a => !a.localDraftId).concat(drafts.map(r => ({ name: r.name, media: mediaURL(r), mediaKind: r.kind, mime: r.mime,
++    localDraftId: r.id, mediaOwner: owner, mediaConversation: id, kb: Math.round(r.blob.size / 1024) })));
++  desenharAnexos(); atualizarBotaoEnviar();
++}
++async function lerMidiaLocal(f, tipo) {
++  const owner = backgroundOwner, conversation = conversaAtiva()?.id;
++  mediaScope(owner, conversation); const limits = mediaLimits(tipo); mediaValidateSize(f.size, limits);
++  const extension = f.name.split('.').pop().toLowerCase();
++  if (!extensoesMidia(tipo).includes(extension)) throw Error('Formato de mídia indisponível no servidor.');
++  const mime = ({ wav: 'audio/wav', mp3: 'audio/mpeg', flac: 'audio/flac', ogg: 'audio/ogg', m4a: 'audio/mp4',
++    mp4: 'video/mp4', mov: 'video/quicktime', avi: 'video/x-msvideo', wmv: 'video/x-ms-wmv' })[extension];
++  if (!mime || !mime.startsWith(tipo + '/')) throw Error('Formato de mídia não permitido.');
++  const id = crypto.randomUUID(), blob = f.slice(0, f.size, mime), key = mediaKey(owner, conversation, id);
++  const record = { key, storageScope: mediaStorageScope(), owner, conversation, id, blob, kind: tipo, mime, name: f.name, selected: true, state: 'local' };
++  if (!record.storageScope) avisar('O servidor não forneceu escopo de mídia. O arquivo fica só nesta aba e será perdido ao recarregar; nada foi enviado.');
++  await mediaLocal('readwrite', store => store.put(record)); mediaScope(owner, conversation);
++  return { name: f.name, media: mediaURL(record), mediaKind: tipo, mime, localDraftId: id,
++    mediaOwner: owner, mediaConversation: conversation, kb: Math.round(f.size / 1024) };
++}
++async function mediaConsent(anexos, text, conversation) {
++  const owner = backgroundOwner; mediaScope(owner, conversation);
++  const response = await fetchIALD('/api/motor', { cache: 'no-store' });
++  if (!response.ok) throw Error('Não foi possível conferir as autorizações. Nenhuma mídia foi enviada.');
++  const motor = await response.json(); mediaScope(owner, conversation);
++  const mode = motor.motor_selecao || motor.motor;
++  if (!['mimo', 'automatico'].includes(mode)) throw Error('Áudio/vídeo requer MiMo ou modo automático autorizado.');
++  const notices = mode === 'automatico' ? [motor.consentimento,
++    (motor.provedores_automaticos || []).find(n => n.provedor === 'Xiaomi MiMo')] : [motor.consentimento];
++  if (notices.some(n => !n || typeof n.texto !== 'string' || !n.texto || !n.provedor || !Number.isInteger(n.versao)))
++    throw Error('Avisos MiMo/JEV incompletos. Nenhuma mídia foi enviada.');
++  const previousScope = mediaStorageScope();
++  const nextScope = motor.limites?.media_capabilities?.media_scope || null;
++  if (previousScope !== nextScope) {
++    mediaDetach(); S.motor = motor; mediaCapsAccount = owner;
++    throw Error('O escopo de mídia mudou. Selecione o arquivo novamente nesta conta.');
++  }
++  S.motor = motor; mediaCapsAccount = owner;
++  for (const a of anexos) if (a.localDraftId) mediaLimits(a.mediaKind);
++  const pending = notices.find(n => n.dado !== true);
++  if (pending) {
++    mediaPendingConsent = { owner, conversation, text, anexos };
++    S.avisoConsentimento = null; abrirConsentimento(pending.texto, pending.provedor, pending.versao);
++    return false;
++  }
++  mediaPendingConsent = null; return true;
++}
++async function mediaResumeConsent() {
++  const pending = mediaPendingConsent;
++  if (!pending) return;
++  mediaScope(pending.owner, pending.conversation);
++  if (S.ativaId !== pending.conversation) throw Error('Volte à conversa de origem para enviar a mídia.');
++  const sent = await enviarTexto(pending.text, pending.anexos);
++  if (sent) {
++    S.anexos = S.anexos.filter(a => !pending.anexos.includes(a));
++    if ($('#entrada').value.trim() === pending.text) { $('#entrada').value = ''; redimensionarEntrada(); }
++    desenharAnexos(); atualizarBotaoEnviar();
++  }
++}
++async function mediaUpload(anexo, owner, conversation) {
++  mediaScope(owner, conversation);
++  if (anexo.mediaOwner !== owner || anexo.mediaConversation !== conversation) throw Error('O anexo pertence a outra conversa.');
++  const record = await mediaLoad(owner, conversation, anexo.localDraftId);
++  if (record.part) return canonicalMediaPart(record.part);
++  if (record.state !== 'local') throw Error('Envio anterior da mídia sem conclusão confirmada. Não foi repetido; confira a situação antes de reenviar.');
++  mediaValidateSize(record.blob.size, mediaLimits(record.kind)); mediaScope(owner, conversation);
++  // Persist intent BEFORE the one upload. Lost responses never auto-retry.
++  record.state = 'uncertain'; await mediaLocal('readwrite', store => store.put(record));
++  mediaScope(owner, conversation); avisar('Enviando mídia privada…');
++  const response = await fetchIALD('/api/private-media?conversation_id=' + encodeURIComponent(conversation), {
++    method: 'POST', headers: { 'Content-Type': record.mime }, body: record.blob,
++  });
++  if (!response.ok) throw Error('O servidor recusou a mídia (HTTP ' + response.status + '). O histórico foi preservado; o envio não foi repetido.');
++  const part = canonicalMediaPart(await response.json());
++  if (part.kind !== record.kind || part.mime !== record.mime || part.bytes !== record.blob.size) throw Error('Metadados da mídia não correspondem ao arquivo enviado.');
++  record.part = part; record.state = 'stored'; await mediaLocal('readwrite', store => store.put(record));
++  mediaScope(owner, conversation); return part;
++}
++async function mediaMigrateLegacy(conversations, owner) {
++  let changed = false;
++  for (const c of conversations) {
++    for (const message of c.mensagens || []) {
++      if (!Array.isArray(message.content)) continue;
++      for (let i = 0; i < message.content.length; i++) {
++        const part = message.content[i];
++        const data = part?.type === 'input_audio' ? part.input_audio?.data : part?.type === 'video_url' ? part.video_url?.url : null;
++        if (typeof data !== 'string' || !/^data:(audio|video)\//.test(data)) continue;
++        if (!mediaStorageScope()) throw Error('O histórico antigo contém mídia. Aguarde o escopo seguro do servidor; o original não foi sobrescrito.');
++        const match = /^data:((audio|video)\/[a-z0-9.+-]+);base64,([A-Za-z0-9+/=\r\n]+)$/i.exec(data);
++        if (!match) throw Error('Mídia antiga ilegível; o histórico original não foi sobrescrito.');
++        const binary = atob(match[3]); mediaValidateSize(binary.length, { raw: MEDIA_RAW_MAX, encoded: MEDIA_BASE64_MAX });
++        const blob = new Blob([Uint8Array.from(binary, c => c.charCodeAt(0))], { type: match[1] });
++        const id = crypto.randomUUID(), key = mediaKey(owner, c.id, id);
++        const record = { key, storageScope: mediaStorageScope(), owner, conversation: c.id, id, blob, kind: match[2], mime: match[1], name: 'Mídia do histórico', selected: false, state: 'local' };
++        await mediaLocal('readwrite', store => store.put(record));
++        message.content[i] = { type: 'iald_local_media', localDraftId: id, kind: record.kind, mime: record.mime, bytes: blob.size };
++        changed = true;
++      }
++    }
++  }
++  return changed;
++}
++function mediaAssertHistory(conversations) {
++  for (const c of conversations) for (const message of c.mensagens || []) if (Array.isArray(message.content)) for (const p of message.content) {
++    if (p?.type === 'input_audio' || p?.type === 'video_url') throw Error('Mídia antiga precisa ser recuperada localmente antes de salvar. O histórico não foi apagado.');
++    if (p?.type === 'iald_media') canonicalMediaPart(p);
++  }
++}
++async function mediaPrepareLegacy(conversation, owner) {
++  for (const message of conversation.mensagens || []) if (Array.isArray(message.content)) for (let i = 0; i < message.content.length; i++) {
++    const p = message.content[i];
++    if (p?.type !== 'iald_local_media') continue;
++    message.content[i] = await mediaUpload({ localDraftId: p.localDraftId, mediaKind: p.kind, mediaOwner: owner, mediaConversation: conversation.id }, owner, conversation.id);
++  }
++}
++async function mediaMarkSubmitted(anexos, owner, conversation) {
++  for (const a of anexos) if (a.localDraftId) {
++    const record = await mediaLoad(owner, conversation, a.localDraftId);
++    record.selected = false; await mediaLocal('readwrite', store => store.put(record));
++  }
++}
++function mediaHistoryControls(container, content, conversation, owner) {
++  for (const p of Array.isArray(content) ? content : []) {
++    if (!['iald_media', 'iald_local_media'].includes(p?.type)) continue;
++    const info = el('p', 'ajuda', 'Mídia privada nesta conversa · ' + p.kind + ' · ' + Math.round(p.bytes / 1024) + ' KB');
++    container.appendChild(info);
++    if (p.type !== 'iald_media') continue;
++    const button = el('button', 'btn-acao', 'Conferir anexo'); container.appendChild(button);
++    button.addEventListener('click', async () => {
++      try {
++        mediaScope(owner, conversation); canonicalMediaPart(p);
++        const r = await fetchIALD('/api/private-media/' + p.media_ref + '?conversation_id=' + encodeURIComponent(conversation), { cache: 'no-store' });
++        if (!r.ok) throw Error('Anexo indisponível nesta conta/conversa.');
++        const actual = canonicalMediaPart(await r.json()); mediaScope(owner, conversation);
++        if (actual.media_ref !== p.media_ref || actual.sha256 !== p.sha256) throw Error('Referência de mídia alterada.');
++        info.textContent = 'Mídia privada conferida · ' + actual.kind + ' · ' + actual.duration_seconds.toFixed(1) + ' s · preservada até exclusão da conversa/conta.';
++      } catch (error) { avisar(error.message); }
++    });
++  }
++}
++
+ function midiaPermitida(tipo) {
+   return limitesDoPlano()?.[tipo] === true;
+ }
+@@ -2839,36 +3098,13 @@
+   return Array.isArray(values) ? values : [];
+ }
+ 
+-async function lerMidiaLocal(f, tipo) {
+-  if (!midiaPermitida(tipo)) throw new Error('Áudio/vídeo requer MiMo e consentimento atualizado.');
+-  if (f.size > 512000) throw new Error('Limite local de 512 KB por mídia. Mesmo abaixo dele, a conversa pode exceder o contexto; a memória TGL será preservada e o envio recusado.');
+-  const extension = f.name.split('.').pop().toLowerCase();
+-  if (!extensoesMidia(tipo).includes(extension)) throw new Error('Validação deste formato indisponível no servidor. WAV não requer decoder externo.');
+-  const mime = ({ wav:'audio/wav',mp3:'audio/mpeg',flac:'audio/flac',ogg:'audio/ogg',m4a:'audio/mp4',
+-    mp4:'video/mp4',mov:'video/quicktime',avi:'video/x-msvideo',wmv:'video/x-ms-wmv' })[f.name.split('.').pop().toLowerCase()];
+-  if (!mime || !mime.startsWith(tipo + '/')) throw new Error('Formato de mídia não permitido.');
+-  const local = URL.createObjectURL(f);
+-  try {
+-    const duration = await new Promise((resolve,reject) => {
+-      const player = document.createElement(tipo);
+-      const timer = setTimeout(() => { cleanup(); reject(new Error('Não foi possível conferir a duração.')); },5000);
+-      function cleanup() { clearTimeout(timer); player.onloadedmetadata=null; player.onerror=null; player.removeAttribute('src'); player.load(); }
+-      player.preload='metadata';
+-      player.onloadedmetadata=() => { const d=player.duration; cleanup(); resolve(d); };
+-      player.onerror=() => { cleanup(); reject(new Error('Formato não reconhecido neste aparelho.')); };
+-      player.src=local;
+-    });
+-    if (!Number.isFinite(duration) || duration<=0 || duration>(tipo==='audio'?30:10))
+-      throw new Error('Duração máxima: áudio 30 s; vídeo 10 s.');
+-    const data = await lerComo(new Blob([f],{type:mime}),'dataURL');
+-    return {name:f.name,media:data,mediaKind:tipo,kb:Math.round(f.size/1024),duration};
+-  } finally { URL.revokeObjectURL(local); }
+-}
++
+ 
+ function desenharAnexos() {
+   const zona = $('#anexos');
+   zona.innerHTML = '';
+-  let chars = 0;
++  let chars = 0;
++  if (midiaPermitida('audio') || midiaPermitida('video')) zona.appendChild(el('p', 'ajuda', MEDIA_LIMIT_TEXT));
+   for (const [i, a] of S.anexos.entries()) {
+     chars += (a.content || '').length;
+     const item = el('div', 'anexo');
+@@ -2895,7 +3131,12 @@
+     tirar.innerHTML = svg('M18 6L6 18M6 6l12 12', 2);
+     tirar.title = 'Remover anexo';
+     tirar.setAttribute('aria-label', 'Remover anexo');
+-    tirar.addEventListener('click', () => { S.anexos.splice(i, 1); desenharAnexos(); atualizarBotaoEnviar(); });
++    tirar.addEventListener('click', async () => {
++      try {
++        if (a.localDraftId) await mediaRemoveLocal(a.mediaOwner, a.mediaConversation, a.localDraftId);
++        S.anexos.splice(i, 1); desenharAnexos(); atualizarBotaoEnviar();
++      } catch (error) { avisar(error.message); }
++    });
+     item.appendChild(tirar);
+ 
+     zona.appendChild(item);
+@@ -3742,8 +3983,8 @@
+ // ══════════════════════════════════════════════════════════════
+ // ENVIO E STREAMING
+ // ══════════════════════════════════════════════════════════════
+-function enviar() {
+-  if (respostaPendenteBackground()) return;
++async function enviar() {
++  if (mediaSending || respostaPendenteBackground()) return;
+   if (!DEMO && !backgroundOwner) { recuperarRespostasBackground(); avisarBackground('Aguarde a identificação da conta antes de enviar.'); return; }
+   const texto = $('#entrada').value.trim();
+   if (!texto || S.gerando) return;
+@@ -3755,26 +3996,36 @@
+     return;
+   }
+   const anexos = S.anexos.slice();
+-  S.anexos = []; S.dicaImagem = false; desenharAnexos();
+-  $('#entrada').value = ''; redimensionarEntrada();
+-  enviarTexto(texto, anexos);
+-}
+-
+-function enviarTexto(texto, anexos) {
++  const conversation = S.ativaId;
++  mediaSending = true;
++  try {
++    if (await enviarTexto(texto, anexos) === false) return;
++    if (S.ativaId === conversation) {
++      S.anexos = S.anexos.filter(a => !anexos.includes(a)); S.dicaImagem = false; desenharAnexos();
++      if ($('#entrada').value.trim() === texto) { $('#entrada').value = ''; redimensionarEntrada(); }
++    }
++  } catch (error) { avisar(error.message); }
++  finally { mediaSending = false; atualizarBotaoEnviar(); }
++}
++
++async function enviarTexto(texto, anexos) {
+   if (respostaPendenteBackground()) return;
+   if (!DEMO && !backgroundOwner) { recuperarRespostasBackground(); return; }
+   const c = conversaAtiva();
+   if (!c) return;
+ 
+-  let conteudo = texto;
+-  const imagens = anexos.filter((a) => a.image).map((a) => a.image);
+-  if (anexos.some(a => a.media && !midiaPermitida(a.mediaKind))) {
+-    avisar('Mídia indisponível: selecione MiMo e confira o consentimento.'); return;
++  const owner = backgroundOwner;
++  const hasMedia = anexos.some(a => a.localDraftId) || c.mensagens.some(m => Array.isArray(m.content) && m.content.some(p => ['iald_media','iald_local_media'].includes(p?.type)));
++  const midias = [];
++  if (hasMedia) {
++    if (!await mediaConsent(anexos, texto, c.id)) return false;
++    await mediaPrepareLegacy(c, owner);
++    for (const a of anexos) if (a.localDraftId) midias.push(await mediaUpload(a, owner, c.id));
++    mediaScope(owner, c.id);
+   }
+-  const midias = anexos.filter(a => a.media).map(a => a.mediaKind === 'audio'
+-    ? {type:'input_audio',input_audio:{data:a.media}}
+-    : {type:'video_url',video_url:{url:a.media}});
+-  const arquivos = anexos.filter((a) => !a.image && !a.media && a.content);
++  let conteudo = texto;
++  const imagens = anexos.filter(a => a.image).map(a => a.image);
++  const arquivos = anexos.filter(a => !a.image && !a.localDraftId && a.content);
+   if (arquivos.length) {
+     const bloco = arquivos.map((a) => `\n\n[ARQUIVO: ${a.name}]\n${a.content}\n[FIM]\n`).join('');
+     conteudo = bloco + '\n' + texto;
+@@ -3787,7 +4038,9 @@
+   c.mensagens.push({ role: 'user', content: conteudo });
+   c.atualizada = new Date().toISOString();
+   if (c.titulo === 'Nova conversa') c.titulo = texto.slice(0, 55);
+-  salvarConversas();
++  mediaAssertHistory(S.conversas);
++  salvarConversas();
++  if (hasMedia) await mediaMarkSubmitted(anexos, owner, c.id);
+   listarConversas();
+   atualizarTitulo();
+ 
+@@ -3795,7 +4048,8 @@
+   desenharMensagem('user', conteudo);
+   atualizarDica();
+ 
+-  transmitir(montarEnvio(c));
++  transmitir(montarEnvio(c));
++  return true;
+ }
+ 
+ function montarEnvio(c) {
+@@ -3817,7 +4071,8 @@
+   // recusada com "recurso_indisponivel"
+   const semImagens = !imagensPermitidas();
+   for (const m of recortar(c.mensagens, sys)) {
+-    const conteudo = m.content;
++    const conteudo = m.content;
++    if (Array.isArray(conteudo) && conteudo.some(p => p?.type === 'iald_local_media')) throw Error('Mídia local ainda não foi enviada com autorização; histórico preservado.');
+     enviadas.push({ role: m.role === 'assistant' ? 'assistant' : 'user', content: conteudo });
+   }
+   return enviadas;
+@@ -4648,7 +4903,7 @@
+     }
+   });
+   $('#btn-consentir').addEventListener('click', consentirEContinuar);
+-  $('#btn-recusar-consentimento').addEventListener('click', () => { S.avisoConsentimento = null; fecharFolhas(); });
++  $('#btn-recusar-consentimento').addEventListener('click', () => { mediaPendingConsent = null; S.avisoConsentimento = null; fecharFolhas(); });
+ 
+   // atalhos do rodapé da lateral (a folha de créditos abre com o uso do plano no topo)
+   document.querySelectorAll('[data-abrir="creditos"]').forEach((b) => b.addEventListener('click', () => {
+@@ -5295,6 +5550,9 @@
+     return;
+   }
+   if (!resp.ok) { alert(j.error || `Não foi possível excluir (HTTP ${resp.status}).`); return; }
++  try {
++    for (const c of S.conversas) if (backgroundOwner && c.background_owner === backgroundOwner) await mediaClearConversationLocal(backgroundOwner, c.id);
++  } catch (error) { alert('Conta excluída no servidor; falha visível na limpeza da mídia local: ' + error.message); }
+   if (backgroundOwner) {
+     localStorage.removeItem(backgroundHistoryKey(backgroundOwner));
+     backgroundJobs.forgetOwner();
+@@ -5370,14 +5628,18 @@
+ }
+ 
+ async function lerMotor(opcoes) {
+-  const ticket = ++motorRequest;
++  const ticket = ++motorRequest;
++  const mediaOwner = backgroundOwner, mediaEpoch = backgroundEpoch;
+   try {
+     const r = await fetchIALD('/api/motor', { signal: AbortSignal.timeout(6000) });
+     if (ticket !== motorRequest || (!r.ok && r.status !== 503)) return;
+     const next = await r.json();
+     if (ticket !== motorRequest) return;
+     const previous = S.motor && (S.motor.motor_selecao || S.motor.modelo || S.motor.motor);
+-    S.motor = next;
++    if (mediaOwner !== backgroundOwner || mediaEpoch !== backgroundEpoch) return;
++    const previousMediaScope = mediaStorageScope();
++    if (previousMediaScope && previousMediaScope !== (next.limites?.media_capabilities?.media_scope || null)) mediaDetach();
++    S.motor = next; mediaCapsAccount = mediaOwner;
+     const current = S.motor.motor_selecao || S.motor.modelo || S.motor.motor;
+     if (previous !== current) {
+       S.ctx = { n_ctx: 32768, margem: 0.92, reserva_resposta: 8192,
+@@ -5649,7 +5911,11 @@
+   estadoConsentimento('');
+   try {
+     if (!(await responderConsentimento(true, folha.provedor, folha.versao))) return;
+-    fecharFolhas();
++    fecharFolhas();
++    if (mediaPendingConsent) {
++      try { await mediaResumeConsent(); } catch (error) { estadoConsentimento(error.message); }
++      return;
++    }
+     const bolha = S.avisoConsentimento;
+     S.avisoConsentimento = null;
+     if (bolha) { bolha.remove(); reenviarUltima(); }

@@ -1,0 +1,119 @@
+{
+  "status": "BACKEND_R2_CANDIDATE_TESTED_READY_FOR_DISTINCT_REVIEW_NOT_INSTALLED",
+  "generated_utc": "2026-10-20T21:26:48.427981+00:00",
+  "reference": "C:\\IALD\\Central de Patentes\\work\\mimo_media_capacity_20261020\\SESSION_REFERENCE.json",
+  "context_id": "bcf544f7-1878-5d27-b532-f1e1aad466aa",
+  "unit": "F9.MIMO_MEDIA_CAPACITY_20261020",
+  "tests": 45,
+  "test_results": [
+    {
+      "script": "test_private_media.py",
+      "receipt": "TEST_RESULTS.json",
+      "sha256": "c9b72af377a8a7431bd7397ff1fa43f2b4083ae7479f03d03fc74e97442d18b5",
+      "tests": 23,
+      "passed": true
+    },
+    {
+      "script": "test_provider_boundary.py",
+      "receipt": "PROVIDER_TEST_RESULTS.json",
+      "sha256": "0b148391818672cf8158161f7398896156f7aaee10349f8da4e4b0736df9bfde",
+      "tests": 10,
+      "passed": true
+    },
+    {
+      "script": "test_private_routes.py",
+      "receipt": "ROUTE_TEST_RESULTS.json",
+      "sha256": "49f337b268683fe668c1339488e9ddfbc064aa1d69abb57edc929c659a78d622",
+      "tests": 6,
+      "passed": true
+    },
+    {
+      "script": "test_upload_lifecycle_R2.py",
+      "receipt": "LIFECYCLE_R2_TEST_RESULTS.json",
+      "sha256": "370b95d971974df17d0fea3f32cb8b97fc20766c156646969fd48c5edfd5ccc1",
+      "tests": 6,
+      "passed": true
+    }
+  ],
+  "files": {
+    "private_media_store.py": "176583c5bdf188d3d52ae664f2b63bd148f8676d2cb124e7ee60f656e2ec1b44",
+    "private_media_routes.py": "7eddef0a6b480c2296435da3980336560948980824b8736d766d0c156313da63",
+    "iald_mimo_multimodal.py": "2d19913de8927b0d4af3d385aef79bb6fc71d49e437b29e550bcb4295177aac4",
+    "iald_app_providers.py": "5fc4caf2916f9580132e02c3a36b18a957f070b59cb3c9b238eaa4b90080b52c",
+    "providers.patch": "c2c814471f5618ac789bdda6669dad5d738b294cb93746cbb73e489c6166d073",
+    "CONTRACT.json": "31c68e5e847e2d676891d45f31528e7732d18b4fad748f80b6126bc7aa672bf6",
+    "METADATA_INTERFACE.json": "9d1806d18c53cd73b3340b64f056ba90b27ed023ffcc27a68bf18bc65abb7bed",
+    "HOST_INTEGRATION.md": "3774af5ff6cd726c4fbcdb8bf1cf6e08b561be9c5f065def827a4a9ffa29f847",
+    "test_private_media.py": "4875a15b42b6ea7ed88580b7dea4be04b3247ea56646522eca43b63404b382ef",
+    "test_provider_boundary.py": "f12e2aaeb5a60cf8fc8016fb4d63cc470ca7ad106a5363710bcb78dae575100d",
+    "test_private_routes.py": "98f6fdf63555f6892f1b17b5eea6a403ea9f1b8cb7d00d3688efdc74b7ec556e",
+    "test_upload_lifecycle_R2.py": "432a269040f1105f3b3a36bb18342965eeccded54941392a06ff4fab067d567f"
+  },
+  "dependency": {
+    "path": "C:\\IALD\\Central de Patentes\\work\\mimo_media_capacity_20261020\\routing_stage\\iald_media_budget.py",
+    "sha256": "cba8e974c7f3e79811e895783f9f1f1ec0e2e6a3ec25620603bbcdd08714b319",
+    "single_budget_engine": true,
+    "usage": "adapt_resolved_metadata + legacy_inline_metadata + options/plan_request + reserve_existing + spending_bound + exact wire policy/byte checks"
+  },
+  "runtime_provider_baseline": "6311365fe24c53c26a5fea706b91b0b094a40fa89d19285751e09c638e38fdcd",
+  "runtime_unchanged": true,
+  "public_interfaces": {
+    "client_capabilities": "scope",
+    "contains_media": "messages",
+    "reject_worker_media": "messages, *, provider, worker=False",
+    "resolve_media_metadata": "messages, *, store, scope, provider='mimo', worker=False",
+    "PrivateMediaRuntime": {
+      "canonical_part": "self, part",
+      "canonicalize": "self, messages, *, provider='mimo'",
+      "metrics_view": "self, messages",
+      "budget_metadata": "self, messages",
+      "routing_options": "self, body, *, intent_limits=None, proposals=None, maximum=131072, window=1048576",
+      "select_routing_policy": "self, choice",
+      "admit": "self, body, maximum, window=1048576",
+      "reserve": "self, spending, body, plan",
+      "expand": "self, body, *, provider, plan"
+    }
+  },
+  "review_findings": {
+    "MEDIA_R1_M1_UPLOAD_REVOKE_RACE": {
+      "candidate_fix": "Exclusive publication transaction rechecks auth/status/lease before any temp file creation; write verified, renamed and active status committed under same DB lock; revoked tombstone cannot resurrect.",
+      "regressions": "conversation and account delete during validation both fail visibly with no orphan/blob/quota success.",
+      "distinct_reviewer_status": "RETEST_PENDING"
+    },
+    "MEDIA_R1_M2_STALE_RESERVATIONS_GLOBAL_LOCKOUT": {
+      "candidate_fix": "Durable PID+birth+300s unpublished upload lease; startup/admission reconciles proven abandoned intents/files only; active retained media never reaped.",
+      "regressions": "Four actual child os._exit interruptions, other-owner successful upload, live unexpired upload preserved, orphan temp cleaned, active blob preserved.",
+      "distinct_reviewer_status": "RETEST_PENDING"
+    }
+  },
+  "retention": "No expiry of active files; explicit conversation/account delete only;technical upload leases do not cap audio/video duration.",
+  "capacity": {
+    "full_data_uri_decimal_bytes": 50000000,
+    "raw_bytes": 37499904,
+    "header_margin_bytes": 128,
+    "provider_json_bytes": 64000000,
+    "no_fixed_audio_video_duration_cap": true
+  },
+  "integration_handoff": {
+    "owner": "PARENT/Averroes host_stage; no edits of main server or app_spend by this front",
+    "required": "Use HOST_INTEGRATION.md. Pass host configured rates and selected video_policy explicitly. runtime.admit RETURNS RAW GOODALL PLAN with input_tokens_bound/output_reserved_tokens (not wrapper); provider here consumes those names. expand REQUIRES plan= for current round; no blind use of old expand(body,provider) example.",
+    "budget": "Parent merges Goodall SPENDING_INTEGRATION.diff; reserve_existing calls spending.before(...,media_plan=plan) once. Missing integrated guard refuses, never bypasses.",
+    "routing": "Before choose, runtime.routing_options full body -> give budget.routing_options(plans) to JEV media_budget_options; select_routing_policy(choice); carry receipt.media_budget on host context. Legacy inline measured without blob re-ingestion.",
+    "http": "Actual _RequisicaoIALD property branch returning MAX_RAW_BYTES belongs to parent; route adapter only verifies no setter/global override.",
+    "worker": "Call reject_worker_media before any worker/nonMiMo credential, routing or request for BOTH inline audio/video and refs.",
+    "new_conversation": "First upload establishes owner-generation-CID namespace; no prior model job required. Bootstrap media_scope partitions IndexedDB and drafts; not a bearer.",
+    "probe": "Runtime vendor/ffmpeg pin path reused; staging real video test uses that verified runtime dependency without installation."
+  },
+  "limitations": [
+    "Actual host session/CSRF/generation glue and client IndexedDB behavior require parent integration review.",
+    "No maximum-size remote-provider benchmark; modality admission remains an explicit estimate and actual usage settles wallet.",
+    "No calls to MiMo/JEV, no production writes, no public media URLs or remote fetching.",
+    "The300s lease bounds publication/quota recovery, not interruption of a blocked OS/socket read; host transport timeout remains required.",
+    "Existing lease-less private-media schema fails visibly and needs explicit migration; this new feature has not been installed.",
+    "Failed Windows temporary-directory test artifact in earlier builder attempt and all reviewer snapshots/receipts retained; final tests use bounded staging temp roots."
+  ],
+  "scientific_package_changed": false,
+  "consent_versions": "MiMo2/Auto3 preserved, no autogrant",
+  "provider_calls": 0,
+  "installed": false
+}

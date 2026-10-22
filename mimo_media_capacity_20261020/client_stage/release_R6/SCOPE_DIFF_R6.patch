@@ -1,0 +1,54 @@
+--- R5helper
++++ R6helper
+@@ -181,26 +181,34 @@
+     desenharAnexos(); atualizarBotaoEnviar();
+   }
+ }
++function mediaBoundResponse(value, expected) {
++  if (typeof expected !== 'string' || !/^[0-9a-f]{32}$/.test(expected) || !value || value.media_scope !== expected)
++    throw Error('O escopo da resposta de mídia não corresponde à conta original. Nada foi anexado; o envio não foi repetido.');
++  const { media_scope, ...part } = value;
++  return canonicalMediaPart(part);
++}
+ async function mediaUpload(anexo, owner, conversation) {
+   mediaActiveConversation(owner, conversation);
+   if (anexo.mediaOwner !== owner || anexo.mediaConversation !== conversation) throw Error('O anexo pertence a outra conversa.');
+   const originalStorageScope = mediaStorageScope();
++  if (!originalStorageScope) throw Error("O servidor não forneceu escopo seguro de envio. O arquivo permanece local; aguarde a atualização da conta.");
+   const uploadKey = mediaKey(owner, conversation, anexo.localDraftId);
+   if (mediaUploadsInFlight.has(uploadKey)) throw Error('O mesmo anexo já está em envio. O pedido não foi repetido.');
+   mediaUploadsInFlight.add(uploadKey);
+   try {
+   const record = await mediaLoad(owner, conversation, anexo.localDraftId);
++  if (record.storageScope !== originalStorageScope) throw Error('O rascunho pertence a outro escopo de conta.');
+   if (record.part) return canonicalMediaPart(record.part);
+   if (record.state !== 'local') throw Error('Envio anterior da mídia sem conclusão confirmada. Não foi repetido; confira a situação antes de reenviar.');
+   mediaValidateSize(record.blob.size, mediaLimits(record.kind)); mediaActiveConversation(owner, conversation);
+   // Persist intent BEFORE the one upload. Lost responses never auto-retry.
+   record.state = 'uncertain'; await mediaLocal('readwrite', store => store.put(record));
+   mediaActiveConversation(owner, conversation); avisar('Enviando mídia privada…');
+-  const response = await fetchIALD('/api/private-media?conversation_id=' + encodeURIComponent(conversation), {
++  const response = await fetchIALD('/api/private-media?conversation_id=' + encodeURIComponent(conversation) + '&expected_media_scope=' + encodeURIComponent(originalStorageScope), {
+     method: 'POST', headers: { 'Content-Type': record.mime }, body: record.blob,
+   });
+   if (!response.ok) throw Error('O servidor recusou a mídia (HTTP ' + response.status + '). O histórico foi preservado; o envio não foi repetido.');
+-  const part = canonicalMediaPart(await response.json());
++  const part = mediaBoundResponse(await response.json(), originalStorageScope);
+   if (originalStorageScope !== mediaStorageScope()) throw Error('O escopo de mídia mudou durante o envio; confira a conta.');
+   if (part.kind !== record.kind || part.mime !== record.mime || part.bytes !== record.blob.size) throw Error('Metadados da mídia não correspondem ao arquivo enviado.');
+   record.part = part; record.state = 'stored'; await mediaLocal('readwrite', store => store.put(record));
+@@ -260,9 +268,12 @@
+     button.addEventListener('click', async () => {
+       try {
+         mediaScope(owner, conversation); canonicalMediaPart(p);
+-        const r = await fetchIALD('/api/private-media/' + p.media_ref + '?conversation_id=' + encodeURIComponent(conversation), { cache: 'no-store' });
++        const expectedScope = mediaStorageScope();
++        if (!expectedScope) throw Error("Escopo seguro de mídia indisponível; nada foi consultado.");
++        const r = await fetchIALD('/api/private-media/' + p.media_ref + '?conversation_id=' + encodeURIComponent(conversation) + '&expected_media_scope=' + encodeURIComponent(expectedScope), { cache: 'no-store' });
+         if (!r.ok) throw Error('Anexo indisponível nesta conta/conversa.');
+-        const actual = canonicalMediaPart(await r.json()); mediaScope(owner, conversation);
++        const actual = mediaBoundResponse(await r.json(), expectedScope); mediaScope(owner, conversation);
++        if (expectedScope !== mediaStorageScope()) throw Error("O escopo da conta mudou durante a consulta.");
+         if (actual.media_ref !== p.media_ref || actual.sha256 !== p.sha256) throw Error('Referência de mídia alterada.');
+         info.textContent = 'Mídia privada conferida · ' + actual.kind + ' · ' + actual.duration_seconds.toFixed(1) + ' s · preservada até exclusão da conversa/conta.';
+       } catch (error) { avisar(error.message); }

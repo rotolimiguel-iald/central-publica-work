@@ -1,0 +1,123 @@
+{
+  "schema": "iald.independent-media-integration-partial-review/v1",
+  "status": "CHANGES_REQUIRED_PARTIAL",
+  "actor": "codex-mimo-capacity-reviewer",
+  "reference": "C:\\IALD\\Central de Patentes\\work\\mimo_media_capacity_20261020\\SESSION_REFERENCE.json",
+  "unit": "F9.MIMO_MEDIA_CAPACITY_20261020",
+  "reviewed_revision": 4,
+  "created_utc": "2026-10-20T21:31:01.946272+00:00",
+  "scope": "Routing, client release_R4 and host candidates; captured backend R2 lifecycle fixes. Read-only originals; synthetic isolated tests, no production imports/server execution/network/model calls. Final release remains moving/unsubmitted.",
+  "source_pins": {
+    "path": "C:\\IALD\\Central de Patentes\\work\\mimo_media_capacity_20261020\\review_integration\\SOURCE_PINS_R1.json",
+    "sha256": "40090b19ac736f5846112b07852270024b203e6142d4d12cf0a3599b6e823e45",
+    "bytes": 22959
+  },
+  "snapshot_integrity_all_files": true,
+  "evidence": [
+    {
+      "path": "C:\\IALD\\Central de Patentes\\work\\mimo_media_capacity_20261020\\review_integration\\PYTHON_REPLAY_R1.json",
+      "sha256": "8699912a1bc6c9895c87e0b722b09de75767563c20d0e190ff35f5dd27531aa0",
+      "bytes": 9051
+    },
+    {
+      "path": "C:\\IALD\\Central de Patentes\\work\\mimo_media_capacity_20261020\\review_integration\\INDEPENDENT_CONTROLS_R1.json",
+      "sha256": "86d4a393f90a5d0b7801250c41e958ce0cfc34327679185772573201473555e2",
+      "bytes": 1135
+    },
+    {
+      "path": "C:\\IALD\\Central de Patentes\\work\\mimo_media_capacity_20261020\\review_integration\\CLIENT_ACCOUNT_SWITCH_R1.json",
+      "sha256": "db9c482c034077fd9c8857554e27ffa8b004b7ea062ef9b9b2a1699fa1af3f11",
+      "bytes": 691
+    },
+    {
+      "path": "C:\\IALD\\Central de Patentes\\work\\mimo_media_capacity_20261020\\review_integration\\STATIC_PIN_CHECKS_R1.json",
+      "sha256": "05dba820ba286ac83fac7c19e3356e507b2c8658086d4761ddab98d5841350dd",
+      "bytes": 990
+    },
+    {
+      "path": "C:\\IALD\\Central de Patentes\\work\\mimo_media_capacity_20261020\\review_integration\\independent_R1.py",
+      "sha256": "0c719d693e2b29ea6e13637965612ba60e59e06ed5424c3efd9b97530143b2d8",
+      "bytes": 6866
+    },
+    {
+      "path": "C:\\IALD\\Central de Patentes\\work\\mimo_media_capacity_20261020\\review_integration\\independent_client_R1.cjs",
+      "sha256": "15da3efe22bf5fe02899c9cbd4867c9da3b3995e1d3e3c80da70a002dc01ad90",
+      "bytes": 1754
+    },
+    {
+      "path": "C:\\IALD\\Central de Patentes\\work\\mimo_media_capacity_20261020\\review_integration\\snapshot_R1\\client_stage\\release_R4\\CLIENT_FLOW_TESTS_R4.json",
+      "sha256": "97fefc99b3fe0a1e77b285e28bc198e206c7e2d7c9f25f7ab3afbe25ad1899b4",
+      "bytes": 279
+    },
+    {
+      "path": "C:\\IALD\\Central de Patentes\\work\\mimo_media_capacity_20261020\\review_integration\\snapshot_R1\\client_stage\\release_R4\\PRIVATE_MEDIA_TESTS_R4.json",
+      "sha256": "5ef156e147cdae0e6b4517721ef696448f2211b9d6b68a413d8b1d2e61045520",
+      "bytes": 458
+    }
+  ],
+  "findings": [
+    {
+      "id": "MEDIA_INT_R1_M3_UPLOAD_EXPECTED_PARTITION",
+      "severity": "MEDIUM",
+      "status": "OPEN",
+      "sources": [
+        {
+          "path": "C:\\IALD\\Central de Patentes\\work\\mimo_media_capacity_20261020\\review_integration\\snapshot_R1\\host_stage\\new_private_media_host.py",
+          "sha256": "6ed1e35807697ddc507bb5e14294154f2813db8f141c75db06f6333570c005bb",
+          "bytes": 9426
+        },
+        {
+          "path": "C:\\IALD\\Central de Patentes\\work\\mimo_media_capacity_20261020\\review_integration\\snapshot_R1\\backend_stage\\private_media_routes.py",
+          "sha256": "7eddef0a6b480c2296435da3980336560948980824b8736d766d0c156313da63",
+          "bytes": 2750
+        },
+        {
+          "path": "C:\\IALD\\Central de Patentes\\work\\mimo_media_capacity_20261020\\review_integration\\snapshot_R1\\client_stage\\release_R4\\app\\iald.js",
+          "sha256": "3c6ebfedc799d8424c940fc01405e6eb2ea8f29eb7fa78db6fe59b6b28a799c3",
+          "bytes": 307354
+        }
+      ],
+      "finding": "Upload request carries conversation only; server derives current authenticated owner/generation but never compares expected client partition. A web cookie/account change in another tab after capability/consent read can make old tab upload account-A selected file into account B. Canonical reply has no partition and old client accepts it into A local draft. This is a wrong-account storage/admission binding, not proof of cross-account blob read or provider dispatch.",
+      "reproduction": "Actual staged Host/Flask route with synthetic sessions: obtain Alice capabilities, switch cookie to Bob, POST same CID+local WAV without expected partition =>201, DB owner Bob/generation gb. Separate actual R4 mediaUpload function test sends only Content-Type/CID and accepts canonical reply, state stored under old owner-A. No remote calls.",
+      "minimum_correction": "Send expected authenticated media_scope from original draft/capabilities on upload; host compares it to current authenticated owner-generation-derived scope before reading request.stream or creating namespace/reservation. Missing/mismatch fail visibly; token remains concurrency binding, never authentication. Keep existing session/CSRF checks. Recheck client scope after async local reads; add cookie/bearer-account and same-name-new-generation switch regressions. Metadata endpoint can use same binding for consistency."
+    }
+  ],
+  "resolved_original_findings": {
+    "path": "C:\\IALD\\Central de Patentes\\work\\mimo_media_capacity_20261020\\review_backend\\LIFECYCLE_MED_REVIEW_R2.json",
+    "sha256": "8dd66d5056d1f0a44a7c57834537112af6451b75a88e21404740f875c82cf2fd",
+    "bytes": 1956
+  },
+  "passed": {
+    "python_replay_cases": 69,
+    "client_assertions": 91,
+    "own_controls": 7,
+    "original_medium_findings_resolved_on_snapshot": 2,
+    "context_functions_unchanged": [
+      "promptSistema",
+      "contextoUsuario",
+      "recortar",
+      "estimarTokens"
+    ],
+    "actual_client_send_storage_functions_match_fixture": true,
+    "video_coverage": "1024.1s at2fps refuses; explicit1fps preserves coverage with1025 requested/1026 padded frames. min_fps2 refuses lower policy; no hidden cap.",
+    "text_and_wallet": "Text/system preserved; history/tool mutation invalidates spending fingerprint; one guarded reservation path, no independent wallet, actual usage settlement retained. Wallet-enabled host availability checks access without requiring new positive balance for admitted task.",
+    "privacy": "JEV whitelisted plan projection contains no refs/pins/payload; final actual provider function test expands raw bytes only at mocked MiMo HTTP boundary, verifies full real science prefix and wallet refusal before decrypt.",
+    "deployment_primitives": "All three copied bytes match declared original sources/receipt and parse; no execution."
+  },
+  "pending": [
+    "Fix new expected-partition MEDIUM before final integration verdict.",
+    "Cicero legacy inline/history >2MB canonicalize regression is in progress; final backend R4 not frozen/reviewed.",
+    "Captured host offers only2fps standard/detail; explicit lower-FPS proposal integration requested by owner pending. Runtime refuses rather than truncates.",
+    "Final release plan, matching final_checks and final pin refresh needed. Include real new_private_media_host.py name, actual transaction/maintenance/plan hashes.",
+    "No final immutable client handoff receipt; captured release_R4 subplan pins and four identical JS copies checked, sources in motion.",
+    "End-to-end browser IndexedDB UI QA/build/store availability and physical install not verified; no maximum context benchmark or paid test."
+  ],
+  "guards": {
+    "remote_calls": 0,
+    "production_changes": false,
+    "requirements_accepted": [],
+    "final_review_written": false,
+    "no_science_promotion": true,
+    "low_findings_rounds": 0
+  }
+}

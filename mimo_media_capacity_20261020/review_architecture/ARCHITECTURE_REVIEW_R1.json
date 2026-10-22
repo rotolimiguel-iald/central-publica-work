@@ -1,0 +1,141 @@
+{
+  "schema": "iald.independent-media-capacity-architecture/v1",
+  "status": "ARCHITECTURE_REVIEW_WITH_REQUIRED_CONTROLS",
+  "actor": "codex-mimo-capacity-reviewer",
+  "reference": "C:\\IALD\\Central de Patentes\\work\\mimo_media_capacity_20261020\\SESSION_REFERENCE.json",
+  "context_id": "bcf544f7-1878-5d27-b532-f1e1aad466aa",
+  "unit": "F9.MIMO_MEDIA_CAPACITY_20261020",
+  "reviewed_revision": 3,
+  "created_utc": "2026-10-20T21:09:12.563632+00:00",
+  "scope": "Offline read-only currentarchitecture and exact size arithmetic. New backend/JEV/client candidates not reviewed or modified; prior delivered mission not adopted.",
+  "measured": {
+    "decoded_target_decimal_bytes": 37500000,
+    "base64_target_characters": 50000000,
+    "http_current_bytes": 31457280,
+    "acom_text_current_bytes": 16777216,
+    "acom_json_current_bytes": 33554432,
+    "provider_context_configured": 1048576,
+    "provider_default_output_reserve": 131072
+  },
+  "current_blockers": [
+    {
+      "id": "INLINE_SIZE_CHAIN",
+      "severity": "MEDIUM",
+      "finding": "50MBase64 chars exceed HTTP30MiB,ACOM16MiBtext/32MiBJSON. _text preserves list as full JSON and legacy migration includes fullmessages; directinline cannot meet target without changing storage/custody boundary.",
+      "sources": [
+        "iald_web_server.py:LIMITE_CORPO_BYTES",
+        "store.py:MAX_TEXT_BYTES/MAX_JSON_BYTES",
+        "iald_app_memory.py:_text/begin"
+      ]
+    },
+    {
+      "id": "BROWSER_PERSISTENCE_INLINE",
+      "severity": "MEDIUM",
+      "finding": "persistirConversasBackground JSONserializes all S.conversas to localStorage. Current typeddataURI remains in history; larger media would bloat persistence and repeated APIrequests. Exact browser quota not measured or assumed.",
+      "source": "app/iald.js:persistirConversasBackground"
+    },
+    {
+      "id": "BASE64_BYTES_NOT_MEDIA_CONTEXT",
+      "severity": "MEDIUM",
+      "finding": "output_budget/check_window charge UTF8JSONbytes as conservative tokenbound.50MBase64 cannot fit configured1048576 by this rule. Simply treating opaque refs as zero then expanding later would undercount paid actual multimodal input.",
+      "source": "iald_app_providers.py:output_budget/check_window/_api"
+    }
+  ],
+  "minimum_design": [
+    {
+      "area": "private_upload",
+      "requirement": "Authenticated owner/accountgeneration and conversation bound atupload,resolution,preview,dispatch,download anddelete. CSRF/header/bodyshape guards; opaqueunpredictable IDs; no arbitrary path/fileURL/remoteURL resolution. Hash bytes onserver,pinned size/MIME/dimensions orsample metadata; clients cannot self-attest ownership,generation,cost or trustedcount."
+    },
+    {
+      "area": "byte_contract",
+      "requirement": "Define decimal MB vsMiB and whether50MB includesdataURI/JSONenvelope. For37500000decodedbytes encodedpayload is50000000chars; envelope addsbytes. Separate perfile,request,history,owner/globalstorage and in-flight quotas. Stream boundedupload and reject overrun even missing/falseContentLength; interrupted upload never becomes usable."
+    },
+    {
+      "area": "blob_custody",
+      "requirement": "Keep raw bytes in app-private immutable blobstore,not localStorage,q/p/originalinlineJSON or SSE. Ledger/browser stores typed scoped refs and verified hash/metadata. Preserve old inscriptions/releases unchanged; no silent migration. Atomic publish,verified private paths,no symlink/reparse/hardlink escapes,hash/read consistency. Reference is data,not bearerpermission."
+    },
+    {
+      "area": "single_expansion_boundary",
+      "requirement": "Validate ref at every use; expand only authorized MiMo finaladapter after currentconsent/rights/wallet preflight. All other adapters,delegates,tools,moderation and JEV get safe text/metadata only or visible refusal. No raw bytes,downloadtickets,private URLs,filesystempaths or authheaders in JEVlogs/errors/providerotherthanMiMo. Prior media privacy helper must recognize new typedrefs and alllegacy/history without rewriting publicscience prefix."
+    },
+    {
+      "area": "replay_and_races",
+      "requirement": "Persist upload/request/op intent IDs,attachmentpins and resolvedgeneration once. Stop cross-owner/conversation/gen access,revokedsession and missing/expired/tampered blobs before key/network. Concurrentdelete/GC must not invalidate admittedrequest; concurrentalias edit cannot change alreadyadmittedbytes. No automaticretry of uncertain modelcalls or rebuilding attachment with newID to resend."
+    },
+    {
+      "area": "multiuser_storage",
+      "requirement": "Transactional reservations perowner+global bytes/inflight/concurrency beforewrite; actualbytes charged once and reservation reconciled afterfailure. Bounded temporaryfiles/diskspace/CPU/memory;TTL/GC tied to retention policy and durable pendingrequests. Duplicate blobs must not cross ownership authorization or produce hash-existence oracle. Existing artifactstore20MiB/dataonlyingest is not automatically a media37.5MB store; reuse its securitypatterns,not permissive genericfileaccess."
+    },
+    {
+      "area": "TGL_context_and_cost",
+      "requirement": "Full kernel/core/scientificprefix remains exact,nevertruncated tofit. Admit text+tools+history+actualmedia modality footprint+outputreserve using validated nativeorprovider-documented model-specific counting with explicit provenance/unknown refusal. No claim1Mtested. Reservewallet based onactual mediacost components,not tinyrefJSON; record measured providerusage and settlement,unknownnotzero. Group/global/individual rights and exemptions unchanged."
+    },
+    {
+      "area": "duration",
+      "requirement": "Remove arbitrary30s/10s acceptanceceilings only alongside actual modalitycontext/cost/resource admission. Validate stream/container consistency and finite metadata; bound probe execution/resources. Resource timeout is not a claim of vendor durationmax. Highlycompressed longaudio/highframevideo must not bypass cost/contextthrough filesizeonly."
+    },
+    {
+      "area": "client_and_distribution",
+      "requirement": "Client stores scoped refs,never rawBase64 acrosspersist/reload/export/backups; revokes temporaryObjectURLs/accountswitch state. Uploadprogress,cancel/retry identity and expiredref outcomes explicit. Same applicable web/iOS/Androidassets; newbins/storegroups/deviceinstallation are separate verified availability states."
+    }
+  ],
+  "required_offline_negatives": [
+    "Boundaryarithmetic justbelow/at/above encoded+decodedtarget,envelope/aggregatecounts,chunked/misreported upload; no need allocate or externallysend50MB to prove rejection.",
+    "Crossowner,conversation,generation;forgedID/hash/metadata;missing/expired/deleted/tamperedblob;path/symlink/remoteURL;authrevocation and CSRF beforediskexpansion/key/network.",
+    "ActualJEVbody capture with realBoundACOM,newtypedrefs+legacy/PDFhistory:no raw/Base64/privateURL/secret tokens anywhere. Exactfullscienceprefix and q/p custody preserved.",
+    "ActualMiMobody undertransportmock expands exactpinnedbytes; sameinputs onOpenAI/TypeSafe/Kimi/DeepSeek/reflection/delegation refuse or receive authorizedsafe metadata only.",
+    "Wallet admission based onactualmodality footprint,notrefsize;missingcounts/oversizedhistory/outputreserve/unknownrate refuses beforedispatch. Costcap tests synthetic,not providerprobe.",
+    "Concurrentquota,crashbetweenwrite/publish,duplicateID,idempotentretry,GCduringadmittedcall,cancelpartial,reconnect/reload/accountswitch; no rawpayload in browserstorage,SSE,exceptions orlogs."
+  ],
+  "limits": [
+    "This is currentarchitecture review,not rejection or acceptance of builderspendingcode.",
+    "No provider calls,maximumcontext tests,uploads ofprivatefiles,productionwrites or scienceexecution.",
+    "Configured1Mwindow is not measuredcapacity and filemax is not guaranteedrequestadmission.",
+    "SSE16MiB is an output/eventbuffer ceiling,not directuploadlimit; avoid rawpayload echoes rather than blindlyincreasingit."
+  ],
+  "evidence_pins": [
+    {
+      "path": "C:\\IALD\\projetos_pyhton\\IALD\\iald_web_server.py",
+      "sha256": "0fabe398035cd7d2d688dd7bda4f4acbd3dd018e680c429794ad12f2719eb8f5"
+    },
+    {
+      "path": "C:\\IALD\\projetos_pyhton\\IALD\\iald_app_memory.py",
+      "sha256": "1518e368c8ce97ace9792b57bbc31c8570500eaccfa8952f1d6b29c461796021"
+    },
+    {
+      "path": "C:\\IALD\\MEMORIA_IALD\\lib\\iald_memory\\store.py",
+      "sha256": "7eeb1213b61e91eab5afbc79a59a51df9a5588739dafc33abde8db2445f9a24e"
+    },
+    {
+      "path": "C:\\IALD\\projetos_pyhton\\IALD\\iald_app_providers.py",
+      "sha256": "6311365fe24c53c26a5fea706b91b0b094a40fa89d19285751e09c638e38fdcd"
+    },
+    {
+      "path": "C:\\IALD\\projetos_pyhton\\IALD\\iald_router_media_view.py",
+      "sha256": "80c7c38c358d0ef2778bfdafa1018713a64a908b72f3cdc9bbde0c71664c1533"
+    },
+    {
+      "path": "C:\\IALD\\projetos_pyhton\\IALD\\iald_mimo_multimodal.py",
+      "sha256": "06859863d09062c3ec4558bee6ec6411359cbf44e69f4ac63403adddfa1022a6"
+    },
+    {
+      "path": "C:\\IALD\\projetos_pyhton\\IALD\\app\\iald.js",
+      "sha256": "717b73f815abb80af0aa8cb1d5277b04b179dde5728640de079fd0fb306d7827"
+    },
+    {
+      "path": "C:\\IALD\\projetos_pyhton\\IALD\\iald_task_artifacts.py",
+      "sha256": "11f32391ae201df1a903747b3e648b875cdf2ba8f248eec044a9cdc2203acc63"
+    },
+    {
+      "path": "C:\\IALD\\projetos_pyhton\\IALD\\iald_chat_jobs.py",
+      "sha256": "cde5baea0e1e8861e3d6257afd18ecff5e62bda73368f2d988230e50bc6b3a12"
+    }
+  ],
+  "actions": {
+    "provider_calls": 0,
+    "production_writes": 0,
+    "builder_stage_writes": 0,
+    "accepted_tasks": []
+  },
+  "next_action": "Review immutable backend+JEVbudget+client deliverables and their exactnegative tests,then finalconsolidatedplan. No new recurringpolling or external calls."
+}

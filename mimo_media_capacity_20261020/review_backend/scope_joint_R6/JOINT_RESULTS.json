@@ -1,0 +1,125 @@
+{
+  "status": "PASS_R6_R4_EXPECTED_SCOPE_JOINT",
+  "checks": [
+    "Matching partition: actual client Blob -> real Flask adapter/store validates WAV and returns matching hash/echo.",
+    "Client strips scope before cached canonical part; fake IndexedDB survives fresh VM reload.",
+    "Actual metadata button consumes actual route response; verified state rendered.",
+    "Cookie A-to-B and same-owner generation change:403 with zero stream/body/store/namespace access.",
+    "Refusals leave no part; subsequent call does not repeat upload.",
+    "Missing/wrong response echo refused, no part cached and no automatic retry.",
+    "Stale metadata GET:403 before store construction/lookup."
+  ],
+  "calls": [
+    {
+      "case": "positive",
+      "status": 201,
+      "counts": {
+        "stream_access": 1,
+        "body_reads": 1,
+        "put": 1,
+        "metadata": 0,
+        "store_created": 1
+      },
+      "rows": [
+        [
+          "owner-A",
+          "g1",
+          "active"
+        ]
+      ]
+    },
+    {
+      "case": "positive",
+      "status": 200,
+      "counts": {
+        "stream_access": 0,
+        "body_reads": 0,
+        "put": 0,
+        "metadata": 1,
+        "store_created": 1
+      },
+      "rows": [
+        [
+          "owner-A",
+          "g1",
+          "active"
+        ]
+      ]
+    },
+    {
+      "case": "cookie_switch",
+      "status": 403,
+      "counts": {
+        "stream_access": 0,
+        "body_reads": 0,
+        "put": 0,
+        "metadata": 0,
+        "store_created": 0
+      },
+      "rows": []
+    },
+    {
+      "case": "generation_switch",
+      "status": 403,
+      "counts": {
+        "stream_access": 0,
+        "body_reads": 0,
+        "put": 0,
+        "metadata": 0,
+        "store_created": 0
+      },
+      "rows": []
+    },
+    {
+      "case": "missing_echo",
+      "status": 201,
+      "counts": {
+        "stream_access": 1,
+        "body_reads": 1,
+        "put": 1,
+        "metadata": 0,
+        "store_created": 1
+      },
+      "rows": [
+        [
+          "owner-A",
+          "g1",
+          "active"
+        ]
+      ]
+    },
+    {
+      "case": "wrong_echo",
+      "status": 201,
+      "counts": {
+        "stream_access": 1,
+        "body_reads": 1,
+        "put": 1,
+        "metadata": 0,
+        "store_created": 1
+      },
+      "rows": [
+        [
+          "owner-A",
+          "g1",
+          "active"
+        ]
+      ]
+    },
+    {
+      "case": "metadata_switch",
+      "status": 403,
+      "counts": {
+        "stream_access": 0,
+        "body_reads": 0,
+        "put": 0,
+        "metadata": 0,
+        "store_created": 0
+      }
+    }
+  ],
+  "provider_calls": 0,
+  "network_calls": 0,
+  "production_changes": false,
+  "limits": "Synthetic session/generation callbacks and IndexedDB VM fixture; actual frozen R6 helper, R4 adapter/store/local WAV validation. Cipher is synthetic for this scope test. No final host/full app certification."
+}

@@ -1,0 +1,104 @@
+--- installedR6
++++ candidateR7
+@@ -1336,13 +1336,13 @@
+     S.conversas = history.conversas.filter((c) => c && (!c.background_owner || c.background_owner === account));
+     for (const c of S.conversas) c.background_owner = account;
+     S.ativaId = S.conversas.some((c) => c.id === history.ativa) ? history.ativa : S.conversas[0]?.id || null;
+-    await carregarMotor();
+-    await mediaMigrateLegacy(S.conversas, account);
+-    persistirConversasBackground();
+-    if (!S.conversas.length) novaConversa({ semFoco: true });
+-    else { listarConversas(); abrirConversa(); }
+-  }
+-  if (await mediaMigrateLegacy(S.conversas, account)) persistirConversasBackground();
++    // Show the authenticated owner's history before asynchronous recovery.
++    // Never leave the previously rendered generic/other-account list visible.
++    listarConversas(); abrirConversa();
++  }
++  await mediaRecoverLegacyHistory(account);
++  if (!S.conversas.length) novaConversa({ semFoco: true });
++  else { listarConversas(); abrirConversa(); }
+   refreshNativeNotificationsUI();
+   artifactAccessUI?.authenticated();
+   return backgroundOwner;
+@@ -2217,11 +2217,19 @@
+   abrirConversa();
+ }
+ 
+-function salvarConversas() {
++function salvarConversas() {
++  try {
+   if (!DEMO && backgroundOwner) { persistirConversasBackground(); return; }
+   mediaAssertHistory(S.conversas);
+   guardar(K.conversas, S.conversas);
+   guardar(K.ativa, S.ativaId || '');
++
++  } catch (error) {
++    // UI actions may proceed in RAM; durable job delivery still calls the
++    // strict persistirConversasBackground directly and cannot acknowledge loss.
++    avisarBackground('Não foi possível salvar esta alteração. O histórico original foi preservado; esta mudança fica só nesta aba até a recuperação: ' + error.message);
++    return false;
++  }
+ }
+ 
+ const conversaAtiva = () => S.conversas.find((c) => c.id === S.ativaId) || null;
+@@ -3054,8 +3062,40 @@
+   mediaActiveConversation(owner, conversation); return part;
+   } finally { mediaUploadsInFlight.delete(uploadKey); }
+ }
++async function mediaAwaitBoundMotor(owner) {
++  const epoch = backgroundEpoch;
++  let pending = carregarMotor();
++  // A newer request may supersede the one awaited by this bootstrap. Follow
++  // that actual promise; never equate an ignored response with ready caps.
++  for (let n = 0; n < 8; n++) {
++    await pending;
++    if (owner !== backgroundOwner || epoch !== backgroundEpoch) throw detached();
++    if (pending !== S.motorCarregando) { pending = S.motorCarregando; continue; }
++    if (mediaStorageScope()) return;
++    break;
++  }
++  throw new PendingChatJobError('O escopo seguro ainda não foi carregado. O histórico original foi preservado; a recuperação será retomada.');
++}
++async function mediaRecoverLegacyHistory(owner) {
++  const legacy = S.conversas.some(c => (c.mensagens || []).some(m => Array.isArray(m.content) && m.content.some(p =>
++    (p?.type === 'input_audio' && typeof p.input_audio?.data === 'string' && p.input_audio.data.startsWith('data:audio/')) ||
++    (p?.type === 'video_url' && typeof p.video_url?.url === 'string' && p.video_url.url.startsWith('data:video/')))));
++  if (!legacy) return;
++  await mediaAwaitBoundMotor(owner);
++  const epoch = backgroundEpoch, scope = mediaStorageScope(), snapshot = JSON.stringify(S.conversas);
++  const recovered = JSON.parse(snapshot);
++  await mediaMigrateLegacy(recovered, owner);
++  if (owner !== backgroundOwner || epoch !== backgroundEpoch || scope !== mediaStorageScope()) throw detached();
++  if (snapshot !== JSON.stringify(S.conversas)) throw new PendingChatJobError('O histórico mudou durante a recuperação; as alterações foram preservadas e a recuperação será retomada.');
++  S.conversas = recovered;
++  persistirConversasBackground();
++}
+ async function mediaMigrateLegacy(conversations, owner) {
+   let changed = false;
++  const expectedScope = mediaStorageScope(), epoch = backgroundEpoch;
++  const sameScope = () => {
++    if (owner !== backgroundOwner || epoch !== backgroundEpoch || expectedScope !== mediaStorageScope()) throw detached();
++  };
+   for (const c of conversations) {
+     for (const message of c.mensagens || []) {
+       if (!Array.isArray(message.content)) continue;
+@@ -3063,14 +3103,17 @@
+         const part = message.content[i];
+         const data = part?.type === 'input_audio' ? part.input_audio?.data : part?.type === 'video_url' ? part.video_url?.url : null;
+         if (typeof data !== 'string' || !/^data:(audio|video)\//.test(data)) continue;
+-        if (!mediaStorageScope()) throw Error('O histórico antigo contém mídia. Aguarde o escopo seguro do servidor; o original não foi sobrescrito.');
++        sameScope();
++        if (!expectedScope) throw Error('O histórico antigo contém mídia. Aguarde o escopo seguro do servidor; o original não foi sobrescrito.');
+         const match = /^data:((audio|video)\/[a-z0-9.+-]+);base64,([A-Za-z0-9+/=\r\n]+)$/i.exec(data);
+         if (!match) throw Error('Mídia antiga ilegível; o histórico original não foi sobrescrito.');
+         const binary = atob(match[3]); mediaValidateSize(binary.length, { raw: MEDIA_RAW_MAX, encoded: MEDIA_BASE64_MAX });
+         const blob = new Blob([Uint8Array.from(binary, c => c.charCodeAt(0))], { type: match[1] });
+         const id = crypto.randomUUID(), key = mediaKey(owner, c.id, id);
+         const record = { key, storageScope: mediaStorageScope(), owner, conversation: c.id, id, blob, kind: match[2], mime: match[1], name: 'Mídia do histórico', selected: false, state: 'local' };
++        sameScope();
+         await mediaLocal('readwrite', store => store.put(record));
++        sameScope();
+         message.content[i] = { type: 'iald_local_media', localDraftId: id, kind: record.kind, mime: record.mime, bytes: blob.size };
+         changed = true;
+       }

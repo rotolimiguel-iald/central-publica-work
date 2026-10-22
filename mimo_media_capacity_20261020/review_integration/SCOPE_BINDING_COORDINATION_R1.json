@@ -1,0 +1,49 @@
+{
+  "schema": "iald.media-scope-review-coordination/v1",
+  "status": "FIX_REQUESTED_NOT_APPROVED",
+  "actor": "codex-mimo-capacity-reviewer",
+  "reference": "C:\\IALD\\Central de Patentes\\work\\mimo_media_capacity_20261020\\SESSION_REFERENCE.json",
+  "finding": "MEDIA_INT_R1_M3_UPLOAD_EXPECTED_PARTITION",
+  "severity": "MEDIUM",
+  "statute": "REAL_OFFLINE_REPRODUCED",
+  "mechanism": "Web cookie can change A-to-B between capabilities/consent read and upload POST. Server derives B scope but never compares expected original A scope. File intended for A is stored under B. No cross-account read/provider dispatch asserted.",
+  "interface": {
+    "query": "expected_media_scope=original captured32hex partition for POST and metadata GET",
+    "response": "JSON top-level canonical part fields plus media_scope; client validates echo against captured original then strips media_scope before canonical part/history/ACOM",
+    "host_order": [
+      "existing session authentication and CSRF",
+      "derive current owner-generation-conversation from host",
+      "constant-time comparison of well-formed expected_media_scope to derived token",
+      "only after successful comparison: stream access/quota/namespace/store"
+    ],
+    "failure": "403 missing/malformed/mismatch, zero body/blob reads; visible and no automatic retry",
+    "token_is_authentication": false
+  },
+  "notified_directly": {
+    "Cicero": "01a15aa9-fb97-79b2-9391-db6af761eea1",
+    "Hypatia": "01a15604-76c6-7110-9a73-2dc692d95018",
+    "Averroes": "01a15aa9-f8ca-79a0-8f51-4a49a6b5eb63"
+  },
+  "message_results": "All3 official send_message_to_thread calls succeeded; first issue+roles then exact R6 interface alignment. No completion inferred.",
+  "human_authorization": "Current user explicitly requested direct messages/coordination to Cicero/Hypatia/Averroes.",
+  "required_negative_tests": [
+    "cookie switched A-to-B after preflight",
+    "same username new generation",
+    "missing/malformed/mismatching token before stream access",
+    "GET metadata wrong scope",
+    "reply echo mismatch rejected without changing history"
+  ],
+  "positive_tests": [
+    "matching cookie/generation/expected scope succeeds",
+    "response echo stripped before persistence",
+    "first-upload draft namespace without prior model job"
+  ],
+  "immutable_client_request": {
+    "path": "C:\\IALD\\Central de Patentes\\work\\mimo_media_capacity_20261020\\client_stage\\CICERO_SCOPE_BINDING_REQUEST_R1.json",
+    "sha256": "ae20cad010796876d101835fa02488e653034f5ebdba1c6416941fa2bcdb1e80"
+  },
+  "requires_frozen_receipts_and_independent_retest": true,
+  "requirements_accepted": [],
+  "production_changes": false,
+  "provider_calls": 0
+}
