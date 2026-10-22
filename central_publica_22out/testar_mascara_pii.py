@@ -11,7 +11,7 @@ from mascara_pii import mascarar, MASK  # noqa: E402
 DEVE = ["ligue [dado pessoal removido] já", "[dado pessoal removido]", "fone [dado pessoal removido]", "CEP: [dado pessoal removido]", "nascido em [dado pessoal removido]",
         "[dado pessoal removido], Setor Bueno, Goiânia", "contato [dado pessoal removido]", "CPF [dado pessoal removido]", "[dado pessoal removido] (celular)",
         "RG [dado pessoal removido]", "Carteira de Identidade nº [dado pessoal removido]", "WhatsApp ([dado pessoal removido]", "Cel: [dado pessoal removido]",
-        "TELEFONE\nx/ [dado pessoal removido]", " CEP\n[dado pessoal removido]\nBAIRRO"]
+        "TELEFONE\nx/ [dado pessoal removido]", " CEP\n[dado pessoal removido]\nBAIRRO", "* Fulano <[dado pessoal removido]>", "[dado pessoal removido]"]
 NAO = ["eq. (23) 20261012 ok", "tabela 34 91234 5678 12", "x = Q@K.T", "wipo pct@wipo.int", "z = (12) 3.14159", "beta = 0.012031300400803142",
        "2026-10-22 11:40:09", "sha256 5dd22afc9b0e7c7e", "a(10) 1234 5678 b", "id 99812-3456",
        'mapeamento EXATO da identidade\\", 0910-2216, 0910-2236', "a identidade 1 = 1 em 2026-10-22", "identidade: 1.0000000 exata",

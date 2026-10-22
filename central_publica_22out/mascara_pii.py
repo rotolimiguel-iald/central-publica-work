@@ -48,6 +48,21 @@ EMAIL = re.compile(r"(?<![\w.])(?=[A-Za-z0-9._%+-]*?[A-Za-z])[A-Za-z0-9._%+-]++@
                    r"(?:com|br|org|net|edu|gov|io|ai|dev|info|me|co|uk|de|fr|it|es|pt|ch|int|us|ca|au|jp|cn|ru|nl|se|no|fi|be|at|pl|ar|mx|cl)\b", re.I)
 
 
+# (22/10/2026) o provedor pessoal com QUALQUER terminação — «…@gmail.cm», erro de digitação no arquivo de autores de um pacote de terceiros,
+# escapava da lista de terminações
+EMAIL_PROVEDOR = re.compile(r"(?<![A-Za-z0-9._%+-])[A-Za-z0-9._%+-]++@(?:hotmail|gmail|googlemail|icloud|outlook|yahoo|live|msn|uol|bol|terra|"
+                            r"protonmail|me)\.[a-z]{2,6}(?:\.[a-z]{2})?\b", re.I)
+
+
+# (22/10/2026) identificadores de PESSOAS PRIVADAS (terceiros: os testadores convidados do app) — a lista mora FORA do código publicado,
+# em ~/.iald_privado/terceiros_privados.json (local, nunca espelhada); fronteira de LETRA, porque o sublinhado de um nome de pasta não protege
+import json as _json
+from pathlib import Path as _Path
+_TP = _Path.home() / ".iald_privado" / "terceiros_privados.json"
+TERCEIROS = (re.compile(r"(?i)(?<![A-Za-zÀ-ú])(?:" + "|".join(_json.loads(_TP.read_text(encoding="utf-8"))["nomes"]) + r")(?![A-Za-zÀ-ú])")
+             if _TP.is_file() else None)
+
+
 def mascarar(t: str) -> tuple[str, dict]:
     cont = {}
     for nome, rx in PII:
@@ -61,4 +76,11 @@ def mascarar(t: str) -> tuple[str, dict]:
             return m.group(0)
         cont["email_pessoal"] = cont.get("email_pessoal", 0) + 1
         return MASK
-    return EMAIL.sub(rep_e, t), cont
+    t = EMAIL.sub(rep_e, t)
+    t = EMAIL_PROVEDOR.sub(rep_e, t)
+    if TERCEIROS is not None:
+        def rep_t(m):
+            cont["terceiro_privado"] = cont.get("terceiro_privado", 0) + 1
+            return MASK
+        t = TERCEIROS.sub(rep_t, t)
+    return t, cont

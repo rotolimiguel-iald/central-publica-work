@@ -26,7 +26,7 @@ TOKENS = re.compile(r"(gh[posu]_[A-Za-z0-9]{30,}|github_pat_[A-Za-z0-9_]{40,}|sk
 ATRIB = re.compile(r"(?i)(password|passwd|senha|secret|api[_-]?key|access[_-]?token|refresh[_-]?token|client[_-]?secret|bearer|"
                    r"authorization|cookie)[\"']?\s*[:=]\s*[\"']([^\"'\s]{12,})[\"']")
 FALSO = re.compile(r"(?i)(errada|fake|synthetic|canary|not_a_secret|example|exemplo|placeholder|changeme|dummy|<|\$\{|x{6,}|\*{6,}|"
-                   r"dado pessoal removido|redacted|test|teste|__Host-|__Secure-|_session\b|\.(?:txt|json|md|py|yaml)$|(?-i:^[A-Z0-9_]+$)|_only$|DO_NOT)")   # (nome de cookie não é valor)
+                   r"dado pessoal removido|redacted|test|teste|__Host-|__Secure-|_session\b|\.(?:txt|json|md|py|yaml)$|(?-i:^[A-Z0-9_]+$)|_only$|DO_NOT|(?-i:^[0-9a-f]{40,64}$))")   # (nome de cookie não é valor)
 # (22/10/2026) o ACERVO DO ESCRITÓRIO (PJ separada): caminho para dentro dele, audiência realizada, número de processo CNJ
 ESCRIT = re.compile(r"(?i)[A-Z]:(?:\\\\|\\|/){1,2}Escrit[oó]rio(?:\\\\|\\|/){1,2}(?!(?:CLAUDE|INSTRUCOES)\.md\b)[^\\/\s\"'`|*<>]+(?:\\\\|\\|/)|"
                     r"audi[eê]ncias?\s+realizad|\b\d{7}-\d{2}\.\d{4}\.\d\.\d{2}\.\d{4}\b|"
