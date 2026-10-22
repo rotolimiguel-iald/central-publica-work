@@ -1,0 +1,385 @@
+--- a/app/iald.js
++++ b/app/iald.js
+@@ -781,6 +781,332 @@
+ })();
+ 
+ 
++// ARTIFACT ACCESS MODULE BEGIN
++// Embedded into iald.js. No storage, historical tickets, external assets or popup API.
++const ARTIFACT_ORIGIN = 'https://demo.iald.ia.br';
++const ARTIFACT_PREVIEW_CSP = "default-src 'none'; style-src 'unsafe-inline'; img-src data:; base-uri 'none'; form-action 'none'";
++const ARTIFACT_PREVIEW_LAYOUT = ':root{overflow-wrap:anywhere}*,*::before,*::after{box-sizing:border-box}h1,h2,h3,h4,h5,h6,img,pre{max-width:100%}img{height:auto}pre{white-space:pre-wrap;overflow-wrap:anywhere}';
++const ARTIFACT_UUID = /^[0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12}$/i;
++const ARTIFACT_ACCOUNT = /^[0-9a-f]{64}$/;
++const artifactUUID = (value) => typeof value === 'string' && ARTIFACT_UUID.test(value) ? value.toLowerCase() : null;
++
++function artifactURL(value, relative = false) {
++  if (typeof value !== 'string' || value.length > 2048 || /[\s\\%]/u.test(value)
++      || /\/(?:\.|\.\.)(?:\/|$|\?)/.test(value)) return null;
++  if (!/^https:\/\//i.test(value) && !(relative && /^\/(?!\/)/.test(value))) return null;
++  try {
++    const url = new URL(value, ARTIFACT_ORIGIN);
++    return url.origin === ARTIFACT_ORIGIN && !url.username && !url.password && !url.hash ? url : null;
++  } catch (_) { return null; }
++}
++function artifactIdFromSearch(search) {
++  if (typeof search !== 'string' || search.length > 4096) return null;
++  const ids = new URLSearchParams(search).getAll('artifact');
++  return ids.length === 1 ? artifactUUID(ids[0]) : null;
++}
++function artifactIdFromURL(value) {
++  const url = artifactURL(value, true);
++  if (!url) return null;
++  if (url.pathname === '/app/index.html') return artifactIdFromSearch(url.search);
++  if (url.search) return null;
++  const match = /^\/api\/task-artifacts\/([^/]+)$/.exec(url.pathname)
++    || /^\/task-download\/([^/]+)\/[A-Za-z0-9_-]{43}$/.exec(url.pathname);
++  return match ? artifactUUID(match[1]) : null; // The historical token is never returned.
++}
++function normalizeArtifactLinks(root) {
++  for (const anchor of root.querySelectorAll('a[href]')) {
++    const id = artifactIdFromURL(anchor.getAttribute('href'));
++    if (!id) continue;
++    anchor.setAttribute('href', ARTIFACT_ORIGIN + '/app/index.html?artifact=' + id);
++    anchor.setAttribute('aria-haspopup', 'dialog');
++  }
++}
++function validateArtifactMetadata(value, id) {
++  if (!value || artifactUUID(value.id) !== id || typeof value.filename !== 'string'
++      || !value.filename.trim() || value.filename.length > 255 || /[\x00-\x1f\x7f]/.test(value.filename)
++      || typeof value.kind !== 'string' || !value.kind || value.kind.length > 40
++      || !Number.isSafeInteger(value.bytes) || value.bytes < 0
++      || typeof value.sha256 !== 'string' || !/^[0-9a-f]{64}$/i.test(value.sha256)
++      || (value.preview_html != null && typeof value.preview_html !== 'string')) {
++    throw new Error('Não foi possível conferir este arquivo.');
++  }
++  return { id, filename: value.filename, kind: value.kind, bytes: value.bytes, sha256: value.sha256,
++    preview_html: value.kind === 'website' && typeof value.preview_html === 'string' && value.preview_html.length <= 2 * 1024 * 1024
++      ? value.preview_html : null };
++}
++function validateArtifactAccess(value, id, now = Date.now()) {
++  const checkURL = (raw, route) => {
++    const url = artifactURL(raw);
++    if (!url || url.search || !new RegExp('^/' + route + '/' + id + '/[A-Za-z0-9_-]{43}$').test(url.pathname)) {
++      throw new Error('O endereço do arquivo não pôde ser conferido.');
++    }
++    return url.href;
++  };
++  if (!value || artifactUUID(value.id) !== id) throw new Error('O arquivo recebido não corresponde ao pedido.');
++  const expires = typeof value.expires_at === 'number' ? value.expires_at * 1000
++    : typeof value.expires_at === 'string' && /^\d{4}-\d\d-\d\dT.+(?:Z|[+-]\d\d:\d\d)$/.test(value.expires_at)
++      ? Date.parse(value.expires_at) : NaN;
++  if (!Number.isFinite(expires) || expires <= now) throw new Error('O link expirou. Prepare um novo link para continuar.');
++  return { download_url: checkURL(value.download_url, 'task-download'),
++    preview_url: value.preview_url == null ? null : checkURL(value.preview_url, 'task-view'), expires_at: expires };
++}
++
++const ARTIFACT_PREVIEW_TAGS = new Set(('a abbr b blockquote br caption code col colgroup dd del details div dl dt em figcaption figure footer h1 h2 h3 h4 h5 h6 header hr i img li main mark nav ol p pre s section small span strong style sub summary sup table tbody td tfoot th thead time tr u ul').split(' '));
++const ARTIFACT_PREVIEW_ATTRIBUTES = new Set(('class id title lang dir style alt width height colspan rowspan scope start reversed open align valign border cellspacing cellpadding datetime').split(' '));
++function sanitizeArtifactPreview(root, unsafeStyle) {
++  for (const node of Array.from(root.querySelectorAll('*'))) {
++    const tag = String(node.localName || '').toLowerCase();
++    if ((node.namespaceURI && node.namespaceURI !== 'http://www.w3.org/1999/xhtml') || !ARTIFACT_PREVIEW_TAGS.has(tag)) {
++      node.remove(); continue;
++    }
++    if (tag === 'style' && unsafeStyle(node.textContent)) { node.remove(); continue; }
++    for (const attribute of Array.from(node.attributes)) {
++      const name = attribute.name.toLowerCase(), value = attribute.value;
++      if (name === 'src' && tag === 'img' && /^data:image\/(?:png|jpeg|jpg|gif|webp|bmp|avif);base64,[a-z0-9+/=\r\n]+$/i.test(value)) continue;
++      if (name.includes(':') || !ARTIFACT_PREVIEW_ATTRIBUTES.has(name) || (name === 'style' && unsafeStyle(value))) node.removeAttribute(attribute.name);
++    }
++  }
++}
++function artifactPreviewDocument(html, document, unsafeStyle) {
++  if (typeof html !== 'string' || html.length > 2 * 1024 * 1024) throw new Error('Prévia indisponível. Baixe o arquivo para abrir.');
++  // Template parsing is inert. Neither the untrusted HTML nor its attributes enter
++  // the parent document. Navigation, forms and remote resources are also stripped.
++  const template = document.createElement('template');
++  template.innerHTML = html;
++  sanitizeArtifactPreview(template.content, unsafeStyle);
++  return '<!doctype html><html><head><meta charset="utf-8"><meta http-equiv="Content-Security-Policy" content="'
++    + ARTIFACT_PREVIEW_CSP + '"><meta name="viewport" content="width=device-width, initial-scale=1"></head><body>'
++    + template.innerHTML + '<style>' + ARTIFACT_PREVIEW_LAYOUT + '</style></body></html>';
++}
++
++function createArtifactAccessController({ request, identity, render = () => {}, onAuthLost = () => {},
++  now = Date.now, initialSearch = '', requestTimeout = 20000 }) {
++  let generation = 0, scope = null, opening = null, renewing = null;
++  let launchId = artifactIdFromSearch(initialSearch);
++  let state = { open: false, phase: 'closed', id: null, metadata: null, access: null, error: '', message: '' };
++  const owner = () => { const value = identity() || {}; return { account: value.account || '', token: value.token || '' }; };
++  const authenticated = (value) => ARTIFACT_ACCOUNT.test(value.account);
++  const publish = (changes) => { state = { ...state, ...changes }; render({ ...state }); };
++  const current = (captured) => captured && captured === scope && captured.generation === generation && !captured.controller.signal.aborted;
++  function close() {
++    launchId = null; generation++; scope?.controller.abort(); scope = null; opening = renewing = null;
++    publish({ open: false, phase: 'closed', id: null, metadata: null, access: null, error: '', message: '' });
++  }
++  function check(captured) {
++    if (!current(captured)) throw new Error('stale');
++    const value = owner();
++    if (!authenticated(value) || value.account !== captured.account || value.token !== captured.token) {
++      close(); throw new Error('stale');
++    }
++  }
++  async function read(path, options, captured) {
++    check(captured);
++    const controller = new AbortController();
++    const abort = () => controller.abort();
++    let timedOut = false;
++    captured.controller.signal.addEventListener('abort', abort, { once: true });
++    const timer = setTimeout(() => { timedOut = true; abort(); }, requestTimeout);
++    try {
++      const response = await request(path, { ...options, signal: controller.signal, cache: 'no-store' });
++      check(captured);
++      if (response.status === 401) { close(); onAuthLost(); throw new Error('stale'); }
++      if (!response.ok) throw new Error(response.status === 403 || response.status === 404
++        ? 'Arquivo não encontrado ou sem acesso nesta conta.' : 'Não foi possível abrir o arquivo agora. Tente novamente.');
++      let value;
++      try { value = await response.json(); } catch (_) { throw new Error('O servidor devolveu uma resposta inválida.'); }
++      check(captured); return value;
++    } catch (error) {
++      check(captured);
++      if (timedOut) throw new Error('O arquivo demorou para abrir. Tente novamente.');
++      if (error instanceof TypeError || error?.name === 'AbortError') throw new Error('Sem conexão. Tente abrir o arquivo novamente.');
++      throw error;
++    } finally {
++      clearTimeout(timer); captured.controller.signal.removeEventListener('abort', abort);
++    }
++  }
++  function renew() {
++    if (renewing) return renewing;
++    const captured = scope;
++    try { check(captured); } catch (_) { return Promise.resolve(false); }
++    if (!state.metadata) return Promise.resolve(false);
++    publish({ phase: 'preparing', access: null, error: '', message: 'Preparando os links…' });
++    const pending = (async () => {
++      try {
++        const value = await read('/api/task-artifacts/' + state.id + '/access', {
++          method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}',
++        }, captured);
++        const access = validateArtifactAccess(value, state.id, now());
++        check(captured);
++        publish({ phase: 'ready', access, message: 'Links prontos. Toque no botão para abrir.', error: '' });
++        return true;
++      } catch (error) {
++        if (current(captured)) publish({ phase: 'ready', access: null, error: error.message, message: '' });
++        return false;
++      }
++    })();
++    renewing = pending;
++    pending.finally(() => { if (renewing === pending) renewing = null; });
++    return pending;
++  }
++  function open(value) {
++    const id = artifactUUID(value);
++    if (!id) return Promise.resolve(false);
++    if (state.open && state.id === id && state.phase !== 'error') {
++      try { check(scope); return opening || Promise.resolve(true); } catch (_) { /* New scope below. */ }
++    }
++    close(); // Also consumes a pending launch parameter; explicit clicks take precedence.
++    const valueOwner = owner();
++    if (!authenticated(valueOwner)) {
++      publish({ open: true, id, phase: 'error', error: 'Entre na sua conta para abrir este arquivo.' });
++      return Promise.resolve(false);
++    }
++    const captured = { ...valueOwner, generation, controller: new AbortController() };
++    scope = captured;
++    publish({ open: true, id, phase: 'loading', error: '', message: 'Abrindo arquivo…' });
++    const pending = (async () => {
++      try {
++        const value = await read('/api/task-artifacts/' + id + '/view', { method: 'GET' }, captured);
++        const metadata = validateArtifactMetadata(value, id);
++        check(captured); publish({ metadata, phase: 'preparing' });
++        return await renew();
++      } catch (error) {
++        if (current(captured)) publish({ phase: 'error', metadata: null, access: null, error: error.message, message: '' });
++        return false;
++      }
++    })();
++    opening = pending;
++    pending.finally(() => { if (opening === pending) opening = null; });
++    return pending;
++  }
++  function activate(action, event) {
++    try { check(scope); } catch (_) { event.preventDefault(); return false; }
++    const url = action === 'preview' ? state.access?.preview_url : state.access?.download_url;
++    if (!url || state.access.expires_at <= now()) {
++      event.preventDefault(); renew(); return false;
++    }
++    // Leave a validated, fresh anchor's normal navigation inside the user's gesture.
++    return true;
++  }
++  return { open, close, reset: close, renew, activate, snapshot: () => ({ ...state }),
++    authenticated() {
++      if (!launchId || !authenticated(owner())) return Promise.resolve(false);
++      const id = launchId; launchId = null; return open(id);
++    },
++    checkIdentity() { if (scope) { try { check(scope); } catch (_) { /* Cleared on mismatch. */ } } },
++  };
++}
++
++const ARTIFACT_MODAL_STYLE = `
++.iald-artifact-overlay{position:fixed;inset:0;z-index:20000;background:rgba(0,0,0,.55);display:flex;justify-content:center;align-items:center;padding:12px;padding:max(12px,env(safe-area-inset-top,0px)) max(12px,env(safe-area-inset-right,0px)) max(12px,env(safe-area-inset-bottom,0px)) max(12px,env(safe-area-inset-left,0px));box-sizing:border-box}
++.iald-artifact-panel{box-sizing:border-box;width:100%;max-width:1000px;height:100%;max-height:900px;background:#fff;color:#172132;border-radius:18px;box-shadow:0 20px 70px #0005;display:flex;flex-direction:column;overflow:hidden;font:16px/1.45 system-ui,sans-serif}
++.iald-artifact-head{display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid #e1e5eb;flex-shrink:0}.iald-artifact-title{font-size:18px;margin:0;flex:1;overflow-wrap:anywhere;min-width:0}
++.iald-artifact-content{flex:1;min-height:0;display:flex;flex-direction:column;overflow:auto;padding:12px 16px}.iald-artifact-meta{font-size:13px;color:#536077;margin:0 0 8px;overflow-wrap:anywhere}.iald-artifact-status{margin:0 0 10px}.iald-artifact-preview{display:block;flex:1;min-height:220px;width:100%;border:1px solid #dbe1e9;border-radius:8px;background:#fff}
++.iald-artifact-actions{display:flex;gap:10px;flex-wrap:wrap;padding:12px 16px;border-top:1px solid #e1e5eb;flex-shrink:0}.iald-artifact-panel button,.iald-artifact-panel a{font:inherit;box-sizing:border-box;min-height:44px;padding:10px 14px;border-radius:10px;border:1px solid #cdd5e0;background:#f3f6fb;color:#16396d;text-decoration:none;cursor:pointer;text-align:center}.iald-artifact-panel [hidden]{display:none!important}.iald-artifact-panel [aria-disabled=true]{opacity:.55;cursor:wait}.iald-artifact-panel :focus-visible{outline:3px solid #1768d5;outline-offset:2px}
++@media(max-width:600px){.iald-artifact-panel{border-radius:12px}.iald-artifact-actions a{flex:1}.iald-artifact-head,.iald-artifact-content,.iald-artifact-actions{padding:10px 12px}}
++`;
++function mountArtifactAccess({ document, window, request, identity, unsafeStyle, onAuthLost, initialSearch = '' }) {
++  let modal = null, title, meta, status, preview, frame = null, frameId = null, download, browser, retry, closer, previousFocus;
++  const node = (tag, className, text) => {
++    const value = document.createElement(tag);
++    if (className) value.className = className;
++    if (text != null) value.textContent = text;
++    return value;
++  };
++  function clearFrame() {
++    if (frame) { frame.removeAttribute('srcdoc'); frame.remove(); }
++    frame = null; frameId = null;
++  }
++  function createModal() {
++    previousFocus = document.activeElement;
++    modal = node('div', 'iald-artifact-overlay');
++    const panel = node('section', 'iald-artifact-panel');
++    panel.setAttribute('role', 'dialog'); panel.setAttribute('aria-modal', 'true'); panel.setAttribute('aria-labelledby', 'iald-artifact-title');
++    const head = node('header', 'iald-artifact-head');
++    title = node('h2', 'iald-artifact-title', 'Arquivo'); title.id = 'iald-artifact-title';
++    closer = node('button', '', 'Fechar'); closer.type = 'button'; closer.addEventListener('click', () => controller.close());
++    head.appendChild(title); head.appendChild(closer); panel.appendChild(head);
++    const content = node('div', 'iald-artifact-content');
++    meta = node('p', 'iald-artifact-meta'); status = node('p', 'iald-artifact-status');
++    status.setAttribute('role', 'status'); status.setAttribute('aria-live', 'polite');
++    preview = node('div', 'iald-artifact-content');
++    content.appendChild(meta); content.appendChild(status); content.appendChild(preview); panel.appendChild(content);
++    const actions = node('footer', 'iald-artifact-actions');
++    const link = (label, action) => {
++      const anchor = node('a', '', label);
++      anchor.target = '_blank'; anchor.rel = 'noopener noreferrer'; anchor.referrerPolicy = 'no-referrer';
++      const activate = (event) => controller.activate(action, event);
++      anchor.addEventListener('click', activate); anchor.addEventListener('auxclick', activate);
++      actions.appendChild(anchor); return anchor;
++    };
++    download = link('Baixar arquivo', 'download'); browser = link('Abrir no navegador', 'preview');
++    retry = node('button', '', 'Tentar novamente'); retry.type = 'button';
++    retry.addEventListener('click', () => { const s = controller.snapshot(); if (s.metadata) controller.renew(); else controller.open(s.id); });
++    actions.appendChild(retry); panel.appendChild(actions); modal.appendChild(panel);
++    modal.addEventListener('click', (event) => { if (event.target === modal) controller.close(); });
++    modal.addEventListener('keydown', (event) => {
++      if (event.key === 'Escape') { event.preventDefault(); event.stopPropagation(); controller.close(); }
++      if (event.key === 'Tab') {
++        const focusable = [closer, download, browser, retry].filter((element) => !element.hidden && (element.tagName !== 'A' || element.hasAttribute('href')));
++        const first = focusable[0], last = focusable.at(-1);
++        if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
++        else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
++      }
++    });
++    document.body.appendChild(modal); closer.focus();
++  }
++  function render(state) {
++    if (!state.open) {
++      clearFrame();
++      if (download) download.removeAttribute('href');
++      if (browser) browser.removeAttribute('href');
++      modal?.remove(); modal = null;
++      if (previousFocus?.isConnected) previousFocus.focus();
++      previousFocus = null; return;
++    }
++    if (!modal) createModal();
++    title.textContent = state.metadata?.filename || 'Arquivo';
++    meta.textContent = state.metadata ? state.metadata.bytes.toLocaleString('pt-BR') + ' bytes' : '';
++    status.textContent = state.error || state.message;
++    status.setAttribute('role', state.error ? 'alert' : 'status');
++    if (!state.metadata || frameId !== state.id) { clearFrame(); preview.textContent = ''; }
++    if (state.metadata && frameId !== state.id) {
++      frameId = state.id;
++      if (state.metadata.preview_html) {
++        try {
++          const srcdoc = artifactPreviewDocument(state.metadata.preview_html, document, unsafeStyle);
++          frame = node('iframe', 'iald-artifact-preview');
++          frame.setAttribute('sandbox', ''); frame.setAttribute('referrerpolicy', 'no-referrer');
++          frame.setAttribute('title', 'Prévia do arquivo'); frame.setAttribute('srcdoc', srcdoc);
++          preview.appendChild(frame);
++        } catch (_) { preview.textContent = 'Prévia indisponível. Baixe o arquivo para abrir.'; }
++      } else preview.textContent = 'Baixe o arquivo para abrir no seu aparelho.';
++    }
++    for (const [anchor, href] of [[download, state.access?.download_url], [browser, state.access?.preview_url]]) {
++      anchor.removeAttribute('href'); anchor.hidden = !href;
++      if (href) anchor.setAttribute('href', href);
++    }
++    retry.hidden = !state.error;
++  }
++  const controller = createArtifactAccessController({ request, identity, render, onAuthLost, initialSearch });
++  if (!document.getElementById('iald-artifact-style')) {
++    const style = node('style', '', ARTIFACT_MODAL_STYLE); style.id = 'iald-artifact-style'; document.head.appendChild(style);
++  }
++  const messages = document.getElementById('conversa-interna');
++  const intercept = (event) => {
++    const anchor = event.target?.closest?.('a[href]');
++    if (!anchor || !messages?.contains(anchor)) return;
++    const id = artifactIdFromURL(anchor.getAttribute('href'));
++    if (!id) return;
++    event.preventDefault(); event.stopPropagation(); controller.open(id);
++  };
++  messages?.addEventListener('click', intercept, true); messages?.addEventListener('auxclick', intercept, true);
++  document.addEventListener('visibilitychange', () => controller.checkIdentity());
++  window.addEventListener('storage', () => controller.checkIdentity());
++  return controller;
++}
++
++// ARTIFACT ACCESS MODULE END
++
+ const VERSAO = 'IALD 4.1 · beta';
+ 
+ // β NUNCA literal (régua da casa): calculado em runtime a partir da constante de
+@@ -962,6 +1288,7 @@
+   } catch (_) { throw new PendingChatJobError('Não foi possível salvar a resposta neste aparelho. A entrega continua pendente.'); }
+ }
+ function desanexarRespostasBackground(sair = false) {
++  if (sair) artifactAccessUI?.reset();
+   if (sair) disconnectNativeNotificationsUI();
+   backgroundEpoch += 1;
+   clearTimeout(backgroundTimer); backgroundTimer = null;
+@@ -1012,6 +1339,7 @@
+     else { listarConversas(); abrirConversa(); }
+   }
+   refreshNativeNotificationsUI();
++  artifactAccessUI?.authenticated();
+   return backgroundOwner;
+ }
+ 
+@@ -1236,6 +1564,17 @@
+ }
+ 
+ 
++let artifactAccessUI = null;
++function startArtifactAccessUI() {
++  if (artifactAccessUI) return;
++  artifactAccessUI = mountArtifactAccess({ document, window, request: fetchIALD,
++    identity: () => ({ account: backgroundOwner, token: tokenApp() }),
++    unsafeStyle: estiloPerigoso, initialSearch: location.search,
++    onAuthLost: () => { desanexarRespostasBackground(true); avisar('Entre novamente para abrir o arquivo.'); },
++  });
++  artifactAccessUI.authenticated();
++}
++
+ const svg = (d, w) => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="${w || 2}" stroke-linecap="round" stroke-linejoin="round"><path d="${d}"/></svg>`;
+ const ICONE = {
+   copiar: 'M20 9h-9a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h9a2 2 0 0 0 2-2v-9a2 2 0 0 0-2-2zM5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1',
+@@ -1543,6 +1882,7 @@
+   const frag = document.createElement('div');
+   frag.className = 'md';
+   frag.appendChild(molde.content);
++  normalizeArtifactLinks(frag);
+   enfeitarCodigo(frag);
+   enfeitarTabelas(frag);
+   return frag;
+@@ -5173,6 +5513,7 @@
+ // PARTIDA
+ // ══════════════════════════════════════════════════════════════
+ function iniciar() {
++  startArtifactAccessUI();
+   aplicarTema(recuperar(K.tema, ''));
+   S.modo = recuperar(K.modo, 'fast') === 'think' ? 'think' : 'fast';
+ 

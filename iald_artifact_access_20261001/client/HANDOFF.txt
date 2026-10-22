@@ -1,0 +1,45 @@
+PROPOSTA CLIENTE — acesso privado a artefatos
+
+Integrar somente iald.js como app/iald.js. Módulo e estilos estão embutidos.
+Sem dependências novas, assets públicos adicionais, build mobile ou deploy.
+iald.base.js é o snapshot original de bytes; build_client.py lê esse snapshot,
+recompõe iald.js/client.patch e registra hashes calculados em build_manifest.json.
+Produção não é escrita. O builder não deve sobrescrever uma integração posterior.
+
+Contrato:
+- GET autenticado /api/task-artifacts/<uuid>/view -> id, filename, kind, bytes,
+  sha256, preview_html opcional somente para kind=website.
+- POST autenticado /api/task-artifacts/<uuid>/access, Content-Type application/json,
+  body {}, Origin administrado pelo navegador/fetchIALD. Resposta: id, download_url,
+  preview_url opcional, expires_at (Unix em segundos ou ISO 8601 com fuso explícito).
+- download_url: https://demo.iald.ia.br/task-download/<uuid>/<token43>.
+- preview_url: https://demo.iald.ia.br/task-view/<uuid>/<token43>.
+- URLs de mensagem reconhecidas: /api/task-artifacts/<uuid>,
+  /task-download/<uuid>/<token43> e /app/index.html?artifact=<uuid>, relativas à raiz
+  ou absolutas na origem exata https://demo.iald.ia.br. Tokens antigos são descartados.
+- O parâmetro inicial artifact abre uma vez após identificarContaBackground obter
+  o dono. Sem identidade autenticada não há chamadas de artefato. Fechar/reset/logout
+  cancela a abertura pendente, aborta observação e descarta respostas atrasadas.
+
+Prévia: HTML recebido do servidor, sem regenerar arquivo ou consultar modelo.
+A cópia exibida é saneada em template inerte, recebe CSP restritiva e entra somente
+em iframe sandbox="" srcdoc. Sem scripts, mesma origem, forms, navegação ou loaders
+remotos; CSS seguro e imagens raster data: permanecem. Artefato original não muda.
+Prévia acima de 2 Mi caracteres é omitida; download continua disponível.
+
+Links externos: somente âncoras tocáveis e URLs novas validadas. Nunca window.open
+depois de await. Ao abrir modal renova o acesso; toque com link expirado impede a
+navegação, prepara outro e pede novo toque. Falhas mostram erro e botão de tentativa.
+Nenhum token ou preview é gravado em localStorage ou no histórico de mensagens.
+Normalização dos links acontece somente no DOM do Markdown, após sanear; fórmulas
+e bloco de saneamento original permanecem preservados. A cópia de visualização tem
+viewport width=device-width e CSS responsivo ao final, após os estilos da fonte:
+quebra de palavras longas, border-box, títulos/imagens limitados à largura e pre-wrap.
+Isso não modifica os bytes do arquivo original.
+
+Validação local:
+  C:\Python314\python.exe -B build_client.py
+  node --check iald.js
+  node --test test_artifact_access.mjs
+Testes usam transporte e DOM simulados, mais marked/KaTeX reais já embarcados no app.
+Não executados aqui: APIs reais, QA visual/WebKit, compilação mobile ou release.
