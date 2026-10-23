@@ -1,0 +1,177 @@
+[12:10:49] cd "C:/IALD/Central de Patentes/work/central_publica_22out" && C:/Python314/python.exe -X utf8 -c "
+p='exportar_cockpit_publico.py'; s=open(p,encoding='utf-8').read()
+pares=[
+ ('for mid in sorted({str(x) for x in ids_de(anda or {})})[:2000]:\n    salvar(\"/api/andamentos/leitura/\" + q(mid))\n',
+  'for it in ((anda or {}).get(\"leituras_iald\") or []):\n    mid = it.get(\"id\") if isinstance(it, dict) else None\n    if mid is not None:\n        salvar(\"/api/andamentos/leitura/\" + q(mid))\n'),
+ ('pats = json.loads((OUT / (sanear_nome(\"/api/patents\") + \".json\")).read_text(encoding=\"utf-8\")) if salvar(\"/api/patents\") is not None or \"/api/patents\" in mapa else []\n',
+  'pats = j(\"/api/patents\") or []\n'),
+ ('    for f in ids_files if False else ((code or {}).get(\"files\") or []):\n', '    for f in ((code or {}).get(\"files\") or []):\n'),
+]
+for a,b in pares:
+    assert s.count(a)==1,(s.count(a),a[:60]); s=s.replace(a,b)
+compile(s,p,'exec'); open(p,'w',encoding='utf-8').write(s); print('ok')
+"
+
+[12:10:56] C:/Python314/python.exe -X utf8 "C:/IALD/Central de Patentes/work/central_publica_22out/exportar_cockpit_publico.py" "C:/IALD/Site/tgl/v3.0_bancada/central_publica/snapshot" 2>&1 | tail -5 | cut -c1-300
+
+[12:12:02] cd "C:/IALD/Central de Patentes/work/central_publica_22out" && C:/Python314/python.exe -X utf8 -c "
+p='exportar_cockpit_publico.py'; s=open(p,encoding='utf-8').read()
+a='''def get(url):
+    with urllib.request.urlopen(BASE + url, timeout=180) as r:
+        return r.status, (r.headers.get(\"Content-Type\") or \"\").split(\";\")[0].strip().lower(), r.read()
+'''
+b='''def get(url):
+    # a Central local limita a 120 pedidos por minuto: ritmo de ~110/min e nova tentativa no 429
+    for tent in range(6):
+        time.sleep(0.55)
+        try:
+            with urllib.request.urlopen(BASE + url, timeout=180) as r:
+                return r.status, (r.headers.get(\"Content-Type\") or \"\").split(\";\")[0].strip().lower(), r.read()
+        except urllib.error.HTTPError as e:
+            if e.code == 429 and tent < 5:
+                time.sleep(20 * (tent + 1)); continue
+            raise
+'''
+assert s.count(a)==1; s=s.replace(a,b)
+a2='''    if slug:
+        salvar(\"/api/device/%s/info\" % slug)
+'''
+assert s.count(a2)==1; s=s.replace(a2,'')
+a3='''(OUT / \"omitido_dado_pessoal.html\").write_text('''
+b3='''for dev in (\"acom\", \"tgl_tensor\"):   # os dois dispositivos que rodam de verdade (FUNCTIONAL_DEVICES do frontend)
+    salvar(\"/api/device/%s/info\" % dev)
+(OUT / \"omitido_dado_pessoal.html\").write_text('''
+assert s.count(a3)==1; s=s.replace(a3,b3)
+s=s.replace('import json, re, sys, time, urllib.parse, urllib.request','import json, re, sys, time, urllib.error, urllib.parse, urllib.request')
+compile(s,p,'exec'); open(p,'w',encoding='utf-8').write(s); print('ok')
+" && rm -rf "C:/IALD/Site/tgl/v3.0_bancada/central_publica/snapshot" && C:/Python314/python.exe -X utf8 exportar_cockpit_publico.py "C:/IALD/Site/tgl/v3.0_bancada/central_publica/snapshot" 2>&1 | tail -2 | cut -c1-200
+
+[12:23:42] cd "C:/IALD/Central de Patentes/work/central_publica_22out" && C:/Python314/python.exe -X utf8 -c "
+p='patch_frontend_publico.py'; s=open(p,encoding='utf-8').read()
+a='''    if MARCA in s or \"pub(\" in s and rel != \"api.ts\" and \"from '../api'\" in s and \"pub }\" in s:\n'''
+assert s.count(a)==1; s=s.replace(a,'''    if MARCA in s:\n'''); open(p,'w',encoding='utf-8').write(s); print('ok')"
+
+[12:32:34] C:/Python314/python.exe -X utf8 "C:/IALD/Central de Patentes/work/central_publica_22out/aparar_retrato_publico.py" "C:/IALD/Site/tgl/v3.0_bancada/central_publica/snapshot" 2>&1 | tail -3 | cut -c1-900
+
+[12:33:54] C:/Python314/python.exe -X utf8 "C:/IALD/Central de Patentes/work/central_publica_22out/aparar_retrato_publico2.py" "C:/IALD/Site/tgl/v3.0_bancada/central_publica/snapshot" 2>&1 | tail -3 | cut -c1-700
+
+[12:47:34] cd "C:/IALD/Central de Patentes/work/central_publica_22out" && C:/Python314/python.exe -X utf8 patch_frontend_publico.py && C:/Python314/python.exe -X utf8 patch_umbutton_publico.py && C:/Python314/python.exe -X utf8 patch_app_publico.py
+
+[12:48:52] cd "C:/IALD/Central de Patentes/frontend" && VITE_CENTRAL_PUBLICA=1 npx --no-install vite build --base /central/ --outDir dist_publica --emptyOutDir > "C:/Users/rotol/AppData/Local/Temp/claude/c--IALD-Central-de-Patentes/f50b1d05-8292-4283-87ca-6534734053b5/scratchpad/vite_publico.txt" 2>&1; echo "vite exit=$?"; tail -8 "C:/Users/rotol/AppData/Local/Temp/claude/c--IALD-Central-de-Patentes/f50b1d05-8292-4283-87ca-6534734053b5/scratchpad/vite_publico.txt" | cut -c1-160; ls dist_publica dist_publica/assets | head -12
+
+[13:04:40] cd "C:/IALD/Central de Patentes/work/central_publica_22out" && "C:/IALD/Central de Patentes/backend/.venv/Scripts/python.exe" -X utf8 gerar_um_acom_publico.py "C:/IALD/Site/tgl/v3.0_bancada/central_publica/acom" 2>&1 | tail -5 | cut -c1-300
+
+[13:06:05] cd "C:/IALD/Central de Patentes/work/central_publica_22out" && C:/Python314/python.exe -X utf8 reexportar_mascarados.py "C:/IALD/Site/tgl/v3.0_bancada/central_publica/snapshot" 2>&1 | tail -3 | cut -c1-1500
+
+[13:06:56] cd "C:/IALD/Central de Patentes/work/central_publica_22out" && C:/Python314/python.exe -X utf8 -c "
+p='exportar_cockpit_publico.py'; s=open(p,encoding='utf-8').read()
+i=s.index('MASK = \"[dado pessoal removido]\"'); j=s.index('FORA_DO_PUBLICO = (')
+s=s[:i]+'sys.path.insert(0, str(Path(__file__).resolve().parent))\nfrom mascara_pii import MASK, PII, mascarar  # noqa: E402  (a máscara única, corrigida em 22/10: o @ de matriz do Python não é e-mail)\n'+s[j:]
+k=s.index('def mascarar(t):'); l=s.index('def sanear_nome(url):')
+s=s[:k]+s[l:]
+compile(s,p,'exec'); open(p,'w',encoding='utf-8').write(s); print('ok', len(s))
+"
+
+[13:09:15] ls "C:/IALD/Site/tgl/v3.0/central" 2>&1 | head -3; C:/Python314/python.exe -X utf8 "C:/IALD/Central de Patentes/work/central_publica_22out/montar_central_no_site.py" 2>&1 | tail -3
+
+[13:10:58] cd "C:/IALD/Central de Patentes/work/central_publica_22out" && C:/Python314/python.exe -X utf8 -c "
+p='gerar_um_acom_publico.py'; s=open(p,encoding='utf-8').read()
+a='import yaml                                 # noqa: E402\n'
+b='import yaml                                 # noqa: E402\nfrom vinculo_patentario import ler_vinculos  # noqa: E402  (a fonte única do vínculo: os dockets, só os campos do vínculo)\nVS = {v[\"dir\"]: v for v in ler_vinculos()}\n'
+assert s.count(a)==1; s=s.replace(a,b)
+i=s.index('    d = yaml.safe_load((pdir / \"docket.yaml\").read_text(encoding=\"utf-8\")) or {}\n'); j=s.index('    vinculos.append(v)\n')
+s=s[:i]+'    v = {k: VS[base][k] for k in VS[base] if k != \"dir\"}\n'+s[j:]
+compile(s,p,'exec'); open(p,'w',encoding='utf-8').write(s); print('ok')
+" && "C:/IALD/Central de Patentes/backend/.venv/Scripts/python.exe" -X utf8 gerar_um_acom_publico.py "C:/IALD/Site/tgl/v3.0_bancada/central_publica/acom" 2>&1 | tail -2 | cut -c1-250 && C:/Python314/python.exe -X utf8 montar_central_no_site.py 2>&1 | tail -1
+
+[13:17:31] "C:/IALD/Central de Patentes/backend/.venv/Scripts/python.exe" -X utf8 "C:/IALD/Central de Patentes/work/central_publica_22out/vincular_central_no_site.py" 2>&1 | tail -2; tail -1 "C:/IALD/Central de Patentes/work/central_publica_22out/construir_nucleo_saida.txt" | cut -c1-200; tail -1 "C:/IALD/Central de Patentes/work/central_publica_22out/construir_work_saida.txt" | cut -c1-200
+
+[13:19:19] cd "C:/IALD/Central de Patentes/frontend" && MSYS_NO_PATHCONV=1 VITE_CENTRAL_PUBLICA=1 npx --no-install vite build --base /central/ --outDir dist_publica --emptyOutDir > "C:/Users/rotol/AppData/Local/Temp/claude/c--IALD-Central-de-Patentes/f50b1d05-8292-4283-87ca-6534734053b5/scratchpad/vite_publico2.txt" 2>&1; echo "vite exit=$?"; grep -o -E '(src|href)="[^"]+"' dist_publica/index.html | head -5; C:/Python314/python.exe -X utf8 "C:/IALD/Central de Patentes/work/central_publica_22out/montar_central_no_site.py" 2>&1 | tail -1
+
+[13:21:24] cd "C:/IALD/Central de Patentes/frontend" && MSYS_NO_PATHCONV=1 VITE_CENTRAL_PUBLICA=1 npx --no-install vite build --base /central/ --outDir dist_publica --emptyOutDir > "C:/Users/rotol/AppData/Local/Temp/claude/c--IALD-Central-de-Patentes/f50b1d05-8292-4283-87ca-6534734053b5/scratchpad/vite_publico3.txt" 2>&1; echo "vite exit=$?"; C:/Python314/python.exe -X utf8 "C:/IALD/Central de Patentes/work/central_publica_22out/montar_central_no_site.py" 2>&1 | tail -1; export MSYS_NO_PATHCONV=1; "C:/Program Files/Google/Chrome/Application/chrome.exe" --headless=new --disable-gpu --no-first-run --virtual-time-budget=25000 --user-data-dir="C:/Users/rotol/AppData/Local/Temp/claude/c--IALD-Central-de-Patentes/f50b1d05-8292-4283-87ca-6534734053b5/scratchpad/chrome_teste5" --dump-dom "http://127.0.0.1:8799/central/#/patents/BR102026003453-3" 2>/dev/null > "C:/Users/rotol/AppData/Local/Temp/claude/c--IALD-Central-de-Patentes/f50b1d05-8292-4283-87ca-6534734053b5/scratchpad/dom_rota.html"; C:/Python314/python.exe -X utf8 -c "
+import re,html
+s=open(r'C:/Users/rotol/AppData/Local/Temp/claude/c--IALD-Central-de-Patentes/f50b1d05-8292-4283-87ca-6534734053b5/scratchpad/dom_rota.html',encoding='utf-8',errors='replace').read()
+t=html.unescape(re.sub(r'<[^>]+>',' ',re.sub(r'<script.*?</script>|<style.*?</style>','',s,flags=re.S))); t=re.sub(r'\s+',' ',t)
+i=t.find('Vínculo patentário'); print('caixa:', i>=0); print(t[i:i+420])
+print('Compilar instruções:', 'Compilar instruções' in t, '| Memória técnica:', 'Memória técnica completa' in t)
+"
+
+[14:45:19] cd "C:/IALD/Central de Patentes/work/central_publica_22out" && cat reexportar_mascarados.py | head -60; echo ----; sed -n 1,40p montar_central_no_site.py
+
+[14:45:37] cd "C:/IALD/Central de Patentes/work/central_publica_22out" && C:/Python314/python.exe -X utf8 remascarar_retrato.py 2>&1 | cut -c1-300
+
+[14:46:41] cd "C:/IALD/Central de Patentes/work/central_publica_22out" && C:/Python314/python.exe -X utf8 montar_central_no_site.py 2>&1 | tail -3; grep -c "dado pessoal removido" "C:/IALD/Site/tgl/v3.0/central/api/documents/5/text.txt"
+
+[15:17:14] cd "C:/IALD/Central de Patentes/frontend" && ls -la .env* 2>/dev/null | head; grep -h "^VITE_" .env* 2>/dev/null | sed 's/=.*/=<valor>/' | head; ls dist_publica/assets | head; for f in dist_publica/assets/*.js; do echo "== $f $(wc -c < $f) bytes"; grep -o -i "bearer [a-z0-9._-]\{8,\}\|ghp_[A-Za-z0-9]\{20,\}\|sk-[A-Za-z0-9]\{20,\}\|AIza[0-9A-Za-z_-]\{35\}\|[a-z0-9._%+-]*@\(hotmail\|gmail\|icloud\|outlook\|yahoo\)\.[a-z.]*\|onrender\.com[^\"' ]*\|127\.0\.0\.1:[0-9]*\|localhost:[0-9]*\|central\.iald\.ia\.br[^\"' ]*" "$f" | sort | uniq -c | head -12; done
+
+[15:23:22] cd "C:/IALD/Central de Patentes/frontend" && echo "CR depois: $(tr -cd '\r' < src/pages/PatentPage.tsx | wc -c)" && npx --no-install tsc -b 2>&1 | tail -5; echo "tsc rc=$?"; MSYS_NO_PATHCONV=1 VITE_CENTRAL_PUBLICA=1 npx --no-install vite build --base /central/ --outDir dist_publica --emptyOutDir > "C:/Users/rotol/AppData/Local/Temp/claude/c--IALD-Central-de-Patentes/f50b1d05-8292-4283-87ca-6534734053b5/scratchpad/vite_publica.txt" 2>&1; echo "vite rc=$?"; tail -6 "C:/Users/rotol/AppData/Local/Temp/claude/c--IALD-Central-de-Patentes/f50b1d05-8292-4283-87ca-6534734053b5/scratchpad/vite_publica.txt"; grep -c "Requerente do PCT" dist_publica/assets/*.js
+
+[15:23:59] cd "C:/IALD/Central de Patentes/work/central_publica_22out" && "C:/IALD/Central de Patentes/backend/.venv/Scripts/python.exe" -X utf8 vinculo_patentario.py "C:/IALD/Site/tgl/v3.0_bancada/central_publica/snapshot" 2>&1 | tail -2; sed -n 1,30p gerar_um_acom_publico.py | grep -n "Uso\|argv\|OUT\|ACOM_DIR\|def \|titular" | head -12
+
+[15:24:20] cd "C:/IALD/Central de Patentes/backend" && "C:/IALD/Central de Patentes/backend/.venv/Scripts/python.exe" -X utf8 "C:/IALD/Central de Patentes/work/central_publica_22out/gerar_um_acom_publico.py" "C:/IALD/Site/tgl/v3.0_bancada/central_publica/acom" 2>&1 | tail -6 | cut -c1-400; C:/Python314/python.exe -X utf8 -c "
+import json; d=json.load(open(r'C:\IALD\Site\tgl\v3.0_bancada\central_publica\acom\um_acom_info.json',encoding='utf-8')); print({k:d[k] for k in ('bytes','n_arquivos','sha256','conferido') if k in d})"; grep -c "IALD Ltda" "C:/IALD/Site/tgl/v3.0_bancada/central_publica/acom/vinculo_patentario.json"
+
+[15:24:33] cd "C:/IALD/Central de Patentes/work/central_publica_22out" && C:/Python314/python.exe -X utf8 montar_central_no_site.py 2>&1 | tail -1 && cd "C:/IALD/Central de Patentes/backend" && "C:/IALD/Central de Patentes/backend/.venv/Scripts/python.exe" -X utf8 "C:/Users/rotol/AppData/Local/Temp/claude/c--IALD-Central-de-Patentes/f50b1d05-8292-4283-87ca-6534734053b5/scratchpad/varrer_um_acom.py" 2>&1 | grep "membros com\|membros:" | cut -c1-200; sha256sum "C:/IALD/Site/tgl/v3.0/central/um.acom" | cut -c1-16
+
+[15:25:07] cd "C:/IALD/Central de Patentes/work/central_publica_22out" && grep -n "IALD Ltda" gerar_readmes_publicos.py | cut -c1-220
+
+[15:25:21] cd "C:/IALD/Central de Patentes/work/central_publica_22out" && cp -p gerar_readmes_publicos.py gerar_readmes_publicos.py.bak_$(date +%Y%m%d_%H%M%S) && echo ok
+
+[15:25:32] cd "C:/IALD/Central de Patentes/work/central_publica_22out" && grep -n "IALD Ltda\|QUEM" gerar_readmes_publicos.py | cut -c1-200; "C:/IALD/Central de Patentes/backend/.venv/Scripts/python.exe" -X utf8 -c "import ast; ast.parse(open('gerar_readmes_publicos.py',encoding='utf-8').read()); print('sintaxe ok')"
+
+[15:25:58] cd "C:/IALD/Central de Patentes/work/central_publica_22out" && sed -n 1,40p vincular_central_no_site.py | cut -c1-200; grep -n "central-aberta\|já\|ja aplicado\|marca\|replace\|um_acom_info\|sha256" vincular_central_no_site.py | cut -c1-180 | head -20
+
+[15:26:15] cd "C:/IALD/Central de Patentes/work/central_publica_22out" && cp -p vincular_central_no_site.py vincular_central_no_site.py.bak_$(date +%Y%m%d_%H%M%S) && echo ok
+
+[15:26:29] cd "C:/IALD/Central de Patentes/work/central_publica_22out" && "C:/IALD/Central de Patentes/backend/.venv/Scripts/python.exe" -X utf8 vincular_central_no_site.py 2>&1 | tail -2; grep -c "IALD Ltda" "C:/IALD/Site/tgl/v3.0/linhas-de-pesquisa.html"; grep -o "sha256 <code>[0-9a-f]*" "C:/IALD/Site/tgl/v3.0/linhas-de-pesquisa.html" | sort | uniq -c; grep -o "Applicant (read[^<]*" "C:/IALD/Site/tgl/v3.0/linhas-de-pesquisa.html"; grep -c 'id="central-aberta"' "C:/IALD/Site/tgl/v3.0/linhas-de-pesquisa.html"
+
+[15:28:20] cd "C:/IALD/Central de Patentes/work/central_publica_22out" && "C:/IALD/Central de Patentes/backend/.venv/Scripts/python.exe" -X utf8 reexportar_mascarados.py "C:/IALD/Site/tgl/v3.0_bancada/central_publica/snapshot" 2>&1 | head -2 | cut -c1-300; grep -c "errata_titular_pessoa_fisica_22out" "C:/IALD/Site/tgl/v3.0_bancada/central_publica/snapshot/api/tgl-core.txt" "C:/IALD/Site/tgl/v3.0_bancada/central_publica/snapshot/api/tgl-atlas.txt"
+
+[15:29:40] cd "C:/IALD/Central de Patentes/work/central_publica_22out" && P="C:/IALD/Central de Patentes/backend/.venv/Scripts/python.exe" && "$P" -X utf8 reexportar_mascarados.py "C:/IALD/Site/tgl/v3.0_bancada/central_publica/snapshot" 2>&1 | head -1 | cut -c1-200; grep -c "errata_titular_pessoa_fisica_22out" "C:/IALD/Site/tgl/v3.0_bancada/central_publica/snapshot/api/tgl-atlas.txt" "C:/IALD/Site/tgl/v3.0_bancada/central_publica/snapshot/api/tgl-core.txt"; cd "C:/IALD/Central de Patentes/backend" && "$P" -X utf8 "C:/IALD/Central de Patentes/work/central_publica_22out/gerar_um_acom_publico.py" "C:/IALD/Site/tgl/v3.0_bancada/central_publica/acom" 2>&1 | tail -1 | cut -c1-300; cd "C:/IALD/Central de Patentes/work/central_publica_22out" && "$P" -X utf8 vincular_central_no_site.py 2>&1 | tail -1; C:/Python314/python.exe -X utf8 montar_central_no_site.py 2>&1 | tail -1; grep -o "sha256 <code>[0-9a-f]*" "C:/IALD/Site/tgl/v3.0/linhas-de-pesquisa.html" | sort -u; sha256sum "C:/IALD/Site/tgl/v3.0/central/um.acom" | cut -c1-16
+
+[16:33:11] cd "C:/IALD/Site/tgl/v3.0_bancada" && C:/Python314/python.exe -X utf8 tools/gerar_sitemap.py --saida "C:/IALD/Site/tgl/v3.0/sitemap.xml" --base "C:/IALD/Site/tgl/v3.0" 2>&1 | grep -i "SITEMAP\|central\|fora" | cut -c1-200; C:/Python314/python.exe -X utf8 tools/gerar_manifesto.py --base "C:/IALD/Site/tgl/v3.0" --saida revisoes/manifesto_central_publica.json --url-base https://teoriadagravitacaoluminodinamica.com/ 2>&1 | grep -v "^  excl\|bak" | head -5 | cut -c1-200
+
+[16:33:20] cd "C:/IALD/Site/tgl/v3.0_bancada" && C:/Python314/python.exe -X utf8 -c "
+import json; d=json.load(open('revisoes/manifesto_central_publica.json',encoding='utf-8')); print('n',d['n'],'bytes',d['total_bytes']); c=[a for a in d['arquivos'] if a['caminho'].startswith('central/')]; print('central/',len(c), sum(a['bytes'] for a in c))
+" && timeout 900 C:/Python314/python.exe -X utf8 tools/subir_site.py --manifesto revisoes/manifesto_central_publica.json --dry-run 2>&1 | tail -25 | cut -c1-220
+
+[16:39:17] cd "C:/IALD/Site/tgl/v3.0_bancada" && C:/Python314/python.exe -X utf8 tools/subir_site.py --manifesto revisoes/manifesto_central_publica.json > "C:/IALD/Central de Patentes/work/central_publica_22out/subida_site_saida.txt" 2>&1; echo "exit=$?"; tail -c 1500 "C:/IALD/Central de Patentes/work/central_publica_22out/subida_site_saida.txt"
+
+[18:25:52] cd "C:/IALD/Central de Patentes/work/central_publica_22out" && "C:/IALD/Central de Patentes/backend/.venv/Scripts/python.exe" -X utf8 gerar_readmes_publicos.py "C:/IALD/Central_publica" 2>&1 | tail -4; head -c 2600 "C:/IALD/Central_publica/central-publica/README.md"
+
+[18:26:20] cd "C:/IALD/Central de Patentes/work/central_publica_22out" && "C:/IALD/Central de Patentes/backend/.venv/Scripts/python.exe" -X utf8 gerar_readmes_publicos.py "C:/IALD/Central_publica" 2>&1 | tail -3; grep -o "um.py\` v[0-9]* \`[0-9a-f]*\`\|um.py\` v[0-9]* (\`[0-9a-f]*\`)" "C:/IALD/Central_publica/central-publica/README.md" | sort -u
+
+[19:10:35] cd "C:/IALD/Central de Patentes/work/central_publica_22out" && grep -n "^for repo, desc in REPOS.items():" gerar_readmes_publicos.py && sed -i 's/^for repo, desc in REPOS.items():$/SO = set(sys.argv[2:])   # (opcional) só estes repositórios — o README de um repositório já publicado não se regrava por tabela\nfor repo, desc in REPOS.items():\n    if SO and repo not in SO:\n        continue/' gerar_readmes_publicos.py && sed -n "$(grep -n '^SO = set' gerar_readmes_publicos.py | cut -d: -f1),+4p" gerar_readmes_publicos.py && "C:/IALD/Central de Patentes/backend/.venv/Scripts/python.exe" -X utf8 gerar_readmes_publicos.py "C:/IALD/Central_publica" central-publica-work 2>&1 | tail -2 && C:/Python314/python.exe -X utf8 indexar_raiz.py "C:/IALD/Central_publica/central-publica-work" && head -c 900 "C:/IALD/Central_publica/central-publica-work/README.md"
+
+[19:11:03] cd "C:/IALD/Central de Patentes/work/central_publica_22out" && C:/Python314/python.exe -X utf8 conferir_subpasta.py "C:/IALD/Central_publica/central-publica-work" central_publica_22out 2>&1 | grep -v "^Multiple\|EOF marker" | tail -3 | cut -c1-900
+
+[19:11:11] cd "C:/IALD/Central de Patentes/work/central_publica_22out" && C:/Python314/python.exe -X utf8 atualizar_pasta_no_preparo.py "C:/IALD/Central_publica/central-publica-work" central_publica_22out 2>&1 | tail -1 | cut -c1-300 && C:/Python314/python.exe -X utf8 conferir_subpasta.py "C:/IALD/Central_publica/central-publica-work" central_publica_22out 2>&1 | grep -v "^Multiple\|EOF marker" | tail -1 | cut -c1-300
+
+[19:50:28] cd "C:/IALD/Central de Patentes/work/central_publica_22out" && C:/Python314/python.exe -X utf8 remascarar_retrato.py 2>&1 | head -3 | cut -c1-300; echo "snapshot com identificador: $(grep -rIl -i "[dado pessoal removido]\|[dado pessoal removido]" "C:/IALD/Site/tgl/v3.0_bancada/central_publica/snapshot" 2>/dev/null | wc -l)"; C:/Python314/python.exe -X utf8 montar_central_no_site.py 2>&1 | tail -1; echo "site central com identificador: $(grep -rIl -i "[dado pessoal removido]\|[dado pessoal removido]" "C:/IALD/Site/tgl/v3.0/central" 2>/dev/null | wc -l)"; cd "C:/IALD/Central de Patentes/backend" && "C:/IALD/Central de Patentes/backend/.venv/Scripts/python.exe" -X utf8 -c "
+import sys,re; sys.path.insert(0, r'C:\IALD\Central de Patentes\backend')
+from app import um_acom as UM
+from pathlib import Path
+r=UM.open_container(Path(r'C:\IALD\Site\tgl\v3.0\central\um.acom').read_bytes(), UM.ONCOLOGIA_KEY)
+n=sum(1 for p,b in r['_files'].items() if re.search(rb'(?i)[dado pessoal removido]|[dado pessoal removido]', b))
+print('um.acom: membros com identificador:', n)
+"
+
+[19:50:55] cd "C:/IALD/Site/tgl/v3.0_bancada" && C:/Python314/python.exe -X utf8 tools/gerar_manifesto.py --base "C:/IALD/Site/tgl/v3.0" --saida revisoes/manifesto_central_publica_r2.json --url-base https://teoriadagravitacaoluminodinamica.com/ 2>&1 | grep -i "^n =\|MANIFESTO" | cut -c1-160; C:/Python314/python.exe -X utf8 tools/subir_site.py --manifesto revisoes/manifesto_central_publica_r2.json > "C:/IALD/Central de Patentes/work/central_publica_22out/subida_site_r2_saida.txt" 2>&1; echo "exit=$?"; grep -a "Subiria\|VEREDITO\|SUBIDA\|falhas =" "C:/IALD/Central de Patentes/work/central_publica_22out/subida_site_r2_saida.txt" | head -6 | cut -c1-200; R=$(ls -td subidas/2026102* | head -1); grep -a "^## Subiria\|DIFERENTE (sha256" "$R/RELATORIO.md" | head -6 | cut -c1-160
+
+[20:00:34] cd "C:/IALD/Central de Patentes/work/central_publica_22out" && C:/Python314/python.exe -X utf8 atualizar_pasta_no_preparo.py "C:/IALD/Central_publica/central-publica-work" central_publica_22out 2>&1 | tail -1 | cut -c1-300 && C:/Python314/python.exe -X utf8 conferir_subpasta.py "C:/IALD/Central_publica/central-publica-work" central_publica_22out 2>&1 | grep -v "^Multiple\|EOF marker" | tail -1 | cut -c1-400; grep -rIl -i "[dado pessoal removido]\|[dado pessoal removido]" "C:/IALD/Central_publica/central-publica-work/central_publica_22out" | head -3
+
+[20:05:29] cd "C:/IALD/Central de Patentes/work/central_publica_22out" && "C:/IALD/Central de Patentes/backend/.venv/Scripts/python.exe" -X utf8 gerar_readmes_publicos.py "C:/IALD/Central_publica" central-publica-work 2>&1 | tail -1 && C:/Python314/python.exe -X utf8 indexar_raiz.py "C:/IALD/Central_publica/central-publica-work" && grep -o "[0-9]* arquivos publicados" "C:/IALD/Central_publica/central-publica-work/README.md"
+
+[20:09:08] cd "C:/IALD/Central de Patentes/work/central_publica_22out" && "C:/IALD/Central de Patentes/backend/.venv/Scripts/python.exe" -X utf8 gerar_readmes_publicos.py "C:/IALD/Central_publica" central-publica-work 2>&1 | tail -1 && C:/Python314/python.exe -X utf8 indexar_raiz.py "C:/IALD/Central_publica/central-publica-work" | tail -1
+
+[20:49:11] cd "C:/IALD/Central de Patentes/work/central_publica_22out" && "C:/IALD/Central de Patentes/backend/.venv/Scripts/python.exe" -X utf8 gerar_readmes_publicos.py "C:/IALD/Central_publica" central-publica-bancada 2>&1 | tail -1 && C:/Python314/python.exe -X utf8 indexar_raiz.py "C:/IALD/Central_publica/central-publica-bancada" | tail -1 && grep -o "[0-9]* arquivos publicados" "C:/IALD/Central_publica/central-publica-bancada/README.md"; ls -la "C:/IALD/Central_publica/central-publica-bancada/.git" 2>&1 | head -1
+
+[21:25:31] cd "C:/IALD/Central de Patentes/work/central_publica_22out" && C:/Python314/python.exe -X utf8 atualizar_pasta_no_preparo.py "C:/IALD/Central_publica/central-publica-work" central_publica_22out 2>&1 | tail -1 | cut -c1-300 && C:/Python314/python.exe -X utf8 conferir_subpasta.py "C:/IALD/Central_publica/central-publica-work" central_publica_22out 2>&1 | grep -v "^Multiple\|EOF marker" | tail -1 | cut -c1-300 && grep -rIl -i "[dado pessoal removido]\|[dado pessoal removido]" "C:/IALD/Central_publica/central-publica-work/central_publica_22out" | wc -l
+
+[22:45:13] find /c/IALD -name "*.php" -not -path "*/.git/*" 2>/dev/null | sed 's#/[^/]*$##' | sort | uniq -c | sort -rn | head -20; echo "---usuario:"; find /c/Users/rotol -maxdepth 6 -name "*.php" -not -path "*/AppData/*" -not -path "*/node_modules/*" 2>/dev/null | head -10; echo "---outros discos:"; ls /d /e 2>/dev/null | head -3; echo "---manifesto do site (php):"; C:/Python314/python.exe -X utf8 -c "
+import json; d=json.load(open(r'C:\IALD\Site\tgl\v3.0_bancada\revisoes\manifesto_central_publica_r2.json',encoding='utf-8'))
+print([a['caminho'] for a in d['arquivos'] if a['caminho'].lower().endswith(('.php','.phtml','.inc'))][:20])
+"
+
+[23:46:02] cd "C:/IALD/Central de Patentes/work/central_publica_22out" && ls *.py | head -60; ls "C:/IALD/Central_publica/"; for f in construir_nucleo_publico.py construir_regiao_publica.py recopiar_no_preparo.py atualizar_pasta_no_preparo.py reprocessar_preparo.py publicar_repo_publico.py conferir_preparos.py montar_central_no_site.py gerar_um_acom_publico.py gerar_readmes_publicos.py; do echo "=== $f"; sed -n '1,25p' $f | grep -v "^import\|^from\|^$" | head -22; done 2>/dev/null | cut -c1-220
+

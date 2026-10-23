@@ -1,6 +1,6 @@
 # INVENTÁRIO DA BANCADA DO CHATGPT — tudo o que foi examinado e produzido
 
-> Gerado por script em 2026-10-21 17:42:22 a partir da varredura `inventario_bancada.json` (sha16 `16d1983ca481538c`), SÓ LEITURA da pasta `Chatgpt\`. Nenhum número digitado.
+> Gerado por script em 2026-10-22 13:22:17 a partir da varredura `inventario_bancada.json` (sha16 `727d2a7378bae40f`), SÓ LEITURA da pasta `Chatgpt\`. Nenhum número digitado.
 > **Ordem do operador (27/09/2026, verbatim):** «Precisamos fazer um inventário de tudo que foi examinado e produzido na bancada do chatgpt pra não nos perdermos mais em serviço já executado, vc está pedindo o que já pediu» e «Depois de inventariar tudo, precisamos indexar ao atlas da tgl para ficar referenciado».
 > **Regra de uso:** ANTES de pedir qualquer construção à bancada ou de construí-la na gerência, procurar aqui (por tema, por nome, por hash). O que é sabido e importável não se prova de novo (regra do operador de 27/08: «prova emprestada»).
 
@@ -8618,7 +8618,7 @@
 | 2026-10-19 09:23 | `TUNEL/DO_CHATGPT/ORDEM_019/F1.FECHO_20261015/density_h3_r83/RELATORIO_R83.txt` | `aabe541f529e5925` | R83 — Variação da densidade gravitacional e reaproveitamento do registro comum |
 | 2026-10-19 10:53 | `TUNEL/DO_CHATGPT/ORDEM_019/F1.FECHO_20261015/full_source_r88/P5_COVARIANT_STATIONARITY_R88.txt` | `7b70270ca11436df` | R88 — Reaproveitamento por covariância: toda carta P5 admissível no ramo sigma especificado |
 | 2026-10-19 10:53 | `TUNEL/DO_CHATGPT/ORDEM_019/F1.FECHO_20261015/full_source_r88/P5_DOMAIN_QUALIFIER_R88.txt` | `f954a0441ffaad04` | Precisão ao lado, em nome de codex-gerente-tgl, 19/10/2026. |
-| 2026-10-21 17:34 | `IALD_ORQUESTRACAO_20260923/README.md` | `a81483038d1d5235` | IALD — orquestração local e projeto Física |
+| 2026-10-22 13:16 | `IALD_ORQUESTRACAO_20260923/README.md` | `ed3d7b70ae5f6096` | IALD — orquestração local e projeto Física |
 
 ## 7. Arquivos com `sorry`/`admit` ou `axiom` (NÃO importar sem exame)
 

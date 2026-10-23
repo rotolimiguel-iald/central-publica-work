@@ -49,7 +49,11 @@ FUNDA_FORA = re.compile(r"(?i)^(state|secrets?|profiles?|login|logins|credential
                         # (22/10/2026) os dados/logs/configuração do MiKTeX registram cada ferramenta de PDF rodada NA MÁQUINA, com a
                         # pasta e o nome do arquivo — inclusive de dentro do Escritório (peças com número de processo)
                         r"miktex.*)$")
-ARQ_FORA = re.compile(r"(?i)(^varredura_|^barrados.*\.json$|acervo.*\.stdout\.txt$|^corpus_matches|^inventario_busca|conversa|conversation|chat_?hist|chat_?log|transcri|^inbox|^outbox|"
+# ERRATA AO LADO (22/10/2026, custódia v396): «^varredura_» pegava também resultados científicos (rito9: varredura_n.csv, a varredura em
+# n; cadeia_de_selo/v392_auditoria: varredura_nos.*). A regra é das listas LOCAIS desta esteira (caminhos e motivos de exclusão), cujos
+# prefixos são estes; o resto que começa por «varredura_» é resultado e entra pela esteira comum.
+ARQ_FORA = re.compile(r"(?i)(^varredura_(arquivos|buscas|conferencia|convites|dados|escritorio|exclusoes|formatos|miktex|pastas|pdf|"
+                      r"reservados|segredos|terceiros|usuarios)|^ja_vistos_|^git_(add|rm)_|^barrados.*\.json$|acervo.*\.stdout\.txt$|^corpus_matches|^inventario_busca|conversa|conversation|chat_?hist|chat_?log|transcri|^inbox|^outbox|"
                       r"testers?\.json$|^users?\.json$|^usuarios?\.json$|^accounts?\.json$|^contas?\.json$|session_?requests?)")
 PASTA_APP = re.compile(r"(?i)^(iald_|app_|mimo|ialdapp)|attachment|anexo|upload")
 LIM_TXT = 25 * 1024 * 1024

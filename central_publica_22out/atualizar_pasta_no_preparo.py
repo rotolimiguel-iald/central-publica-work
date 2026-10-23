@@ -18,7 +18,9 @@ D, SUB = Path(sys.argv[1]), sys.argv[2].strip("/\\")
 SRC = Path(r"C:\IALD\Central de Patentes\work") / SUB
 TXT = {".py", ".md", ".json", ".jsonl", ".txt", ".tex", ".csv", ".yaml", ".yml", ".html", ".js", ".ts", ".log", ".out", ".xml", ".toml", ".ini",
        ".cfg", ".sh", ".ps1", ".bat", ".diff", ".patch"}
-FORA = re.compile(r"(?i)(^varredura_|\.bak_|\.tmp|__pycache__|^conferencia_|^subida_)")   # subida_*: o log do envio do site traz o usuário e o caminho da hospedagem
+FORA = re.compile(r"(?i)(^varredura_|\.bak_|\.tmp|__pycache__|^conferencia_|^subida_|^ja_vistos_|^git_(add|rm)_)")   # subida_*: o log do envio do site traz o usuário e o caminho da hospedagem
+# (22/10/2026, custódia v396) ja_vistos_*.json repete os caminhos das listas LOCAIS de exclusão (que não se publicam: os próprios nomes
+# podem ser nota ou dado); git_add_/git_rm_ são listas de trabalho do envio incremental
 # os scripts da própria esteira trazem os PADRÕES da regra do Escritório e exemplos FICTÍCIOS (revistos um a um em 22/10/2026): a regra do
 # Escritório não os barra; credencial e dado pessoal continuam valendo para eles
 ESTEIRA = {"aplicar_regra_escritorio.py", "conferir_preparos.py", "guarda_publica.py", "testar_regra_escritorio.py"}

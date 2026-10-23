@@ -1,0 +1,101 @@
+[20:57:04] C:/Python314/python.exe -X utf8 "C:/IALD/Central de Patentes/work/custodia_v395_21out/acom_init.py"; C:/Python314/python.exe -X utf8 C:/IALD/MAPA_DE_ROTAS/rotas.py consultar "custodia" 2>&1 | grep -E "rota_id|veredito|proximo" | tail -8 | cut -c1-220
+
+[20:57:43] cd "C:/IALD/Central de Patentes/work" && sed -e 's/custódia v394 (19\/10\/2026, sessão a7)/custódia v395 (21\/10\/2026, sessão a7)/; s/assert base.name == "Chatgpt_20261007_195426_delta_de_20261007_114440", base.name/assert base.name == "Chatgpt_20261019_190704_delta_de_20261007_195426", base.name/; s/v2 (custodia v394, 19\/10; exclusoes iguais as de 15\/09)/v2 (custodia v395, 21\/10; exclusoes iguais as de 15\/09)/' custodia_v394_19out/snapshot_chatgpt_v394.py > custodia_v395_21out/snapshot_chatgpt_v395.py && grep -n -E "assert base.name|versao_do_script|custódia v395" custodia_v395_21out/snapshot_chatgpt_v395.py | cut -c1-160; C:/Python314/python.exe -X utf8 -c "import ast;ast.parse(open(r'C:/IALD/Central de Patentes/work/custodia_v395_21out/snapshot_chatgpt_v395.py',encoding='utf-8').read());print('sintaxe ok')"
+
+[20:57:46] PYTHONIOENCODING=utf-8 C:/Python314/python.exe -X utf8 "C:/IALD/Central de Patentes/work/custodia_v395_21out/snapshot_chatgpt_v395.py" > "C:/IALD/Central de Patentes/work/custodia_v395_21out/snapshot_chatgpt_v395_saida.txt" 2>&1
+
+[20:59:41] C:/Python314/python.exe -X utf8 "C:/IALD/Central de Patentes/work/custodia_v395_21out/derivar_v395.py" && cd C:/IALD/Site/tgl/v3.0_bancada && grep -c $'\x00' tools/custodia_v395_espelho.py; C:/Python314/python.exe -X utf8 tools/custodia_v395_passo0_backup.py 2>&1 | tail -6 | cut -c1-260
+
+[21:00:06] cd C:/IALD/Site/tgl/v3.0_bancada/tools && grep -n -E "add_argument|args\.|modo" custodia_v395_espelho.py | head -12 | cut -c1-200
+
+[21:00:09] cd C:/IALD/Site/tgl/v3.0_bancada && C:/Python314/python.exe -X utf8 tools/custodia_v395_espelho.py --conferir 2>&1 | tail -12 | cut -c1-300
+
+[21:02:32] cd C:/IALD/Site/tgl/v3.0_bancada && C:/Python314/python.exe -X utf8 tools/custodia_v395_espelho.py 2>&1 | tail -6 | cut -c1-320; C:/Python314/python.exe -X utf8 -c "
+import json; r=json.load(open(r'C:/IALD/Site/tgl/v3.0_bancada/revisoes/custodia_v395_espelho.json',encoding='utf-8'))
+print('fontes_pinadas:', {k:(v if not isinstance(v,list) else v[:4]) for k,v in r['fontes_pinadas'].items()}); print('kernel novos:', r['selo']['kernel'].get('novos')[:5] if r['selo']['kernel'].get('novos') else None)"
+
+[21:06:35] cd C:/IALD/Site/tgl/v3.0_bancada && C:/Python314/python.exe -X utf8 tools/custodia_v395_geradores.py 2>&1 | tail -10 | cut -c1-300
+
+[21:06:44] cd C:/IALD/Artigo/the_boundary && C:/Python314/python.exe -X utf8 tools/gerar_estado_atual.py 2>&1 | tail -1 | cut -c1-200 && git status --porcelain --untracked-files=all | grep -i -E "\.bak|\.tmp|\.env|psion_state|stack_v7|auth\.json|\.pem$|\.key$" | head -5; git add -A && C:/Python314/python.exe -X utf8 tools/gerar_portas.py 2>&1 | tail -2 && cd C:/IALD/Site/tgl/v3.0_bancada && for f in gerar_read_brief gerar_llms_site gerar_head_camada_texto gerar_secoes; do C:/Python314/python.exe -X utf8 tools/$f.py 2>&1 | tail -1 | cut -c1-200; done
+
+[21:06:57] cd C:/IALD/Artigo/the_boundary && git add -A && C:/Python314/python.exe -X utf8 tools/gerar_portas.py 2>&1 | tail -1 && C:/Python314/python.exe -X utf8 tools/gerar_readme_frente.py 2>&1 | tail -1 | cut -c1-200 && git add -A && C:/Python314/python.exe -X utf8 tools/gerar_portas.py 2>&1 | tail -1 && C:/Python314/python.exe -X utf8 tools/gerar_readme_frente.py 2>&1 | tail -1 | cut -c1-120 && git add -A && echo "unstaged: $(git diff --name-only | wc -l) | staged: $(git diff --cached --name-only | wc -l)" && echo "=== verificar_portas" && C:/Python314/python.exe -X utf8 tools/verificar_portas.py 2>&1 | tail -3 && echo "=== guarda_do_selo" && C:/Python314/python.exe -X utf8 tools/guarda_do_selo.py 2>&1 | tail -4 | cut -c1-220
+
+[21:07:58] cd C:/IALD/Artigo/the_boundary && git commit -q -F "C:/Users/rotol/AppData/Local/Temp/claude/c--IALD-Central-de-Patentes/f50b1d05-8292-4283-87ca-6534734053b5/scratchpad/commit_espelho_v395.txt" && git log -1 --format="%h %s" | cut -c1-110 && git push origin main 2>&1 | tail -2 && C:/Python314/python.exe -X utf8 tools/pos_push.py 2>&1 | tail -7 | cut -c1-200
+
+[21:08:34] cd C:/IALD/Site/tgl/v3.0_bancada && C:/Python314/python.exe -X utf8 tools/aplicar_selo.py 2>&1 | tail -1 | cut -c1-200 && C:/Python314/python.exe -X utf8 tools/aplicar_selo.py --conferir 2>&1 | tail -1 && C:/Python314/python.exe -X utf8 tools/gerar_llms_full.py 2>&1 | tail -1 | cut -c1-120 && C:/Python314/python.exe -X utf8 tools/gerar_index_md.py 2>&1 | tail -1 | cut -c1-160 && C:/Python314/python.exe -X utf8 tools/gerar_sitemap.py --saida "C:/IALD/Site/tgl/v3.0/sitemap.xml" --base "C:/IALD/Site/tgl/v3.0" 2>&1 | grep -c "fora:" && C:/Python314/python.exe -X utf8 tools/gerar_manifesto.py --base "C:\IALD\Site\tgl\v3.0" --saida "C:/IALD/Site/tgl/v3.0_bancada/revisoes/manifesto_v395.json" 2>&1 | tail -1 | cut -c1-120 && C:/Python314/python.exe -X utf8 tools/subir_site.py --manifesto "C:/IALD/Site/tgl/v3.0_bancada/revisoes/manifesto_v395.json" --dry-run 2>&1 | tail -1
+
+[21:10:44] cd C:/IALD/Site/tgl/v3.0_bancada && grep -c "DIFERENTE\|AUSENTE" subidas/20261021_180839_dryrun/RELATORIO.md; grep "DIFERENTE\|AUSENTE" subidas/20261021_180839_dryrun/RELATORIO.md | grep "^|" | awk -F'|' '{print $2}' | head -20 | tr '\n' ' '; echo; C:/Python314/python.exe -X utf8 tools/subir_site.py --manifesto "C:/IALD/Site/tgl/v3.0_bancada/revisoes/manifesto_v395.json" 2>&1 | grep -E "VEREDITO|SUBIDA|ERROS" | head -4
+
+[21:12:46] cd C:/IALD/Site/tgl/v3.0_bancada && C:/Python314/python.exe -X utf8 tools/leitor_ia.py --relatorio revisoes/leitor_ia_20261021_v395.md 2>&1 | grep -E "R1:|Bytes somados" | cut -c1-160
+
+[21:12:50] cd "C:/IALD/Central de Patentes/work" && sed -e 's/custodia_v394_19out/custodia_v395_21out/; s/claude-central-a7_custodia-v394-19out.json/claude-central-a7_custodia-v395-21out.json/; s/custódia v393+v394/custódia v395/' custodia_v394_19out/acom_transicao.py > custodia_v395_21out/acom_transicao.py && grep -n -E "^W =|^REF =" custodia_v395_21out/acom_transicao.py
+
+[21:13:01] C:/Python314/python.exe -X utf8 "C:/IALD/Central de Patentes/work/custodia_v395_21out/acom_transicao.py" t1 0; head -40 "C:/IALD/Central de Patentes/work/custodia_v394_19out/cofre_v394.py" | cut -c1-200
+
+[21:14:08] cd "C:/IALD/Central de Patentes/work" && C:/Python314/python.exe -X utf8 - <<'PYEOF'
+from pathlib import Path
+src = Path("custodia_v394_19out/cofre_v394.py").read_text(encoding="utf-8")
+def rep(a, b, n=1):
+    global src
+    c = src.count(a)
+    assert c == n, (a[:90], c, n)
+    src = src.replace(a, b)
+rep('"""CUSTÓDIA CONJUNTA v392→v394 — O COFRE DA CENTRAL (19/10/2026, sessão a7, por ordem do operador).',
+    '"""CUSTÓDIA v395 — O COFRE DA CENTRAL (21/10/2026, sessão a7, por ordem do operador; molde: cofre_v394.py, base = o cofre v394).\nDo molde: CUSTÓDIA CONJUNTA v392→v394 — O COFRE DA CENTRAL (19/10/2026, sessão a7, por ordem do operador).')
+rep('V = OC / "um_unificado_v394"\nKV = OC / "tgl_kernel_v394"\nV391 = OC / "um_unificado_v391"\nKV391 = OC / "tgl_kernel_v391"',
+    'V = OC / "um_unificado_v395"\nKV = OC / "tgl_kernel_v395"\nV391 = OC / "um_unificado_v394"   # (nome herdado do molde: é a BASE, o cofre v394)\nKV391 = OC / "tgl_kernel_v394"')
+rep('ORDEM = CEN / "work" / "custodia_v394_19out" / "OPERADOR_19out_custodia_verbatim.txt"',
+    'ORDEM = CEN / "work" / "custodia_v395_21out" / "OPERADOR_21out_custodia_v395_verbatim.txt"')
+rep('assert not V.exists() and not KV.exists(), "o cofre v394 já existe — PARAR (nada se sobrescreve)"',
+    'assert not V.exists() and not KV.exists(), "o cofre v395 já existe — PARAR (nada se sobrescreve)"')
+rep('assert pin == selo["sha256"]["um.py"] and pin.startswith("972e81f22dd8cc68") and selo.get("um_version") == "v394", (pin[:16], s
+
+[21:14:38] cd "C:/IALD/Central de Patentes/work" && C:/Python314/python.exe -X utf8 custodia_v395_21out/derivar_cofre_v395.py && grep -n -E "v39[0-4]" custodia_v395_21out/cofre_v395.py | grep -v -E "nome herdado|Do molde|V391|KV391|k391|m391|cofre v394|v394 que estava|v394 passa|contratos da v394|da v394 não|v394_972e|declaracoes_v394|formal_files_v394|delta_v394|desde a v394|HANDOFF_v39[234]|rodada_v39[234]|_v394\"|tgl_kernel_v394|um_unificado_v394" | cut -c1-170
+
+[21:14:44] cd "C:/IALD/Central de Patentes/work" && PYTHONIOENCODING=utf-8 C:/Python314/python.exe -X utf8 custodia_v395_21out/cofre_v395.py 2>&1 | tail -6 | cut -c1-260
+
+[21:15:18] cd "C:/IALD/Central de Patentes/work" && sed -e 's/um_unificado_v394"), OC \/ "um_unificado_v391"/um_unificado_v395"), OC \/ "um_unificado_v394"/; s/contra o cofre v391/contra o cofre v394/; s/desde v391/desde v394/g' custodia_v394_19out/medir_v394_contra_v391.py > custodia_v395_21out/medir_v395_contra_v394.py && grep -n "C4, C1 =" custodia_v395_21out/medir_v395_contra_v394.py && C:/Python314/python.exe -X utf8 custodia_v395_21out/medir_v395_contra_v394.py 2>&1 | cut -c1-300
+
+[21:15:25] cd "C:/IALD/Central de Patentes/work/custodia_v395_21out" && C:/Python314/python.exe -X utf8 -c "
+p='medir_v395_contra_v394.py'; s=open(p,encoding='utf-8').read()
+a='C4, C1 = OC / \"um_unificado_v394\", OC / \"um_unificado_v391\"'; b='C4, C1 = OC / \"um_unificado_v395\", OC / \"um_unificado_v394\"'
+assert s.count(a)==1; s=s.replace(a,b); open(p,'w',encoding='utf-8').write(s); print('ok')
+" && C:/Python314/python.exe -X utf8 medir_v395_contra_v394.py 2>&1 | cut -c1-300
+
+[21:16:15] cd "C:/IALD/Central de Patentes/fronteira_tgl/runner" && C:/Python314/python.exe -X utf8 "C:/IALD/Central de Patentes/work/custodia_v395_21out/patch_runner_v60.py" 2>&1 | tail -13 && PYTHONIOENCODING=utf-8 C:/Python314/python.exe -X utf8 one_fronteira.py > "C:/IALD/Central de Patentes/work/custodia_v395_21out/runner_v60_r1.txt" 2>&1; echo "exit=$?"; grep -E "CUSTODIA um.py|VEREDITO:" "C:/IALD/Central de Patentes/work/custodia_v395_21out/runner_v60_r1.txt" | cut -c1-230
+
+[21:16:42] cd "C:/IALD/Central de Patentes/fronteira_tgl/runner" && PYTHONIOENCODING=utf-8 C:/Python314/python.exe -X utf8 one_fronteira.py > "C:/IALD/Central de Patentes/work/custodia_v395_21out/runner_v60_r2.txt" 2>&1; echo "exit=$?"; cd ../results && C:/Python314/python.exe -X utf8 -c "
+import json,glob,os
+fs=sorted(glob.glob('fronteira_*.json'),key=os.path.getmtime)[-2:]
+for f in fs:
+    d=json.load(open(f,encoding='utf-8')); v=d['the_station']['custodia_v395']
+    print(f, '| pass:', v['pass'], '| verdict ok:', d['verdict'].startswith('FRONTEIRA_SINCRONIZADA_V395'), '| ceticos:', v['ceticos']['1_reprovou'], v['ceticos']['2_reprovou'], '| reg:', v['registro_de_vereditos']['ok'], '| kernel:', v['kernel'])
+    falhas=[k for k,x in d['the_station'].items() if isinstance(x,dict) and x.get('pass') is False]; print('   pedras reprovadas:', falhas)
+"
+
+[21:17:33] C:/Python314/python.exe -X utf8 "C:/IALD/Central de Patentes/work/custodia_v395_21out/patch_formula_v395.py" 2>&1 | tail -10 && cd "C:/IALD/Central de Patentes/patents/_formula_completa" && PYTHONIOENCODING=utf-8 C:/Python314/python.exe -X utf8 -c "
+import tgl_formula_completa as m, json
+from pathlib import Path
+c=m.camada(Path('tgl_formula_completa.py').resolve()); cf=c['conferencia_no_cofre']
+print(c['versao_da_camada'], cf['cofre']); print(json.dumps(cf['camada_v395_no_cofre'],ensure_ascii=False)[:600])" 2>&1 | tail -3 | cut -c1-700
+
+[21:20:28] cat "C:/IALD/Central de Patentes/work/custodia_v395_21out/snapshot_chatgpt_v395_saida.txt" | tail -2 | cut -c1-300
+
+[21:21:44] C:/Python314/python.exe -X utf8 "C:/IALD/Central de Patentes/work/custodia_v395_21out/derivar_fim_v395.py"; grep -n "v394\|1423\|29026" "C:/IALD/Central de Patentes/work/custodia_v395_21out/conferencia_final_v395.py" | cut -c1-160; cat "C:/IALD/Central de Patentes/work/custodia_v395_21out/snapshot_chatgpt_v395_saida.txt" | tail -1 | cut -c1-200
+
+[21:22:17] cat "C:/IALD/Central de Patentes/work/custodia_v395_21out/snapshot_chatgpt_v395_saida.txt" | tail -1 | cut -c1-250; date +%H:%M
+
+[21:22:27] C:/Python314/python.exe -X utf8 "C:/IALD/Central de Patentes/work/custodia_v395_21out/acom_transicao.py" t2 1
+
+[21:29:37] tail -1 "C:/IALD/Central de Patentes/work/custodia_v395_21out/snapshot_chatgpt_v395_saida.txt" | cut -c1-300
+
+[21:29:40] C:/Python314/python.exe -X utf8 "C:/IALD/Central de Patentes/work/custodia_v395_21out/registro_v395.py" 2>&1 | tail -14 | cut -c1-220
+
+[21:29:52] cd "C:/IALD/Central de Patentes" && git commit -q -F "C:/Users/rotol/AppData/Local/Temp/claude/c--IALD-Central-de-Patentes/f50b1d05-8292-4283-87ca-6534734053b5/scratchpad/commit_central_v395.txt" && git log -1 --format="%h %s" | cut -c1-120 && git push origin main 2>&1 | tail -2
+
+[21:30:09] C:/Python314/python.exe -X utf8 "C:/IALD/Central de Patentes/work/custodia_v395_21out/conferencia_final_v395.py" 2>&1 | tail -14 | cut -c1-200
+
+[21:30:15] C:/Python314/python.exe -X utf8 "C:/IALD/Central de Patentes/work/custodia_v395_21out/registro_v395_publicada.py" 2>&1 | tail -6 | cut -c1-200
+
+[21:30:25] C:/Python314/python.exe -X utf8 "C:/IALD/Central de Patentes/work/custodia_v395_21out/acom_transicao.py" t3 2; cd "C:/IALD/Central de Patentes" && git status --porcelain --untracked-files=no | grep -E "memory/|fronteira_tgl|vault/|_formula" | head -3; echo "fim"
+
