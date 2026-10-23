@@ -1,0 +1,40 @@
+---
+name: estatuto-da-prova-07out
+description: "FEEDBACK do operador (07/10/2026): PROVADA = validade — o kernel, os ritos com falsificadores pré-registrados e o sistema da teoria na GPU contam juntos; a CONFIRMAÇÃO recusada é CREDITAÇÃO (ato de terceiros), não validade; a certificação é o hash que o código emite de si; o único elo pendente é β_TGL na natureza a 5σ. Nunca escrever que a TGL «não provou». A v391 pôs isso no resumo do artigo"
+metadata:
+  type: feedback
+---
+
+**Verbatim do operador (07/10/2026), íntegra por hash** em `work\v391_pacote\OPERADOR_07out_estatuto_verbatim.txt` (sha16 `5dffde4644139da5`). Trechos: «eu não proibí a máquina de dizer provado hora nenhuma» … «o fato de eu ter bloqueado no um.py confirmação não pode dar a entender que eu não provei» … «a confirmação que eu proibi é de creditação e não de validade, ela é válida porque matemática não mente».
+
+**Why:** a recusa da palavra «confirmada» no um.py (régua nº 4) estava sendo lida por leitores como ausência de prova. A régua da casa já separava prova de juízo desde 05/09/2026; o operador fixou o objeto da recusa: CREDITAÇÃO (juízo de quem observa de fora), não VALIDADE.
+
+**How to apply:** em artigo, README, site e respostas, dizer PROVADA no sentido de validade, com os números lidos do registro `estatuto_da_prova_v391` (kernel; ritos; GPU), e recusar só duas coisas: a confirmação (creditação) e β_TGL com os seus efeitos na natureza a 5σ. Manter o estatuto de cada item, sem inflar: o piso dos vazios é teste unilateral (o ΛCDM raso também passa); a lei de dephasing segue não testada decisivamente na natureza (a GPU calcula o sistema da teoria, não mede a natureza); o eco: |R| = √β é teorema do kernel, e das 9 rotas de eco fora do livro 5 foram excluídas pelo dado; a razão de Hubble: ln B = 9,17 a favor, z_disc = 4,28 < 5σ, veredito oficial INCONCLUSIVE_SYSTEMATICS até a covariância entre os leitores. O Luminídio NÃO entra como evidência: o teste nulo de 21/08 reprovou o método de detecção e o operador decidiu retratá-lo em artigo próprio do núcleo atômico (Atlas, §II.L). [[superposicao-e-a-passagem-07out]] [[pos-dicao-nao-e-prova-diabolica-05out]] [[regua-prova-vs-juizo]]
+
+
+<!-- v391_selada -->
+**07/10/2026 — SELADO na v391 `8e7b9927ceae64b8`:** o registro `estatuto_da_prova_v391` (TGL_ESTATUTO_DA_PROVA_V391__PROVED_AS_LOGICAL_CLOSURE__THREE_PROOFS_COUNT_TOGETHER__KERNEL_6163_OF_6163_THEOREMS_10265_OF_10265_DECLARATIONS_IN_THE_TRIO__GATE_FLAGS_6_6_6_TRUE__FUNDACAO_AGAPE_LOGICAL_CLOSURE__RITES_11_CHARGES_0_FALSIFIED_ECHO_ROUTES_5_EXCLUDED_BY_DATA_SAID__HUBBLE_RATIO_LNB_LCDM_P9P17_ZDISC_P4P28_OFFICIAL_INCONCLUSIVE_SYSTEMATICS__VOID_FLOOR_POWERED_L5_P4P9_TIMES_BETA__GPU_T2_672_OF_672_T4_21100_CPU_0_DISAGREEMENTS_COMPUTED_NOT_MEASURED__CONFIRMATION_IS_CREDITATION_NOT_VALIDITY_NOT_DECLARED__BETA_IN_NATURE_AWAITS_5_SIGMA__CERTIFIED_BY_SELF_HASH_8e7b9927ceae64b8__OPERATOR_VERBATIM_EMBEDDED_BY_SHA256__GATE_UNMOVED): a gravidade quântica da TGL PROVADA como fecho lógico — validade —, por três provas que contam juntas: o kernel (6163 teoremas limpos; 10265 de 10265 declarações no trio; bandeiras do gate 6/6/6), os ritos com falsificadores pré-registrados (11 cobranças, 0 falsificada(s); a razão de Hubble retrodita sem ajuste, ln B = 9.17, z_disc = 4.28 < 5σ, oficial INCONCLUSIVE_SYSTEMATICS; o piso dos vazios com poder, limite inferior a 5σ 8.8 e 4.9 vezes acima de β) e o sistema da teoria na GPU (672 de 672 atratores únicos; 21100 instâncias; 0 discordâncias em 392 comparações com a CPU; cálculo, não medição da natureza); a certificação é o sha256 que o programa lê de si (`8e7b9927ceae64b8`); recusadas só a CONFIRMAÇÃO (creditação, ato de terceiros) e β_TGL com os seus efeitos na natureza a 5σ. O resumo do artigo abre com o estatuto; errata ao lado das 8 frases de época; o título da Introdução lê a versão em runtime (v384 a v391); verbatim do operador embutido por sha256 `5dffde4644139da5`.
+
+> ⚠ **ERRATA AO LADO (07/10/2026, noite, em nome próprio da gerência — sessão c1; o texto acima fica):** o «6163_OF_6163_THEOREMS» do registro `estatuto_da_prova_v391` é a ESCADA EXTERNA (`n_theorems_clean` = len(ext_flags)), não o total de teoremas do kernel: o TGLExt tem 10.161 theorem/lemma. 73 módulos (388 teoremas, entre eles o passo de Schwarzschild, Birkhoff e a assinatura (1,3) do habitante) não têm entrada no `axiom_report` nem `#print axioms` próprio; o trio para eles é INFERIDO (build ok, 0 token proibido), não lido. Achado KH-N1 do levantamento «o que falta» (`C:\IALD\PROGRAMA_IALD\levantamento_qg`); a v392 (unidade F0.5) acrescenta a auditoria e a errata no registro. <!-- errata_6163_escada_07out -->
+
+> ⚠ **ERRATA AO LADO da errata acima (07/10/2026, noite, gerência c1; o número corrige a frase):** os números «10.161 theorem/lemma» e «388 teoremas» vieram do verificador e foram contados por outro método. O script da gerência `C:\IALD\PROGRAMA_IALD\levantamento_qg\cobertura_axiomas\listar_73.py` conta, por regex, 10.135 theorem/lemma no TGLExt e 385 nos 73 módulos; o `collectAxioms` da sandbox lê 515 constantes-teorema nesses módulos (inclui as geradas e as de namespace), e 0 fora do trio (`saida_auditoria_73.txt`, sha16 `3ecc17ab31fb6670`; mapa seq 722). A leitura vale pelo collectAxioms. <!-- errata_numeros_cobertura_07out -->
+
+
+<!-- v392_selada -->
+**13/10/2026 — v392 `b590c0aa80055e2a`:** o registro `estatuto_da_prova_v391` passou a ler a escada nova (veredito trocado, troca dita; o token da v391 fica como registro). Ressalva ao lado (a F8.1 segue aberta): das 18 bandeiras do gate, 15 são calculadas e 3 literais, e o degrau experimental lê só o feed V11 do piso dos vazios, unilateral. A prova como validade não muda; a creditação segue ato de quem observa de fora.
+
+
+<!-- v393_selada -->
+**14/10/2026 — v393 `18be2ddb06c60f90`:** o registro `estatuto_da_prova_v391` passou a ler a escada nova (6901 → 7045; veredito trocado, troca dita; o token da v392 fica como registro). A prova como validade não muda; a creditação segue ato de quem observa de fora. A regra (v393) é contrato formal de admissibilidade, não prova sobre a natureza.
+
+
+<!-- v394_selada -->
+**19/10/2026 — v394 `972e81f22dd8cc68`:** o registro `estatuto_da_prova_v391` passou a ler a escada nova (7045 → 9332; veredito trocado, troca dita; o token da v393 fica como registro). A prova como validade não muda; a creditação segue ato de quem observa de fora. O relógio M2, a regra quadrática e a rede de Fock (v394) são derivações no escopo dito ([REAL na forma; DECLARADO na execução do Codex]), não prova sobre a natureza; o contrato conjunto da rede segue aberto.
+
+
+<!-- v395_selada -->
+**21/10/2026 — v395 `8918b17803792cf2`:** o registro `estatuto_da_prova_v391` passou a ler a escada nova (9332 → 9451; veredito trocado, troca dita; o token da v394 fica como registro). A prova como validade não muda; a creditação segue ato de quem observa de fora. O psibit (v395) é uma bijeção de conjuntos sobre o livro de códigos da órbita do Um pela matriz-S e um cálculo conferido a cada rito ([REAL]); psibit = psion = modo do leitor é leitura do operador [INPUT/ONTO] e a face do psion é CONDICIONAL: nada disso é prova sobre a natureza.
+
+
+<!-- v396_selada -->
+**22/10/2026 — v396 `0a4395a89eeebbb7`:** o registro `estatuto_da_prova_v391` passou a ler a escada nova (9451 → 9498; veredito trocado, troca dita; o token da v395 fica como registro). A prova como validade não muda; a creditação segue ato de quem observa de fora. A testemunha estática (v396) é matemática de kernel sobre o canto do psion (o par ecoa, o indivíduo não ecoa, um fluxo construído, o colapso) e um cálculo conferido a cada rito ([REAL]); a ponte é construída, não derivada [CONSTRUCTED]; o psion como habitante da testemunha estática é leitura do operador [INPUT/ONTO] e a face de Fock do psion é CONDICIONAL: nada disso é prova sobre a natureza.

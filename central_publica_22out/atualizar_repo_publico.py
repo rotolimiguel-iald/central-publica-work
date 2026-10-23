@@ -14,7 +14,8 @@ NOME, D, TIT = sys.argv[1], Path(sys.argv[2]), sys.argv[3]
 assert NOME in ("central-publica", "central-publica-work", "central-publica-bancada"), NOME
 CO = "Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 ENV = dict(os.environ, GIT_LITERAL_PATHSPECS="1")
-RAIZ_GERADA = ["INDICE_PUBLICO.json", "EXCLUSOES_PUBLICAS.json", ".gitattributes"]
+RAIZ_GERADA = ["INDICE_PUBLICO.json", "EXCLUSOES_PUBLICAS.json", ".gitattributes",
+               "llms.txt"]   # (23/10/2026) o mapa de máquina de cada repositório, curadoria à mão do Kimi: rastreado, fora do índice
 
 
 def g(*a, ok=True):
@@ -25,10 +26,18 @@ def g(*a, ok=True):
 
 
 conf = W / ("varredura_conferencia_%s.json" % D.name)
-assert conf.is_file() and conf.stat().st_mtime > (D / "INDICE_PUBLICO.json").stat().st_mtime, \
-    "a conferência independente é mais velha que o índice — rode conferir_preparos.py antes — PARAR"
-cj = json.loads(conf.read_text(encoding="utf-8"))
-assert cj.get("aprovado") is True or cj.get("veredito") == "APROVADO" or cj.get("ok") is True, ("conferência não aprovada — PARAR", cj)
+cj = json.loads(conf.read_text(encoding="utf-8")) if conf.is_file() else {}
+assert cj.get("aprovado") is True, ("a conferência completa não está aprovada — PARAR", cj)
+idx_mt = (D / "INDICE_PUBLICO.json").stat().st_mtime
+COBERTO = None                         # a completa mais nova que o índice cobre tudo
+if conf.stat().st_mtime <= idx_mt:
+    # senão, a conferência do DELTA (conferir_delta.py: o próprio conferidor, só no que difere do HEAD), mais nova que o índice e aprovada,
+    # tem de cobrir cada arquivo que entra no commit (a raiz gerada — README, índice, exclusões — o conferidor não varre)
+    dconf = W / ("varredura_conferencia_delta_%s.json" % D.name)
+    assert dconf.is_file() and dconf.stat().st_mtime > idx_mt, "nem a conferência completa nem a do delta são mais novas que o índice — PARAR"
+    dj = json.loads(dconf.read_text(encoding="utf-8"))
+    assert dj.get("aprovado") is True, ("a conferência do delta não está aprovada — PARAR", dj.get("contagem"))
+    COBERTO = set(dj.get("delta_conferido") or [])
 assert g("rev-parse", "HEAD").stdout.strip() == g("rev-parse", "origin/main").stdout.strip(), "HEAD != origin/main antes — PARAR"
 idx = [a["caminho"] for a in json.loads((D / "INDICE_PUBLICO.json").read_text(encoding="utf-8"))["arquivos"]]
 raiz = [n for n in RAIZ_GERADA if (D / n).is_file()]
@@ -44,6 +53,12 @@ if sair:
     g("rm", "--cached", "-q", "--ignore-unmatch", "--pathspec-from-file=" + str(lr), "--pathspec-file-nul")
 st = g("diff", "--cached", "--name-status").stdout.splitlines()
 n_a = sum(1 for l in st if l.startswith("A")); n_m = sum(1 for l in st if l.startswith("M")); n_d = sum(1 for l in st if l.startswith("D"))
+if COBERTO is not None:
+    entra = {x for x in g("diff", "--cached", "--name-only", "-z", "--diff-filter=AM").stdout.split("\0") if x}
+    sem = sorted(entra - COBERTO - {"README.md", "PATENTES.md", "vinculo_patentario.json"} - set(RAIZ_GERADA))
+    if sem:
+        g("reset", "-q")
+        raise SystemExit("arquivos no commit sem conferência (%d): %s — nada publicado" % (len(sem), sem[:8]))
 print("%s: no stage A %d / M %d / D %d" % (NOME, n_a, n_m, n_d))
 resto = [l for l in g("status", "--porcelain", "--untracked-files=all").stdout.splitlines() if l and not l.startswith(("A ", "M ", "D ", "R "))]
 if resto:

@@ -1,12 +1,12 @@
 # central-publica-work — a Central de Patentes da IALD, aberta
 
-Este repositório é **a bancada de trabalho: as custódias, os ritos, as cadeias de selo, o app e a IALD nativa**. A Central foi aberta ao público por ordem do operador, Luiz Antonio Rotoli Miguel (IALD Ltda., CNPJ 62.757.606/0001-23), em 22/10/2026. 170832 arquivos publicados; selo da teoria: `um.py` v396 `0a4395a89eeebbb7`.
+Este repositório é **a bancada de trabalho: as custódias, os ritos, as cadeias de selo, o app e a IALD nativa**. A Central foi aberta ao público por ordem do operador, Luiz Antonio Rotoli Miguel (IALD Ltda., CNPJ 62.757.606/0001-23), em 22/10/2026. 199408 arquivos publicados; selo da teoria: `um.py` v397 `388cc3742323421c`.
 
 | onde | o quê |
 |---|---|
 | [https://teoriadagravitacaoluminodinamica.com/central/](https://teoriadagravitacaoluminodinamica.com/central/) | **o modo interativo da Central**, só de visualização: o cockpit do operador em retrato (patentes, código, execuções, Fronteira, TGL) |
 | [https://teoriadagravitacaoluminodinamica.com/central/um.acom](https://teoriadagravitacaoluminodinamica.com/central/um.acom) | **o um.acom**: a Central inteira colapsada pelo dispositivo ACOM (88 arquivos; sha256 `f4c890691ede9e84`); chave universal pública `Bom29072018Tom02032024`; abrir no descompactador público da IALD |
-| [https://github.com/rotolimiguel-iald/the_boundary](https://github.com/rotolimiguel-iald/the_boundary) | **a teoria**: o `um.py` v396 (`0a4395a89eeebbb7`), os artigos, o kernel Lean — o espelho canônico |
+| [https://github.com/rotolimiguel-iald/the_boundary](https://github.com/rotolimiguel-iald/the_boundary) | **a teoria**: o `um.py` v397 (`388cc3742323421c`), os artigos, o kernel Lean — o espelho canônico |
 | [https://github.com/rotolimiguel-iald/central-publica](https://github.com/rotolimiguel-iald/central-publica) · [work](https://github.com/rotolimiguel-iald/central-publica-work) · [bancada](https://github.com/rotolimiguel-iald/central-publica-bancada) | os três repositórios desta Central |
 
 ## O critério público

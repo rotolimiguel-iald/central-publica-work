@@ -117,8 +117,10 @@ def _todos():
             yield Path(os.path.join(dp, f))
 for p in _todos():
     rel = os.path.relpath(str(p), _RAIZ).replace(os.sep, "/")
-    if rel in ("INDICE_PUBLICO.json", "EXCLUSOES_PUBLICAS.json", "README.md", "PATENTES.md", "vinculo_patentario.json", ".gitattributes"):
-        continue
+    # (23/10/2026) os gerados da raiz e o llms.txt (curadoria à mão, do Kimi) não precisam estar no índice — mas o CONTEÚDO deles passa
+    # pelas mesmas checagens de todo o resto (antes, a raiz era pulada inteira)
+    raiz_gerada = rel in ("INDICE_PUBLICO.json", "EXCLUSOES_PUBLICAS.json", "README.md", "PATENTES.md", "vinculo_patentario.json",
+                          ".gitattributes", "llms.txt")
     vistos.add(rel)
     partes = rel.split("/")
     if any(PASTA_PROIBIDA.match(x) for x in partes[:-1]):
@@ -129,7 +131,7 @@ for p in _todos():
     if len(b) > 95 * 1024 * 1024:
         marca("acima de 95 MB", rel)
     a = no_indice.get(rel)
-    if SEM_INDICE:
+    if SEM_INDICE or raiz_gerada:
         pass
     elif a is None:
         marca("arquivo fora do índice", rel)

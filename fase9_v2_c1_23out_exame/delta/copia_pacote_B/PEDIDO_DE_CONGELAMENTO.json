@@ -1,0 +1,357 @@
+{
+ "autoria_dos_pinos": "calculados por script a partir dos arquivos desta pasta no instante da geracao deste pedido; o recibo recalcula tudo ao ser emitido",
+ "comandos": {
+  "emitir_recibo_de_abertura_ato_proprio": "python -B -P -E -X utf8 ferramentas/emitir_recibo_de_abertura.py --root . --quem \"...\" --texto \"...\" --escrever",
+  "emitir_recibo_de_congelamento": "... --escrever",
+  "ensaio_do_recibo_nada_e_gravado": "python -B -P -E -X utf8 ferramentas/emitir_recibo_de_congelamento.py --root . --emitido-por \"...\" --auditoria-ref \"...\" --confirmo-auditoria",
+  "executar": "python -B -P -E -X utf8 runner/f9v2_runner.py --package-root . --mode observed",
+  "preflight_sem_abrir": "python -B -P -E -X utf8 runner/f9v2_runner.py --package-root . --mode preflight"
+ },
+ "conferir_antes_de_assinar": [
+  {
+   "como": "ler spec/DIFF_R52_PARA_V2C1.md (cada mudanca atribuida) e spec.alcance",
+   "criterio": "nenhuma mudanca sem atribuicao; logica e limiares da funcao identicos aos da R5.2",
+   "id": "C01",
+   "item": "spec: o texto do alcance, X13, D-H e D-J reflete as decisoes do operador de 23/10"
+  },
+  {
+   "como": "ferramentas/build_funcao.py reproduz o arquivo; testes A4 (4000 entradas aleatorias) comparam com a R5.2",
+   "criterio": "tokens iguais salvo a base",
+   "id": "C02",
+   "item": "funcao de veredito = texto da R5.2 com 3 trocas literais"
+  },
+  {
+   "como": "sha256sum de cada arquivo em fontes/; ferramentas/build_registro_dh.py; teste F1",
+   "criterio": "extraido = declarado a 1e-9 nos 8 leitores",
+   "id": "C03",
+   "item": "registro D-H: 8 fontes por sha256, regra de extracao testada contra os bytes, L1b e L6 baixados"
+  },
+  {
+   "como": "testes/QUALIFICACAO_FORNECEDOR_REAL.json",
+   "criterio": "|H0-68,531|<0,01 e |sigma-0,301|<0,005",
+   "id": "C04",
+   "item": "fundo BG1 real reproduz o pino"
+  },
+  {
+   "como": "testes/run_tests.py (55 casos); relato em testes/TESTES.log",
+   "criterio": "todos os controles negativos recusam com o codigo esperado e sem deixar saida",
+   "id": "C05",
+   "item": "o runner recusa na ausencia de qualquer trava"
+  },
+  {
+   "como": "testes D1, D4, E08, E12",
+   "criterio": "log ordem_de_acesso; cofre lacrado",
+   "id": "C06",
+   "item": "ordem do modo observado: poder (so sigma) antes dos centros; centros so da fonte; nenhum ALVOS a mao"
+  },
+  {
+   "como": "calibracao/CALIBRACAO_CAUDA_RECIBO.json e MC_VALIDACAO.json",
+   "criterio": "MC concorda com o analitico; reducao exata verificada contra o pipeline completo",
+   "id": "C07",
+   "item": "calibracao de cauda: modo escolhido, p calibrado, limiares brutos equivalentes"
+  },
+  {
+   "como": "auditoria independente dos modulos runner/*.py",
+   "criterio": "sem achado ALTO/MEDIO aberto",
+   "estado": "FEITA em 23/10/2026: C:\\IALD\\Central de Patentes\\work\\fase9_v2_c1_23out_exame\\EXAME_AUDITORIA_V2C1.md = PODE_CONGELAR, 6 BAIXAS (B1-B6); todas corrigidas nesta versao (ver 'correcoes_da_auditoria')",
+   "id": "C08",
+   "item": "auditoria c1 do runner (a R5.2 foi auditada ate X13/D-H; o runner do modo observado, nao)"
+  },
+  {
+   "como": "pinos 'bancada' do recibo x BG.bancada_pins()",
+   "criterio": "iguais",
+   "id": "C09",
+   "item": "bytes da Bancada (fornecedor do fundo) inalterados desde a qualificacao"
+  }
+ ],
+ "correcoes_da_auditoria": {
+  "B1": "run_tests.py: a asserção da palavra proibida (terminava em 'or True') virou asserção real, sobre o resultado inteiro e sobre todo o texto do pacote (testes D5, F4b)",
+  "B2": "a régua deixou de escrever a palavra proibida: «NOT_FALSIFIED nunca é a palavra da creditação» na docstring da função (a função mudou de sha; logica e limiares identicos, teste A4), no texto da spec, no AVISO e na leitura do resultado",
+  "B3": "mapa z_delta(u) não monótono => REFUSE__CALIBRATION_MAP_NOT_MONOTONE (guarda do recibo e eval_family); controle sintético",
+  "B4": "abertura única: freeze/ABERTURA_CONSUMIDA.json (O_EXCL, com o sha do recibo de abertura) nasce ANTES da primeira fonte ser lida; marcador existente => REFUSE__ALREADY_OPENED; recusa depois do marcador (e a tentativa de reabrir) grava freeze/REGISTRO_DE_RECUSA_*.json; erros de extração/função viram códigos REFUSE na CLI",
+  "B5": "constantes do S5 cobradas contra o um.py instalado no pacote REAL: ausente/divergente => REFUSE__S5_CONSTANTS_DIFFER_FROM_UM_PY",
+  "B6": "todos os comandos com python -B; emissores desligam o bytecode; runner/__pycache__ não vazio => REFUSE__PYCACHE_IN_RUNNER (os pinos cobrem só os .py)",
+  "efeito_nos_pinos": "mudaram: função, spec (canônico), runner_modulos (freeze, runner, calibration), recibo de calibração; inalterados: registro D-H, fontes, Bancada",
+  "fonte": "work\\fase9_v2_c1_23out_exame\\EXAME_AUDITORIA_V2C1.md (PODE_CONGELAR com BAIXAS); nenhum limiar mudado; nada aberto"
+ },
+ "de": "subagente de preparacao (c1, 23/10/2026)",
+ "decisoes_da_gerencia_reversiveis_antes_do_congelamento": [
+  {
+   "alternativas": {
+    "bruto": "escore bruto (equivale a R5.2)",
+    "proprio": "p com a covariancia do ponto de analise",
+    "sup_caixa": "p com a pior covariancia da caixa (conservador)"
+   },
+   "assunto": "modo da calibracao de cauda",
+   "como_mudar": "editar calibracao_de_cauda.modo em ferramentas/build_spec.py, refazer build_spec.py, calibracao/rodar_calibracao.py e os testes",
+   "efeito_medido": {
+    "P(FALSIFIED | LCDM verdadeira) por modo e covariancia verdadeira": {
+     "LCDM_verdadeira__C_verdadeira=indep(0,0)": {
+      "bruto": 0.75485,
+      "proprio": 0.75253,
+      "sup_caixa": 0.42715
+     },
+     "LCDM_verdadeira__C_verdadeira=max_sigma(1,0.25)": {
+      "bruto": 0.80704,
+      "proprio": 0.80406,
+      "sup_caixa": 0.46845
+     },
+     "LCDM_verdadeira__C_verdadeira=pior_caixa(1,1)": {
+      "bruto": 0.80849,
+      "proprio": 0.80524,
+      "sup_caixa": 0.47148
+     }
+    },
+    "P(TENSION | LCDM verdadeira)": {
+     "LCDM_verdadeira__C_verdadeira=indep(0,0)": {
+      "bruto": 0.05042,
+      "proprio": 0.05274,
+      "sup_caixa": 0.37599
+     },
+     "LCDM_verdadeira__C_verdadeira=max_sigma(1,0.25)": {
+      "bruto": 0.09737,
+      "proprio": 0.10035,
+      "sup_caixa": 0.42612
+     },
+     "LCDM_verdadeira__C_verdadeira=pior_caixa(1,1)": {
+      "bruto": 0.0986,
+      "proprio": 0.10185,
+      "sup_caixa": 0.42596
+     }
+    },
+    "limiar_bruto_equivalente_a_5sigma_z_delta": {
+     "proprio": 5.019842561025509,
+     "sup_caixa": 6.370509637908605
+    }
+   },
+   "estado": "CONFIRMADA pela gerencia (23/10/2026, apos a auditoria)",
+   "id": "G01",
+   "padrao": "sup_caixa"
+  },
+  {
+   "assunto": "regra de dispersao herdada do V1 (chi2/(n-1) > 2 OU p < 0,01 em qualquer extremo => INCONCLUSIVE)",
+   "efeito_medido": {
+    "taxa de INCONCLUSIVE pela dispersao quando tudo e' consistente (nula, 5 leitores)": {
+     "LCDM_verdadeira__C_verdadeira=indep(0,0)": {
+      "chi2_gt2_max": 0.19373,
+      "chi2_gt2_min": 0.09165,
+      "p_lt_001_max": 0.04504,
+      "p_lt_001_min": 0.00979,
+      "qualquer_regra": 0.19461,
+      "so_p_lt_001": 0.04527
+     },
+     "LCDM_verdadeira__C_verdadeira=max_sigma(1,0.25)": {
+      "chi2_gt2_max": 0.09235,
+      "chi2_gt2_min": 0.05241,
+      "p_lt_001_max": 0.0098,
+      "p_lt_001_min": 0.00464,
+      "qualquer_regra": 0.0941,
+      "so_p_lt_001": 0.01014
+     },
+     "LCDM_verdadeira__C_verdadeira=pior_caixa(1,1)": {
+      "chi2_gt2_max": 0.08951,
+      "chi2_gt2_min": 0.05111,
+      "p_lt_001_max": 0.00998,
+      "p_lt_001_min": 0.00433,
+      "qualquer_regra": 0.0911,
+      "so_p_lt_001": 0.01037
+     },
+     "TGL_verdadeira__C_verdadeira=indep(0,0)": {
+      "chi2_gt2_max": 0.19186,
+      "chi2_gt2_min": 0.08905,
+      "p_lt_001_max": 0.04467,
+      "p_lt_001_min": 0.00969,
+      "qualquer_regra": 0.19279,
+      "so_p_lt_001": 0.0448
+     },
+     "TGL_verdadeira__C_verdadeira=max_sigma(1,0.25)": {
+      "chi2_gt2_max": 0.09166,
+      "chi2_gt2_min": 0.05291,
+      "p_lt_001_max": 0.01008,
+      "p_lt_001_min": 0.00439,
+      "qualquer_regra": 0.09318,
+      "so_p_lt_001": 0.01034
+     },
+     "TGL_verdadeira__C_verdadeira=pior_caixa(1,1)": {
+      "chi2_gt2_max": 0.09158,
+      "chi2_gt2_min": 0.05238,
+      "p_lt_001_max": 0.0102,
+      "p_lt_001_min": 0.00437,
+      "qualquer_regra": 0.09348,
+      "so_p_lt_001": 0.0106
+     }
+    }
+   },
+   "estado": "CONFIRMADA pela gerencia: herdada sem mudanca",
+   "id": "G02",
+   "nota": "so p < 0,01 daria ~2% em vez de ~9-20%; mudar e' decisao de limiar ANTES de congelar, nao depois",
+   "padrao": "mantida como na R5.2 (nao alterei limiar)"
+  },
+  {
+   "assunto": "BG2/BG3 (fundos diagnosticos) nao tem fonte pinada",
+   "estado": "CONFIRMADA pela gerencia (padrao)",
+   "id": "G03",
+   "padrao": "ficam [KNOWN]/[DECLARADO], fora do veredito"
+  },
+  {
+   "assunto": "versao do L6",
+   "estado": "CONFIRMADA pela gerencia (padrao)",
+   "id": "G04",
+   "nota": "L6 esta fora do composto; nao muda o veredito",
+   "padrao": "v1/v2 (76,6 +13,0/-9,5; declarado desde o V1); a v3 publicada diz 75,4 +12,8/-9,1 e fica ao lado, nao admitida"
+  },
+  {
+   "assunto": "acrescimos da c1 nao pedidos pelo operador",
+   "estado": "CONFIRMADA pela gerencia (padrao)",
+   "id": "G05",
+   "padrao": "E2 tambem confere sigma (|sigma-0,301|<0,005); beta_livre_no_limite vale se QUALQUER extremo estiver na borda; ln B decisorio = n 100 (conferencia n 200)"
+  }
+ ],
+ "estado": "PREPARADO_NAO_CONGELADO; nada aberto; nenhum centro observado entrou em calculo; nenhum recibo emitido",
+ "nao_executado_nesta_preparacao": [
+  "emissao do recibo de congelamento",
+  "emissao do recibo de abertura",
+  "o runner em modo observado",
+  "qualquer calculo do composto observado da V2",
+  "escrita no tunel, no Nos, no um.py, no mapa, no quadro, na memoria, no site, no git"
+ ],
+ "o_que_o_recibo_atesta_e_o_que_nao": {
+  "atesta": "que os bytes de spec, funcao, registro D-H, fontes, runner, calibracao e Bancada sao os que estao pinados e que a gerencia auditou o runner",
+  "nao_atesta": [
+   "que o teste vai discriminar ou falsificar (isso e' do dado)",
+   "autenticidade criptografica do emitente (a trava e' o ato da gerencia + conferencia dos bytes)",
+   "que d72 (a testemunha conjunta) esteja qualificada"
+  ]
+ },
+ "o_recibo_pinara": {
+  "bancada": {
+   "bancada/camb_tabela.py": {
+    "bytes": 4822,
+    "sha256": "bbd414094d58398f44afc177858df41d1cdd944970fb85f7061e1b838bcad3e6"
+   },
+   "bancada/fontes.py": {
+    "bytes": 12658,
+    "sha256": "647fdab73645662b0063520ba5e270b82dd2c8f69c6a588ebdf2020f8749f683"
+   },
+   "bancada/fundo_gpu.py": {
+    "bytes": 8477,
+    "sha256": "dc3920c2445c256f5a92f81e8c69eece0d758a7cb0cc9a53cda15e25c5ef5f88"
+   },
+   "bancada/motor.py": {
+    "bytes": 23971,
+    "sha256": "dc8bdc0da972a4b548c3ca2240073d83c1d7f916e5f1e5b87746e83356e3922f"
+   },
+   "bancada/pantheon_cov.py": {
+    "bytes": 8170,
+    "sha256": "57b2ab1b909c62b05b724b0e251a5492ce755ba7888217b14a8b89718dd288d2"
+   },
+   "bancada/regua.py": {
+    "bytes": 6714,
+    "sha256": "91b1a584f113f07e09131430a21439d56c206db3bfe54d5d26b69ef466baa33b"
+   },
+   "tabelas/camb_lcdm_v1.npz": {
+    "bytes": 223602,
+    "sha256": "6bc4dd4a092325007ed05504401d6722d2f849956f3168a72b474786b4ce7363"
+   }
+  },
+  "calibracao_recibo": {
+   "bytes": 6072,
+   "path": "calibracao/CALIBRACAO_CAUDA_RECIBO.json",
+   "sha256": "27787c0bec5bf116387699e495b1aa752ef2887b744cefade470fedd81e68302"
+  },
+  "fontes": {
+   "L1_sh0es_r22": {
+    "bytes": 50043,
+    "path": "fontes/L1_sh0es_r22_arxiv_2112.04510/sh0es_2022.html",
+    "sha256": "df9136da862ef625ce692d6a6813b069ccdc9d7ce93537256fedcc9457c2d7d0"
+   },
+   "L1b_sh0es_r25": {
+    "bytes": 45920,
+    "path": "fontes/L1b_riess2025_arxiv_2509.01667/abs_2509.01667.html",
+    "sha256": "302b0a42572723e757e9deb11f346e9e44827da800d52b80c6eb8578df95e537"
+   },
+   "L2_cchp": {
+    "bytes": 45366,
+    "path": "fontes/L2_cchp_arxiv_2408.06153v3/cchp_2025_v3.html",
+    "sha256": "eb1b6689f13dbceaaa9e919ad68682bc75cf8f8cd4bf78ced3180a39b8207fa6"
+   },
+   "L3_sbf": {
+    "bytes": 45130,
+    "path": "fontes/L3_sbf_arxiv_2502.15935v2/sbf_2502.15935v2.html",
+    "sha256": "b61012efc5238c0e701baf9a442bb697deaec041fb3f1016b91365bb164d4946"
+   },
+   "L4_masers_5": {
+    "bytes": 1564815,
+    "path": "fontes/L4_masers_arxiv_2001.09213v2/masers_2001.09213v2.pdf",
+    "sha256": "c9f2d2b626fee60d77928856d217a2cbe546f06c69cd9e7ac804f4ab652e731a"
+   },
+   "L4_masers_6": {
+    "bytes": 1564815,
+    "path": "fontes/L4_masers_arxiv_2001.09213v2/masers_2001.09213v2.pdf",
+    "sha256": "c9f2d2b626fee60d77928856d217a2cbe546f06c69cd9e7ac804f4ab652e731a"
+   },
+   "L5_tdcosmo": {
+    "bytes": 52315,
+    "path": "fontes/L5_tdcosmo_arxiv_2506.03023v4/tdcosmo_2025_v4.html",
+    "sha256": "b04dfc911acb4ad357224a3f2b432b407a109254277993f90a68a0e56137bf02"
+   },
+   "L6_sirenes": {
+    "bytes": 45063,
+    "path": "fontes/L6_lvk_o4a_arxiv_2509.04348/abs_2509.04348v1.html",
+    "sha256": "1b728822339026c4a6758f92a349c6dfd28e0842dd903c5dd9f087ae1be70f5a"
+   }
+  },
+  "funcao_arquivo": {
+   "bytes": 7615,
+   "path": "spec/veredito_fase9_v2_c1.py",
+   "sha256": "af960b7405732d6215ee2ffa4bf94ce21716efa7be5f6c8a627ddbc891f893fc"
+  },
+  "registro_dh": {
+   "bytes": 13093,
+   "path": "spec/REGISTRO_DH_V2_C1.json",
+   "sha256": "3e25ac3431c6288731068e606d3821e9cc432a2b4f8519b3e7b27dd036277c77"
+  },
+  "runner_modulos": {
+   "runner/f9v2_background.py": {
+    "bytes": 6805,
+    "sha256": "69b6d8d842d7ac02cf3f8fd0d51c86b009522dd12d0ff2095ba6eecb447bcd3e"
+   },
+   "runner/f9v2_calibration.py": {
+    "bytes": 9105,
+    "sha256": "a705fb3426031bafb7222e61a942df66b2e6f45a0988921e1a36e1b10d4c5629"
+   },
+   "runner/f9v2_extract.py": {
+    "bytes": 1807,
+    "sha256": "57ad640ed193f50fd816ff49a90f30641e84c0d1320680d743378f869f722ba2"
+   },
+   "runner/f9v2_freeze.py": {
+    "bytes": 13057,
+    "sha256": "640efb7e2a2a5a635d33e73d0bda3b4f84d51ba290755daf023eb2dcbc5734a6"
+   },
+   "runner/f9v2_runner.py": {
+    "bytes": 26659,
+    "sha256": "a8fffc5df28ea5c6e06fb3dc2ffc44f776db40c0238efb4d0837a3194499fd44"
+   },
+   "runner/f9v2_stats.py": {
+    "bytes": 14455,
+    "sha256": "0e581e392f44e43058cd4d0d4c0c7de15ec3191469161288a90b3b32930ed9b3"
+   },
+   "runner/f9v2_text.py": {
+    "bytes": 980,
+    "sha256": "ab020e146dc0deb25d0e3137473597f60877b560e4aca60b5291070255ab76f3"
+   },
+   "runner/f9v2_verdict.py": {
+    "bytes": 1547,
+    "sha256": "6e8d7736510a3a4ae045af95ab558e575c21b086229072e8382bd05e39b58a2d"
+   }
+  },
+  "spec_arquivo": {
+   "bytes": 84234,
+   "path": "spec/PREREGISTRO_FASE9_V2_C1_A_UNICA_PALAVRA.json",
+   "sha256": "e7c47cbcbbcd3a7abd23f17de80fc52db294a13edebcddaf52ba9cae77e8c74f"
+  },
+  "spec_canonico_sha256": "db1ccecbc1718e6908782f84ef354b6fb6c1ae5f08a75693766fae4be520b343"
+ },
+ "para": "gerencia c1",
+ "schema": "F9V2C1_PEDIDO_DE_CONGELAMENTO_V1"
+}

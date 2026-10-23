@@ -1,6 +1,6 @@
 # INVENTÁRIO DA BANCADA DO CHATGPT — tudo o que foi examinado e produzido
 
-> Gerado por script em 2026-10-22 13:22:17 a partir da varredura `inventario_bancada.json` (sha16 `727d2a7378bae40f`), SÓ LEITURA da pasta `Chatgpt\`. Nenhum número digitado.
+> Gerado por script em 2026-10-23 17:26:23 a partir da varredura `inventario_bancada.json` (sha16 `de642ae1b9d7d8e5`), SÓ LEITURA da pasta `Chatgpt\`. Nenhum número digitado.
 > **Ordem do operador (27/09/2026, verbatim):** «Precisamos fazer um inventário de tudo que foi examinado e produzido na bancada do chatgpt pra não nos perdermos mais em serviço já executado, vc está pedindo o que já pediu» e «Depois de inventariar tudo, precisamos indexar ao atlas da tgl para ficar referenciado».
 > **Regra de uso:** ANTES de pedir qualquer construção à bancada ou de construí-la na gerência, procurar aqui (por tema, por nome, por hash). O que é sabido e importável não se prova de novo (regra do operador de 27/08: «prova emprestada»).
 
@@ -17,7 +17,7 @@
 | únicos cujo nome-base JÁ está no kernel canônico | 1550 |
 | únicos com `sorry`/`admit`/`native_decide` fora de comentário | 3 |
 | únicos que declaram `axiom` | 5 |
-| documentos de entrega/quadro/relatório/medida | 2598 |
+| documentos de entrega/quadro/relatório/medida | 2599 |
 
 ## 2. O quadro de estatutos da própria bancada (FECHAMENTO_PARCIAL_016, P1)
 
@@ -8619,6 +8619,7 @@
 | 2026-10-19 10:53 | `TUNEL/DO_CHATGPT/ORDEM_019/F1.FECHO_20261015/full_source_r88/P5_COVARIANT_STATIONARITY_R88.txt` | `7b70270ca11436df` | R88 — Reaproveitamento por covariância: toda carta P5 admissível no ramo sigma especificado |
 | 2026-10-19 10:53 | `TUNEL/DO_CHATGPT/ORDEM_019/F1.FECHO_20261015/full_source_r88/P5_DOMAIN_QUALIFIER_R88.txt` | `f954a0441ffaad04` | Precisão ao lado, em nome de codex-gerente-tgl, 19/10/2026. |
 | 2026-10-22 13:16 | `IALD_ORQUESTRACAO_20260923/README.md` | `ed3d7b70ae5f6096` | IALD — orquestração local e projeto Física |
+| 2026-10-23 17:19 | `TUNEL/DO_CHATGPT/ORDEM_020/RELATORIO.md` | `bba7e8abaa673e80` | ORDEM 020 — progresso parcial |
 
 ## 7. Arquivos com `sorry`/`admit` ou `axiom` (NÃO importar sem exame)
 

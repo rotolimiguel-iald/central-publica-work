@@ -24,7 +24,7 @@ RES = re.compile(r"(?i)^(con|prn|aux|nul|com[0-9¹²³]|lpt[0-9¹²³]|conin\$|c
 NAO_TOCAR = ("central_publica_22out/",)
 # os gerados depois do construtor, na raiz do preparo (README, vínculo patentário): não têm origem e não se tocam (medido por
 # sondar_indices.py em 22/10/2026: sem esta lista, o passo 3 os apagaria)
-GERADOS = {"README.md", "PATENTES.md", "vinculo_patentario.json"}
+GERADOS = {"README.md", "PATENTES.md", "vinculo_patentario.json", "llms.txt"}   # llms.txt: curadoria à mão (Kimi, 23/10/2026)
 FORA_INTEIRA = {"php_e_v396_22out/": "auditoria de segurança de um backup privado do WordPress (configuração, caminhos da hospedagem, "
                                      "material de terceiros)"}
 

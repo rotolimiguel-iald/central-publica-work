@@ -11,9 +11,15 @@ PY = r"C:\Python314\python.exe"
 TIPO = sys.argv[1]
 PREP = {"nucleo": "central-publica", "work": "central-publica-work", "Chatgpt": "central-publica-bancada"}[TIPO]
 D = Path(r"C:\IALD\Central_publica") / PREP
-T = Path(r"C:\IALD\Central_publica") / ("_incr_v396_" + TIPO + (("_" + sys.argv[2]) if len(sys.argv) > 2 else ""))   # 2ª rodada: sufixo
+# (23/10/2026) generalizado: a pasta da rodada leva a hora; o DESDE vem de --desde "AAAA-MM-DD HH:MM:SS" (o padrão é a hora do último
+# commit do preparo, lida do git: tudo o que mudou na origem depois da última publicação)
+T = Path(r"C:\IALD\Central_publica") / ("_incr_%s_%s" % (time.strftime("%Y%m%d_%H%M%S"), TIPO))
 assert not T.exists(), "a pasta da rodada já existe — PARAR (nada se sobrescreve): %s" % T
-DESDE = time.mktime(time.strptime("2026-10-22 00:00:00", "%Y-%m-%d %H:%M:%S"))
+if "--desde" in sys.argv:
+    DESDE = time.mktime(time.strptime(sys.argv[sys.argv.index("--desde") + 1], "%Y-%m-%d %H:%M:%S"))
+else:
+    DESDE = float(subprocess.run(["git", "-C", str(D), "log", "-1", "--format=%ct"], capture_output=True, text=True).stdout.strip())
+print("  DESDE (origem modificada depois de): %s" % time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(DESDE)))
 
 
 def rodar(args, env=None):
