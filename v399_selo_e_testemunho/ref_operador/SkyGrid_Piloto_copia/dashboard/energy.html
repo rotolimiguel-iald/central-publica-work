@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>SkyGrid — Painel de ENERGIA do Gêmeo Digital [SIM]</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  :root{--bg:#0b1020;--panel:#121a33;--panel2:#0e1530;--ink:#e8ecf8;--dim:#8fa0c8;
+        --ok:#3ddc84;--warn:#ffb347;--bad:#ff5d6c;--accent:#5aa2ff;--gold:#e8c35a;--pur:#b58cff}
+  *{box-sizing:border-box}
+  body{margin:0;font:14px/1.45 "Segoe UI",system-ui,sans-serif;background:var(--bg);color:var(--ink)}
+  header{padding:18px 26px;background:linear-gradient(135deg,#101a3d,#0b1020 65%);border-bottom:1px solid #223}
+  header h1{margin:0;font-size:20px}
+  header .sub{color:var(--dim);font-size:12px;margin-top:4px}
+  a{color:var(--accent)}
+  .banner{margin:10px 26px 0;padding:8px 14px;border-radius:8px;font-size:12.5px;
+          background:#2a1d0c;border:1px solid #7a5b1d;color:var(--gold)}
+  .verdict{display:inline-block;padding:3px 12px;border-radius:14px;font-weight:700;font-size:13px}
+  .verdict.closes{background:#0d3b25;color:var(--ok);border:1px solid var(--ok)}
+  .verdict.open{background:#3b1a0d;color:var(--warn);border:1px solid var(--warn)}
+  main{padding:18px 26px;max-width:1280px;margin:0 auto}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(215px,1fr));gap:12px;margin-bottom:18px}
+  .card{background:var(--panel);border:1px solid #1e2a4d;border-radius:10px;padding:14px 16px}
+  .card .k{color:var(--dim);font-size:11.5px;text-transform:uppercase;letter-spacing:.7px}
+  .card .v{font-size:22px;font-weight:600;margin-top:4px}
+  .card .d{color:var(--dim);font-size:11.5px;margin-top:3px}
+  .ok{color:var(--ok)} .bad{color:var(--bad)} .accent{color:var(--accent)} .pur{color:var(--pur)}
+  h2{font-size:14px;color:var(--dim);text-transform:uppercase;letter-spacing:.8px;margin:22px 0 10px}
+  canvas{background:var(--panel2);border:1px solid #1e2a4d;border-radius:10px;width:100%}
+  .prov{background:var(--panel2);border:1px solid #1e2a4d;border-radius:10px;padding:10px 14px;
+        font-size:12px;color:var(--dim);margin-bottom:14px}
+  .prov b{color:var(--ink)}
+  footer{padding:14px 26px;color:var(--dim);font-size:11px;border-top:1px solid #182246;margin-top:26px}
+  .mono{font-family:Consolas,monospace;font-size:11px}
+</style>
+</head>
+<body>
+<header>
+  <h1>SKYGRID — Painel de ENERGIA do Gêmeo Digital
+      <span id="verdict" class="verdict open">…</span></h1>
+  <div class="sub">v3 [SIM] · β = α·√e em runtime · <span id="beta" class="mono"></span> ·
+    <a href="index.html">→ painel de dados (v2)</a></div>
+</header>
+<div class="banner">⚠ <b>MODELO PREDITIVO [SIM]</b> sob hipóteses [CONJ] — computa o que o
+  mecanismo produziria SE as hipóteses da TGL valerem. Balanço fecha por conservação;
+  <b>não é medida física de energia</b> (physical_verdict_allowed=false). O que resta é a bancada.</div>
+<main>
+  <div class="prov" id="prov">carregando…</div>
+  <div class="grid" id="cards"></div>
+
+  <h2>Potência da última rodada (kW)</h2>
+  <canvas id="power" height="150"></canvas>
+
+  <h2>Estado de carga total das células (kJ)</h2>
+  <canvas id="soc" height="90"></canvas>
+
+  <h2>Curvas de projeto (sweeps) — P entregue vs parâmetro</h2>
+  <canvas id="sweeps" height="150"></canvas>
+</main>
+<footer>
+  Selo: <span id="seal" class="mono">—</span> · atualizado <span id="upd">—</span> ·
+  auto-refresh 4 s · “O número corrige a frase, sempre.”
+</footer>
+<script>
+const $=id=>document.getElementById(id);
+const fmt=(x,d=3)=>x==null?"—":(+x).toFixed(d);
+function card(k,v,d,cls=""){return `<div class="card"><div class="k">${k}</div>
+  <div class="v ${cls}">${v}</div><div class="d">${d||""}</div></div>`}
+
+function drawSeries(cv, t, seriesList, unit){
+  const c=$(cv), ctx=c.getContext("2d");
+  c.width=c.clientWidth*devicePixelRatio;
+  const H=+c.getAttribute("height"), W=c.clientWidth;
+  c.height=H*devicePixelRatio; ctx.scale(devicePixelRatio,devicePixelRatio);
+  ctx.clearRect(0,0,W,H);
+  const p=42, ymax=Math.max(...seriesList.flatMap(s=>s.data), 1e-9);
+  ctx.strokeStyle="#223"; ctx.beginPath();
+  ctx.moveTo(p,6);ctx.lineTo(p,H-20);ctx.lineTo(W-8,H-20);ctx.stroke();
+  ctx.fillStyle="#8fa0c8";ctx.font="10px sans-serif";
+  ctx.fillText(fmt(ymax,1)+" "+unit, 2, 12);
+  ctx.fillText("0", p-12, H-18);
+  const n=t.length, x=i=>p+(W-p-14)*(n===1?0.5:i/(n-1));
+  seriesList.forEach(s=>{
+    ctx.strokeStyle=s.color; ctx.lineWidth=s.w||1.6;
+    ctx.setLineDash(s.dash||[]);
+    ctx.beginPath();
+    s.data.forEach((v,i)=>{const y=H-20-(H-32)*(v/ymax);
+      i?ctx.lineTo(x(i),y):ctx.moveTo(x(i),y)});
+    ctx.stroke(); ctx.setLineDash([]);
+  });
+  let lx=p+8;
+  seriesList.forEach(s=>{ctx.fillStyle=s.color;ctx.fillText(s.label,lx,H-6);
+    lx+=ctx.measureText(s.label).width+16});
+}
+
+async function load(){
+  let latest, sweeps;
+  try{ latest=await(await fetch("data/energy_latest.json?ts="+Date.now())).json(); }
+  catch(e){ $("prov").textContent="sem dados — rode: python skygrid_energy_app.py twin"; return; }
+  const r=latest.report, e=r.energy, c=r.controls, a=r.audit, s=latest.series;
+
+  const vd=$("verdict");
+  vd.textContent=r.verdict;
+  vd.className="verdict "+(r.verdict==="MODEL_CLOSES"?"closes":"open");
+  $("beta").textContent="β="+(+r.beta_runtime).toFixed(15);
+  $("seal").textContent=r.seal_sha256; $("upd").textContent=r.timestamp;
+
+  $("prov").innerHTML=
+    `<b>Rodada:</b> ${r.params.n_sats}×${r.params.n_bases}, ${r.params.duration_s}s simulados ·
+     <b>Acoplador:</b> f₀=${r.coupler_spec.f0_MHz} MHz, Q=${r.coupler_spec.Q},
+     abertura (1−β)=${fmt(r.coupler_spec.boundary_aperture_1_minus_beta,6)} ·
+     <b>Meia-Nat:</b> ${(+r.coupler_spec.halfnat_power_W).toExponential(2)} W/acoplador ·
+     <b>Falhas:</b> ${c.faults_injected.length?c.faults_injected.join(", "):"nenhuma"}
+     (detectadas=${c.faults_all_detected})`;
+
+  $("cards").innerHTML=
+    card("Balanço", a.balance==="ENERGY_BALANCE_OK"?"FECHA":"ABERTO",
+         "resíduo "+(+a.residual_J).toExponential(1)+" J",
+         a.balance==="ENERGY_BALANCE_OK"?"ok":"bad")+
+    card("Extraída", fmt(e.E_extracted_J/1e3,1)+" kJ","débito do reservatório [CONJ]","pur")+
+    card("Entregue", fmt(e.E_delivered_J/1e3,1)+" kJ",
+         "P média "+fmt(e.P_delivered_mean_W/1e3,2)+" kW","ok")+
+    card("η_sys", fmt(e.eta_sys,4),"entregue / extraída","accent")+
+    card("Cobertura da demanda", fmt(e.demand_coverage*100,1)+"%","carga atendida")+
+    card("Perdas", fmt(e.E_losses_J/1e3,1)+" kJ","conv + enlace + dump + célula")+
+    card("Armazenada", fmt(e.E_stored_final_J/1e3,1)+" kJ","SoC final das células","accent")+
+    card("Meia-Nat", (+e.E_halfnat_J).toExponential(2)+" J",
+         "piso entrópico (atos="+a.acts+")","pur")+
+    card("Placebo", c.placebo_energy_zero?"0 W ✓":"≠0 (!)",
+         "sem β ⇒ nada [reivind. 3]", c.placebo_energy_zero?"ok":"bad")+
+    card("Plano de dados", c.data_rounds+" rodadas",
+         "placebo dados rejeitado: "+c.placebo_data_rejected_all_rounds);
+
+  drawSeries("power", s.t, [
+    {label:"disponível", data:s.P_avail.map(v=>v/1e3), color:"#b58cff", w:1.2},
+    {label:"acoplada",   data:s.P_in.map(v=>v/1e3),   color:"#5aa2ff", w:1.2},
+    {label:"recebida",   data:s.P_rx.map(v=>v/1e3),   color:"#e8c35a", w:1.2},
+    {label:"ENTREGUE",   data:s.P_delivered.map(v=>v/1e3), color:"#3ddc84", w:2},
+    {label:"demanda",    data:s.P_demand.map(v=>v/1e3), color:"#ff5d6c", dash:[5,4]},
+    {label:"placebo",    data:s.placebo_P, color:"#ff5d6c", dash:[2,3], w:2},
+  ], "kW");
+  drawSeries("soc", s.t, [
+    {label:"SoC total", data:s.soc_total.map(v=>v/1e3), color:"#e8c35a", w:2},
+  ], "kJ");
+
+  try{
+    sweeps=await(await fetch("data/energy_sweeps.json?ts="+Date.now())).json();
+    const ks=Object.keys(sweeps.sweeps);
+    const cols=["#3ddc84","#5aa2ff","#e8c35a","#b58cff","#ff5d6c","#7ce7ff"];
+    const list=ks.map((k,i)=>{
+      const pts=sweeps.sweeps[k].points;
+      const m=Math.max(...pts.map(p=>p.P_delivered_W),1e-9);
+      return {label:k, data:pts.map(p=>p.P_delivered_W/m), color:cols[i%6], w:1.5};
+    });
+    drawSeries("sweeps", sweeps.sweeps[ks[0]].points.map((_,i)=>i), list, "(normalizado)");
+  }catch(e){}
+}
+load(); setInterval(load,4000);
+</script>
+</body>
+</html>

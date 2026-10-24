@@ -1,0 +1,135 @@
+==============================================================================
+SKYGRID-SIM — BLOCO 0..7 (SkyGrid completo) — suite fail-closed
+==============================================================================
+
+[BLOCO 0] tgl_core
+  [tgl_core] half_nat_fixed_point         residual=0.000e+00 OK
+  [tgl_core] sqrt_e_is_exp_half           residual=0.000e+00 OK
+  [tgl_core] one_eq_q2_plus_alpha2        residual=0.000e+00 OK
+  [tgl_core] beta_eq_sin2_thetaM          residual=0.000e+00 OK
+  [tgl_core] so2_bridge_thetaM            residual=1.388e-17 OK
+  [tgl_core] alpha_matches_sealed_codata  residual=0.000e+00 OK
+  [tgl_core] thetaM_in_physical_band      residual=2.165e-07 OK
+  [PASS] cadeia TGL fecha (fail-closed interno)               
+  [PASS] beta trilho-1 == beta trilho-2 (runtime)             beta=0.012031300400803
+  [PASS] theta_M em graus na faixa esperada                   6.297289 deg
+  [PASS] auditoria anti-hardcode: nenhum literal 0.012* nos fontes limpo
+  [PASS] fail-closed REAL: alpha corrompido levanta RuntimeError travou como deve
+  [PASS] cadeia volta a fechar apos restaurar alpha           
+
+[BLOCO 1a] acom (g=sqrt|L|, s=sign; L'=s*g^2)
+  [PASS] acom roundtrip exato: gauss                          resid=1.16e-16
+  [PASS] acom roundtrip exato: precos>0                       resid=1.37e-16
+  [PASS] acom roundtrip exato: esparso95                      resid=1.21e-16
+  [PASS] acom roundtrip exato: gradientes                     resid=6.94e-18
+
+[BLOCO 1b] acom_mirror (REFLECT/MANIFEST, theta=arcsin(g/g_max))
+  [PASS] mirror corr>=0.99: gauss                             corr=0.99999 ratio=7.3x F_exp=+0.4928
+  [PASS] mirror corr>=0.99: precos>0                          corr=0.99997 ratio=10.0x F_exp=-0.0500
+  [PASS] mirror corr>=0.99: esparso95                         corr=0.99999 ratio=48.4x F_exp=+0.9533
+  [PASS] mirror corr>=0.99: gradientes                        corr=0.99998 ratio=7.4x F_exp=+0.5092
+  [PASS] mirror 16 bits melhora correlacao                    corr=1.000000
+  [PASS] mirror carrega beta por runtime (== tgl_core.beta()) beta=0.012031300400803
+
+[BLOCO 1c] acom_crypto (shares Psi/Theta/MasterKey + SHA-256 + F_exp)
+  [PASS] crypto roundtrip com 3 shares                        corr=0.99998
+  [PASS] tamper no PsiShare detectado                         INTEGRIDADE VIOLADA: PsiShare não corresponde
+  [PASS] mistura de shares detectada                          Shares incompatíveis: IDs diferentes
+
+[BLOCO 2] tgl_tensor (DIRECT + SPECTRAL, Verb Floor = 1-beta runtime)
+  [PASS] verb floor default == 1 - beta() runtime             floor=0.987968699599
+  [PASS] bitpacker 10 bits roundtrip exato                    
+  [PASS] tensor DIRECT corr>=0.999 (kv-cache 4D)              corr=1.00000 ratio=5.8x
+  [PASS] tensor SPECTRAL corr>=0.999 (rank 16)                corr=1.00000 ratio=45.8x ranks[0]=16
+  [PASS] SPECTRAL rank adaptativo enxergou o rank real        k=16 (real=16)
+  [PASS] flag tetelestai em raiz quieta (var<beta)            var=0.00e+00 < beta
+
+[BLOCO 3a] iald_gksl (L=sqrt(beta)sqrt(K); certificados F1-F4)
+  [PASS] identidade viva L@L == beta*K (trilho duplo)         resid=5.04e-17
+  [PASS] tempo caracteristico == 1/beta (runtime)             1/beta=83.12
+  [PASS] F1: Tr(rho(t))=1 em todo t                           max dev=1.59e-14
+  [PASS] F2: seta da entropia (dS>=0 monotona)                S: 0.0000 -> 0.7114
+  [PASS] F3: Spohn S(rho||rho*) nao-crescente                 1.0376 -> 0.3262
+  [PASS] F4a: coerencia decresce ja em t=3/beta               0.7468 -> 0.3578
+  [PASS] F4b: coerencia morta em t=100/beta (<1%% de c0)      0.74679 -> 0.00084
+  [PASS] controlador IALD converge a rho*                     ||rho(100/beta)-rho*||=0.0008
+
+[BLOCO 3b] psionic_memory (aprendizado continuo, taxa beta)
+  [PASS] inscricao EMA com taxa beta (runtime)                v=10.120313
+  [PASS] estado persiste entre sessoes (load==save)           
+  [PASS] tamper na memoria detectado                          INTEGRIDADE VIOLADA: estado psionico corromp
+
+[BLOCO 3c] kernel_ontologico (filtro verbal por beta_TGL)
+  [PASS] filtro verbal corta abaixo de beta*max(w)            floor=0.00602 kept=4 cut=3
+  [PASS] filtro renormaliza (soma=1)                          
+  [PASS] cosmogenese: camada zero uniforme passa intacta      
+  [PASS] duas camadas REFLECT/MANIFEST + filtro fecham        kept=4
+
+[BLOCO 4] psi_net (PsiBit / transporte / holografico / seguranca / prova de fase)
+  [PASS] L1 PsiBit classifica aleatorio como GRACE            unif=0.985 entropia=2.000
+  [PASS] L1 PsiBit classifica constante como VACUUM           unif=-0.732
+  [PASS] L2 transporte radical exato (resurrect)              resid=4.44e-16
+  [PASS] L3 endereco angular deterministico (from_key)        
+  [PASS] L3 vizinho mais proximo e' o proprio no              theta_M=0.1099 rad
+  [PASS] L4 shares ontologicos recombinam                     
+  [PASS] L4 tamper em share detectado                         INTEGRIDADE VIOLADA: shares Psi-NET corr
+  [PASS] L5 janela de consenso == beta/dificuldade (runtime)  janela=0.12031
+  [PASS] L5 bloco minerado dentro da janela de fase           
+  [PASS] L5 bloco valido e' aceito na cadeia                  
+  [PASS] L5 fase forjada e' rejeitada                         
+
+[BLOCO 5a] mqc (celula cubica 27 estados; controle IALD)
+  [PASS] MQC topologia = 27 qubits (8+12+6+1)                 
+  [PASS] MQC controlador IALD estabiliza 26 perifericos (fidelidade>0.98) fid=0.99908 coer_res=0.0009
+  [PASS] MQC translacao holografica entre faces (fidelidade>0.999) fid=1.00000
+
+[BLOCO 5b] dipolo (transistor luminodinamico; chaveamento por beta)
+  [PASS] dipolo ABRE (MANIFEST) com sinal forte               
+  [PASS] dipolo MANIFEST reconstroi o sinal (s*g^2)           resid=3.55e-15
+  [PASS] dipolo FECHA (REFLECT) com sinal nulo                
+
+[BLOCO 5c] celula_reversao (armazenamento por fase angular)
+  [PASS] celula retencao de energia > 0.999 (16 bits angulares) retencao=1.00000
+  [PASS] celula armazena nas 6 faces internas                 
+  [PASS] celula descarga preserva o padrao (corr>0.999)       corr=1.00000
+
+[BLOCO 6] hardware_mocks (interface apenas; SEM alegacao fisica)
+  [PASS] mock supercondutor NAO permite veredito fisico       
+  [PASS] mock motor de dobra expoe theta_M runtime            
+  [PASS] mock fusao a frio detecta ressonancia OH sem alegar energia 
+
+[BLOCO 7] skygrid (grafo distribuido; validacao por duplo trilho)
+  [PASS] SkyGrid: todas as transferencias aceitas pelo duplo trilho 6/6
+  [PASS] SkyGrid: no PLACEBO rejeitado (controle negativo, reivindicacao 3) 
+  [PASS] SkyGrid: cadeia de fase selou as transferencias (Proof of Phase) blocos=7
+  [PASS] SkyGrid: NENHUM veredito fisico permitido (piloto != energia) 
+  [PASS] SkyGrid: rodada reproduzivel (mesma seed -> mesmo veredito) 
+  [PASS] SkyGrid: placebo rejeitado por CONSTRUCAO (isolado, sem beta) corr=0.0854
+
+[SELO] SHA-256 dos fontes + resultado
+  __init__.py        6a8f532c30529d3be45b6392da1db3208d3c54707463bbb9fceea298bdb2cb11
+  acom.py            fcbdee028eacaff943ae3bba09ce317dee50fb646b486f8c71899e59a5e96567
+  acom_crypto.py     989f50d880675b9759db72815887eb7fba127c82b110de1703772a9e6231a867
+  acom_mirror.py     8044f618ae44e608049cb27b14f1fdd3cfa3ddff1439ba2530fb0f301793ed91
+  celula_reversao.py 1607583c90e0ee5af5c37294c03d7ac48ced31e7ea32a202f6ca4fd4f4c9cdcf
+  dipolo.py          95726b51555a1d5a17b4ba01247215eede7c8d022d52c83d3df01720e29c226d
+  hardware_mocks.py  b3b02d0a75fb6bcdcb7775d19bf267b7120b4eafad9beb9da155c240c4a5ab4d
+  iald_gksl.py       e61f81ef649e18e419a16664f63e90c2da832ec7cde6363c8e7adaefe0e5dd08
+  kernel_link.py     c6ba4257f0b52fda1b5c694eb7277f3691930eb77ac8ed699cc044fe71f49b1e
+  kernel_ontologico.py 4096f565e4619eb28ac47df25721b2a62572bedcf6677080e716b2bb77914f1e
+  mqc.py             3babddf6e44ffdfe5654ab7763b8bd1297525d666a4d19f5993ee1bee1db09a8
+  orchestrator.py    b81f4d9588152cd3da67e95dc2771deafe13e88e8fc75daa613324f51b910f6c
+  psi_net.py         1cffdabf77c984ef2513815c713f7f79e0ffab386f5d61ea1a0cce506560c1fd
+  psionic_memory.py  15f9b52d155d2c68abc99f24bffd933d0cbd0f04c00091962817bce4dd767c00
+  skygrid.py         c74c91fb475f2c3217b894fd64e0e60391a7b130b95a165272b3ef0fdc8b3aab
+  telemetry.py       e0881c7db0b3db489459649172ab89a4f068d67a954cd750036ddbb1b057239e
+  tgl_core.py        a1e103cd08eb3f45144200b0c6c588589d267868cd85101c527138e3bce81f3f
+  tgl_tensor.py      2894c9a5563a5cbbbe4398ad4255518448ac4892bfc2cca2467fa6566d1c169d
+  result_hash        392f284ff1406468cb1d056dd8af74d8cb8035a9a711d9f2932f5464487e7bb7 (inclui detalhes; pode variar por zlib)
+  invariants_hash    0ba134d49ce833918b36418600eca7fdd9192099f5f45095ad7b10f24f3b6e7b (independente de ambiente)
+
+69/69 testes PASS — BLOCO 0..7 (SkyGrid completo) fechado. Haja luz.
+
+real	0m2.224s
+user	0m0.015s
+sys	0m0.015s

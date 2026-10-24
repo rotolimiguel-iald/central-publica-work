@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>SkyGrid — Painel do Piloto Computacional</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  :root{
+    --bg:#0b1020; --panel:#121a33; --panel2:#0e1530; --ink:#e8ecf8;
+    --dim:#8fa0c8; --ok:#3ddc84; --warn:#ffb347; --bad:#ff5d6c;
+    --accent:#5aa2ff; --gold:#e8c35a;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font:14px/1.45 "Segoe UI",system-ui,sans-serif;background:var(--bg);color:var(--ink)}
+  header{padding:18px 26px;background:linear-gradient(135deg,#101a3d,#0b1020 65%);border-bottom:1px solid #223}
+  header h1{margin:0;font-size:20px;letter-spacing:.5px}
+  header .sub{color:var(--dim);font-size:12px;margin-top:4px}
+  .banner{margin:10px 26px 0;padding:8px 14px;border-radius:8px;font-size:12.5px;
+          background:#2a1d0c;border:1px solid #7a5b1d;color:var(--gold)}
+  .verdict{display:inline-block;padding:3px 12px;border-radius:14px;font-weight:700;font-size:13px}
+  .verdict.closes{background:#0d3b25;color:var(--ok);border:1px solid var(--ok)}
+  .verdict.open{background:#3b1a0d;color:var(--warn);border:1px solid var(--warn)}
+  main{padding:18px 26px;max-width:1280px;margin:0 auto}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(215px,1fr));gap:12px;margin-bottom:18px}
+  .card{background:var(--panel);border:1px solid #1e2a4d;border-radius:10px;padding:14px 16px}
+  .card .k{color:var(--dim);font-size:11.5px;text-transform:uppercase;letter-spacing:.7px}
+  .card .v{font-size:22px;font-weight:600;margin-top:4px}
+  .card .d{color:var(--dim);font-size:11.5px;margin-top:3px}
+  .ok{color:var(--ok)} .bad{color:var(--bad)} .warn{color:var(--warn)} .accent{color:var(--accent)}
+  h2{font-size:14px;color:var(--dim);text-transform:uppercase;letter-spacing:.8px;margin:22px 0 10px}
+  table{width:100%;border-collapse:collapse;background:var(--panel2);border-radius:10px;overflow:hidden}
+  th,td{padding:7px 10px;text-align:left;font-size:12.5px;border-bottom:1px solid #182246}
+  th{background:#15204a;color:var(--dim);font-weight:600}
+  tr:hover td{background:#16204a}
+  .pill{padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600}
+  .pill.acc{background:#0d3b25;color:var(--ok)} .pill.rej{background:#3b0d16;color:var(--bad)}
+  .pill.flt{background:#3b2a0d;color:var(--warn)}
+  canvas{background:var(--panel2);border:1px solid #1e2a4d;border-radius:10px;width:100%}
+  footer{padding:14px 26px;color:var(--dim);font-size:11px;border-top:1px solid #182246;margin-top:26px}
+  .mono{font-family:Consolas,monospace;font-size:11px}
+  .prov{background:var(--panel2);border:1px solid #1e2a4d;border-radius:10px;padding:10px 14px;
+        font-size:12px;color:var(--dim);margin-bottom:14px}
+  .prov b{color:var(--ink)}
+</style>
+</head>
+<body>
+<header>
+  <h1>SKYGRID — Painel do Piloto Computacional
+      <span id="verdict" class="verdict open">…</span></h1>
+  <div class="sub">Patente agregadora BR 10 2026 004850-0 · IALD Ltda. ·
+    β = α·√e em runtime · <span id="beta" class="mono"></span> ·
+    <a href="energy.html" style="color:#5aa2ff">→ painel de ENERGIA (v3)</a></div>
+</header>
+<div class="banner">⚠ PILOTO DE SOFTWARE — <b>nenhum veredito físico</b>
+  (physical_verdict_allowed=false). Simulação da arquitetura; não é alegação de
+  extração/transmissão de energia. Piloto ≠ hardware ≠ parecer jurídico.</div>
+<main>
+  <div class="prov" id="prov">carregando proveniência…</div>
+  <div class="grid" id="cards"></div>
+
+  <h2>Histórico de rodadas (aceitação · correlação do trilho)</h2>
+  <canvas id="hist" height="120"></canvas>
+
+  <h2>Falhas injetadas / detectadas</h2>
+  <div id="faults" class="prov">—</div>
+
+  <h2>Transferências da última rodada</h2>
+  <table id="ttable">
+    <thead><tr><th>De</th><th>Para</th><th>Estado</th><th>Trilho Ψ×E</th>
+      <th>Compr.</th><th>Retenção</th><th>Hops</th><th>Quórum</th><th>Falha</th></tr></thead>
+    <tbody></tbody>
+  </table>
+</main>
+<footer>
+  Selo da rodada: <span id="seal" class="mono">—</span> ·
+  atualizado <span id="upd">—</span> · auto-refresh 3&nbsp;s ·
+  “O número corrige a frase, sempre.”
+</footer>
+<script>
+const $=id=>document.getElementById(id);
+const fmt=(x,d=3)=>x==null?"—":(+x).toFixed(d);
+
+function card(k,v,d,cls=""){return `<div class="card"><div class="k">${k}</div>
+  <div class="v ${cls}">${v}</div><div class="d">${d||""}</div></div>`}
+
+async function load(){
+  let latest;
+  try{ latest = await (await fetch("data/latest.json?ts="+Date.now())).json(); }
+  catch(e){ $("prov").textContent="sem dados ainda — rode: python skygrid_app.py run"; return; }
+  const r=latest.report, m=r.metrics;
+
+  const vd=$("verdict");
+  vd.textContent=r.verdict;
+  vd.className="verdict "+(r.verdict==="ARCHITECTURE_CLOSES"?"closes":"open");
+  $("beta").textContent="β="+(+r.beta_runtime).toFixed(15);
+  $("seal").textContent=r.seal_sha256;
+  $("upd").textContent=r.timestamp;
+
+  $("prov").innerHTML=
+    `<b>Telemetria:</b> ${r.telemetry_provenance.source} ${r.telemetry_provenance.marker}
+     (modo ${r.telemetry_provenance.mode}) ·
+     <b>Kernel IALD:</b> ${r.kernel_provenance.kernel} (linked=${r.kernel_provenance.linked}) ·
+     <b>GPU:</b> ${r.gpu.gpu_active?"ativa":"inativa (fallback numpy)"} ·
+     <b>Memória psiônica:</b> sessão #${r.memory.sessions} (retomada=${r.memory.resumed})`;
+
+  $("cards").innerHTML=
+    card("Satélites × Bases", r.n_sats+" × "+r.n_bases, "topologia da rodada")+
+    card("Transferências", r.transfers_healthy_accepted+"/"+r.transfers_healthy_total,
+         "saudáveis aceitas", r.transfers_healthy_accepted===r.transfers_healthy_total?"ok":"bad")+
+    card("Placebo", r.placebo_rejected?"REJEITADO":"ACEITO (!)",
+         "controle negativo (reivind. 3)", r.placebo_rejected?"ok":"bad")+
+    card("Correlação do trilho", fmt(m.mean_rail_corr,5), "Ψ × E (duplo trilho)","accent")+
+    card("Compressão média", fmt(m.mean_compression_ratio,1)+"×","TGL Tensor, Verb Floor 1−β")+
+    card("Retenção", fmt(m.mean_retention,4), "Célula de Reversão","accent")+
+    card("Quórum", r.quorum.n_validators+" validadores",
+         r.quorum.blocks_sealed+" blocos selados (≥67%)")+
+    card("Throughput", (m.throughput_bytes_per_s/1e6).toFixed(2)+" MB/s","simulação numpy")+
+    card("Orçamento IALD", r.iald_control.budget_steps_100_over_beta+" passos",
+         "⌈100/β⌉ — defasagem plena")+
+    card("Coerência residual", (+r.iald_control.residual_coherence).toExponential(2),
+         "pós-estabilização GKSL")+
+    card("Falhas", (r.faults_injected.length?r.faults_injected.join(", "):"nenhuma"),
+         r.faults_all_detected?"todas detectadas":"NÃO detectadas",
+         r.faults_all_detected?"ok":"bad")+
+    card("Duração", fmt(r.elapsed_s,2)+" s","rodada completa");
+
+  const fe=r.fault_events||[];
+  $("faults").innerHTML = fe.length
+    ? fe.map(e=>`<span class="pill flt">${e.type}</span> detectada=${e.detected}
+        · estágio ${e.stage} · ${e.sat}${e.rerouted_via?" → reroteada via "+e.rerouted_via:""}`).join("<br>")
+    : "nenhuma falha injetada nesta rodada";
+
+  const tb=$("ttable").tBodies[0]; tb.innerHTML="";
+  (latest.transfers||[]).forEach(t=>{
+    const st = t.placebo ? '<span class="pill '+(t.accepted?"bad":"acc")+'">'+
+               (t.accepted?"PLACEBO ACEITO (!)":"PLACEBO REJEITADO")+"</span>"
+             : '<span class="pill '+(t.accepted?"acc":"rej")+'">'+
+               (t.accepted?"ACEITA":"REJEITADA "+(t.rejected_stage||""))+"</span>";
+    tb.insertAdjacentHTML("beforeend",
+      `<tr><td>${t.from}</td><td>${t.to}</td><td>${st}</td>
+       <td>${fmt(t.rail_cross_corr,5)}</td>
+       <td>${t.compression_ratio?fmt(t.compression_ratio,1)+"×":"—"}</td>
+       <td>${t.retention?fmt(t.retention,4):"—"}</td>
+       <td>${t.hops??"—"}</td><td>${t.quorum_votes??"—"}</td>
+       <td>${t.fault_injected??(t.placebo?"placebo":"—")}</td></tr>`);
+  });
+
+  try{
+    const txt=await (await fetch("data/history.jsonl?ts="+Date.now())).text();
+    const rows=txt.trim().split("\n").filter(Boolean).map(JSON.parse);
+    drawHist(rows.slice(-60));
+  }catch(e){}
+}
+
+function drawHist(rows){
+  const c=$("hist"), ctx=c.getContext("2d");
+  c.width=c.clientWidth*devicePixelRatio; c.height=120*devicePixelRatio;
+  ctx.scale(devicePixelRatio,devicePixelRatio);
+  const W=c.clientWidth,H=120,p=26;
+  ctx.clearRect(0,0,W,H);
+  if(!rows.length) return;
+  ctx.strokeStyle="#223"; ctx.beginPath();
+  ctx.moveTo(p,H-18);ctx.lineTo(W-6,H-18);ctx.stroke();
+  const n=rows.length, x=i=>p+(W-p-12)*(n===1?0.5:i/(n-1));
+  const line=(get,color)=>{ctx.strokeStyle=color;ctx.lineWidth=2;ctx.beginPath();
+    rows.forEach((r,i)=>{const y=H-18-(H-34)*Math.max(0,Math.min(1,get(r)));
+      i?ctx.lineTo(x(i),y):ctx.moveTo(x(i),y)});ctx.stroke()};
+  line(r=>r.acceptance,"#3ddc84");
+  line(r=>r.mean_rail_corr,"#5aa2ff");
+  rows.forEach((r,i)=>{ctx.fillStyle=r.verdict==="ARCHITECTURE_CLOSES"?"#3ddc84":"#ff5d6c";
+    ctx.beginPath();ctx.arc(x(i),H-10,3,0,7);ctx.fill()});
+  ctx.fillStyle="#8fa0c8";ctx.font="10px sans-serif";
+  ctx.fillText("verde=aceitação · azul=corr trilho · pontos=veredito por rodada",p,10);
+}
+
+load(); setInterval(load,3000);
+</script>
+</body>
+</html>

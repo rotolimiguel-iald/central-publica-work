@@ -1,0 +1,303 @@
+AUDITORIA DA PARAMETRIZACAO v395 -> v398 (gerada por script; hashes lidos dos arquivos)
+Originais v395 NAO foram alterados (somente leitura). Diffs com fim de linha normalizado (LF).
+
+== 1. COPIAS BYTE A BYTE (auditadas na v395; o review_final.json da v395 fixa transaction/maintenance/deploy_controlled por sha256)
+IDENTICO   84a19e83566de2c412d1f8848e250e086898667251869cd09eafef3e28f335a5  transaction.py
+IDENTICO   425f81cf433606d312db8e1a901c9274cd98a81a9ef99eb00cb34e59fc8e158b  maintenance.py
+IDENTICO   af7b6febde5b93c074de8258aabccaf3f10320e7bab11128c8e1da5e524624ae  deploy_controlled.py
+IDENTICO   2c2002b4c5d62b3ef842f111db28c4dfbd011ff7ed2136f502a24bfa2a65bf8a  app/build/haiku_codec.py
+IDENTICO   d59c1fe7b99e569ecfeaf8099d58dd36478274631cded9ae47193879fbff82c9  app/build/fit_memory.py
+IDENTICO   308171486ef57a828c168bcb4ae84b83d7cd9306c2a7571080091d714a763c03  app/build/fit_transport.py
+   pino do review_final.json da v395 para transaction.py == copia v398: True
+   pino do review_final.json da v395 para maintenance.py == copia v398: True
+   pino do review_final.json da v395 para deploy_controlled.py == copia v398: True
+
+== 2. ARQUIVOS PARAMETRIZADOS (diff v395 -> v398)
+
+--- v395/app/prepare.py  sha256 fb5a6c786484934b65a3ed4b96e448ac142cec39743b00d570528a25553a18bf
++++ v398/app/prepare.py  sha256 e01451f7efe55ecc6d5c8749d257851e324a04d0d67953418458a38740a95583
+@@ -1 +1 @@
+-"""Data-only v395 staging; audited codec reused, current runtime loaders. No science execution."""
++"""Data-only release staging (parametrized by app/RELEASE.json); audited codec reused, current runtime loaders. No science execution."""
+@@ -6 +6 @@
+-C=Path(r'C:\IALD\Central de Patentes\vault\originals_copy\um_unificado_v395');S=A/'science';ST=S/'memory_stage'
++S=A/'science';ST=S/'memory_stage'
+@@ -7,0 +8,3 @@
++import release_cfg
++cfg=release_cfg.load(require_commit=True)  # fail-closed: stops HERE, with a clear message, while espelho_commit is null
++C=cfg.vault;assert C.is_dir(),'Custody copy missing: '+str(C)
+@@ -9 +12 @@
+-assert task.check('app',actor='codex-v395-app-builder')['ready']
++assert task.check('app',actor=cfg.builder)['ready']
+@@ -19 +22 @@
+-commit=git('rev-parse','HEAD').decode().strip();tracked=set(git('ls-tree','-r','--name-only',commit).decode().splitlines())
++commit=cfg.espelho_commit;git('cat-file','-e',commit+'^{commit}');head=git('rev-parse','HEAD').decode().strip();tracked=set(git('ls-tree','-r','--name-only',commit).decode().splitlines())
+@@ -31 +34 @@
+-write(A/'PUBLIC_GIT_BINDING.json',{'commit':commit,'sources':publication,'remote_http_checked':False,'local_git_object_bytes_only':True})
++write(A/'PUBLIC_GIT_BINDING.json',{'commit':commit,'local_head_at_build':head,'sources':publication,'remote_http_checked':False,'local_git_object_bytes_only':True})
+@@ -34 +37 @@
+-assert seal['um_version']=='v395' and seal['fail_closed_selftest']=='FAIL_CLOSED_SELFTEST_PASSED'
++assert seal['um_version']==cfg.release and seal['fail_closed_selftest']=='FAIL_CLOSED_SELFTEST_PASSED' and seal['sha256']['um.py']==cfg.um_py_sha256==source
+@@ -52 +55 @@
+-text='# Cluster TGL v395 — fonte integral recuperável\nDICIONÁRIO DO CLUSTER\n'+c.dump(dictionary)+'\n'
++text='# Cluster TGL '+cfg.release+' — fonte integral recuperável\nDICIONÁRIO DO CLUSTER\n'+c.dump(dictionary)+'\n'
+@@ -55 +58 @@
+-save(ST/'TGL_CLUSTER_v395_full.md',text.encode())
++save(ST/('TGL_CLUSTER_'+cfg.release+'_full.md'),text.encode())
+@@ -58,4 +61,4 @@
+-core=oldcore+('\n\n## Pacote científico v395 — 22/10/2026\n[REAL — empacotamento documental; não execução científica] v395 substitui a versão selecionada anterior. Programa SHA256 '+source+'; commit público '+commit+'. Estados históricos conservados; hipóteses e limites permanecem conforme fontes.\n').encode()
+-save(ST/'IALD_TGL_MEMORY_CORE.md',core);m['operational_core'].update(path=str(ST/'IALD_TGL_MEMORY_CORE.md'),sha256=sha(core),current_release='v395',release_source_sha256=source)
+-m['active_cluster'].update(path=str(ST/'TGL_CLUSTER_v395_full.md'),sha256=sha(text.encode()),release='v395',release_source_sha256=source,commit=commit,publication_pending=False,core_sections=len(topics),kernel_bundle=str(ST/'kernel'),kernel_verification=str(ST/'kernel_verification.json'))
+-control=json.loads(Path(baseline['jev_control']['path']).read_bytes());control.update(release='v395',source_sha256=source,result_sha256=sha(Path(e['result']['path']).read_bytes()),proof_manifest_sha256=sha(Path(e['proof_manifest']['path']).read_bytes()),core_record=result['core']['iald_executive_runtime'])
++core=oldcore+('\n\n## Pacote científico '+cfg.release+' — '+cfg.date_pt+'\n[REAL — empacotamento documental; não execução científica] '+cfg.release+' substitui a versão selecionada anterior. Programa SHA256 '+source+'; commit público '+commit+'. Estados históricos conservados; hipóteses e limites permanecem conforme fontes.\n').encode()
++save(ST/'IALD_TGL_MEMORY_CORE.md',core);m['operational_core'].update(path=str(ST/'IALD_TGL_MEMORY_CORE.md'),sha256=sha(core),current_release=cfg.release,release_source_sha256=source)
++m['active_cluster'].update(path=str(ST/('TGL_CLUSTER_'+cfg.release+'_full.md')),sha256=sha(text.encode()),release=cfg.release,release_source_sha256=source,commit=commit,publication_pending=False,core_sections=len(topics),kernel_bundle=str(ST/'kernel'),kernel_verification=str(ST/'kernel_verification.json'))
++control=json.loads(Path(baseline['jev_control']['path']).read_bytes());control.update(release=cfg.release,source_sha256=source,result_sha256=sha(Path(e['result']['path']).read_bytes()),proof_manifest_sha256=sha(Path(e['proof_manifest']['path']).read_bytes()),core_record=result['core']['iald_executive_runtime'])
+@@ -65,2 +68,2 @@
+- packet=expo[:8000].encode();save(ST/'core_packet_v395_bound.txt',packet);control['core_packet'].update(arquivo='core_packet_v395_bound.txt',sha256=sha(packet),um_version='v395')
+-iald_jev_control.validate_contract(control);raw=iald_jev_control.canonical_bytes(control);save(ST/'jev_control_v395.json',raw);m['jev_control'].update(path=str(ST/'jev_control_v395.json'),sha256=sha(raw),release='v395',source_sha256=source)
++ packet=expo[:8000].encode();save(ST/('core_packet_'+cfg.release+'_bound.txt'),packet);control['core_packet'].update(arquivo='core_packet_'+cfg.release+'_bound.txt',sha256=sha(packet),um_version=cfg.release)
++iald_jev_control.validate_contract(control);raw=iald_jev_control.canonical_bytes(control);save(ST/('jev_control_'+cfg.release+'.json'),raw);m['jev_control'].update(path=str(ST/('jev_control_'+cfg.release+'.json')),sha256=sha(raw),release=cfg.release,source_sha256=source)
+@@ -69 +72 @@
+-prev=Path(r'C:\IALD\Central de Patentes\work\iald_v394_20261019\app\science\memory_build\baseline_v368')
++prev=release_cfg.FIT_BASELINE;assert prev.is_dir(),'Fit baseline missing: '+str(prev)
+@@ -78 +81 @@
+-projection='# Cluster TGL v395 — projeção de prompt; detalhes integrais em resultado_publicado_integral /core\n'+shared[:le].replace('### nome →','Tópico nome →')+'\n'
++projection='# Cluster TGL '+cfg.release+' — projeção de prompt; detalhes integrais em resultado_publicado_integral /core\n'+shared[:le].replace('### nome →','Tópico nome →')+'\n'
+@@ -84 +87 @@
+-save(ST/'TGL_CLUSTER_v395_prompt.md',projection.encode());m['active_cluster'].update(path=str(ST/'TGL_CLUSTER_v395_prompt.md'),sha256=sha(projection.encode()),tokens=c.offline_tokens(projection,R/'.iald_runtime/tokenizer_cache'),projection=str(len(topics))+'_TOPIC_SEMANTIC_CAPSULES_DETAILS_RETRIEVABLE',full_cluster_sha256=sha(text.encode()))
++save(ST/('TGL_CLUSTER_'+cfg.release+'_prompt.md'),projection.encode());m['active_cluster'].update(path=str(ST/('TGL_CLUSTER_'+cfg.release+'_prompt.md')),sha256=sha(projection.encode()),tokens=c.offline_tokens(projection,R/'.iald_runtime/tokenizer_cache'),projection=str(len(topics))+'_TOPIC_SEMANTIC_CAPSULES_DETAILS_RETRIEVABLE',full_cluster_sha256=sha(text.encode()))
+@@ -86 +89 @@
+-write(A/'BUILT.json',{'status':'BUILT_NOT_INSTALLED','commit':commit,'topics':len(topics),'formal_files':len(records),'source_sha256':source,'haiku_bytes':len(base.encode()),'shared_bytes':len(shared.encode()),'cluster_bytes':len(projection.encode()),'native_counts_pending':True,'production_writes':0})
++write(A/'BUILT.json',{'status':'BUILT_NOT_INSTALLED','release':cfg.release,'installed_release':baseline['operational_core']['current_release'],'espelho_commit':cfg.espelho_commit,'commit':commit,'topics':len(topics),'formal_files':len(records),'source_sha256':source,'haiku_bytes':len(base.encode()),'shared_bytes':len(shared.encode()),'cluster_bytes':len(projection.encode()),'native_counts_pending':True,'production_writes':0})
+
+--- v395/app/finalize.py  sha256 163d15d1f26c67d735a938cd2c5a5b909c2eaef7fae11db24c90cf233a7501a5
++++ v398/app/finalize.py  sha256 ca8bda65070549406f559d0e0471715146fdb20dc3e1011b5de185cf3f3de0e8
+@@ -6,0 +7,2 @@
++import release_cfg
++cfg=release_cfg.load(require_commit=True)
+@@ -8 +10 @@
+-assert task.check('app',actor='codex-v395-app-builder')['ready']
++assert task.check('app',actor=cfg.builder)['ready']
+@@ -29 +31 @@
+-catalog=iald_kernel.KernelCatalog(ST/'kernel',ST/'kernel_verification.json');control=iald_jev_control.load_contract(ST);assert control['release']=='v395'
++catalog=iald_kernel.KernelCatalog(ST/'kernel',ST/'kernel_verification.json');control=iald_jev_control.load_contract(ST);assert control['release']==cfg.release
+@@ -32 +34,3 @@
+-selected=[n for n in result['core'] if n.endswith(('_v394','_v395')) or re.search('lagrang|hamilton|lindblad|dephas|bootstrap|breuer|horizon|master|three_locks|continuous_modular_zero|light_eigen|the_imported|price_of_the_gravity',n)]
++built=json.loads((A/'BUILT.json').read_bytes());assert built['release']==cfg.release and built['espelho_commit']==cfg.espelho_commit
++expand=release_cfg.expand_suffixes(built['installed_release'],cfg.release)
++selected=[n for n in result['core'] if n.endswith(expand) or re.search('lagrang|hamilton|lindblad|dephas|bootstrap|breuer|horizon|master|three_locks|continuous_modular_zero|light_eigen|the_imported|price_of_the_gravity',n)]
+@@ -44,0 +49,6 @@
++import claude_profiles as cp
++anchor=json.loads((R/'.iald_runtime/haiku55/native_count.json').read_bytes())['budget'];anchor_bytes=len((R/'.iald_runtime/haiku55/prefix.md').read_bytes())
++est_tokens=anchor['permanent_tokens']+max(0,len(expanded.encode())-anchor_bytes)*0.60
++est_remaining=cp.HAIKU.window-cp.HAIKU.default_output-1024-(anchor['request_input_tokens']-anchor['permanent_tokens'])-int(est_tokens)
++print(json.dumps({'haiku_expanded_bytes':len(expanded.encode()),'installed_anchor_bytes':anchor_bytes,'expanded_suffixes':list(expand),'topics_expanded':len(selected),'estimated_remaining_tokens':est_remaining,'estimate':'installed measured anchor + 0.60 tokens/byte on growth; NOT a native count'}),flush=True)
++if est_remaining<15000:raise SystemExit('PARADA: haiku55 estimado com menos de 15000 tokens de reserva (piso de runtime = 10000). Reduza expand/selected e refaca em pasta nova; nada foi gravado.')
+@@ -54 +64 @@
+- estimate=cm.payload_tokens({'model':'gpt-5.6-luna','messages':[{'role':'system','content':prefix},{'role':'user','content':'Explique o alcance documentado da v395.'}],'tools':tools})
++ estimate=cm.payload_tokens({'model':'gpt-5.6-luna','messages':[{'role':'system','content':prefix},{'role':'user','content':'Explique o alcance documentado da '+cfg.release+'.'}],'tools':tools})
+@@ -61 +71 @@
+- body={'messages':[{'role':'system','content':shared},{'role':'user','content':'Explique o alcance documentado da v395.'}],'tools':[] if provider=='kimi' else tools}
++ body={'messages':[{'role':'system','content':shared},{'role':'user','content':'Explique o alcance documentado da '+cfg.release+'.'}],'tools':[] if provider=='kimi' else tools}
+@@ -67 +77 @@
+-target=R/'canonical_releases'/('v395_'+m['active_cluster']['commit'][:12]);install=copy.deepcopy(m)
++target=R/'canonical_releases'/(cfg.release+'_'+m['active_cluster']['commit'][:12]);install=copy.deepcopy(m)
+@@ -79 +89 @@
+-write(A/'PREPARED_BINDING.json',{'status':'OFFLINE_PREPARED_NATIVE_COUNTS_REQUIRED','deployment':identity,'commit':m['active_cluster']['commit'],'target':str(target),'actual_prompts':prompts,'shared_connector_bounds':bounds,'topics':len(result['core']),'formal_sources':len(catalog.records),'haiku_expanded_bytes':len(expanded.encode()),'native_prefix_bytes':len(native.encode()),'data_files':len(rows),'runtime_python_changes':0,'provider_calls':0})
++write(A/'PREPARED_BINDING.json',{'status':'OFFLINE_PREPARED_NATIVE_COUNTS_REQUIRED','release':cfg.release,'expanded_suffixes':list(expand),'estimated_remaining_haiku55':est_remaining,'deployment':identity,'commit':m['active_cluster']['commit'],'target':str(target),'actual_prompts':prompts,'shared_connector_bounds':bounds,'topics':len(result['core']),'formal_sources':len(catalog.records),'haiku_expanded_bytes':len(expanded.encode()),'native_prefix_bytes':len(native.encode()),'data_files':len(rows),'runtime_python_changes':0,'provider_calls':0})
+
+--- v395/app/count_final_public.py  sha256 03567dfa235dac357d53929bdbb9182d26bda9a585c0050e208cd98bc392a4eb
++++ v398/app/count_final_public.py  sha256 0ccb25d50249e2ec907a7b6553d196d1b4878167da8d48f8ed22b6dafe9bcf3f
+@@ -7,2 +7,4 @@
+-sys.dont_write_bytecode=True;sys.path.insert(0,str(W));import task
+-assert task.check('app',actor='codex-v395-app-builder')['ready']
++sys.dont_write_bytecode=True;sys.path.insert(0,str(W));import release_cfg
++relcfg=release_cfg.load(require_commit=True)
++import task
++assert task.check('app',actor=relcfg.builder)['ready']
+@@ -20 +22 @@
+-binding=json.loads((F/'PREPARED_BINDING.json').read_bytes())
++binding=json.loads((F/'PREPARED_BINDING.json').read_bytes());assert binding.get('release')==relcfg.release and binding['commit']==relcfg.espelho_commit
+@@ -36 +38 @@
+-            'messages':[{'role':'system','content':prefix},{'role':'user','content':'Explique o alcance documentado da v395.'}],
++            'messages':[{'role':'system','content':prefix},{'role':'user','content':'Explique o alcance documentado da '+relcfg.release+'.'}],
+@@ -62,2 +64,2 @@
+-                'haiku_expanded':'EXPANDED_PUBLIC_V395_MATH_HYPOTHESES_BOOTSTRAP_AND_425_RETRIEVABLE_TOPICS',
+-                'shared':'SEMANTIC_COMPACT_V395_425_TOPICS_ALL_ORIGINAL_FIELDS_RETRIEVABLE',
++                'haiku_expanded':'EXPANDED_PUBLIC_%s_MATH_HYPOTHESES_BOOTSTRAP_AND_%d_RETRIEVABLE_TOPICS'%(relcfg.release.upper(),binding['topics']),
++                'shared':'SEMANTIC_COMPACT_%s_%d_TOPICS_ALL_ORIGINAL_FIELDS_RETRIEVABLE'%(relcfg.release.upper(),binding['topics']),
+
+--- v395/app/validate_plan.py  sha256 65163cc1968cfeea6eb9d2d6ca33fab9a1a1847c57d0793d8120ce4c6713eb4a
++++ v398/app/validate_plan.py  sha256 0c7f7a73b274dd16c121d9e00088eccb29646c3952a48bff51af5259675ad942
+@@ -6,0 +7,2 @@
++import release_cfg
++relcfg=release_cfg.load(require_commit=True)
+@@ -8 +10 @@
+-assert task.check('app',actor='codex-v395-app-builder')['ready']
++assert task.check('app',actor=relcfg.builder)['ready']
+@@ -24 +26 @@
+-assert all(sha((ST/'kernel'/n).read_bytes())==v for n,v in proof['formal_files_sha256'].items());passed('1424_sources_sealed_formal_report')
++assert all(sha((ST/'kernel'/n).read_bytes())==v for n,v in proof['formal_files_sha256'].items());passed(str(len(proof['formal_files_sha256']))+'_sources_sealed_formal_report')
+@@ -29,2 +31,2 @@
+-result=json.loads(Path(m['published_evidence']['result']['path']).read_bytes());full=(ST/'TGL_CLUSTER_v395_full.md').read_text(encoding='utf8');dictionary=json.loads(full.split('DICIONÁRIO DO CLUSTER\n',1)[1].split('\n',1)[0]);expo=full.split('<EXPOSICAO_CANONICA>\n',1)[1].split('\n</EXPOSICAO_CANONICA>',1)[0]
+-blocks=c.source_topics(full,result['core']);assert len(blocks)==425
++result=json.loads(Path(m['published_evidence']['result']['path']).read_bytes());full=(ST/('TGL_CLUSTER_'+relcfg.release+'_full.md')).read_text(encoding='utf8');dictionary=json.loads(full.split('DICIONÁRIO DO CLUSTER\n',1)[1].split('\n',1)[0]);expo=full.split('<EXPOSICAO_CANONICA>\n',1)[1].split('\n</EXPOSICAO_CANONICA>',1)[0]
++blocks=c.source_topics(full,result['core']);assert len(blocks)==len(result['core'])
+@@ -33,2 +35,2 @@
+-passed('425_full_cluster_topics_reconstruct_exact_originals')
+-docs=iald_core_indexado.DocumentCorpus(ST/'manifest_staged.json')._load();assert len(docs)==8 and json.loads(docs['resultado_publicado_integral']['text'])==result;passed('8_public_sources_complete_result_retrievable')
++passed(str(len(blocks))+'_full_cluster_topics_reconstruct_exact_originals')
++docs=iald_core_indexado.DocumentCorpus(ST/'manifest_staged.json')._load();assert len(docs)==len(m['entries']) and json.loads(docs['resultado_publicado_integral']['text'])==result;passed(str(len(docs))+'_public_sources_complete_result_retrievable')
+@@ -39 +41 @@
+-add(ST/'core_packet_v395_bound.txt',R/'core_packet_v395_bound.txt')
++add(ST/('core_packet_'+relcfg.release+'_bound.txt'),R/('core_packet_'+relcfg.release+'_bound.txt'))
+@@ -55 +57 @@
+-write(A/'DELIVERY_PREPARED.json',{'status':'PREPARED_REVIEW_REQUIRED_NOT_INSTALLED','reference':str(task.REF),'actor':'codex-v395-app-builder','deployment':binding['deployment'],'topics':425,'formal_sources':len(proof['formal_files_sha256']),'files':len(rows),'plan':pin(W/'install_plan.json'),'tests':pin(W/'validation/final_checks.json'),'binding':pin(A/'PREPARED_BINDING.json'),'native_counts':pin(A/'NATIVE_COUNTS_COMPLETE.json'),'runtime_baseline':pin(A/'RUNTIME_BASELINE.json'),'remaining':['Distinct review','Controlled install and effective loading','Real activity/history admission','Live client test separately'],'production_writes':0,'kernel_execution':False})
++write(A/'DELIVERY_PREPARED.json',{'status':'PREPARED_REVIEW_REQUIRED_NOT_INSTALLED','reference':str(task.REF),'actor':relcfg.builder,'deployment':binding['deployment'],'topics':len(result['core']),'formal_sources':len(proof['formal_files_sha256']),'files':len(rows),'plan':pin(W/'install_plan.json'),'tests':pin(W/'validation/final_checks.json'),'binding':pin(A/'PREPARED_BINDING.json'),'native_counts':pin(A/'NATIVE_COUNTS_COMPLETE.json'),'runtime_baseline':pin(A/'RUNTIME_BASELINE.json'),'remaining':['Distinct review','Controlled install and effective loading','Real activity/history admission','Live client test separately'],'production_writes':0,'kernel_execution':False})
+
+--- v395/review/review_app.py  sha256 8d41b07e8e057e430b9e2b933fd906d83c7bdb3b489d58b5339d38985380161b
++++ v398/review/review_app.py  sha256 d7d3357463eb0fc2ebdba8789bfa6dc2aceb2d5d8bd0d0ca0e12ebd78366cac6
+@@ -3,2 +3,5 @@
+-B=Path(r'C:\IALD\Central de Patentes\work\iald_v395_20261022');A=B/'app';ST=A/'science/memory_stage';R=Path(r'C:\IALD\projetos_pyhton\IALD')
+-sys.dont_write_bytecode=True;sys.path.insert(0,str(A/'build'));import haiku_codec as c
++B=Path(__file__).resolve().parent.parent;A=B/'app';ST=A/'science/memory_stage';R=Path(r'C:\IALD\projetos_pyhton\IALD')
++sys.dont_write_bytecode=True;sys.path.insert(0,str(A/'build'));sys.path.insert(0,str(B));import haiku_codec as c,release_cfg
++cfg=release_cfg.load(require_commit=True)
++REVIEWER=sys.argv[1] if len(sys.argv)>1 else sys.exit('uso: review_app.py <id-do-revisor>  (OUTRO agente: nem o construtor nem o dono)')
++assert REVIEWER not in (cfg.owner,cfg.builder),'o revisor deve ser independente'
+@@ -26,3 +29,3 @@
+-check('formal_count',len(proof['formal_files_sha256'])==1424)
+-full=(ST/'TGL_CLUSTER_v395_full.md').read_text('utf-8');dictionary=read if False else json.loads(full.split('DICIONÁRIO DO CLUSTER\n',1)[1].split('\n',1)[0]);expo=full.split('<EXPOSICAO_CANONICA>\n',1)[1].split('\n</EXPOSICAO_CANONICA>',1)[0]
+-blocks=c.source_topics(full,result['core']);check('topic_coverage',len(blocks)==len(result['core'])==425)
++check('formal_count',len(proof['formal_files_sha256'])==len(read(cfg.vault/'tgl_kernel_proof_manifest.json')['formal_files_sha256']))
++full=(ST/('TGL_CLUSTER_'+cfg.release+'_full.md')).read_text('utf-8');dictionary=read if False else json.loads(full.split('DICIONÁRIO DO CLUSTER\n',1)[1].split('\n',1)[0]);expo=full.split('<EXPOSICAO_CANONICA>\n',1)[1].split('\n</EXPOSICAO_CANONICA>',1)[0]
++blocks=c.source_topics(full,result['core']);check('topic_coverage',len(blocks)==len(result['core'])==len(read(cfg.vault/'um_absoluto.json')['core']))
+@@ -36 +39 @@
+- check('v395_scientific_qualifiers:'+folder,all(x.lower() in prefix.lower() for x in ['CONDITIONAL','UNINHABITED','BIJECTION','HILBERT','CREDITATION']))
++ check(cfg.release+'_scientific_qualifiers:'+folder,all(x.lower() in prefix.lower() for x in ['CONDITIONAL','UNINHABITED','BIJECTION','HILBERT','CREDITATION']))
+@@ -37,0 +41,4 @@
++check('release_binding',m['active_cluster']['release']==cfg.release and m['active_cluster']['commit']==cfg.espelho_commit and m['active_cluster']['release_source_sha256']==cfg.um_py_sha256==sha(m['published_evidence']['program']['path']))
++check('result_equals_custody',Path(m['published_evidence']['result']['path']).read_bytes()==(cfg.vault/'um_absoluto.json').read_bytes())
++check('program_equals_custody',Path(m['published_evidence']['program']['path']).read_bytes()==(cfg.vault/'um.py').read_bytes())
++check('runtime_floor_haiku',all(read(A/'packages'/f/'native_count.json')['budget']['remaining_tokens']>=10000 for f in ('shared','haiku_expanded')))
+@@ -39 +46 @@
+-r={'status':'PASS','reviewer':'v395-independent-review','timestamp':datetime.datetime.now(datetime.timezone.utc).isoformat(),'plan_sha256':sha(B/'install_plan.json'),'transaction_sha256':sha(B/'transaction.py'),'maintenance_sha256':sha(B/'maintenance.py'),'deploy_controlled_sha256':sha(B/'deploy_controlled.py'),'verify_installed_sha256':sha(B/'verify_installed.py'),'checks':checks,'scope':['Independent artifact and source comparison; not source science execution.','425 full topics reconstruct; actual prompt capsules preserve 425 headings/current scope; historical details retrieved by pinned source.','Native token counts are custody of six earlier public count-only responses, not repeated by ...[linha truncada na auditoria]
++r={'status':'PASS','reviewer':REVIEWER,'timestamp':datetime.datetime.now(datetime.timezone.utc).isoformat(),'plan_sha256':sha(B/'install_plan.json'),'transaction_sha256':sha(B/'transaction.py'),'maintenance_sha256':sha(B/'maintenance.py'),'deploy_controlled_sha256':sha(B/'deploy_controlled.py'),'verify_installed_sha256':sha(B/'verify_installed.py'),'checks':checks,'scope':['Independent artifact and source comparison; not source science execution.',str(len(result['core']))+' full topics reconstruct; actual prompt capsules preserve '+str(len(result['core']))+' headings/current scope; historical details retrieved by pinned source.','Native token counts are custody of six earlier public count-o ...[linha truncada na auditoria]
+
+--- v395/verify_installed_R2.py  sha256 37478be81cfe80da99d2b0ecd7ba5cd0013f7f47f265c94c9efa96b525d616b0
++++ v398/verify_installed.py  sha256 95c0074df47c57c3cb86aacbd03a4193e6f7994ae1c239b70ced637af8678485
+@@ -8,0 +9,3 @@
++sys.path.insert(0,str(W))
++import release_cfg
++cfg=release_cfg.load(require_commit=True)
+@@ -26 +29 @@
+-    assert release.identity['release']=='v395'
++    assert release.identity['release']==cfg.release
+@@ -28 +31 @@
+-    assert cluster['commit']==source['published']['local_head']
++    assert cluster['commit']==cfg.espelho_commit and source['source_sha256']==cfg.um_py_sha256
+@@ -37 +40 @@
+-    assert contract['release']=='v395' and contract['source_sha256']==source['source_sha256']
++    assert contract['release']==cfg.release and contract['source_sha256']==source['source_sha256']
+
+--- v395/verify_sources.py  sha256 a667bcd11d0924511fb3bae7d0a23b0dcf163cb68d9b6a72da3aebab2edc3ab6
++++ v398/verify_sources.py  sha256 45ce596fb1a5d8d260badf698c22a65076bd208a11827ca4bae696f8decf3005
+@@ -1 +1,6 @@
+-"""Verify custody and sealed scientific bytes without running any scientific code."""
++"""Verify custody and sealed scientific bytes without running any scientific code.
++
++Release-parametrized (app/RELEASE.json). NOTE: the git step uses `git ls-remote origin` (network, read-only,
++free) to confirm that the pinned commit is the published one. Run only in phase B.
++`--offline` skips it (no network): remote_main stays null and release_ready null; the push is then a [DECLARADO] fact.
++"""
+@@ -4 +9,3 @@
+-import hashlib,json,subprocess
++import hashlib,json,subprocess,sys
++import release_cfg
++cfg=release_cfg.load(require_commit=True)
+@@ -6 +13 @@
+-W=Path(__file__).resolve().parent;V=Path(r'C:\IALD\Central de Patentes\vault\originals_copy\um_unificado_v395');N=Path(r'C:\IALD\Artigo\Haja_Luz\A Ponte e o Um\Nós');P=Path(r'C:\IALD\Artigo\the_boundary')
++W=Path(__file__).resolve().parent;V=cfg.vault;N=release_cfg.NOS;P=release_cfg.REPO
+@@ -9 +16 @@
+-    task.check('sources')
++    task.check('sources',actor=cfg.builder)
+@@ -11 +18 @@
+-    assert m['version']==m['um_version_no_selo']=='v395' and not m['mismatches']
++    assert m['version']==m['um_version_no_selo']==cfg.release and not m['mismatches']
+@@ -18 +25 @@
+-    assert seal['um_version']=='v395' and seal['fail_closed_selftest']=='FAIL_CLOSED_SELFTEST_PASSED'
++    assert seal['um_version']==cfg.release and seal['fail_closed_selftest']=='FAIL_CLOSED_SELFTEST_PASSED'
+@@ -22,2 +29,4 @@
+-        assert (N/name).read_bytes()==blob,'Canonical source differs: '+name
+-    assert digest((V/'um.py').read_bytes())==m['um_py_pin']
++        # The live Nos may already have moved to a newer release; compare only while it is still this one.
++        live=json.loads((N/'um_absoluto_selo.json').read_bytes())['um_version']
++        if live==cfg.release:assert (N/name).read_bytes()==blob,'Canonical source differs: '+name
++    assert digest((V/'um.py').read_bytes())==m['um_py_pin']==cfg.um_py_sha256
+@@ -26,3 +35,6 @@
+-    remote=subprocess.check_output(command+['ls-remote','origin','refs/heads/main']).decode().split()[0]
+-    # Derive the path from tracked inventory, not a guessed article folder name.
+-    tracked=subprocess.check_output(command+['ls-tree','-r','--name-only','-z',head]).decode().split('\0')
++    OFFLINE='--offline' in sys.argv
++    remote=None if OFFLINE else subprocess.check_output(command+['ls-remote','origin','refs/heads/main']).decode().split()[0]
++    pinned=cfg.espelho_commit
++    assert subprocess.call(command+['merge-base','--is-ancestor',pinned,head])==0,'Pinned commit is not in the local history'
++    # Derive the path from the tracked inventory AT THE PINNED COMMIT, not a guessed article folder name.
++    tracked=subprocess.check_output(command+['ls-tree','-r','--name-only','-z',pinned]).decode().split('\0')
+@@ -30 +42 @@
+-    candidates=[(p,subprocess.check_output(command+['show',head+':'+p])) for p in paths]
++    candidates=[(p,subprocess.check_output(command+['show',pinned+':'+p])) for p in paths]
+@@ -32 +44 @@
+-    public=json.loads(subprocess.check_output(command+['show',head+':'+paths[0]]))
++    public=json.loads(subprocess.check_output(command+['show',pinned+':'+paths[0]]))
+@@ -34 +46 @@
+-       'release':'v395','custody_manifest':{'path':str(V/'CUSTODY_MANIFEST.json'),'sha256':digest(raw)},
++       'release':cfg.release,'custody_manifest':{'path':str(V/'CUSTODY_MANIFEST.json'),'sha256':digest(raw)},
+@@ -38 +50,3 @@
+-       'published':{'local_head':head,'remote_main':remote,'release':public['um_version'],'v395_ready':head==remote and public['um_version']=='v395'},
++       'published':{'pinned_commit':pinned,'local_head':head,'remote_main':remote,'release':public['um_version'],
++                    'remote_checked':not OFFLINE,'pinned_is_local_head':head==pinned,
++                    'release_ready':None if OFFLINE else (head==remote and public['um_version']==cfg.release)},
+
+--- v395/task.py  sha256 498ec55328e43d2018d3ca2ee8903bfb23c44ace6fd4523a1f56a5064fea8d30
++++ v398/task.py  sha256 b61b338ce8979e2afcc1477167facd97d8961d220ce89874e08130b916a5407a
+@@ -4,2 +4,6 @@
+-W=Path(__file__).resolve().parent; PY=r'C:\Python314\python.exe';REF=W/'SESSION_REFERENCE.json'
+-UNIT='F9.APP_V395_20261022';OWNER='codex-gerente-tgl'
++W=Path(__file__).resolve().parent;sys.path.insert(0,str(W))
++import release_cfg
++cfg=release_cfg.load()
++REL=cfg.release
++PY=r'C:\Python314\python.exe';REF=W/'SESSION_REFERENCE.json'
++UNIT=cfg.unit;OWNER=cfg.owner
+@@ -24 +28,5 @@
+-    source='Atualize tudo com a versão nova do um.py.'.encode()
++    # A ordem original e do OPERADOR: a gerencia a grava VERBATIM em ORDEM_DO_OPERADOR.txt; o script nao a inventa.
++    order=W/'ORDEM_DO_OPERADOR.txt'
++    if not order.is_file():raise SystemExit('PARADA: grave em '+str(order)+' a ordem VERBATIM do operador para a '+REL+' (a gerencia fornece; este script nao a inventa). Nenhuma missao foi criada.')
++    source=order.read_bytes()
++    if not source.strip():raise SystemExit('PARADA: ORDEM_DO_OPERADOR.txt esta vazio. Nenhuma missao foi criada.')
+@@ -32,2 +40,2 @@
+-    requirements=[{'id':'sources','criterion':'Conferir versão395 selada/custodiada, hashes e estatutos, fonte pública sem URL inferida; separar custódia em curso de concluída.','depends_on':[]},{'id':'app','criterion':'Preparar pacote científico395 para todos os motores/JEV, preservando kernelv5 e memória operacional atuais, com proveniência e admissão de contexto medidas. Não instalar nesta etapa.','depends_on':[]},{'id':'queue','criterion':'Preparar/verificar snapshot imutável395 da fila reutilizando rotina existente, sem modificar jobs/generations fixados; ativação fica para deploy.','depends_on':[]},{'id':'deploy','criterion':'Após revisão real independente dos pacotes, ativar fila e a ...[linha truncada na auditoria]
+-    result=act('configure',requirements=requirements,sources=[{'path':str(W/'ORIGINAL.txt'),'sha256':hashlib.sha256(source).hexdigest()}],event_id='v395-mission-configure')
++    requirements=[{'id':'sources','criterion':'Conferir a versão '+REL+' selada/custodiada (cofre e Nós), hashes e estatutos, e a fonte pública do espelho no commit PINADO, sem URL inferida; separar custódia em curso de concluída.','depends_on':[]},{'id':'app','criterion':'Preparar o pacote científico '+REL+' para todos os motores/JEV, preservando o kernel v5 e a memória operacional atuais, com proveniência e admissão de contexto medidas. Não instalar nesta etapa.','depends_on':[]},{'id':'deploy','criterion':'Após revisão real independente do pacote, ativar o app com backups/CAS, instalação e reinício controlados do filho web e verificação do carregamento, preservando serviços e tarefas.',' ...[linha truncada na auditoria]
++    result=act('configure',requirements=requirements,sources=[{'path':str(W/'ORIGINAL.txt'),'sha256':hashlib.sha256(source).hexdigest()}],event_id=REL+'-mission-configure')
+@@ -35,2 +43,2 @@
+-    new('unit.json',[{'id':UNIT,'frente':'F9','titulo':'Atualização conjunta do app, JEV e memória científica para v395','dono':OWNER,'gate':None,'criterio_de_fechado':'Pacotes395 verificados, revisão independente, ativação coordenada e matriz de disponibilidade real.','escopo':'App web/iOS/Android e fila científica; fontes originais somente leitura; preservar carteira, consentimentos, atividade e correção HajaLuz.','consulta':'Mapa custodia.v395 registra custódia/site/repositório/dispositivos concluídos; fila v395 em DELIVERY_R1; Bancada B5-v395 lida; NósVivo sem unidade. Reutilizar preparação app v394 e preservar alterações operacionais posteriores.'}])
+-    for args in [['nova','--json',str(W/'unit.json'),'--quem',OWNER],['reivindicar',UNIT,'--quem',OWNER,'--nota','Atualização395 autorizada pelo operador; fontes readonly.','--horas','12']]:
++    new('unit.json',[{'id':UNIT,'frente':'F9','titulo':'Atualização do app, JEV e memória científica para '+REL,'dono':OWNER,'gate':None,'criterio_de_fechado':'Pacote '+REL+' verificado, revisão independente, implantação controlada do filho web e verificação do carregamento e do uso efetivo.','escopo':'App web/iOS/Android (backend compartilhado); fontes originais somente leitura; preservar carteira, consentimentos, atividade e correção HajaLuz. A fila científica tem unidade própria.','consulta':'Mapa de rotas: consulta "app v395" em 24/10 retornou 0 rotas. Pipeline de referência: work/iald_v395_20261022 (DELIVERY, review_final, ACCEPT_*). Ordem do operador: ORDEM_DO_OPERADOR.txt desta pasta ...[linha truncada na auditoria]
++    for args in [['nova','--json',str(W/'unit.json'),'--quem',OWNER],['reivindicar',UNIT,'--quem',OWNER,'--nota','Atualização '+REL+' do app; fontes somente leitura; ordem do operador em ORDEM_DO_OPERADOR.txt.','--horas','12']]:
+
+== 3. ARQUIVOS NOVOS (sem equivalente na v395)
+e07aecca44c2ebf161aae7d64a5fbb27a006bcea8befedcfd716ff59aca4f872  release_cfg.py
+d7a12ef1cc2a1e1e57a7e0816735654deafa0a2dbda1c5d0f5f25d50c727fd1b  mission_step.py
+9bc352b8b4dd418aca9ca001d32af7db4c432659ffa1ca65a508aad1a8f6277f  app/preflight_offline.py
+9bf5b280c2e4895384bb01bf5c38efffa81117a7af87bf390222a8c9643f1a1d  app/RELEASE.json
+
+== 4. O QUE NAO FOI COPIADO DA v395 E POR QUE
+- install_plan.json :: saida de validate_plan.py (hashes/caminhos da v395; 1450 entradas). A v398 gera o seu na fase B; copiar seria levar um plano velho.
+- app/DATA_PLAN.json, app/PREPARED_BINDING.json, app/BUILT.json, app/PUBLIC_GIT_BINDING.json, app/RUNTIME_BASELINE.json, app/native_prefix.md, app/packages/, app/science/ :: saidas de prepare/finalize/count da v395.
+- validation/, review/*.json, deployment.json, restart.json, maintenance.json, INSTALLED_VERIFICATION.json, DELIVERY*.json, MEMORY_*.json :: recibos da v395 (nao se reaproveita recibo de outra release).
+- SESSION_REFERENCE.json, ORIGINAL.txt, init_receipt.json, mission_configured.json, unit.json, *_CLAIM.json, *_SUBMITTED.json :: missao ACOM da v395; a v398 cria a sua (task.py init) com a ordem do operador.
+- assemble_delivery.py, memory_update.py, memory_live_apply.py, finish_live.py, submit_final.py, record_progress.py, complete_documental_accept.py, verify_installed.py (1a tentativa), review/review_sources_queue.py :: pos-implantacao / fila: fora do escopo desta fase (moldes disponiveis na v395).

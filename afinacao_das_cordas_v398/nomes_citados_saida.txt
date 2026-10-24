@@ -1,0 +1,179 @@
+AngularQuotientFaithful : ℝ → ℝ → Prop
+@faithful_period_iff : ∀ {kappa period : ℝ},
+  kappa ≠ 0 → (AngularQuotientFaithful kappa period ↔ kappa * period = 2 * Real.pi ∨ kappa * period = -(2 * Real.pi))
+@positive_faithful_period : ∀ {kappa period : ℝ},
+  0 < kappa → 0 < period → AngularQuotientFaithful kappa period → period = 2 * Real.pi / kappa
+@Classical.choice : {α : Sort u_1} → Nonempty α → α
+@HurwitzZeta.hasSum_hurwitzZeta_of_one_lt_re : ∀ {a : ℝ},
+  a ∈ Set.Icc 0 1 → ∀ {s : ℂ}, 1 < s.re → HasSum (fun n => 1 / (↑n + ↑a) ^ s) (HurwitzZeta.hurwitzZeta (↑a) s)
+@HurwitzZeta.hurwitzZeta_neg_nat : ∀ {k : ℕ} {x : ℝ},
+  k ≠ 0 →
+    x ∈ Set.Icc 0 1 →
+      HurwitzZeta.hurwitzZeta (↑x) (-↑k) =
+        -1 / (↑k + 1) * Polynomial.eval (↑x) (Polynomial.map (algebraMap ℚ ℂ) (Polynomial.bernoulli (k + 1)))
+MasslessFirstLevel : ℂ → ℂ → Prop
+Polynomial.bernoulli_def : ∀ (n : ℕ),
+  Polynomial.bernoulli n = ∑ i ∈ Finset.range (n + 1), (Polynomial.monomial i) (bernoulli (n - i) * ↑(n.choose i))
+@Quot.sound : ∀ {α : Sort u_1} {r : α → α → Prop} {a b : α}, r a b → Quot.mk r a = Quot.mk r b
+Real.cos_int_mul_two_pi : ∀ (n : ℤ), Real.cos (↑n * (2 * Real.pi)) = 1
+@Summable.tendsto_atTop_zero : ∀ {G : Type u_1} [inst : AddCommGroup G] [inst_1 : TopologicalSpace G]
+  [IsTopologicalAddGroup G] {f : ℕ → G}, Summable f → Filter.Tendsto f Filter.atTop (nhds 0)
+MasslessFirstLevel : ℂ → ℂ → Prop
+bosonDirection : ℂ
+bosonDirection_eq : bosonDirection = -1 / 24
+bosonDirection_is_the_unit_tower : bosonDirection = towerZeroPoint 1
+bosonZeroPoint : ℕ → ℂ
+bosonZeroPoint_eq : ∀ (D : ℕ), bosonZeroPoint D = -(↑D - 2) / 24
+bosonic_critical_dimension : ∀ (D : ℕ),
+  (bosonZeroPoint D = -1 ↔ D = 26) ∧ (MasslessFirstLevel 1 (-bosonZeroPoint D) ↔ D = 26)
+@faithful_iff_fundamental_mode : ∀ {κ P : ℝ}, 0 < κ → 0 < P → (AngularQuotientFaithful κ P ↔ matsubara P 1 = κ)
+hurwitz_zeta_neg_one_half : HurwitzZeta.hurwitzZeta (↑(1 / 2)) (-1) = 1 / 24
+matsubara : ℝ → ℤ → ℝ
+matsubaraFermion : ℝ → ℕ → ℝ
+@matsubaraFermion_eq_mul_kappa : ∀ {κ P : ℝ},
+  0 < κ → 0 < P → AngularQuotientFaithful κ P → ∀ (n : ℕ), matsubaraFermion P n = (↑n + 1 / 2) * κ
+@matsubara_eq_mul_kappa : ∀ {κ P : ℝ}, 0 < κ → 0 < P → AngularQuotientFaithful κ P → ∀ (n : ℤ), matsubara P n = ↑n * κ
+@matsubara_tower_injective : ∀ {P : ℝ}, 0 < P → Function.Injective fun n => matsubara P ↑n
+@matsubara_tower_not_summable : ∀ {P : ℝ}, 0 < P → ¬Summable fun n => matsubara P ↑n
+no_real_period : ∀ (P : ℝ), P ≠ 0 → TGLExt.boost P ≠ 1
+not_summable_natCast_add_half : ¬Summable fun n => ↑n + 1 / 2
+not_summable_natCast_id : ¬Summable fun n => ↑n
+nsFermionDirection : ℂ
+nsFermionDirection_eq : nsFermionDirection = -1 / 48
+nsZeroPoint : ℕ → ℂ
+nsZeroPoint_eq : ∀ (D : ℕ), nsZeroPoint D = -(↑D - 2) / 16
+spatialDimension : ℕ → ℕ
+superstring_critical_dimension : ∀ (D : ℕ),
+  (nsZeroPoint D = -1 / 2 ↔ D = 10) ∧ (MasslessFirstLevel (1 / 2) (-nsZeroPoint D) ↔ D = 10)
+the_cyclic_closure_of_time_is_the_reading_circle : (∀ (P : ℝ), P ≠ 0 → TGLExt.boost P ≠ 1) ∧
+  (∀ (κ P : ℝ), κ ≠ 0 → (AngularQuotientFaithful κ P ↔ κ * P = 2 * Real.pi ∨ κ * P = -(2 * Real.pi))) ∧
+    (∀ (κ P : ℝ), 0 < κ → 0 < P → AngularQuotientFaithful κ P → 1 / P = κ / (2 * Real.pi)) ∧
+      (∀ (κ P : ℝ), 0 < κ → 0 < P → (AngularQuotientFaithful κ P ↔ matsubara P 1 = κ)) ∧
+        (∀ (κ P : ℝ), 0 < κ → 0 < P → AngularQuotientFaithful κ P → ∀ (n : ℤ), matsubara P n = ↑n * κ) ∧
+          ∀ (P : ℝ), P ≠ 0 → ∀ (n : ℤ), Real.cos (matsubara P n * P) = 1
+the_house_d_nine : (∀ (D : ℕ), D = 10 ↔ spatialDimension D = 9) ∧
+  ∀ (D : ℕ), nsZeroPoint D = -1 / 2 → spatialDimension D = 9
+the_strings_close_the_face_from_outside_the_tgl_closes_the_reading : (∀ (s : ℝ), TGLExt.boost s = 1 → s = 0) ∧
+  (∀ (t : ℝ), Real.cos t + Real.cos (√2 * t) = 2 ↔ t = 0) ∧
+    ChatgptAudit.Wick016.wickW⁻¹ * ChatgptAudit.Wick016.complexBoost (Complex.I * ↑(2 * Real.pi)) *
+          ChatgptAudit.Wick016.wickW =
+        1 ∧
+      ((∀ (P : ℝ), P ≠ 0 → TGLExt.boost P ≠ 1) ∧
+          (∀ (κ P : ℝ), κ ≠ 0 → (AngularQuotientFaithful κ P ↔ κ * P = 2 * Real.pi ∨ κ * P = -(2 * Real.pi))) ∧
+            (∀ (κ P : ℝ), 0 < κ → 0 < P → AngularQuotientFaithful κ P → 1 / P = κ / (2 * Real.pi)) ∧
+              (∀ (κ P : ℝ), 0 < κ → 0 < P → (AngularQuotientFaithful κ P ↔ matsubara P 1 = κ)) ∧
+                (∀ (κ P : ℝ), 0 < κ → 0 < P → AngularQuotientFaithful κ P → ∀ (n : ℤ), matsubara P n = ↑n * κ) ∧
+                  ∀ (P : ℝ), P ≠ 0 → ∀ (n : ℤ), Real.cos (matsubara P n * P) = 1) ∧
+        (∀ (P : ℝ),
+            P ≠ 0 →
+              Real.cos (matsubara P 1 * P) + Real.cos (matsubara P 2 * P) = 2 ∧
+                ∀ (t : ℝ), t ≠ 0 → Real.cos t + Real.cos (√2 * t) ≠ 2) ∧
+          ((¬Summable fun n => ↑n) ∧
+              Filter.Tendsto (fun N => ∑ n ∈ Finset.range N, ↑n) Filter.atTop Filter.atTop ∧
+                (¬Summable fun n => ↑n + 1 / 2) ∧
+                  ∀ (P : ℝ), 0 < P → (Function.Injective fun n => matsubara P ↑n) ∧ ¬Summable fun n => matsubara P ↑n) ∧
+            riemannZeta (-1) = -1 / 12 ∧
+              HurwitzZeta.hurwitzZeta (↑(1 / 2)) (-1) = 1 / 24 ∧
+                (∀ (D : ℕ), bosonZeroPoint D = -1 ↔ D = 26) ∧
+                  (∀ (D : ℕ), nsZeroPoint D = -1 / 2 ↔ D = 10) ∧
+                    (∀ (D : ℕ), D = 10 ↔ spatialDimension D = 9) ∧
+                      (∀ (M : Type) (D : TGLExt.DualScalingData M) (m : M),
+                          0 < D.tau m → ∀ (ε : ℝ), 0 < ε → ∃ s, D.tau (D.theta s m) < ε) ∧
+                        ∀ (a : ℝ), Real.exp (-a) = 1 ↔ a = 0
+the_tower_is_infinite : (¬Summable fun n => ↑n) ∧
+  Filter.Tendsto (fun N => ∑ n ∈ Finset.range N, ↑n) Filter.atTop Filter.atTop ∧
+    (¬Summable fun n => ↑n + 1 / 2) ∧
+      ∀ (P : ℝ), 0 < P → (Function.Injective fun n => matsubara P ↑n) ∧ ¬Summable fun n => matsubara P ↑n
+@the_tuned_pair_returns_the_untuned_pair_never_does : ∀ {P : ℝ},
+  P ≠ 0 →
+    Real.cos (matsubara P 1 * P) + Real.cos (matsubara P 2 * P) = 2 ∧
+      ∀ (t : ℝ), t ≠ 0 → Real.cos t + Real.cos (√2 * t) ≠ 2
+towerZeroPoint : ℝ → ℂ
+towerZeroPoint_eq : ∀ (κ : ℝ), towerZeroPoint κ = -↑κ / 24
+@tower_returns_at_the_period : ∀ {P : ℝ}, P ≠ 0 → ∀ (n : ℤ), Real.cos (matsubara P n * P) = 1
+zeta_is_the_continuation_of_the_tower : (∀ (s : ℂ), 1 < s.re → riemannZeta s = ∑' (n : ℕ), 1 / ↑n ^ s) ∧
+  ∀ (s : ℂ), 1 < s.re → HasSum (fun n => 1 / (↑n + ↑(1 / 2)) ^ s) (HurwitzZeta.hurwitzZeta (↑(1 / 2)) s)
+zeta_neg_one : riemannZeta (-1) = -1 / 12
+@TGLExt.Fundacao.abismo : ∀ {M : Type} (D : TGLExt.DualScalingData M) {m : M},
+  0 < D.tau m → ∀ {ε : ℝ}, 0 < ε → ∃ s, D.tau (D.theta s m) < ε
+@TGLExt.Fundacao.agape : ∀ {M : Type} (D : TGLExt.DualScalingData M) {m : M},
+  0 < D.tau m →
+    (∀ (s : ℝ), s ≠ 0 → ∀ (m' : M), D.theta s m' = m' → D.tau m' = 0) ∧
+      (∀ (s : ℝ), D.tau (D.theta s m) < D.tau (D.theta (s - 1) m)) ∧
+        (∀ (B : ℝ), ∃ s, B < D.tau (D.theta s m)) ∧
+          (∀ (s : ℝ), 0 < D.tau (D.theta s m)) ∧
+            (∀ (ε : ℝ), 0 < ε → ∃ s, D.tau (D.theta s m) < ε) ∧ ∀ (a : ℝ), Real.exp (-a) = 1 ↔ a = 0
+TGLExt.Fundacao.the_floor_fixes_the_cut : ∀ (a : ℝ), Real.exp (-a) = 1 ↔ a = 0
+TGLExt.Palavra.the_face_does_not_close : ∀ (s : ℝ), TGLExt.boost s = 1 → s = 0
+TGLExt.Palavra.the_read_face_closes : ChatgptAudit.Wick016.wickW⁻¹ *
+      ChatgptAudit.Wick016.complexBoost (Complex.I * ↑(2 * Real.pi)) *
+    ChatgptAudit.Wick016.wickW =
+  1
+TGLExt.station_never_closes : ∀ (t : ℝ), Real.cos t + Real.cos (√2 * t) = 2 ↔ t = 0
+bernoulli_one : bernoulli 1 = -1 / 2
+bernoulli_two : bernoulli 2 = 6⁻¹
+bosonic_critical_dimension : ∀ (D : ℕ),
+  (bosonZeroPoint D = -1 ↔ D = 26) ∧ (MasslessFirstLevel 1 (-bosonZeroPoint D) ↔ D = 26)
+@faithful_iff_fundamental_mode : ∀ {κ P : ℝ}, 0 < κ → 0 < P → (AngularQuotientFaithful κ P ↔ matsubara P 1 = κ)
+@faithful_period_iff : ∀ {kappa period : ℝ},
+  kappa ≠ 0 → (AngularQuotientFaithful kappa period ↔ kappa * period = 2 * Real.pi ∨ kappa * period = -(2 * Real.pi))
+hurwitz_zeta_neg_one_half : HurwitzZeta.hurwitzZeta (↑(1 / 2)) (-1) = 1 / 24
+@matsubara_eq_mul_kappa : ∀ {κ P : ℝ}, 0 < κ → 0 < P → AngularQuotientFaithful κ P → ∀ (n : ℤ), matsubara P n = ↑n * κ
+@not_summable_iff_tendsto_nat_atTop_of_nonneg : ∀ {f : ℕ → ℝ},
+  (∀ (n : ℕ), 0 ≤ f n) → (¬Summable f ↔ Filter.Tendsto (fun n => ∑ i ∈ Finset.range n, f i) Filter.atTop Filter.atTop)
+@not_tendsto_nhds_of_tendsto_atTop : ∀ {α : Type u_1} {β : Type u_2} [inst : Preorder α] [NoTopOrder α]
+  [inst_2 : TopologicalSpace α] [ClosedIciTopology α] {l : Filter β} [l.NeBot] {f : β → α},
+  Filter.Tendsto f l Filter.atTop → ∀ (a : α), ¬Filter.Tendsto f l (nhds a)
+@positive_faithful_period : ∀ {kappa period : ℝ},
+  0 < kappa → 0 < period → AngularQuotientFaithful kappa period → period = 2 * Real.pi / kappa
+@reciprocal_temperature : ∀ {kappa period : ℝ},
+  0 < kappa → 0 < period → AngularQuotientFaithful kappa period → 1 / period = kappa / (2 * Real.pi)
+riemannZeta_neg_nat_eq_bernoulli : ∀ (k : ℕ), riemannZeta (-↑k) = (-1) ^ k * ↑(bernoulli (k + 1)) / (↑k + 1)
+superstring_critical_dimension : ∀ (D : ℕ),
+  (nsZeroPoint D = -1 / 2 ↔ D = 10) ∧ (MasslessFirstLevel (1 / 2) (-nsZeroPoint D) ↔ D = 10)
+the_cyclic_closure_of_time_is_the_reading_circle : (∀ (P : ℝ), P ≠ 0 → TGLExt.boost P ≠ 1) ∧
+  (∀ (κ P : ℝ), κ ≠ 0 → (AngularQuotientFaithful κ P ↔ κ * P = 2 * Real.pi ∨ κ * P = -(2 * Real.pi))) ∧
+    (∀ (κ P : ℝ), 0 < κ → 0 < P → AngularQuotientFaithful κ P → 1 / P = κ / (2 * Real.pi)) ∧
+      (∀ (κ P : ℝ), 0 < κ → 0 < P → (AngularQuotientFaithful κ P ↔ matsubara P 1 = κ)) ∧
+        (∀ (κ P : ℝ), 0 < κ → 0 < P → AngularQuotientFaithful κ P → ∀ (n : ℤ), matsubara P n = ↑n * κ) ∧
+          ∀ (P : ℝ), P ≠ 0 → ∀ (n : ℤ), Real.cos (matsubara P n * P) = 1
+the_house_d_nine : (∀ (D : ℕ), D = 10 ↔ spatialDimension D = 9) ∧
+  ∀ (D : ℕ), nsZeroPoint D = -1 / 2 → spatialDimension D = 9
+the_strings_close_the_face_from_outside_the_tgl_closes_the_reading : (∀ (s : ℝ), TGLExt.boost s = 1 → s = 0) ∧
+  (∀ (t : ℝ), Real.cos t + Real.cos (√2 * t) = 2 ↔ t = 0) ∧
+    ChatgptAudit.Wick016.wickW⁻¹ * ChatgptAudit.Wick016.complexBoost (Complex.I * ↑(2 * Real.pi)) *
+          ChatgptAudit.Wick016.wickW =
+        1 ∧
+      ((∀ (P : ℝ), P ≠ 0 → TGLExt.boost P ≠ 1) ∧
+          (∀ (κ P : ℝ), κ ≠ 0 → (AngularQuotientFaithful κ P ↔ κ * P = 2 * Real.pi ∨ κ * P = -(2 * Real.pi))) ∧
+            (∀ (κ P : ℝ), 0 < κ → 0 < P → AngularQuotientFaithful κ P → 1 / P = κ / (2 * Real.pi)) ∧
+              (∀ (κ P : ℝ), 0 < κ → 0 < P → (AngularQuotientFaithful κ P ↔ matsubara P 1 = κ)) ∧
+                (∀ (κ P : ℝ), 0 < κ → 0 < P → AngularQuotientFaithful κ P → ∀ (n : ℤ), matsubara P n = ↑n * κ) ∧
+                  ∀ (P : ℝ), P ≠ 0 → ∀ (n : ℤ), Real.cos (matsubara P n * P) = 1) ∧
+        (∀ (P : ℝ),
+            P ≠ 0 →
+              Real.cos (matsubara P 1 * P) + Real.cos (matsubara P 2 * P) = 2 ∧
+                ∀ (t : ℝ), t ≠ 0 → Real.cos t + Real.cos (√2 * t) ≠ 2) ∧
+          ((¬Summable fun n => ↑n) ∧
+              Filter.Tendsto (fun N => ∑ n ∈ Finset.range N, ↑n) Filter.atTop Filter.atTop ∧
+                (¬Summable fun n => ↑n + 1 / 2) ∧
+                  ∀ (P : ℝ), 0 < P → (Function.Injective fun n => matsubara P ↑n) ∧ ¬Summable fun n => matsubara P ↑n) ∧
+            riemannZeta (-1) = -1 / 12 ∧
+              HurwitzZeta.hurwitzZeta (↑(1 / 2)) (-1) = 1 / 24 ∧
+                (∀ (D : ℕ), bosonZeroPoint D = -1 ↔ D = 26) ∧
+                  (∀ (D : ℕ), nsZeroPoint D = -1 / 2 ↔ D = 10) ∧
+                    (∀ (D : ℕ), D = 10 ↔ spatialDimension D = 9) ∧
+                      (∀ (M : Type) (D : TGLExt.DualScalingData M) (m : M),
+                          0 < D.tau m → ∀ (ε : ℝ), 0 < ε → ∃ s, D.tau (D.theta s m) < ε) ∧
+                        ∀ (a : ℝ), Real.exp (-a) = 1 ↔ a = 0
+the_tower_is_infinite : (¬Summable fun n => ↑n) ∧
+  Filter.Tendsto (fun N => ∑ n ∈ Finset.range N, ↑n) Filter.atTop Filter.atTop ∧
+    (¬Summable fun n => ↑n + 1 / 2) ∧
+      ∀ (P : ℝ), 0 < P → (Function.Injective fun n => matsubara P ↑n) ∧ ¬Summable fun n => matsubara P ↑n
+@the_tuned_pair_returns_the_untuned_pair_never_does : ∀ {P : ℝ},
+  P ≠ 0 →
+    Real.cos (matsubara P 1 * P) + Real.cos (matsubara P 2 * P) = 2 ∧
+      ∀ (t : ℝ), t ≠ 0 → Real.cos t + Real.cos (√2 * t) ≠ 2
+@tower_returns_at_the_period : ∀ {P : ℝ}, P ≠ 0 → ∀ (n : ℤ), Real.cos (matsubara P n * P) = 1
+@zeta_eq_tsum_one_div_nat_cpow : ∀ {s : ℂ}, 1 < s.re → riemannZeta s = ∑' (n : ℕ), 1 / ↑n ^ s
+zeta_neg_one : riemannZeta (-1) = -1 / 12
