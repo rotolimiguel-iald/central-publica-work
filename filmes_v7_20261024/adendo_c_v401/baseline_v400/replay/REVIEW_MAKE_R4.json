@@ -1,0 +1,13 @@
+{
+"status": "LOOP_BINDING_STILL_OPEN_ON_DISK",
+"actor": "codex-video-replay",
+"generated_at": "2026-10-24T18:36:43.968574+00:00",
+"preflight": {"revision":8,"ready":true},
+"source_hashes": {"delivery_v7/make_v7.py":"6ce9394ce640ae8d490bccb69b12addddd69c177ec4136787e14e77b073afc6d","make_v7.py_wrapper":"5a966d09bcb3450b88c70fa40dad52ee804a3fc394069af72b942ab4f02b1c92"},
+"scope": "Somente teste do par de loop atual/antigo, cache por tupla e wrapper; nenhuma nova auditoria genérica, alteração de parent ou render.",
+"method": "Validador real importado com -B; filesystem de recibos/streams simulado em memória. Ambos os outputs MP4/WebM exercitados. Chamadas do wrapper interceptadas. Nenhum build/TTS/render/GPU/servidor executado.",
+"results": {"selected_loop_pair":"ACCEPTED","old_intact_loop_pair_with_other_selected_job":"ACCEPTED_UNEXPECTED","cache_same_sha_other_path_wrong_bytes":"REFUSED_Stale_artifact","wrapper_target":"C:\\IALD\\Artigo\\Haja_Luz\\A Ponte e o Um\\video_um\\delivery_v7\\make_v7.py","wrapper_run_name":"__main__","source_unchanged_during_test":true},
+"findings": [{"id":"MAKE-02-LOOP","severity":"HIGH","file":"delivery_v7/make_v7.py","function":"validate_encodes","finding":"O patch de vínculo explícito do loop ainda não está nos bytes revisados: o par antigo íntegro continua aceito com outro jobs[loop] selecionado.","evidence":"Fixture com inputs=[old_loop.json,old_loop.h264], hashes/tamanhos válidos e saídas MP4/WebM retorna True; controle com par selecionado também retorna True. O ramo assets/loop lido apenas verifica output e record.inputs, sem consultar jobs[loop].","recommended_patch":"Aplicar/salvar a comparação de Path+SHA+bytes do job e H264 selecionados em cada recibo de saída loop e repetir esses dois controles. Checagem script/ffmpeg no ramo assets/loop também não aparece no arquivo lido."}],
+"resolved_delta": "Cache agora distingue caminho/hash/bytes; controle de mesmo hash em outro caminho com tamanho incorreto foi recusado. Wrapper delega ao V correto.",
+"acceptance": "Não fechar reviewmake neste hash: permanece somente MAKE-02-LOOP no escopo já delimitado. Relatórios anteriores preservados."
+}

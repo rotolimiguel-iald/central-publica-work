@@ -40,8 +40,13 @@ entrada("quadro_v397.py", dst="quadro_v397.py", com_bump=False, regras=[
 ])
 
 # ------------------------------------------------------------------------------------------- refazer_* (sandbox, arvore pos-selo, candidato) e o build do kernel
-entrada("refazer_arvore_v398_pos_selo.py")
-entrada("refazer_sandbox_v398.sh")
+entrada("refazer_arvore_v398_pos_selo.py", regras=[
+    ("Escrito em 23/10/2026 (NAO executado na preparacao). Molde: refazer_arvore_v398_pos_selo.py.", "Escrito em 24/10/2026 (NAO executado na preparacao). Molde: refazer_arvore_v398_pos_selo.py.", 1),
+])
+entrada("refazer_sandbox_v398.sh", regras=[
+    ("e sem as pedras compiladas em .lake/build, entao o build COMPILA AS PEDRAS A FRIO, como o rito)", "e sem a pedra compilada em .lake/build, entao o build COMPILA A PEDRA A FRIO, como o rito)", 1),
+    ("acrescenta as pedras Sonico e AfinacaoDasCordas e GERA a raiz e o Audit", "acrescenta a pedra Testemunho e GERA a raiz e o Audit", 1),
+])
 entrada("refazer_sandbox_v398_pos_selo.sh")
 entrada("refazer_candidato_v398.sh", regras=[
     ("(runtime_pedras_v399.py, registros_v399.py, artigo_*_v399.pysnip, gerar_candidato_v399.py)", "(runtime_v399.py [montado por montar_runtime_v399.py], registros_v399.py, artigo_*_v399.pysnip, gerar_candidato_v399.py)", 1),
@@ -60,9 +65,22 @@ entrada("diff_e_pinos_v398.py", regras=[
     ("o diff do kernel nao e' so' as duas pedras + raiz + Audit", "o diff do kernel nao e' so' a pedra + raiz + Audit", 1),
     ("os vereditos esperados do passo simples (REPINADA_B8__...)", "os vereditos esperados do passo simples (REPINADA_B9__...)", 1),
 ])
-entrada("instalar_v398.py")
-entrada("reverter_v398.py")
-entrada("regras_v398.py")
+entrada("instalar_v398.py", regras=[
+    ("escrito em 23/10/2026, NAO executado na preparacao). Molde: instalar_v398.py.", "escrito em 24/10/2026, NAO executado na preparacao). Molde: instalar_v398.py.", 1),
+    ("(a v399 traz DOIS modulos novos de kernel, o numero lido de kernel_modulos_novos_v399.json: o proprio rito os materializa a partir do corpo embutido)",
+     "(a v399 traz UM modulo novo de kernel, Testemunho [nome provisorio]; o numero e' lido de kernel_modulos_novos_v399.json: o proprio rito o materializa a partir do corpo embutido)", 1),
+    ("(o criterio binario, a rede de Fock, o tempo, Psibit, TestemunhaEstatica e Token) JA estao no kernel do Nos (a base instalada e' a v398 selada); (b) os modulos novos da v399 (Sonico e AfinacaoDasCordas) NAO estao la ainda.",
+     "(o criterio binario, a rede de Fock, o tempo, Psibit, TestemunhaEstatica, Token, Sonico e AfinacaoDasCordas) JA estao no kernel do Nos (a base instalada e' a v398 selada); (b) o modulo novo da v399 (Testemunho) NAO esta la ainda.", 1),
+    ('"Psibit", "TestemunhaEstatica", "Token")', '"Psibit", "TestemunhaEstatica", "Token", "Sonico", "AfinacaoDasCordas")', 1),
+])
+entrada("reverter_v398.py", regras=[
+    ("escrito em 23/10/2026, NAO executado na preparacao). Le o ULTIMO", "escrito em 24/10/2026, NAO executado na preparacao). Le o ULTIMO", 1),
+])
+entrada("regras_v398.py", regras=[
+    ("ESCRITO em 23/10/2026 pela preparacao da cadeia v399", "ESCRITO em 24/10/2026 pela preparacao da cadeia v399", 1),
+    # o conferidor da v399 IMPORTA o um.py instalado (que importa o numpy do usuario): roda SEM -I (o -I esconderia o numpy); a regra de permissao tem de casar o comando exato
+    ("python -I -B -X utf8 conferir_rito_v399.py:*", "python -B -X utf8 conferir_rito_v399.py:*", 1),
+])
 entrada("teste_conferidor_positivo_v398.py", autoral=True)   # escrito a mao na v399: monta o sidecar e o stdout do Nos falso com a funcao do proprio candidato
 
 # ------------------------------------------------------------------------------------------- o kernel (preparar, pos_build): a logica e' a mesma (laco sobre DL.STONES); so' o texto de uma pedra
@@ -87,4 +105,6 @@ entrada("pos_build_kernel_v398.py", regras=[
     ("(Replayed = a pedra ja' estava compilada em .lake/build do k399b;", "(Replayed = a pedra ja' estava compilada em .lake/build do k399/final;", 1),
     ("(as pedras podem ja' estar compiladas em C:/t/k399b, cada uma isolada;", "(a pedra pode ja' estar compilada em C:/t/k399/final, isolada;", 1),
     ("x19='nao': o recibo v399 lista so' as pedras NOVAS Sonico e AfinacaoDasCordas e a LightNetStandardWedgeDataBGL.lean", "x19='nao': o recibo v399 lista so' a pedra NOVA Testemunho e a LightNetStandardWedgeDataBGL.lean", 1),
+    ("gerado por pos_build_kernel_v399.py (preparacao, 23/10/2026);", "gerado por pos_build_kernel_v399.py (preparacao, 24/10/2026);", 1),
+    ("(decisao da gerencia c1, 23/10/2026; a regra e' a da v394 a v398,", "(decisao da gerencia c1, mantida na ordem da v399 de 24/10/2026: bandeiras so' nomeadas; a regra e' a da v394 a v398,", 1),
 ])

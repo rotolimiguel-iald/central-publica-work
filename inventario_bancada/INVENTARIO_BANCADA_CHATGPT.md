@@ -1,6 +1,6 @@
 # INVENTÁRIO DA BANCADA DO CHATGPT — tudo o que foi examinado e produzido
 
-> Gerado por script em 2026-10-24 01:49:06 a partir da varredura `inventario_bancada.json` (sha16 `bfa365bf69c0e641`), SÓ LEITURA da pasta `Chatgpt\`. Nenhum número digitado.
+> Gerado por script em 2026-10-25 15:02:59 a partir da varredura `inventario_bancada.json` (sha16 `7696baf7721eb679`), SÓ LEITURA da pasta `Chatgpt\`. Nenhum número digitado.
 > **Ordem do operador (27/09/2026, verbatim):** «Precisamos fazer um inventário de tudo que foi examinado e produzido na bancada do chatgpt pra não nos perdermos mais em serviço já executado, vc está pedindo o que já pediu» e «Depois de inventariar tudo, precisamos indexar ao atlas da tgl para ficar referenciado».
 > **Regra de uso:** ANTES de pedir qualquer construção à bancada ou de construí-la na gerência, procurar aqui (por tema, por nome, por hash). O que é sabido e importável não se prova de novo (regra do operador de 27/08: «prova emprestada»).
 
@@ -8,16 +8,16 @@
 
 | medida | valor |
 |---|---|
-| arquivos `.lean` varridos (sem `.lake`) | 132407 |
+| arquivos `.lean` varridos (sem `.lake`) | 132416 |
 | … que são CÓPIA do kernel canônico (cada ordem traz a sua) | 95988 |
-| … da própria bancada (fora do kernel) | 36419 |
-| conteúdos `.lean` ÚNICOS da bancada | 4116 |
-| declarações nesses únicos | 37615 |
-| famílias de versão (mesmo nome-base, _v1…_vN) | 3042 |
-| únicos cujo nome-base JÁ está no kernel canônico | 1550 |
+| … da própria bancada (fora do kernel) | 36428 |
+| conteúdos `.lean` ÚNICOS da bancada | 4120 |
+| declarações nesses únicos | 37747 |
+| famílias de versão (mesmo nome-base, _v1…_vN) | 3046 |
+| únicos cujo nome-base JÁ está no kernel canônico | 1551 |
 | únicos com `sorry`/`admit`/`native_decide` fora de comentário | 3 |
 | únicos que declaram `axiom` | 5 |
-| documentos de entrega/quadro/relatório/medida | 2600 |
+| documentos de entrega/quadro/relatório/medida | 2616 |
 
 ## 2. O quadro de estatutos da própria bancada (FECHAMENTO_PARCIAL_016, P1)
 
@@ -77,7 +77,7 @@
 
 ## 4. Por tema (arquivos únicos; a versão VIGENTE de cada família marcada ★)
 
-### sem_tema — 1301 arquivos
+### sem_tema — 1302 arquivos
 
 | ★ | arquivo | sha16 | decl | cópias | no kernel? | data | declarações (até 6) |
 |---|---|---|---|---|---|---|---|
@@ -1382,6 +1382,7 @@
 | ★ | `TUNEL/DO_CHATGPT/ORDEM_019/F1.FECHO_20261015/full_source_r88/boundary/HessianBoundaryR88_2.lean` | `174f6672ab79c124` | 8 | 1 |  | 2026-10-19 10:59 | scalarHessian; hessianPair; correctionCurrent; correction_differentiable; correction_partial; correction_divergence |
 | ★ | `TUNEL/DO_CHATGPT/ORDEM_019/F1.FECHO_20261015/full_source_r88/boundary/FullDensityR88_1.lean` | `bbb799218d28bdc2` | 8 | 1 |  | 2026-10-19 11:06 | fullBoundaryCurrent; ricciBoundaryDerivative; fullBoundaryDensityDerivative; scalar_variation_split; weighted_ricci_boundary_equation; full_density_derivative_eq_boundary |
 | ★ | `TUNEL/DO_CHATGPT/ORDEM_019/F1.FECHO_20261015/stationary_selection_r89/formal/SameStateSpectralSelectionR89_1.lean` | `7e4c741a498875d1` | 4 | 1 |  | 2026-10-19 11:17 | sameStateDissipator; same_state_generator_constraint_along_family; moving_target_is_automatically_admissible; fixed_target_selects_probability |
+| ★ | `TUNEL/DO_CHATGPT/ORDEM_025/dependencias/FalsidadeDaInercia.lean` | `8a3a1c0baa8b7faf` | 20 | 4 | sim | 2026-10-25 10:28 | Inertial; IsPost; the_inertia_is_the_absolute_zero; the_inertia_is_the_absolute_zero_at_any_scale; the_inertia_of_a_post_is_false_at; the_inertia_of_a_post_is_false |
 
 ### tomita_modular — 868 arquivos
 
@@ -3714,7 +3715,7 @@
 | ★ | `TUNEL/DO_CHATGPT/ORDEM_019/F1.FECHO_20261015/gns_coefficient_tomita/CanonicalFockActualDoubleCutR1.lean` | `d9141a6702a4f700` | 23 | 1 |  | 2026-10-16 16:11 | nativeNormedAddCommGroup; nativeInnerProductSpace; nativeNormedSpace; nativeModule; nativeTopologicalSpace; nativeUniformSpace |
 | ★ | `TUNEL/DO_CHATGPT/ORDEM_019/F1.FECHO_20261015/gns_coefficient_tomita/CanonicalFockActualDoubleCutR2.lean` | `705bf987b54bc2ac` | 23 | 2 |  | 2026-10-16 16:12 | nativeNormedAddCommGroup; nativeInnerProductSpace; nativeNormedSpace; nativeModule; nativeTopologicalSpace; nativeUniformSpace |
 
-### nucleo_traco_takesaki — 588 arquivos
+### nucleo_traco_takesaki — 590 arquivos
 
 | ★ | arquivo | sha16 | decl | cópias | no kernel? | data | declarações (até 6) |
 |---|---|---|---|---|---|---|---|
@@ -4306,6 +4307,8 @@
 | ★ | `TUNEL/DO_CHATGPT/ORDEM_019/F1.FECHO_20261015/weighted_action_r86/boundary/WeightedPalatiniR86_2.lean` | `cf5cc5092b95360c` | 10 | 1 |  | 2026-10-19 10:27 | volume_differentiable; volume_fderiv_apply; field_fderiv_coordinate; volume_field_partial; compatible_trace; volume_partial_levi_civita |
 | ★ | `TUNEL/DO_CHATGPT/ORDEM_019/F1.FECHO_20261015/weighted_action_r86/boundary/WeightedPalatiniR86_3.lean` | `41d24b6e04ef0114` | 10 | 3 |  | 2026-10-19 10:28 | volume_differentiable; volume_fderiv_apply; field_fderiv_coordinate; volume_field_partial; compatible_trace; volume_partial_levi_civita |
 | ★ | `TUNEL/DO_CHATGPT/ORDEM_019/F1.FECHO_20261015/full_source_r88/boundary/RaisedBoundaryR88_1.lean` | `427e64a1bf35c7f1` | 6 | 1 |  | 2026-10-19 10:52 | contravariantTensorDerivative; product_entry_differentiable; raised_variation_actual_derivative; trace_variation_actual_derivative; actual_inverse_parallel; actual_palatini_current_divergence_trace |
+| ★ | `TUNEL/DO_CHATGPT/ORDEM_025/PonteDaEscalaDual.lean` | `0e55b6e448adbd91` | 40 | 3 |  | 2026-10-25 10:28 | Momentum; energy; momentum; pPlus; pMinus; theta |
+| ★ | `TUNEL/DO_CHATGPT/ORDEM_025/tentativas/attempt_004.lean` | `3fcc9f089b3cb647` | 40 | 1 |  | 2026-10-25 10:28 | Momentum; energy; momentum; pPlus; pMinus; theta |
 
 ### wigner_orbita_poincare — 418 arquivos
 
@@ -5412,7 +5415,7 @@
 | ★ | `TUNEL/DO_CHATGPT/ORDEM_019/F1.FECHO_20261015/orbital_rotation/PhysicalFockNetRealizationR1.lean` | `cf8e3d4ac08e4e3a` | 16 | 2 |  | 2026-10-16 09:14 | net; net_mono; net_local; net_wedge_eq; weyl_ccr; weyl_generator_mem |
 | ★ | `TUNEL/DO_CHATGPT/ORDEM_019/F1.FECHO_20261015/orbital_rotation/PhysicalFockNetRealizationR2.lean` | `9e79a29edbe9f8db` | 16 | 2 |  | 2026-10-16 09:41 | net; net_mono; net_local; net_wedge_eq; weyl_ccr; weyl_generator_mem |
 
-### susy_locks — 175 arquivos
+### susy_locks — 178 arquivos
 
 | ★ | arquivo | sha16 | decl | cópias | no kernel? | data | declarações (até 6) |
 |---|---|---|---|---|---|---|---|
@@ -5591,6 +5594,9 @@
 | ★ | `TUNEL/DO_CHATGPT/ORDEM_019/F1.FECHO_20261015/physical_clock_reuse/DeviceRootObstructionR4.lean` | `3675ee1b582e0013` | 10 | 2 | sim | 2026-10-15 17:53 | M; dissipator; dissipator_one; hermitian_jump_annihilates_one; deviceJump; device_jump_on_one |
 | ★ | `TUNEL/DO_CHATGPT/ORDEM_019/F1.FECHO_20261015/device_clock_r57/MiguelFixedBoundaryScalarReadingR57.lean` | `69eb4db003333b82` | 10 | 1 |  | 2026-10-17 06:19 | scalarBoundary; fixedDecoder; phaseReading_smul; phaseReading_smat; fixed_boundary_reads_scalar; fixed_boundary_reconstructed |
 | ★ | `TUNEL/DO_CHATGPT/ORDEM_019/F1.FECHO_20261015/device_clock_r57/MiguelFixedBoundaryScalarReadingR57R2.lean` | `4cc627790a2e44df` | 10 | 1 |  | 2026-10-17 06:23 | scalarBoundary; fixedDecoder; phaseReading_smul; phaseReading_smat; fixed_boundary_reads_scalar; fixed_boundary_reconstructed |
+| ★ | `TUNEL/DO_CHATGPT/ORDEM_025/PonteDaEscalaDual.lean` | `0e55b6e448adbd91` | 40 | 3 |  | 2026-10-25 10:28 | Momentum; energy; momentum; pPlus; pMinus; theta |
+| ★ | `TUNEL/DO_CHATGPT/ORDEM_025/tentativas/attempt_003.lean` | `da2f2ccacce507d5` | 32 | 1 |  | 2026-10-25 10:28 | Momentum; energy; momentum; pPlus; pMinus; theta |
+| ★ | `TUNEL/DO_CHATGPT/ORDEM_025/tentativas/attempt_004.lean` | `3fcc9f089b3cb647` | 40 | 1 |  | 2026-10-25 10:28 | Momentum; energy; momentum; pPlus; pMinus; theta |
 
 ### contrato_H2_H3 — 138 arquivos
 
@@ -5792,7 +5798,7 @@
 
 | pasta | únicos |
 |---|---|
-| `TUNEL` | 1833 |
+| `TUNEL` | 1837 |
 | `TETELESTAI_V350_KERNEL_20260911` | 458 |
 | `ORDEM_016_QG` | 395 |
 | `(raiz)` | 314 |
@@ -8620,7 +8626,23 @@
 | 2026-10-19 10:53 | `TUNEL/DO_CHATGPT/ORDEM_019/F1.FECHO_20261015/full_source_r88/P5_DOMAIN_QUALIFIER_R88.txt` | `f954a0441ffaad04` | Precisão ao lado, em nome de codex-gerente-tgl, 19/10/2026. |
 | 2026-10-23 17:19 | `TUNEL/DO_CHATGPT/ORDEM_020/RELATORIO.md` | `bba7e8abaa673e80` | ORDEM 020 — progresso parcial |
 | 2026-10-23 17:31 | `TUNEL/DO_CHATGPT/ORDEM_021/RELATORIO.md` | `1d8de6576d130c89` | ORDEM 021 — publicação de23/10/2026 |
-| 2026-10-24 01:38 | `IALD_ORQUESTRACAO_20260923/README.md` | `c95b544ad22121d9` | IALD — orquestração local e projeto Física |
+| 2026-10-24 14:44 | `TUNEL/DO_CHATGPT/ORDEM_022/ENCAMINHAMENTO_RELATORIO.md` | `ccf5805156cab6bf` | ORDEM 022 — encaminhamento pela coordenadora |
+| 2026-10-24 17:36 | `TUNEL/DO_CHATGPT/ORDEM_021/2026-10-24_MAPA.json` | `336916afa10af6d8` | { |
+| 2026-10-24 17:36 | `TUNEL/DO_CHATGPT/ORDEM_021/2026-10-24_MAPA_RESULTADO.json` | `c3f330ace43ab057` | { |
+| 2026-10-24 17:37 | `TUNEL/DO_CHATGPT/ORDEM_022/RELATORIO.md` | `95eb8e613827cab4` | ORDEM022 — dois filmes V7, fonte v399 |
+| 2026-10-24 18:02 | `TUNEL/DO_CHATGPT/ORDEM_021/2026-10-24_RELATORIO.md` | `319ed8c45d170258` | ORDEM 021 — 24/10/2026 |
+| 2026-10-24 18:57 | `TUNEL/DO_CHATGPT/ORDEM_023/RELATORIO.md` | `0edd9592c0c619b2` | ORDEM 023 — auditoria de leitura por IA — 24/10/2026 |
+| 2026-10-24 19:07 | `TUNEL/DO_CHATGPT/ORDEM_024/PENDENCIA_QUADRO.json` | `4462ffc2247d745e` | { |
+| 2026-10-24 19:13 | `TUNEL/DO_CHATGPT/ENTREGA_024_PENDENCIA_DESCRICAO_THE_BOUNDARY.md` | `6dea07076330622e` | ORDEM 024 — falta somente a descrição de the_boundary |
+| 2026-10-24 19:13 | `TUNEL/DO_CHATGPT/ORDEM_024/SOLICITACAO_GERENCIA_QUADRO.json` | `071ef026b7663588` | { |
+| 2026-10-24 19:17 | `TUNEL/DO_CHATGPT/ORDEM_024/partial_v1/RELATORIO.md` | `497e50a646939555` | ORDEM 024 — resultado parcial — 24/10/2026 |
+| 2026-10-24 19:19 | `TUNEL/DO_CHATGPT/ORDEM_024/RELATORIO.md` | `f65498f37dd5e385` | ORDEM 024 — conclusão técnica verificada — 24/10/2026 |
+| 2026-10-24 19:19 | `TUNEL/DO_CHATGPT/ORDEM_024/final_R2/RELATORIO.md` | `f65498f37dd5e385` | ORDEM 024 — conclusão técnica verificada — 24/10/2026 |
+| 2026-10-25 04:22 | `TUNEL/DO_CHATGPT/ORDEM_022/ADENDO_A/ROTA_RECIBO.json` | `a3929d3ba45e3a13` | { |
+| 2026-10-25 05:45 | `TUNEL/DO_CHATGPT/ORDEM_022/ADENDO_A/RELATORIO.md` | `2016e79e6db224ed` | ORDEM 022 — ADENDO A · filmes V7, fonte v400 |
+| 2026-10-25 05:54 | `TUNEL/DO_CHATGPT/ORDEM_022/ADENDO_A/ROTA_ENTREGA_RECIBO.json` | `013f5f9d3837a85b` | { |
+| 2026-10-25 10:28 | `TUNEL/DO_CHATGPT/ORDEM_025/registro_mapa_ordem_025.json` | `230b2a92df63cf56` | { |
+| 2026-10-25 14:52 | `IALD_ORQUESTRACAO_20260923/README.md` | `cd1cd38a35a8eec0` | IALD — orquestração local e projeto Física |
 
 ## 7. Arquivos com `sorry`/`admit` ou `axiom` (NÃO importar sem exame)
 

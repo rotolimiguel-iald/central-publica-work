@@ -6,7 +6,7 @@ foi medido; este arquivo só os chama, para e registra. Nada de novo entra no p�
 conferir_preparos, conferir_um_acom) e nenhum push ou subida acontece sem --publicar.
 
 Grupos: repos (incrementais -> esteira -> README -> índice -> conferência do delta -> publicação) · site (retrato -> um.acom -> conferência
--> vínculo -> montagem -> conferência -> llms (Kimi, 23/10) -> sitemap -> manifesto -> subida em ensaio -> subida) · fim (estado do organismo).
+-> vínculo -> central_extra -> montagem -> conferência -> llms (Kimi, 23/10) -> sitemap -> manifesto -> subida em ensaio -> subida) · fim (estado do organismo).
 Uso: atualizar_central_publica.py [--grupo repos|site|tudo] [--desde "AAAA-MM-DD HH:MM:SS"] [--so passo,passo] [--ate passo]
                                    [--publicar] [--titulo "título do commit"] [--listar]
 Registro de cada rodada em rodadas/<data>.json (rc, segundos e a última linha de cada passo)."""
@@ -58,10 +58,12 @@ for r in REPOS:
 for r in REPOS:
     add("publicar_" + r, "repos", [str(W / "atualizar_repo_publico.py"), r, str(PUB / r), a.titulo], publica=True)
 add("retrato", "site", [str(W / "refazer_retrato.py")])
+add("conferir_retrato", "site", [str(W / "conferir_retrato.py")])   # (24/10/2026) PORTAO: exportacao inteira (0 falhas; /api/classes e /api/patents no mapa) ou a rodada para
 add("acom_anterior", "site", func=copiar_acom_anterior)
 add("acom", "site", [str(W / "gerar_um_acom_publico.py"), str(BANC / "central_publica" / "acom")], cwd=CEN / "backend", py=PYB)
 add("conferir_acom", "site", [str(W / "conferir_um_acom_publico.py"), str(BANC / "central_publica" / "acom" / "um.acom")], cwd=CEN / "backend", py=PYB)
 add("vincular", "site", [str(W / "vincular_central_no_site.py")], py=PYB)
+add("central_extra", "site", [str(W / "gerar_central_extra.py")])   # (24/10/2026) os contratos do organismo, pensamentos e custódias, ANTES do montar que os copia
 add("montar", "site", [str(W / "montar_central_no_site.py")])
 add("conferir_central", "site", [str(W / "conferir_preparos.py"), str(SITE / "central")])
 add("llms_site", "site", [str(BANC / "tools" / "gerar_llms_site.py")], cwd=BANC)

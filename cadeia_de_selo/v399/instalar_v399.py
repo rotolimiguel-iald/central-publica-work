@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
-"""instalar_v399.py -- instala o candidato v399 no canonico (ato da gerencia c1; escrito em 23/10/2026, NAO executado na preparacao). Molde: instalar_v398.py. Fail-closed:
+"""instalar_v399.py -- instala o candidato v399 no canonico (ato da gerencia c1; escrito em 24/10/2026, NAO executado na preparacao). Molde: instalar_v398.py. Fail-closed:
   * o canonico tem de ser a v398 selada (ESPERADOS_v399.origem_sha16 == CANDIDATO_v399.base_v398_sha16, lido do arquivo) e o candidato o de ESPERADOS e do registro;
   * o recibo pre_selo do B(n) (PINO_RECIBO_PRE_SELO_v399.json) tem de existir, estar pinado (sha256 do arquivo == o do pino), ser UTILIZAVEL e ser do um.py que esta no Nos agora (a licao da v398: o recibo e' gerado e pinado ANTES da instalacao);
   * o cache do pilar tem de guardar o resultado reaproveitado (o mesmo que a v399 reaproveita pela chave);
-  * nenhum processo um.py ou trabalhador do pilar rodando (a v399 traz DOIS modulos novos de kernel, o numero lido de kernel_modulos_novos_v399.json: o proprio rito os materializa a partir do corpo embutido);
+  * nenhum processo um.py ou trabalhador do pilar rodando (a v399 traz UM modulo novo de kernel, Testemunho [nome provisorio]; o numero e' lido de kernel_modulos_novos_v399.json: o proprio rito o materializa a partir do corpo embutido);
   * BACKUP DE BYTES de um.py, um_absoluto.json, _selo.json, _forma_canonica.md, _manifest.md, _pilar_quantico.json, tgl_kernel/TGLExt.lean e tgl_kernel/TGL/Audit.lean;
   * COPIA DE BYTES do resultado do pilar no cache para o pacote (pilar_anterior_v398_<ts>/);
   * candidato -> temporario -> conferir -> os.replace; grava APLICADO_AO_CANONICO_<ts>.json."""
@@ -32,9 +32,9 @@ assert os.path.exists(PINO["path"]) and hashlib.sha256(open(PINO["path"], "rb").
 assert PINO["utilizavel_como_recibo_pre_selo_do_B_n"] is True and PINO["versao_nos"] == "v398" and PINO["um_py_sha16_do_nos"] == h16(raw0), "o recibo pre_selo nao e' utilizavel ou nao e' do um.py que esta no Nos -- nao instalo"
 _cdir = os.path.join("C:" + os.sep, "IALD", "Artigo", "Haja_Luz", "A Ponte e o Um", "cache", "checkpoints", "quantum_pillar", ESP["pilar"]["key"])
 assert hashlib.sha256(open(os.path.join(_cdir, "result.json"), "rb").read()).hexdigest() == ESP["pilar"]["result_sha256"], "o cache do pilar nao guarda o resultado reaproveitado"
-# v399: (a) as pedras anteriores (o criterio binario, a rede de Fock, o tempo, Psibit, TestemunhaEstatica e Token) JA estao no kernel do Nos (a base instalada e' a v398 selada); (b) os modulos novos da v399 (Sonico e AfinacaoDasCordas) NAO estao la ainda.
+# v399: (a) as pedras anteriores (o criterio binario, a rede de Fock, o tempo, Psibit, TestemunhaEstatica, Token, Sonico e AfinacaoDasCordas) JA estao no kernel do Nos (a base instalada e' a v398 selada); (b) o modulo novo da v399 (Testemunho) NAO esta la ainda.
 # A lista dos modulos novos vem de kernel_modulos_novos_v399.json (campo 'novos', uma LISTA); o numero e' o comprimento dela, conferido contra ESPERADOS. Fail-closed em tudo.
-_PEDRAS_ANTERIORES = ("TheBinaryReadingAtTheFixedPoint", "TimeGravitonMatrix", "RuleQuadraticResidual", "Psibit", "TestemunhaEstatica", "Token")
+_PEDRAS_ANTERIORES = ("TheBinaryReadingAtTheFixedPoint", "TimeGravitonMatrix", "RuleQuadraticResidual", "Psibit", "TestemunhaEstatica", "Token", "Sonico", "AfinacaoDasCordas")
 assert all(os.path.exists(os.path.join(NOS, "tgl_kernel", "TGLExt", n_ + ".lean")) for n_ in _PEDRAS_ANTERIORES) and os.path.exists(os.path.join(NOS, "tgl_kernel", "TGLExt", "F1Fecho394", "NetworkProofAuditR8.lean")), "as pedras anteriores (v394 a v398) nao estao no kernel do Nos -- nao instalo"
 _nj = json.load(open(os.path.join(HERE, "kernel_modulos_novos_v399.json"), encoding="utf-8"))
 assert isinstance(_nj["novos"], list), "kernel_modulos_novos_v399.json tem de trazer a LISTA em 'novos'"

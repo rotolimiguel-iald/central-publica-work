@@ -1,0 +1,93 @@
+{
+  "status": "PASS_CORRECTED_CODE_ACTUAL_INTEGRATION_REVIEW_PENDING",
+  "source": "v401",
+  "source_sha256": "1925cb691e933ae811933a6286b4acb9c25853ba2d89f926a6610d2d837eba01",
+  "created_at": "2026-10-25T23:46:26.752520+00:00",
+  "actor": "codex-video-replay",
+  "finding": {
+    "id": "SUBMIT401-01",
+    "severity": "MEDIUM",
+    "status": "FIXED",
+    "problem": "PASS_WITH_SCOPE alone accepted a review of another source/construction or a self-review; root pointer was not checked against the reviewed result pin.",
+    "fix": "Require current version/source pin, named distinct reviewer, exact result/construction byte equality and an actual result/construction pin inside the review; bind root pointer to result.delivery."
+  },
+  "code": {
+    "path": "C:\\IALD\\Central de Patentes\\work\\filmes_v7_20261024\\adendo_c_v401\\submit_v401.py",
+    "sha256": "a22b4504ccb8bbeda056254bf2507d61853fcbf10416d0c6572ff76af5e02bb4",
+    "bytes": 7924
+  },
+  "backup": {
+    "path": "C:\\IALD\\Central de Patentes\\work\\filmes_v7_20261024\\adendo_c_v401\\submit_v401.py.bak_review_1792971936175423400",
+    "sha256": "49c82f48ddd0beed24be5cd44b6e62f7b894cd65ef99634ae7e42498e3508c52",
+    "bytes": 6350
+  },
+  "tests": [
+    {
+      "name": "bound_review",
+      "pass": true,
+      "observed": "accepted"
+    },
+    {
+      "name": "reviewer_id_object",
+      "pass": true,
+      "observed": "accepted"
+    },
+    {
+      "name": "status_only",
+      "pass": true,
+      "observed": "rejected",
+      "reason": "'source'"
+    },
+    {
+      "name": "wrong_source",
+      "pass": true,
+      "observed": "rejected",
+      "reason": ""
+    },
+    {
+      "name": "wrong_program_pin",
+      "pass": true,
+      "observed": "rejected",
+      "reason": ""
+    },
+    {
+      "name": "self_review",
+      "pass": true,
+      "observed": "rejected",
+      "reason": "Distinct reviewer required"
+    },
+    {
+      "name": "wrong_result_pin",
+      "pass": true,
+      "observed": "rejected",
+      "reason": "Review pins another construction"
+    },
+    {
+      "name": "no_result_pin",
+      "pass": true,
+      "observed": "rejected",
+      "reason": "Review must pin RESULTADO.json or CONSTRUCTION_DELIVERY_V401.json"
+    },
+    {
+      "name": "different_tunnel_construction",
+      "pass": true,
+      "observed": "rejected",
+      "reason": "Construction and tunnel result differ"
+    }
+  ],
+  "test_count": 9,
+  "schema_contract": {
+    "status": "PASS_WITH_SCOPE",
+    "source": "v401",
+    "source_sha256": "Current source pin",
+    "reviewer_or_actor": "Distinct reviewer ID, string or {id:...}; this field is not authentication by itself.",
+    "evidence": "At least one nested {path or file,sha256[,bytes]} pin to T/RESULTADO.json or C/CONSTRUCTION_DELIVERY_V401.json."
+  },
+  "static_checks": [
+    "Only submit/check/project/get/transition calls; no accept or publish operation.",
+    "Mission submission carries current revision/projection/lease and refuses concurrent revision changes.",
+    "Existing pending evidence is compared before continuing, without duplicate submission.",
+    "ACOM handles are read fresh and preserved in the CAS transition."
+  ],
+  "scope": "Only the pure validation function extracted by AST was executed against synthetic local fixtures. submit_v401.main was not executed; no mission mutation, capture, TTS, finalizer or frozen-product write. Actual Goodall integration review is still pending."
+}

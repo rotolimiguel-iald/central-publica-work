@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""reverter_v399.py -- REVERSAO da instalacao v399 (ato da gerencia c1; usar so' se o rito falhar; escrito em 23/10/2026, NAO executado na preparacao). Le o ULTIMO APLICADO_AO_CANONICO_*.json desta pasta (o carimbo dos backups;
+"""reverter_v399.py -- REVERSAO da instalacao v399 (ato da gerencia c1; usar so' se o rito falhar; escrito em 24/10/2026, NAO executado na preparacao). Le o ULTIMO APLICADO_AO_CANONICO_*.json desta pasta (o carimbo dos backups;
 nada digitado), guarda o estado falho como registro, restaura os 8 backups de BYTES (um.py, core, selo, .md, manifesto, pilar, TGLExt.lean, TGL/Audit.lean) e poe os modulos novos de kernel da v399 (a lista que o instalador gravou;
 o numero e' o comprimento dela) em QUARENTENA (nunca apaga; guarda o caminho relativo). Confere ao fim que o um.py voltou a ser a v398 selada (o sha16 e' LIDO de ESPERADOS_v398.json do pacote anterior, nunca digitado).
 Fail-closed: backup ausente => para sem tocar o que resta. Molde: reverter_v398.py."""

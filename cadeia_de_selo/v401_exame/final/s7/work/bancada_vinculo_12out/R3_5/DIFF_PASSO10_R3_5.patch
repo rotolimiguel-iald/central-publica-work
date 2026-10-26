@@ -1,0 +1,186 @@
+diff --git a/b3_recibo_v394.py b/b3_recibo_v394.py
+index d08e19e..c67b05a 100644
+--- a/b3_recibo_v394.py
++++ b/b3_recibo_v394.py
+@@ -1,28 +1,29 @@
+ # -*- coding: utf-8 -*-
+-"""b3_recibo_v394.py -- confere o que o sincronizar_bancada.py (o elo B(3), esboco R3.3) imprimiu: a ULTIMA linha JSON do stdout cita o recibo; o recibo e' aberto, o seu sha256
+-confere com o impresso, e (R3, Remissao 4) a bateria PASSA, a versao alvo e' v394, a fase e' pos_selo e o modo e' o pedido.
+-uso: python -I -B -X utf8 b3_recibo_v394.py <arquivo com o stdout do esboco> ensaio|aplicar
++"""b3_recibo_v394.py -- confere o que o sincronizar_bancada.py (o elo B(n), esboco R3.5: SALTO v392 -> v394) imprimiu: a ULTIMA linha JSON do stdout cita o recibo; o recibo e' aberto, o seu sha256 confere com o impresso,
++e (R3, Remissao 4) a bateria PASSA, a versao alvo e' v394, a fase e' pos_selo e o modo e' o pedido. R3.5: com o 3o argumento (o sha256 da cadeia de selos, lido de PINOS_BN) o recibo tem de DECLARAR o salto:
++salto.declarado, salto.cadeia.sha256 == o pino, proxima_a_selar == v394, o veredito nomeia o salto (__SALTO_) e os pinos da versao da bateria sao os da v394, conferidos contra o Nos lido.
++uso: python -I -B -X utf8 b3_recibo_v394.py <arquivo com o stdout do esboco> ensaio|aplicar [<sha256 da cadeia de selos>]
+ rc 0 = confere; rc 1 = nao confere (a cadeia PARA). Nao escreve nada. NOT_FALSIFIED nao e' a palavra da creditacao; o gate nao se move."""
+ import hashlib, json, os, sys
+ sys.stdout.reconfigure(encoding="utf-8")
+ 
+ 
+ def main(argv):
+-    if len(argv) != 3 or argv[2] not in ("ensaio", "aplicar"):
+-        print("uso: b3_recibo_v394.py <stdout> ensaio|aplicar"); return 1
++    if len(argv) not in (3, 4) or argv[2] not in ("ensaio", "aplicar"):
++        print("uso: b3_recibo_v394.py <stdout> ensaio|aplicar [<sha256 da cadeia de selos>]"); return 1
+     linhas = [l for l in open(argv[1], encoding="utf-8", errors="replace").read().splitlines() if l.strip().startswith("{")]
+     if not linhas:
+-        print("B3 %s: o stdout nao traz a linha JSON do esboco" % argv[2]); return 1
++        print("B(n) %s: o stdout nao traz a linha JSON do esboco" % argv[2]); return 1
+     try:
+         imp = json.loads(linhas[-1])
+     except ValueError as e:
+-        print("B3 %s: a ultima linha JSON nao le: %r" % (argv[2], e)); return 1
++        print("B(n) %s: a ultima linha JSON nao le: %r" % (argv[2], e)); return 1
+     rp = imp.get("recibo")
+     if not rp or not os.path.isfile(rp):
+-        print("B3 %s: sem recibo (veredito %r, recusa %r)" % (argv[2], imp.get("veredito"), imp.get("recusa"))); return 1
++        print("B(n) %s: sem recibo (veredito %r, recusa %r)" % (argv[2], imp.get("veredito"), imp.get("recusa"))); return 1
+     raw = open(rp, "rb").read()
+     if hashlib.sha256(raw).hexdigest() != imp.get("recibo_sha256"):
+-        print("B3 %s: o sha256 do recibo nao confere com o impresso" % argv[2]); return 1
++        print("B(n) %s: o sha256 do recibo nao confere com o impresso" % argv[2]); return 1
+     r = json.loads(raw.decode("utf-8"))
+     bat = (r.get("bateria_resultado") or {}).get("veredito"); ver = str(r.get("veredito") or "")
+     prob = []
+@@ -36,7 +37,23 @@ def main(argv):
+         prob.append("o veredito do aplicar nao e' REPINADA_B* com aplicacao: %r" % ver)
+     if argv[2] == "ensaio" and ver.startswith(("RECUSA", "RECUSADA")):
+         prob.append("veredito do ensaio: %r" % ver)
+-    print("B3 %s: veredito=%s bateria=%s recibo=%s sha16=%s manifesto_novo=%s" % (argv[2], ver, bat, rp, imp.get("recibo_sha256", "")[:16], ((r.get("manifesto_novo") or {}).get("sha256") or "")[:16]))
++    salto = r.get("salto")
++    if len(argv) == 4:      # R3.5: a Bancada de producao pina a v392: o recibo tem de declarar o SALTO, com a cadeia pinada, e a bateria tem de ser a da v394
++        cad = argv[3].lower()
++        if not isinstance(salto, dict) or salto.get("declarado") is not True:
++            prob.append("o recibo nao declara o salto (a Bancada pina uma versao anterior a v393)")
++        else:
++            if (salto.get("cadeia") or {}).get("sha256") != cad:
++                prob.append("a cadeia de selos do salto no recibo (%r) nao e a pinada (%r)" % ((salto.get("cadeia") or {}).get("sha256"), cad))
++            if salto.get("proxima_a_selar") != "v394":
++                prob.append("salto.proxima_a_selar=%r (esperado v394)" % salto.get("proxima_a_selar"))
++            if "__SALTO_" not in ver:
++                prob.append("o veredito nao nomeia o salto: %r" % ver)
++        pv = (r.get("bateria") or {}).get("pinos_da_versao") or {}
++        if pv.get("versao") != "v394" or pv.get("declarados") is not True or pv.get("conferidos_contra_o_nos_lido") is not True:
++            prob.append("os pinos da versao da bateria nao sao os da v394 conferidos contra o Nos lido: %r" % {k: pv.get(k) for k in ("declarados", "versao", "conferidos_contra_o_nos_lido")})
++    print("B(n) %s: veredito=%s bateria=%s recibo=%s sha16=%s manifesto_novo=%s salto=%s" % (argv[2], ver, bat, rp, imp.get("recibo_sha256", "")[:16], ((r.get("manifesto_novo") or {}).get("sha256") or "")[:16],
++                                                                                       ("%s->%s puladas=%s" % (salto["de"]["versao"], r.get("versao_alvo"), salto["versoes_puladas"])) if isinstance(salto, dict) else None))
+     for p in prob:
+         print("  PROBLEMA:", p)
+     return 1 if prob else 0
+diff --git a/chain_pos_rito_v394.sh b/chain_pos_rito_v394.sh
+index c23f7fd..d8328e7 100644
+--- a/chain_pos_rito_v394.sh
++++ b/chain_pos_rito_v394.sh
+@@ -12,6 +12,10 @@
+ # Os pinos do B(n) vem de PINOS_BN_v394.json (lidos na hora; hash nunca de memoria). Sem o PINO recibo_pre_selo (a fase pre_selo da B(n) nao foi preparada) o 10 PARA em AGUARDA_OPERADOR.
+ # textos_v394.py, o handoff de fechar_v394.py e registrar_mapa_v394.py RECUSAM rodar enquanto tiverem trecho marcado para reescrever (as narrativas da v393 saem com a subida mecanica): os passos 0 a 2 nao os usam.
+ # Codigos de saida: 0 fim; 1 reprovacao (PARADA); 20 AGUARDA_OPERADOR (parada de proposito, nao e' falha).
++# R3.5 (19/10/2026, depois da revisao independente EXAME_DELTA_E_R3_4.md): o PASSO 10 (10, 10a, 10b, 10c) e o helper b3_recibo_v394.py foram RE-DERIVADOS pela §7 do RESULTADO_R3_4.md com o esboco R3.5 (R3_5/_construcao/derivar_passo10_r35.py;
++# NAO se rodou derivar_cadeia_v394.py): o B(n) e' o SALTO v392 -> v394 (a Bancada de producao pina a v392; o elo da v393 nunca rodou). Os pinos vem de PINOS_BN_v394.json FUNDIDO com o que e' da R3.4/R3.5 (esboco_R3_5, cadeia_de_selos,
++# recibo_pre_selo 0d82d598 da R3.4, kernel_recibo R3_4 com modulos_de_auditoria, selo/manifesto do kernel da v393, gerador_bateria, driver_t12_t14, bateria_base_R2); a BATERIA da v394 e' GERADA por script no 10 (depois do selo; bateria por versao)
++# e pinada ao lado (bateria_pos_selo/PINOS_BATERIA_v394.json); o 10 e o 10b passam --cadeia-de-selos; o 10b exige o evento c1 que nomeia a v394. Os passos 0 a 9, 10a, 10c e 11 a 14 estao como antes.
+ PK="/c/IALD/Central de Patentes/work/cadeia_de_selo/v394"; SEL="$PK/pos_rito"
+ TOOLS="/c/IALD/Central de Patentes/work/cadeia_de_selo"
+ NOS="/c/IALD/Artigo/Haja_Luz/A Ponte e o Um/Nós"
+@@ -41,21 +45,36 @@ sha256f() { $PY -c "import hashlib,sys;print(hashlib.sha256(open(sys.argv[1],'rb
+ pino() { $PY -c "import json,sys;print(json.load(open(sys.argv[1],encoding='utf-8'))[sys.argv[2]]['sha256'])" "$(cygpath -w "$PK/PINOS_BN_v394.json")" "$1"; }
+ pinop() { $PY -c "import json,sys;print(json.load(open(sys.argv[1],encoding='utf-8'))[sys.argv[2]]['path'])" "$(cygpath -w "$PK/PINOS_BN_v394.json")" "$1"; }
+ b3_prepara() {
+-  for k in bateria criterios esboco_R3_3 kernel_recibo candidato esperados pins_do_candidato; do
++  # R3.5 (19/10/2026): o B(n) da v394 e' o SALTO v392 -> v394 (a Bancada de producao pina a v392; o elo da v393 nunca rodou) com o esboco R3.5, pela §7 do RESULTADO_R3_4.md. Os pinos vem de PINOS_BN_v394.json (lidos na hora;
++  # hash nunca de memoria), FUNDIDO com o que e' da R3.4/R3.5 (R3_5/_construcao/fundir_pinos_bn_r35.py): o esboco R3.5, a cadeia de selos v392->v393, o recibo pre_selo (R3.4, gerado antes da instalacao), o recibo do kernel
++  # R3_4 (modulos_de_auditoria), o selo e o manifesto do kernel da v393 (custodia), o driver, o gerador e a base R2 da bateria. A bateria da v394 e' GERADA aqui, por script, depois do selo (bateria por versao).
++  for k in criterios esboco_R3_5 gerador_bateria driver_t12_t14 bateria_base_R2 cadeia_de_selos kernel_recibo candidato esperados pins_do_candidato recibo_pre_selo selo_anterior_v393 kernel_manifesto_anterior_v393; do
++    tem_pino "$k" || aguarda "o PINO $k nao esta em PINOS_BN_v394.json: a fusao da R3.4/R3.5 no PINOS_BN nao foi feita (ato da gerencia: rodar R3_5/_construcao/fundir_pinos_bn_r35.py) e retomar com CHAIN_DE=$1"
+     p=$(pinop "$k"); a=$(pino "$k"); b=$(sha256f "$p"); [ "$a" = "$b" ] || parar "o pino $k diverge do arquivo (pino $a != arquivo $b)"
+   done
+-  tem_pino recibo_pre_selo || aguarda "o PINO recibo_pre_selo nao esta em PINOS_BN_v394.json: o recibo da fase pre_selo da B(n) nao foi preparado (ato da gerencia: rodar o esboco R3.3 na fase pre_selo, pinar o recibo e retomar com CHAIN_DE=$1)"
+-  p=$(pinop recibo_pre_selo); a=$(pino recibo_pre_selo); b=$(sha256f "$p"); [ "$a" = "$b" ] || parar "o pino recibo_pre_selo diverge do arquivo (pino $a != arquivo $b)"
+-  BAT=$(pino bateria); CRI=$(pino criterios); RPS=$(pino recibo_pre_selo)
+-  W_BAT=$(cygpath -w "$(pinop bateria)"); W_CRI=$(cygpath -w "$(pinop criterios)"); W_RPS=$(cygpath -w "$(pinop recibo_pre_selo)"); W_ESB=$(cygpath -w "$(pinop esboco_R3_3)"); W_NOS=$(cygpath -w "$NOS")
+-  # o selo e o manifesto do kernel da v393 (versao anterior): pinados se houver pino; senao, as copias de custodia da pasta base_v393 (SEM pino, hash lido na hora; o esboco as cruza com o pino da Bancada, R31-3)
+-  if tem_pino selo_anterior_v393; then p=$(pinop selo_anterior_v393); a=$(pino selo_anterior_v393); b=$(sha256f "$p"); [ "$a" = "$b" ] || parar "o pino selo_anterior_v393 diverge do arquivo"; W_SELO=$(cygpath -w "$p")
+-  else W_SELO=$(cygpath -w "$PK/base_v393/um_absoluto_selo.json"); [ -f "$PK/base_v393/um_absoluto_selo.json" ] || parar "sem o selo da v393 em $PK/base_v393"; echo "  selo anterior SEM pino (lido na hora): $(sha256f "$W_SELO")"; fi
+-  if tem_pino kernel_manifesto_anterior_v393; then p=$(pinop kernel_manifesto_anterior_v393); a=$(pino kernel_manifesto_anterior_v393); b=$(sha256f "$p"); [ "$a" = "$b" ] || parar "o pino kernel_manifesto_anterior_v393 diverge do arquivo"; W_KMAN=$(cygpath -w "$p")
+-  else W_KMAN=$(cygpath -w "$PK/base_v393/tgl_kernel_proof_manifest.json"); [ -f "$PK/base_v393/tgl_kernel_proof_manifest.json" ] || parar "sem o manifesto do kernel da v393 em $PK/base_v393"; echo "  manifesto do kernel anterior SEM pino (lido na hora): $(sha256f "$W_KMAN")"; fi
+-  KR="$PK/kernel/KERNEL_RECIBO_v394.json"; [ -f "$KR" ] || parar "sem o recibo do kernel: $KR"
+-  W_KR=$(cygpath -w "$KR"); KRSHA=$(sha256f "$W_KR"); [ "$KRSHA" = "$(pino kernel_recibo)" ] || parar "o recibo do kernel diverge do pino"; echo "  recibo do kernel (sha256 LIDO NA HORA, igual ao pino): $KRSHA"
+-  $PY -c "import json,os,sys;sys.exit(0 if os.path.isdir(json.load(open(sys.argv[1],encoding='utf-8'))['arvore']) else 1)" "$W_KR" || aguarda "a arvore so-fontes do recibo do kernel (campo arvore: C:/t/k394/arvore) nao existe mais: rodar $PY $PK/refazer_arvore_v394_pos_selo.py (refaz a arvore a partir do kernel do Nos, sem build; ato da gerencia) e retomar com CHAIN_DE=$1"
++  [ "$(pino candidato)" = "$(sha256f "$(cygpath -w "$NOS/um.py")")" ] || parar "o um.py do Nos nao e o candidato pinado em PINOS_BN (candidato $(pino candidato))"
++  CRI=$(pino criterios); RPS=$(pino recibo_pre_selo); CAD=$(pino cadeia_de_selos)
++  W_NOS=$(cygpath -w "$NOS"); W_ESB=$(cygpath -w "$(pinop esboco_R3_5)"); W_CRI=$(cygpath -w "$(pinop criterios)"); W_RPS=$(cygpath -w "$(pinop recibo_pre_selo)"); W_CAD=$(cygpath -w "$(pinop cadeia_de_selos)")
++  W_SELO=$(cygpath -w "$(pinop selo_anterior_v393)"); W_KMAN=$(cygpath -w "$(pinop kernel_manifesto_anterior_v393)")
++  # o recibo do kernel do pos_selo e' o pino kernel_recibo (R3_4: contrato KERNEL_RECIBO_R3_4 + modulos_de_auditoria); o KERNEL_RECIBO_v394.json (R3_2) nao passa na N1k dos 3 modulos de auditoria
++  W_KR=$(cygpath -w "$(pinop kernel_recibo)"); KRSHA=$(sha256f "$W_KR"); [ "$KRSHA" = "$(pino kernel_recibo)" ] || parar "o recibo do kernel diverge do pino"; echo "  recibo do kernel (R3_4, sha256 LIDO NA HORA, igual ao pino): $KRSHA"
++  $PY -c "import json,os,sys;sys.exit(0 if os.path.isdir(json.load(open(sys.argv[1],encoding='utf-8'))['arvore']) else 1)" "$W_KR" || aguarda "a arvore so-fontes do recibo do kernel (campo arvore) nao existe mais: refazer a arvore (refazer_arvore_v394_pos_selo.py, sem build; ato da gerencia) e retomar com CHAIN_DE=$1"
++  # a bateria da v394: GERADA UMA vez, depois do selo, a partir dos pinos da cadeia (PINOS_BN: candidato == o um.py do Nos); o que o ensaio (10) usa e' o que o aplicar (10b) usa (pino ao lado, gravado na geracao)
++  BATD="$PK/bateria_pos_selo"
++  if [ ! -e "$BATD/BATERIA_VINCULO_v394.json" ]; then
++    mkdir -p "$BATD"
++    $PY "$(cygpath -w "$(pinop gerador_bateria)")" --base "$(cygpath -w "$(pinop bateria_base_R2)")" --base-sha256 "$(pino bateria_base_R2)" --versao v394 --nos "$W_NOS" \
++        --driver "$(cygpath -w "$(pinop driver_t12_t14)")" --pinos-bn "$(cygpath -w "$PK/PINOS_BN_v394.json")" \
++        --pino-saida "$(cygpath -w "$BATD/PINO_UM_PY_v394.json")" --saida "$(cygpath -w "$BATD/BATERIA_VINCULO_v394.json")" > "$SEL/gerar_bateria_v394_out.txt" 2>&1 \
++      || { cut -c1-300 "$SEL/gerar_bateria_v394_out.txt"; parar "gerar_bateria_r3_4.py recusou: o Nos nao e o candidato pinado em PINOS_BN, ou o selo nao pina o um.py (saida inteira em $SEL/gerar_bateria_v394_out.txt)"; }
++    $PY -c "import hashlib,json,sys;h=lambda p:hashlib.sha256(open(p,'rb').read()).hexdigest();b,p,o=sys.argv[1:4];open(o,'x',encoding='utf-8').write(json.dumps({'bateria':{'path':b,'sha256':h(b)},'pino_um_py':{'path':p,'sha256':h(p)},'nota':'pino ao lado da bateria da v394, gravado quando o chain a gerou (R3.5)'},indent=1))" \
++        "$(cygpath -w "$BATD/BATERIA_VINCULO_v394.json")" "$(cygpath -w "$BATD/PINO_UM_PY_v394.json")" "$(cygpath -w "$BATD/PINOS_BATERIA_v394.json")" || parar "nao gravei o pino ao lado da bateria da v394"
++    echo "  bateria da v394 GERADA por script em $BATD (pino ao lado: PINOS_BATERIA_v394.json)"
++  fi
++  [ -f "$BATD/PINOS_BATERIA_v394.json" ] || parar "a bateria da v394 existe sem o pino ao lado ($BATD/PINOS_BATERIA_v394.json): nao se sabe quem a gerou"
++  W_BAT=$(cygpath -w "$BATD/BATERIA_VINCULO_v394.json"); BAT=$(sha256f "$W_BAT")
++  [ "$BAT" = "$($PY -c "import json,sys;print(json.load(open(sys.argv[1],encoding='utf-8'))['bateria']['sha256'])" "$(cygpath -w "$BATD/PINOS_BATERIA_v394.json")")" ] || parar "a bateria da v394 em disco diverge do pino gravado quando foi gerada"
++  echo "  bateria da v394 (sha256 LIDO NA HORA, igual ao pino ao lado): $BAT"
+ }
+ tem_pino() { $PY -c "import json,sys;sys.exit(0 if sys.argv[2] in json.load(open(sys.argv[1],encoding='utf-8')) else 1)" "$(cygpath -w "$PK/PINOS_BN_v394.json")" "$1"; }
+ echo "== 0. guardas $(date +%T)"
+@@ -173,18 +192,19 @@ n=$(wc -c < "$UMEM/MEMORY.md"); l=$(wc -l < "$UMEM/MEMORY.md"); echo "  MEMORY.m
+ [ "$l" -le 195 ] || parar "MEMORY.md passou de 195 linhas ($l): o carregador do harness o corta acima de 200"
+ fi
+ if quer 10; then
+-echo "== 10. B(3) da Bancada, ENSAIO pos-selo (nada e' gravado na Bancada; o servico pode estar no ar) $(date +%T)"
++echo "== 10. B(n) da Bancada, ENSAIO pos-selo, SALTO v392 -> v394, esboco R3.5 (nada e' gravado na Bancada; o servico pode estar no ar) $(date +%T)"
+ b3_prepara 10
+ SAIDA_E="$PK/bancada_B3_ensaio_$(date +%Y%m%d_%H%M%S)"
+ set +e
+ $PY "$W_ESB" --bancada 'C:\IALD\Bancada_Um' --producao --nos "$W_NOS" --versao v394 --fase pos_selo --modo ensaio --bateria "$W_BAT" --bateria-sha256 "$BAT" \
++    --cadeia-de-selos "$W_CAD" --cadeia-de-selos-sha256 "$CAD" \
+     --recibo-pre-selo "$W_RPS" --recibo-pre-selo-sha256 "$RPS" --selo-anterior "$W_SELO" --kernel-manifesto-anterior "$W_KMAN" \
+     --kernel-recibo "$W_KR" --kernel-recibo-sha256 "$KRSHA" --criterios "$W_CRI" --criterios-sha256 "$CRI" \
+     --saida "$(cygpath -w "$SAIDA_E")" > "$SEL/b3_ensaio_out.txt" 2>&1; b3=$?
+ set -e
+ tail -4 "$SEL/b3_ensaio_out.txt" | cut -c1-400
+-[ "$b3" = "0" ] || parar "o B(3) ENSAIO reprovou (rc=$b3): saida inteira em $SEL/b3_ensaio_out.txt"
+-$PY "$SEL/b3_recibo_v394.py" "$(cygpath -w "$SEL/b3_ensaio_out.txt")" ensaio || parar "o recibo do B(3) ENSAIO nao confere"
++[ "$b3" = "0" ] || parar "o B(n) ENSAIO reprovou (rc=$b3): saida inteira em $SEL/b3_ensaio_out.txt"
++$PY "$SEL/b3_recibo_v394.py" "$(cygpath -w "$SEL/b3_ensaio_out.txt")" ensaio "$CAD" || parar "o recibo do B(n) ENSAIO nao confere"
+ fi
+ if quer 10a; then
+ echo "== 10-bis-a. a parada do servico da Bancada Um (porta 18777), com recibo"
+@@ -199,23 +219,24 @@ sys.exit(1)" || parar "o servico da Bancada esta no AR (a porta 18777 responde)
+ echo "  recibo da parada: $RP (sha256 $(sha256f "$(cygpath -w "$RP")")); porta 18777 fechada"
+ fi
+ if quer 10b; then
+-echo "== 10-bis. B(3) APLICAR (grava o manifesto B3 na Bancada de producao: backup de bytes, rollback se falhar) $(date +%T)"
+-[ "$B3_AUTORIZADO" = "sim" ] || aguarda "a B3 nao esta autorizada: ato da gerencia sob evento c1 (SINCRONIZACAO_BANCADA) + autorizacao do operador. Definir B3_AUTORIZADO=sim, EVENTO=<seq> e EVENTO_HASH=<hash16 do retorno de iald.py anotar>, com o servico parado (10-bis-a) e o recibo da parada, e retomar com CHAIN_DE=10b"
++echo "== 10-bis. B(n) APLICAR, SALTO v392 -> v394, esboco R3.5 (grava o manifesto B4 na Bancada de producao: backup de bytes, rollback se falhar) $(date +%T)"
++[ "$B3_AUTORIZADO" = "sim" ] || aguarda "a B(n) nao esta autorizada: ato da gerencia sob evento c1 (SINCRONIZACAO_BANCADA, que nomeia a v394) + autorizacao do operador. Definir B3_AUTORIZADO=sim, EVENTO=<seq> e EVENTO_HASH=<hash16 do retorno de iald.py anotar>, com o servico parado (10-bis-a) e o recibo da parada, e retomar com CHAIN_DE=10b"
+ [ -n "$EVENTO" ] && [ -n "$EVENTO_HASH" ] || aguarda "faltam EVENTO e EVENTO_HASH (o elo do evento c1 nomeando a gravacao)"
+ [ -f "$PK/bancada_B3_servico/RECIBO_PARADA_v394.json" ] || aguarda "sem o recibo da parada do servico (10-bis-a)"
+ b3_prepara 10b
+ SAIDA_B3="$PK/bancada_B3"; k=1; while [ -e "$SAIDA_B3" ]; do k=$((k+1)); SAIDA_B3="$PK/bancada_B3_$k"; done
+-echo "  saida do B(3): $SAIDA_B3 (pasta nova)"
++echo "  saida do B(n): $SAIDA_B3 (pasta nova)"
+ set +e
+ $PY "$W_ESB" --bancada 'C:\IALD\Bancada_Um' --producao --nos "$W_NOS" --versao v394 --fase pos_selo --modo aplicar --bateria "$W_BAT" --bateria-sha256 "$BAT" \
++    --cadeia-de-selos "$W_CAD" --cadeia-de-selos-sha256 "$CAD" \
+     --evento "$EVENTO" --evento-hash "$EVENTO_HASH" \
+     --recibo-pre-selo "$W_RPS" --recibo-pre-selo-sha256 "$RPS" --selo-anterior "$W_SELO" --kernel-manifesto-anterior "$W_KMAN" \
+     --kernel-recibo "$W_KR" --kernel-recibo-sha256 "$KRSHA" --criterios "$W_CRI" --criterios-sha256 "$CRI" \
+     --saida "$(cygpath -w "$SAIDA_B3")" > "$SEL/b3_aplicar_out.txt" 2>&1; b3=$?
+ set -e
+ tail -4 "$SEL/b3_aplicar_out.txt" | cut -c1-400
+-[ "$b3" = "0" ] || parar "o B(3) APLICAR reprovou (rc=$b3): saida inteira em $SEL/b3_aplicar_out.txt; NADA foi restaurado por esta cadeia (o esboco faz o seu rollback)"
+-$PY "$SEL/b3_recibo_v394.py" "$(cygpath -w "$SEL/b3_aplicar_out.txt")" aplicar || parar "o recibo do B(3) APLICAR nao confere"
++[ "$b3" = "0" ] || parar "o B(n) APLICAR reprovou (rc=$b3): saida inteira em $SEL/b3_aplicar_out.txt; NADA foi restaurado por esta cadeia (o esboco faz o seu rollback)"
++$PY "$SEL/b3_recibo_v394.py" "$(cygpath -w "$SEL/b3_aplicar_out.txt")" aplicar "$CAD" || parar "o recibo do B(n) APLICAR nao confere"
+ fi
+ if quer 10c; then
+ echo "== 10-ter. o religamento do servico e a reconexao dos adaptadores MCP (ato do operador)"

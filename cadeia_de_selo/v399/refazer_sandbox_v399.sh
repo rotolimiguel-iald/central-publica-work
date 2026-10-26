@@ -1,6 +1,6 @@
 #!/bin/sh
-# refaz o sandbox B do kernel da v399 (C:/t/k399c/final) a partir do kernel que o Nos TEM (a v398 instalada: sem a pasta probe\ de rascunhos e sem as pedras compiladas em .lake/build, entao o build COMPILA AS PEDRAS A FRIO, como o rito):
-# copia (robocopy sobre a pasta, sem /PURGE), acrescenta as pedras Sonico e AfinacaoDasCordas e GERA a raiz e o Audit (preparar_kernel_v399.py gerar), UM `lake build` + Audit (construir_kernel_v399.sh) e o pos-build (pos_build_kernel_v399.py).
+# refaz o sandbox B do kernel da v399 (C:/t/k399c/final) a partir do kernel que o Nos TEM (a v398 instalada: sem a pasta probe\ de rascunhos e sem a pedra compilada em .lake/build, entao o build COMPILA A PEDRA A FRIO, como o rito):
+# copia (robocopy sobre a pasta, sem /PURGE), acrescenta a pedra Testemunho e GERA a raiz e o Audit (preparar_kernel_v399.py gerar), UM `lake build` + Audit (construir_kernel_v399.sh) e o pos-build (pos_build_kernel_v399.py).
 # USAR ANTES de instalar_v399.py: o `gerar` le o um.py do Nos (ou base_v398) como a base v398. Se o sandbox C:/t/k399c/final ja existe e esta certo, NAO ha o que refazer (ele e' o que o ensaio e os pinos usam).
 V="/c/IALD/Central de Patentes/work/cadeia_de_selo/v399"
 mkdir -p /c/t/k399c || exit 9

@@ -1,0 +1,89 @@
+{
+ "contrato": "RESULTADO_CONTROLE_NEGATIVO_v401",
+ "script": {
+  "path": "C:\\IALD\\Central de Patentes\\work\\cadeia_de_selo\\v401\\bancada_B3_servico\\controle_negativo\\mutar_conferidor_v401.py",
+  "sha256": "076d6b2cf481ff7e0ea0ea0072baca839aa2a2d116cd16f299f2184cfdd2c291"
+ },
+ "conferidor": {
+  "path": "C:\\IALD\\Central de Patentes\\work\\cadeia_de_selo\\v401\\bancada_B3_servico\\conferir_exigencias_servico_v401.py",
+  "sha256": "21a7bad8a3dc6c803801f3bc79e35b682e44d93a7149b0f2082a223d330d4ebb"
+ },
+ "mutacoes": [
+  "M1_assert_AUT_depois_do_socket",
+  "M2_nome_da_versao_anterior_na_variavel",
+  "M3_assert_do_ESPERADOS_depois_do_subprocess"
+ ],
+ "rc_do_conferidor_sobre_as_mutacoes": 1,
+ "esperado_rc": 1,
+ "n_condicoes": 27,
+ "n_condicoes_ok": 20,
+ "condicoes_que_falharam": [
+  {
+   "nome": "recibo_parada_v401.py: o assert AUT vem logo depois da atribuicao (sem nada entre)",
+   "observado": [
+    7,
+    12
+   ]
+  },
+  {
+   "nome": "recibo_parada_v401.py: nenhuma chamada de E/S antes do assert AUT (so imports, D e AUT)",
+   "observado": [
+    "connect_ex",
+    "socket"
+   ]
+  },
+  {
+   "nome": "recibo_religamento_v401.py: ha a atribuicao AUT = os.environ.get(V401_AUTORIZACAO_OPERADOR).strip()",
+   "observado": null
+  },
+  {
+   "nome": "recibo_religamento_v401.py: o assert AUT vem logo depois da atribuicao (sem nada entre)",
+   "observado": [
+    null,
+    10
+   ]
+  },
+  {
+   "nome": "recibo_religamento_v401.py: V401_AUTORIZACAO_OPERADOR aparece 2 vezes (leitura e mensagem do assert)",
+   "observado": 1
+  },
+  {
+   "nome": "recibo_religamento_v401.py: nenhum nome da versao anterior sobrou (V400_AUTORIZACAO_OPERADOR, RECIBO_*_v400.json como saida)",
+   "observado": [
+    true,
+    false
+   ]
+  },
+  {
+   "nome": "evento: assert os.path.isfile(ESP) < leitura de CAND16 < assert startswith(CAND16) < subprocess.run (anotar no quadro)",
+   "observado": [
+    15,
+    10,
+    12,
+    13
+   ]
+  }
+ ],
+ "falhas_por_mutacao": {
+  "M1_assert_AUT_depois_do_socket": [
+   "recibo_parada_v401.py: o assert AUT vem logo depois da atribuicao (sem nada entre)",
+   "recibo_parada_v401.py: nenhuma chamada de E/S antes do assert AUT (so imports, D e AUT)"
+  ],
+  "M2_nome_da_versao_anterior_na_variavel": [
+   "recibo_religamento_v401.py: ha a atribuicao AUT = os.environ.get(V401_AUTORIZACAO_OPERADOR).strip()",
+   "recibo_religamento_v401.py: o assert AUT vem logo depois da atribuicao (sem nada entre)",
+   "recibo_religamento_v401.py: V401_AUTORIZACAO_OPERADOR aparece 2 vezes (leitura e mensagem do assert)",
+   "recibo_religamento_v401.py: nenhum nome da versao anterior sobrou (V400_AUTORIZACAO_OPERADOR, RECIBO_*_v400.json como saida)"
+  ],
+  "M3_assert_do_ESPERADOS_depois_do_subprocess": [
+   "evento: assert os.path.isfile(ESP) < leitura de CAND16 < assert startswith(CAND16) < subprocess.run (anotar no quadro)"
+  ]
+ },
+ "toda_mutacao_foi_pega": true,
+ "diffs_das_mutacoes": {
+  "M1_assert_AUT_depois_do_socket": "--- real/recibo_parada_v401.py\n+++ mutado/recibo_parada_v401.py\n@@ -7,11 +7,11 @@\n \n D = os.path.dirname(os.path.abspath(__file__))\n AUT = os.environ.get(\"V401_AUTORIZACAO_OPERADOR\", \"\").strip()\n-assert AUT, \"defina V401_AUTORIZACAO_OPERADOR com a ordem do operador que cobre este ato (data e texto): o script nao presume autorizacao\"\n s = socket.socket()\n s.settimeout(1)\n aberta = s.connect_ex((\"127.0.0.1\", 18777)) == 0\n s.close()\n+assert AUT, \"defina V401_AUTORIZACAO_OPERADOR com a ordem do operador que cobre este ato (data e texto): o script nao presume autorizacao\"\n assert not aberta, \"a porta 18777 esta aberta: parar o servico pelo PID antes deste recibo\"\n ps = subprocess.run([\"powershell\", \"-NoProfile\", \"-Command\",\n                      \"(Get-CimInstance Win32_Process | Where-Object { $_.CommandLine -like '*um_bancada.py*' -and $_.ProcessId -ne $PID } | \"\n",
+  "M2_nome_da_versao_anterior_na_variavel": "--- real/recibo_religamento_v401.py\n+++ mutado/recibo_religamento_v401.py\n@@ -9,7 +9,7 @@\n import urllib.request\n \n D = os.path.dirname(os.path.abspath(__file__))\n-AUT = os.environ.get(\"V401_AUTORIZACAO_OPERADOR\", \"\").strip()\n+AUT = os.environ.get(\"V400_AUTORIZACAO_OPERADOR\", \"\").strip()\n assert AUT, \"defina V401_AUTORIZACAO_OPERADOR com a ordem do operador que cobre este ato (data e texto): o script nao presume autorizacao\"\n NOS = r\"C:\\IALD\\Artigo\\Haja_Luz\\A Ponte e o Um\\Nós\"\n um_sha = hashlib.sha256(open(os.path.join(NOS, \"um.py\"), \"rb\").read()).hexdigest()\n",
+  "M3_assert_do_ESPERADOS_depois_do_subprocess": "--- real/evento_c1_b3_v401.py\n+++ mutado/evento_c1_b3_v401.py\n@@ -10,7 +10,6 @@\n          \"um_py\": sh(NOS + r\"\\um.py\"), \"selo\": sh(NOS + r\"\\um_absoluto_selo.json\"), \"unidade\": \"F0.6\"}\n D = os.path.dirname(os.path.abspath(__file__))\n ESP = os.path.join(D, \"..\", \"ESPERADOS_v401.json\")\n-assert os.path.isfile(ESP), \"ESPERADOS_v401.json nao existe ainda (e gerado antes do rito, por gerar_esperados_v401): sem ele o um.py do Nos nao tem com que ser conferido; nada foi anotado no quadro\"\n CAND16 = json.load(open(ESP, encoding=\"utf-8\"))[\"candidato_sha16\"]\n assert len(CAND16) >= 16, CAND16\n assert dados[\"um_py\"].startswith(CAND16), (\"o um.py do Nos nao e o candidato de ESPERADOS_v401.json\", dados[\"um_py\"][:16], CAND16)\n@@ -18,3 +17,4 @@\n                     \"--unidade\", \"F0.6\", \"--dados\", json.dumps(dados, ensure_ascii=False)],\n                    capture_output=True, text=True, encoding=\"utf-8\", cwd=r\"C:\\IALD\\PROGRAMA_IALD\")\n print(r.stdout.strip(), r.stderr.strip()[-300:])\n+assert os.path.isfile(ESP), \"ESPERADOS_v401.json nao existe ainda (e gerado antes do rito, por gerar_esperados_v401): sem ele o um.py do Nos nao tem com que ser conferido; nada foi anotado no quadro\"\n"
+ },
+ "escopo": "nada do servico foi executado; nenhum script real foi alterado; a pasta temporaria foi apagada; NOT_FALSIFIED nao e creditacao; o gate nao se move"
+}

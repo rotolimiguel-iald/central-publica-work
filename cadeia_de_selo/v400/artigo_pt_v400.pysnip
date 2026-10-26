@@ -1,0 +1,11 @@
+    # v400 (24/10/2026) -- ERRATA AO LADO da secao da v399 (o alfa redeclarado e a checagem do beta). O texto e' fixo; o hash do bloco embutido e a diferenca relativa do beta SAO LIDOS do registro selo_pela_propria_tecnologia_v399, nunca digitados.
+    # O quadro do topo (O Teste da Unica Palavra, v397) fica onde esta: a regra do 4,44 nao se mexe. Nada aqui move o gate.
+    _sv400 = (core.get("selo_pela_propria_tecnologia_v399") or {}).get("values") or {}
+    _h400 = lambda x_: (r"\texttt{" + x_[:16] + "}") if isinstance(x_, str) and len(x_) >= 16 else r"\text{n/d}"
+    _e400 = lambda x_: (r"\texttt{" + ("%.1e" % x_) + "}") if isinstance(x_, float) and not isinstance(x_, bool) else r"\text{n/d}"
+    s.append(r"\textbf{Errata ao lado (v400).} \textsf{[REAL]} A seção acima descreve o selo pela própria tecnologia como a v399 o selou, e a v399 trazia um defeito de integração que a Bancada Um apontou ao tentar sincronizá-la: "
+             r"a adaptação do selo (código da gerência, antes do bloco do operador) \emph{redeclarava} o literal de $\alpha$ numa linha não indentada do \texttt{um.py}, e o esboço de sincronização da Bancada exige uma só linha de $\alpha$ no programa (\texttt{ALPHA\_LINHA\_NAO\_UNICA}). "
+             r"A recusa fechou como devia (fail-closed): a v399 fica selada como está, e o passo seguinte da Bancada é a v400. A v400 corrige sem acrescentar nada ao kernel nem aos registros: a seção passa a \emph{ler} o $\alpha$ do próprio programa (\texttt{SEALED\_CODATA\_ALPHA}), "
+             r"de modo que o programa tem uma só declaração de $\alpha$ e nenhum literal de $\beta$ ($\beta=\alpha\sqrt{e}$ em tempo de execução, nunca literal); o bloco do operador (hash " + _h400(_sv400.get("bloco_embutido_sha256")) + r") não muda, nem o perfil, nem os controles negativos, nem o sidecar. "
+             r"E a checagem «$\beta$ do runtime» do registro do selo, que comparava o $\beta$ calculado com o mesmo $\alpha\sqrt{e}$ (tautológica), passa a confrontar com o $\beta$ do core do rito: diferença relativa medida neste rito " + _e400(_sv400.get("rel_beta_vs_core")) + r", tolerância $10^{-9}$. "
+             r"Nenhuma pedra, nenhum registro novo, nenhuma inscrição nova; validade no kernel não é creditação e o gate não se move. O quadro «O Teste da Única Palavra» segue no topo, com a sua linha dos $5\sigma$.")

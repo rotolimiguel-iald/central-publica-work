@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """refaz C:/t/k399c/arvore (so-fontes) a partir do kernel v399 que o Nos tem (LEITURA do Nos), como pos_build_kernel_v399.py a fez; confere os sha contra kernel/KERNEL_RECIBO_v399.json. Nao muda o recibo.
-Escrito em 23/10/2026 (NAO executado na preparacao). Molde: refazer_arvore_v398_pos_selo.py."""
+Escrito em 24/10/2026 (NAO executado na preparacao). Molde: refazer_arvore_v398_pos_selo.py."""
 import hashlib, json, os, shutil, sys
 H = os.path.dirname(os.path.abspath(__file__))
 NK = r"C:\IALD\Artigo\Haja_Luz\A Ponte e o Um\Nós\tgl_kernel"; ARV = r"C:\t\k399c\arvore"

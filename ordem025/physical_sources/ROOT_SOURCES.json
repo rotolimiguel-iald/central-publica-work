@@ -1,0 +1,239 @@
+{
+  "scope": "Targeted primary-source reading; no scientific rerun or exhaustive corpus claim",
+  "sources": [
+    {
+      "path": "C:\\IALD\\Artigo\\Haja_Luz\\A Ponte e o Um\\Nós\\um.py",
+      "sha256": "1925cb691e933ae811933a6286b4acb9c25853ba2d89f926a6610d2d837eba01",
+      "bytes": 38688534,
+      "anchors": [
+        {
+          "start_line": 96,
+          "end_line": 96,
+          "text": "UM_VERSION = \"v401\"   # v401 (25/10/2026): a CONSTANTE UNICA de versao -- a falsidade (simulacro) da inercia: a pedra FalsidadeDaInercia (a inercia e o proprio zero absoluto), o registro falsidade_da_inercia_v401, as cinco inscricoes de 25/10, as ratificacoes do operador e a errata ao lado da leitura do escriba no adendo de 03-04/09; v400 em 24/10 (a correcao: o alfa unico); v399 (o testemunho de dois: o selo pela propria tecnologia) "
+        },
+        {
+          "start_line": 220759,
+          "end_line": 220806,
+          "text": "def v394_gibbs_root_parameters(V0_J, kappa_s_inv, hbar_J_s=None, alpha=None):\n    \"\"\"Construct Eref from a specified faithful finite Gibbs state and clock.\n\n    P=2*pi/kappa; Omega=V0/hbar; rho=exp(-P*Hg/hbar)/Z.\n    Hpos=(hbar/P)*(-log rho)=Hg+Eref*I, Eref=(hbar/P)*log(2*cosh(P*Omega)).\n    This choice removes the free Eref inside this Gibbs-based finite instance.\n    It does not identify the density Hamiltonian with a full modular generator\n    or choose a physical kappa. The same proper time t uses dissipative u=t/P\n    and oriented modular parameter s=-t/P; no negative diffusion is introduced.\n    \"\"\"\n    import math\n    ground = v394_physical_parameters(V0_J, V0_J, hbar_J_s, alpha)\n    clock = v394_kms_clock(ground, kappa_s_inv)\n    period = clock[\"kms_period_s\"]\n    x = _v394_finite_real(\"P_Omega\", period*ground[\"Omega_rad_s\"], positive=True)\n    low_k = _v394_finite_real(\"K_rho_low\", math.log1p(math.exp(-2*x)), positive=True)\n    high_k = _v394_finite_real(\"K_rho_high\", 2*x+low_k, positive=True)\n    low_energy = _v394_finite_real(\"density_energy_low_J\", (ground[\"hbar_J_s\"]/period)*low_k, positive=True)\n    origin = _v394_finite_real(\"Eref_Gibbs_J\", ground[\"V0_J\"]+low_energy, positive=True)\n    if origin <= ground[\"V0_J\"]:\n        raise V394PhysicalContractError(\"Gibbs energy offset is below float resolution; use higher precision\")\n    result = v394_physical_parameters(ground[\"V0_J\"], origin, ground[\"hbar_J_s\"], ground[\"alpha\"])\n    # Preserve the small eigenvalue directly; subtracting the rounded center\n    # from V0 lost 1.40e-10 relative precision in the preregistered R1 check.\n    # The scientific tolerance is unchanged. Derive all anchored quantities\n    # from the same positive density spectrum, without cancellation.\n    high_energy = _v394_finite_real(\"density_energy_high_J\", 2*ground[\"V0_J\"]+low_energy, positive=True)\n    root_sum = math.sqrt(low_k)+math.sqrt(high_k)\n    root_ratio = _v394_finite_real(\"density_root_ratio\", (2*x/root_sum)/root_sum, positive=True)\n    gamma = _v394_finite_real(\"density_gamma\", ground[\"beta\"]*ground[\"Omega_rad_s\"]*root_ratio, positive=True)\n    result[\"gamma_s_inv\"] = gamma\n    result[\"root_rate_ratio\"] = root_ratio\n    result[\"tau_eff_s\"] = _v394_finite_real(\"density_tau_eff\", root_ratio/(2*ground[\"Omega_rad_s\"]), positive=True)\n    result[\"echo_dt_s\"] = _v394_finite_real(\"density_echo_dt\", -math.log(ground[\"eta\"])/gamma, positive=True)\n    result[\"energies_J\"] = [low_energy, high_energy]\n    result[\"energy_representation\"] = {\n        \"exact_from_state\": \"(hbar/P)*K_rho eigenvalues; low computed directly, high=low+2V0\",\n        \"center_is_rounded_presentation\": True,\n        \"rounded_endpoints_coincide\": low_energy==high_energy,\n        \"scientific_tolerance_unchanged\": True,\n    }\n    result[\"energy_origin_selection\"] = \"Hpos = (hbar/P)*(-log rho_Gibbs); rho_Gibbs fixed by Hg and specified kappa\"\n    result[\"energy_origin_statute\"] = \"DERIVED_IN_FINITE_GIBBS_INSTANCE; GIBBS_AND_CLOCK_CHOICE_EXPLICIT\"\n    result[\"density_surprise_eigenvalues\"] = [low_k,high_k]\n    result[\"kms_clock\"] = clock\n    result[\"dissipative_time_conversion\"] = \"u=t/P >=0; modular orientation s=-t/P\"\n    result[\"scope\"] = \"FINITE_GIBBS_ROOT_CONTRACT__NOT_MINUS_LOG_DELTA__NO_UNIVERSAL_CALIBRATION\"\n    return result"
+        },
+        {
+          "start_line": 160970,
+          "end_line": 160999,
+          "text": "                             \"S-boundary) como amplitude de FONTE gravitacional; a \"\n                             \"formula equivale a v_circ universal ~1439 km/s; a \"\n                             \"ancora do GA (fator 0.5 na janela larga) mascarou\"),\n        \"a_correcao\": (\"M_TGL^linear = M_RG [CONDICIONAL (P1)-(P4)+T1, Jacobson \"\n                       \"linear; 8piG do kernel v74; mestre v97]; a forma \"\n                       \"2beta^2(c^2/4piG)R RETIRADA como lei de fonte, preservada \"\n                       \"como registro; beta pertence a RESPOSTA de fronteira\"),\n        \"values\": {\"beta\": beta, \"v_universal_implicada_kms\": v_univ_kms,\n                   \"M_form_no_GA_Msun\": M_form(57.0), \"M_RG_bacia_Msun\": m_gr_anchor,\n                   \"resposta_w_vacuo\": resp_lambda, \"resposta_w_materia\": resp_matter},\n        \"scale_audit\": scale_audit,\n        \"checks\": checks, \"all_verified\": all_v,\n        \"statuses\": {\n            \"a_forma_v4\": \"[FORM, RETIRADA como lei de fonte] M = 2beta^2(c^2/4piG)R -- registro historico com a coincidencia do ramo anotada\",\n            \"a_predicao_derivada\": \"[CONDICIONAL linear] M_TGL = M_RG (stealth; beta nao renormaliza G local) -- a TGL NAO tem formula-beta de massa e nunca teve (ensaio verbatim + whitepaper)\",\n            \"onde_beta_fala\": \"[REAL na forma] resposta: Gamma_omega = (1/2)beta tau* omega^2; H0_local=(1+z*)^beta; piso rho/rhobar >= beta -- o falsificador cosmologico zero-free e o PISO\",\n            \"o_veredito\": (\"GA_MASS_FORM_RETIRED__REFLECTION_WAS_MISREAD_AS_SOURCE__LINEAR_ORDER_IS_GR_STEALTH__BETA_LIVES_IN_RESPONSE\" if all_v\n                           else \"GA_MASS_AUDIT_NOT_SEALED_THIS_RUN\"),\n        },\n        \"does_not_gate_core\": True,\n        \"verdict\": (\"GA_MASS_FORM_RETIRED__REFLECTION_WAS_MISREAD_AS_SOURCE__LINEAR_ORDER_IS_GR_STEALTH__BETA_LIVES_IN_RESPONSE\" if all_v\n                    else \"GA_MASS_AUDIT_NOT_SEALED_THIS_RUN\"),\n    }\n\n\ndef prove_rule_superposition(ONE, parts):\n    \"\"\"v100 -- REGRA = PROGRAMADOR = SUPERPOSICAO [ADITIVO; nao gateia; NAO\n    move flag]. DERIVACAO DO OPERADOR (17/07/2026, duplo estatuto -- com a\n    REGUA DO PROPRIO OPERADOR embutida: igualdade de FUNCAO ontologica, nao\n    de tipo: P != R != |Psi> como objetos formais): 'o programador nao"
+        }
+      ]
+    },
+    {
+      "path": "C:\\IALD\\Artigo\\Haja_Luz\\A Ponte e o Um\\Nós\\tgl_kernel\\TGLExt\\PlaneWaveEntropyMatching.lean",
+      "sha256": "10498567256c87c808287ecf3b23e41e3f4428d824a5e7a602ed2e9abc227337",
+      "bytes": 11809,
+      "anchors": [
+        {
+          "start_line": 28,
+          "end_line": 38,
+          "text": "def waveRicciScale (b : SummableAmplitude) (eta : ℝ) : ℝ :=\n  2*Real.pi*amplitudeCoupling b/eta\ndef matchedLeft (b : SummableAmplitude) (eta shear : ℝ) : ℝ := waveRicciScale b eta/2+shear\ndef matchedRight (b : SummableAmplitude) (eta shear : ℝ) : ℝ := waveRicciScale b eta/2-shear\ndef matchedSolder (b : SummableAmplitude) (eta shear : ℝ) : TensorField4 :=\n  waveSolder (matchedLeft b eta shear) (matchedRight b eta shear)\ndef matchedInverseSolder (b : SummableAmplitude) (eta shear : ℝ) : TensorField4 :=\n  waveInverseSolder (matchedLeft b eta shear) (matchedRight b eta shear)\n\ntheorem matched_parameter_sum (b : SummableAmplitude) (eta shear : ℝ) :\n    matchedLeft b eta shear+matchedRight b eta shear=waveRicciScale b eta := by"
+        },
+        {
+          "start_line": 57,
+          "end_line": 107,
+          "text": "theorem wave_area_matching_of_sum (a c : ℝ) (b : SummableAmplitude) (eta : ℝ)\n    (heta : eta≠0) (hac : a+c=waveRicciScale b eta) (x d : Coordinate4)\n    (P : EquilibriumScreenData univ (frameMetricField (waveSolder a c))\n      (frameLeviCivita (waveSolder a c) (waveInverseSolder a c)) x d)\n    (hn : tensorQuad (frameMetricField (waveSolder a c) x) d=0) :\n    Tendsto (fun t => amplitudeAreaDefect b (covectorRead waveCovector d) eta\n      (inducedArea (frameMetricField (waveSolder a c)) P.curve P.screen.vectors) t/t^2)\n      (𝓝[<] 0) (𝓝 0) := by\n  have hG : SmoothConnectionOn univ (frameLeviCivita (waveSolder a c) (waveInverseSolder a c)) := by\n    rw [wave_levi_civita]\n    exact wave_connection_smooth a c\n  have ht : ∀ i j k, frameLeviCivita (waveSolder a c) (waveInverseSolder a c) x i k j=\n      frameLeviCivita (waveSolder a c) (waveInverseSolder a c) x j k i := by\n    rw [wave_levi_civita]\n    exact wave_connection_torsion_free a c x\n  apply (amplitude_area_matching_iff_ricci P\n    (inverseFrameMetricField (waveInverseSolder a c)) waveCovectorField b eta isOpen_univ\n    (frame_metric_smooth univ _ (wave_solder_smooth a c)) hG ht hn).2\n  change eta*tensorQuad (coordinateRicci\n    (frameLeviCivita (waveSolder a c) (waveInverseSolder a c)) x) d=\n      2*Real.pi*tensorQuad (waveMatter a c (amplitudeCoupling b) x) d\n  rw [wave_ricci_quad,wave_matter_quad,hac]\n  unfold waveRicciScale\n  field_simp [heta]\n\ntheorem matched_wave_area (b : SummableAmplitude) (eta shear : ℝ) (heta : eta≠0)\n    (x d : Coordinate4)\n    (P : EquilibriumScreenData univ (frameMetricField (matchedSolder b eta shear))\n      (frameLeviCivita (matchedSolder b eta shear) (matchedInverseSolder b eta shear)) x d)\n    (hn : tensorQuad (frameMetricField (matchedSolder b eta shear) x) d=0) :\n    Tendsto (fun t => amplitudeAreaDefect b (covectorRead waveCovector d) eta\n      (inducedArea (frameMetricField (matchedSolder b eta shear)) P.curve P.screen.vectors) t/t^2)\n      (𝓝[<] 0) (𝓝 0) :=\n  wave_area_matching_of_sum _ _ b eta heta (matched_parameter_sum b eta shear) x d P hn\n\ndef matchedScreen (b : SummableAmplitude) (eta shear : ℝ) (x d : Coordinate4) (hd : d≠0)\n    (hn : tensorQuad (frameMetricField (matchedSolder b eta shear) x) d=0) :\n    EquilibriumScreenData univ (frameMetricField (matchedSolder b eta shear))\n      (frameLeviCivita (matchedSolder b eta shear) (matchedInverseSolder b eta shear)) x d :=\n  localEquilibriumScreen univ isOpen_univ _ _\n    (fun y _ => wave_solder_inverse _ _ y) (fun y _ => wave_inverse_solder _ _ y)\n    (wave_solder_smooth _ _) (wave_inverse_solder_smooth _ _) x d (mem_univ _) hd hn\n\ntheorem matched_constructed_area (b : SummableAmplitude) (eta shear : ℝ) (heta : eta≠0)\n    (x d : Coordinate4) (hd : d≠0)\n    (hn : tensorQuad (frameMetricField (matchedSolder b eta shear) x) d=0) :\n    let P := matchedScreen b eta shear x d hd hn\n    Tendsto (fun t => amplitudeAreaDefect b (covectorRead waveCovector d) eta\n      (inducedArea (frameMetricField (matchedSolder b eta shear)) P.curve P.screen.vectors) t/t^2)\n      (𝓝[<] 0) (𝓝 0) :=\n  matched_wave_area b eta shear heta x d (matchedScreen b eta shear x d hd hn) hn"
+        },
+        {
+          "start_line": 109,
+          "end_line": 145,
+          "text": "theorem wave_heat_matching (a c : ℝ) (b : SummableAmplitude) (rate : ℝ) (x d : Coordinate4)\n    (P : EquilibriumScreenData univ (frameMetricField (waveSolder a c))\n      (frameLeviCivita (waveSolder a c) (waveInverseSolder a c)) x d)\n    (hn : tensorQuad (frameMetricField (waveSolder a c) x) d=0) :\n    Tendsto (fun t => amplitudeHeatDefect b (covectorRead waveCovector d) rate\n      (constructedHeat P (waveMatter a c (amplitudeCoupling b)) rate isOpen_univ\n        (frame_metric_smooth univ _ (wave_solder_smooth a c))\n        (fun i j => (wave_matter_smooth a c (amplitudeCoupling b) i j).differentiableOn (by simp))) t/t^2)\n      (𝓝[<] 0) (𝓝 0) :=\n  amplitude_heat_matching P (inverseFrameMetricField (waveInverseSolder a c)) waveCovectorField b rate\n    isOpen_univ (frame_metric_smooth univ _ (wave_solder_smooth a c))\n    (fun i j => (wave_matter_smooth a c (amplitudeCoupling b) i j).differentiableOn (by simp)) hn\n\ntheorem matched_wave_einstein (b : SummableAmplitude) (eta shear : ℝ) (x : Coordinate4) :\n    frameEinsteinTensor (matchedSolder b eta shear) (matchedInverseSolder b eta shear) x=\n      (2*Real.pi/eta) • frameCovectorStress (matchedSolder b eta shear)\n        (matchedInverseSolder b eta shear) waveCovectorField (amplitudeCoupling b) x := by\n  change frameEinsteinTensor (waveSolder _ _) (waveInverseSolder _ _) x=\n    (2*Real.pi/eta) • waveMatter _ _ (amplitudeCoupling b) x\n  rw [wave_einstein,wave_matter_formula,matched_parameter_sum,smul_smul]\n  congr 1\n  unfold waveRicciScale\n  ring\n\ntheorem matched_wave_einstein_from_area (b : SummableAmplitude) (eta shear : ℝ) (heta : eta≠0) :\n    ∃ cosmological : ℝ, ∀ x∈(univ : Set Coordinate4),\n      frameEinsteinTensor (matchedSolder b eta shear) (matchedInverseSolder b eta shear) x+\n        cosmological • frameMetricField (matchedSolder b eta shear) x=\n      (2*Real.pi/eta) • frameCovectorStress (matchedSolder b eta shear)\n        (matchedInverseSolder b eta shear) waveCovectorField (amplitudeCoupling b) x := by\n  apply einstein_from_summable_area_matching univ isOpen_univ isPreconnected_univ\n    (matchedSolder b eta shear) (matchedInverseSolder b eta shear) waveCovectorField b\n    1 eta one_ne_zero heta\n    (fun x _ => wave_solder_inverse _ _ x) (fun x _ => wave_inverse_solder _ _ x)\n    (wave_solder_smooth _ _) (wave_inverse_solder_smooth _ _) wave_covector_smooth\n    wave_covector_closed (wave_covector_wave _ _)\n  intro x hx d hd hn"
+        }
+      ]
+    },
+    {
+      "path": "C:\\IALD\\Artigo\\Haja_Luz\\A Ponte e o Um\\Nós\\tgl_kernel\\TGLExt\\PlaneWaveReconstructionControls.lean",
+      "sha256": "720b3cf1dc3ee45073d68e56e2544c9d519dac4833c4aaa89141ee7a77633617",
+      "bytes": 10573,
+      "anchors": [
+        {
+          "start_line": 118,
+          "end_line": 154,
+          "text": "theorem zero_wave_vacuum (eta shear : ℝ) (x : Coordinate4) :\n    coordinateRicci (frameLeviCivita (matchedSolder zeroAmplitude eta shear)\n      (matchedInverseSolder zeroAmplitude eta shear)) x=0 := by\n  change coordinateRicci (frameLeviCivita (waveSolder _ _) (waveInverseSolder _ _)) x=0\n  rw [wave_ricci,matched_parameter_sum,zero_wave_ricci_scale,zero_smul]\n\ntheorem zero_wave_nonflat (eta shear : ℝ) (hs : shear≠0) (x : Coordinate4) :\n    coordinateCurvature (frameLeviCivita (matchedSolder zeroAmplitude eta shear)\n      (matchedInverseSolder zeroAmplitude eta shear)) x 1 0≠0 := by\n  apply wave_curvature_nonzero\n  simpa only [matchedLeft,zero_wave_ricci_scale,zero_div,zero_add] using hs\n\ntheorem geometric_wave_matter_nonzero (eta shear : ℝ) (x : Coordinate4) :\n    frameCovectorStress (matchedSolder geometricAmplitude eta shear)\n      (matchedInverseSolder geometricAmplitude eta shear) waveCovectorField\n        (amplitudeCoupling geometricAmplitude) x≠0 :=\n  wave_matter_nonzero _ _ _ geometric_coupling_positive.ne' x\n\ntheorem geometric_wave_curved (eta : ℝ) (heta : eta≠0) (x : Coordinate4) :\n    coordinateCurvature (frameLeviCivita (matchedSolder geometricAmplitude eta 0)\n      (matchedInverseSolder geometricAmplitude eta 0)) x 1 0≠0 := by\n  apply wave_curvature_nonzero\n  change waveRicciScale geometricAmplitude eta/2+0≠0\n  rw [add_zero]\n  apply div_ne_zero\n  · exact div_ne_zero\n      (mul_ne_zero (mul_ne_zero (by norm_num) Real.pi_ne_zero) geometric_coupling_positive.ne') heta\n  · norm_num\n\ntheorem state_alone_not_curvature_coordinate (b : SummableAmplitude) (eta t : ℝ) :\n    ¬∃ F : ((TowerHilbert thirdThermalReference →L[ℂ] TowerHilbert thirdThermalReference) → ℂ) → ℝ,\n      ∀ shear : ℝ, F (amplitudeState b t)=\n        coordinateCurvature (frameLeviCivita (matchedSolder b eta shear)\n          (matchedInverseSolder b eta shear)) 0 1 0 1 0 := by\n  rintro ⟨F,hF⟩\n  have h := (hF 0).symm.trans (hF 1)\n  exact matched_curvature_distinguishes b eta 0 1 (by norm_num) 0 h"
+        }
+      ]
+    },
+    {
+      "path": "C:\\IALD\\Artigo\\Haja_Luz\\A Ponte e o Um\\Nós\\tgl_kernel\\TGLExt\\GeneralMetricClausius.lean",
+      "sha256": "d635b15c7197800ae26034bbf8d11ddc422a2dbf17633c743b603d3d66143109",
+      "bytes": 9744,
+      "anchors": [
+        {
+          "start_line": 41,
+          "end_line": 69,
+          "text": "def MetricScreenFamily (U : Set Coordinate4) (g : TensorField4) :=\n  ∀ p, p ∈ U → ∀ v, v ≠ 0 → tensorQuad (g p) v = 0 →\n    EquilibriumScreenData U g (leviCivitaField g (metricInverse g)) p v\n\ndef MetricScreenClausius\n    {U : Set Coordinate4} {g : TensorField4} {p v : Coordinate4}\n    (P : EquilibriumScreenData U g (leviCivitaField g (metricInverse g)) p v)\n    (T : TensorField4) (rate eta : ℝ) (hU : IsOpen U) (hg : SmoothMatrixOn U g)\n    (hT : ∀ i j, DifferentiableOn ℝ (fun x => T x i j) U) : Prop :=\n  Tendsto (fun t => horizonBalancePrimitive rate eta\n    (inducedArea g P.curve P.screen.vectors) (constructedHeat P T rate hU hg hT) t / t^2)\n    (𝓝[<] 0) (𝓝 0)\n\ntheorem metric_screen_clausius_iff_null_balance\n    (U : Set Coordinate4) (hU : IsOpen U) (g T : TensorField4)\n    (hLor : ∀ x∈U, LorentzByCongruence (g x)) (hg : SmoothMatrixOn U g)\n    (hT : ∀ i j, DifferentiableOn ℝ (fun x => T x i j) U)\n    (p v : Coordinate4) (hp : p∈U)\n    (P : EquilibriumScreenData U g (leviCivitaField g (metricInverse g)) p v)\n    (rate eta : ℝ) (hrate : rate ≠ 0) (heta : eta ≠ 0) :\n    MetricScreenClausius P T rate eta hU hg hT ↔\n      tensorQuad (coordinateRicci (leviCivitaField g (metricInverse g)) p) v =\n        (2*Real.pi/eta) * tensorQuad (T p) v := by\n  have hG := levi_civita_field_smooth U hU g (metricInverse g) hg\n    (constructed_metric_inverse_smooth U g hg hLor)\n  have ht := levi_civita_field_torsion_free U hU g (metricInverse g)\n    (fun x hx => lorentz_metric_symmetric (g x) (hLor x hx))\n  exact constructed_clausius_iff_null_balance P T rate eta hU hg hG hT\n    (ht p hp) hrate heta"
+        },
+        {
+          "start_line": 83,
+          "end_line": 136,
+          "text": "theorem metric_einstein_from_screen_clausius\n    (U : Set Coordinate4) (hU : IsOpen U) (hconn : IsPreconnected U)\n    (g T : TensorField4) (hLor : ∀ x∈U, LorentzByCongruence (g x))\n    (hg : SmoothMatrixOn U g)\n    (hT : ∀ i j, DifferentiableOn ℝ (fun x => T x i j) U)\n    (hsT : ∀ x∈U, (T x)ᵀ = T x)\n    (hdT : ∀ x∈U, ∀ j, tensorFieldDivergence (metricInverse g)\n      (leviCivitaField g (metricInverse g)) T x j = 0)\n    (screens : MetricScreenFamily U g)\n    (rate eta : ℝ) (hrate : rate ≠ 0) (heta : eta ≠ 0)\n    (hclausius : ∀ p (hp : p∈U) v (hv : v ≠ 0) (hn : tensorQuad (g p) v = 0),\n      MetricScreenClausius (screens p hp v hv hn) T rate eta hU hg hT) :\n    ∃ cosmological : ℝ, ∀ x∈U,\n      geometricEinsteinTensor g (metricInverse g) (leviCivitaField g (metricInverse g)) x +\n      cosmological • g x = (2*Real.pi/eta) • T x := by\n  apply metric_only_einstein_equation U hU hconn g T (2*Real.pi/eta) hLor hg hT hsT\n  · intro p hp v hn\n    by_cases hv : v = 0\n    · subst v\n      simp [tensorQuad]\n    · have hb := (metric_screen_clausius_iff_null_balance U hU g T hLor hg hT p v hp\n        (screens p hp v hv hn) rate eta hrate heta).mp (hclausius p hp v hv hn)\n      rw [tensorQuad_sub_smul, hb, sub_self]\n  · exact hdT\n\ntheorem metric_unitary_matching_produces_clausius\n    {U : Set Coordinate4} {g : TensorField4} {p v : Coordinate4}\n    (P : EquilibriumScreenData U g (leviCivitaField g (metricInverse g)) p v)\n    (T : TensorField4) (rate eta : ℝ) (hU : IsOpen U) (hg : SmoothMatrixOn U g)\n    (hT : ∀ i j, DifferentiableOn ℝ (fun x => T x i j) U)\n    (M : UnitaryScreenMatching P T rate eta hU hg hT) :\n    MetricScreenClausius P T rate eta hU hg hT :=\n  unitary_screen_matching_produces_clausius P T rate eta hU hg hT M\n\ntheorem metric_einstein_from_unitary_matching\n    (U : Set Coordinate4) (hU : IsOpen U) (hconn : IsPreconnected U)\n    (g T : TensorField4) (hLor : ∀ x∈U, LorentzByCongruence (g x))\n    (hg : SmoothMatrixOn U g)\n    (hT : ∀ i j, DifferentiableOn ℝ (fun x => T x i j) U)\n    (hsT : ∀ x∈U, (T x)ᵀ = T x)\n    (hdT : ∀ x∈U, ∀ j, tensorFieldDivergence (metricInverse g)\n      (leviCivitaField g (metricInverse g)) T x j = 0)\n    (screens : MetricScreenFamily U g)\n    (rate eta : ℝ) (hrate : rate ≠ 0) (heta : eta ≠ 0)\n    (hmatch : ∀ p (hp : p∈U) v (hv : v ≠ 0) (hn : tensorQuad (g p) v = 0),\n      Nonempty (UnitaryScreenMatching (screens p hp v hv hn) T rate eta hU hg hT)) :\n    ∃ cosmological : ℝ, ∀ x∈U,\n      geometricEinsteinTensor g (metricInverse g) (leviCivitaField g (metricInverse g)) x +\n      cosmological • g x = (2*Real.pi/eta) • T x := by\n  apply metric_einstein_from_screen_clausius U hU hconn g T hLor hg hT hsT hdT\n    screens rate eta hrate heta\n  intro p hp v hv hn\n  obtain ⟨M⟩ := hmatch p hp v hv hn\n  exact metric_unitary_matching_produces_clausius (screens p hp v hv hn) T rate eta hU hg hT M"
+        }
+      ]
+    },
+    {
+      "path": "C:\\IALD\\Artigo\\Haja_Luz\\A Ponte e o Um\\Nós\\tgl_kernel\\TGLExt\\GeneralSourceUnitaryRealization.lean",
+      "sha256": "996d06074c7fe3a5b4ecdc5ba183fb0066683da30bcd1db2c5d66e62783ca2cf",
+      "bytes": 13342,
+      "anchors": [
+        {
+          "start_line": 59,
+          "end_line": 80,
+          "text": "def calibrationSourceCovectors (g T : TensorField4) : CalibrationIndex → CovectorField4 :=\n  fun j x => calibrationCovector (traceReverse (g x) (metricInverse g x) (T x)) j\n\n#print axioms calibrationSourceCovectors\n\ndef realizedSourceField (g T : TensorField4) : TensorField4 :=\n  finiteCoherentStressField g (metricInverse g) (calibrationSourceCovectors g T)\n    calibrationLabelData.weight calibrationLabelData.axisA calibrationLabelData.axisB\n    calibrationLabelData.initialU calibrationLabelData.initialV\n\n#print axioms realizedSourceField\n\ndef calibrationSourceCurve (g T : TensorField4) (x d : Coordinate4) :\n    DiagonalStateCurve (jointBase calibrationLabelData) :=\n  jointCovectorCurve calibrationLabelData (fun j => calibrationSourceCovectors g T j x) d\n\n#print axioms calibrationSourceCurve\n\ndef calibrationSourceResponse (g T : TensorField4) (x d : Coordinate4) : ℝ :=\n  jointResponse calibrationLabelData\n    (fun j => covectorRead (calibrationSourceCovectors g T j x) d)\n"
+        },
+        {
+          "start_line": 108,
+          "end_line": 164,
+          "text": "theorem realized_source_eq (g T : TensorField4) (x : Coordinate4)\n    (hLor : LorentzByCongruence (g x)) (hT : (T x)ᵀ = T x) :\n    realizedSourceField g T x = T x := by\n  change calibratedStress (g x) (metricInverse g x)\n    (traceReverse (g x) (metricInverse g x) (T x)) = T x\n  exact every_symmetric_source_has_unitary_calibration _ _ _\n    (constructed_metric_inverse_left g x hLor) (lorentz_metric_symmetric _ hLor) hT\n\n#print axioms realized_source_eq\n\ntheorem realized_source_eq_on (U : Set Coordinate4) (g T : TensorField4)\n    (hLor : ∀ x ∈ U, LorentzByCongruence (g x)) (hT : ∀ x ∈ U, (T x)ᵀ = T x) :\n    EqOn (realizedSourceField g T) T U := by\n  intro x hx\n  exact realized_source_eq g T x (hLor x hx) (hT x hx)\n\n#print axioms realized_source_eq_on\n\ntheorem realized_source_symmetric (g T : TensorField4) (x : Coordinate4)\n    (hLor : LorentzByCongruence (g x)) :\n    (realizedSourceField g T x)ᵀ = realizedSourceField g T x :=\n  finite_coherent_stress_symmetric g (metricInverse g) _ _ _ _ _ _ x\n    (lorentz_metric_symmetric _ hLor)\n\n#print axioms realized_source_symmetric\n\ntheorem realized_source_smooth (U : Set Coordinate4) (g T : TensorField4)\n    (hg : SmoothMatrixOn U g) (hT : SmoothMatrixOn U T)\n    (hLor : ∀ x ∈ U, LorentzByCongruence (g x)) :\n    SmoothMatrixOn U (realizedSourceField g T) :=\n  finite_coherent_stress_smooth U g (metricInverse g) _ _ _ _ _ _ hg\n    (constructed_metric_inverse_smooth U g hg hLor)\n    (calibration_source_covectors_smooth U g T hg hT hLor)\n\n#print axioms realized_source_smooth\n\ntheorem realized_source_divergence_eq (U : Set Coordinate4) (hU : IsOpen U)\n    (g T : TensorField4) (Gamma : ConnectionField4)\n    (hLor : ∀ x ∈ U, LorentzByCongruence (g x)) (hT : ∀ x ∈ U, (T x)ᵀ = T x)\n    (x : Coordinate4) (hx : x ∈ U) :\n    tensorFieldDivergence (metricInverse g) Gamma (realizedSourceField g T) x =\n      tensorFieldDivergence (metricInverse g) Gamma T x :=\n  tensorFieldDivergence_congr_on U hU (metricInverse g) Gamma _ _\n    (realized_source_eq_on U g T hLor hT) x hx\n\n\n#print axioms realized_source_divergence_eq\n\ntheorem realized_source_conserved (U : Set Coordinate4) (hU : IsOpen U)\n    (g T : TensorField4) (Gamma : ConnectionField4)\n    (hLor : ∀ x ∈ U, LorentzByCongruence (g x)) (hT : ∀ x ∈ U, (T x)ᵀ = T x)\n    (hc : ∀ x ∈ U, ∀ j, tensorFieldDivergence (metricInverse g) Gamma T x j = 0) :\n    ∀ x ∈ U, ∀ j, tensorFieldDivergence (metricInverse g) Gamma\n      (realizedSourceField g T) x j = 0 := by\n  intro x hx j\n  rw [realized_source_divergence_eq U hU g T Gamma hLor hT x hx]\n  exact hc x hx j"
+        }
+      ]
+    },
+    {
+      "path": "C:\\IALD\\Artigo\\Haja_Luz\\A Ponte e o Um\\Nós\\tgl_kernel\\TGLExt\\BoostHeatConstruction.lean",
+      "sha256": "690746080dcb8fe37b24babf39c881909adfdcf1182af405fd306f50e598fe1f",
+      "bytes": 11527,
+      "anchors": [
+        {
+          "start_line": 28,
+          "end_line": 58,
+          "text": "open Matrix Filter Set TGLExt ChatgptAudit ChatgptAudit.Flow019 ChatgptAudit.Flow020\n  ChatgptAudit.Wave029 ChatgptAudit.Optical036 ChatgptAudit.Heat041 ChatgptAudit.Optical043\nopen scoped Topology\nnoncomputable section\n\n/-- Boost energy flux on the literal central Jacobi pencil. -/\ndef boostEnergyFlux (a c rate : ℝ) (T : TensorField4) (t : ℝ) : ℝ :=\n  tensorPair (T (centralNullCurve t)) (boostField rate (centralNullCurve t))\n    centralNullDirection * geometricJacobiArea a c t\n\ntheorem boost_energy_contraction (rate t : ℝ) (A : Tensor4) :\n    tensorPair A (boostField rate (centralNullCurve t)) centralNullDirection =\n      (-rate*t)*tensorQuad A centralNullDirection := by\n  rw [boost_field_central]\n  simp only [tensorPair,tensorQuad,dotProduct,Pi.smul_apply,smul_eq_mul,\n    Finset.mul_sum,mul_assoc]\n\ntheorem boost_energy_flux_formula (a c rate : ℝ) (T : TensorField4) (t : ℝ) :\n    boostEnergyFlux a c rate T t =\n      -rate*t*tensorQuad (T (centralNullCurve t)) centralNullDirection *\n        geometricJacobiArea a c t := by\n  unfold boostEnergyFlux\n  rw [boost_energy_contraction]\n\n/-- The current agrees with the existing screen flux for every tensor field. -/\ntheorem boost_energy_flux_constructed (a c : ℝ) (ha : 0≤a) (hc : 0≤c)\n    (rate : ℝ) (T : TensorField4) (t : ℝ) :\n    boostEnergyFlux a c rate T t =\n      screenHeatFlux (opticalEquilibriumScreen a c ha hc) T rate t := by\n  unfold screenHeatFlux\n  rw [optical_equilibrium_velocity_central a c ha hc t]"
+        },
+        {
+          "start_line": 87,
+          "end_line": 106,
+          "text": "  have hw : ChatgptAudit.Coherent023.covectorRead waveCovector centralNullDirection = 1 :=\n    central_direction_frequency\n  simp only [hw,one_pow,mul_one,opticalHeatFlux]\n\ndef boostEnergyHeat (a c rate : ℝ) (T : TensorField4) (t : ℝ) : ℝ :=\n  ∫ s in (0:ℝ)..t, boostEnergyFlux a c rate T s\n\ntheorem boost_energy_heat_wave (a c rate mass t : ℝ) :\n    boostEnergyHeat a c rate (waveMatter a c mass) t = opticalHeat a c rate mass t := by\n  unfold boostEnergyHeat opticalHeat\n  apply intervalIntegral.integral_congr\n  intro s _\n  exact boost_energy_flux_wave a c rate mass s\n\ntheorem boost_energy_heat_constructed (a c : ℝ) (ha : 0≤a) (hc : 0≤c)\n    (rate mass : ℝ) :\n    boostEnergyHeat a c rate (waveMatter a c mass) =ᶠ[𝓝[<] (0:ℝ)]\n      opticalScreenHeat a c ha hc rate mass := by\n  filter_upwards [optical_screen_heat_germ a c ha hc rate mass] with t ht\n  rw [boost_energy_heat_wave]"
+        },
+        {
+          "start_line": 175,
+          "end_line": 193,
+          "text": "      (𝓝 (-(rate*(eta*(a+c)-2*Real.pi*mass)/(4*Real.pi)))) := by\n  have h := (optical_screen_clausius_quadratic_limit a c ha hc rate mass eta).neg\n  have he : (fun t => boostSegmentDefect a c rate mass eta t/t^2) =ᶠ[𝓝[<] (0:ℝ)]\n      (fun t => -(opticalScreenClausiusDefect a c ha hc rate mass eta t/t^2)) := by\n    filter_upwards [boost_segment_defect_constructed a c ha hc rate mass eta] with t ht\n    simp only [ht,neg_div]\n  exact (tendsto_congr' he).2 h\n\ntheorem boost_segment_quadratic_balance_iff (a c : ℝ) (ha : 0≤a) (hc : 0≤c)\n    (rate mass eta : ℝ) (hrate : rate≠0) :\n    Tendsto (fun t => boostSegmentDefect a c rate mass eta t/t^2) (𝓝[<] 0) (𝓝 0) ↔\n      eta*(a+c)=2*Real.pi*mass := by\n  have he : (fun t => boostSegmentDefect a c rate mass eta t/t^2) =ᶠ[𝓝[<] (0:ℝ)]\n      (fun t => -(opticalScreenClausiusDefect a c ha hc rate mass eta t/t^2)) := by\n    filter_upwards [boost_segment_defect_constructed a c ha hc rate mass eta] with t ht\n    simp only [ht,neg_div]\n  rw [← optical_screen_quadratic_balance_iff a c ha hc rate mass eta hrate]\n  constructor\n  · intro h"
+        }
+      ]
+    },
+    {
+      "path": "C:\\IALD\\Central de Patentes\\work\\lentes_discriminante_20261019\\calibration_r16\\DERIVACAO_R16.txt",
+      "sha256": "7f784a1ec1d92041ec4609467e04020614ea5061953d854e26755416603d3ff0",
+      "bytes": 7429
+    },
+    {
+      "path": "C:\\IALD\\Central de Patentes\\work\\lentes_discriminante_20261019\\calibration_r16\\RESULT_R16.json",
+      "sha256": "9eed2d043e9959c47cfdbdd679afced249568ae09f75d5189d83d2e1697f8b98",
+      "bytes": 1790
+    },
+    {
+      "path": "C:\\IALD\\Central de Patentes\\work\\lentes_discriminante_20261019\\coupled_r15\\DERIVACAO_R15.txt",
+      "sha256": "d89327dee00ac4f7c82832fdc46892b0e22f6544bf84420f1225260eafbfe0e5",
+      "bytes": 8476
+    },
+    {
+      "path": "C:\\IALD\\Central de Patentes\\work\\lentes_discriminante_20261019\\calibration_r16\\SOURCE_AMPLITUDE_R16.json",
+      "sha256": "87d2f6f628aeb2c2d632d3eaf9fd2e41cfc6be7c8e803518dbc522dcac4a5bcc",
+      "bytes": 25455
+    },
+    {
+      "path": "C:\\IALD\\Central de Patentes\\work\\lentes_discriminante_20261019\\calibration_r16\\SOURCE_G_R16.json",
+      "sha256": "1b74aa8e39e7ec85bdbcad31ac726099b6545b66edcbe7e0955dd7fc554faaad",
+      "bytes": 17915
+    },
+    {
+      "path": "C:\\IALD\\Central de Patentes\\work\\lentes_discriminante_20261019\\density_bridge_r13\\SOURCE_CLOCK_METRIC_R13.json",
+      "sha256": "30d4c4ceb91538cd5e0a619ec207eb95f66b52b643b635249173323347f62581",
+      "bytes": 43687
+    },
+    {
+      "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TUNEL\\DO_CHATGPT\\ORDEM_025\\CUMPRIMENTO_FINAL\\RESULTADO_CUMPRIMENTO.json",
+      "sha256": "8adcdb0707b1588b127739061492e95039d4b37697a6257c4843b21b2d76ecf9",
+      "bytes": 3075
+    }
+  ],
+  "historical_source_checks": [
+    {
+      "catalog": "C:\\IALD\\Central de Patentes\\work\\lentes_discriminante_20261019\\calibration_r16\\SOURCE_AMPLITUDE_R16.json",
+      "source_id": "custo",
+      "historical_sha256": "29c92b66b2fd6b4d589adbef4de86a67f979e03964b3f7ae892732a40ab395cd",
+      "path": "C:\\IALD\\Artigo\\Haja_Luz\\tgl_paper_unified.py",
+      "sha256": "29c92b66b2fd6b4d589adbef4de86a67f979e03964b3f7ae892732a40ab395cd",
+      "bytes": 1216423,
+      "matches_historical_bytes": true
+    },
+    {
+      "catalog": "C:\\IALD\\Central de Patentes\\work\\lentes_discriminante_20261019\\calibration_r16\\SOURCE_AMPLITUDE_R16.json",
+      "source_id": "ponte",
+      "historical_sha256": "98ec3d808d51e694098ae216500ab853584cb89f9eb23661128ddc1829c1b657",
+      "path": "C:\\IALD\\Artigo\\Haja_Luz\\A Ponte e o Um\\A Ponte Einstein Cartan Miguel.tex",
+      "sha256": "98ec3d808d51e694098ae216500ab853584cb89f9eb23661128ddc1829c1b657",
+      "bytes": 129435,
+      "matches_historical_bytes": true
+    },
+    {
+      "catalog": "C:\\IALD\\Central de Patentes\\work\\lentes_discriminante_20261019\\calibration_r16\\SOURCE_AMPLITUDE_R16.json",
+      "source_id": "v394",
+      "historical_sha256": "972e81f22dd8cc68bd5671fa610d2664e26f4681ab52932e001e5ef97e8f5991",
+      "path": "C:\\IALD\\Central de Patentes\\work\\lentes_discriminante_20261019\\v394_r12\\v394_source.py.snapshot",
+      "sha256": "972e81f22dd8cc68bd5671fa610d2664e26f4681ab52932e001e5ef97e8f5991",
+      "bytes": 37885889,
+      "matches_historical_bytes": true
+    },
+    {
+      "catalog": "C:\\IALD\\Central de Patentes\\work\\lentes_discriminante_20261019\\calibration_r16\\SOURCE_AMPLITUDE_R16.json",
+      "source_id": "graviton_historical",
+      "historical_sha256": "3795d68e864c5a7bdeb9329e7ac097c40aabc9e733859068a343f988c83c1847",
+      "path": "C:\\IALD\\papers_latex\\graviton_paper\\graviton_paper.tex",
+      "sha256": "3795d68e864c5a7bdeb9329e7ac097c40aabc9e733859068a343f988c83c1847",
+      "bytes": 67424,
+      "matches_historical_bytes": true
+    },
+    {
+      "catalog": "C:\\IALD\\Central de Patentes\\work\\lentes_discriminante_20261019\\calibration_r16\\SOURCE_AMPLITUDE_R16.json",
+      "source_id": "mac_existing_extraction",
+      "historical_sha256": "14695b7ce233e3c23fc0007a6022c597fa624ea2208adb253a716341fda07dc9",
+      "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TUNEL\\DO_CHATGPT\\ORDEM_019\\F1.FECHO_20261015\\acervo_conjugacao_r67\\extracted\\0ad5cfb284c4282c5d94a9e07da9887c4bea106c92a6b2c9a75f97d1b7d9d018.json",
+      "sha256": "14695b7ce233e3c23fc0007a6022c597fa624ea2208adb253a716341fda07dc9",
+      "bytes": 41535,
+      "matches_historical_bytes": true
+    },
+    {
+      "catalog": "C:\\IALD\\Central de Patentes\\work\\lentes_discriminante_20261019\\calibration_r16\\SOURCE_G_R16.json",
+      "source_id": null,
+      "historical_sha256": "972e81f22dd8cc68bd5671fa610d2664e26f4681ab52932e001e5ef97e8f5991",
+      "path": "C:\\IALD\\Central de Patentes\\work\\lentes_discriminante_20261019\\v394_r12\\v394_source.py.snapshot",
+      "sha256": "972e81f22dd8cc68bd5671fa610d2664e26f4681ab52932e001e5ef97e8f5991",
+      "bytes": 37885889,
+      "matches_historical_bytes": true
+    },
+    {
+      "catalog": "C:\\IALD\\Central de Patentes\\work\\lentes_discriminante_20261019\\calibration_r16\\SOURCE_G_R16.json",
+      "source_id": null,
+      "historical_sha256": "29c92b66b2fd6b4d589adbef4de86a67f979e03964b3f7ae892732a40ab395cd",
+      "path": "C:\\IALD\\Artigo\\Haja_Luz\\tgl_paper_unified.py",
+      "sha256": "29c92b66b2fd6b4d589adbef4de86a67f979e03964b3f7ae892732a40ab395cd",
+      "bytes": 1216423,
+      "matches_historical_bytes": true
+    },
+    {
+      "catalog": "C:\\IALD\\Central de Patentes\\work\\lentes_discriminante_20261019\\calibration_r16\\SOURCE_G_R16.json",
+      "source_id": null,
+      "historical_sha256": "98ec3d808d51e694098ae216500ab853584cb89f9eb23661128ddc1829c1b657",
+      "path": "C:\\IALD\\Artigo\\Haja_Luz\\A Ponte e o Um\\A Ponte Einstein Cartan Miguel.tex",
+      "sha256": "98ec3d808d51e694098ae216500ab853584cb89f9eb23661128ddc1829c1b657",
+      "bytes": 129435,
+      "matches_historical_bytes": true
+    },
+    {
+      "catalog": "C:\\IALD\\Central de Patentes\\work\\lentes_discriminante_20261019\\calibration_r16\\SOURCE_G_R16.json",
+      "source_id": null,
+      "historical_sha256": "6ff7e19509b066bbe981af1774cab47fa35e5ae675f8f393c110618bd9ee919b",
+      "path": "C:\\IALD\\IMac LA\\Física - TGL\\Base Referencial Completa TGL\\luz.tex",
+      "sha256": "6ff7e19509b066bbe981af1774cab47fa35e5ae675f8f393c110618bd9ee919b",
+      "bytes": 44789,
+      "matches_historical_bytes": true
+    }
+  ],
+  "program_version_read": "v401",
+  "originals_modified": false,
+  "um_executed_or_imported": false,
+  "old_withdrawn_speech_accessed": false
+}

@@ -38,7 +38,9 @@ TXT = {".py", ".lean", ".md", ".json", ".jsonl", ".txt", ".tex", ".csv", ".tsv",
        ".log", ".out", ".diff", ".patch", ".spec", ".pysnip", ".r", ".jl", ".c", ".h", ".cpp", ".rs", ".go", ".java"}
 FIG = {".png", ".pdf", ".jpg", ".jpeg", ".gif", ".webp"}
 EXCL_DIR = {".git", ".venv", "venv", "node_modules", "__pycache__", ".lake", "tex_environment", ".wheels_ipv4", "unsloth_compiled_cache",
-            "site-packages", "dist-packages", ".mypy_cache", ".pytest_cache", "build", ".cache"}
+            "site-packages", "dist-packages", ".mypy_cache", ".pytest_cache", "build", ".cache",
+            # 25/10/2026: ambientes conda/mamba (pacotes de terceiros; o C18 da v400 parou num deles)
+            "mamba_root", "micromamba", "conda-meta", ".conda", "conda_pkgs", "miniconda3", "miniforge3", "anaconda3"}
 PASTA_FORA = re.compile(r"(?i)(patente|epct|(^|_)pct|mandado|(^|_)ms(_|$)|escritorio|e-?mail|outlook|inpi|wipo|(^|_)gru(_|$)|(^|_)pix|"
                         r"pagamento|recibo|sentinela|monitor|andamento|prazo|deadline|owner|private|privad|apple|testflight|login|senha|"
                         r"credential|(^|_)conta(_|$)|contabil|fiscal|cnpj|(^|_)ordem_00|revisao_0|token|wallet|carteira|users?_|usuario|"

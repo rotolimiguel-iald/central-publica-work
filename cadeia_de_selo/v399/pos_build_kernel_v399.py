@@ -116,7 +116,7 @@ chk("o axiom_report de agora tem exatamente os nomes do v398 mais as declaracoes
 chave_de = {f[1]: f[0] for f in flags_v399}
 por_grupo = {s["grupo"]: len(nomeadas[s["key"]]) for s in DL.STONES}
 json.dump({"politica": "so' declaracao NOMEADA tem bandeira (a pratica selada da v392 a v398); as auxiliares geradas pelo compilador (ultimo componente _proof_N, _simp_N, match_N, _sunfold, eq_N, eq_def, congr_simp) ficam fora; "
-                       "chaves " + " e ".join("%sNNNN" % s["flag_prefix"] for s in DL.STONES) + ", em ordem alfabetica do nome dentro de cada pedra (decisao da gerencia c1, 23/10/2026; a regra e' a da v394 a v398, os numeros saem do Audit desta geracao)",
+                       "chaves " + " e ".join("%sNNNN" % s["flag_prefix"] for s in DL.STONES) + ", em ordem alfabetica do nome dentro de cada pedra (decisao da gerencia c1, mantida na ordem da v399 de 24/10/2026: bandeiras so' nomeadas; a regra e' a da v394 a v398, os numeros saem do Audit desta geracao)",
            "flags": flags_v399, "n_flags": len(flags_v399), "n_decl_audit": len(axm), "por_origem": {g + "_nomeada": n for g, n in por_grupo.items()},
            "por_grupo_bandeiras": por_grupo,
            "excluidas_auxiliares": {"n": len(aux_todas), "por_classe": cl_aux, "nomes": aux_todas, "por_pedra": {k: len(v) for k, v in aux.items()}},
@@ -224,7 +224,7 @@ recibo = {"contrato": "KERNEL_RECIBO_R3_2", "versao": "v399", "rc": 0, "sorry": 
           "criterios": {k: {"medido": v} for k, v in criterios.items()},
           "nos_kernel_impressao": {"definicao": "sha256 do JSON canonico de formal_files_sha256 do Nos (manifesto pinado pelo selo v398)", "antes": imp(ff), "depois": imp(ff)},
           "quando_utc": datetime.datetime.now(datetime.timezone.utc).isoformat(timespec="seconds"),
-          "nota": "gerado por pos_build_kernel_v399.py (preparacao, 23/10/2026); NAO conferido por verificar_kernel_recibo do B(n) (precisa do selo v399 e do manifesto novo); a arvore de varredura e' a copia so-fontes " + abs_fw(ARV) + " (MANTIDA: o recibo pos-selo precisa dela); "
+          "nota": "gerado por pos_build_kernel_v399.py (preparacao, 24/10/2026); NAO conferido por verificar_kernel_recibo do B(n) (precisa do selo v399 e do manifesto novo); a arvore de varredura e' a copia so-fontes " + abs_fw(ARV) + " (MANTIDA: o recibo pos-selo precisa dela); "
                   "o build do sandbox e' INCREMENTAL (a pedra pode ja' estar compilada em C:/t/k399/final, isolada; o rito real do Nos compila a frio)"}
 ok = all(s["ok"] for s in sinais)
 json.dump(recibo, open(os.path.join(KD, "KERNEL_RECIBO_v399.json"), "w", encoding="utf-8"), ensure_ascii=False, indent=1)
