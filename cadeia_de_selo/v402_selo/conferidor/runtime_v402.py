@@ -1,0 +1,251 @@
+# ---- v402: A PONTE DA ESCALA DUAL, A QUEDA SEM GEOMETRIA E A ESPERANCA CONDICIONAL. TRES registros PEQUENOS, com FUNCAO, lidos no ponto real do main, logo depois da falsidade_da_inercia_v401: cada um LE do kernel do PROPRIO rito a composicao da sua pedra
+# (bandeira True, trio, proveniencia no modulo da pedra), os teoremas do contrato e os termos antigos que ela cita, a fonte da pedra por sha256, as inscricoes de 26/10 por sha256 e um TEXTO-CONTEXTO do kernel embutido, e CALCULA, com beta = alfa CODATA 2018 x sqrt(e) em
+# runtime (nunca literal), um modelo honesto de cada pedra: a ponte (o boost longitudinal sobre (E, p) com c = 1: p+ escala por e^{-s}, p- por e^{+s}, m^2 = p+ p- e' invariante, E e' a leitura do observador, a massa NAO e' selecionada pela lei de escala), a queda (o peso cai
+# estritamente, nats = s, a seta e' o sinal de s, o chao e' o posto e nunca o zero, a entrega custa, o regime angular so' le, a isotropia e' hipotese nomeada) e a esperanca condicional (em M2(C) o Nome de rho* e' a esperanca diagonal, preserva o Um, reler nao acrescenta,
+# memoria-subalgebra, bimodular, a compressao pelo espelho; o indice 1/beta e' CONDICIONAL). A lei de escala de Takesaki e' [KNOWN] (campo da estrutura); a identificacao com o fluxo de um corpo fisico e' [OPEN]; H_BW, H_cal e H3 seguem NOMEADAS [OPEN]. O gate nao se move.
+# Fonte autoral deste bloco: runtime_v402.py (cadeia_de_selo/v402); os contratos (_V402_CONTRACTS) e as inscricoes (_V402_VERBATINS2) sao DERIVADOS do build e dos arquivos, nunca digitados.
+import math as _m402
+
+
+def _v402_close(a_, b_, e_=1e-11):
+    return abs(a_ - b_) <= e_ * (1.0 + abs(a_) + abs(b_))
+
+
+def v402_ponte_mechanics(beta_):
+    """v402 -- a mecanica da PONTE DA ESCALA DUAL no modelo longitudinal (E, p) com c = 1, p+ = E + p, p- = E - p, theta_s = boost(-s): theta_energy e theta_momentum do kernel, com beta recebido (o chamador o calcula em runtime: alfa CODATA x sqrt(e); NUNCA literal).
+    Cada checagem e' a leitura numerica de um ou mais teoremas do kernel (TGLExt.PonteDaEscalaDual.*). Devolve {passed, checks, values, n_checks}. Nao levanta para beta invalido: devolve passed False."""
+    checks_ = []
+
+    def ck_(id_, desc_, ok_, val_=None):
+        checks_.append({"id": id_, "descricao": desc_, "ok": bool(ok_), "valor": val_})
+    if not (isinstance(beta_, float) and _m402.isfinite(beta_) and 0.0 < beta_ < 1.0):
+        return {"passed": False, "checks": [{"id": "p0", "descricao": "beta finito em (0, 1)", "ok": False, "valor": repr(beta_)}], "values": {}, "n_checks": 1}
+    ch_, sh_, ex_ = _m402.cosh, _m402.sinh, _m402.exp
+    th_ = lambda s_, v_: (ch_(s_) * v_[0] - sh_(s_) * v_[1], -sh_(s_) * v_[0] + ch_(s_) * v_[1])      # theta s v (theta_energy, theta_momentum)
+    pp_ = lambda v_: v_[0] + v_[1]
+    pm_ = lambda v_: v_[0] - v_[1]
+    m2_ = lambda v_: pp_(v_) * pm_(v_)
+    cl_ = _v402_close
+    esc_ = [k_ / 4.0 for k_ in range(-12, 13)]
+    esc_nz_ = [s_ for s_ in esc_ if s_ != 0.0]
+    est_ = [(1.0, 0.0), (2.0, 1.0), (3.0, -2.0), (5.0, 4.5), (0.5, 0.25), (10.0, -9.0), (1.0, 1.0), (2.0, -2.0)]
+    ck_("p1", "pPlus_scaling e pMinus_scaling: p+(theta_s v) = e^{-s} p+(v) e p-(theta_s v) = e^{+s} p-(v), nos 8 estados e nas 25 escalas de teste (s de -3 a 3, passo 1/4)",
+        all(cl_(pp_(th_(s_, v_)), ex_(-s_) * pp_(v_)) and cl_(pm_(th_(s_, v_)), ex_(s_) * pm_(v_)) for v_ in est_ for s_ in esc_), [len(est_), len(esc_)])
+    ck_("p2", "mass_is_the_invariant e mass_is_minkowski: m^2 = p+ p- = E^2 - p^2 e' INVARIANTE sob p+- -> e^{-+s} p+- (a massa e' o invariante do boost)",
+        all(cl_(m2_(th_(s_, v_)), m2_(v_)) and cl_(m2_(v_), v_[0] ** 2 - v_[1] ** 2) for v_ in est_ for s_ in esc_), [len(est_) * len(esc_)])
+    nulo_ = (1.0, 1.0); rep_ = (2.0, 0.0)
+    desl_nulo_ = min(abs(th_(s_, nulo_)[0] - nulo_[0]) for s_ in esc_nz_); desl_rep_ = min(abs(th_(s_, rep_)[0] - rep_[0]) for s_ in esc_nz_)
+    ck_("p3", "energy_is_the_reading e observer_energy_changes: E(theta_s v) = (e^{-s} p+ + e^{s} p-)/2 e a ENERGIA MUDA com o observador: no estado nulo (1, 1) vale e^{-s} != 1 em toda escala nao trivial (desvio minimo > 0,22) e no repouso (2, 0) vale 2 cosh s != 2 (desvio minimo > 0,06)",
+        all(cl_(th_(s_, v_)[0], (ex_(-s_) * pp_(v_) + ex_(s_) * pm_(v_)) / 2.0) for v_ in est_ for s_ in esc_) and desl_nulo_ > 0.22 and desl_rep_ > 0.06, [desl_nulo_, desl_rep_])
+    ck_("p4", "theta_zero e theta_add: theta_0 = id (exato) e theta_{s+t} = theta_s . theta_t (a lei de grupo da acao do boost) nos pares de escalas de teste",
+        all(th_(0.0, v_) == v_ for v_ in est_) and all(all(cl_(a_, b_) for a_, b_ in zip(th_(s_ + t_, v_), th_(s_, th_(t_, v_)))) for v_ in est_[:4] for s_ in esc_[::4] for t_ in esc_[2::4]), [len(est_)])
+    um_ = lambda mu2_, a_: ((a_ + mu2_ / a_) / 2.0, (a_ - mu2_ / a_) / 2.0)                    # lift D mu2 a, com o dado oneScaling (tau a = a, theta_s a = e^{-s} a)
+    avals_ = (0.5, 2.0, 3.0); mus_ = (0.0, 1.0, 4.0, 9.0)
+    ck_("p5", "lift_pPlus, lift_pMinus, lift_mass e lift_equivariant: o levantamento lift(mu^2, a) = ((a + mu^2/a)/2, (a - mu^2/a)/2) tem p+ = tau(a), p- = mu^2/tau(a), massa mu^2 e e' EQUIVARIANTE: lift(mu^2, theta_s a) = theta_s lift(mu^2, a)",
+        all(cl_(pp_(um_(m_, a_)), a_) and cl_(pm_(um_(m_, a_)), m_ / a_) and cl_(m2_(um_(m_, a_)), m_) and all(cl_(x_, y_) for x_, y_ in zip(um_(m_, ex_(-s_) * a_), th_(s_, um_(m_, a_)))) for a_ in avals_ for m_ in mus_ for s_ in esc_), [len(avals_) * len(mus_) * len(esc_)])
+    L1_, L4_, L9_ = um_(1.0, 2.0), um_(4.0, 2.0), um_(9.0, 2.0)
+    ck_("p6", "★ lift_mass_not_selected (H_tau na forma literal e' REFUTADA): com o MESMO p+ = tau(a) = 2, os invariantes mu^2 = 1, 4, 9 dao tres realizacoes equivariantes DISTINTAS (massas 1, 4, 9): a lei de escala determina a componente nula p+ e DEIXA a massa livre",
+        pp_(L1_) == pp_(L4_) == pp_(L9_) == 2.0 and len({L1_, L4_, L9_}) == 3 and [round(m2_(x_), 9) for x_ in (L1_, L4_, L9_)] == [1.0, 4.0, 9.0], [L1_, L4_, L9_])
+    ck_("p7", "invariant_weight_is_zero, positive_weight_cannot_be_invariant_mass e positive_weight_stays_positive: um peso positivo que escala por e^{-s} nunca e' invariante (desvio minimo >= 0,1 do peso em toda escala nao trivial) e segue positivo; o unico peso fixo por toda a escala e' 0",
+        all(min(abs(ex_(-s_) * a_ - a_) for s_ in esc_nz_) >= 0.1 * a_ for a_ in avals_) and all(pp_(th_(s_, v_)) > 0.0 for v_ in est_ if pp_(v_) > 0.0 for s_ in esc_) and all(ex_(-s_) * 0.0 == 0.0 for s_ in esc_), [list(avals_)])
+    m3_ = 3.0; c2_ = 2.0; l_rep_ = um_(m3_ ** 2, m3_); l_fora_ = um_(m3_ ** 2, 1.0)
+    ck_("p8", "rest_energy_eq_mc2 e lift_rest_energy (E3: algebra real com premissas explicitas; a composicao e' do REPOUSO, c = 1, condicionada a mu^2 e a tau = m): com p = 0 e E >= 0 a casca E^2 = m^2 c^4 da E = m c^2 (m = 3, c = 2: E = 12); no levantamento, o momento e' nulo so' quando tau(a) = m (tau = 3, mu^2 = 9: (3, 0), E = 3 = m) e NAO quando tau != m (tau = 1, mu^2 = 9: (5, -4))",
+        cl_(m3_ * c2_ ** 2, 12.0) and cl_((m3_ * c2_ ** 2) ** 2, m3_ ** 2 * c2_ ** 4) and l_rep_ == (3.0, 0.0) and l_rep_[0] == m3_ and l_fora_ == (5.0, -4.0) and l_fora_[1] != 0.0, [l_rep_, l_fora_])
+    fixos_ = [v_ for v_ in est_ + [(0.0, 0.0)] if all(th_(s_, v_) == v_ for s_ in esc_)]
+    desl_rest_ = min(_m402.hypot(th_(s_, (1.0, 0.0))[0] - 1.0, th_(s_, (1.0, 0.0))[1]) for s_ in esc_nz_)
+    ck_("p9", "inertial_momentum_is_zero e rest_post_exists_and_moves (E2): nesta instancia INERCIAL (fixo por todo boost) e' o VETOR ZERO e nada mais (nos 9 estados de teste so' (0, 0) e' fixo); o posto em repouso (1, 0) tem p+ = 1 e SE MOVE em toda escala nao trivial (deslocamento minimo > 0,25)",
+        fixos_ == [(0.0, 0.0)] and pp_((1.0, 0.0)) == 1.0 and desl_rest_ > 0.25, [fixos_, desl_rest_])
+    ck_("p10", "[DERIVED] a unidade de defasagem s = beta (beta = alfa x raiz de e em runtime): p+ encolhe pelo fator e^{-beta}, com 1 - beta < e^{-beta} < 1 - beta + beta^2/2 < 1, e o repouso (1, 0) ganha energia cosh(beta) - 1, com 0 < cosh(beta) - 1 < beta^2 (numeros deste rito, NAO estao no kernel)",
+        1.0 - beta_ < ex_(-beta_) < 1.0 - beta_ + beta_ ** 2 / 2.0 < 1.0 and 0.0 < ch_(beta_) - 1.0 < beta_ ** 2 and pp_(th_(beta_, (2.0, 1.0))) < pp_((2.0, 1.0)), [ex_(-beta_), ch_(beta_) - 1.0])
+    vals_ = {"beta": beta_, "grid_scales": len(esc_), "n_states": len(est_), "min_null_energy_shift": desl_nulo_, "min_rest_energy_shift": desl_rep_, "pplus_factor_at_beta": ex_(-beta_), "cosh_beta_minus_one": ch_(beta_) - 1.0,
+             "lifts_same_pplus_masses": [m2_(L1_), m2_(L4_), m2_(L9_)], "rest_lift": list(l_rep_), "off_rest_lift": list(l_fora_), "fixed_by_every_boost": [list(x_) for x_ in fixos_], "rest_post_min_displacement": desl_rest_, "rest_energy_c2": m3_ * c2_ ** 2}
+    return {"passed": all(k_["ok"] for k_ in checks_), "checks": checks_, "values": vals_, "n_checks": len(checks_)}
+
+
+def v402_queda_mechanics(beta_):
+    """v402 -- a mecanica da QUEDA SEM GEOMETRIA no modelo oneScaling (tau = id, theta_s = e^{-s}), no fluxo diagonal e na matriz-S, com beta recebido (alfa CODATA x sqrt(e) em runtime; NUNCA literal).
+    Cada checagem e' a leitura numerica de um ou mais teoremas do kernel (TGLExt.QuedaSemGeometria.*). Devolve {passed, checks, values, n_checks}. Nao levanta para beta invalido: devolve passed False."""
+    checks_ = []
+
+    def ck_(id_, desc_, ok_, val_=None):
+        checks_.append({"id": id_, "descricao": desc_, "ok": bool(ok_), "valor": val_})
+    if not (isinstance(beta_, float) and _m402.isfinite(beta_) and 0.0 < beta_ < 1.0):
+        return {"passed": False, "checks": [{"id": "q0", "descricao": "beta finito em (0, 1)", "ok": False, "valor": repr(beta_)}], "values": {}, "n_checks": 1}
+    ex_, lg_ = _m402.exp, _m402.log
+    cl_ = _v402_close
+    esc_ = [k_ / 8.0 for k_ in range(-80, 81)]
+    taus_ = (0.5, 1.0, 7.0)
+    tau_ = lambda s_, t0_: ex_(-s_) * t0_                                                                 # tau(theta_s m) = e^{-s} tau(m)
+    ck_("q1", "the_fall_is_a_loss_of_measure e the_fall_is_strictly_anti: com tau(m) > 0, s -> tau(theta_s m) = e^{-s} tau(m) e' ESTRITAMENTE decrescente (a fase cai, sem fim) nas 161 escalas de teste (s de -10 a 10, passo 1/8), para tau = 0,5; 1; 7",
+        all(all(tau_(s2_, t0_) < tau_(s1_, t0_) for s1_, s2_ in zip(esc_, esc_[1:])) for t0_ in taus_), [len(esc_), list(taus_)])
+    caminho_a_ = lambda s_, x_: ex_(-s_) * x_                                                              # portador A: um real, tau = ele mesmo
+    caminho_b_ = lambda s_, ab_: (ex_(-s_) * ab_[0], ex_(-s_) * ab_[1])                                    # portador B: um par, tau = soma
+    ck_("q2", "the_fall_in_nats_is_s e the_fall_depends_only_on_the_weight: log tau(theta_s m) = log tau(m) - s (a queda, em nats, e' s), e dois PORTADORES diferentes com o mesmo peso (um real 3; um par (1, 2)) caem igual: a queda depende so' do peso",
+        all(abs(lg_(tau_(s_, t0_)) - (lg_(t0_) - s_)) <= 1e-12 for t0_ in taus_ for s_ in esc_) and all(cl_(caminho_a_(s_, 3.0), sum(caminho_b_(s_, (1.0, 2.0)))) for s_ in esc_), [len(esc_)])
+    ck_("q3", "the_arrow_is_the_sign_of_s: tau(theta_s m) < tau(m) <=> s > 0; tau(m) < tau(theta_s m) <=> s < 0; tau(theta_s m) = tau(m) <=> s = 0 (a SETA e' o sinal de s, nao uma direcao do espaco)",
+        all((tau_(s_, t0_) < t0_) == (s_ > 0.0) and (t0_ < tau_(s_, t0_)) == (s_ < 0.0) and (tau_(s_, t0_) == t0_) == (s_ == 0.0) for t0_ in taus_ for s_ in esc_), [len(esc_) * len(taus_)])
+    eps_ = (1e-3, 1e-6, 1e-12, 1e-30)
+    quedas_ = [(e_, -lg_(e_) + 1.0) for e_ in eps_]
+    ck_("q4", "the_floor_is_the_post_and_is_never_touched: o CHAO e' o POSTO (peso 1 = omega(I), o corte a = 0), nunca o infimo 0: e^{-a} = 1 so' em a = 0, o peso e' estritamente positivo em toda escala, e fica abaixo de todo epsilon testado (%s) em s = -ln(epsilon) + 1 (a fase cai sem fim e sem tocar o zero)" % (list(eps_),),
+        [a_ for a_ in esc_ if ex_(-a_) == 1.0] == [0.0] and all(ex_(-a_) > 0.0 for a_ in esc_) and all(ex_(-s_) < e_ for e_, s_ in quedas_), [len(quedas_)])
+    gs_ = (0.5, 1.0, 2.0, 3.7); ts_ = (0.1, 1.0, 10.0, 100.0)
+    custos_ = [(t_ * beta_ * g_, ex_(-(t_ * beta_ * g_))) for g_ in gs_ for t_ in ts_]
+    vaza_ = [(e_, lg_(1.0 / e_) / (beta_ * 0.5) + 1.0) for e_ in (0.5, 0.1, 1e-3, 1e-6)]
+    ck_("q5", "surrender_is_the_cost (a ENTREGA CUSTA) com beta = alfa x raiz de e em runtime e contrastes g de teste %s: o custo t . beta . g e' estritamente POSITIVO, a defasagem e^{-t beta g} e' estritamente menor que 1, a perda tau(m) - tau(theta m) esta em (0, tau(m)), e o vazamento fica abaixo de cada epsilon em t = ln(1/epsilon)/(beta g) + 1 (g = 1/2)" % (list(gs_),),
+        all(c_ > 0.0 and f_ < 1.0 for c_, f_ in custos_) and all(0.0 < 7.0 - tau_(t_ * beta_ * g_, 7.0) < 7.0 for g_ in gs_ for t_ in ts_) and all(ex_(-(t_ * beta_ * 0.5)) < e_ for e_, t_ in vaza_), [min(c_ for c_, _ in custos_), max(f_ for _, f_ in custos_)])
+    dgap_ = (0.0, 0.5, 1.3); x0_ = (2.0, -1.0, 0.75)
+    fluxo_ = lambda t_, i_: ex_(-(t_ * beta_ * dgap_[i_])) * x0_[i_]
+    ck_("q6", "relaxation_to_the_attractor: o fluxo diagonal diagFlow(beta, d, t) x_i = e^{-t beta d_i} x_i relaxa ao atrator: a coordenada com gap d_i != 0 e' podada ate' zero no limite (t = 1e9/beta: |fluxo| < 1e-12) e e' DIFERENTE de zero em todo t finito testado, a de gap 0 e' o equilibrio (fixa em todo t), e vale a lei de semigrupo diagFlow(t1 + t2) = diagFlow(t1) . diagFlow(t2)",
+        all(abs(fluxo_(1e9 / beta_, i_)) < 1e-12 for i_ in (1, 2)) and all(fluxo_(t_, i_) != 0.0 for t_ in (0.0, 1.0, 10.0, 100.0) for i_ in (1, 2)) and all(fluxo_(t_, 0) == x0_[0] for t_ in (0.0, 1.0, 10.0, 100.0, 1e9))
+        and all(cl_(fluxo_(t1_ + t2_, i_), ex_(-(t1_ * beta_ * dgap_[i_])) * fluxo_(t2_, i_)) for t1_ in (0.0, 1.0, 10.0) for t2_ in (0.0, 2.0, 30.0) for i_ in range(3)), [dgap_, x0_])
+    S_ = lambda th_: ((_m402.cos(th_), _m402.sin(th_)), (-_m402.sin(th_), _m402.cos(th_)))              # Smat theta = cos theta . 1 + sin theta . Grot, Grot = [[0, 1], [-1, 0]]
+    mx_ = lambda A_, B_: max(abs(A_[i_][j_] - B_[i_][j_]) for i_ in (0, 1) for j_ in (0, 1))
+    voltas_ = [2.0 * _m402.pi * n_ for n_ in range(0, 101)]
+    ck_("q7", "Smat_add_two_pi, Smat_pi, Smat_has_no_limit, the_two_regimes_of_one_orbit: o regime ANGULAR so' le: Smat(theta + 2 pi) = Smat(theta) (periodica), Smat(pi) = -1, e NAO tem limite (Smat(2 pi n) = 1 e Smat(2 pi n + pi) = -1 diferem de 2 para todo n testado); o regime da FACE tem limite: a orbita com taxa r > 0 (e^{-r s}) tende a zero (r = beta, s = 1e9/beta: < 1e-12)",
+        all(mx_(S_(th_ + 2.0 * _m402.pi), S_(th_)) <= 1e-10 for th_ in (0.0, 0.3, 1.0, 2.5, -1.7, 40.0)) and mx_(S_(_m402.pi), ((-1.0, 0.0), (0.0, -1.0))) <= 1e-15 and all(abs(S_(t_ + _m402.pi)[0][0] - S_(t_)[0][0]) > 1.999999 for t_ in voltas_) and ex_(-(beta_ * (1e9 / beta_))) < 1e-12, [len(voltas_)])
+    G_ = 12                                                                                                # um grupo finito (Z/12) agindo por translacao em W = Z/12: o modelo finito de IsotropicPost
+    age_ = lambda g_, w_: (g_ + w_) % G_
+    P_cov_ = lambda w_: True                                                                               # predicado covariante
+    P_ret_ = lambda w_: w_ == 0                                                                            # predicado NAO covariante
+    transitivo_ = all(any(age_(g_, 0) == w_ for g_ in range(G_)) for w_ in range(G_))
+    cov_ = lambda P_: all((not P_(w_)) or P_(age_(g_, w_)) for g_ in range(G_) for w_ in range(G_))
+    ck_("q8", "IsotropicPost, clausius_everywhere_from_one_wedge_by_covariance e covariance_is_load_bearing (a isotropia e' hipotese NOMEADA, e' CARGA): num modelo finito (Z/12 agindo por translacao em W = Z/12, transitivo), um predicado COVARIANTE valido em um ponto vale em todos; o predicado 'w = 0' vale em 0 mas NAO e' covariante e a conclusao falha (nao vale em todos): sem a covariancia nada se transporta",
+        transitivo_ and cov_(P_cov_) and all(P_cov_(w_) for w_ in range(G_)) and P_ret_(0) and not cov_(P_ret_) and not all(P_ret_(w_) for w_ in range(G_)), [G_])
+    vals_ = {"beta": beta_, "grid_scales": len(esc_), "post_weight_at_scale_one": ex_(-1.0), "post_weight_at_minus_one": ex_(1.0), "min_cost_t_beta_g": min(c_ for c_, _ in custos_), "max_dephasing_factor": max(f_ for _, f_ in custos_), "dephasing_factor_at_t1_g1": ex_(-beta_),
+             "loss_per_unit": 1.0 - ex_(-beta_), "abyss_witnesses": [[e_, s_] for e_, s_ in quedas_], "leak_witnesses_g_half": [[e_, t_] for e_, t_ in vaza_], "diag_flow_gap_zero_is_fixed": fluxo_(1e9, 0) == x0_[0], "diag_flow_gap_pruned_at_1e9_over_beta": [abs(fluxo_(1e9 / beta_, i_)) for i_ in (1, 2)],
+             "angular_period": 2.0 * _m402.pi, "finite_model_group_order": G_}
+    return {"passed": all(k_["ok"] for k_ in checks_), "checks": checks_, "values": vals_, "n_checks": len(checks_)}
+
+
+def v402_esperanca_mechanics(beta_):
+    """v402 -- a mecanica da ESPERANCA CONDICIONAL = NOME em M2(C) (matrizes 2 x 2 de complexos e o espaco GNS 4 x 4), com beta recebido (alfa CODATA x sqrt(e) em runtime; NUNCA literal): nameOp p x = p x p + (1 - p) x (1 - p) com p = rho* = e_00,
+    diagExpect x = diag(x_00, x_11), trExpect x = (tr x / 2) . 1. Cada checagem e' a leitura numerica de um ou mais teoremas do kernel (TGLExt.EsperancaCondicional.*). Devolve {passed, checks, values, n_checks}. Nao levanta para beta invalido: devolve passed False."""
+    checks_ = []
+
+    def ck_(id_, desc_, ok_, val_=None):
+        checks_.append({"id": id_, "descricao": desc_, "ok": bool(ok_), "valor": val_})
+    if not (isinstance(beta_, float) and _m402.isfinite(beta_) and 0.0 < beta_ < 1.0):
+        return {"passed": False, "checks": [{"id": "e0", "descricao": "beta finito em (0, 1)", "ok": False, "valor": repr(beta_)}], "values": {}, "n_checks": 1}
+    mm_ = lambda A_, B_: tuple(tuple(sum(A_[i_][k_] * B_[k_][j_] for k_ in (0, 1)) for j_ in (0, 1)) for i_ in (0, 1))
+    ad_ = lambda A_, B_: tuple(tuple(A_[i_][j_] + B_[i_][j_] for j_ in (0, 1)) for i_ in (0, 1))
+    sb_ = lambda A_, B_: tuple(tuple(A_[i_][j_] - B_[i_][j_] for j_ in (0, 1)) for i_ in (0, 1))
+    sc_ = lambda c_, A_: tuple(tuple(c_ * A_[i_][j_] for j_ in (0, 1)) for i_ in (0, 1))
+    dist_ = lambda A_, B_: max(abs(A_[i_][j_] - B_[i_][j_]) for i_ in (0, 1) for j_ in (0, 1))
+    UM_ = ((1.0 + 0j, 0j), (0j, 1.0 + 0j)); P_ = ((1.0 + 0j, 0j), (0j, 0j))                                    # 1 e rho* = Matrix.single 0 0 1
+    nome_ = lambda x_: ad_(mm_(mm_(P_, x_), P_), mm_(mm_(sb_(UM_, P_), x_), sb_(UM_, P_)))                    # nameOp rho* x = p x p + (1 - p) x (1 - p)
+    diag_ = lambda x_: ((x_[0][0], 0j), (0j, x_[1][1]))                                                         # diagExpect
+    tr_ = lambda x_: sc_((x_[0][0] + x_[1][1]) / 2.0, UM_)                                                      # trExpect
+    xs_ = [((1 + 2j, 3 - 1j), (0.5j, 2 + 0j)), ((0j, 1 + 0j), (1 + 0j, 0j)), ((2 + 0j, -1j), (1j, 3 + 0j)), ((0.3 + 0j, 0.4 + 0.1j), (0.4 - 0.1j, 0.7 + 0j)), ((1 + 0j, 0j), (0j, 0j)), ((5j, 2 + 0j), (-3 + 0j, 1 + 1j))]
+    ck_("e1", "★ the_name_of_the_unit_is_the_diagonal_expectation (PostoAdendo.A1c): em M2(C) o Operador do Nome de rho* ( x -> p x p + (1 - p) x (1 - p), p = rho* = e_00 ) E a esperanca diagonal x -> diag(x_00, x_11), nas 6 matrizes de teste",
+        all(dist_(nome_(x_), diag_(x_)) <= 1e-14 for x_ in xs_), [len(xs_)])
+    ck_("e2", "the_name_preserves_the_one e every_expectation_preserves_the_one: E(1) = 1 para o Nome, para a esperanca diagonal e para a esperanca do traco (o POSTO e' o peso que a esperanca preserva)",
+        dist_(nome_(UM_), UM_) <= 1e-15 and dist_(diag_(UM_), UM_) <= 1e-15 and dist_(tr_(UM_), UM_) <= 1e-15, [3])
+    ths_ = (0.0, 0.4, 1.1, 2.3, -0.8)
+    K_ = ((0j, 1 + 0j), (-1 + 0j, 0j))                                                                         # genK = Grot
+    pplus_ = sc_(0.5, sb_(UM_, sc_(1j, K_)))                                                                    # projPlus = (1 - i K)/2
+    ang_ = lambda t_: ad_(sc_(_m402.cos(t_), UM_), sc_(_m402.sin(t_), K_))                                      # angFamily theta
+    ck_("e3", "rereading_the_name_adds_nothing (RELER NAO ACRESCENTA): E(E(x)) = E(x) para o Nome, a esperanca diagonal e a do traco, e P+ . (P+ . A(theta)) = P+ . A(theta) (a leitura do observador; P+ . A(theta) = e^{i theta} P+) nos angulos de teste",
+        all(dist_(nome_(nome_(x_)), nome_(x_)) <= 1e-14 and dist_(diag_(diag_(x_)), diag_(x_)) <= 1e-14 and dist_(tr_(tr_(x_)), tr_(x_)) <= 1e-14 for x_ in xs_)
+        and all(dist_(mm_(pplus_, mm_(pplus_, ang_(t_))), mm_(pplus_, ang_(t_))) <= 1e-14 and dist_(mm_(pplus_, ang_(t_)), sc_(_m402.cos(t_) + 1j * _m402.sin(t_), pplus_)) <= 1e-14 for t_ in ths_), [len(xs_), len(ths_)])
+    ds_ = [((1.0 + 0j, 0j), (0j, 2 - 1j)), ((0.5j, 0j), (0j, 3 + 0j)), ((1 + 1j, 0j), (0j, -2 + 0j))]
+    ck_("e4", "the_name_memory_is_a_subalgebra: os pontos fixos do Nome (a memoria) sao EXATAMENTE as matrizes diagonais, e o produto de dois pontos fixos e' ponto fixo (E(x y) = x y); uma matriz com termo fora da diagonal NAO e' fixa",
+        all(dist_(nome_(d_), d_) <= 1e-15 for d_ in ds_) and all(dist_(nome_(mm_(a_, b_)), mm_(a_, b_)) <= 1e-14 for a_ in ds_ for b_ in ds_) and all((dist_(nome_(x_), x_) <= 1e-14) == (abs(x_[0][1]) + abs(x_[1][0]) <= 1e-14) for x_ in xs_), [len(ds_)])
+    ck_("e5", "the_name_of_the_unit_is_bimodular: E(d x d') = d E(x) d' para d, d' diagonais (a esperanca e' bimodular sobre a diagonal)",
+        all(dist_(nome_(mm_(mm_(d_, x_), e_)), mm_(mm_(d_, nome_(x_)), e_)) <= 1e-13 for d_ in ds_ for e_ in ds_ for x_ in xs_), [len(ds_) * len(ds_) * len(xs_)])
+    th_m_ = _m402.asin(_m402.sqrt(beta_)); b_ind_ = _m402.sin(th_m_) ** 2; indice_ = 1.0 / b_ind_
+    psd_ = lambda h_: h_[0][0].real >= -1e-12 and h_[1][1].real >= -1e-12 and (h_[0][0] * h_[1][1] - h_[0][1] * h_[1][0]).real >= -1e-12
+    xps_ = [((1 + 0j, 1 + 0j), (1 + 0j, 1 + 0j)), ((2 + 0j, 1j), (-1j, 1 + 0j)), ((0.3 + 0j, 0.1 + 0.2j), (0.1 - 0.2j, 0.9 + 0j)), ((1 + 0j, 0j), (0j, 0j))]
+    pp_ok_ = all(psd_(sb_(diag_(x_), sc_(0.5, x_))) for x_ in xps_) and not psd_(sb_(diag_(xps_[0]), sc_(0.5 + 1e-3, xps_[0])))
+    ck_("e6", "the_index_of_the_name_is_one_over_beta (CONDICIONAL a hpp e hopt do kernel; nenhuma instancia e' construida): com theta_M = arcsin(raiz de beta) e beta = alfa x raiz de e em runtime, sin^2(theta_M) = beta e o indice do Nome 1/beta = %.4f (> 83,1 e < 83,2), com (1/beta) . beta = 1; e a esperanca diagonal da face M2 tem constante de Pimsner-Popa 1/2 (indice 2: E(x) - x/2 >= 0 nas matrizes positivas de teste, e a constante 1/2 + 0,001 falha em x = [[1, 1], [1, 1]]): os dois numeros NAO sao identificados" % indice_,
+        abs(b_ind_ - beta_) <= 1e-15 and abs(indice_ * beta_ - 1.0) <= 1e-12 and 83.1 < indice_ < 83.2 and pp_ok_, [indice_, b_ind_])
+    bas_ = lambda i_, j_: [[1.0 + 0j if (a_, b_) == (i_, j_) else 0j for b_ in (0, 1)] for a_ in (0, 1)]
+    idx_ = [(0, 0), (0, 1), (1, 0), (1, 1)]
+    vec_ = lambda x_: [x_[0][0], x_[0][1], x_[1][0], x_[1][1]]                                                    # o espaco GNS: M2 como C^4
+    Lm_ = lambda a_: [[vec_(mm_(a_, bas_(i_, j_)))[r_] for (i_, j_) in idx_] for r_ in range(4)]                  # Lmul a (a matriz 4 x 4 da multiplicacao a esquerda)
+    eD_ = [[1.0 + 0j if r_ == c_ and r_ in (0, 3) else 0j for c_ in range(4)] for r_ in range(4)]                  # e_D: projecao ortogonal nas diagonais
+    mm4_ = lambda A_, B_: [[sum(A_[i_][k_] * B_[k_][j_] for k_ in range(4)) for j_ in range(4)] for i_ in range(4)]
+    d4_ = lambda A_, B_: max(abs(A_[i_][j_] - B_[i_][j_]) for i_ in range(4) for j_ in range(4))
+    ck_("e7", "the_mirror_compression_is_the_expectation e the_mirror_compression_is_the_name (a relacao de Jones): no espaco GNS M2 = C^4, e_D . L_x . e_D = L_{E_D(x)} . e_D, e e_D . L_x . e_D = L_{nameOp rho* x} . e_D: a compressao pelo espelho E a esperanca, que e' o Nome",
+        all(d4_(mm4_(mm4_(eD_, Lm_(x_)), eD_), mm4_(Lm_(diag_(x_)), eD_)) <= 1e-13 and d4_(mm4_(mm4_(eD_, Lm_(x_)), eD_), mm4_(Lm_(nome_(x_)), eD_)) <= 1e-13 for x_ in xs_), [len(xs_)])
+    vals_ = {"beta": beta_, "theta_M": th_m_, "sin2_theta_M": b_ind_, "name_index_one_over_beta": indice_, "diagonal_expectation_pp_constant": 0.5, "diagonal_expectation_index_M2": 2, "test_matrices": len(xs_), "test_angles": len(ths_), "gns_dimension": 4}
+    return {"passed": all(k_["ok"] for k_ in checks_), "checks": checks_, "values": vals_, "n_checks": len(checks_)}
+
+
+def _v402_formal(core, c_, txt_):
+    """A evidencia FORMAL do registro, lida do kernel do PROPRIO rito: a escada exata, a composicao e os teoremas do contrato (bandeira True, trio, proveniencia no modulo da pedra), os termos antigos que a pedra cita (no trio, com a proveniencia que o compilador emite),
+    a fonte da pedra por sha256 (embutida == contrato == hash formal do rito), as inscricoes por sha256, o TEXTO-CONTEXTO no kernel embutido e a guarda P18 sobre o texto. Devolve um dict; `formal` e' o conjunto."""
+    import hashlib, json as _j402
+    kf_ = core.get("kernel_formalization") or {}; axr_ = kf_.get("axiom_report") or {}; src_ = kf_.get("declaration_sources_v394") or {}
+    trio_ = {"propext", "Classical.choice", "Quot.sound"}
+    lad_ = core.get("external_ladder") or {}
+    cnt_ = [lad_.get("n_theorems_clean"), lad_.get("n_theorems_expected"), c_["expected_ladder"]]
+    exact_ = all(type(x_) is int for x_ in cnt_) and len(set(cnt_)) == 1
+    em_trio_ = lambda n_: bool(isinstance(axr_.get(n_), list) and all(isinstance(x_, str) for x_ in axr_.get(n_)) and set(axr_.get(n_)) <= trio_)
+    per_ = {th_: bool(em_trio_(th_) and kf_.get(fl_) is True and src_.get(th_) == c_["stone"]["path"]) for th_, fl_ in c_["theorems"].items()}
+    sup_ = {n_: bool(em_trio_(n_) and src_.get(n_) == p_) for n_, p_ in c_["support"].items()}
+    cit_ = {n_: bool(em_trio_(n_) and src_.get(n_) == p_) for n_, p_ in c_["cited_outside"].items()}
+    aux_ = {n_: bool(em_trio_(n_) and src_.get(n_) == c_["stone"]["path"]) for n_ in c_["auxiliaries_outside_the_composition"]}
+    body_ = _EMBEDDED_KERNEL_FILES.get(c_["stone"]["path"])
+    src_ok_ = bool(isinstance(body_, str) and hashlib.sha256(body_.encode("utf-8")).hexdigest() == c_["stone"]["sha256"] and (kf_.get("formal_files_sha256") or {}).get(c_["stone"]["path"]) == c_["stone"]["sha256"])
+    ver_ = {}
+    for k_ in c_["verbatins"]:
+        v_ = _V402_VERBATINS2.get(k_)
+        ver_[k_] = bool(v_ and hashlib.sha256(v_["text"].encode("utf-8")).hexdigest() == v_["sha256"] and all(t_ in v_["text"] for t_ in v_["trechos"]))
+    unc_th_, unc_fl_ = c_["unconditional"]["theorem"], c_["unconditional"]["flag"]
+    unc_ = {"theorem": unc_th_, "flag": unc_fl_, "flag_true": kf_.get(unc_fl_) is True, "axioms": axr_.get(unc_th_), "in_trio": em_trio_(unc_th_), "declared_in": src_.get(unc_th_), "in_kernel": bool(per_.get(unc_th_)),
+            "composition": "NO_CERTIFICATE_AS_HYPOTHESIS" if not c_.get("named_hypotheses_in_the_statement") else "CONDITIONAL_ON_NAMED_HYPOTHESES_IN_THE_STATEMENT"}
+    key_th_, key_fl_ = c_["key_theorem"]["theorem"], c_["key_theorem"]["flag"]
+    key_ = {"theorem": key_th_, "flag": key_fl_, "flag_true": kf_.get(key_fl_) is True, "in_trio": em_trio_(key_th_), "declared_in": src_.get(key_th_), "in_kernel": bool(per_.get(key_th_)), "statement": c_["key_statement"]}
+    cx_ = c_["context"]; cb_ = _EMBEDDED_KERNEL_FILES.get(cx_["path"])
+    ctx_ = {"path": cx_["path"], "needles": list(cx_["needles"]), "text_in_embedded_kernel": bool(isinstance(cb_, str) and all(n_ in cb_ for n_ in cx_["needles"]))}
+    ctx_["ok"] = bool(ctx_["text_in_embedded_kernel"])
+    guarda_ = _v392_guarda_texto(_j402.dumps(txt_, ensure_ascii=False))
+    formal_ = bool(kf_.get("all_verified") is True and exact_ and per_ and all(per_.values()) and sup_ and all(sup_.values()) and all(cit_.values()) and all(aux_.values()) and src_ok_ and all(ver_.values()) and key_["in_kernel"] and unc_["in_kernel"] and ctx_["ok"] and not guarda_)
+    return {"exact_ladder": exact_, "formal_theorems": per_, "support_theorems": sup_, "cited_outside": cit_, "auxiliaries_outside_the_composition": aux_, "embedded_source_ok": src_ok_, "inscriptions": ver_, "unconditional": unc_, "key_theorem": key_,
+            "context": ctx_, "guarda": guarda_, "formal": formal_}
+
+
+_V402_RECUSA = "TGL_%s_V402__REFUSED_%s__GATE_UNMOVED"
+
+
+def _v402_registro(core, chave_, nome_, mec_, tag_):
+    """v402 -- o miolo comum dos TRES registros com FUNCAO: le o kernel do rito (evidencia FORMAL), confere o beta (alfa x raiz de e, nunca literal), CALCULA a mecanica da pedra e sela. Fail-closed em cada elo; excecao vira recusa visivel; nao move o gate."""
+    c_ = _V402_CONTRACTS[chave_]; t_ = _V402_TEXTS[chave_]
+    f_ = _v402_formal(core, c_, t_)
+    beta_rt_, beta_rel_, dois_nomes_, beta_ok_ = _v398_beta(core)
+    out_ = {"all_verified": False, "estatuto": t_["estatuto"], "exact_ladder": f_["exact_ladder"], "formal_theorems": f_["formal_theorems"], "support_theorems": f_["support_theorems"], "embedded_source_ok": f_["embedded_source_ok"],
+            "inscriptions": f_["inscriptions"], "beta_ok": beta_ok_, "beta_core_rel_diff": beta_rel_, "alpha_two_names_same": dois_nomes_, "unconditional": f_["unconditional"], "key_theorem": f_["key_theorem"], "context": f_["context"],
+            "runtime_executed": False, "does_not_gate_core": True, "scope": t_["escopo"], "limites": t_["limites"], "diz": t_["diz"], "nao_diz": t_["nao_diz"], "guarda_p18_violacoes": f_["guarda"][:5]}
+    out_.update(t_["extras"])
+    if not f_["formal"]:
+        out_["verdict"] = _V402_RECUSA % (tag_, "FORMAL_OR_SOURCE_EVIDENCE")
+    elif not beta_ok_:
+        out_["verdict"] = _V402_RECUSA % (tag_, "BETA_IS_NOT_ALPHA_SQRT_E")
+    else:
+        try:
+            mec_r_ = mec_(beta_rt_)
+            out_.update(runtime_executed=True, mechanics={"passed": mec_r_["passed"], "n_checks": mec_r_["n_checks"], "checks": mec_r_["checks"]}, values=mec_r_["values"], all_verified=bool(mec_r_["passed"]))
+            out_["verdict"] = (t_["veredito_ok"] if mec_r_["passed"] else _V402_RECUSA % (tag_, "MECHANICS_CHECK_FAILED"))
+        except Exception as e_:   # noqa: BLE001
+            out_.update(runtime_executed=True, error=repr(e_)[:300])
+            out_["verdict"] = _V402_RECUSA % (tag_, "RUNTIME_ERROR")
+    core[nome_] = out_
+    return out_
+
+
+def ponte_da_escala_dual_v402(core):
+    """v402 -- A PONTE DA ESCALA DUAL (modulo do Codex, ORDEM 025; exame independente INTEGRAR_COM_ERRATA_AO_LADO): lida no PONTO REAL do main, logo depois da falsidade da inercia (v401). Le do kernel do PROPRIO rito a pedra (bandeiras, trio, modulo), os termos antigos que ela cita, a fonte por sha256
+    e o texto de Bisognano-Wichmann no kernel embutido; e CALCULA, com beta = alfa CODATA 2018 x sqrt(e) em runtime, o modelo longitudinal (E, p), c = 1. Fail-closed em cada elo; nao move o gate. Validade no kernel nao e' creditacao."""
+    return _v402_registro(core, "ponte", "ponte_da_escala_dual_v402", v402_ponte_mechanics, "PONTE_DA_ESCALA_DUAL")
+
+
+def queda_sem_geometria_v402(core):
+    """v402 -- A QUEDA SEM GEOMETRIA (nome do modulo PROVISORIO; o operador nomeia): lida logo depois da ponte. Le do kernel do PROPRIO rito a composicao e os teoremas, a Fundacao embutida («o piso limita») e as inscricoes; e CALCULA, com beta em runtime, o modelo oneScaling, o fluxo diagonal
+    e a matriz-S. Fail-closed em cada elo; nao move o gate. Validade no kernel nao e' creditacao."""
+    return _v402_registro(core, "queda", "queda_sem_geometria_v402", v402_queda_mechanics, "QUEDA_SEM_GEOMETRIA")
+
+
+def esperanca_condicional_v402(core):
+    """v402 -- A ESPERANCA CONDICIONAL = NOME (nome do modulo PROVISORIO): lida logo depois da queda. Le do kernel do PROPRIO rito a composicao e os teoremas, o texto do indice do Nome no kernel embutido (TGL/NameIndex) e as inscricoes; e CALCULA, com beta em runtime, a esperanca diagonal
+    em M2(C), a lei de Jones e o indice 1/beta (CONDICIONAL). Fail-closed em cada elo; nao move o gate. Validade no kernel nao e' creditacao."""
+    return _v402_registro(core, "esperanca", "esperanca_condicional_v402", v402_esperanca_mechanics, "ESPERANCA_CONDICIONAL")

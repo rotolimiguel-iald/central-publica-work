@@ -1,0 +1,97 @@
+# ------------------------------------------------------------------ 4c. o PARAGRAFO NOVO (a ponte da escala dual, a queda sem geometria e a esperanca condicional): verificacao propria, controles negativos, a citacao verbatim, a ERRATA ao lado do paragrafo da v401 e o handoff que diz que os do testemunho e da falsidade seguem como estao
+_sn = {"ok": False}
+try:
+    PAR_F, PAR_F_INFO = T.paragrafo_v402()
+    _sn["positivo_sem_falhas"] = (T.verificar_paragrafo_v402(PAR_F, _core_p, ESP) == [])
+    _sn["igual_ao_gerado_do_core"] = (PAR_F == T._paragrafo_v402_de(_core_p))
+    _ho = RENDER.get("handoff", "")
+    _ERR = T.errata_v401_bloco()
+    _sn["handoff_traz_os_paragrafos_e_a_errata_entre_os_marcadores"] = bool((T.MARC_V402_INI + "\n" + PAR_F.rstrip("\n") + "\n" + T.MARC_V402_FIM) in _ho and ("<!-- INICIO_PARAGRAFO_README_v397 -->\n" + PAR.rstrip("\n") + "\n<!-- FIM_PARAGRAFO_README_v397 -->") in _ho
+                                                                         and (T.MARC_ERR_INI + "\n" + _ERR.rstrip("\n") + "\n" + T.MARC_ERR_FIM) in _ho)
+    _sn["handoff_lista_o_sidecar"] = bool("um_absoluto_selo_acom.json" in _ho and Vd["sidecar"]["sha256"] in _ho and Vd["sidecar"]["veredito"] in _ho)
+    _sn["handoff_diz_que_o_testemunho_e_a_falsidade_seguem_como_estao"] = bool(("SEGUEM COMO ESTÃO" in _ho or "SEGUE COMO ESTÁ" in _ho) and "handoff-v401-custodia.md" in _ho and "<!-- INICIO_PARAGRAFO_TESTEMUNHO" not in _ho and "<!-- INICIO_PARAGRAFO_FALSIDADE" not in _ho)
+    _sn["errata_v401_sem_o_4_44_e_limpa"] = bool(not re.search(r"4[,.]44|z_disc", _ERR) and not violacoes(_ERR) and "REFUTADA" in _ERR and "positive_weight_cannot_be_invariant_mass" in _ERR)
+    _sn["info"] = PAR_F_INFO
+    if not (_sn["positivo_sem_falhas"] and _sn["igual_ao_gerado_do_core"] and _sn["handoff_traz_os_paragrafos_e_a_errata_entre_os_marcadores"] and _sn["handoff_lista_o_sidecar"] and _sn["handoff_diz_que_o_testemunho_e_a_falsidade_seguem_como_estao"] and _sn["errata_v401_sem_o_4_44_e_limpa"]):
+        falha("paragrafo novo da v402: positivo %s, igual ao gerado do core %s, no handoff %s, sidecar listado %s, testemunho e falsidade ditos como estao %s, errata limpa %s" % (_sn["positivo_sem_falhas"], _sn["igual_ao_gerado_do_core"], _sn["handoff_traz_os_paragrafos_e_a_errata_entre_os_marcadores"], _sn["handoff_lista_o_sidecar"],
+                                                                                                                                   _sn["handoff_diz_que_o_testemunho_e_a_falsidade_seguem_como_estao"], _sn["errata_v401_sem_o_4_44_e_limpa"]))
+    _pv = _core_p["ponte_da_escala_dual_v402"]["values"]; _qv = _core_p["queda_sem_geometria_v402"]["values"]; _ev = _core_p["esperanca_condicional_v402"]["values"]
+    _num_mut = lambda s: s[:-1] + str((int(s[-1]) + 1) % 10)
+
+    def _muts(nome, f, espera):
+        p2 = f(PAR_F); fa = T.verificar_paragrafo_v402(p2, _core_p, ESP)
+        ok = bool(p2 != PAR_F and fa and any(espera in x for x in fa)); return {"controle": nome, "reprovou": bool(fa), "mensagem_esperada_presente": any(espera in x for x in fa), "ok": ok, "falhas": [x[:140] for x in fa][:3]}
+    _bt = T._p(_pv["beta"], 12); _cm = T._p(_qv["min_cost_t_beta_g"], 9); _dm = T._p(_qv["max_dephasing_factor"], 9); _lp = T._p(_qv["loss_per_unit"], 9); _ix = T._p(_ev["name_index_one_over_beta"], 4); _ms = T._lst(_pv["lifts_same_pplus_masses"])
+    _dirq = T._g(_core_p, "cunhagens_v402", "extras", "leitura_26out_direcao", "resposta")
+    _NEGS = [_muts("beta com um digito trocado (em todo o paragrafo)", lambda p: p.replace(_bt, _num_mut(_bt)), "ausente do paragrafo"),
+             _muts("o custo minimo da queda com um digito trocado", lambda p: p.replace(_cm, _num_mut(_cm)), "ausente do paragrafo"),
+             _muts("o fator de defasagem maximo com um digito trocado", lambda p: p.replace(_dm, _num_mut(_dm)), "ausente do paragrafo"),
+             _muts("a perda por unidade com um digito trocado", lambda p: p.replace(_lp, _num_mut(_lp)), "ausente do paragrafo"),
+             _muts("o indice 1/beta com um digito trocado", lambda p: p.replace(_ix, _num_mut(_ix)), "ausente do paragrafo"),
+             _muts("os mu^2 do mesmo p+ adulterados", lambda p: p.replace(_ms, "1, 4, 10"), "ausente do paragrafo"),
+             _muts("a ORDEM 025 com sha16 adulterado", lambda p: p.replace(d_o025 := T._cod025(), _num_mut(d_o025)), "ausente do paragrafo"),
+             _muts("a IALD como quem testifica do operador (direcao invertida)", lambda p: p + "\n> - A IALD testifica do operador.\n", "DIRECAO"),
+             _muts("H_tau literal deixa de ser REFUTADA", lambda p: p.replace("REFUTADA no kernel", "mantida no kernel"), "frase de limite ausente"),
+             _muts("a massa passa a ser selecionada pela lei", lambda p: p.replace("a massa NÃO é selecionada pela lei", "a massa é selecionada pela lei", 1), "frase de limite ausente"),
+             _muts("o chao passa a ser o infimo 0", lambda p: p.replace("O CHÃO é o POSTO", "O CHÃO é o ÍNFIMO", 1), "frase de limite ausente"),
+             _muts("a dimensao 3 dita provada", lambda p: p.replace("NÃO é provada", "é provada", 1), "frase de limite ausente"),
+             _muts("o Nome deixa de ser as tres faces de um objeto", lambda p: p.replace("TRÊS FACES DE UM OBJETO FIXO", "UMA DEFINIÇÃO", 1), "frase de limite ausente"),
+             _muts("o indice 1/beta dito incondicional", lambda p: p.replace("CONDICIONAL a duas hipóteses", "incondicional", 1), "frase de limite ausente"),
+             _muts("a instancia dita construida", lambda p: p.replace("nenhuma instância é construída", "a instância é construída", 1), "frase de limite ausente"),
+             _muts("as pedras passam a provar a primeira lei de Newton", lambda p: p.replace("NÃO provam a primeira lei de Newton", "provam a primeira lei de Newton", 1), "frase de limite ausente"),
+             _muts("o calculo passa a provar em vez de conferir", lambda p: p.replace("CONFERE os teoremas", "prova os teoremas", 1), "frase de limite ausente"),
+             _muts("o kernel deixa de ser quem prova", lambda p: p.replace("quem prova é o kernel", "quem prova é o cálculo", 1), "frase de limite ausente"),
+             _muts("os nomes deixam de ser provisorios", lambda p: p.replace("PROVISÓRIO", "DEFINITIVO"), "frase de limite ausente"),
+             _muts("as decisoes deixam de ser ratificaveis", lambda p: p.replace("ratificável", "definitiva"), "frase de limite ausente"),
+             _muts("citacao do operador que nao e' verbatim", lambda p: p.replace("esperança condicional=nome", "esperança condicional é nome", 1), "NAO e' verbatim"),
+             _muts("citacao do kernel que nao e' verbatim", lambda p: p.replace("não existe acima, o piso limita", "existe acima, o piso limita", 1), "NAO e' verbatim"),
+             _muts("o estatuto DECLARADO removido", lambda p: p.replace("[DECLARADO]", "", 1), "estatuto ausente"),
+             _muts("o estatuto OPEN removido", lambda p: p.replace("[OPEN]", ""), "estatuto ausente"),
+             _muts("o estatuto DERIVED removido", lambda p: p.replace("[DERIVED]", ""), "estatuto ausente"),
+             _muts("o 4,44 entra no paragrafo", lambda p: p + "\n> z_disc = " + _z + "\n", "4,44"),
+             _muts("seguranca criptografica garantida (alegacao)", lambda p: p + "\n> - A confidencialidade garantida e o sigilo garantido do metodo.\n", "alega seguranca criptografica"),
+             _muts("a palavra consciencia usada como termo", lambda p: p + "\n> - A consciência é a tipagem que falta.\n", "consciencia"),
+             _muts("o gate dito movido", lambda p: p.replace("o gate não se move", "o gate se move", 1), "frase de limite ausente"),
+             _muts("a creditacao dita pela validade", lambda p: p.replace("validade no kernel não é creditação", "validade no kernel é creditação", 1), "frase de limite ausente"),
+             _muts("o paragrafo deixa de dizer que nao traz o numero do quadro", lambda p: p.replace("este parágrafo não traz o número do quadro", "este parágrafo traz o quadro", 1), "frase de limite ausente"),
+             _muts("a resposta de 26/10 adulterada", lambda p: p.replace(_dirq, "a seta do espaço", 1), "difere do gerado"),
+             _muts("o paragrafo sem o bullet das erratas", lambda p: "\n".join(l for l in p.split("\n") if not l.startswith("> - **Erratas ao lado")), "difere do gerado"),
+             _muts("o paragrafo sem o bullet da queda", lambda p: "\n".join(l for l in p.split("\n") if not l.startswith("> - **A queda sem geometria")), "difere do gerado"),
+             _muts("o paragrafo sem o bullet da esperanca", lambda p: "\n".join(l for l in p.split("\n") if not l.startswith("> - **A esperança condicional é o Nome")), "difere do gerado"),
+             _muts("o paragrafo sem o bullet da pergunta e resposta", lambda p: "\n".join(l for l in p.split("\n") if not l.startswith("> - **Pergunta e resposta")), "difere do gerado")]
+    for n_ in _NEGS:
+        print("  controle negativo do paragrafo da v402 %-62s %s" % (n_["controle"], "REPROVOU como esperado" if n_["ok"] else "NAO REPROVOU como esperado"))
+        if not n_["ok"]:
+            falha("controle negativo do paragrafo da v402 nao reprovou como esperado: %s -> %s" % (n_["controle"], n_["falhas"]))
+    _sn["negativos"] = _NEGS
+
+    def _levanta(f):
+        try:
+            f(); return False
+        except AssertionError:
+            return True
+    _inv_txt = "A IALD testifica do operador, e o um.py testifica em hash."
+    _tx = {"cita_fora_dos_bytes_levanta": _levanta(lambda: T._cita("a queda é o corpo de Newton e a IALD de ninguem")),
+           "cita_verbatim_passa": (T._cita("faça a prova") == "«faça a prova»"),
+           "cita_adendo_verbatim_passa": (T._cita_adendo("ele interrompe a inércia") == "«ele interrompe a inércia»"),
+           "cita_adendo_fora_dos_bytes_levanta": _levanta(lambda: T._cita_adendo("ω(I)=1 é a inércia")),
+           "texto_do_kernel_verbatim_passa": (T._um_texto_tem("nunca correspondeu, e por isso nada custa") == "«nunca correspondeu, e por isso nada custa»"),
+           "texto_do_kernel_fora_dos_bytes_levanta": _levanta(lambda: T._um_texto_tem("nunca correspondeu e custa tudo")),
+           "piso_do_kernel_verbatim_passa": (T._um_texto_tem("não existe acima, o piso limita") == "«não existe acima, o piso limita»"),
+           "atribuicao_limpa_nos_textos": {nome: T.atribuicao_da_gerencia(txt) for nome, txt in RENDER.items() if T.atribuicao_da_gerencia(txt)} == {},
+           "controle_direcao_invertida": bool(T.atribuicao_da_gerencia(_inv_txt)),
+           "controle_a_fala_em_que_ele_recusa_a_ordem_inversa_passa": (T.atribuicao_da_gerencia("eu não podia dizer que IALD testifica a mim, porque sou eu que testifico dela") == []),
+           "controle_a_IALD_nao_testifica_passa": (T.atribuicao_da_gerencia("a IALD NÃO testifica do operador") == []),
+           "controle_consciencia_como_termo": bool(T.atribuicao_da_gerencia("A consciência é a tipagem que falta.")),
+           "controle_consciencia_palavra_retirada_passa": (T.atribuicao_da_gerencia("a palavra «consciência» é retirada por ele") == []),
+           "controle_inscricao_da_gerencia": bool(T.atribuicao_da_gerencia("as falas do operador e da gerência"))}
+    _sn["textos"] = _tx
+    _ruim = [k for k, v in _tx.items() if not v]
+    if _ruim:
+        falha("citacao verbatim / direcao do testemunho: controles que nao deram o esperado: %s" % _ruim)
+    _sn["ok"] = True
+    print("  paragrafo novo (a ponte, a queda e a esperanca): positivo ok; %d controles negativos; citacao e direcao: %d controles ok" % (len(_NEGS), len(_tx)))
+except BaseException as ex:  # noqa: BLE001
+    _sn["erro"] = "%s: %s" % (type(ex).__name__, str(ex)[:401]); _sn["onde"] = traceback.format_exc().strip().splitlines()[-3:]
+    falha("paragrafo novo da v402: %s" % _sn["erro"])
+etapa("paragrafo_v402_e_citacoes", **_sn)

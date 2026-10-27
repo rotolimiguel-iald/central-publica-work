@@ -1,0 +1,58 @@
+# ---- [EXAME FINAL v402] controles negativos dos TRES registros com funcao (molde: exame_pontos_v401x.py, bloco da falsidade) e o positivo de novo
+import math as _mx402
+try:
+    _negs = {}
+    _pos = {}
+    def _kfc(c_):
+        c_["kernel_formalization"] = dict(c_["kernel_formalization"]); return c_["kernel_formalization"]
+    _so = sys.stdout; sys.stdout = io.StringIO()
+    try:
+        _alfa = um.SEALED_CODATA_ALPHA
+        _beta_rt = _alfa * _mx402.sqrt(_mx402.e)
+        _pos["beta_runtime_alfa_raiz_e"] = _beta_rt
+        _pos["beta_core"] = core.get("beta")
+        _pos["beta_rel"] = abs(core.get("beta") - _beta_rt) / _beta_rt
+        for _nm, _fn, _ch in (("ponte", um.ponte_da_escala_dual_v402, "ponte"), ("queda", um.queda_sem_geometria_v402, "queda"), ("esperanca", um.esperanca_condicional_v402, "esperanca")):
+            _C = um._V402_CONTRACTS[_ch]
+            r0 = _fn(copy.deepcopy(core)); _pos[_nm] = {"verdict": r0.get("verdict"), "all_verified": r0.get("all_verified"), "beta_ok": r0.get("beta_ok"), "beta_core_rel_diff": r0.get("beta_core_rel_diff"),
+                                                         "n_checks": (r0.get("mechanics") or {}).get("n_checks"), "values": r0.get("values")}
+            ut, uf = _C["unconditional"]["theorem"], _C["unconditional"]["flag"]
+            kt, kfl = _C["key_theorem"]["theorem"], _C["key_theorem"]["flag"]
+            c1 = copy.deepcopy(core); k1 = _kfc(c1); k1["axiom_report"] = dict(k1["axiom_report"]); k1["axiom_report"].pop(ut, None); _negs[_nm + ":pedra_composicao_fora_do_axiom_report"] = _fn(c1).get("verdict")
+            c1 = copy.deepcopy(core); k1 = _kfc(c1); k1["axiom_report"] = dict(k1["axiom_report"]); k1["axiom_report"][kt] = ["propext", "Classical.choice", "Quot.sound", "sorryAx"]; _negs[_nm + ":sorryAx_na_estrela"] = _fn(c1).get("verdict")
+            c1 = copy.deepcopy(core); k1 = _kfc(c1); k1[uf] = False; _negs[_nm + ":bandeira_da_composicao_falsa"] = _fn(c1).get("verdict")
+            c1 = copy.deepcopy(core); k1 = _kfc(c1); k1[kfl] = False; _negs[_nm + ":bandeira_da_estrela_falsa"] = _fn(c1).get("verdict")
+            c1 = copy.deepcopy(core); k1 = _kfc(c1); k1["formal_files_sha256"] = dict(k1["formal_files_sha256"]); k1["formal_files_sha256"][_C["stone"]["path"]] = "0" * 64; _negs[_nm + ":sha_da_pedra_errado_no_kernel"] = _fn(c1).get("verdict")
+            c1 = copy.deepcopy(core); c1["external_ladder"] = dict(c1["external_ladder"]); c1["external_ladder"]["n_theorems_clean"] -= 1; _negs[_nm + ":escada_nao_fecha"] = _fn(c1).get("verdict")
+            c1 = copy.deepcopy(core); c1["beta"] = c1["beta"] * (1 + 1e-6); _negs[_nm + ":beta_do_core_vezes_1_mais_1e-6"] = _fn(c1).get("verdict")
+            try:
+                um.SEALED_CODATA_ALPHA = _alfa * (1 + 1e-6); _negs[_nm + ":alfa_selado_adulterado"] = _fn(copy.deepcopy(core)).get("verdict")
+            finally:
+                um.SEALED_CODATA_ALPHA = _alfa
+            _vb = um._V402_VERBATINS2
+            if _C.get("verbatins"):
+                _k0 = _C["verbatins"][0]
+                try:
+                    um._V402_VERBATINS2 = copy.deepcopy(_vb); um._V402_VERBATINS2[_k0]["text"] = _vb[_k0]["text"][:-1] + ("!" if not _vb[_k0]["text"].endswith("!") else "?")
+                    _negs[_nm + ":inscricao_adulterada"] = _fn(copy.deepcopy(core)).get("verdict")
+                finally:
+                    um._V402_VERBATINS2 = _vb
+            else:
+                _negs[_nm + ":inscricao_adulterada"] = "SEM_INSCRICAO_NO_CONTRATO"
+            _emb0 = um._EMBEDDED_KERNEL_FILES
+            try:
+                um._EMBEDDED_KERNEL_FILES = dict(_emb0); um._EMBEDDED_KERNEL_FILES[_C["stone"]["path"]] = _emb0[_C["stone"]["path"]] + "\n-- adulterada\n"
+                _negs[_nm + ":fonte_embutida_adulterada"] = _fn(copy.deepcopy(core)).get("verdict")
+            finally:
+                um._EMBEDDED_KERNEL_FILES = _emb0
+            # o positivo de novo, depois dos negativos (nada ficou adulterado)
+            r9 = _fn(copy.deepcopy(core)); _pos[_nm]["depois_dos_negativos"] = (r9.get("verdict") == r0.get("verdict") and r9.get("all_verified") is True)
+    finally:
+        sys.stdout = _so
+    _rx_ref = re.compile(r"^TGL_[A-Z_]+_V402__REFUSED_")
+    R["negativos_registros_v402_EXAME"] = {"positivos": _pos, "negativos": _negs,
+                                           "todos_os_negativos_recusam": all(isinstance(v_, str) and (bool(_rx_ref.match(v_)) or v_ == "SEM_INSCRICAO_NO_CONTRATO") for v_ in _negs.values()),
+                                           "nao_recusaram": {k_: v_ for k_, v_ in _negs.items() if not (isinstance(v_, str) and _rx_ref.match(v_))}}
+except Exception as e:
+    import traceback
+    R["negativos_registros_v402_EXAME"] = {"EXCECAO": repr(e)[:300], "tb": traceback.format_exc()[-1500:]}

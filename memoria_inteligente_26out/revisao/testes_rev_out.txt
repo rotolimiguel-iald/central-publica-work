@@ -1,0 +1,71 @@
+python 3.14.3 · real (só leitura): C:\t\mem_rev\real_copia · cópia: C:\t\mem_rev\mem_teste
+test_01_help_em_portugues (__main__.Memoria.test_01_help_em_portugues)
+--help em português (geral e de cada comando) ... ok
+test_02_verificar_passa (__main__.Memoria.test_02_verificar_passa)
+verificar passa na cópia recém-pinada (todos os invariantes) ... ok
+test_03_depositar_ok (__main__.Memoria.test_03_depositar_ok)
+depositar OK: arquivo com frontmatter, id no formato, linha encadeada no livro, sha da fonte CALCULADO ... ok
+test_04_depositar_recusa_conteudo_proibido (__main__.Memoria.test_04_depositar_recusa_conteudo_proibido)
+depositar recusa (chave, senha, .env, iald_stack, psion, CPF, e-mail, «só entre nós», Escritório) sem ecoar o valor e sem gravar nada ... ok
+test_05_depositar_valida_campos (__main__.Memoria.test_05_depositar_valida_campos)
+depositar valida quem, tipo, estatuto, alvo, texto e exclusão mútua --texto/--texto-arquivo ... ok
+test_06_depositar_arquivo_com_espaco_e_acento (__main__.Memoria.test_06_depositar_arquivo_com_espaco_e_acento)
+depositar lê --texto-arquivo com espaço e acento no caminho, corpo UTF-8 preservado byte a byte, e '-' lê da entrada padrão ... ok
+test_10_promover_sem_env_recusa (__main__.Memoria.test_10_promover_sem_env_recusa)
+promover/adiar/recusar/pinar sem MEMORIA_GERENCIA=claude-c1 (ou com outro valor) recusam e nada muda ... ok
+test_11_promover_com_env_grava_topico_com_backup_e_repina (__main__.Memoria.test_11_promover_com_env_grava_topico_com_backup_e_repina)
+promover com env: append datado AO LADO no tópico, backup de bytes, linha no índice, re-pino (sha+conteúdo), livro com quem ... ok
+test_12_promover_estoura_195_linhas_recusa (__main__.Memoria.test_12_promover_estoura_195_linhas_recusa)
+promover que estoura 195 linhas recusa e diz; nada é gravado; em 194 linhas a promoção cabe (fica em 195) ... ok
+test_13_promover_estoura_24000_bytes_recusa (__main__.Memoria.test_13_promover_estoura_24000_bytes_recusa)
+promover que estoura 24 000 B recusa; o limite exato (24 000 B) ainda cabe ... ok
+test_14_promover_para_topico_novo_e_para_indice (__main__.Memoria.test_14_promover_para_topico_novo_e_para_indice)
+promover novo:<slug> cria tópico com frontmatter válido; --para MEMORY.md exige --linha-indice e só insere a linha ... ok
+test_15_adiar_recusar_e_estados (__main__.Memoria.test_15_adiar_recusar_e_estados)
+adiar -> ainda promovível; recusar -> terminal; o depósito fica; o livro guarda quem e o motivo ... ok
+test_16_promover_recusa_se_indice_diverge_do_pino (__main__.Memoria.test_16_promover_recusa_se_indice_diverge_do_pino)
+promover só opera sobre um índice que bate com o pino; depois de `pinar` (ato da gerência) volta a operar ... ok
+test_20_vigiar_ok (__main__.Memoria.test_20_vigiar_ok)
+vigiar com o índice igual ao pino: relatório OK, rc 0, nenhum arquivo novo ... ok
+test_21_vigiar_detecta_linha_estranha_e_so_relata (__main__.Memoria.test_21_vigiar_detecta_linha_estranha_e_so_relata)
+vigiar detecta a linha estranha (rc 4), grava VIGIA_<ts>.json com o diff, NÃO mexe no índice, e não repete o mesmo relatório ... ok
+test_22_vigiar_enforcar_move_as_linhas_e_restaura (__main__.Memoria.test_22_vigiar_enforcar_move_as_linhas_e_restaura)
+vigiar --enforcar: linhas estranhas VERBATIM em depositos/estranho/<ts>_linhas_estranhas.md, versão estranha em .bak_estranho_<ts>, índice volta ao pino ... ok
+test_23_enforcar_so_remocao_e_linha_sensivel (__main__.Memoria.test_23_enforcar_so_remocao_e_linha_sensivel)
+--enforcar com só remoção restaura sem depósito; linha estranha sensível fica verbatim no depósito mas é OMITIDA dos relatórios ... ok
+test_24_enforcar_sem_espelho_recusa (__main__.Memoria.test_24_enforcar_sem_espelho_recusa)
+--enforcar recusa se o pino não tem conteúdo guardado; nada é alterado; o vigiar simples ainda relata ... ok
+test_25_enforcar_carencia_e_indice_ausente (__main__.Memoria.test_25_enforcar_carencia_e_indice_ausente)
+--carencia adia o enforcement de alteração recente; índice apagado é restaurado do espelho ... ok
+test_30_hash_chain_detecta_adulteracao (__main__.Memoria.test_30_hash_chain_detecta_adulteracao)
+alterar, apagar ou trocar linha do livro quebra a cadeia: verificar/listar acusam; depósito editado também ... ok
+test_31_verificar_acusa_regua_pino_tracos_e_topicos (__main__.Memoria.test_31_verificar_acusa_regua_pino_tracos_e_topicos)
+verificar acusa: índice acima da régua, pino divergente, sem MEMORY_2.md, tópico sem frontmatter ... ok
+test_32_deposito_colocado_a_mao_e_recolhido (__main__.Memoria.test_32_deposito_colocado_a_mao_e_recolhido)
+arquivo colocado à mão (README, regra 5) aparece como NAO_REGISTRADO e é RECOLHIDO ao promover; dono errado e segredo são recusados ... ok
+test_33_projetar (__main__.Memoria.test_33_projetar)
+projetar gera PROJECAO.md com os pendentes, por quem e há quanto tempo; sem mudança não reescreve ... ok
+test_34_trava_ocupada_e_concorrencia (__main__.Memoria.test_34_trava_ocupada_e_concorrencia)
+duas escritas em paralelo não corrompem o livro (a trava serializa); trava velha de processo morto é retomada ... ok
+test_35_compare_and_swap_nao_pisa_outro_escritor (__main__.Memoria.test_35_compare_and_swap_nao_pisa_outro_escritor)
+_escrever_atomico(antes=…) aborta se o arquivo mudou no meio do caminho (a gerência editando o índice à mão) e não grava nada ... ok
+test_36_diretorio_errado_nao_semeia_pastas (__main__.Memoria.test_36_diretorio_errado_nao_semeia_pastas)
+MEMORIA_DIR apontando para um lugar sem fila\ recusa e não cria nada ... ok
+test_37_vigiar_nao_age_sobre_arquivo_em_mudanca (__main__.Memoria.test_37_vigiar_nao_age_sobre_arquivo_em_mudanca)
+com alguém escrevendo no MEMORY.md durante a leitura, o vigiar --enforcar recusa (INDICE_EM_MUDANCA) e não guarda nem restaura nada ... ok
+test_38_livro_apagado_ou_encurtado_e_visto (__main__.Memoria.test_38_livro_apagado_ou_encurtado_e_visto)
+livro apagado ou encurtado em 2+ linhas é acusado (o backup mais recente tem de ser prefixo); o corte só da ÚLTIMA linha é limite conhecido ... ok
+test_99_o_real_nao_foi_tocado (__main__.Memoria.test_99_o_real_nao_foi_tocado)
+nenhum artefato que o memoria.py produz (livro, trava, VIGIA_, PROJECAO, .bak_estranho_, depósitos do estranho) apareceu ou mudou no REAL ... ok
+
+----------------------------------------------------------------------
+Ran 29 tests in 48.471s
+
+OK
+
+RESUMO {"testes": 29, "passaram": 29, "falhas": 0, "erros": 0, "python": "3.14.3"}
+
+real	0m48.622s
+user	0m0.000s
+sys	0m0.015s
+rc=0

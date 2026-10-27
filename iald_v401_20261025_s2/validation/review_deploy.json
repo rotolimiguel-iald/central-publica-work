@@ -1,0 +1,456 @@
+{
+  "revisor": "sonnet-app-v401s2-revisor",
+  "timestamp_utc": "2026-10-26T22:02:09.205432+00:00",
+  "escopo": "Revisao independente do DEPLOY da W4 (v401 s2): o instalado em C:\\IALD\\projetos_pyhton\\IALD bate com install_plan.json (7d190148...), backups, reinicio do filho web sob o mesmo supervisor, servidor respondendo. Somente leitura (psutil de consulta, nenhum processo tocado); unica rede: GET http://127.0.0.1:8082/login; nenhum .env/credencial; hash recomputado dos bytes; literais (prefixo do plano, PIDs, 1456) vieram do pedido da gerencia a7 como esperado declarado.",
+  "script_revisor_sha256": "a6aba085a1a1a3144f24833ee97f7e08fd32e335aa3d1b0b7178d895b8c9eb3c",
+  "veredito": "PASS",
+  "n_checks": 22,
+  "n_ok": 22,
+  "n_falha": 0,
+  "checks": [
+    {
+      "n": 1,
+      "grupo": "A_RECIBO",
+      "descricao": "recibo v401-deploy-submit: task deploy em review_pending, submetido por claude-gerencia-a7 (distinto do revisor), evidencias = deployment.json e restart.json com sha256 = bytes ATUAIS (nao mudaram desde o submit)",
+      "esperado": {
+        "status": "review_pending",
+        "submitted_by": "claude-gerencia-a7",
+        "evidencias": [
+          "deployment.json",
+          "restart.json"
+        ],
+        "pinos_batem": true
+      },
+      "achado": {
+        "status": "review_pending",
+        "submitted_by": "claude-gerencia-a7",
+        "evidencias": [
+          "deployment.json",
+          "restart.json"
+        ],
+        "pinos_batem": true,
+        "revisao_do_recibo": 12
+      },
+      "ok": true
+    },
+    {
+      "n": 2,
+      "grupo": "A_RECIBO",
+      "descricao": "deployment.json e restart.json nao tem .bak_ ao lado nem foram regravados (so uma versao de cada)",
+      "esperado": [],
+      "achado": [],
+      "ok": true
+    },
+    {
+      "n": 3,
+      "grupo": "B_PLANO",
+      "descricao": "plano: sha256 recomputado de install_plan.json comeca com 7d190148 (pino declarado) e = deployment.plan_sha256 = final_checks.plan_sha256 = review_final.plan_sha256",
+      "esperado": "7d190148",
+      "achado": "7d190148",
+      "ok": true
+    },
+    {
+      "n": 4,
+      "grupo": "B_PLANO",
+      "descricao": "deployment.json: status INSTALLED_RESTART_REQUIRED; accounts_modified=false, bench_restarted=false, client_files_changed=false",
+      "esperado": {
+        "status": "INSTALLED_RESTART_REQUIRED",
+        "accounts_modified": false,
+        "bench_restarted": false,
+        "client_files_changed": false
+      },
+      "achado": {
+        "status": "INSTALLED_RESTART_REQUIRED",
+        "accounts_modified": false,
+        "bench_restarted": false,
+        "client_files_changed": false
+      },
+      "ok": true
+    },
+    {
+      "n": 5,
+      "grupo": "B_PLANO",
+      "descricao": "deployment.files tem exatamente os 1456 destinos do plano, na mesma ordem (nada a mais, nada a menos)",
+      "esperado": 1456,
+      "achado": {
+        "plano": 1456,
+        "deployment": 1456,
+        "mesma_ordem": true,
+        "sem_duplicata": true
+      },
+      "ok": true
+    },
+    {
+      "n": 6,
+      "grupo": "B_PLANO",
+      "descricao": "para cada um dos 1456 destinos: sha256 registrado em deployment.files = sha256 do plano = sha256 dos BYTES hoje em disco (recomputado agora)",
+      "esperado": {
+        "divergentes_no_recibo": [],
+        "divergentes_em_disco": []
+      },
+      "achado": {
+        "divergentes_no_recibo": [],
+        "divergentes_em_disco": [],
+        "n_verificados": 1456
+      },
+      "ok": true
+    },
+    {
+      "n": 7,
+      "grupo": "B_PLANO",
+      "descricao": "classificacao do plano: 7 destinos pre-existentes que mudam (exigem backup), 1449 criados (baseline nulo), 0 inalterados",
+      "esperado": {
+        "mudam": 7,
+        "novos": 1449,
+        "iguais": 0
+      },
+      "achado": {
+        "mudam": 7,
+        "novos": 1449,
+        "iguais": 0
+      },
+      "ok": true
+    },
+    {
+      "n": 8,
+      "grupo": "B_PLANO",
+      "descricao": "backups: deployment.backups lista exatamente os 7 destinos que mudaram; cada .bak_ existe, esta na pasta do destino, tem os BYTES do estado anterior (sha256 = baseline do plano) e difere do novo; um unico carimbo",
+      "esperado": {
+        "n_backups": 7,
+        "carimbos": 1
+      },
+      "achado": {
+        "n_backups": 7,
+        "chaves_iguais_aos_destinos_que_mudam": true,
+        "carimbos": [
+          "20261026_185643_398975"
+        ],
+        "itens": [
+          {
+            "destino": "prefix.md",
+            "backup": "prefix.md.bak_20261026_185643_398975",
+            "existe": true,
+            "mesma_pasta": true,
+            "nome_ok": true,
+            "bytes_do_backup_igual_ao_baseline_do_plano": true,
+            "backup_difere_do_novo": true
+          },
+          {
+            "destino": "manifest.json",
+            "backup": "manifest.json.bak_20261026_185643_398975",
+            "existe": true,
+            "mesma_pasta": true,
+            "nome_ok": true,
+            "bytes_do_backup_igual_ao_baseline_do_plano": true,
+            "backup_difere_do_novo": true
+          },
+          {
+            "destino": "native_count.json",
+            "backup": "native_count.json.bak_20261026_185643_398975",
+            "existe": true,
+            "mesma_pasta": true,
+            "nome_ok": true,
+            "bytes_do_backup_igual_ao_baseline_do_plano": true,
+            "backup_difere_do_novo": true
+          },
+          {
+            "destino": "prefix.md",
+            "backup": "prefix.md.bak_20261026_185643_398975",
+            "existe": true,
+            "mesma_pasta": true,
+            "nome_ok": true,
+            "bytes_do_backup_igual_ao_baseline_do_plano": true,
+            "backup_difere_do_novo": true
+          },
+          {
+            "destino": "manifest.json",
+            "backup": "manifest.json.bak_20261026_185643_398975",
+            "existe": true,
+            "mesma_pasta": true,
+            "nome_ok": true,
+            "bytes_do_backup_igual_ao_baseline_do_plano": true,
+            "backup_difere_do_novo": true
+          },
+          {
+            "destino": "native_count.json",
+            "backup": "native_count.json.bak_20261026_185643_398975",
+            "existe": true,
+            "mesma_pasta": true,
+            "nome_ok": true,
+            "bytes_do_backup_igual_ao_baseline_do_plano": true,
+            "backup_difere_do_novo": true
+          },
+          {
+            "destino": "iald_nucleo_fixo.json",
+            "backup": "iald_nucleo_fixo.json.bak_20261026_185643_398975",
+            "existe": true,
+            "mesma_pasta": true,
+            "nome_ok": true,
+            "bytes_do_backup_igual_ao_baseline_do_plano": true,
+            "backup_difere_do_novo": true
+          }
+        ]
+      },
+      "ok": true
+    },
+    {
+      "n": 9,
+      "grupo": "B_PLANO",
+      "descricao": "nenhum .bak_ com o carimbo do deploy fora da lista (sem backup orfao nas pastas dos 7 destinos); sem mobile_backups/ nem rollback_new_files/ em W4 (nada foi revertido, nenhum arquivo iald-app tocado)",
+      "esperado": {
+        "orfaos": [],
+        "mobile_backups": false,
+        "rollback_new_files": false
+      },
+      "achado": {
+        "orfaos": [],
+        "mobile_backups": false,
+        "rollback_new_files": false
+      },
+      "ok": true
+    },
+    {
+      "n": 10,
+      "grupo": "B_PLANO",
+      "descricao": "canonical_releases\\v401_<commit12>: o conjunto de arquivos em disco = exatamente os destinos do plano sob essa pasta (nada a mais)",
+      "esperado": {
+        "igual": true
+      },
+      "achado": {
+        "em_disco": 1448,
+        "no_plano": 1448,
+        "so_em_disco": [],
+        "so_no_plano": []
+      },
+      "ok": true
+    },
+    {
+      "n": 11,
+      "grupo": "B_PLANO",
+      "descricao": "codigo de runtime preservado: todos os .py da producao (RUNTIME_BASELINE, exceto o manifesto ativo) tem o sha256 de antes do deploy; o conjunto de .py de raiz nao mudou; o manifesto ativo mudou do baseline para o do plano",
+      "esperado": {
+        "py_divergentes": [],
+        "conjunto_py_igual": true,
+        "manifesto_baseline_para_plano": true
+      },
+      "achado": {
+        "py_divergentes": [],
+        "conjunto_py_igual": true,
+        "n_py": 170,
+        "manifesto_baseline_igual_ao_do_baseline_do_runtime": true,
+        "manifesto_atual_igual_ao_do_plano": true
+      },
+      "ok": true
+    },
+    {
+      "n": 12,
+      "grupo": "B_PLANO",
+      "descricao": "o plano (e portanto o deploy) nao escreve nenhum .py de runtime: nenhum destino .py diretamente em C:\\IALD\\projetos_pyhton\\IALD; runtime_python_changes=0; os .py que existem no plano estao sob canonical_releases (dado da release publica)",
+      "esperado": {
+        "py_na_raiz": [],
+        "runtime_python_changes": 0
+      },
+      "achado": {
+        "py_na_raiz": [],
+        "n_py_sob_canonical_releases": 1,
+        "n_py_total_no_plano": 1,
+        "runtime_python_changes": 0
+      },
+      "ok": true
+    },
+    {
+      "n": 13,
+      "grupo": "B_PLANO",
+      "descricao": "manifesto ativo de producao agora: release v401, commit do espelho = RELEASE.json, source_sha256 = pino do um.py, publication_pending=false",
+      "esperado": {
+        "release": "v401",
+        "commit": "c9dedb0d444df7f457e5f9c01e482b0e30bdc480",
+        "source": "1925cb691e933ae811933a6286b4acb9c25853ba2d89f926a6610d2d837eba01",
+        "publication_pending": false
+      },
+      "achado": {
+        "release": "v401",
+        "current_release": "v401",
+        "commit": "c9dedb0d444df7f457e5f9c01e482b0e30bdc480",
+        "source": "1925cb691e933ae811933a6286b4acb9c25853ba2d89f926a6610d2d837eba01",
+        "publication_pending": false
+      },
+      "ok": true
+    },
+    {
+      "n": 14,
+      "grupo": "B_PLANO",
+      "descricao": "pacotes de runtime instalados = pacotes revisados: .iald_runtime\\haiku55\\prefix.md = haiku_expanded; .iald_runtime\\haiku\\prefix.md = shared (bytes), com a fonte do plano no pacote certo",
+      "esperado": true,
+      "achado": {
+        ".iald_runtime\\haiku55\\prefix.md": {
+          "fonte_do_plano": "app/packages/haiku_expanded/prefix.md",
+          "igual_ao_pacote_revisado": true,
+          "fonte_esperada": "app/packages/haiku_expanded/prefix.md"
+        },
+        ".iald_runtime\\haiku\\prefix.md": {
+          "fonte_do_plano": "app/packages/shared/prefix.md",
+          "igual_ao_pacote_revisado": true,
+          "fonte_esperada": "app/packages/shared/prefix.md"
+        }
+      },
+      "ok": true
+    },
+    {
+      "n": 15,
+      "grupo": "B_PLANO",
+      "descricao": "o deploy usou o codigo revisado e veio DEPOIS da revisao: transaction_sha256/maintenance_sha256 de review_final.json = bytes atuais de transaction.py/maintenance.py; installed_at > mtime de review_final.json; review_final PASS cobre o plano",
+      "esperado": true,
+      "achado": {
+        "transaction_igual": true,
+        "maintenance_igual": true,
+        "deploy_controlled_igual": true,
+        "verify_installed_igual": true,
+        "installed_at_utc": "2026-10-26T21:56:57.593860+00:00",
+        "review_final_mtime_utc": "2026-10-25T20:44:18.595410+00:00",
+        "review_status": "PASS",
+        "reviewer": "sonnet-app-v401s2-revisor"
+      },
+      "ok": true
+    },
+    {
+      "n": 16,
+      "grupo": "C_REINICIO",
+      "descricao": "restart.json: status PASS, http_status 200, PID antigo 42124 diferente do novo 71732, supervisor 37592; identidade do supervisor igual a de maintenance.json (mesmo old_web_pid, supervisor_pid e supervisor_created)",
+      "esperado": {
+        "status": "PASS",
+        "http_status": 200,
+        "old_web_pid": 42124,
+        "new_web_pid": 71732,
+        "supervisor_pid": 37592,
+        "mesma_identidade_do_supervisor": true
+      },
+      "achado": {
+        "status": "PASS",
+        "http_status": 200,
+        "old_web_pid": 42124,
+        "new_web_pid": 71732,
+        "supervisor_pid": 37592,
+        "mesma_identidade_do_supervisor": true,
+        "escopo": "Existing web child only; same supervisor resumed; bench/llama untouched"
+      },
+      "ok": true
+    },
+    {
+      "n": 17,
+      "grupo": "C_REINICIO",
+      "descricao": "AGORA: exatamente um ouvinte na porta 8082 e seu PID = new_web_pid do restart.json (71732); exatamente um processo iald_web_server.py; e o mesmo PID",
+      "esperado": {
+        "ouvintes_8082": 1,
+        "pid_ouvinte": 71732,
+        "processos_web": 1
+      },
+      "achado": {
+        "ouvintes_8082": 1,
+        "pid_ouvinte": 71732,
+        "processos_web": [
+          71732
+        ]
+      },
+      "ok": true
+    },
+    {
+      "n": 18,
+      "grupo": "C_REINICIO",
+      "descricao": "o filho novo (71732) esta sob o MESMO supervisor: ppid = 37592, create_time do supervisor = restart.supervisor_created (mesma instancia), supervisor roda start_iald_web.ps1 e NAO esta suspenso (retomado); o filho nao esta suspenso",
+      "esperado": {
+        "ppid": 37592,
+        "mesma_instancia": true,
+        "supervisor_roda_start_iald_web_ps1": true,
+        "supervisor_suspenso": false,
+        "filho_suspenso": false
+      },
+      "achado": {
+        "ppid": 37592,
+        "supervisor_create_time_igual": true,
+        "supervisor_roda_start_iald_web_ps1": true,
+        "supervisor_status": "running",
+        "filho_status": "running"
+      },
+      "ok": true
+    },
+    {
+      "n": 19,
+      "grupo": "C_REINICIO",
+      "descricao": "o filho novo nasceu DEPOIS da instalacao (create_time > installed_at: carregou os arquivos novos) e o PID antigo 42124 nao e mais um servidor web",
+      "esperado": {
+        "filho_criado_apos_installed_at": true,
+        "pid_antigo_e_servidor_web": false
+      },
+      "achado": {
+        "filho_create_time_utc": "2026-10-26T21:57:02.677737+00:00",
+        "installed_at_utc": "2026-10-26T21:56:57.593860+00:00",
+        "pid_antigo_existe": false,
+        "pid_antigo_e_servidor_web": false
+      },
+      "ok": true
+    },
+    {
+      "n": 20,
+      "grupo": "C_REINICIO",
+      "descricao": "bench e llama: os servicos que ESCUTAM agora (8081, 18765, 18766) foram criados ANTES da janela do deploy (carimbo dos backups) e nao estao suspensos - nao foram reiniciados; os que nao escutam ficam declarados",
+      "esperado": {
+        "reiniciados_na_janela": [],
+        "suspensos": []
+      },
+      "achado": {
+        "janela_inicio_utc": "2026-10-26T21:56:43+00:00",
+        "servicos": {
+          "llama": {
+            "porta": 8081,
+            "pid": 41736,
+            "create_time_utc": "2026-10-26T19:44:39.982226+00:00",
+            "iniciado_antes_da_janela_do_deploy": true,
+            "status": "running"
+          },
+          "bench_gw": {
+            "porta": 18765,
+            "ouvintes": 0,
+            "nota": "nao escuta agora; nao verificavel por este revisor"
+          },
+          "bench_cosmos": {
+            "porta": 18766,
+            "ouvintes": 0,
+            "nota": "nao escuta agora; nao verificavel por este revisor"
+          }
+        }
+      },
+      "ok": true
+    },
+    {
+      "n": 21,
+      "grupo": "C_REINICIO",
+      "descricao": "GET local http://127.0.0.1:8082/login = 200 (unico acesso de rede deste revisor; corpo descartado)",
+      "esperado": 200,
+      "achado": {
+        "status": 200,
+        "bytes_do_corpo": 4727
+      },
+      "ok": true
+    },
+    {
+      "n": 22,
+      "grupo": "C_REINICIO",
+      "descricao": "depois do GET o ouvinte da 8082 continua sendo o mesmo PID e a mesma instancia (create_time identico): o servidor nao reiniciou durante a revisao",
+      "esperado": {
+        "pid": 71732,
+        "mesma_instancia": true
+      },
+      "achado": {
+        "pid": 71732,
+        "create_time_igual": true
+      },
+      "ok": true
+    }
+  ],
+  "ressalvas": [
+    "Que o servidor em execucao carregou a v401 na MEMORIA nao e observavel por este GET (200 em /login nao autentica); o que se prova: filho criado depois da instalacao + arquivos em disco = plano + loaders de processo novo (verify_installed.py, proxima etapa).",
+    "bench/llama intocados: verificado so para os servicos que escutam agora (criados antes da janela); o recibo da gerencia (restart_scope) e DECLARADO.",
+    "Os PIDs/identidade sao fotografia do momento da revisao (psutil); se o supervisor reiniciar o filho depois, os PIDs mudam sem invalidar o deploy."
+  ]
+}

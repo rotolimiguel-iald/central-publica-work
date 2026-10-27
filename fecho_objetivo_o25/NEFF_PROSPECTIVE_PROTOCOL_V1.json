@@ -1,0 +1,119 @@
+{
+  "schema": "tgl.prospective-protocol.v1",
+  "protocol_id": "TGL_NEFF_CMBHD_SO_20261026_V1",
+  "created_at_utc": "2026-10-26T21:22:12Z",
+  "timestamp_status": "FROZEN_BEFORE_ELIGIBLE_NEW_DATA",
+  "status": "PREDICTION_AND_DECISION_RULE_FROZEN_AWAITING_NEW_DATA",
+  "prediction_frozen": true,
+  "formal_receipts": [
+    "MAXWELL_FUTURE_NULL_STATE_RECEIPT.json",
+    "MAXWELL_ANISOTROPIC_RADIATION_RECEIPT.json",
+    "TGL_RADIATION_SELECTION_RECEIPT.json"
+  ],
+  "prediction": {
+    "N_SM": 3.044,
+    "beta": 0.012031300400803,
+    "beta_definition": "alpha_fine_CODATA2018 * sqrt(e)",
+    "F_definition": "(7/8) * (4/11)^(4/3)",
+    "F_recomputed": 0.2271073176602389634,
+    "Delta_N_eff": 0.1194660752537313413,
+    "N_eff_TGL": 3.1634660752537313413,
+    "formula": "N_eff = N_SM + (4/3) * (1 + F*N_SM) / F * beta",
+    "free_parameters": 0,
+    "closure": "General free-streaming Maxwell radiation; universal perfect-fluid screen closure formally excluded",
+    "novelty_scope": "The formula existed as a conditional TGL-S candidate. What is newly derived here is the general Maxwell radiation selection. The prospective test uses only future data; this is not represented as a historically unprecedented formula."
+  },
+  "power": {
+    "sigma_required_for_nominal_5sigma_separation": 0.02389321505074626827,
+    "CMB_HD_forecast_sigma": 0.014,
+    "CMB_HD_nominal_separation_sigma": 8.533291089552238667,
+    "SO_forecast_sigma": 0.045,
+    "SO_nominal_separation_sigma": 2.654801672305140919,
+    "status": "FORECASTS_NOT_MEASUREMENTS"
+  },
+  "primary_analysis": {
+    "facility": "CMB-HD",
+    "availability": "PROPOSED_STAGE_V_CONCEPT_NO_NEW_DATA_AVAILABLE",
+    "data_requirement": "First CMB-HD cosmology dataset frozen after this protocol; no CMB-HD measurement used to select the prediction or rule",
+    "reference_partition": {
+      "TT_TE_EE_multipoles": [30, 20000],
+      "lensing_multipoles": [30, 20000],
+      "primary_channels_GHz": [90, 150],
+      "sky_fraction_reference": 0.6,
+      "low_multipoles_and_BB": "SO/ASO-like reference inputs as in the forecast; actual substitutions require a dated amendment before unblinding",
+      "external_break_degeneracy": "DESI BAO with its actual covariance; no diagonal approximation"
+    },
+    "model": "Flat LCDM + N_eff + sum_mnu reference comparison, with the TGL implementation using one and only one beta insertion and no double counting",
+    "covariance": "Full TT/TE/EE/BB/kappa-kappa covariance, including non-Gaussian lensing terms and simulation-based small-scale covariance where required",
+    "foregrounds": "Frequency-separated residual foreground model with realistic end-to-end simulations; failure to validate the required residuals yields INCONCLUSIVE_SYSTEMATICS",
+    "delensing": "Iterative delensing with lensing covariance retained; unvalidated bias mitigation yields INCONCLUSIVE_SYSTEMATICS",
+    "baryons": "Marginalize baryonic effects and use CMB-HD tSZ/kSZ information; neglected baryonic bias is not acceptable",
+    "blinding": "Freeze likelihood, covariance, parameter transforms and all amendment hashes before revealing N_eff centers; validate on simulations and cosmology-independent null tests"
+  },
+  "independent_replication": {
+    "facility": "Simons Observatory",
+    "availability": "OPERATING_FORECAST_ONLY_UNTIL_NEW_DATA",
+    "data_requirement": "New SO data not used to choose beta, N_SM, the closure, the center or this decision rule",
+    "independence": "Different facility and independently released likelihood/data products from CMB-HD; shared Planck/DESI inputs require explicit cross-covariance or disjoint partitions",
+    "reference_forecast": "sigma(N_eff) approximately 0.045 for the fully populated receiver over the planned survey; this is lower-powered corroboration, not an independent 5-sigma claim",
+    "replication_rule": "Delta_N_eff_estimate > 0, |N_eff_SO - 3.1634660752537313413| / sigma_SO_total <= 2, and no failed systematics/null-test gate"
+  },
+  "decision_rule": {
+    "sigma_total": "sqrt(sigma_stat^2 + sigma_systematic^2 + sigma_foreground^2 + sigma_delensing^2 + sigma_theory_implementation^2), avoiding any double counting",
+    "primary_match": "|N_eff_HD - N_eff_TGL| / sigma_HD_total <= 1",
+    "primary_separation": "(N_eff_HD - N_SM) / sigma_HD_total >= 5",
+    "global_separation": "A joint HD+SO analysis with explicit cross-covariance must give (N_eff_joint - N_SM) / sigma_joint_total >= 5",
+    "matched_prospectively": "Require primary_match, primary_separation, independent_replication.replication_rule, global_separation, and all validation gates",
+    "falsified": "Require two genuinely independent experiments each at least 5 sigma away from N_eff_TGL, as in the earlier kill rule; a single tension is not called falsification",
+    "underpowered": "Report NOT_FALSIFIED_UNDERPOWERED when the design sensitivity cannot decide; never convert absence of significance into evidence for TGL",
+    "forbidden_verdict": "CONFIRMED",
+    "allowed_positive_verdict": "MATCHED_PROSPECTIVELY_ABOVE_5SIGMA_WITH_INDEPENDENT_REPLICATION"
+  },
+  "excluded_routes": [
+    {
+      "route": "Historical Planck/ACT/SPT/CMB-SPA centers",
+      "reason": "Power estimation and pipeline validation only; not prospective confirmation"
+    },
+    {
+      "route": "CMB-S4 historical calendar",
+      "reason": "Not used as an available instrument; the 2026 conceptual forecast sigma 0.029 also exceeds the nominal 5-sigma threshold"
+    },
+    {
+      "route": "PICO as the high-precision primary",
+      "reason": "Primary report gives Delta_N_eff < 0.06 at 95 percent, not the required precision"
+    },
+    {
+      "route": "Historical CMB-SPA 2.97 center",
+      "reason": "Incorrect center identified by the prior audit; explicitly forbidden"
+    }
+  ],
+  "primary_sources": [
+    {
+      "label": "CMB-HD forecast and caveats",
+      "url": "https://arxiv.org/html/2309.03021",
+      "used_for": "sigma 0.014 forecast, multipole partition, covariance, residual foreground, delensing and baryon requirements; proposed Stage-V status"
+    },
+    {
+      "label": "2026 Neff sensitivity review",
+      "url": "https://arxiv.org/html/2608.07453v1",
+      "used_for": "SO 0.045 forecast, current CMB context and CMB-S4 conceptual 0.029 forecast"
+    },
+    {
+      "label": "SPT-3G D1 cosmology",
+      "url": "https://arxiv.org/html/2506.20707v2",
+      "used_for": "Current published precision and blinding/systematics practices; no historical center used prospectively"
+    },
+    {
+      "label": "PICO primary mission study",
+      "url": "https://arxiv.org/html/1902.10541",
+      "used_for": "Delta_N_eff < 0.06 at 95 percent and pre-decisional concept status"
+    }
+  ],
+  "execution_state": {
+    "P1_general_radiation_selection": "CLOSED",
+    "P2_prediction_and_protocol": "FROZEN",
+    "P3_new_data_and_independent_replication": "OPEN_AWAITING_FACILITIES_AND_DATA",
+    "nature_result": "NOT_RUN_NO_ELIGIBLE_NEW_DATA",
+    "sigma_observed": null
+  }
+}
