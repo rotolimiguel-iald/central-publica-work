@@ -1,0 +1,206 @@
+
+# ---------------------------------------------------------------- colocacao automatica de legendas/caixas e grade com lacunas
+from matplotlib.path import Path as MPath
+from matplotlib.transforms import Bbox
+from matplotlib.collections import LineCollection, PathCollection, PolyCollection
+OPAQUE = {}   # id(ax) -> lista de (artista, folga_px) opacos (legenda, caixa de texto) para abrir lacunas na grade
+
+
+def _r(fig):
+    return fig.canvas.get_renderer()
+
+
+def _seg_hits(P, R):
+    """Algum segmento da poligonal P (N,2) cruza o retangulo R (Bbox)? (Liang-Barsky vetorizado)"""
+    x0, y0, x1, y1 = P[:-1, 0], P[:-1, 1], P[1:, 0], P[1:, 1]
+    dx, dy = x1 - x0, y1 - y0
+    t0 = np.zeros_like(dx)
+    t1 = np.ones_like(dx)
+    ok = np.ones(len(dx), bool)
+    for p, q in ((-dx, x0 - R.x0), (dx, R.x1 - x0), (-dy, y0 - R.y0), (dy, R.y1 - y0)):
+        par = (p == 0)
+        with np.errstate(divide='ignore', invalid='ignore'):
+            rr = q / p
+        ok &= ~(par & (q < 0))
+        neg = (p < 0) & ~par
+        pos = (p > 0) & ~par
+        t0 = np.where(neg, np.maximum(t0, rr), t0)
+        t1 = np.where(pos, np.minimum(t1, rr), t1)
+    return bool(np.any(ok & (t0 <= t1)))
+
+
+def obstaculos(ax, skip=()):
+    fig = ax.figure
+    r = _r(fig)
+    ax.get_xlim()
+    ax.get_ylim()
+    ob = {'poly': [], 'pts': [], 'fills': [], 'rects': []}
+    for ln in ax.lines:
+        xy = np.asarray(ln.get_xydata(), float)
+        if len(xy) < 2:
+            continue
+        d = ax.transData.transform(xy)
+        d = d[np.isfinite(d).all(axis=1)]
+        if len(d) >= 2:
+            ob['poly'].append(d)
+    for c in ax.collections:
+        if isinstance(c, PathCollection):
+            d = ax.transData.transform(np.asarray(c.get_offsets(), float))
+            ob['pts'].append(d[np.isfinite(d).all(axis=1)])
+        elif isinstance(c, PolyCollection):
+            for pth in c.get_paths():
+                ob['fills'].append(MPath(c.get_transform().transform(pth.vertices), pth.codes))
+    for p in ax.patches:
+        ob['rects'].append(p.get_window_extent(r))
+    for t in ax.texts:
+        if t not in skip:
+            ob['rects'].append(t.get_window_extent(r))
+    return ob
+
+
+def _hit(R, ob, margin=6.0):
+    Ri = Bbox.from_extents(R.x0 - margin, R.y0 - margin, R.x1 + margin, R.y1 + margin)
+    for P in ob['poly']:
+        if _seg_hits(P, Ri):
+            return True
+    for d in ob['pts']:
+        if len(d) and np.any((d[:, 0] >= Ri.x0 - 7) & (d[:, 0] <= Ri.x1 + 7) & (d[:, 1] >= Ri.y0 - 7) & (d[:, 1] <= Ri.y1 + 7)):
+            return True
+    for pth in ob['fills']:
+        try:
+            if pth.intersects_bbox(Ri, filled=True):
+                return True
+        except Exception:
+            pass
+    for b in ob['rects']:
+        if b.overlaps(Ri):
+            return True
+    return False
+
+
+def colocar_legenda(ax, prefer=(0.85, 0.8), avoid=(), **kw):
+    """Legenda DENTRO do quadro, so numa regiao sem dado/linha/ponto/barra/hachura (varredura de 17x17 posicoes);
+    devolve None se nao houver regiao livre (o chamador usa legenda_fora)."""
+    fig = ax.figure
+    r = _r(fig)
+    lg = legend(ax, loc='center', bbox_to_anchor=(0.5, 0.5), **kw)
+    ob = obstaculos(ax)
+    axb = ax.get_window_extent(r)
+    best = None
+    for fx_ in np.linspace(0.08, 0.92, 22):
+        for fy_ in np.linspace(0.08, 0.92, 22):
+            lg.set_bbox_to_anchor((fx_, fy_), transform=ax.transAxes)
+            R = lg.get_window_extent(r)
+            if R.x0 < axb.x0 + 4 or R.x1 > axb.x1 - 4 or R.y0 < axb.y0 + 4 or R.y1 > axb.y1 - 4:
+                continue
+            if _hit(R, ob) or any(R.overlaps(Bbox.from_extents(a.x0 - 6, a.y0 - 6, a.x1 + 6, a.y1 + 6)) for a in avoid):
+                continue
+            dist = (fx_ - prefer[0]) ** 2 + (fy_ - prefer[1]) ** 2
+            if best is None or dist < best[0]:
+                best = (dist, fx_, fy_)
+    if best is None:
+        lg.remove()
+        return None
+    lg.set_bbox_to_anchor((best[1], best[2]), transform=ax.transAxes)
+    OPAQUE.setdefault(id(ax), []).append((lg, 0.0))
+    return lg
+
+
+def legenda_fora(ax, ncol=1, **kw):
+    """Legenda FORA do quadro, logo acima dele; devolve a altura (pt) para afastar o titulo."""
+    fig = ax.figure
+    r = _r(fig)
+    lg = legend(ax, loc='lower center', bbox_to_anchor=(0.5, 1.0), ncol=ncol, borderaxespad=0.3, **kw)
+    h = lg.get_window_extent(r).height * 72.0 / fig.dpi
+    return lg, h + 4 + 7
+
+
+def colocar_caixa(ax, texto, prefer=(0.5, 0.5), avoid=(), **kw):
+    fig = ax.figure
+    r = _r(fig)
+    t = ax.text(0.5, 0.5, texto, transform=ax.transAxes, ha='center', va='center', fontsize=FS, linespacing=1.2,
+                bbox=dict(boxstyle='square,pad=0.3', facecolor='white', edgecolor='black', linewidth=1.0), **kw)
+    ob = obstaculos(ax, skip=(t,))
+    axb = ax.get_window_extent(r)
+    best = None
+    for fx_ in np.linspace(0.08, 0.92, 22):
+        for fy_ in np.linspace(0.08, 0.92, 22):
+            t.set_position((fx_, fy_))
+            R0 = t.get_window_extent(r)
+            R = Bbox.from_extents(R0.x0 - 8, R0.y0 - 8, R0.x1 + 8, R0.y1 + 8)
+            if R.x0 < axb.x0 + 3 or R.x1 > axb.x1 - 3 or R.y0 < axb.y0 + 3 or R.y1 > axb.y1 - 3:
+                continue
+            if _hit(R, ob) or any(R.overlaps(Bbox.from_extents(a.x0 - 6, a.y0 - 6, a.x1 + 6, a.y1 + 6)) for a in avoid):
+                continue
+            dist = (fx_ - prefer[0]) ** 2 + (fy_ - prefer[1]) ** 2
+            if best is None or dist < best[0]:
+                best = (dist, fx_, fy_)
+    if best is None:
+        t.remove()
+        return None
+    t.set_position((best[1], best[2]))
+    OPAQUE.setdefault(id(ax), []).append((t, 8.0))
+    return t
+
+
+def _cut(ints, a, b):
+    out = []
+    for lo, hi in ints:
+        if b <= lo or a >= hi:
+            out.append((lo, hi))
+        else:
+            if a > lo:
+                out.append((lo, a))
+            if b < hi:
+                out.append((b, hi))
+    return out
+
+
+def grade(ax, extras=()):
+    """Grade pontilhada preta desenhada a mao, com LACUNAS onde ha legenda, caixa de texto ou coluna: nenhum fundo opaco
+    fica por cima de traco (o teste de oclusao do kit exige isso)."""
+    fig = ax.figure
+    r = _r(fig)
+    ax.get_xlim()
+    ax.get_ylim()
+    boxes = []
+    for art, infl in OPAQUE.get(id(ax), []):
+        b = art.get_window_extent(r)
+        boxes.append(Bbox.from_extents(b.x0 - infl, b.y0 - infl, b.x1 + infl, b.y1 + infl))
+    boxes += list(extras)
+    mg = 3.0
+    axb = ax.get_window_extent(r)
+    inv = ax.transData.inverted()
+    xlim, ylim = ax.get_xlim(), ax.get_ylim()
+    segs = []
+    for xt in ax.xaxis.get_majorticklocs():
+        if not (min(xlim) < xt < max(xlim)):
+            continue
+        X = ax.transData.transform((xt, ylim[0]))[0]
+        if X <= axb.x0 + 1.5 or X >= axb.x1 - 1.5:
+            continue
+        ints = [(axb.y0, axb.y1)]
+        for b in boxes:
+            if b.x0 - mg <= X <= b.x1 + mg:
+                ints = _cut(ints, b.y0 - mg, b.y1 + mg)
+        for ya, yb in ints:
+            if yb - ya > 2:
+                segs.append([inv.transform((X, ya)), inv.transform((X, yb))])
+    for yt in ax.yaxis.get_majorticklocs():
+        if not (min(ylim) < yt < max(ylim)):
+            continue
+        Y = ax.transData.transform((xlim[0], yt))[1]
+        if Y <= axb.y0 + 1.5 or Y >= axb.y1 - 1.5:
+            continue
+        ints = [(axb.x0, axb.x1)]
+        for b in boxes:
+            if b.y0 - mg <= Y <= b.y1 + mg:
+                ints = _cut(ints, b.x0 - mg, b.x1 + mg)
+        for xa, xb in ints:
+            if xb - xa > 2:
+                segs.append([inv.transform((xa, Y)), inv.transform((xb, Y))])
+    lc = LineCollection(segs, colors='black', linewidths=0.7, linestyles=[(0, (1, 3.5))], zorder=0.5)
+    ax.add_collection(lc, autolim=False)
+    ax.set_xlim(xlim)
+    ax.set_ylim(ylim)
+

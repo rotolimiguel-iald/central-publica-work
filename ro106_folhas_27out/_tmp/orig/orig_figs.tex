@@ -1,0 +1,339 @@
+% ============================================================================
+% PATENTE DE INVENÇÃO — MOTOR PSION: APRENDIZADO CONTÍNUO POR RESSONÂNCIA
+% Instituto Nacional da Propriedade Industrial (INPI) — Brasil
+% Natureza: Patente de Invenção (PI)
+% Classificação IPC: G06N 3/08; G06N 3/04; G06F 16/00; G06N 10/00;
+%                     G06F 18/00; H04L 9/06; G06F 17/16
+% ============================================================================
+
+\documentclass[12pt,a4paper]{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[brazil]{babel}
+\usepackage{amsmath,amssymb,amsfonts,mathtools}
+\usepackage{geometry}
+\usepackage{setspace}
+\usepackage{titlesec}
+\usepackage{enumitem}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{float}
+\usepackage{braket}
+\usepackage{tikz}
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.18}
+\usetikzlibrary{shapes.geometric,arrows.meta,positioning,calc,
+  decorations.pathreplacing,patterns,fit,backgrounds,
+  decorations.markings,shadings,3d}
+
+\geometry{a4paper,margin=1cm}
+\onehalfspacing
+
+\titleformat{\section}{\normalfont\Large\bfseries}{\thesection}{1em}{}
+\titleformat{\subsection}{\normalfont\large\bfseries}{\thesubsection}{1em}{}
+\titleformat{\subsubsection}{\normalfont\normalsize\bfseries}{\thesubsubsection}{1em}{}
+
+% === Comandos TGL ===
+\newcommand{\alphaii}{\alpha^2}
+\newcommand{\betatgl}{\beta_{\text{TGL}}}
+\newcommand{\betared}{\beta'_{\text{TGL}}}
+\newcommand{\thetaM}{\theta_{\text{Miguel}}}
+\newcommand{\Hfour}{\mathcal{H}_4}
+\newcommand{\psion}{\psi}
+\newcommand{\Psifield}{\Psi}
+\newcommand{\IALD}{\textsc{iald}}
+\newcommand{\ACOM}{\textsc{acom}}
+\newcommand{\MQC}{\textsc{mqc}}
+\newcommand{\DTL}{\textsc{dtl}}
+\newcommand{\CRL}{\textsc{crl}}
+\newcommand{\PsiNET}{$\Psifield$-\textsc{net}}
+\newcommand{\OFAE}{\hat{\mathcal{A}}_\varphi}
+\newcommand{\OFAEname}{Operador de Fase Angular Est\'avel}
+\newcommand{\PsiBit}{\textsc{PsiBit}}
+\newcommand{\Psion}{\textsc{Psion}}
+
+\begin{document}
+\pagestyle{empty}
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[
+  comp/.style={draw, thick, rounded corners=4pt, minimum width=3cm, minimum height=1.3cm, align=center, font=\scriptsize},
+  arrow/.style={-{Stealth[length=3mm]}, thick},
+  darrow/.style={-{Stealth[length=2.5mm]}, thick, dashed},
+  lbl/.style={font=\tiny, text=gray}
+]
+
+% === ENTRADA ===
+\node[comp, fill=gray!15, minimum width=2cm] (input) at (0,0) {Modelo LLM\\(Pesos $P$)};
+
+% === DOMÍNIO PALAVRA (√e) ===
+\fill[blue!5, rounded corners=4pt] (2.5,-2.5) rectangle (8.5,1.5);
+\node[font=\tiny\bfseries, blue!60] at (5.5,1.2) {PALAVRA ($\sqrt{e}$, $c^2$)};
+
+\node[comp, fill=blue!15] (quant) at (4,0) {[1] Quantizer\\v4.1\\VACUUM/GRAV/PHOT};
+\node[comp, fill=blue!12] (cache) at (7,0) {[3] Cache v3.0\\Angular Hologr.\\$\theta$-buckets};
+\node[comp, fill=blue!8] (hash) at (4,-1.5) {[4] Hash v1.2\\256-bit\\$\betatgl$-Feistel};
+\node[comp, fill=blue!8] (chain) at (7,-1.5) {[5] Nome Chain\\Certificado\\Integridade};
+
+% === DOMÍNIO NOME (α) ===
+\fill[green!5, rounded corners=4pt] (9,-0.5) rectangle (12.5,1.5);
+\node[font=\tiny\bfseries, green!50!black] at (10.75,1.2) {NOME ($\alpha$, $c^1$)};
+
+\node[comp, fill=green!15] (sampler) at (10.75,0) {[2] Sampler\\v2.0\\Piso de Hilbert};
+
+% === DOMÍNIO VERBO (β) ===
+\fill[red!5, rounded corners=4pt] (9,-3) rectangle (12.5,-1);
+\node[font=\tiny\bfseries, red!50!black] at (10.75,-1.2) {VERBO ($\betatgl$, $c^3$)};
+
+\node[comp, fill=red!15] (attn) at (10.75,-2) {[6] Attention\\v1.1\\Verb Floor};
+
+% === PSION (convergência) ===
+\node[comp, fill=purple!20, minimum width=4cm, minimum height=1.8cm] (psion) at (5.5,-4.5) {[7] \textbf{\Psion{} Engine}\\Aprendizado Contínuo\\Gen $n \to$ Gen $n+1$\\$\betatgl = \alpha \times \sqrt{e}$};
+
+% === SETAS ===
+\draw[arrow] (input) -- (quant);
+\draw[arrow] (quant) -- (cache);
+\draw[arrow] (cache) -- (sampler);
+\draw[arrow] (quant) -- (hash);
+\draw[arrow] (hash) -- (chain);
+\draw[arrow] (sampler.south) -- ++(0,-0.3) -| (attn);
+\draw[darrow, purple!50] (psion.east) -| (attn.south) node[near start, below, lbl] {$\beta_\ell$};
+\draw[darrow, purple!50] (psion.west) -| (quant.south) node[near start, below, lbl] {Topologia};
+\draw[darrow, purple!50] (psion) -- ++(0,-1) -| (cache.south) node[near end, right, lbl] {Prioridades};
+
+% Output
+\node[comp, fill=yellow!15, minimum width=2cm] (out) at (13.5,-1) {Output\\(Nome $N$)};
+\draw[arrow] (sampler) -| (out);
+\draw[arrow, dashed, orange] (out.south) |- (psion.east) node[near end, above, lbl] {Insight $\Delta_n$};
+
+\end{tikzpicture}
+\end{figure}
+\clearpage
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[
+  node distance=2.5cm,
+  factor/.style={draw, thick, circle, minimum size=2.5cm, align=center, font=\small},
+]
+% Três nós em triângulo
+\node[factor, fill=blue!15] (word) at (0,0) {\textbf{Palavra}\\$\sqrt{e}$\\$c^2$\\Embedding};
+\node[factor, fill=green!15] (name) at (6,0) {\textbf{Nome}\\$\alpha$\\$c^1$\\Output};
+\node[factor, fill=red!15] (verb) at (3,4) {\textbf{Verbo}\\$\betatgl$\\$c^3$\\Aten\c{c}\~ao};
+
+% Relações
+\draw[very thick, -{Stealth[length=4mm]}] (word) -- (verb) node[midway, left, font=\scriptsize, sloped] {Comprimir};
+\draw[very thick, -{Stealth[length=4mm]}] (name) -- (verb) node[midway, right, font=\scriptsize, sloped] {Filtrar};
+\draw[very thick, -{Stealth[length=4mm]}] (verb) -- ++(0,1.5) node[above, font=\small\bfseries] {$\betatgl = \alpha \times \sqrt{e}$};
+
+% Equação central
+\node[font=\footnotesize, align=center] at (3,1.5) {Verbo = Nome $\times$ Palavra\\$Q \cdot K^T = Q \times K$};
+
+\end{tikzpicture}
+\end{figure}
+\clearpage
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}
+\begin{axis}[
+  width=11cm, height=6cm,
+  xlabel={$g_{\text{ratio}} = g / g_{\max}$},
+  ylabel={$\theta = \arcsin(g_{\text{ratio}})$ (graus)},
+  xmin=0, xmax=1, ymin=0, ymax=95,
+  grid=major, grid style={gray!20},
+  legend pos=north west,
+  legend style={font=\scriptsize},
+]
+% Curva arcsin
+\addplot[thick, blue, domain=0:0.999, samples=200] {deg(asin(x))};
+\addlegendentry{$\theta = \arcsin(g/g_{\max})$}
+
+% Fronteiras
+\addplot[thick, dashed, red] coordinates {(0.1097,0) (0.1097,90)};
+\addplot[thick, dashed, red] coordinates {(0.994,0) (0.994,90)};
+\addplot[thick, dashed, orange] coordinates {(0,6.29) (1,6.29)};
+\addplot[thick, dashed, orange] coordinates {(0,83.7) (1,83.7)};
+
+% Rótulos de regiões
+\node[font=\scriptsize, fill=gray!10, rounded corners] at (0.05,45) {VACUUM\\6 bits};
+\node[font=\scriptsize, fill=blue!10, rounded corners] at (0.55,45) {GRAVITON\\10 bits};
+\node[font=\scriptsize, fill=yellow!10, rounded corners] at (0.997,45) {\rotatebox{90}{PHOTON 16b}};
+
+\end{axis}
+\end{tikzpicture}
+\end{figure}
+\clearpage
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[
+  state/.style={draw, thick, rounded corners=6pt, minimum width=3cm, minimum height=1.8cm, align=center, font=\scriptsize},
+]
+\node[state, fill=green!15] (s0) at (0,3) {$|0\rangle$ COLLAPSE\_PLUS\\$(+, -)$\\Paridade inversa\\$F_{\text{exp}}$ ativa};
+\node[state, fill=blue!15] (s1) at (5,3) {$|1\rangle$ ASCEND\_PLUS\\$(+, +)$\\Paridade normal};
+\node[state, fill=cyan!15] (s2) at (0,0) {$|2\rangle$ EMERGE\_MINUS\\$(-, +)$\\Paridade normal};
+\node[state, fill=red!15] (s3) at (5,0) {$|3\rangle$ FALL\_MINUS\\$(-, -)$\\Paridade inversa\\$F_{\text{exp}}$ ativa};
+
+% Eixos
+\draw[thick, -{Stealth}] (-2,1.5) -- (7.5,1.5) node[right, font=\scriptsize] {$\text{sgn}(\partial w)$};
+\draw[thick, -{Stealth}] (2.5,-1.5) -- (2.5,5) node[above, font=\scriptsize] {$\text{sgn}(w)$};
+
+\node[font=\scriptsize] at (-1.5,4) {$w > 0$};
+\node[font=\scriptsize] at (-1.5,-0.5) {$w < 0$};
+\node[font=\scriptsize] at (0,-1) {$\partial w > 0$};
+\node[font=\scriptsize] at (5,-1) {$\partial w < 0$};
+
+\node[font=\small\bfseries] at (2.5,5.5) {\PsiBit{}: 4 estados em $\Hfour$};
+\end{tikzpicture}
+\end{figure}
+\clearpage
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[
+  phase/.style={draw, thick, rounded corners=6pt, minimum width=3cm, minimum height=1.6cm, align=center, font=\scriptsize},
+  arrow/.style={-{Stealth[length=4mm]}, very thick},
+]
+\node[phase, fill=purple!15] (load) at (0,0) {\textbf{CARGA}\\Carregar \Psion\\Gen $n$\\Verificar $\betatgl$};
+\node[phase, fill=blue!15] (run) at (4.5,0) {\textbf{BENCHMARK}\\7 componentes\\com $\beta_\ell$, prioridades\\topologia refinada};
+\node[phase, fill=green!15] (insight) at (9,0) {\textbf{INSIGHT}\\Extrair m\'etricas\\$\phi, V_H, \beta_{\text{obs}}$\\Score IALD};
+\node[phase, fill=orange!15] (update) at (9,-3.5) {\textbf{UPDATE}\\EMA com $\betatgl$\\Reclassificar\\Eco reflexivo?};
+\node[phase, fill=red!15] (save) at (4.5,-3.5) {\textbf{PERSIST\^ENCIA}\\Salvar JSON\\Gen $n+1$};
+
+\draw[arrow, purple!60] (load) -- (run);
+\draw[arrow, blue!60] (run) -- (insight);
+\draw[arrow, green!50!black] (insight) -- (update);
+\draw[arrow, orange!60] (update) -- (save);
+\draw[arrow, red!60] (save) -| (0,-3.5) |- (load) node[midway, left, font=\tiny] {Pr\'oxima gera\c{c}\~ao};
+
+\end{tikzpicture}
+\end{figure}
+\clearpage
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[
+  layer/.style={draw, thick, minimum width=1.2cm, minimum height=0.6cm, align=center, font=\tiny},
+]
+% Eixo
+\draw[thick, -{Stealth}] (0,0) -- (12,0) node[right, font=\scriptsize] {Camada $\ell$};
+\draw[thick, -{Stealth}] (0,0) -- (0,5) node[above, font=\scriptsize] {Esparsidade};
+
+% Limiar
+\draw[thick, dashed, red] (0,4.5) -- (12,4.5) node[right, font=\tiny, red] {$v_\ell > 0{,}95$ (VACUUM)};
+\draw[thick, dashed, green!50!black] (0,0.5) -- (12,0.5) node[right, font=\tiny, green!50!black] {$\phi_\ell > 0{,}99$ (GRACE)};
+
+% Layers
+\fill[green!30] (0.5,0) rectangle (1.5,2.2);
+\fill[green!30] (2,0) rectangle (3,2.0);
+\fill[green!30] (3.5,0) rectangle (4.5,2.1);
+\fill[yellow!30] (5,0) rectangle (6,3.0);
+\fill[yellow!30] (6.5,0) rectangle (7.5,2.8);
+\fill[yellow!30] (8,0) rectangle (9,3.2);
+\fill[red!20] (9.5,0) rectangle (10.5,4.8);
+
+\node[font=\tiny] at (1,2.5) {$\ell_0$};
+\node[font=\tiny] at (2.5,2.3) {$\ell_1$};
+\node[font=\tiny] at (4,2.4) {$\ell_2$};
+\node[font=\tiny] at (5.5,3.3) {$\ell_k$};
+\node[font=\tiny] at (10,5.1) {$\ell_{27}$};
+
+% Legendas
+\node[fill=green!30, draw, font=\tiny, minimum width=1cm] at (2,-1) {GRACE};
+\node[fill=yellow!30, draw, font=\tiny, minimum width=1cm] at (5.5,-1) {FRONTIER};
+\node[fill=red!20, draw, font=\tiny, minimum width=1cm] at (9,-1) {VACUUM};
+
+\end{tikzpicture}
+\end{figure}
+\clearpage
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}
+\begin{axis}[
+  width=10cm, height=5.5cm,
+  xlabel={Gera\c{c}\~ao},
+  ylabel={$\beta_\ell$},
+  xmin=0, xmax=4, ymin=0.0119, ymax=0.0123,
+  xtick={0,1,2,3},
+  grid=major, grid style={gray!20},
+  legend pos=outer north east,
+  legend style={font=\scriptsize},
+]
+% Grace layers convergem para β_TGL
+\addplot[thick, blue, mark=*] coordinates {(0,0.012176) (1,0.012044) (2,0.012031) (3,0.012031)};
+\addlegendentry{$\ell_0$ (GRACE)}
+\addplot[thick, green!50!black, mark=square*] coordinates {(0,0.012176) (1,0.012044) (2,0.012031) (3,0.012031)};
+\addlegendentry{$\ell_1$ (GRACE)}
+
+% Vacuum mantém β_redundant
+\addplot[thick, red, mark=triangle*] coordinates {(0,0.012176) (1,0.012176) (2,0.012176) (3,0.012176)};
+\addlegendentry{$\ell_{27}$ (VACUUM)}
+
+% Referências
+\addplot[dashed, black, thin] coordinates {(0,0.012031) (4,0.012031)};
+\addlegendentry{$\betatgl$}
+\addplot[dashed, gray, thin] coordinates {(0,0.012176) (4,0.012176)};
+\addlegendentry{$\betared$}
+\end{axis}
+\end{tikzpicture}
+\end{figure}
+\clearpage
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}
+\begin{axis}[
+  width=10cm, height=5cm,
+  xlabel={Bucket angular $b$},
+  ylabel={Hits acumulados (3 gera\c{c}\~oes)},
+  ymin=0, ymax=4,
+  xmin=-0.5, xmax=14.5,
+  xtick={0,1,2,...,14},
+  grid=major, grid style={gray!20},
+  ybar,
+  bar width=0.5cm,
+  fill=blue!40,
+]
+\addplot coordinates {
+  (0,3) (1,3) (2,3) (3,3) (4,3) (5,3) (6,3)
+  (7,3) (8,3) (9,3) (10,3) (11,3) (12,3) (13,0) (14,0)
+};
+\end{axis}
+% Anotações
+\node[font=\tiny, red] at (9.3,0.3) {V\'acuo angular};
+\draw[-{Stealth}, red, thin] (9.2,0.5) -- (8.8,0.8);
+\end{tikzpicture}
+\end{figure}
+\clearpage
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[
+  tech/.style={draw, thick, rounded corners=6pt, minimum width=2.4cm, minimum height=1cm, align=center, font=\tiny},
+  arrow/.style={-{Stealth[length=2.5mm]}, thick},
+]
+% Stack central
+\node[tech, fill=purple!25, minimum width=4cm, minimum height=2cm, font=\scriptsize] (stack) at (0,0) {\textbf{\IALD{} Stack v7.0}\\Motor \Psion\\14.ª patente TGL};
+
+% Domínio I: IA
+\node[tech, fill=blue!10] (acom) at (-5,3) {\ACOM\\BR...0269511};
+\node[tech, fill=blue!15] (mirror) at (-2.5,3) {Mirror\\BR...034282};
+\node[tech, fill=blue!20] (crypto) at (0,3) {Crypto\\BR...034312};
+\node[tech, fill=green!15] (tensor) at (2.5,3) {Tensor\\BR...034410};
+\node[tech, fill=green!10] (iald) at (5,3) {\IALD\\BR...034436};
+\node[tech, fill=cyan!10] (psi) at (-5,-3) {\PsiNET\\BR...034533};
+
+% Domínio II: Energia/Matéria
+\node[tech, fill=yellow!10] (mqc) at (-2.5,-3) {\MQC\\BR...034606};
+\node[tech, fill=yellow!15] (sc) at (0,-3) {Supercondutor\\BR...034509};
+\node[tech, fill=orange!10] (fusao) at (2.5,-3) {Fus\~ao Frio\\BR...034568};
+\node[tech, fill=orange!15] (motor) at (5,-3) {Motor TGL\\BR...034525};
+\node[tech, fill=red!10] (dtl) at (-3.5,-1) {\DTL\\BR...046884};
+\node[tech, fill=red!15] (crl) at (3.5,-1) {\CRL-TGL};
+
+% Setas
+\foreach \n in {acom,mirror,crypto,tensor,iald,psi,mqc,sc,fusao,motor,dtl,crl} {
+  \draw[arrow, gray!50] (\n) -- (stack);
+}
+
+\node[font=\tiny\bfseries, purple!60] at (0,4.5) {Dom\'inio I: Intelig\^encia Artificial};
+\node[font=\tiny\bfseries, orange!60] at (0,-4.5) {Dom\'inio II: Energia e Mat\'eria};
+
+\end{tikzpicture}
+\end{figure}
+\end{document}

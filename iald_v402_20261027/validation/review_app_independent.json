@@ -1,0 +1,765 @@
+{
+  "revisor": "sonnet-app-v402-revisor",
+  "timestamp_utc": "2026-10-27T11:43:36.624438+00:00",
+  "escopo": "Revisao independente da claim `app` da v402: pipeline herdada (diff de codigo), pacotes (shared/haiku_expanded/sonnet_public/cluster) com decoder proprio, capsulas compactas e estatutos, janelas dos executores recomputadas, Jev, plano de instalacao, segredos, redacao. Somente leitura; sem rede; nenhum Lean/um.py executado (so ast.parse do texto); runtime importado somente para as funcoes de admissao, com audit hook (sem rede/subprocesso/escrita).",
+  "script_revisor_sha256": "66a11c5b0bff4b94d1eea92e5fccc331157e4e9a4c993990c072937de9bed46b",
+  "auxiliares_sha256": {
+    "rlib.py": "633143176c75725761afe48e6bd0c750c48ce5f3f643ebde0518a6415e4c94bc",
+    "dec.py": "6706cfeb7e02f5fb1c64ac8c379fc438a398288b7e5e555dd360ee2cc8503acb",
+    "r_windows.py": "91dcc4176725490fe3102062ee9ac14659b80c7c9dfcf9c799e6f3d5bedc8b75",
+    "r_jev.py": "ceeec02b9c3b651b5adb3fdbe9b71c278f4ae84a7215080db70ccccc77386d56"
+  },
+  "veredito": "PASS",
+  "n_checks": 41,
+  "n_ok": 41,
+  "n_falha": 0,
+  "checks": [
+    {
+      "n": 1,
+      "grupo": "E_CODIGO",
+      "descricao": "diff de CODIGO de pipeline v402 x v401_s2 (todos os .py/.ps1/.bat/.cmd/.sh/.js/.lean fora de app/science, por sha256 dos bytes): SO release_cfg.py e task.py diferem",
+      "ok": true,
+      "achado": {
+        "diferem": [
+          "release_cfg.py",
+          "task.py"
+        ],
+        "comuns": 17
+      }
+    },
+    {
+      "n": 2,
+      "grupo": "E_CODIGO",
+      "descricao": "arquivos de codigo que so existem em um lado: v402 ganhou apenas builder_measurements.py e measure_shared_capsules.py; nada se perdeu da v401_s2",
+      "ok": true,
+      "achado": {
+        "so_v402": [
+          "builder_measurements.py",
+          "measure_shared_capsules.py"
+        ],
+        "so_v401": []
+      }
+    },
+    {
+      "n": 3,
+      "grupo": "E_CODIGO",
+      "descricao": "backups de BYTES release_cfg.py.bak_20261027_orig e task.py.bak_20261027_orig do v402 = release_cfg.py e task.py da v401_s2 (o backup e o estado que foi tocado)",
+      "ok": true,
+      "achado": "ok"
+    },
+    {
+      "n": 4,
+      "grupo": "E_CODIGO",
+      "descricao": "release_cfg.py v402 x v401_s2: difere SO em BUILDER (l.23) e EXPAND_OVERRIDE (l.58: (\"_v399\",\"_v400\",\"_v401\") -> None = regra padrao instalada v401 -> corrente v402 = (_v401,_v402))",
+      "ok": true,
+      "achado": [
+        "-BUILDER = 'sonnet-app-v401s2-construtor'",
+        "+BUILDER = 'sonnet-app-v402-construtor'",
+        "-EXPAND_OVERRIDE = ('_v399', '_v400', '_v401')",
+        "+EXPAND_OVERRIDE = None  # v402: regra padrao instalada v401 -> corrente v402 = ('_v401','_v402'); a janela de cada executor e medida antes de fixar qualquer outra coisa"
+      ]
+    },
+    {
+      "n": 5,
+      "grupo": "E_CODIGO",
+      "descricao": "task.py v402 x v401_s2: mudancas limitadas ao declarado (ACTOR=builder na inscricao init/configure/quadro; ORIGINAL.txt ja existente aceito so se identico; texto da unidade); nenhuma chamada nova de rede/aceite/revisao",
+      "ok": true,
+      "achado": {
+        "linhas_alteradas": 13,
+        "palavras_suspeitas_nas_linhas_novas": [],
+        "desfazer_as_edicoes_declaradas_na_v402_devolve_a_v401_(salvo_texto_da_unidade_e_da_nota)": true,
+        "linhas_novas": [
+          "ACTOR=cfg.builder  # v402: a gerencia mandou inscrever (init/configure/quadro) com o id do CONSTRUTOR; OWNER segue sendo o dono da unidade e quem faz o deploy.",
+          "        # v402: a gerencia ja gravou ORIGINAL.txt (bytes identicos a ORDEM_DO_OPERADOR.txt); aceita so se identico, nunca sobrescreve.",
+          "        if (W/'ORIGINAL.txt').exists():assert (W/'ORIGINAL.txt').read_bytes()==source,'ORIGINAL.txt difere da ordem do operador'",
+          "        else:new('ORIGINAL.txt',source)",
+          "        d=call({'operation':'init','objective_file':str(W/'ORIGINAL.txt'),'objective_sha256':hashlib.sha256(source).hexdigest(),'request_id':str(uuid.uuid4()),'scope':{'house':'IALD','principal':'luiz'},'actor':{'id':ACTOR,'kind':'agent'},'write_reference':str(REF),'constraints':{'unit':UNIT,'scientific_sources_read_only':True,'preserve_accounts_wallet_consents':True,'preserve_activity_memory_and_hajaluz_fix':True}},False)",
+          "    result=act('configure',requirements=requirements,sources=[{'path':str(W/'ORIGINAL.txt'),'sha256':hashlib.sha256(source).hexdigest()}],event_id=REL+'-mission-configure',actor=ACTOR)",
+          "    new('unit.json',[{'id':UNIT,'frente':'F9','titulo':'Atualização do app, JEV e memória científica para '+REL,'dono':OWNER,'gate':None,'criterio_de_fechado':'Pacote '+REL+' verificado, revisão independente, implantação controlada do filho web e verificação do carregamento e do uso efetivo.','escopo':'App web/iOS/Android (backend compartilhado); fontes originais somente leitura; preservar carteira, consentimentos, atividade e correção HajaLuz. A fila científica tem unidade própria.','consulta':'Mapa de rotas: consultas \"app release\" e \"app v401\" em 27/10 retornaram 0 rotas (1473 registros). Pipeline de referência: work/iald_v401_20261025_s2 (instalada e aceita por revisor independente). Ordem do operador: ORDEM_DO_OPERADOR.txt desta pasta.'}])",
+          "    for args in [['nova','--json',str(W/'unit.json'),'--quem',ACTOR],['reivindicar',UNIT,'--quem',ACTOR,'--nota','Construção '+REL+' do app pelo construtor; fontes somente leitura; ordem do operador em ORDEM_DO_OPERADOR.txt; a gerência assume na revisão/deploy.','--horas','6']]:"
+        ]
+      }
+    },
+    {
+      "n": 6,
+      "grupo": "E_CODIGO",
+      "descricao": "scripts novos do construtor (builder_measurements.py, measure_shared_capsules.py): sem rede; a medicao so escreve stdout; o outro grava BUILDER_MEASUREMENTS.json em modo exclusivo",
+      "ok": true,
+      "achado": {
+        "builder_measurements.py": {
+          "sha256": "be5c08dfa05ee1fd",
+          "rede": false,
+          "escreve_fora": [
+            "'xb'"
+          ]
+        },
+        "measure_shared_capsules.py": {
+          "sha256": "b3b2eb0a4461d2a1",
+          "rede": false,
+          "escreve_fora": []
+        }
+      }
+    },
+    {
+      "n": 7,
+      "grupo": "E_CODIGO",
+      "descricao": "nenhum arquivo fora das arvores esperadas na pasta v402 (topo + app/review/receipts/validation); nenhum .env, chave, .pyc, __pycache__, iald_stack_v7*, iald_psion_state*, iald_web_server*",
+      "ok": true,
+      "achado": {
+        "fora_do_esperado": [],
+        "nomes_proibidos": [],
+        "n_arquivos_total": 1537
+      }
+    },
+    {
+      "n": 8,
+      "grupo": "E_CODIGO",
+      "descricao": "app/ (fora de science/ e packages/): mesmo conjunto de arquivos que a v401_s2, salvo os 2 artefatos do re-run s2 da v401 (AUDITORIA_COPIA.txt, prepare.py.bak_*), que a v402 corretamente nao tem; prepare.py igual byte a byte ao da v401_s2",
+      "ok": true,
+      "achado": {
+        "so_v401": [
+          "AUDITORIA_COPIA.txt",
+          "prepare.py.bak_20261025_173828"
+        ],
+        "so_v402": [],
+        "prepare.py_igual_ao_da_v401_s2": true
+      }
+    },
+    {
+      "n": 9,
+      "grupo": "E_CODIGO",
+      "descricao": "dados da release (app/science) v402 x v401_s2: os unicos arquivos que SAEM sao os 4 nomeados por versao (cluster full/prompt, core_packet, jev_control v401); entram os 4 v402 + os 3 .lean novos",
+      "ok": true,
+      "achado": {
+        "so_v401": [
+          "memory_stage/TGL_CLUSTER_v401_full.md",
+          "memory_stage/TGL_CLUSTER_v401_prompt.md",
+          "memory_stage/core_packet_v401_bound.txt",
+          "memory_stage/jev_control_v401.json"
+        ],
+        "so_v402_nao_kernel": [
+          "memory_stage/TGL_CLUSTER_v402_full.md",
+          "memory_stage/TGL_CLUSTER_v402_prompt.md",
+          "memory_stage/core_packet_v402_bound.txt",
+          "memory_stage/jev_control_v402.json"
+        ],
+        "novos_no_kernel": [
+          "memory_stage/kernel/TGLExt/EsperancaCondicional.lean",
+          "memory_stage/kernel/TGLExt/PonteDaEscalaDual.lean",
+          "memory_stage/kernel/TGLExt/QuedaSemGeometria.lean"
+        ],
+        "n_alterados": 17,
+        "alterados_kernel": [
+          "memory_stage/kernel/TGL/Audit.lean",
+          "memory_stage/kernel/TGLExt.lean",
+          "memory_stage/kernel/kernel_manifest.json"
+        ]
+      }
+    },
+    {
+      "n": 10,
+      "grupo": "F_SHARED",
+      "descricao": "result.core (cofre v402) tem 447 topicos = len(manifest do app) e todos os 442 da v401 continuam (0 perdidos na fonte)",
+      "ok": true,
+      "achado": {
+        "novos": [
+          "cunhagens_v402",
+          "esperanca_condicional_v402",
+          "kh_n1_cobertura_v402",
+          "ponte_da_escala_dual_v402",
+          "queda_sem_geometria_v402"
+        ]
+      }
+    },
+    {
+      "n": 11,
+      "grupo": "F_SHARED",
+      "descricao": "shared: 447 blocos \"### nome\" antes da exposicao, 0 sumidos, 0 duplicados",
+      "ok": true,
+      "achado": {
+        "blocos": 447,
+        "duplicados": [],
+        "sumidos": []
+      }
+    },
+    {
+      "n": 12,
+      "grupo": "F_SHARED",
+      "descricao": "politica de expansao recomputada: sufixos (_v401,_v402) + regex do finalize protegem N topicos; reusados + extra compactado + protegidos = 447; sufixos conferem com a regra padrao (instalada v401 -> corrente v402)",
+      "ok": true,
+      "achado": {
+        "reusados": 274,
+        "extra_compactados": 159,
+        "protegidos_nao_reusados": 14,
+        "protegidos_total": 25
+      }
+    },
+    {
+      "n": 13,
+      "grupo": "F_SHARED",
+      "descricao": "TODOS os 447 topicos decodificados pelo decoder PROPRIO do revisor (aliases, @B, metadados agrupados, literais, enum/upper/concat, spans da exposicao): 424 blocos JSON + 23 blocos de texto; 0 folhas literais que contradizem result.core no mesmo caminho; 0 ponteiros @ mal atribuidos/irresoluveis/com contagem errada; 0 chaves inexistentes na fonte (exceto o metadado AUDIT_BOOLEAN_FIELDS_IN_SOURCE, recontado da fonte)",
+      "ok": true,
+      "achado": {
+        "topicos_com_contradicao": {},
+        "n_json": 424,
+        "n_text": 23,
+        "ponteiros_@": 1336,
+        "links_@SUMMARY": 55,
+        "metadados_recontados": 1
+      }
+    },
+    {
+      "n": 14,
+      "grupo": "F_SHARED",
+      "descricao": "capsulas compactas ({\"@\":\"\", items, fields}): cada uma restaura EXATAMENTE o topico-fonte (ponteiro raiz resolve, items = numero de chaves da fonte, todo campo retido = fonte no caminho)",
+      "ok": true,
+      "achado": {
+        "capsulas_compactas": 151,
+        "ruins": [],
+        "builder_declarou": 151
+      }
+    },
+    {
+      "n": 15,
+      "grupo": "F_SHARED",
+      "descricao": "SEM REGRESSAO DE ESTATUTO: toda folha status|statute|estatuto|verdict|veredit que a v401_s2 carregava LITERAL (e cujo valor na fonte nao mudou) continua carregada LITERAL na v402 (0 estatutos que viraram so-ponteiro)",
+      "ok": true,
+      "achado": {
+        "folhas_de_estatuto_veredito_na_fonte_nos_topicos_json": 3585,
+        "carregadas_literalmente_no_shared": 2337,
+        "topicos_comparados_com_v401": 419,
+        "estatutos_literais_na_v401_que_viraram_so_ponteiro_na_v402": [],
+        "n_regressoes": 0
+      }
+    },
+    {
+      "n": 16,
+      "grupo": "F_SHARED",
+      "descricao": "blocos nao-objeto (23): os escalares JSON (inclui `timestamp`, novo na v402) sao iguais a fonte v402; as capsulas de texto historicas (escritas a mao, nao decodificaveis) sao identicas as da v401_s2 aceita E com topico-fonte inalterado v401 -> v402",
+      "ok": true,
+      "achado": {
+        "blocos_nao_objeto": 23,
+        "escalares_JSON_iguais_a_fonte_v402": 20,
+        "capsulas_de_texto_identicas_as_da_v401_com_fonte_inalterada": 3,
+        "divergentes": []
+      }
+    },
+    {
+      "n": 17,
+      "grupo": "F_SHARED",
+      "descricao": "chaves da fonte ausentes de um bloco JSON nao-ponteiro (projecao historica por desenho): so em blocos IDENTICOS aos da v401 aceita, ou kernel_formalization (booleanos diretos viram contagem recontada); 0 sem explicacao",
+      "ok": true,
+      "achado": {
+        "topicos_com_chaves_so_na_fonte": 80,
+        "explicados_(kernel_formalization: booleanos diretos contados no metadado; ou bloco decodificado identico ao da v401 aceita)": 80,
+        "sem_explicacao": []
+      }
+    },
+    {
+      "n": 18,
+      "grupo": "F_SHARED",
+      "descricao": "os 5 topicos NOVOS da v402 entram no shared NAO compactados, com TODA folha de estatuto/veredito e TODO qualificador textual (limites, nao_diz, diz, scope) carregado literal e igual a fonte; os registros estruturados `unconditional` e `named_pending` ficam como ponteiro (mesmo tratamento do topico v401 aceito) e os nomes das hipoteses pendentes estao no texto carregado",
+      "ok": true,
+      "achado": {
+        "cunhagens_v402": {
+          "compacto": false,
+          "folhas_estatuto": 38,
+          "estatuto_nao_carregado": 0,
+          "folhas_qualificadores": 14,
+          "qualificadores_textuais_nao_carregados": [],
+          "evidencia_estruturada_so_ponteiro_(unconditional/named_pending)": 0,
+          "contradicoes": 0
+        },
+        "esperanca_condicional_v402": {
+          "compacto": false,
+          "folhas_estatuto": 4,
+          "estatuto_nao_carregado": 0,
+          "folhas_qualificadores": 26,
+          "qualificadores_textuais_nao_carregados": [],
+          "evidencia_estruturada_so_ponteiro_(unconditional/named_pending)": 9,
+          "contradicoes": 0
+        },
+        "kh_n1_cobertura_v402": {
+          "compacto": false,
+          "folhas_estatuto": 16,
+          "estatuto_nao_carregado": 0,
+          "folhas_qualificadores": 5,
+          "qualificadores_textuais_nao_carregados": [],
+          "evidencia_estruturada_so_ponteiro_(unconditional/named_pending)": 0,
+          "contradicoes": 0
+        },
+        "ponte_da_escala_dual_v402": {
+          "compacto": false,
+          "folhas_estatuto": 8,
+          "estatuto_nao_carregado": 0,
+          "folhas_qualificadores": 44,
+          "qualificadores_textuais_nao_carregados": [],
+          "evidencia_estruturada_so_ponteiro_(unconditional/named_pending)": 18,
+          "contradicoes": 0,
+          "hipoteses_nomeadas_pendentes_citadas_no_texto_carregado": [
+            [
+              "H_BW",
+              true
+            ],
+            [
+              "H_cal",
+              true
+            ],
+            [
+              "H3",
+              true
+            ],
+            [
+              "signature",
+              true
+            ],
+            [
+              "rank_c_4",
+              true
+            ]
+          ]
+        },
+        "queda_sem_geometria_v402": {
+          "compacto": false,
+          "folhas_estatuto": 5,
+          "estatuto_nao_carregado": 0,
+          "folhas_qualificadores": 30,
+          "qualificadores_textuais_nao_carregados": [],
+          "evidencia_estruturada_so_ponteiro_(unconditional/named_pending)": 9,
+          "contradicoes": 0
+        }
+      }
+    },
+    {
+      "n": 19,
+      "grupo": "F_SHARED",
+      "descricao": "verdict e estatuto de topo dos 5 topicos novos: literais no shared e iguais a fonte",
+      "ok": true,
+      "achado": {
+        "ausentes": []
+      }
+    },
+    {
+      "n": 20,
+      "grupo": "F_SHARED",
+      "descricao": "cluster ativo (TGL_CLUSTER_v402_prompt.md): 447 topicos, 0 duplicados, cada corpo = corpo do shared (com a linha Fonte quando o corpo nao a traz); sha256 = manifest",
+      "ok": true,
+      "achado": {
+        "blocos": 447,
+        "duplicados": [],
+        "divergentes": [],
+        "sha256_confere_com_manifest": true,
+        "bytes": 633788
+      }
+    },
+    {
+      "n": 21,
+      "grupo": "F_SHARED",
+      "descricao": "prefixo do Sonnet publico contem integralmente o cluster ativo (projecao de prompt) byte a byte",
+      "ok": true,
+      "achado": {
+        "bytes_sonnet": 785767,
+        "bytes_cluster": 633788
+      }
+    },
+    {
+      "n": 22,
+      "grupo": "F_SHARED",
+      "descricao": "o shared (Kimi/MiMo/DeepSeek/Haiku compacto) e o sonnet_public declaram a release v402 e o pino do um.py no preambulo (lido do prefixo)",
+      "ok": true,
+      "achado": "ok"
+    },
+    {
+      "n": 23,
+      "grupo": "F_SHARED",
+      "descricao": "tamanho do shared: 708.859 B (declarado) = bytes do prefix.md; v401_s2 = 680.931 B (recomputado); crescimento = 27928 B",
+      "ok": true,
+      "achado": [
+        708859,
+        680931
+      ]
+    },
+    {
+      "n": 24,
+      "grupo": "G_HAIKU",
+      "descricao": "haiku_expanded REPRODUZIDO DO ZERO pelo revisor (haiku55-base + expansao integral exata dos topicos _v401/_v402 e do regex do finalize + bloco documental do bootstrap): bytes identicos ao construido; expanded_topics e campos diferidos conferem",
+      "ok": true,
+      "achado": {
+        "topicos_expandidos": 25,
+        "sufixos": [
+          "_v401",
+          "_v402"
+        ],
+        "sha256_reproduzido": "f7ceb245e5048258",
+        "sha256_construido": "f7ceb245e5048258",
+        "bytes": 1786410,
+        "campos_diferidos": [],
+        "expandidos_sao_os_dos_sufixos_v401_v402_e_do_regex": true
+      }
+    },
+    {
+      "n": 25,
+      "grupo": "G_HAIKU",
+      "descricao": "haiku_expanded: 447 blocos, 0 duplicados; os 5 topicos novos v402 aparecem INTEGRAIS (corpo JSON == result.core[nome], sem pontero nem sintese)",
+      "ok": true,
+      "achado": {
+        "blocos": 447,
+        "novos_integrais_na_expansao": 5,
+        "divergentes": []
+      }
+    },
+    {
+      "n": 26,
+      "grupo": "G_HAIKU",
+      "descricao": "haiku55 (haiku_expanded, claude-haiku-5-5): nenhum topico da v402 sumido (o prefixo expandido tem os 447 titulos)",
+      "ok": true,
+      "achado": "ok"
+    },
+    {
+      "n": 27,
+      "grupo": "H_JANELAS",
+      "descricao": "janelas de Kimi, MiMo e DeepSeek RECOMPUTADAS com as funcoes de admissao do runtime (output_budget/check_window; import somente-leitura com audit hook: sem rede/subprocesso/escrita) + json.dumps independente: entrada, reserva e folga = as do construtor; Kimi/MiMo reservam o maximo do provedor (131.072) e sobram >100.000 B; DeepSeek reserva o maximo seguro e sobram 106 B (> 0) / 146.667 B na reserva declarada de 148.656",
+      "ok": true,
+      "achado": {
+        "kimi": {
+          "entrada_B_recomputada": 745768,
+          "entrada_B_construtor": 745768,
+          "reserva": 131072,
+          "folga_recomputada": 167640,
+          "folga_construtor": 167640,
+          "folga_politica_declarada_148656": 150056,
+          "folga_v401_recomputada": 196580,
+          "delta_vs_v401": -28940,
+          "mesma_politica_de_reserva_que_v401": true
+        },
+        "mimo": {
+          "entrada_B_recomputada": 749140,
+          "entrada_B_construtor": 749140,
+          "reserva": 131072,
+          "folga_recomputada": 164268,
+          "folga_construtor": 164268,
+          "folga_politica_declarada_148656": 146684,
+          "folga_v401_recomputada": 193208,
+          "delta_vs_v401": -28940,
+          "mesma_politica_de_reserva_que_v401": true
+        },
+        "deepseek": {
+          "entrada_B_recomputada": 749157,
+          "entrada_B_construtor": 749157,
+          "reserva": 295217,
+          "folga_recomputada": 106,
+          "folga_construtor": 106,
+          "folga_politica_declarada_148656": 146667,
+          "folga_v401_recomputada": 106,
+          "delta_vs_v401": 0,
+          "mesma_politica_de_reserva_que_v401": true
+        }
+      }
+    },
+    {
+      "n": 28,
+      "grupo": "H_JANELAS",
+      "descricao": "Haiku55 (haiku_expanded), Haiku compacto (shared) e Sonnet publico: sobra de tokens RECOMPUTADA (1.000.000 - pedido - 16.384 saida - 1.024 margem) = a declarada >= piso de runtime 10.000; cadeia intencao->resultado->prefixo por sha256; 0 geracoes; sem atlas privado/contexto do operador; tokens/byte coerente com a v401 (+-1%)",
+      "ok": true,
+      "achado": {
+        "haiku_expanded": {
+          "request_input_tokens": 955456,
+          "sobra_recomputada": 27136,
+          "sobra_declarada": 27136,
+          "piso_de_runtime": 10000,
+          "tokens_por_byte": 0.53485,
+          "tokens_por_byte_v401": 0.53552,
+          "sobra_v401": 56522,
+          "cadeia_intencao_resultado_prefixo": true,
+          "contagens_conferem": true,
+          "geracoes": 0,
+          "atlas_privado": false,
+          "contexto_do_operador": false
+        },
+        "shared": {
+          "request_input_tokens": 362824,
+          "sobra_recomputada": 619768,
+          "sobra_declarada": 619768,
+          "piso_de_runtime": 10000,
+          "tokens_por_byte": 0.51184,
+          "tokens_por_byte_v401": 0.51277,
+          "sobra_v401": 633432,
+          "cadeia_intencao_resultado_prefixo": true,
+          "contagens_conferem": true,
+          "geracoes": 0,
+          "atlas_privado": false,
+          "contexto_do_operador": false
+        },
+        "sonnet_public": {
+          "request_input_tokens": 397648,
+          "sobra_recomputada": 584944,
+          "sobra_declarada": 584944,
+          "piso_de_runtime": 0,
+          "tokens_por_byte": 0.50606,
+          "tokens_por_byte_v401": 0.50676,
+          "sobra_v401": 598716,
+          "cadeia_intencao_resultado_prefixo": true,
+          "contagens_conferem": true,
+          "geracoes": 0,
+          "atlas_privado": false,
+          "contexto_do_operador": false
+        }
+      }
+    },
+    {
+      "n": 29,
+      "grupo": "I_JEV",
+      "descricao": "Jev: load_contract do runtime (hash do contrato, release/fonte, nucleo, cluster, resultado, prova) e load_core_packet (pacote == primeiros 8000 caracteres normalizados da forma canonica) PASSAM sobre o stage v402; contrato <= 10.000 B; pacote escapado + contrato escapado deixam > 10.000 B dos 30.000 B de estado",
+      "ok": true,
+      "achado": {
+        "release": "v402",
+        "schema": "iald.jev-control.v2",
+        "contract_canonical_bytes": 6147,
+        "MAX_CONTRACT_BYTES": 10000,
+        "packet_file_bytes": 8379,
+        "packet_characters": 8000,
+        "packet_escaped_ascii_bytes": 9635,
+        "contract_escaped_ascii_bytes": 6480,
+        "MAX_STATE_BYTES": 30000,
+        "MAX_REQUEST_BYTES": 60000,
+        "MAX_LONG_CONTEXT_BYTES": 250000,
+        "packet_sha256": "f7dd487261a665ac12be475a0acb0d0fcd5a28a4c909708a24daad0984c0b3b2",
+        "coverage": "COMPLETE_BOUND_ROUTING_PACKET_PARTIAL_CANONICAL",
+        "state_slack_after_contract_and_packet": 13885
+      }
+    },
+    {
+      "n": 30,
+      "grupo": "I_JEV",
+      "descricao": "contrato Jev v402 preserva todos os campos que nao sao de versao do contrato v401 aceito; pinos de fonte/resultado/prova = bytes do cofre v402",
+      "ok": true,
+      "achado": "campos nao-versao preservados"
+    },
+    {
+      "n": 31,
+      "grupo": "J_PLANO",
+      "descricao": "install_plan.json: a lista de arquivos = EXATAMENTE a que o revisor deriva do build (stage de dados -> canonical_releases\\v402_<c12>, pacote do JEV na raiz, 6 arquivos de pacotes -> .iald_runtime, manifesto ativo por ULTIMO): 1459 linhas, sem sobra nem falta",
+      "ok": true,
+      "achado": {
+        "plano": 1459,
+        "esperado": 1459,
+        "so_no_plano": [],
+        "so_no_esperado": []
+      }
+    },
+    {
+      "n": 32,
+      "grupo": "J_PLANO",
+      "descricao": "todo destino esta em canonical_releases\\v402_98cabfd1f88c, nos 6 arquivos de .iald_runtime/{haiku,haiku55}, no pacote Jev da raiz ou no manifesto ativo; nenhum .py; runtime_python_changes = 0 (plano, DATA_PLAN e PREPARED_BINDING)",
+      "ok": true,
+      "achado": {
+        "fora_do_escopo": [],
+        "runtime_python_changes": [
+          0,
+          0
+        ],
+        "staging_only": true
+      }
+    },
+    {
+      "n": 33,
+      "grupo": "J_PLANO",
+      "descricao": "baselines do plano = bytes ATUAIS de producao em cada destino (1459); o manifesto ativo de producao e a v401 instalada; nada foi aplicado",
+      "ok": true,
+      "achado": {
+        "destinos_divergentes_da_baseline": [],
+        "producao_hoje": "v401"
+      }
+    },
+    {
+      "n": 34,
+      "grupo": "J_PLANO",
+      "descricao": "DATA_PLAN.json: 1451 arquivos de dados; install_plan.deployment_identity = DELIVERY_PREPARED.deployment = manifest do pacote",
+      "ok": true,
+      "achado": 1451
+    },
+    {
+      "n": 35,
+      "grupo": "K_SEGREDOS",
+      "descricao": "varredura de TODOS os arquivos da pasta v402 (exceto validation/): nenhum padrao de chave/token/senha/chave privada (sk-, sk-ant-, AKIA, ghp_, xox, BEGIN PRIVATE KEY, \"api_key\": \"...\", token=...)",
+      "ok": true,
+      "achado": {
+        "arquivos_varridos": 1533,
+        "bytes_varridos": 80022391,
+        "acertos": []
+      }
+    },
+    {
+      "n": 36,
+      "grupo": "K_SEGREDOS",
+      "descricao": "manifest_staged/manifest_install/jev_control e os JSONs de pacote nao carregam caminhos de .env nem de stacks confidenciais",
+      "ok": true,
+      "achado": "ok"
+    },
+    {
+      "n": 37,
+      "grupo": "L_REDACAO",
+      "descricao": "vocabulario proibido: nenhuma ocorrencia NOVA (vs v401 aceita) de CONFIRMED/confirmada/confirmado sem qualificador de negacao/creditacao em shared, haiku_expanded, sonnet_public e cluster prompt; nos 5 topicos novos da fonte e no bloco \"Correcoes canonicas da release v402\" toda ocorrencia e qualificada",
+      "ok": true,
+      "achado": {
+        "shared": {
+          "ocorrencias_v402": 33,
+          "ocorrencias_v401": 33,
+          "nao_qualificadas_NOVAS_vs_v401": [],
+          "n_nao_qualificadas_novas": 0
+        },
+        "haiku_expanded": {
+          "ocorrencias_v402": 35,
+          "ocorrencias_v401": 35,
+          "nao_qualificadas_NOVAS_vs_v401": [],
+          "n_nao_qualificadas_novas": 0
+        },
+        "sonnet_public": {
+          "ocorrencias_v402": 34,
+          "ocorrencias_v401": 34,
+          "nao_qualificadas_NOVAS_vs_v401": [],
+          "n_nao_qualificadas_novas": 0
+        },
+        "cluster_prompt": {
+          "ocorrencias_v402": 32,
+          "ocorrencias_v401": 32,
+          "nao_qualificadas_NOVAS_vs_v401": [],
+          "n_nao_qualificadas_novas": 0
+        },
+        "fonte:cunhagens_v402": {
+          "ocorrencias": 0,
+          "nao_qualificadas": []
+        },
+        "fonte:esperanca_condicional_v402": {
+          "ocorrencias": 0,
+          "nao_qualificadas": []
+        },
+        "fonte:kh_n1_cobertura_v402": {
+          "ocorrencias": 0,
+          "nao_qualificadas": []
+        },
+        "fonte:ponte_da_escala_dual_v402": {
+          "ocorrencias": 0,
+          "nao_qualificadas": []
+        },
+        "fonte:queda_sem_geometria_v402": {
+          "ocorrencias": 0,
+          "nao_qualificadas": []
+        },
+        "exposicao:correcoes_v402": {
+          "ocorrencias": 0,
+          "nao_qualificadas": []
+        }
+      }
+    },
+    {
+      "n": 38,
+      "grupo": "L_REDACAO",
+      "descricao": "qualificadores presentes em TODOS os pacotes: CONDITIONAL/CONDICIONAL, UNINHABITED, BIJECTION, HILBERT, CREDITATION + o qualificador do gate (NATURE_TEST_COMPLETED ... MORE_SENSITIVE_DATA_COULD_REVISE)",
+      "ok": true,
+      "achado": {
+        "shared": {
+          "CONDITIONAL": true,
+          "UNINHABITED": true,
+          "BIJECTION": true,
+          "HILBERT": true,
+          "CREDITATION": true,
+          "CONDICIONAL": true,
+          "NATURE_TEST_COMPLETED": true,
+          "MORE_SENSITIVE_DATA_COULD_REVISE": true
+        },
+        "haiku_expanded": {
+          "CONDITIONAL": true,
+          "UNINHABITED": true,
+          "BIJECTION": true,
+          "HILBERT": true,
+          "CREDITATION": true,
+          "CONDICIONAL": true,
+          "NATURE_TEST_COMPLETED": true,
+          "MORE_SENSITIVE_DATA_COULD_REVISE": true
+        },
+        "sonnet_public": {
+          "CONDITIONAL": true,
+          "UNINHABITED": true,
+          "BIJECTION": true,
+          "HILBERT": true,
+          "CREDITATION": true,
+          "CONDICIONAL": true,
+          "NATURE_TEST_COMPLETED": true,
+          "MORE_SENSITIVE_DATA_COULD_REVISE": true
+        },
+        "cluster_prompt": {
+          "CONDITIONAL": true,
+          "UNINHABITED": true,
+          "BIJECTION": true,
+          "HILBERT": true,
+          "CREDITATION": true,
+          "CONDICIONAL": true,
+          "NATURE_TEST_COMPLETED": true,
+          "MORE_SENSITIVE_DATA_COULD_REVISE": true
+        }
+      }
+    },
+    {
+      "n": 39,
+      "grupo": "L_REDACAO",
+      "descricao": "gate nao movido (selo v402 = v401); nucleo operacional ADITIVO sobre o da v401 e instrucao-mae v5 byte a byte igual",
+      "ok": true,
+      "achado": {
+        "gate_igual_ao_da_v401": true,
+        "nucleo_operacional_aditivo": true,
+        "mae_v5_identica": true
+      }
+    },
+    {
+      "n": 40,
+      "grupo": "M_IMUTAVEIS",
+      "descricao": "v401_s2 (instalada e aceita) intocada: nenhum arquivo mais novo que o ultimo recibo de aceite; todas as evidencias pinadas nos 4 recibos de aceite (app, sources, deploy, verify) = bytes atuais",
+      "ok": true,
+      "achado": {
+        "arquivos_mais_novos_que_o_ultimo_recibo_de_aceite": [],
+        "pinos_quebrados": []
+      }
+    },
+    {
+      "n": 41,
+      "grupo": "M_IMUTAVEIS",
+      "descricao": "estado da missao (project, somente leitura): as claims `app` e `sources` estao review_pending (a espera do revisor); deploy/verify nao tocados",
+      "ok": true,
+      "achado": {
+        "revision": 5,
+        "projection_sha256": "fccdd087923098164eed333a766aca592541bffc079daf0d344875745de1f8cd",
+        "active": [
+          {
+            "id": "app",
+            "status": "review_pending",
+            "lease": null
+          },
+          {
+            "id": "deploy",
+            "status": "open",
+            "lease": null
+          },
+          {
+            "id": "sources",
+            "status": "review_pending",
+            "lease": null
+          },
+          {
+            "id": "verify",
+            "status": "open",
+            "lease": null
+          }
+        ]
+      }
+    }
+  ],
+  "ressalvas": [
+    "MARGEM DO HAIKU55 ENCOLHEU: sobra nativa 27.136 tokens (v401_s2: 56.522; -29.386, -52%); segue >= piso de runtime 10.000, mas no mesmo ritmo a v403 viola o piso: a janela de expansao (_v401,_v402) ou a compactacao precisa ser decidida ANTES da v403 (decisao da gerencia; nao e defeito desta entrega).",
+    "DEEPSEEK: com a reserva de saida no maximo seguro, a folga e de 106 B (igual a v401); a reserva caiu de 324.157 para 295.217 tokens (75% do maximo do provedor, 393.216). Com a reserva declarada de 148.656 a folga e de 146.667 B (v401: 175.607). Kimi/MiMo seguem com o maximo do provedor (131.072) e folga de 167.640 / 164.268 B.",
+    "A janela deslizante da politica P2 (_v401,_v402) desprotege os registros _v399/_v400: viraram capsulas compactas no shared (cunhagens_v399 mudou). 0 estatutos/vereditos que a v401 carregava literais viraram so ponteiro; os qualificadores textuais dos 5 topicos novos estao integrais. Os registros estruturados `unconditional` e `named_pending` dos topicos novos ficam como ponteiro no shared/sonnet_public/cluster (mesmo tratamento do topico v401 aceito) e integrais no haiku_expanded.",
+    "As contagens nativas de tokens (6 count_tokens publicos, 0 geracoes) sao custodia dos recibos do construtor; o revisor recomputou a aritmetica, a cadeia intencao->resultado->prefixo e a coerencia tokens/byte (+-1% da v401), nao repetiu chamadas pagas.",
+    "Nenhum Lean/um.py executado (so ast.parse do texto para reproduzir o bloco documental do bootstrap); o runtime foi importado somente para as funcoes de admissao e o carregador do Jev, com audit hook (sem rede/subprocesso/escrita).",
+    "Este revisor NAO aprova o deploy: deploy/verify seguem abertos; a producao esta na v401 e os 1459 baselines do plano conferem."
+  ]
+}

@@ -1,0 +1,227 @@
+{
+  "revisor": "sonnet-app-v402-revisor",
+  "timestamp_utc": "2026-10-27T11:57:06.427223+00:00",
+  "escopo": "Revisao independente do passo `verify` da v402. ACEITA O QUE FOI DECLARADO: carregadores em processo novo + hashes + login + processo vivo. NAO cobre: resposta viva do app citando a v402 (0 chamadas a provedor), memorias atualizadas com recibos, distincao backend x build, inspecao fisica do celular. Somente leitura; unica rede = GET local /login; nenhum processo tocado.",
+  "script_revisor_sha256": "96d2c573c9df70ca346a7a7c1f3642777b99c4339d2433f62213329bec4ff962",
+  "auxiliares_sha256": {
+    "rlib.py": "633143176c75725761afe48e6bd0c750c48ce5f3f643ebde0518a6415e4c94bc",
+    "r_loaders.py": "3bb2a34582c67988214ce348b5fb58931a52ae82dd922dc86140e80aadd3fe67"
+  },
+  "veredito": "PASS",
+  "n_checks": 14,
+  "n_ok": 14,
+  "n_falha": 0,
+  "checks": [
+    {
+      "n": 1,
+      "grupo": "A_SUBMISSAO",
+      "descricao": "recibo v402-verify-submit: verify review_pending, submetido por claude-gerencia-a7 (distinto do revisor), depende de deploy; as 2 evidencias (INSTALLED_VERIFICATION.json, LOGIN_CHECK_v402.json) tem sha256 = bytes ATUAIS",
+      "ok": true,
+      "achado": {
+        "status": "review_pending",
+        "submitted_by": "claude-gerencia-a7",
+        "evidencias": [
+          "INSTALLED_VERIFICATION.json",
+          "LOGIN_CHECK_v402.json"
+        ],
+        "hash_divergente": [],
+        "revision": 12
+      }
+    },
+    {
+      "n": 2,
+      "grupo": "A_SUBMISSAO",
+      "descricao": "pre-condicao: deploy satisfeito pela minha revisao e TODAS as evidencias pinadas do deploy (deployment/maintenance/restart/plano e review_deploy.json) continuam com os bytes de quando foram aceitas; verify e a unica etapa ativa",
+      "ok": true,
+      "achado": {
+        "deploy": "satisfied",
+        "pinos_do_deploy_e_da_minha_revisao_ainda_batem": true,
+        "ativos": [
+          "verify"
+        ]
+      }
+    },
+    {
+      "n": 3,
+      "grupo": "B_ESCOPO",
+      "descricao": "o escopo declarado na submissao exclui explicitamente a resposta viva do modelo (0 chamadas a provedor) e a inspecao fisica do celular; o criterio da missao cita \"resposta do app citando a v402\" -> essa parte NAO e coberta (declarada, nao escondida)",
+      "ok": true,
+      "achado": {
+        "criterio_da_missao": "Verificar o uso efetivo do pacote v402 (login 200, release no manifest, resposta do app citando a v402), integridade após a implantação e memórias atualizadas com recibos; distinguir alteração de backend e necessidade real de build.",
+        "escopo_declarado_pela_gerencia": "carregadores em processo novo + hashes + login; sem resposta de modelo ao vivo (0 chamadas a provedor, como na v401); sem inspeção física do celular",
+        "nota": "verify_installed PASS (1459 arquivos; release v402; commit 98cabfd1; JEV v402; 0 chamadas a provedor); /login 200; escopo declarado: sem resposta de modelo ao vivo nem inspeção física do celular",
+        "provider_calls": 0
+      }
+    },
+    {
+      "n": 4,
+      "grupo": "B_ESCOPO",
+      "descricao": "precedente: o criterio de verify e textualmente o mesmo da v401, e a v401 foi aceita com o MESMO escopo (loaders + hashes + login; 0 chamadas a provedor; sem resposta viva, memorias nem backend x build)",
+      "ok": true,
+      "achado": {
+        "v401_verify": "satisfied",
+        "v401_revisor": "claude-gerencia-a7",
+        "mesmo_criterio_textual": true,
+        "v401_ressalva": "sta em INSTALLED_VERIFICATION.json.bak_*). Escopo: loaders e hashes instalados; NAO cobre resposta viva do app citando a v401, memorias atualizadas nem a distincao backend x build (restam a gerencia)."
+      }
+    },
+    {
+      "n": 5,
+      "grupo": "C_EVIDENCIA",
+      "descricao": "INSTALLED_VERIFICATION.json (gerencia) = o que os MEUS loaders do runtime medem AGORA em processo novo (audit hook): identidade, commit, 2 pacotes (tokens permanentes/bytes/sha do prefixo = os revisados), native, prompt publico, Jev v402",
+      "ok": true,
+      "achado": {
+        "identity": {
+          "release": "v402",
+          "source_sha256": "6a5033dc3f29324ce1df7cb82538a28386cae2fd2dce81cd370e442fa29a95c5",
+          "cluster_sha256": "ca79336388c80f68323694a71900e46e4ed648414fb8584b344ea7548c24a36d",
+          "operational_core_sha256": "39a19033447bc28ea3e963916bfcf49ac29e9b22fef69d07121092d9b4cc7f74"
+        },
+        "catalog_records": 1433,
+        "catalog_source_sha": "6a5033dc3f29324ce1df7cb82538a28386cae2fd2dce81cd370e442fa29a95c5",
+        "packages": {
+          "haiku55": {
+            "permanent_tokens": 953909,
+            "prefix_bytes": 1786410,
+            "prefix_sha256": "f7ceb245e504825849a0735742844157a59ca421a0db1320b0150751ed41bfaf"
+          },
+          "haiku": {
+            "permanent_tokens": 361277,
+            "prefix_bytes": 708859,
+            "prefix_sha256": "508ec0459dd45d1702494c7b56a2e1c50414550cba38a893e66eb1b8de7f7bac"
+          }
+        },
+        "native": {
+          "bytes": 51652,
+          "sha256": "61a5ad8ea28ccae87b604f2b8b3e82ae4cdc5b9f142e950c6dedfc11081332ba",
+          "identity_equals_release": true
+        },
+        "jev": {
+          "release": "v402",
+          "source_sha256": "6a5033dc3f29324ce1df7cb82538a28386cae2fd2dce81cd370e442fa29a95c5",
+          "packet_sha256": "f7dd487261a665ac12be475a0acb0d0fcd5a28a4c909708a24daad0984c0b3b2",
+          "packet_characters": 8000
+        },
+        "public_prompt": {
+          "bytes": 785767,
+          "sha256": "c689b42afe2a336ae79bd349bfdfcba5ffcb71eef19ff19bc54840374be23c95",
+          "private_atlas_included": false
+        }
+      }
+    },
+    {
+      "n": 6,
+      "grupo": "C_EVIDENCIA",
+      "descricao": "os 1459 arquivos instalados continuam com o sha256 do plano (recomputado agora, nao confiado ao PASS da gerencia)",
+      "ok": true,
+      "achado": {
+        "verificados_agora": 1459,
+        "divergentes": []
+      }
+    },
+    {
+      "n": 7,
+      "grupo": "C_EVIDENCIA",
+      "descricao": "o nucleo (iald_nucleo_fixo.json) AINDA aponta active_cluster, operational_core e jev_control para v402, com commit e source sha256 de RELEASE.json, e e byte a byte o manifest_install revisado",
+      "ok": true,
+      "achado": {
+        "active_cluster.release": "v402",
+        "operational_core.current_release": "v402",
+        "jev_control.release": "v402",
+        "commit": "98cabfd1f88c",
+        "source16": "6a5033dc3f29324c"
+      }
+    },
+    {
+      "n": 8,
+      "grupo": "D_VIVO",
+      "descricao": "AGORA: PID 65420 e o unico processo web e o unico ouvinte da 8082, sob o supervisor 50252 (mesmo create_time do restart.json), nenhum suspenso",
+      "ok": true,
+      "achado": {
+        "processos_web": [
+          65420
+        ],
+        "ouvinte_8082": [
+          65420
+        ],
+        "ppid": 50252,
+        "supervisor_create_time_igual_ao_do_restart": true
+      }
+    },
+    {
+      "n": 9,
+      "grupo": "D_VIVO",
+      "descricao": "o filho 65420 e o MESMO de quando revisei o deploy (create_time identico ao que registrei em review_deploy.json): nao reiniciou desde a instalacao, logo e a instancia que nasceu depois dos arquivos da v402",
+      "ok": true,
+      "achado": {
+        "create_time_utc": "2026-10-27T11:46:05.355286+00:00",
+        "registrado_no_deploy_review": "2026-10-27T11:46:05.355286+00:00"
+      }
+    },
+    {
+      "n": 10,
+      "grupo": "D_VIVO",
+      "descricao": "GET local http://127.0.0.1:8082/login = 200 AGORA (unico acesso de rede deste revisor; corpo descartado)",
+      "ok": true,
+      "achado": {
+        "status": 200,
+        "bytes_do_corpo": 4727
+      }
+    },
+    {
+      "n": 11,
+      "grupo": "D_VIVO",
+      "descricao": "LOGIN_CHECK_v402.json da gerencia: login_http_status 200, URL local 8082/login, feito DEPOIS da instalacao e do reinicio e antes do submit",
+      "ok": true,
+      "achado": {
+        "em_local": "2026-10-27T08:55:25",
+        "por": "claude-gerencia-a7"
+      }
+    },
+    {
+      "n": 12,
+      "grupo": "D_VIVO",
+      "descricao": "depois do GET: mesmo PID, mesmo create_time, mesmo ouvinte (o servidor nao reiniciou durante a revisao)",
+      "ok": true,
+      "achado": {
+        "pid": [
+          65420
+        ]
+      }
+    },
+    {
+      "n": 13,
+      "grupo": "E_ESCOPO",
+      "descricao": "varredura somente-stat da arvore de runtime (nenhum arquivo aberto): desde a janela do deploy so mudaram os 1459 destinos, os 7 backups e logs vivos; o verify e as evidencias dele nao escreveram nada em producao",
+      "ok": true,
+      "achado": {
+        "arquivos": 81067,
+        "mudados_desde_a_janela": 1471,
+        "plano": 1459,
+        "backups": 7,
+        "logs_vivos": [
+          "logs/gpu_20261027_024027.csv",
+          "logs/iald_heartbeat_telemetry.jsonl",
+          "logs/web-server_20261026_221019_r2.log",
+          "logs/web-server_20261026_221019_r2.log.err",
+          "logs/web-supervisor.log"
+        ],
+        "inesperados": []
+      }
+    },
+    {
+      "n": 14,
+      "grupo": "E_ESCOPO",
+      "descricao": "na pasta do build, os unicos arquivos novos desde a revisao do deploy sao os do verify (LOGIN_CHECK_v402.json, recibos de claim/submit do verify); INSTALLED_VERIFICATION.json nao foi regravado (sem .bak_)",
+      "ok": true,
+      "achado": [
+        "LOGIN_CHECK_v402.json"
+      ]
+    }
+  ],
+  "ressalvas": [
+    "O criterio da missao cita \"resposta do app citando a v402\", memorias com recibos e a distincao backend x build; esta aceitacao NAO os cobre (a submissao os exclui, como a v401 aceita). Ficam com a gerencia.",
+    "Que o processo em execucao tem a v402 na MEMORIA continua inobservavel por GET /login; prova-se: filho nascido depois da instalacao, arquivos = plano, loaders de processo novo aceitam o instalado.",
+    "PIDs/create_time sao fotografia do momento da revisao."
+  ]
+}

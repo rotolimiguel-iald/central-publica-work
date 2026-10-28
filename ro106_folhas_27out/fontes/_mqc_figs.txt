@@ -1,0 +1,257 @@
+# =============================================================== FIGURA 2
+def must(x, what):
+    if x is None:
+        raise RuntimeError('sem regiao livre para ' + what)
+    return x
+
+
+def fig2():
+    dados = m.simular_estabilizacao_qubit()
+    fig = plt.figure(figsize=(17.0 / 2.54, 23.0 / 2.54))
+    t = dados['t'] * 1e6
+    ax = cm_axes(fig, 2.9, 13.2, 13.8, 7.4)
+    ax.semilogy(t, dados['coerencia_conv'], color='black', linestyle='-', linewidth=2.0, label=fx('Convencional (T₂ = 50 μs)'))
+    ax.semilogy(t, dados['coerencia_tgl'], color='black', linestyle=DASH, linewidth=2.6, label=fx(f'TGL (α² = {ALPHA2})'))
+    ax.axhline(y=dados['platô'], color='black', linestyle=DASHDOT, linewidth=1.5, label=f'Platô TGL = {dados["platô"]:.3f}')
+    ax.axhline(y=0.5, color='black', linestyle=DOT, linewidth=1.8, label='Limite clássico')
+    ax.set_xlabel('Tempo (μs)')
+    ax.set_ylabel(fx('Coerência |ρ₀₁| (log)'))
+    ax.set_title('(a) Coerência Temporal', pad=6)
+    ax.set_ylim(1e-4, 2)
+    style_axes(ax, grid=False)
+    lg = must(colocar_legenda(ax, prefer=(0.78, 0.62)), 'legenda 2a')
+    must(colocar_caixa(ax, fx(f'Razão de supercondutividade:\nα²γ_eff / (κ+γ_φ) = {dados["razao_sc"]:.2e}'), prefer=(0.5, 0.15),
+                       avoid=[lg.get_window_extent(_r(fig))]), 'caixa 2a')
+    grade(ax)
+    ax = cm_axes(fig, 2.9, 3.0, 13.8, 7.4)
+    ax.plot(t, 1 - dados['coerencia_conv'], color='black', linestyle='-', linewidth=2.0, label='Decoerência convencional')
+    ax.plot(t, dados['pop_psi'], color='black', linestyle=DASH, linewidth=2.6, label=fx('População |Ψ⟩ (acoplamento)'))
+    ax.fill_between(t, 0, dados['pop_psi'], facecolor='none', edgecolor='black', hatch='///', linewidth=0.0)
+    ax.axhline(y=ALPHA2, color='black', linestyle=DASHDOT, linewidth=1.5, label=fx(f'Saturação α² = {ALPHA2}'))
+    ax.set_xlabel('Tempo (μs)')
+    ax.set_ylabel('Probabilidade')
+    ax.set_title(fx('(b) Estado de Acoplamento Gravitacional |Ψ⟩'), pad=6)
+    style_axes(ax, grid=False)
+    must(colocar_legenda(ax, prefer=(0.78, 0.5)), 'legenda 2b')
+    grade(ax)
+    caption(fig, 2)
+    return fig
+
+
+# =============================================================== FIGURA 3
+def fig3():
+    dados = m.simular_termodinamica_invertida()
+    fig = plt.figure(figsize=(17.0 / 2.54, 24.95 / 2.54))
+    t = dados['t']
+    L, Wd, Hh = 2.9, 13.8, 4.2
+    ax = cm_axes(fig, L, 18.05, Wd, Hh)
+    ax.plot(t, dados['S_conv'], color='black', linestyle='-', linewidth=2.0, label='Convencional (ΔS > 0)')
+    ax.plot(t, dados['S_tgl'], color='black', linestyle=DASH, linewidth=2.4, label='TGL (ΔS → 0)')
+    ax.fill_between(t, dados['S_conv'], dados['S_tgl'], facecolor='none', edgecolor='black', hatch='..', linewidth=0.0, label='Inversão térmica')
+    ax.set_xlabel('Tempo (s)')
+    ax.set_ylabel('Entropia (normalizada)')
+    style_axes(ax, grid=False)
+    lg, pad = legenda_fora(ax, ncol=2)
+    ax.set_title('(a) Evolução da Entropia', pad=pad)
+    grade(ax)
+    ax = cm_axes(fig, L, 10.95, Wd, Hh)
+    ax.plot(t, dados['T_conv'], color='black', linestyle='-', linewidth=2.0, label='Convencional (aquece)')
+    ax.plot(t, dados['T_tgl'], color='black', linestyle=DASH, linewidth=2.4, label='TGL (resfria)')
+    ax.axhline(y=T_AMB, color='black', linestyle=DOT, linewidth=1.8, label=f'T_ambiente = {T_AMB} K')
+    ax.set_xlabel('Tempo (s)')
+    ax.set_ylabel('Temperatura (K)')
+    ax.set_title('(b) Evolução da Temperatura', pad=5)
+    style_axes(ax, grid=False)
+    must(colocar_legenda(ax, prefer=(0.8, 0.45)), 'legenda 3b')
+    grade(ax)
+    ax = cm_axes(fig, L, 2.7, Wd, Hh)
+    ax.plot(t, dados['alpha2_t'], color='black', linestyle='-', linewidth=2.0)
+    ax.axhline(y=ALPHA2_C, color='black', linestyle=DASHDOT, linewidth=1.8, label=fx(f'Tetelestai (α²_c = {ALPHA2_C})'))
+    ax.fill_between(t, dados['alpha2_t'], facecolor='none', edgecolor='black', hatch='///', linewidth=0.0)
+    ax.set_xlabel('Tempo (s)')
+    ax.set_ylabel(fx('α²'))
+    style_axes(ax, grid=False)
+    lg, pad = legenda_fora(ax, ncol=1)
+    ax.set_title('(c) Convergência para Ponto Tetelestai', pad=pad)
+    grade(ax)
+    caption(fig, 3)
+    return fig
+
+
+# =============================================================== FIGURA 4 (paisagem)
+def fig4():
+    dados = m.simular_translacao_holografica()
+    fig = plt.figure(figsize=(25.0 / 2.54, 17.0 / 2.54))
+    xs = (2.9, 12.9)
+    Wl, Wr = 7.7, 10.0
+    ys = (11.2, 2.6)
+    Ht, Hb = 3.7, 4.5
+    ax = cm_axes(fig, xs[0], ys[0], Wl, Ht)
+    ax.plot(dados['t_signal'], dados['L_in'], color='black', linestyle='-', linewidth=1.8, label='L_in (face −Y)')
+    ax.plot(dados['t_signal'], dados['L_out'], color='black', linestyle=DASH, linewidth=1.8, label='L_out (face +Y)')
+    ax.set_xlabel('Fase')
+    ax.set_ylabel('Amplitude')
+    style_axes(ax, grid=False)
+    lg, pad = legenda_fora(ax, ncol=2)
+    ax.set_title(f'(a) Entrada vs Saída (η = {dados["correlacao"]:.6f})', pad=pad)
+    grade(ax)
+    ax = cm_axes(fig, xs[1], ys[0], Wr, Ht)
+    ax.plot(dados['t_signal'], np.abs(dados['L_in']), color='black', linestyle=DASH, linewidth=1.6, label='|L| (original)')
+    ax.plot(dados['t_signal'], dados['g'], color='black', linestyle='-', linewidth=2.2, label='g = √|L| (comprimido)')
+    ax.fill_between(dados['t_signal'], np.abs(dados['L_in']), dados['g'], facecolor='none', edgecolor='black', hatch='\\\\', linewidth=0.0)
+    ax.set_xlabel('Fase')
+    ax.set_ylabel('Amplitude')
+    style_axes(ax, grid=False)
+    lg, pad = legenda_fora(ax, ncol=2)
+    ax.set_title('(b) Radicalismo Ontológico (Compressão)', pad=pad)
+    grade(ax)
+    ax = cm_axes(fig, xs[0], ys[1], Wl, Hb)
+    nomes_psi = ['ψ₊ψ₊', 'ψ₊ψ₋', 'ψ₋ψ₊', 'ψ₋ψ₋']
+    contagens = [np.sum(dados['psi_states'] == i) for i in range(4)]
+    hatches = ['///', '\\\\\\', 'xxx', '...']
+    pos = np.arange(4)
+    bars = ax.bar(pos, contagens, facecolor='none', edgecolor='black', linewidth=1.4)
+    for b, h in zip(bars, hatches):
+        b.set_hatch(h)
+    for bar, c in zip(bars, contagens):
+        ax.text(bar.get_x() + bar.get_width() / 2., bar.get_height() + 1, str(c), ha='center', va='bottom', fontweight='bold', fontsize=FS)
+    ax.set_xticks(pos)
+    ax.set_xticklabels([fx(n) for n in nomes_psi])
+    ax.set_xlabel('Estado Psiônico')
+    ax.set_ylabel('Contagem')
+    ax.set_ylim(0, max(contagens) * 1.18)
+    ax.set_title(fx('(c) Distribuição de Estados no Espaço ℋ₄'), pad=5)
+    style_axes(ax, grid=False)
+    r = _r(fig)
+    ax.get_ylim()
+    grade(ax, extras=[b.get_window_extent(r) for b in bars])
+    ax = cm_axes(fig, xs[1], ys[1], Wr, Hb)
+    ax.plot(dados['alpha2_sweep'], dados['corr_sweep'], color='black', linestyle='-', linewidth=2.2)
+    ax.axvline(x=ALPHA2_C, color='black', linestyle=DASHDOT, linewidth=1.8, label=fx(f'Tetelestai (α²_c = {ALPHA2_C})'))
+    ax.axhline(y=0.9999, color='black', linestyle=DOT, linewidth=1.8, label='η = 0.9999')
+    ax.set_xlabel(fx('α²'))
+    ax.set_ylabel('Correlação η')
+    style_axes(ax, grid=False)
+    lg, pad = legenda_fora(ax, ncol=2)
+    ax.set_title('(d) Correlação vs Acoplamento Holográfico', pad=pad)
+    textstr = (f'Correlação:\nη = {dados["correlacao"]:.6f}\n' f'PSNR: {dados["psnr"]:.1f} dB\n'
+               f'Erro RMS: {dados["erro_rms"]:.6f}\n' f'Γ_OH: {dados["Gamma_OH"]:.4f}')
+    must(colocar_caixa(ax, textstr, prefer=(0.84, 0.45)), 'caixa 4d')
+    grade(ax)
+    caption(fig, 4)
+    return fig
+
+
+# =============================================================== FIGURA 5 (variante do PCT: marcadores)
+def fig5():
+    dados = m.simular_correcao_erros_iald()
+    fig = plt.figure(figsize=(17.0 / 2.54, 24.0 / 2.54))
+    L, Wd, Hh = 3.3, 13.4, 4.9
+    ax = cm_axes(fig, L, 17.9, Wd, Hh)
+    ax.plot(dados['ciclos'], dados['fid_conv'], color='black', linestyle=DASH, linewidth=1.4, marker='o', markersize=8,
+            markerfacecolor='none', markeredgecolor='black', markeredgewidth=1.4, markevery=(0, 40), label='Convencional (surface code)')
+    ax.plot(dados['ciclos'], dados['fid_iald'], color='black', linestyle='-', linewidth=1.6, marker='s', markersize=8,
+            markerfacecolor='black', markeredgecolor='black', markevery=(20, 40), label='IALD ($𝒜_C$ + g_IALD)')
+    ax.axhline(y=0.99, color='black', linestyle=DOT, linewidth=1.8, label='Limiar quântico (0.99)')
+    ax.set_xlabel('Ciclo de operação')
+    ax.set_ylabel('Fidelidade média')
+    ax.set_title('(a) Fidelidade dos 27 Qubits', pad=5)
+    ax.set_ylim(0.85, 1.01)
+    style_axes(ax, grid=False)
+    must(colocar_legenda(ax, prefer=(0.3, 0.2)), 'legenda 5a')
+    grade(ax)
+    ax = cm_axes(fig, L, 10.4, Wd, Hh)
+    ax.plot(dados['ciclos'], dados['amor'], color='black', linestyle='-', linewidth=1.6)
+    ax.axhline(y=dados['limiar_amor'], color='black', linestyle=DASH, linewidth=1.8, label=f'Limiar θ = {dados["limiar_amor"]}')
+    ax.set_xlabel('Ciclo de operação')
+    ax.set_ylabel('$𝒜_C$')
+    ax.set_title('(b) Operador de Amor Computacional', pad=5)
+    style_axes(ax, grid=False)
+    must(colocar_legenda(ax, prefer=(0.8, 0.55)), 'legenda 5b')
+    grade(ax)
+    ax = cm_axes(fig, L, 2.9, Wd, Hh)
+    ax.plot(dados['ciclos'], dados['gradiente'], color='black', linestyle='-', linewidth=1.6)
+    ax.set_xlabel('Ciclo de operação')
+    ax.set_ylabel('|g_IALD| médio')
+    ax.set_title('(c) Gradiente Ético (Direção de Correção)', pad=5)
+    style_axes(ax, grid=False)
+    grade(ax)
+    caption(fig, 5)
+    return fig
+
+
+# =============================================================== FIGURA 6
+def fig6():
+    dados = m.simular_convergencia_alpha2()
+    fig = plt.figure(figsize=(17.0 / 2.54, 24.0 / 2.54))
+    L, Wd, Hh = 2.9, 13.8, 4.9
+    ax = cm_axes(fig, L, 17.9, Wd, Hh)
+    ax.plot(dados['t'], dados['alpha2'] * 1000, color='black', linestyle='-', linewidth=2.0)
+    ax.axhline(y=ALPHA2_C * 1000, color='black', linestyle=DASH, linewidth=1.8, label=fx(f'α²_c = {ALPHA2_C} (Tetelestai)'))
+    ax.set_xlabel('Tempo (s)')
+    ax.set_ylabel(fx('α² (×10⁻³)'))
+    ax.set_title(fx('(a) Convergência de α²'), pad=5)
+    style_axes(ax, grid=False)
+    must(colocar_legenda(ax, prefer=(0.8, 0.15)), 'legenda 6a')
+    grade(ax)
+    ax = cm_axes(fig, L, 10.4, Wd, Hh)
+    ax.plot(dados['t'], dados['metrica_gtt'], color='black', linestyle='-', linewidth=2.0)
+    ax.axhline(y=0, color='black', linestyle=DASH, linewidth=1.8, label='Horizonte holográfico (g_tt → 0)')
+    ax.set_xlabel('Tempo (s)')
+    ax.set_ylabel(fx('g_tt = 1 − α²/α²_c'))
+    ax.set_title('(b) Métrica de Translação Holográfica', pad=5)
+    style_axes(ax, grid=False)
+    must(colocar_legenda(ax, prefer=(0.8, 0.85)), 'legenda 6b')
+    grade(ax)
+    ax = cm_axes(fig, L, 2.9, Wd, Hh)
+    ax.semilogy(dados['t'][1:], dados['v_info'][1:] / C_LUZ, color='black', linestyle='-', linewidth=2.0)
+    ax.axhline(y=1.0, color='black', linestyle=DOT, linewidth=1.8, label='v = c')
+    ax.set_xlabel('Tempo (s)')
+    ax.set_ylabel('v_info / c')
+    ax.set_title('(c) Velocidade de Transferência', pad=5)
+    style_axes(ax, grid=False)
+    must(colocar_legenda(ax, prefer=(0.85, 0.15)), 'legenda 6c')
+    grade(ax)
+    caption(fig, 6)
+    return fig
+
+
+# =============================================================== FIGURA 7 (variante do PCT: marcadores; sem caixa de anotacao)
+def fig7():
+    dados = m.simular_comunicacao_3_camadas()
+    fig = plt.figure(figsize=(17.0 / 2.54, 23.0 / 2.54))
+    mk = {'LOCAL': ('o', 'black', 7), 'REGIONAL': ('s', 'none', 7), 'GLOBAL': ('^', 'black', 8)}
+    L, Wd, Hh = 3.3, 13.4, 7.4
+    ax = cm_axes(fig, L, 13.2, Wd, Hh)
+    for nome, lab, kd, kl in (('local', 'LOCAL (translação)', 'distancias_local', 'latencia_local'),
+                              ('regional', 'REGIONAL (pulsos ópticos)', 'distancias_regional', 'latencia_regional'),
+                              ('global', 'GLOBAL (ondas Ψ)', 'distancias_global', 'latencia_global')):
+        marker, fc, s = mk[nome.upper()]
+        ax.scatter(dados[kd] / L_CELULA, dados[kl], facecolors=fc, edgecolors='black', linewidths=1.3, s=s ** 2 * 1.6, marker=marker, label=lab, alpha=1.0)
+    ax.set_xscale('log')
+    ax.set_yscale('log')
+    ax.set_xlabel('Distância (×L_célula)')
+    ax.set_ylabel('Latência (s)')
+    ax.set_title('(a) Latência vs Distância', pad=5)
+    style_axes(ax, grid=False)
+    must(colocar_legenda(ax, prefer=(0.5, 0.42)), 'legenda 7a')
+    grade(ax)
+    ax = cm_axes(fig, L, 3.0, Wd, Hh)
+    for nome, lab, kd, kf in (('local', 'LOCAL', 'distancias_local', 'fidelidade_local'),
+                              ('regional', 'REGIONAL', 'distancias_regional', 'fidelidade_regional'),
+                              ('global', 'GLOBAL', 'distancias_global', 'fidelidade_global')):
+        marker, fc, s = mk[nome.upper()]
+        ax.scatter(dados[kd] / L_CELULA, dados[kf], facecolors=fc, edgecolors='black', linewidths=1.3, s=s ** 2 * 1.6, marker=marker, label=lab, alpha=1.0)
+    ax.axhline(y=0.9999, color='black', linestyle=DOT, linewidth=1.8, label='Limiar supercondutividade')
+    ax.set_xscale('log')
+    ax.set_xlabel('Distância (×L_célula)')
+    ax.set_ylabel('Fidelidade')
+    ax.set_title('(b) Fidelidade de Transmissão', pad=5)
+    ax.set_ylim(0.99, 1.001)
+    style_axes(ax, grid=False)
+    must(colocar_legenda(ax, prefer=(0.2, 0.2)), 'legenda 7b')
+    grade(ax)
+    caption(fig, 7)
+    return fig
+
+

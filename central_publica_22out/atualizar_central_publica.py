@@ -29,7 +29,12 @@ ap.add_argument("--ate", default=None)
 ap.add_argument("--publicar", action="store_true")
 ap.add_argument("--titulo", default="Central aberta — atualização pela cadeia (%s)" % time.strftime("%d/%m/%Y"))
 ap.add_argument("--listar", action="store_true")
+ap.add_argument("--manifesto", default=None, help="manifesto já gerado por rodada anterior (para --so subir em rodada própria; sem ele o passo subir procura o manifesto do carimbo DESTA rodada e, se o passo manifesto não rodou nela, não o acha: lição da v401/v402, 25 e 27/10/2026)")
 a = ap.parse_args()
+if a.manifesto:
+    MAN = Path(a.manifesto)
+    if not MAN.is_file():
+        sys.exit('--manifesto nao existe: %s' % MAN)
 
 
 def copiar_acom_anterior():
