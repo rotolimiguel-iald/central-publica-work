@@ -1,6 +1,6 @@
 # INVENTÁRIO DA BANCADA DO CHATGPT — tudo o que foi examinado e produzido
 
-> Gerado por script em 2026-10-28 10:02:10 a partir da varredura `inventario_bancada.json` (sha16 `84935f797cec86f4`), SÓ LEITURA da pasta `Chatgpt\`. Nenhum número digitado.
+> Gerado por script em 2026-10-28 22:18:04 a partir da varredura `inventario_bancada.json` (sha16 `79ec8226d52dd707`), SÓ LEITURA da pasta `Chatgpt\`. Nenhum número digitado.
 > **Ordem do operador (27/09/2026, verbatim):** «Precisamos fazer um inventário de tudo que foi examinado e produzido na bancada do chatgpt pra não nos perdermos mais em serviço já executado, vc está pedindo o que já pediu» e «Depois de inventariar tudo, precisamos indexar ao atlas da tgl para ficar referenciado».
 > **Regra de uso:** ANTES de pedir qualquer construção à bancada ou de construí-la na gerência, procurar aqui (por tema, por nome, por hash). O que é sabido e importável não se prova de novo (regra do operador de 27/08: «prova emprestada»).
 
@@ -17,7 +17,7 @@
 | únicos cujo nome-base JÁ está no kernel canônico | 1551 |
 | únicos com `sorry`/`admit`/`native_decide` fora de comentário | 3 |
 | únicos que declaram `axiom` | 5 |
-| documentos de entrega/quadro/relatório/medida | 2646 |
+| documentos de entrega/quadro/relatório/medida | 2648 |
 
 ## 2. O quadro de estatutos da própria bancada (FECHAMENTO_PARCIAL_016, P1)
 
@@ -8675,6 +8675,8 @@
 | 2026-10-26 20:18 | `TUNEL/DO_CHATGPT/ORDEM_026/VITRINE/RELATORIO_FINAL_FASE1.md` | `b7dfb5e6d0429c37` | FASE1_IMPLANTADA_VERIFICADA — 026-X / ADENDO A. |
 | 2026-10-27 10:07 | `TUNEL/DO_CHATGPT/ORDEM_022/ADENDO_E/RELATORIO.md` | `fae93551afe0dc30` | ORDEM 022 — ADENDO E · filmes V7, fonte v402 |
 | 2026-10-27 18:04 | `TUNEL/DO_CHATGPT/ORDEM_021/2026-10-27_RELATORIO.md` | `e2f0c881d3c38a8c` | ORDEM 021 — verificação de 27/10/2026 |
+| 2026-10-28 13:08 | `TUNEL/DO_CHATGPT/ORDEM_022/ADENDO_F/RELATORIO.md` | `24efed278cb06541` | ORDEM 022 — ADENDO F: parada anterior ao render v403 |
+| 2026-10-28 18:02 | `TUNEL/DO_CHATGPT/ORDEM_021/2026-10-28_RELATORIO.md` | `8ef4b2b0bcb3bb3c` | [REAL] ORDEM 021 — conferência idempotente de 28/10/2026. |
 
 ## 7. Arquivos com `sorry`/`admit` ou `axiom` (NÃO importar sem exame)
 

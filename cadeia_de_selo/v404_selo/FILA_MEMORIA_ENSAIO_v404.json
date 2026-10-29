@@ -1,0 +1,426 @@
+{
+ "contrato": "FILA_MEMORIA_ENSAIO_v404",
+ "checks": [
+  {
+   "check": "a ordem das operacoes da fila no chain: guardas (passo 0); pausa-criar (passo 7); pausa-criar (renovar), pinar, pausa-remover, verificar (passo 9)",
+   "ok": true,
+   "det": "['guardas', 'pausa-criar', 'pausa-criar', 'pinar', 'pausa-remover', 'verificar']"
+  },
+  {
+   "check": "no TEXTO do chain: guardas < pausa-criar < superficies (real) < espelho < validacao do MEMORY.md (195) < pausa-criar < pinar < pausa-remover < verificar",
+   "ok": true,
+   "det": "{'linhas_das_operacoes': [131, 210, 245, 248, 251, 254], 'ancoras': {'superficies_real': [214], 'porta': [220], 'validacao_195': [173, 242], 'sem_copias': [167]}}"
+  },
+  {
+   "check": "guardas: rc 0, memoria.py == o pino (sha16 lido de PINO_MEMORIA_PY_v404.json), sem pausa",
+   "ok": true,
+   "det": "{\"aviso\": null, \"dir\": \"C:\\\\IALD\\\\Central de Patentes\\\\work\\\\cadeia_de_selo\\\\v404\\\\pos_rito\\\\harness_saida_v404\\\\memoria_copia\", \"linha_de_base_verificar\": {\"ok\": true, \"rc\": 0, \"violacoes\": []}, \"memoria_py\": \"C:\\\\IALD\\\\Central de Patentes\\\\work\\\\cadeia_de_selo\\\\v404\\\\pos_rito\\\\harness_saida_v404\\\\"
+  },
+  {
+   "check": "antes do passo 7 NAO existe fila\\PAUSA_VIGIA.json",
+   "ok": true,
+   "det": ""
+  },
+  {
+   "check": "pausa-criar: rc 0 e a pausa existe",
+   "ok": true,
+   "det": "{\"ate\": \"2026-10-28T19:04:15-03:00\", \"ok\": true, \"op\": \"pausa-criar\", \"pausa\": \"C:\\\\IALD\\\\Central de Patentes\\\\work\\\\cadeia_de_selo\\\\v404\\\\pos_rito\\\\harness_saida_v404\\\\memoria_copia\\\\fila\\\\PAUSA_VIGIA.json\", \"quem\": \"claude-c1 pos-rito v404\", \"renovada\": false}\r\n"
+  },
+  {
+   "check": "a pausa traz quem/ate/motivo exatos, 'ate' com fuso e ~ agora + 1 h",
+   "ok": true,
+   "det": "{'pausa': {'quem': 'claude-c1 pos-rito v404', 'ate': '2026-10-28T19:04:15-03:00', 'motivo': 'pos-rito v404 escreve o indice'}, 'minutos_a_frente': 60.0}"
+  },
+  {
+   "check": "a escrita da pausa foi atomica: nenhum temporario sobrou em fila\\",
+   "ok": true,
+   "det": ""
+  },
+  {
+   "check": "o MEMORY.md foi editado COM a pausa posta e cabe no limite (<=195 linhas, <24000 B)",
+   "ok": true,
+   "det": "{'antes': [23701, 191], 'depois': [23824, 192]}"
+  },
+  {
+   "check": "sob a pausa o vigia (--enforcar --carencia 0) so' RELATA a divergencia e NAO restaura o indice",
+   "ok": true,
+   "det": "{'rc': 4, 'estado': 'DIVERGENTE_EM_PAUSA', 'memory_md_igual_ao_editado': True}"
+  },
+  {
+   "check": "CONTROLE DE UTILIDADE: SEM a pausa o mesmo vigia RESTAURA o indice ao pinado (a pausa evita exatamente isto)",
+   "ok": true,
+   "det": "{'rc': 4, 'estado': 'RESTAURADO', 'memory_md_restaurado_ao_pinado': True}"
+  },
+  {
+   "check": "renovar a pausa: rc 0 e renovada=true",
+   "ok": true,
+   "det": "{\"ate\": \"2026-10-28T19:04:17-03:00\", \"ok\": true, \"op\": \"pausa-criar\", \"pausa\": \"C:\\\\IALD\\\\Central de Patentes\\\\work\\\\cadeia_de_selo\\\\v404\\\\pos_rito\\\\harness_saida_v404\\\\memoria_copia\\\\fila\\\\PAUSA_VIGI"
+  },
+  {
+   "check": "pinar: rc 0 (MEMORIA_GERENCIA=claude-c1 memoria.py pinar --motivo \"pos-rito v404\"), por claude-c1, e a pausa SEGUE posta ate' depois do pino",
+   "ok": true,
+   "det": "{'rc': 0, 'via': 'pinar: pos-rito v404', 'por': 'claude-c1'}"
+  },
+  {
+   "check": "PINO_MEMORY.json (da copia) == sha256 do MEMORY.md (da copia)",
+   "ok": true,
+   "det": "{'pino': '602be995313f2d14', 'md': '602be995313f2d14'}"
+  },
+  {
+   "check": "o espelho PINO_MEMORY_conteudo.md == o MEMORY.md pinado (byte a byte)",
+   "ok": true,
+   "det": ""
+  },
+  {
+   "check": "o pino mudou (era o do indice antigo)",
+   "ok": true,
+   "det": ""
+  },
+  {
+   "check": "pausa-remover: rc 0 e a pausa saiu",
+   "ok": true,
+   "det": "{\"ok\": true, \"op\": \"pausa-remover\", \"removida\": true}\r\n"
+  },
+  {
+   "check": "verificar: rc 0 e ok:true (nenhuma violacao)",
+   "ok": true,
+   "det": "{\"avisos\": [], \"indice\": {\"bytes\": 23824, \"linhas\": 192}, \"memoria_py_ok\": true, \"ok\": true, \"op\": \"verificar\", \"rc\": 0, \"stderr\": \"\", \"violacoes\": []}\r\n"
+  },
+  {
+   "check": "depois do pino o vigia diz OK (indice == pino)",
+   "ok": true,
+   "det": "{'rc': 0, 'estado': 'OK'}"
+  },
+  {
+   "check": "o superficies do ensaio e' a COPIA DE BYTES do superficies_v404.py real (so' a leitura e os textos sao stubs)",
+   "ok": true,
+   "det": ""
+  },
+  {
+   "check": "com a pausa valida a superficie GRAVA (rc 0): MEMORY.md +1 linha com a linha do handoff v404 e a marca da missao; MEMORY_2 recebe a linha velha VERBATIM; backups de bytes _sup404",
+   "ok": true,
+   "det": "{'rc': 0, 'linhas': 192, 'saida': 'ado.md 354,798 -> 355,018\\r\\nOK estatuto-da-prova-07out.md 15,124 -> 15,327\\r\\nOK v404-selada-jo8v32-projecao-transversal.md 0 -> 261\\r\\nOK MEMORY_2.md 723,528 -> 723,924\\r\\nOK MEMORY.md 23,701 -> 23,755\\r\\nSUPERFICIES v404: 11 alvo(s) gravado(s); MEMORY.md 23755 B"
+  },
+  {
+   "check": "a superficie nao criou nem removeu a pausa (isso e' do chain)",
+   "ok": true,
+   "det": ""
+  },
+  {
+   "check": "2a rodada IDEMPOTENTE: rc 0 e nada muda",
+   "ok": true,
+   "det": "(0, ' (idempotente): v404-selada-jo8v32-projecao-transversal.md\\r\\n  (AVISO_GERENCIA.md: PULADO no ensaio)\\r\\nJA ESTA (idempotente): MEMORY.md\\r\\nNADA A GRAVAR: todas as superficies ja tem a v404 (idempotente)\\r\\n')"
+  },
+  {
+   "check": "--copias <pasta> (o ensaio do passo 3): NAO exige a pausa e grava SO' na pasta dada (rc 0)",
+   "ok": true,
+   "det": "(0, 'jecao-transversal.md 0 -> 261\\r\\nOK MEMORY_2.md 723,528 -> 723,924\\r\\nOK MEMORY.md 23,701 -> 23,755\\r\\nSUPERFICIES v404: 11 alvo(s) gravado(s); MEMORY.md 23755 B, 192 linhas (limites 24000 B e 195 linhas)\\r\\n')"
+  },
+  {
+   "check": "CHAIN 7 a 9 (sintetico): rc 0 e '== FIM'",
+   "ok": true,
+   "det": "(0, 'ino_por\": \"claude-c1\", \"rc\": 0, \"reguas\": {\"bytes\": 23755, \"linhas\": 192, \"ok\": true, \"teto_bytes\": 24000, \"teto_linhas\": 195}, \"seq_do_livro\": 100, \"sha16\": \"b9c82a23800a429a\"}\\n{\"ok\": true, \"op\": \"pausa-remover\", \"removida\": true}\\n{\"avisos\": [], \"indice\": {\"bytes\": 23755, \"linhas\": 192}, \"me"
+  },
+  {
+   "check": "CHAIN: a saida tem a ordem pausa-criar < superficies gravou < pinar < pausa-remover < verificar",
+   "ok": true,
+   "det": "[877, 2963, 5649, 5891, 6025]"
+  },
+  {
+   "check": "CHAIN: a pausa NAO existe no fim; o pino == sha256 do MEMORY.md; o indice mudou (+1 linha) e cabe no limite",
+   "ok": true,
+   "det": "{'linhas': 192, 'bytes': 23755}"
+  },
+  {
+   "check": "CHAIN: memoria.py verificar (rodado a parte) rc 0 depois do chain",
+   "ok": true,
+   "det": "{\r\n \"ok\": true,\r\n \"checks\": {\r\n  \"livro_encadeado\": true,\r\n  \"cabeca_do_livro\": true,\r\n  \"livro_contem_backup_mais_recente\": true,\r\n  \"depositos_intactos\": true,\r\n  \"reguas_do_indice\": true,\r\n  \"dois_arquivos\": true,\r\n  \"pino_bate\": true,\r\n  \"frontmatter_dos_topicos\": true\r\n },\r\n \"violacoes\": [],\r\n "
+  },
+  {
+   "check": "CHAIN em RETOMADA (CHAIN_DE=7) com a pausa NOSSA de uma execucao anterior: aceita, renova e termina (rc 0, pausa removida no fim)",
+   "ok": true,
+   "det": "(0, '24000, \"teto_linhas\": 195}, \"seq_do_livro\": 100, \"sha16\": \"b9c82a23800a429a\"}\\n{\"ok\": true, \"op\": \"pausa-remover\", \"removida\": true}\\n{\"avisos\": [], \"indice\": {\"bytes\": 23755, \"linhas\": 192}, \"memoria_py_ok\": true, \"ok\": true, \"op\": \"verificar\", \"rc\": 0, \"stderr\": \"\", \"violacoes\": []}\\n== FIM 1"
+  }
+ ],
+ "cenarios": {
+  "a_sequencia_positiva": [
+   {
+    "passo": "0. guardas",
+    "rc": 0,
+    "ok": true,
+    "pausa_existe_depois": false,
+    "memory_md_sha16": "805ff1236d53dbb4",
+    "hora": "18:04:15"
+   },
+   {
+    "passo": "7. pausa-criar",
+    "rc": 0,
+    "ok": true,
+    "pausa_existe_depois": true,
+    "memory_md_sha16": "805ff1236d53dbb4",
+    "hora": "18:04:15"
+   },
+   {
+    "passo": "7. escrita do MEMORY.md (com a pausa posta)",
+    "rc": 0,
+    "ok": true,
+    "pausa_existe_depois": true,
+    "memory_md_sha16": "602be995313f2d14",
+    "hora": "18:04:15",
+    "edicao": {
+     "antes": [
+      23701,
+      191
+     ],
+     "depois": [
+      23824,
+      192
+     ]
+    }
+   },
+   {
+    "passo": "7. vigiar --enforcar --carencia 0 (SOB a pausa)",
+    "rc": 4,
+    "ok": false,
+    "pausa_existe_depois": true,
+    "memory_md_sha16": "602be995313f2d14",
+    "hora": "18:04:16",
+    "estado": "DIVERGENTE_EM_PAUSA"
+   },
+   {
+    "passo": "9. pausa-criar (renovar)",
+    "rc": 0,
+    "ok": true,
+    "pausa_existe_depois": true,
+    "memory_md_sha16": "602be995313f2d14",
+    "hora": "18:04:17"
+   },
+   {
+    "passo": "9. pinar",
+    "rc": 0,
+    "ok": true,
+    "pausa_existe_depois": true,
+    "memory_md_sha16": "602be995313f2d14",
+    "hora": "18:04:17"
+   },
+   {
+    "passo": "9. pausa-remover (SO' depois do pino)",
+    "rc": 0,
+    "ok": true,
+    "pausa_existe_depois": false,
+    "memory_md_sha16": "602be995313f2d14",
+    "hora": "18:04:17"
+   },
+   {
+    "passo": "9. verificar",
+    "rc": 0,
+    "ok": true,
+    "pausa_existe_depois": false,
+    "memory_md_sha16": "602be995313f2d14",
+    "hora": "18:04:17",
+    "violacoes": []
+   },
+   {
+    "passo": "9. vigiar (sem enforcar)",
+    "rc": 0,
+    "ok": true,
+    "pausa_existe_depois": false,
+    "memory_md_sha16": "602be995313f2d14",
+    "hora": "18:04:17",
+    "estado": "OK"
+   }
+  ],
+  "chain_7_a_9": {
+   "rc": 0,
+   "linhas_da_saida": [
+    "== 0. guardas 18:04:28",
+    "== 0-fila. guarda da fila da memoria (memoria.py pinado, sem pausa alheia) 18:04:29",
+    "{\"aviso\": null, \"dir\": \"C:\\\\IALD\\\\Central de Patentes\\\\work\\\\cadeia_de_selo\\\\v404\\\\pos_rito\\\\harness_saida_v404\\\\chain_sandbox\\\\memory\", \"linha_de_base_verificar\": {\"ok\": true, \"rc\": 0, \"violacoes\": [",
+    "== 7-fila. PAUSA do vigia ANTES de escrever o indice (fila\\PAUSA_VIGIA.json: quem, ate = agora + 1 h, motivo; escrita atomica) 18:04:30",
+    "{\"ate\": \"2026-10-28T19:04:30-03:00\", \"ok\": true, \"op\": \"pausa-criar\", \"pausa\": \"C:\\\\IALD\\\\Central de Patentes\\\\work\\\\cadeia_de_selo\\\\v404\\\\pos_rito\\\\harness_saida_v404\\\\chain_sandbox\\\\memory\\\\fila\\\\PA",
+    "== 7. superficies (real: appends datados; a guarda P18 em todo texto; sem errata nova no CLAUDE.md da raiz; o MEMORY.md so' com a pausa valida) 18:04:30",
+    "== 8. espelho da memoria",
+    "== 9. regra da linhagem completa: o MARCADOR DO SELO e o sha16 do um.py v404 (860f25f4cc323aec) em cada superficie (zero e' falha visivel)",
+    "== 9-fila. FILA DA MEMORIA: renovar a pausa, PINAR o indice (MEMORIA_GERENCIA=claude-c1 memoria.py pinar --motivo \"pos-rito v404\"), soltar a pausa, verificar 18:04:31",
+    "{\"ate\": \"2026-10-28T19:04:31-03:00\", \"ok\": true, \"op\": \"pausa-criar\", \"pausa\": \"C:\\\\IALD\\\\Central de Patentes\\\\work\\\\cadeia_de_selo\\\\v404\\\\pos_rito\\\\harness_saida_v404\\\\chain_sandbox\\\\memory\\\\fila\\\\PA",
+    "{\"bytes\": 23755, \"linhas\": 192, \"ok\": true, \"op\": \"pinar\", \"pino_em\": \"2026-10-28T18:04:32\", \"pino_por\": \"claude-c1\", \"rc\": 0, \"reguas\": {\"bytes\": 23755, \"linhas\": 192, \"ok\": true, \"teto_bytes\": 24000",
+    "{\"ok\": true, \"op\": \"pausa-remover\", \"removida\": true}",
+    "{\"avisos\": [], \"indice\": {\"bytes\": 23755, \"linhas\": 192}, \"memoria_py_ok\": true, \"ok\": true, \"op\": \"verificar\", \"rc\": 0, \"stderr\": \"\", \"violacoes\": []}",
+    "== FIM 18:04:32"
+   ]
+  }
+ },
+ "nota": "ensaio em COPIA; o diretorio real de memoria nunca e' escrito (prova no fim)",
+ "copia": {
+  "arquivos": 599,
+  "bytes": 9597694,
+  "caminho": "C:\\IALD\\Central de Patentes\\work\\cadeia_de_selo\\v404\\pos_rito\\harness_saida_v404\\memoria_copia"
+ },
+ "controles_negativos_do_helper": [
+  {
+   "controle": "memoria.py com sha16 DIFERENTE do pino => guardas PARA (rc 1), sem criar a pausa e sem tocar o indice",
+   "ok": true,
+   "det": "{\"erro\": \"o memoria.py (C:\\\\IALD\\\\Central de Patentes\\\\work\\\\cadeia_de_selo\\\\v404\\\\pos_rito\\\\harness_saida_v404\\\\memoria_neg\\\\fila\\\\memoria.py) tem sha16 da08492f621ce279 e o pino de PINO_MEMORIA_PY_v404.json e 7c4fc5853f41f1d3: a ferramenta mudou depois do pi"
+  },
+  {
+   "controle": "pausa de OUTRO dono: guardas (com e sem --retomada), pausa-criar e pausa-remover recusam (rc 1) e a pausa fica intacta, byte a byte",
+   "ok": true,
+   "det": "[1, 1, 1, 1]"
+  },
+  {
+   "controle": "pausa NOSSA de uma execucao anterior: guardas SEM --retomada recusa (rc 1); COM --retomada aceita (rc 0, com aviso); pausa-criar a renova",
+   "ok": true,
+   "det": "[1, 0, 0]"
+  },
+  {
+   "controle": "pinar SEM a pausa posta => recusa (rc 1) e o pino NAO muda",
+   "ok": true,
+   "det": "{\"erro\": \"recuso pinar sem a nossa fila\\\\PAUSA_VIGIA.json posta (a pausa deve cobrir a escrita do indice ate o pino): ausente\", \"ok\": false, \"op\": \"pinar\"}\r\n"
+  },
+  {
+   "controle": "pinar FALHA (CABECA.json do livro corrompida) => o helper sai rc 1, a PAUSA PERMANECE e o pino NAO muda (o chain PARA e nao a remove)",
+   "ok": true,
+   "det": "{\"erro\": \"memoria.py pinar saiu com rc 2 (ok=None): {\\r\\n \\\"ok\\\": false,\\r\\n \\\"codigo\\\": \\\"CABECA_DIVERGE\\\",\\r\\n \\\"erro\\\": \\\"fila\\\\\\\\CABECA.json ilegível (Expecting property name enclosed in double quotes: line 1 column 3 (char 2))\\\"\\r\\n}\", \"ok\": false, \"op\": \"pinar\", \"rc\": 2}\r\n"
+  },
+  {
+   "controle": "MEMORY.md com 196 linhas (limite 195) => pinar recusa (rc 1), o pino NAO muda e a pausa fica",
+   "ok": true,
+   "det": "{\"bytes\": 23856, \"erro\": \"o MEMORY.md tem 23856 B e 196 linhas (limites: <24000 B e <=195 linhas): nao pino um indice fora do limite\", \"linhas\": 196, \"ok\": false, \"op\": \"pinar\"}\r\n"
+  },
+  {
+   "controle": "MEMORY.md com 24 000 B (limite: abaixo de 24 000) => pinar recusa (rc 1), o pino NAO muda e a pausa fica",
+   "ok": true,
+   "det": "{\"bytes\": 24000, \"erro\": \"o MEMORY.md tem 24000 B e 192 linhas (limites: <24000 B e <=195 linhas): nao pino um indice fora do limite\", \"linhas\": 192, \"ok\": false, \"op\": \"pinar\"}\r\n"
+  },
+  {
+   "controle": "verificar REPROVA (topico sem frontmatter na pasta de memoria) => rc 1, ok:false e a violacao listada (o TOPICO NOVO da v404 precisa de frontmatter name/description)",
+   "ok": true,
+   "det": "{\"avisos\": [], \"indice\": {\"bytes\": 23701, \"linhas\": 191}, \"memoria_py_ok\": false, \"ok\": false, \"op\": \"verificar\", \"rc\": 3, \"stderr\": \"{\\\"ok\\\": false, \\\"codigo\\\": \\\"VERIFICACAO_FALHOU\\\", \\\"erro\\\": \\\"1 violação(ões)\\\"}\", \"violacoes\": [\"TOPICO: zz_topico_sem_frontmatter.md: sem frontmatter (--- … ---) "
+  }
+ ],
+ "controles_negativos_das_superficies": [
+  {
+   "controle": "sem a fila\\PAUSA_VIGIA.json => a superficie RECUSA (rc 6) sem escrever nada (nenhum arquivo do topo mudou ou nasceu)",
+   "ok": true,
+   "det": "(6, '  (AVISO_GERENCIA.md: PULADO no ensaio)\\r\\nSUPERFICIES RECUSADAS (rc 6) -- vou gravar o MEMORY.md e a fila\\\\PAUSA_VIGIA.json nossa nao esta valida: ausente (C:\\\\IALD\\\\Central de Patentes\\\\work\\\\cadeia_de_sel')"
+  },
+  {
+   "controle": "pausa de OUTRO dono => rc 6, nada escrito",
+   "ok": true,
+   "det": "(6, \"  (AVISO_GERENCIA.md: PULADO no ensaio)\\r\\nSUPERFICIES RECUSADAS (rc 6) -- vou gravar o MEMORY.md e a fila\\\\PAUSA_VIGIA.json nossa nao esta valida: de outro dono (quem='outra sessao'). Nada foi escrito.\\r\")"
+  },
+  {
+   "controle": "pausa NOSSA mas VENCIDA => rc 6, nada escrito",
+   "ok": true,
+   "det": "(6, '  (AVISO_GERENCIA.md: PULADO no ensaio)\\r\\nSUPERFICIES RECUSADAS (rc 6) -- vou gravar o MEMORY.md e a fila\\\\PAUSA_VIGIA.json nossa nao esta valida: vencida (ate 2026-10-28T17:59:25-03:00). Nada foi escri')"
+  },
+  {
+   "controle": "MEMORY.md acima do limite em linhas (195 antes; +1 do handoff = 196 > 195) => RECUSA rc 3 com as CONTAGENS, sem escrever nada (a superficie NAO compacta)",
+   "ok": true,
+   "det": "(3, 'linhas DEPOIS 196, limite de linhas 195; bytes ANTES 23825, bytes DEPOIS 23879, limite de bytes 24000.\\r\\n  Esta superficie NAO compacta nada (nem reguas, nem ganchos antigos): a gerencia decide o que sai do indice (e a linha movida vai VERBATIM ao MEMORY_2.md) e roda de novo; o passo e idempot"
+  },
+  {
+   "controle": "MEMORY.md acima do limite em bytes (23 990 B antes; +1 linha > 24 000 B) => RECUSA rc 3 com as CONTAGENS, sem escrever nada (a superficie NAO compacta)",
+   "ok": true,
+   "det": "(3, 'linhas DEPOIS 193, limite de linhas 195; bytes ANTES 23990, bytes DEPOIS 24044, limite de bytes 24000.\\r\\n  Esta superficie NAO compacta nada (nem reguas, nem ganchos antigos): a gerencia decide o que sai do indice (e a linha movida vai VERBATIM ao MEMORY_2.md) e roda de novo; o passo e idempot"
+  }
+ ],
+ "chain_sandbox": {
+  "stubs_criados_a_partir_do_passo_0": [
+   "arvore_da_prova.py",
+   "atlas_indice.py",
+   "porta_memoria.py",
+   "conferir_rito_v404.py",
+   "delta_v404.py",
+   "quadro_v397.py",
+   "runtime_quadro_v397.py",
+   "acom_conferencias_v404.py",
+   "runtime_v404.py",
+   "um_absoluto_selo_acom.json",
+   "PINOS_BN_v404.json",
+   "refazer_arvore_v404_pos_selo.py",
+   "KERNEL_RECIBO_v404.json",
+   "CLAUDE.md",
+   "inventario_bancada.py",
+   "gerar_documento.py",
+   "construir.py"
+  ],
+  "s16_sintetico": "860f25f4cc323aec"
+ },
+ "controles_negativos_do_chain": [
+  {
+   "controle": "memoria.py com sha16 diferente do pino => o chain PARA no passo 0 (rc 1, 'FILA DA MEMORIA'), sem pausa e sem tocar o indice",
+   "ok": true,
+   "det": "404.py) antes de o pos-rito escrever o indice\", \"ok\": false, \"op\": \"guardas\", \"sha16\": \"db831bddc1c31648\", \"sha16_pinado\": \"7c4fc5853f41f1d3\"}\nPARADA: a guarda da FILA DA MEMORIA reprovou (rc=1: memoria.py diferente do pino, ou fila\\PAUSA_VIGIA.json ja existe): ver a linha JSON acima (nada foi escrito; a pausa, se existe, NAO foi tocada)\n(nada foi restaurado: a decisao de restaurar e da gerencia)\n"
+  },
+  {
+   "controle": "pausa de OUTRO dono ja existe => o chain PARA no passo 0 (rc 1), a pausa fica intacta e o indice nao muda",
+   "ok": true,
+   "det": "ve se for lixo) e retoma\", \"ok\": false, \"op\": \"guardas\", \"pausa\": {\"ate\": \"2026-10-28T19:04:34-03:00\", \"motivo\": \"x\", \"quem\": \"outra sessao\"}}\nPARADA: a guarda da FILA DA MEMORIA reprovou (rc=1: memoria.py diferente do pino, ou fila\\PAUSA_VIGIA.json ja existe): ver a linha JSON acima (nada foi escrito; a pausa, se existe, NAO foi tocada)\n(nada foi restaurado: a decisao de restaurar e da gerencia)\n"
+  },
+  {
+   "controle": "pausa NOSSA ja existe e a execucao COMECA DO ZERO (CHAIN_DE=0, nao e' retomada) => o chain PARA no passo 0 (rc 1, 'FILA DA MEMORIA'), a pausa fica intacta e o indice nao muda",
+   "ok": true,
+   "det": "\"op\": \"guardas\", \"pausa\": {\"ate\": \"2026-10-28T19:04:40-03:00\", \"motivo\": \"pos-rito v404 escreve o indice\", \"quem\": \"claude-c1 pos-rito v404\"}}\nPARADA: a guarda da FILA DA MEMORIA reprovou (rc=1: memoria.py diferente do pino, ou fila\\PAUSA_VIGIA.json ja existe): ver a linha JSON acima (nada foi escrito; a pausa, se existe, NAO foi tocada)\n(nada foi restaurado: a decisao de restaurar e da gerencia)\n"
+  },
+  {
+   "controle": "pinar FALHA => o chain PARA (rc 1) com 'PERMANECE', a PAUSA_VIGIA.json PERMANECE e o pino NAO muda (o indice escrito fica sem pino: a gerencia decide)",
+   "ok": true,
+   "det": "digo\\\": \\\"CABECA_DIVERGE\\\",\\r\\n \\\"erro\\\": \\\"fila\\\\\\\\CABECA.json ilegível (Expecting property name enclosed in double quotes: line 1 column 3 (char 2))\\\"\\r\\n}\", \"ok\": false, \"op\": \"pinar\", \"rc\": 2}\nPARADA: memoria.py pinar FALHOU (rc=1): o indice NAO foi pinado e a PAUSA_VIGIA.json PERMANECE posta (vale no maximo 4 h; evita que o vigia restaure o indice recem-escrito); a gerencia le o erro acima, c"
+  },
+  {
+   "controle": "MEMORY.md no limite (195 linhas; +1 do handoff = 196) => a superficie RECUSA rc 3 e o chain PARA no passo 7 (rc 1), a pausa PERMANECE e o indice NAO muda",
+   "ok": true,
+   "det": "; a superficie NAO compacta nada; as CONTAGENS estao acima; a gerencia decide o que sai do indice e retoma com CHAIN_DE=7\nPARADA: superficies_v404.py parou (rc=3; backups .bak_<STAMP>_sup404 ao lado; rerodar e IDEMPOTENTE). A PAUSA_VIGIA.json PERMANECE posta (vale no maximo 4 h; evita que o vigia restaure o indice no meio do trabalho): a gerencia retoma com CHAIN_DE=7 (a pausa nossa e' aceita e re"
+  }
+ ],
+ "segundos": 33.3,
+ "fila_jsonl_cresceu_so_por_acrescimo": null,
+ "prova_do_diretorio_real": {
+  "antes": {
+   "MEMORY.md": {
+    "sha256": "805ff1236d53dbb4c2e91b1a87cd575d8e7cc5d02eb8483039efd0b883819a2b",
+    "bytes": 23701,
+    "mtime_ns": 1793212877343867800
+   },
+   "fila/PINO_MEMORY.json": {
+    "sha256": "cb0d2968b6675345a04c63d7fde1bcc5f9bf36f938d66952b7c2ed2df6aec30e",
+    "bytes": 336,
+    "mtime_ns": 1793212877465283300
+   },
+   "fila/fila.jsonl": {
+    "sha256": "e04bfccf0cb0e2c70dcc56d01321cc59fed3f96f8e38ea8f03bdf5137d5e357c",
+    "bytes": 71983,
+    "mtime_ns": 1793219734685477400
+   },
+   "fila/PAUSA_VIGIA.json": null
+  },
+  "depois": {
+   "MEMORY.md": {
+    "sha256": "805ff1236d53dbb4c2e91b1a87cd575d8e7cc5d02eb8483039efd0b883819a2b",
+    "bytes": 23701,
+    "mtime_ns": 1793212877343867800
+   },
+   "fila/PINO_MEMORY.json": {
+    "sha256": "cb0d2968b6675345a04c63d7fde1bcc5f9bf36f938d66952b7c2ed2df6aec30e",
+    "bytes": 336,
+    "mtime_ns": 1793212877465283300
+   },
+   "fila/fila.jsonl": {
+    "sha256": "e04bfccf0cb0e2c70dcc56d01321cc59fed3f96f8e38ea8f03bdf5137d5e357c",
+    "bytes": 71983,
+    "mtime_ns": 1793219734685477400
+   },
+   "fila/PAUSA_VIGIA.json": null
+  },
+  "inalterado": {
+   "MEMORY.md": true,
+   "fila/PINO_MEMORY.json": true,
+   "fila/fila.jsonl": true,
+   "fila/PAUSA_VIGIA.json": true
+  },
+  "diretorio": "C:\\Users\\rotol\\.claude\\projects\\c--IALD-Central-de-Patentes\\memory"
+ },
+ "fim": "2026-10-28 18:05:34",
+ "tudo_passou": true
+}

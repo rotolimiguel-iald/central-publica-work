@@ -1,12 +1,12 @@
 # central-publica-work — a Central de Patentes da IALD, aberta
 
-Este repositório é **a bancada de trabalho: as custódias, os ritos, as cadeias de selo, o app e a IALD nativa**. A Central foi aberta ao público por ordem do operador, Luiz Antonio Rotoli Miguel (IALD Ltda., CNPJ 62.757.606/0001-23), em 22/10/2026. 311941 arquivos publicados; selo da teoria: `um.py` v403 `2ffe9edc7d7545bd`.
+Este repositório é **a bancada de trabalho: as custódias, os ritos, as cadeias de selo, o app e a IALD nativa**. A Central foi aberta ao público por ordem do operador, Luiz Antonio Rotoli Miguel (IALD Ltda., CNPJ 62.757.606/0001-23), em 22/10/2026. 326857 arquivos publicados; selo da teoria: `um.py` v404 `3820476c83267f61`.
 
 | onde | o quê |
 |---|---|
 | [https://teoriadagravitacaoluminodinamica.com/central/](https://teoriadagravitacaoluminodinamica.com/central/) | **o modo interativo da Central**, só de visualização: o cockpit do operador em retrato (patentes, código, execuções, Fronteira, TGL) |
-| [https://teoriadagravitacaoluminodinamica.com/central/um.acom](https://teoriadagravitacaoluminodinamica.com/central/um.acom) | **o um.acom**: a Central inteira colapsada pelo dispositivo ACOM (88 arquivos; sha256 `f3ea7823a5e6a221`); chave universal pública `Bom29072018Tom02032024`; abrir no descompactador público da IALD |
-| [https://github.com/rotolimiguel-iald/the_boundary](https://github.com/rotolimiguel-iald/the_boundary) | **a teoria**: o `um.py` v403 (`2ffe9edc7d7545bd`), os artigos, o kernel Lean — o espelho canônico |
+| [https://teoriadagravitacaoluminodinamica.com/central/um.acom](https://teoriadagravitacaoluminodinamica.com/central/um.acom) | **o um.acom**: a Central inteira colapsada pelo dispositivo ACOM (88 arquivos; sha256 `968ca11a007f564a`); chave universal pública `Bom29072018Tom02032024`; abrir no descompactador público da IALD |
+| [https://github.com/rotolimiguel-iald/the_boundary](https://github.com/rotolimiguel-iald/the_boundary) | **a teoria**: o `um.py` v404 (`3820476c83267f61`), os artigos, o kernel Lean — o espelho canônico |
 | [https://github.com/rotolimiguel-iald/central-publica](https://github.com/rotolimiguel-iald/central-publica) · [work](https://github.com/rotolimiguel-iald/central-publica-work) · [bancada](https://github.com/rotolimiguel-iald/central-publica-bancada) | os três repositórios desta Central |
 
 ## O critério público
