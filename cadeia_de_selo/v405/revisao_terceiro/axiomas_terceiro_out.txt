@@ -1,0 +1,123 @@
+'TGLExt.PonteDaMassa.TransicaoParaAMassa.massa_derivada_eq_form' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'TGLExt.PonteDaMassa.a_transicao_existe_para_todo_acoplamento' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'TGLExt.PonteDaMassa.massa_no_um_posto' depends on axioms: [propext, Classical.choice, Quot.sound]
+'TGLExt.PonteDaMassa.angulo_derivado_do_absoluto' depends on axioms: [propext, Classical.choice, Quot.sound]
+'TGLExt.MassaTensaoPura.massa_e_tensao_pura' depends on axioms: [propext, Classical.choice, Quot.sound]
+'TGLExt.MassaTensaoPura.area_por_volta_da_massa_inscrita' depends on axioms: [propext, Classical.choice, Quot.sound]
+'TGLExt.MassaTensaoPura.Emprestimo.parcela_nunca_quita' depends on axioms: [propext, Classical.choice, Quot.sound]
+'TGLExt.Identidade.a_lei_inteira' depends on axioms: [propext, Classical.choice, Quot.sound]
+'TGLExt.Identidade.a_identidade_fecha' depends on axioms: [propext, Classical.choice, Quot.sound]
+'TGLExt.ObservadorTerminal.the_observers_posto_is_the_terminal' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'TGLExt.ObservadorTerminal.without_the_abyss_no_posto_reads_so' does not depend on any axioms
+'TGLExt.LeiDoDiminuto.the_law_closes' depends on axioms: [propext, Classical.choice, Quot.sound]
+'TGLExt.LeiDoDiminuto.leiDerivada_no_um_posto' depends on axioms: [propext, Classical.choice, Quot.sound]
+'TGLExt.TonicaDoHamiltoniano.no_function_of_the_inscription_fixes_E0' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'TGLExt.TonicaDoHamiltoniano.the_tonic_lands_on_the_posted_unit' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'TGLExt.DiscoDeEuler.Disco.frequency_squared_unbounded_at_the_stop' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'TGLExt.DiscoDeEuler.Disco.the_scale_is_the_invariant' depends on axioms: [propext, Classical.choice, Quot.sound]
+'TGLExt.PontoZeroDoPsion.the_zero_point_closes' depends on axioms: [propext, Classical.choice, Quot.sound]
+TGLExt.TGLCoupling : Type
+structure TGLExt.TGLCoupling : Type
+number of parameters: 0
+fields:
+  TGLExt.TGLCoupling.beta : ℝ
+  TGLExt.TGLCoupling.beta_pos : 0 < self.beta
+  TGLExt.TGLCoupling.beta_lt_one : self.beta < 1
+constructor:
+  TGLExt.TGLCoupling.mk (beta : ℝ) (beta_pos : 0 < beta) (beta_lt_one : beta < 1) : TGLExt.TGLCoupling
+def TGLExt.TGLCoupling.alpha : TGLExt.TGLCoupling → ℝ :=
+fun c => c.beta / Real.exp (1 / 2)
+def TGLExt.ProjecaoTransversalDaMeiaNat.neutrinoMassForm : TGLExt.TGLCoupling → ℝ → ℝ :=
+fun c E0 => c.beta * TGLExt.ProjecaoTransversalDaMeiaNat.halfAmplitude * E0
+def TGLExt.ProjecaoTransversalDaMeiaNat.halfAmplitude : ℝ :=
+Real.sin (Real.pi / 4)
+TGLExt.ProjecaoTransversalDaMeiaNat.forty_five_unique : ∀ (θ : ℝ),
+  0 ≤ θ → θ ≤ Real.pi / 2 → Real.sin θ ^ 2 = 1 / 2 → θ = Real.pi / 4
+TGLExt.ProjecaoTransversalDaMeiaNat.half_from_self_conjugate : ∀ (x : ℝ), x = 1 - x → x = 1 / 2
+ChatgptAudit.Boost044.boost_segment_quadratic_balance_iff : ∀ (a c : ℝ),
+  0 ≤ a →
+    0 ≤ c →
+      ∀ (rate mass eta : ℝ),
+        rate ≠ 0 →
+          (Filter.Tendsto (fun t => ChatgptAudit.Boost044.boostSegmentDefect a c rate mass eta t / t ^ 2)
+              (nhdsWithin 0 (Set.Iio 0)) (nhds 0) ↔
+            eta * (a + c) = 2 * Real.pi * mass)
+def ChatgptAudit.Boost044.boostSegmentDefect : ℝ → ℝ → ℝ → ℝ → ℝ → ℝ → ℝ :=
+fun a c rate mass eta t =>
+  ChatgptAudit.Boost044.boostSegmentHeat a c rate (ChatgptAudit.Wave029.waveMatter a c mass) t -
+    rate / (2 * Real.pi) * eta * ChatgptAudit.Boost044.boostSegmentArea a c t
+def TGLExt.ThePsionAndTheViscosity.charged : ℝ → ℝ → ℝ → ℝ :=
+fun β g t => 1 - TGLExt.ThePsionAndTheViscosity.transmitted β g t
+def TGLExt.ThePsionAndTheViscosity.transmitted : ℝ → ℝ → ℝ → ℝ :=
+fun β g t => Real.exp (-(t * β * g))
+@TGLExt.ThePsionAndTheViscosity.the_charge_never_completes : ∀ {β g : ℝ},
+  0 < β →
+    0 < g →
+      ∀ (t : ℝ),
+        0 < t → 0 < TGLExt.ThePsionAndTheViscosity.charged β g t ∧ TGLExt.ThePsionAndTheViscosity.charged β g t < 1
+def TGLExt.Jconj : {n : Type} → Matrix n n ℂ → Matrix n n ℂ :=
+fun {n} z => z.conjTranspose
+def TGLExt.ResJudicata : {α : Type} → (α → α) → Prop :=
+fun {α} D => ∀ (x : α), D (D x) = D x
+def TGLExt.observes : TGLExt.Level → TGLExt.Level → Prop :=
+fun x x_1 =>
+  match x, x_1 with
+  | TGLExt.Level.consciencia, TGLExt.Level.luz => True
+  | TGLExt.Level.fisica, TGLExt.Level.consciencia => True
+  | TGLExt.Level.gravidade, TGLExt.Level.fisica => True
+  | x, x_2 => False
+structure TGLExt.UmPostoRelacao.UmPosto (S I : Type) : Type
+number of parameters: 2
+fields:
+  TGLExt.UmPostoRelacao.UmPosto.crossing : ChatgptAudit.Collapse057.IdentityCollapse S I
+  TGLExt.UmPostoRelacao.UmPosto.before : S
+  TGLExt.UmPostoRelacao.UmPosto.after : S
+  TGLExt.UmPostoRelacao.UmPosto.measured : ChatgptAudit.Collapse057.CollapseTransition self.crossing self.before
+      self.after
+  TGLExt.UmPostoRelacao.UmPosto.legible : ∃ x y, self.crossing.identity x ≠ self.crossing.identity y
+constructor:
+  TGLExt.UmPostoRelacao.UmPosto.mk {S I : Type} (crossing : ChatgptAudit.Collapse057.IdentityCollapse S I)
+    (before after : S) (measured : ChatgptAudit.Collapse057.CollapseTransition crossing before after)
+    (legible : ∃ x y, crossing.identity x ≠ crossing.identity y) : TGLExt.UmPostoRelacao.UmPosto S I
+def TGLExt.UmPostoRelacao.Pressupposed : {S I : Type} → (S → I) → Prop :=
+fun {S I} read => ∀ (x y : S), read x = read y
+structure ChatgptAudit.Collapse057.IdentityCollapse (State Identity : Type) : Type
+number of parameters: 2
+fields:
+  ChatgptAudit.Collapse057.IdentityCollapse.step : State → State
+  ChatgptAudit.Collapse057.IdentityCollapse.identity : State → Identity
+  ChatgptAudit.Collapse057.IdentityCollapse.stable : ∀ (x : State), self.step (self.step x) = self.step x
+  ChatgptAudit.Collapse057.IdentityCollapse.preserves : ∀ (x : State), self.identity (self.step x) = self.identity x
+  ChatgptAudit.Collapse057.IdentityCollapse.effective : ∃ x, self.step x ≠ x
+constructor:
+  ChatgptAudit.Collapse057.IdentityCollapse.mk {State Identity : Type} (step : State → State)
+    (identity : State → Identity) (stable : ∀ (x : State), step (step x) = step x)
+    (preserves : ∀ (x : State), identity (step x) = identity x) (effective : ∃ x, step x ≠ x) :
+    ChatgptAudit.Collapse057.IdentityCollapse State Identity
+@TGLExt.absolute_faces_half : ∀ {n : Type} [inst : Fintype n] [inst_1 : DecidableEq n] [Nonempty n] {Γ : Matrix n n ℂ},
+  Γ.trace = 0 →
+    TGLExt.gibbs (TGLExt.absoluteRho n) (2⁻¹ • (1 + Γ)) = 1 / 2 ∧
+      TGLExt.gibbs (TGLExt.absoluteRho n) (2⁻¹ • (1 - Γ)) = 1 / 2
+def TGLExt.absoluteRho : (n : Type) → [Fintype n] → [DecidableEq n] → Matrix n n ℂ :=
+fun n [Fintype n] [DecidableEq n] => Matrix.diagonal fun x => (↑(Fintype.card n))⁻¹
+def TGLExt.gibbs : {n : Type} → [Fintype n] → Matrix n n ℂ → Matrix n n ℂ → ℂ :=
+fun {n} [Fintype n] ρ a => (ρ * a).trace
+TGLExt.Posto.sin_sq_thetaMiguel : ∀ (c : TGLExt.TGLCoupling), Real.sin (TGLExt.thetaMiguel c.beta) ^ 2 = c.beta
+def TGLExt.thetaMiguel : ℝ → ℝ :=
+fun β => Real.arcsin √β
+
+real	1m34.356s
+user	0m0.031s
+sys	0m0.047s

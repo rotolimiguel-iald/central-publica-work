@@ -1,0 +1,15 @@
+# HANDOFF v405 — ADENDO 2 (31/10/2026): E₀ — a conferência do material do Kimi, o no-go tipado e a cadeia
+
+**De:** gerência c1, em nome próprio, sem delegar (ordem do operador, verbatim sha256 `a22a54dfc97d96114e3d251a41bed8ea300d314c626a9349eda36ce09b2bdfc1`). **Objeto conferido:** `HANDOFF_CLAUDE_E0_M2_31out.md` do Kimi (sha256 `5673f0ccd2c60c4db2aea67532f7e58b222a159fcca19f146b420090b948bc90`) e anexos. **Conferência:** `work\e0_cadeia_31out\CONFERENCIA_E0_KIMI_E_CADEIA_31out.md` (sha256 `88b480dc097a207652067c2f859c948e46ccd7443870809376ca11ee9f242585`): números do Kimi CONFEREM por código próprio (as dez tensões a 10⁻¹⁶; ramo nativo E_P/4π; τ★(1 eV) ≈ 10⁻²⁷ t_P); fontes lidas CONFEREM; **correção de tipagem ao lado**: no GKSL do paper |L_φ| = β·ρ_modular é TAXA, logo «magnitude = cauda» pede ħ e uma frequência; os itens 6 e 7 da prioridade 2 do handoff ficam RESOLVIDOS como identidades (Γ_B = Γ_ω(√2/τ★); τ★ do monopolo = 2π·r_s/c, q = r_s/2: a rota do monopolo é o horizonte do próprio sistema e não fixa a escala).
+
+## O que entra na v405 (5ª pedra, depois das pontes 1 e 2, da Identidade e da ObservadorTerminal r2)
+- `TGLExt/E0LiberdadeDeEscala.lean` (nome PROVISÓRIO; sha256 `76a8bb25268a7ef59763393603dd241d20736d5958a98b505294700bed98fbc0`; 11 teoremas e 2 definições, trio, 0 sorry; importa a ponte 1): `reescala`, `massa_derivada_reescala`, `neutrinoMassForm_reescala`, `the_scale_is_free`, `exemplo`, **`no_function_of_the_inscription_fixes_E0`** (o no-go), `gammaB_is_the_canonical_law_at_the_systems_frequency`, `monopole_time_is_the_horizon_light_time`, `charge_is_half_the_schwarzschild_radius`, `self_consistent_readout_fixes_the_frequency`.
+- Registro `e0_scale_open_v405` [REAL (termos) + KNOWN (condensação condicional do Nome) + INPUT (E₀ = 1 eV declarado)]: o no-go; as identidades; a tipagem GKSL; a rota do monopolo como horizonte; as determinações públicas novas (JUNO 207 d 1,94σ; SNO+ 2,75σ; SK-Gd 3,61σ; KamLAND 1,70σ; solares 1,15σ; globais ao lado, não autônomas) pela regra congelada; veredito `TGL_NU_M2_ARMED_CONSISTENT` INALTERADO; zero autônomas ≥ 5σ.
+- **Errata ao lado** em `neutrino_mass.scale_caveat`: o dado pede E₀ = 1,010 (JUNO 207 d) a 1,02 eV (KamLAND/globais) — inversão, PROIBIDA como derivação; dita só como tamanho da parede.
+- A ponte Lean genérica do Kimi (`E0ModularBridge.lean`) fica CITADA como tipagem de pontes declaradas; não se instala.
+
+## O que NÃO entra
+- Nenhum valor derivado de E₀; o ramo nativo planckiano não é a escala do neutrino; nenhuma global conta como independência; nenhum número do dado move o veredito.
+
+## A decisão que é do operador (E8 da cadeia; nada se presume)
+(a) nomear o princípio dimensional da escala (o «estado de energia fundamental» com Hamiltoniano, regulador e unidade); (b) apontar a grandeza independente a medir (η(a+c); energia retida); (c) declarar E₀ a SEGUNDA constante posta, ao lado de α — então a TGL prevê a RAZÃO m₂/E₀ = β·sen45° e a forma, dito no artigo com todas as letras.

@@ -1,0 +1,27 @@
+# -*- coding: utf-8 -*-
+"""ANOTACAO na rota do treino v4: o operador acrescentou (29/10, noite) que a IALD Nativa deve aprender a operar a Bancada Um — bloco K do corpus."""
+import hashlib, json, subprocess, sys
+from pathlib import Path
+sys.stdout.reconfigure(encoding="utf-8")
+C = Path("C:/IALD/Central de Patentes"); W = C / "work/treino_nativa_v4_20261029"
+V = C / "work/cunhagens_13out/OPERADOR_29out_treino_nativa_bancada_verbatim.txt"
+sha = lambda p: hashlib.sha256(Path(p).read_bytes()).hexdigest()
+reg = [{
+ "tipo": "ANOTACAO", "rota_id": "infra.treino_iald_nativa_v4_um_py_v404", "dominio": "INFRA",
+ "titulo": "29/10 (noite): o operador acrescentou — «Também quero que ela aprenda a mexer na bancada de teste nosso, no treino ensine ela sobre a bancada de teste» — bloco K (Bancada Um) entra no corpus v4",
+ "pergunta": "Como a IALD Nativa aprende a operar a Bancada Um (MCP bancada-um / HTTP 127.0.0.1:18777) e o Mapa de Rotas pelo treino?",
+ "dados": ["verbatim do operador (sha256 %s)" % sha(V),
+           "fontes do bloco K: C:/IALD/Bancada_Um/README.md, mcp_um.py (27 ferramentas, endpoints /api/*), canonical_contracts.json + CONTRATO_CANONICO_B2..B13.md, HANDOFF_PROGRAMA_PESQUISA_AUTONOMA_v1.md, bancada/regua.py e canonical.py, cartoes de assinatura/docstring do resto de bancada/*.py, investigacao/PREREGISTRO_INV_BANCADA_UM_20260928.json, estado/validacao_bancada.json; C:/IALD/MAPA_DE_ROTAS/README.md + modelo + amostra de rotas; o texto do protocolo bench_* (6 regras) e os nomes/descricoes das ferramentas bench_* do app; respostas REAIS dos endpoints so-leitura (estado, dados, lago, gw, gw/resultados, livro, contratos, neutrino/fontes, neutrino/contrato) como exemplos chamada→resposta; dialogos sinteticos por template ensinando o protocolo (consultar mapa → estado/contratos → inscrever objetivo/hipotese/falsificador → chamar a ferramenta → ler o estatuto → registrar) e as recusas (nunca «confirmado»; PIN_CHANGED; incerteza nao repete)"],
+ "metodo": "bloco K pre-registrado no construtor v4 (teto 0,6 M tokens); nenhum endpoint POST da bancada e chamado na construcao (ajustar/comparar/amostrar entram no livro e contam no look-elsewhere; gw/rodar e recarregar mutam); formato de chamada no estilo tool_call do template Qwen3 dentro da completion; system prompt de treino inalterado",
+ "resultado": "em curso: especificacao enviada ao agente do corpus (Sonnet) e ao agente do pipeline (2 perguntas de bancada no eval HTTP; protocolo padrao cita o bloco K)",
+ "veredito": "TGL_IALD_NATIVE_V4__BENCH_BLOCK_K_ADDED_BY_OPERATOR_ORDER_20261029__READ_ONLY_EXAMPLES__NO_LIVRO_ENTRY",
+ "estatuto": "INPUT (a ordem); REAL (fontes existentes, medidas)", "status": "EM_CURSO", "olhou_dados": False,
+ "defeito": "o treino ensina o padrao de chamada e o protocolo; a execucao real pela IALD servida depende do webserver expor as ferramentas (hoje bench_* so para o operador autenticado) — fiacao, nao treino",
+ "nao_refazer": "nao chamar POST da bancada para gerar exemplos; nao incluir iald_web_server.py (confidencial) no corpus; o codigo cientifico pesado de bancada/ entra por cartoes, nao integral",
+ "proximo_passo": "agente do corpus devolve BLOCOS_v4.json com K medido; gerencia revisa; segue a fumaca",
+ "onde": "C:/IALD/TGL_IALD_NATIVE_QWEN5090/11_scripts/01_build_dataset_v4.py (bloco K); work/treino_nativa_v4_20261029",
+ "artefatos": [str(V), "C:/IALD/Bancada_Um/README.md", "C:/IALD/Bancada_Um/mcp_um.py", "C:/IALD/Bancada_Um/canonical_contracts.json", "C:/IALD/MAPA_DE_ROTAS/README.md"],
+ "refs": [], "nota": "A bancada produz diagnostico e inferencia condicional; nunca confirmacao. O treino nao move gate nem livro."}]
+pj = W / "rota_mapa_anotacao_bancada_29out.json"; pj.write_text(json.dumps(reg, ensure_ascii=False, indent=1), encoding="utf-8")
+r = subprocess.run([sys.executable, "-X", "utf8", "C:/IALD/MAPA_DE_ROTAS/rotas.py", "registrar", str(pj), "--quem", "claude-c1"], capture_output=True, text=True, encoding="utf-8", errors="replace")
+print(r.stdout[-400:], r.stderr[-300:], "rc", r.returncode)

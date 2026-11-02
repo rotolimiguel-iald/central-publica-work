@@ -1,6 +1,6 @@
 # INVENTÁRIO DA BANCADA DO CHATGPT — tudo o que foi examinado e produzido
 
-> Gerado por script em 2026-10-28 22:18:04 a partir da varredura `inventario_bancada.json` (sha16 `79ec8226d52dd707`), SÓ LEITURA da pasta `Chatgpt\`. Nenhum número digitado.
+> Gerado por script em 2026-11-02 00:33:37 a partir da varredura `inventario_bancada.json` (sha16 `4ea8c9a1203521e3`), SÓ LEITURA da pasta `Chatgpt\`. Nenhum número digitado.
 > **Ordem do operador (27/09/2026, verbatim):** «Precisamos fazer um inventário de tudo que foi examinado e produzido na bancada do chatgpt pra não nos perdermos mais em serviço já executado, vc está pedindo o que já pediu» e «Depois de inventariar tudo, precisamos indexar ao atlas da tgl para ficar referenciado».
 > **Regra de uso:** ANTES de pedir qualquer construção à bancada ou de construí-la na gerência, procurar aqui (por tema, por nome, por hash). O que é sabido e importável não se prova de novo (regra do operador de 27/08: «prova emprestada»).
 
@@ -17,7 +17,7 @@
 | únicos cujo nome-base JÁ está no kernel canônico | 1551 |
 | únicos com `sorry`/`admit`/`native_decide` fora de comentário | 3 |
 | únicos que declaram `axiom` | 5 |
-| documentos de entrega/quadro/relatório/medida | 2648 |
+| documentos de entrega/quadro/relatório/medida | 2653 |
 
 ## 2. O quadro de estatutos da própria bancada (FECHAMENTO_PARCIAL_016, P1)
 
@@ -8677,6 +8677,11 @@
 | 2026-10-27 18:04 | `TUNEL/DO_CHATGPT/ORDEM_021/2026-10-27_RELATORIO.md` | `e2f0c881d3c38a8c` | ORDEM 021 — verificação de 27/10/2026 |
 | 2026-10-28 13:08 | `TUNEL/DO_CHATGPT/ORDEM_022/ADENDO_F/RELATORIO.md` | `24efed278cb06541` | ORDEM 022 — ADENDO F: parada anterior ao render v403 |
 | 2026-10-28 18:02 | `TUNEL/DO_CHATGPT/ORDEM_021/2026-10-28_RELATORIO.md` | `8ef4b2b0bcb3bb3c` | [REAL] ORDEM 021 — conferência idempotente de 28/10/2026. |
+| 2026-10-28 22:42 | `TUNEL/DO_CHATGPT/ORDEM_022/ADENDO_G/RELATORIO.md` | `c8c59b80fba23bcc` | ORDEM 022 — ADENDO G: duas sínteses adicionais antes da v404 |
+| 2026-10-29 01:07 | `TUNEL/DO_CHATGPT/ORDEM_022/ADENDO_H/RELATORIO.md` | `c751e67f351ecacb` | ORDEM 022 — ADENDO H · dois filmes V7, fonte v404 |
+| 2026-10-29 18:09 | `TUNEL/DO_CHATGPT/ORDEM_021/2026-10-29_RELATORIO.md` | `0ac899a1501e601d` | ORDEM 021 — relatório diário de 29/10/2026 |
+| 2026-10-30 18:00 | `TUNEL/DO_CHATGPT/ORDEM_021/2026-10-30_RELATORIO.md` | `8751d1e9ba594849` | ORDEM 021 — relatório diário de 30/10/2026 |
+| 2026-11-01 17:59 | `TUNEL/DO_CHATGPT/ORDEM_021/2026-11-01_RELATORIO.md` | `0200b3db2d0ce1ab` | ORDEM 021 - Relatorio de 2026-11-01 |
 
 ## 7. Arquivos com `sorry`/`admit` ou `axiom` (NÃO importar sem exame)
 

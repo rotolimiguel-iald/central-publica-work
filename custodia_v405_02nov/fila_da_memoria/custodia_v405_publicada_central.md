@@ -1,0 +1,4 @@
+## 02/11/2026 01:32 — custódia v405 publicada
+
+PUBLICADA. Espelho the_boundary `6a2138d7` = origin/main; Central `8f8616ac` = origin/main (privado); SITE no ar: SUBIDA VERIFICADA (o ar (pelo registro das subidas verificadas; última); leitor de IA R1 passa (leitor_ia_20261102_v405.md (02/11 01). Conferência final independente (`work/custodia_v405_*/CONFERENCIA_FINAL_v405.json`, sem importar a esteira): **13/13 ok** — o um.py igual no Nós, no espelho, no cofre e no raw do GitHub (o pino); o cofre e o kernel conferem; o site no ar e o README raw trazem o pino; os dois repositórios sem nada pendente nos caminhos da custódia. Os nomes dos registros novos e a paridade [LEGAL] do ACOM Mirror seguem decisão do operador. O gate não se moveu.
+<!-- custodia:v405:publicada_central -->

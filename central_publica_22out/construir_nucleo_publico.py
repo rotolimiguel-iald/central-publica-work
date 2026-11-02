@@ -65,6 +65,7 @@ for t in tr:
 
 
 LOCAL_EXCL = {}
+CAMINHO_LONGO = "caminho acima do limite do Windows (listado; as fontes pinadas seguem no MAPA_FONTES_PINADAS do the_boundary)"
 
 
 def fora_(m, x):
@@ -90,6 +91,8 @@ def motivo(t):
         return "texto de documento com dado pessoal (formulário)"
     if ".bak_" in nome or nome.endswith(".tmp"):
         return "backup de sessão"
+    if len(str(DST / t)) > 255:      # 02/11/2026 (v405): nome longo de cunhagem no cofre; o write_bytes falharia e derrubaria a rodada
+        return CAMINHO_LONGO
     return None
 
 
@@ -145,7 +148,7 @@ for i, t in enumerate(tr):
     indice.append({"caminho": t, "bytes": len(b), "sha256": sha(b)})
     if i % 5000 == 0:
         print("  ... %d/%d (%.0f s)" % (i, len(tr), time.time() - t0), flush=True)
-LISTAVEIS = {"documento de protocolo ou pagamento", "acima de 95 MB (índice apenas)", "backup de sessão"}
+LISTAVEIS = {"documento de protocolo ou pagamento", "acima de 95 MB (índice apenas)", "backup de sessão", CAMINHO_LONGO}
 exclusoes = {"criterio": "dados pessoais e notas operacionais do operador ficam fora; todo o código e todo resultado ficam",
              "por_motivo": dict(fora), "caminhos_listados_por_motivo": {k: v for k, v in fora_lista.items() if k in LISTAVEIS},
              "nota": "os caminhos dos motivos de dado pessoal, marcador privado e notas operacionais não são listados (os próprios nomes podem ser nota ou dado)",

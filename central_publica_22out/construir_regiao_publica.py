@@ -19,7 +19,7 @@ from pathlib import Path
 sys.stdout.reconfigure(encoding="utf-8")
 W = Path(__file__).resolve().parent
 sys.path.insert(0, str(W))
-from mascara_pii import mascarar            # noqa: E402
+from mascara_pii import mascarar, TERCEIROS # noqa: E402
 from filtro_operacional import filtrar_markdown  # noqa: E402
 import guarda_publica as GP                 # noqa: E402
 
@@ -103,6 +103,9 @@ for top in tops:
                 fora_("backup de sessão", rel); continue
             if GP.arquivo_de_credencial(f):
                 fora_("arquivo de credencial", rel); continue
+            # AO LADO (01/11/2026, gerência c1): fala com dado pessoal de terceiro não vai ao público nem pelo nome do arquivo; a lista é a privada
+            if TERCEIROS is not None and TERCEIROS.search(f):
+                fora_("dado pessoal de terceiro", rel); continue
             if ARQ_FORA.search(f):
                 fora_("conversa, usuários ou varredura de dado pessoal", rel); continue
             try:

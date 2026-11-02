@@ -1,0 +1,478 @@
+{
+  "revisor": "sonnet-app-v404-revisor",
+  "timestamp_utc": "2026-10-29T12:19:40.026556+00:00",
+  "escopo": "Revisao independente do DEPLOY da v404 (r2). Somente leitura: psutil de consulta (nenhum processo tocado), varredura somente-stat da arvore de runtime (82.554 arquivos vistos, nenhum aberto; .env e .iald_secret_key inclusive), hash dos bytes dos destinos do plano; unica rede = GET http://127.0.0.1:8082/login; loaders do runtime importados em processo novo com audit hook (sem rede/subprocesso/escrita/segredos). Os PIDs 41280/69428/38024 vieram do pedido da gerencia e dos recibos; o esperado foi comparado com o que o sistema mostra agora.",
+  "script_revisor_sha256": "28c5e967e3d2331beb87a956c51f1ddba32a28ac9657e708ecbd25af5b7dda9f",
+  "auxiliares_sha256": {
+    "d2_loaders.py": "a49242546d3fba23944eb59b4d4f1a4ab3f8353612fa0729f1c9e3282ef34c13",
+    "d2_out.json": "f1acdbb9ea5e1a868857890b8062510ad4f59422b1320aac186d60675e7a7532",
+    "d1_out.json": "b1b1e8d62aef38183fa8f671c8aed4edf50bf05d3635bddaf317ad343e3052ee"
+  },
+  "veredito": "PASS",
+  "n_checks": 30,
+  "n_ok": 30,
+  "n_falha": 0,
+  "checks": [
+    {
+      "n": 1,
+      "grupo": "A_RECIBO",
+      "descricao": "recibo v404-deploy-submit: deploy review_pending, submetido por claude-gerencia-a7 (distinto do revisor); as 4 evidencias (deployment, maintenance, restart, install_plan) tem sha256 = bytes ATUAIS",
+      "ok": true,
+      "achado": {
+        "status": "review_pending",
+        "by": "claude-gerencia-a7",
+        "stale": []
+      }
+    },
+    {
+      "n": 2,
+      "grupo": "A_RECIBO",
+      "descricao": "missao (project, somente leitura): deploy review_pending, verify needs_revalidation (ainda nao reclamado); app e sources SATISFEITOS pela minha revisao independente da r2 (reviewed_by = eu, submitted_by = construtor) com todas as evidencias pinadas = bytes atuais",
+      "ok": true,
+      "achado": {
+        "active": {
+          "deploy": "review_pending",
+          "verify": "needs_revalidation"
+        },
+        "revision": 15,
+        "accept_evidence_stale": []
+      }
+    },
+    {
+      "n": 3,
+      "grupo": "A_RECIBO",
+      "descricao": "ordem temporal: aceite da revisao do pacote (r2) < claim do deploy < janela de manutencao < instalacao < restart.json < submit < INSTALLED_VERIFICATION (o deploy veio DEPOIS da revisao; evidencias nao regravadas)",
+      "ok": true,
+      "achado": [
+        [
+          "accept app r2",
+          "09:12:39.141"
+        ],
+        [
+          "claim deploy",
+          "09:13:23.224"
+        ],
+        [
+          "maintenance.json",
+          "09:13:25.337"
+        ],
+        [
+          "installed_at",
+          "09:13:34.256"
+        ],
+        [
+          "restart.json",
+          "09:13:52.995"
+        ],
+        [
+          "submit deploy",
+          "09:14:03.360"
+        ],
+        [
+          "INSTALLED_VERIFICATION",
+          "09:14:07.084"
+        ]
+      ]
+    },
+    {
+      "n": 4,
+      "grupo": "A_RECIBO",
+      "descricao": "deployment.json, maintenance.json e restart.json existem em UMA versao cada (sem .bak_ ao lado: nao foram regravados)",
+      "ok": true,
+      "achado": []
+    },
+    {
+      "n": 5,
+      "grupo": "B_PLANO",
+      "descricao": "plano: sha256 recomputado de install_plan.json = deployment.plan_sha256 = final_checks.plan_sha256 = review_final.plan_sha256 = pino do recibo de submit r2 do pacote",
+      "ok": true,
+      "achado": {
+        "recomputado": "15cf0269a3fbaa05",
+        "deployment.plan_sha256": "15cf0269a3fbaa05",
+        "final_checks": "15cf0269a3fbaa05",
+        "review_final": "15cf0269a3fbaa05",
+        "pino_do_submit_r2_do_pacote": "15cf0269a3fbaa05"
+      }
+    },
+    {
+      "n": 6,
+      "grupo": "B_PLANO",
+      "descricao": "deployment.json: status INSTALLED_RESTART_REQUIRED; accounts_modified=false, bench_restarted=false, client_files_changed=false; runtime_python_changes=0 no plano",
+      "ok": true,
+      "achado": {
+        "installed_at": "2026-10-29T12:13:34.256032+00:00"
+      }
+    },
+    {
+      "n": 7,
+      "grupo": "B_PLANO",
+      "descricao": "deployment.files tem EXATAMENTE os 1464 destinos do plano, na mesma ordem, sem duplicata (nada a mais, nada a menos)",
+      "ok": true,
+      "achado": {
+        "n_plan": 1464,
+        "n_dep": 1464
+      }
+    },
+    {
+      "n": 8,
+      "grupo": "B_PLANO",
+      "descricao": "para cada um dos 1464 destinos: sha256 em deployment.files = sha256 do plano = sha256 dos BYTES hoje em disco (recomputado agora)",
+      "ok": true,
+      "achado": {
+        "divergentes": []
+      }
+    },
+    {
+      "n": 9,
+      "grupo": "B_PLANO",
+      "descricao": "classificacao do plano: 7 destinos pre-existentes que mudam (6 de .iald_runtime + manifesto ativo), 1457 criados (baseline nulo), 0 inalterados",
+      "ok": true,
+      "achado": {
+        "pre": [
+          "prefix.md",
+          "manifest.json",
+          "native_count.json",
+          "prefix.md",
+          "manifest.json",
+          "native_count.json",
+          "iald_nucleo_fixo.json"
+        ]
+      }
+    },
+    {
+      "n": 10,
+      "grupo": "B_PLANO",
+      "descricao": "backups: deployment.backups = exatamente os 7 destinos que mudam; cada .bak_ existe na pasta do destino, tem os BYTES do estado anterior (sha256 = baseline do plano), difere do novo; um unico carimbo; nenhum .bak_ orfao do mesmo carimbo",
+      "ok": true,
+      "achado": {
+        "stamps": [
+          "20261029_091325_383529"
+        ],
+        "bad": [],
+        "orphans": []
+      }
+    },
+    {
+      "n": 11,
+      "grupo": "B_PLANO",
+      "descricao": "cadeia com a v402: o conteudo de cada um dos 7 backups = o sha256 que a v402 registrou como instalado em deployment.json (o backup guardou exatamente a v402 aceita, nao um estado intermediario)",
+      "ok": true,
+      "achado": {
+        "divergentes": []
+      }
+    },
+    {
+      "n": 12,
+      "grupo": "B_PLANO",
+      "descricao": "canonical_releases\\v404_1d3c4cbe3f3c: o conjunto de arquivos em disco = exatamente os destinos do plano sob essa pasta (nenhum arquivo instalado a mais, nenhum a menos)",
+      "ok": true,
+      "achado": {
+        "disk": 1456,
+        "plan": 1456,
+        "extra": [],
+        "missing": []
+      }
+    },
+    {
+      "n": 13,
+      "grupo": "B_PLANO",
+      "descricao": "codigo de runtime preservado: todos os 171 arquivos de RUNTIME_BASELINE.json (tirado ANTES do deploy) tem o sha256 de antes; o conjunto de .py da raiz nao mudou (so o confidencial iald_stack_v7.py fica fora do baseline por desenho, nunca aberto); o unico arquivo do baseline que muda e o manifesto ativo; o plano nao escreve .py de runtime; o manifesto ativo mudou do baseline para o do plano",
+      "ok": true,
+      "achado": {
+        "baseline_files": 171,
+        "unico_arquivo_do_baseline_que_mudou": [
+          "iald_nucleo_fixo.json"
+        ],
+        "root_py_now": 171,
+        "root_py_baseline": 170,
+        "extra_fora_do_baseline": [
+          "iald_stack_v7.py"
+        ],
+        "nota": "iald_stack_v7.py e confidencial: excluido do baseline por desenho, so stat (mtime/ctime anteriores a janela), nunca aberto"
+      }
+    },
+    {
+      "n": 14,
+      "grupo": "B_PLANO",
+      "descricao": "pacotes instalados = pacotes REVISADOS byte a byte (r2): haiku55/{prefix,manifest,native_count} = haiku_expanded; haiku/{...} = shared; manifesto ativo = manifest_install do estagio; pacote do Jev da raiz = o do estagio",
+      "ok": true,
+      "achado": {
+        "pairs": 8,
+        "diff": []
+      }
+    },
+    {
+      "n": 15,
+      "grupo": "B_PLANO",
+      "descricao": "o deploy usou o codigo REVISADO: transaction/maintenance/deploy_controlled/verify_installed = bytes que review_final.json registrou = bytes da v402 aceita",
+      "ok": true,
+      "achado": {
+        "divergentes": []
+      }
+    },
+    {
+      "n": 16,
+      "grupo": "C_REINICIO",
+      "descricao": "maintenance.json: ADMISSIONS_STOPPED, filho antigo 41280, supervisor 38024; restart.json: PASS, HTTP 200, filho novo 69428 != 41280, MESMA identidade do supervisor (pid e create_time) que maintenance.json",
+      "ok": true,
+      "achado": {
+        "restart_scope": "Existing web child only; same supervisor resumed; bench/llama untouched"
+      }
+    },
+    {
+      "n": 17,
+      "grupo": "C_REINICIO",
+      "descricao": "AGORA: exatamente UM processo python.exe rodando iald_web_server.py, exatamente UM ouvinte na 8082, e ambos sao o PID new_web_pid do restart.json (69428)",
+      "ok": true,
+      "achado": {
+        "web": [
+          69428
+        ],
+        "listeners": [
+          69428
+        ]
+      }
+    },
+    {
+      "n": 18,
+      "grupo": "C_REINICIO",
+      "descricao": "o filho 69428 esta sob o MESMO supervisor: ppid = 38024, create_time do supervisor IDENTICO ao de restart.json/maintenance.json (mesma instancia, nao um supervisor novo), roda start_iald_web.ps1 sem -NoSupervise, e nem ele nem o filho estao suspensos",
+      "ok": true,
+      "achado": {
+        "ppid": 38024,
+        "sup_created": "2026-10-28T13:38:55.728232",
+        "sup_status": "running",
+        "child_status": "running",
+        "child_created": "2026-10-29T09:13:39.405770"
+      }
+    },
+    {
+      "n": 19,
+      "grupo": "C_REINICIO",
+      "descricao": "o filho novo nasceu DEPOIS da instalacao (create_time > installed_at: pode ter carregado os arquivos novos) e o PID antigo 41280 nao existe mais",
+      "ok": true,
+      "achado": {
+        "child_minus_installed_s": 5.1
+      }
+    },
+    {
+      "n": 20,
+      "grupo": "C_REINICIO",
+      "descricao": "bench e llama: os servicos que ESCUTAM agora (llama 8081, Bancada Um 18777, e 18765/18766 se existirem) foram criados ANTES da janela do deploy e nao estao suspensos (nao foram reiniciados); processos IALD criados desde a janela listados para a gerencia",
+      "ok": true,
+      "achado": {
+        "bench": {
+          "llama": {
+            "port": 8081,
+            "pid": 58196,
+            "created_before_window": true,
+            "suspended": false,
+            "created": "10-28 21:56:59"
+          },
+          "Bancada Um": {
+            "port": 18777,
+            "pid": 44228,
+            "created_before_window": true,
+            "suspended": false,
+            "created": "10-28 22:06:39"
+          }
+        },
+        "criados_desde_a_janela": [
+          [
+            10652,
+            "bash.exe",
+            "C:\\Program Files\\Git\\bin\\..\\usr\\bin\\bash.exe -c source /c/Users/rotol/.claude/shell-snapshots/snapshot-bash-17"
+          ],
+          [
+            28400,
+            "bash.exe",
+            "C:\\Program Files\\Git\\bin\\bash.exe -c source /c/Users/rotol/.claude/shell-snapshots/snapshot-bash-1793272353281"
+          ],
+          [
+            65984,
+            "bash.exe",
+            "C:\\Program Files\\Git\\bin\\..\\usr\\bin\\bash.exe -c source /c/Users/rotol/.claude/shell-snapshots/snapshot-bash-17"
+          ],
+          [
+            69428,
+            "python.exe",
+            "C:\\Python314\\python.exe C:\\IALD\\projetos_pyhton\\IALD\\iald_web_server.py 8082"
+          ],
+          [
+            69568,
+            "bash.exe",
+            "C:\\Program Files\\Git\\bin\\..\\usr\\bin\\bash.exe -c source /c/Users/rotol/.claude/shell-snapshots/snapshot-bash-17"
+          ],
+          [
+            70124,
+            "bash.exe",
+            "C:\\Program Files\\Git\\bin\\bash.exe -c source /c/Users/rotol/.claude/shell-snapshots/snapshot-bash-1793272353281"
+          ]
+        ]
+      }
+    },
+    {
+      "n": 21,
+      "grupo": "C_REINICIO",
+      "descricao": "GET local http://127.0.0.1:8082/login = 200 (unico acesso de rede deste revisor; corpo descartado)",
+      "ok": true,
+      "achado": {
+        "http": 200
+      }
+    },
+    {
+      "n": 22,
+      "grupo": "C_REINICIO",
+      "descricao": "depois do GET: ainda um unico processo web, mesmo PID, mesmo create_time, mesmo supervisor e o mesmo ouvinte (o servidor nao reiniciou durante a revisao)",
+      "ok": true,
+      "achado": {
+        "pid": 69428
+      }
+    },
+    {
+      "n": 23,
+      "grupo": "D_MANIFESTO",
+      "descricao": "iald_nucleo_fixo.json de producao AGORA: active_cluster.release, operational_core.current_release e jev_control.release = v404 (backup: v402 nos tres); commit = RELEASE.espelho_commit; release_source_sha256/source_sha256 = RELEASE.um_py_sha256; publication_pending=false",
+      "ok": true,
+      "achado": {
+        "agora": [
+          "v404",
+          "v404",
+          "v404"
+        ],
+        "backup": [
+          "v402",
+          "v402",
+          "v402"
+        ],
+        "commit": "1d3c4cbe3f3c",
+        "source_sha": "3820476c83267f61"
+      }
+    },
+    {
+      "n": 24,
+      "grupo": "D_MANIFESTO",
+      "descricao": "todos os caminhos que o manifesto ativo aponta (cluster, kernel, nucleo, Jev, mae, 8 fontes publicas, programa/selo/resultado/prova) existem DENTRO de canonical_releases\\v404_1d3c4cbe3f3c e os sha256 pinados no manifesto = bytes em disco; programa/selo/resultado/prova = os do cofre v404",
+      "ok": true,
+      "achado": {
+        "caminhos": 18,
+        "sha_ruins": [],
+        "diferem_do_cofre": []
+      }
+    },
+    {
+      "n": 25,
+      "grupo": "D_LOADERS",
+      "descricao": "LOADERS DO RUNTIME, processo novo, escritos pelo revisor (audit hook: sem rede/subprocesso/escrita/segredos): load_release identidade = deployment_identity do plano; KernelCatalog 1438 fontes e source_sha = pino; load_package haiku55 e haiku (tokens permanentes e sha256 do prefixo = os contados e revisados); load_native_context (52.030 B = native_prefix.md, identidade = release); load_contract v404; prompt publico (851.087 B) = sonnet_public revisado, sem atlas privado",
+      "ok": true,
+      "achado": {
+        "tokens": {
+          "haiku55": 952405,
+          "haiku": 393062
+        },
+        "native": 52030,
+        "public": 851087,
+        "sources": 1438
+      }
+    },
+    {
+      "n": 26,
+      "grupo": "D_LOADERS",
+      "descricao": "INSTALLED_VERIFICATION.json da gerencia (nao confiado: comparado) = o que os loaders do revisor mediram: 1464 arquivos, identidade, commit, tokens/bytes dos 2 pacotes, native 52.030 B, prompt publico 851.087 B, Jev v404, 0 chamadas a provedor",
+      "ok": true,
+      "achado": {
+        "files_verified": 1464
+      }
+    },
+    {
+      "n": 27,
+      "grupo": "E_ESCOPO",
+      "descricao": "NADA fora das arvores do plano mudou: varredura somente-stat de TODA a arvore de runtime (82554 arquivos vistos, nenhum aberto; .env e .iald_secret_key inclusive): os arquivos com mtime/ctime desde a janela sao so os 1464 destinos do plano, os 7 backups e logs vivos do reinicio do web/telemetria; 0 temporarios .tmp_v380_ orfaos; nenhum .py de runtime, .env, banco sqlite, iald-app ou outra release (o unico .py que aparece e o um.py selado DENTRO de canonical_releases, dado do plano)",
+      "ok": true,
+      "achado": {
+        "vistos": 82554,
+        "mudados": 1476,
+        "plano+backups_presentes": 1471,
+        "logs_vivos": [
+          "logs\\gpu_20261028_215657.csv",
+          "logs\\iald_heartbeat_telemetry.jsonl",
+          "logs\\web-server_20261028_133856_r2.log",
+          "logs\\web-server_20261028_133856_r2.log.err",
+          "logs\\web-supervisor.log"
+        ],
+        "tmp_orfaos": []
+      }
+    },
+    {
+      "n": 28,
+      "grupo": "E_ESCOPO",
+      "descricao": "baseline v402: todos os 1452 arquivos que a v402 instalou e que o plano v404 NAO reescreve (release v402 inteira, pacote Jev da v402 etc.) continuam com o sha256 que a v402 registrou; a interseccao com o plano v404 sao exatamente os 7 destinos com backup",
+      "ok": true,
+      "achado": {
+        "interseccao": [
+          "iald_nucleo_fixo.json",
+          "manifest.json",
+          "manifest.json",
+          "native_count.json",
+          "native_count.json",
+          "prefix.md",
+          "prefix.md"
+        ],
+        "divergentes": []
+      }
+    },
+    {
+      "n": 29,
+      "grupo": "E_ESCOPO",
+      "descricao": "canonical_releases: surgiu UMA pasta nova (v404_1d3c4cbe3f3c) e nenhum arquivo das releases anteriores (v357..v402) foi tocado (stat + sha da v402)",
+      "ok": true,
+      "achado": {
+        "pastas": [
+          "v357_12d6fb8d830d",
+          "v368_e65478711905",
+          "v378_d2f053032533",
+          "v380_f20f65973561",
+          "v389_010ae55c5d27",
+          "v390_5cff2ebfec1b",
+          "v392_9e3b59681835",
+          "v394_237ef12cf051",
+          "v394_237ef12cf051_publication_fix",
+          "v395_1d6e3f49610b",
+          "v401_c9dedb0d444d",
+          "v402_98cabfd1f88c",
+          "v404_1d3c4cbe3f3c"
+        ],
+        "novas": [
+          "v404_1d3c4cbe3f3c"
+        ]
+      }
+    },
+    {
+      "n": 30,
+      "grupo": "E_ESCOPO",
+      "descricao": "na pasta do build v404, desde a janela so surgiram maintenance.json, deployment.json, restart.json, INSTALLED_VERIFICATION.json, LOGIN_CHECK_v404.json (+ recibos da missao: claim/submit do deploy e os meus dois aceites r2, de 09:12); sem rollback_new_files/mobile_backups",
+      "ok": true,
+      "achado": {
+        "novos": [
+          "INSTALLED_VERIFICATION.json",
+          "LOGIN_CHECK_v404.json",
+          "deployment.json",
+          "maintenance.json",
+          "restart.json",
+          "v404-app-accept-r2.json",
+          "v404-deploy-claim.json",
+          "v404-deploy-submit.json",
+          "v404-sources-accept-r2.json"
+        ]
+      }
+    }
+  ],
+  "ressalvas": [
+    "Que o processo web em execucao carregou a v404 na MEMORIA nao e observavel por GET /login (200 nao autentica nem mostra a release): prova-se que o filho (69428) nasceu 5,1 s DEPOIS da instalacao, que os arquivos em disco = plano e que os loaders de processo novo aceitam o instalado. O uso efetivo (resposta do app citando a v404) esta fora do escopo declarado do `verify`, como na v402.",
+    "bench/llama intocados: verificado so para os servicos que ESCUTAM agora (llama 8081 pid 58196 e Bancada Um 18777 pid 44228, ambos criados em 28/10, antes da janela). As portas 18765/18766 (gw/cosmologia) nao escutam agora; a revisao nao tem como saber se escutavam antes. O recibo da gerencia (restart_scope, bench_restarted=false) e DECLARADO.",
+    "PIDs e create_time sao fotografia do momento da revisao; se o supervisor reiniciar o filho depois, os PIDs mudam sem invalidar o deploy.",
+    "Os logs vivos da varredura (web-server_*.log e .err, web-supervisor.log, gpu csv, iald_heartbeat_telemetry.jsonl) mudam por serem logs do proprio servidor que reiniciou; nao sao arquivos da release.",
+    "iald_stack_v7.py (confidencial) esta na raiz e fora do RUNTIME_BASELINE por desenho: so stat (mtime/ctime de 09/03/2026, anteriores a janela), nunca aberto.",
+    "Este revisor NAO aprova o verify; a missao mostra verify needs_revalidation ate a gerencia reclama-lo e submete-lo."
+  ]
+}

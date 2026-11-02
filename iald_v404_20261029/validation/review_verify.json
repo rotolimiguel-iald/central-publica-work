@@ -1,0 +1,182 @@
+{
+  "revisor": "sonnet-app-v404-revisor",
+  "timestamp_utc": "2026-10-29T12:21:45.474719+00:00",
+  "escopo": "Revisao independente do passo `verify` da v404. ACEITA O QUE FOI DECLARADO: carregadores em processo novo + hashes + login + processo vivo. NAO cobre: resposta viva do app citando a v404 (0 chamadas a provedor), memorias atualizadas com recibos, distincao backend x build, inspecao fisica do celular. Somente leitura; unica rede = GET local /login; nenhum processo tocado.",
+  "script_revisor_sha256": "2c4664e03dad3ea56927083afad758b04d95ec97e3646c8078ab8a8124ecf687",
+  "auxiliares_sha256": {
+    "d2_loaders.py": "a49242546d3fba23944eb59b4d4f1a4ab3f8353612fa0729f1c9e3282ef34c13",
+    "v1_out.json": "2fffa95e439a4b8ea1ff538c17eca62856a55a40e5584b69e60b6ab3a764b346",
+    "d1_out.json": "b1b1e8d62aef38183fa8f671c8aed4edf50bf05d3635bddaf317ad343e3052ee"
+  },
+  "veredito": "PASS",
+  "n_checks": 14,
+  "n_ok": 14,
+  "n_falha": 0,
+  "checks": [
+    {
+      "n": 1,
+      "grupo": "A_SUBMISSAO",
+      "descricao": "recibo v404-verify-submit: verify review_pending, submetido por claude-gerencia-a7 (distinto do revisor), depende de deploy; as evidencias (INSTALLED_VERIFICATION.json, LOGIN_CHECK_v404.json) tem sha256 = bytes ATUAIS",
+      "ok": true,
+      "achado": {
+        "status": "review_pending",
+        "by": "claude-gerencia-a7",
+        "depends_on": [
+          "deploy"
+        ],
+        "stale": [],
+        "note": "verify_installed PASS (1464 arquivos; release v404; commit 1d3c4cbe; 0 chamadas a provedor); /login 200; escopo declarado: sem resposta de modelo ao vivo nem inspeção física do celular"
+      }
+    },
+    {
+      "n": 2,
+      "grupo": "A_SUBMISSAO",
+      "descricao": "pre-condicao: deploy satisfeito pela minha revisao (reviewed_by = eu) e TODAS as evidencias pinadas do deploy (deployment/maintenance/restart/plano e review_deploy.json) continuam com os bytes de quando foram aceitas; verify e a unica etapa ativa",
+      "ok": true,
+      "achado": {
+        "deploy": "satisfied",
+        "stale": [],
+        "active": {
+          "verify": "review_pending"
+        },
+        "revision": 18
+      }
+    },
+    {
+      "n": 3,
+      "grupo": "B_ESCOPO",
+      "descricao": "o escopo declarado (LOGIN_CHECK_v404.json e recibo) exclui explicitamente a resposta viva do modelo (0 chamadas a provedor) e a inspecao fisica do celular; o criterio da missao cita \"resposta do app citando a v404\" -> essa parte NAO e coberta (declarada, nao escondida)",
+      "ok": true,
+      "achado": {
+        "escopo": "carregadores em processo novo + hashes + login; sem resposta de modelo ao vivo (0 chamadas a provedor, como na v401/v402); sem inspeção física do celular",
+        "criterio": "Verificar o uso efetivo do pacote v404 (login 200, release no manifest, resposta do app citando a v404), integridade após a implantação e memórias atualizadas com recibos; distinguir alteração de back"
+      }
+    },
+    {
+      "n": 4,
+      "grupo": "B_ESCOPO",
+      "descricao": "precedente: o criterio de verify e textualmente o mesmo da v402 (tirada a versao; aceita com o MESMO escopo: loaders + hashes + login; 0 chamadas a provedor; sem resposta viva, memorias nem backend x build); INSTALLED_VERIFICATION.json tem a mesma forma e o mesmo escopo declarado",
+      "ok": true,
+      "achado": {
+        "criterio_igual_exceto_versao": true
+      }
+    },
+    {
+      "n": 5,
+      "grupo": "C_EVIDENCIA",
+      "descricao": "INSTALLED_VERIFICATION.json (gerencia) = o que os MEUS loaders do runtime medem AGORA em processo novo (audit hook): identidade, commit, 2 pacotes (tokens permanentes/bytes/sha do prefixo = os revisados), native 52.030 B, prompt publico 851.087 B, Jev v404, 1438 fontes do kernel",
+      "ok": true,
+      "achado": {
+        "tokens": {
+          "haiku55": 952405,
+          "haiku": 393062
+        }
+      }
+    },
+    {
+      "n": 6,
+      "grupo": "C_EVIDENCIA",
+      "descricao": "os 1464 arquivos instalados continuam com o sha256 do plano (recomputado agora, nao confiado ao PASS da gerencia)",
+      "ok": true,
+      "achado": {
+        "divergentes": []
+      }
+    },
+    {
+      "n": 7,
+      "grupo": "C_EVIDENCIA",
+      "descricao": "o nucleo (iald_nucleo_fixo.json) AINDA aponta active_cluster, operational_core e jev_control para v404, com commit e source sha256 de RELEASE.json, e e byte a byte o manifest_install revisado",
+      "ok": true,
+      "achado": {
+        "commit": "1d3c4cbe3f3c"
+      }
+    },
+    {
+      "n": 8,
+      "grupo": "D_VIVO",
+      "descricao": "AGORA: PID 69428 e o unico processo web e o unico ouvinte da 8082, sob o supervisor 38024 (mesmo create_time do restart.json), nenhum suspenso",
+      "ok": true,
+      "achado": {
+        "child": 69428,
+        "ppid": 38024,
+        "status": [
+          "running",
+          "running"
+        ]
+      }
+    },
+    {
+      "n": 9,
+      "grupo": "D_VIVO",
+      "descricao": "o filho 69428 e o MESMO de quando revisei o deploy (create_time identico ao que registrei em d1_out.json): nao reiniciou desde a instalacao, logo e a instancia que nasceu depois dos arquivos da v404",
+      "ok": true,
+      "achado": {
+        "created": "2026-10-29T09:13:39.405770"
+      }
+    },
+    {
+      "n": 10,
+      "grupo": "D_VIVO",
+      "descricao": "GET local http://127.0.0.1:8082/login = 200 AGORA (unico acesso de rede deste revisor; corpo descartado)",
+      "ok": true,
+      "achado": {
+        "http": 200
+      }
+    },
+    {
+      "n": 11,
+      "grupo": "D_VIVO",
+      "descricao": "LOGIN_CHECK_v404.json da gerencia: login_http_status 200, URL local 8082/login, feito DEPOIS da instalacao e do reinicio e antes do submit do verify",
+      "ok": true,
+      "achado": {
+        "em": "2026-10-29T09:14:07"
+      }
+    },
+    {
+      "n": 12,
+      "grupo": "D_VIVO",
+      "descricao": "depois do GET: mesmo PID, mesmo create_time, mesmo ouvinte (o servidor nao reiniciou durante a revisao)",
+      "ok": true,
+      "achado": {
+        "pid": 69428
+      }
+    },
+    {
+      "n": 13,
+      "grupo": "E_ESCOPO",
+      "descricao": "varredura somente-stat da arvore de runtime (82554 arquivos, nenhum aberto): desde a janela do deploy so mudaram os 1464 destinos, os 7 backups e logs vivos; NENHUM destino/backup foi tocado depois da minha revisao do deploy (o verify e as evidencias dele nao escreveram nada em producao); 0 temporarios .tmp_v380_",
+      "ok": true,
+      "achado": {
+        "vistos": 82554,
+        "mudados": 1476,
+        "logs_vivos": [
+          "logs\\gpu_20261028_215657.csv",
+          "logs\\iald_heartbeat_telemetry.jsonl",
+          "logs\\web-server_20261028_133856_r2.log",
+          "logs\\web-server_20261028_133856_r2.log.err",
+          "logs\\web-supervisor.log"
+        ],
+        "destinos_tocados_apos_minha_revisao": []
+      }
+    },
+    {
+      "n": 14,
+      "grupo": "E_ESCOPO",
+      "descricao": "na pasta do build, os unicos arquivos novos desde a minha revisao do deploy sao os do verify (LOGIN_CHECK/recibos de claim e submit do verify) e o meu aceite do deploy; INSTALLED_VERIFICATION.json e LOGIN_CHECK_v404.json nao foram regravados (sem .bak_)",
+      "ok": true,
+      "achado": {
+        "novos": [
+          "v404-deploy-accept.json",
+          "v404-verify-claim.json",
+          "v404-verify-submit.json"
+        ]
+      }
+    }
+  ],
+  "ressalvas": [
+    "O criterio da missao cita \"resposta do app citando a v404\", memorias com recibos e a distincao backend x build; esta aceitacao NAO os cobre (a submissao os exclui, como a v401/v402 aceitas). Ficam com a gerencia.",
+    "Que o processo em execucao tem a v404 na MEMORIA continua inobservavel por GET /login; prova-se: filho 69428 nascido 5,1 s depois da instalacao, arquivos = plano, loaders de processo novo aceitam o instalado.",
+    "PIDs/create_time sao fotografia do momento da revisao.",
+    "Na r2 a janela do MiMo ficou em 96.974 B e a do Kimi em 100.346 B (ressalva registrada na revisao do pacote); isso e capacidade de historico por conversa, nao algo que o verify declarado meca."
+  ]
+}

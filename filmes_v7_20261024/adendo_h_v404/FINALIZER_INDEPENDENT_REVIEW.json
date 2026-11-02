@@ -1,0 +1,305 @@
+{
+  "schema": "iald.finalizer-independent-review/v1",
+  "actor": "codex-video-v404-final-review",
+  "created_at": "2026-10-29T03:09:03.221191+00:00",
+  "status": "CHANGES_REQUIRED_PREPARATION_ONLY",
+  "statute": "REAL — revisão local de código e guardas; não resultado futuro",
+  "reference": "C:\\IALD\\Central de Patentes\\work\\filmes_v7_20261024\\SESSION_REFERENCE.json",
+  "mission_read_only": {
+    "receipt": {
+      "context_id": "459f93ee-d0bf-5e37-a08b-c802da6e5c76",
+      "scope": {
+        "house": "TGL",
+        "principal": "operador-iald"
+      },
+      "revision": 112,
+      "event_id": "ordem022-v404-first-capture-complete",
+      "event_hash": "950b7e3e31f2956cba22ba73b821c9cf2f10d278ed8a045e5da2b5a6e605f101",
+      "objective_sha256": "a0de159670d52bce92e29b0420fb90032f7915fab782e17754a769fbbe1f9f26",
+      "anchor_sha256": "a4ee7616aca79339be6f3157ce0afe8a562ff1220b469bd5922b4cf97fa9a8fc",
+      "state_sha256": "169d1a2f36e7dd6ecf503e31b4e2bdaa8e1631acd673fb4c9904519474b8bfc6",
+      "replayed": false
+    },
+    "projection_sha256": "cf221f4a9b5dd8cfc2708a0e2be5bf4617546f5a401b7bad9dc6b5e70096f072"
+  },
+  "method": [
+    "Leitura estática dos cinco alvos e caminhos efetivos do wrapper/make, worker e cobertura; nenhum main executado.",
+    "Fundação documental: PARENT_DATA_REVIEW, AUDIO_RESULT_REVIEW, INTEGRATION_REVIEW R2 e INTEGRATION_PROJECTIONS_COMPLETED; não refaz ciência ou áudio.",
+    "Execução somente de validate_frozen_data/validate_replay read-only e compare_render_manifests puro; função valid_job extraída por AST com todos acessos substituídos por fixtures em RAM.",
+    "Project via context.py na referência exata; nenhuma transição, claim, preflight mutante ou adoção de outra missão.",
+    "Pinos calculados dos bytes reais na emissão; não se alega congelamento de arquivos ativos ao longo da revisão."
+  ],
+  "findings": [
+    {
+      "id": "F01",
+      "severity": "MEDIUM",
+      "location": [
+        {
+          "path": "C:\\IALD\\Central de Patentes\\work\\filmes_v7_20261024\\adendo_h_v404\\finalize_make.py",
+          "lines": [
+            9,
+            21
+          ]
+        },
+        {
+          "path": "C:\\IALD\\Central de Patentes\\work\\filmes_v7_20261024\\adendo_h_v404\\finalizer_guards.py",
+          "lines": [
+            57,
+            81
+          ]
+        },
+        {
+          "path": "C:\\IALD\\Artigo\\Haja_Luz\\A Ponte e o Um\\video_um\\delivery_v7\\make_v7.py",
+          "lines": [
+            87,
+            103
+          ]
+        }
+      ],
+      "title": "Vínculo dos três jobs do worker é conferido tarde demais para proteger a escrita final",
+      "evidence": "Antes do subprocesso, exige COMPLETE e preserva o manifesto, mas não valida jobs de DELIVERY_E/watch contra baseline/intent nem ausência de lock. make.find_job escolhe o mais recente, não o ID pinado de E; valid_job não compara metadata.source/source_sha256. Probe isolado aceitou fixture source=v402/source_sha256=old-source com closure de 43 entradas e demais campos válidos. Não foi teste sobre mídia real.",
+      "impact": "Um job substituto pode ser selecionado; make reescreve os três manifestos antes de build_render_manifest_link recusar a divergência. O link impede PASS incorreto, mas a recusa ocorre após mutação dos manifestos.",
+      "correction": "Antes de make, validar exatamente film1/film2/loop, pinos dos jobs/streams, fonte v404/pino corrente, frames/dimensões, mesma closure de 43 arquivos em baseline/intent/current e lock ausente; exigir que a seleção efetiva de make seja exatamente E/watch, recusando duplicatas/alternativas. Manter verificação após make. Não alterar worker/renderer durante a captura."
+    },
+    {
+      "id": "F02",
+      "severity": "MEDIUM",
+      "location": [
+        {
+          "path": "C:\\IALD\\Central de Patentes\\work\\filmes_v7_20261024\\adendo_h_v404\\bind_final_media_v404.py",
+          "lines": [
+            56,
+            58
+          ]
+        },
+        {
+          "path": "C:\\IALD\\Central de Patentes\\work\\filmes_v7_20261024\\adendo_h_v404\\audit_capture.py",
+          "lines": [
+            12,
+            24
+          ]
+        }
+      ],
+      "title": "Binder não vincula evidências de captura/UI aos jobs finais",
+      "evidence": "Binder lê FINAL_PLAYER_V404 e PARENT_CAPTURE_AUDIT e exige apenas status, versão e source_sha256; depois pina os JSONs, mas não confere seus pinos internos nem compara capture.jobs com E/manifest/watch. audit_capture produz receipt/stream por job e closure, disponíveis para essa conferência.",
+      "impact": "Um parecer anterior da mesma fonte v404 pode ser agregado como evidência do conjunto final mesmo com jobs/streams diferentes ou pinos internos rompidos. Não se afirma que isso aconteceu nesta execução.",
+      "correction": "Verificar pinos internos dos dois pareceres, comparar exatamente os três capture.jobs receipt/stream e render_closure com os jobs finais e baseline/intent; vincular a observação UI aos artefatos finais conforme seu esquema e recusar evidência sem vínculo suficiente. Preservar recibos anteriores."
+    },
+    {
+      "id": "F03",
+      "severity": "LOW",
+      "location": [
+        {
+          "path": "C:\\IALD\\Central de Patentes\\work\\filmes_v7_20261024\\adendo_h_v404\\test_finalizer_guards.py",
+          "lines": [
+            36,
+            40
+          ]
+        }
+      ],
+      "title": "Suíte preparada ainda referencia caminhos/esquema antigos",
+      "evidence": "DELIVERY_DATA.json, finish_v404.py e parent_numeric_review.py não existem em H na leitura; a suíte chama finalizer_guards.validate_audio (contrato antigo), enquanto finalize_make importa current_audio_guard.validate_audio. Não executei a suíte, que escreve arquivos.",
+      "correction": "Atualizar testes para o caminho efetivo e executar controles isolados autorizados antes de alegar cobertura do finalizador atual. Não reutilizar PASS antigo como ensaio desta versão."
+    }
+  ],
+  "checks": [
+    {
+      "name": "frozen_source_data",
+      "result": "PASS",
+      "scope": "Guard read-only dos bytes instalados; sem reexecutar exportação/ciência"
+    },
+    {
+      "name": "replay_receipt_guard",
+      "result": "PASS",
+      "scope": "Pinos e recibos existentes, não nova execução de browser"
+    },
+    {
+      "name": "installation_projection_pins",
+      "result": "PASS",
+      "count": 5
+    },
+    {
+      "name": "manifest_transition_pure_controls",
+      "result": "PASS",
+      "accepted": "remoção exclusiva adendo_worker",
+      "rejected": [
+        "alteração job",
+        "campo adicional",
+        "source_sha256 divergente"
+      ]
+    },
+    {
+      "name": "AST_parse",
+      "result": "PASS",
+      "files": 6
+    },
+    {
+      "name": "closure_count",
+      "result": "PASS",
+      "baseline": 43,
+      "intent": 43
+    },
+    {
+      "name": "finalize_command_scope",
+      "result": "PASS_STATIC",
+      "detail": "Wrapper efetivo usa --finalize-only --reuse-render --no-open; pula data_stage, TTS/build, assets e encode. validate_encodes pede plan; não é síntese. Manifestos locais não são publicação remota."
+    },
+    {
+      "name": "snapshot_before_make",
+      "result": "PASS_STATIC",
+      "detail": "Snapshot byte-exact ligado ao pin original E precede subprocesso; existente deve coincidir; transição permite só root adendo_worker/serialização, tolerância numérica zero."
+    },
+    {
+      "name": "six_TTS_foundation",
+      "result": "PASS_WITH_SCOPE",
+      "counts": {
+        "units": 58,
+        "new": 6,
+        "reused": 52,
+        "occurrences": 76,
+        "recorded_speech_request_ids": 6,
+        "recorded_retries": 0
+      },
+      "detail": "Contagens lidas do parecer distinto; não repetidas como observação de rede própria. Quantidade de pedidos não determina orçamento/fatura; custo CPU/energia permanece não medido. Nenhuma chamada TTS desta revisão."
+    },
+    {
+      "name": "historical_E",
+      "result": "PASS_STATIC_WITH_F02",
+      "detail": "Binder identifica audit/DELIVERY_E histórico como histórico; não o reescreve nem promove explicitamente a v404. Outros vínculos de parecer precisam de F02."
+    }
+  ],
+  "input_pins": [
+    {
+      "path": "C:\\IALD\\Central de Patentes\\work\\filmes_v7_20261024\\adendo_h_v404\\finalize_make.py",
+      "bytes": 2261,
+      "sha256": "355b75900b1174760e55efe2916bd6dd4b56d450e60df661d61e632405aeb0bb"
+    },
+    {
+      "path": "C:\\IALD\\Central de Patentes\\work\\filmes_v7_20261024\\adendo_h_v404\\finalizer_guards.py",
+      "bytes": 18153,
+      "sha256": "d3838b0aa56b417f965583ed5286ebca4b930aa5006a1e3e38826e45c439765e"
+    },
+    {
+      "path": "C:\\IALD\\Central de Patentes\\work\\filmes_v7_20261024\\adendo_h_v404\\current_audio_guard.py",
+      "bytes": 3002,
+      "sha256": "d1aec2ce95d51261decbd474d88f368df7e4ebbd929f9d23c2e999ca9987de7f"
+    },
+    {
+      "path": "C:\\IALD\\Central de Patentes\\work\\filmes_v7_20261024\\adendo_h_v404\\bind_final_media_v404.py",
+      "bytes": 7629,
+      "sha256": "77d51cfa35ef92b2797474ec675736a2e14e48a68b53c5794449c1f7adfd0723"
+    },
+    {
+      "path": "C:\\IALD\\Central de Patentes\\work\\filmes_v7_20261024\\adendo_h_v404\\audit_capture.py",
+      "bytes": 2358,
+      "sha256": "1aa45c3d842733e6d11321a3a2a3aa88ae0cd43faa0a47188dad94f792e5f51b"
+    },
+    {
+      "path": "C:\\IALD\\Central de Patentes\\work\\filmes_v7_20261024\\adendo_h_v404\\coverage_validation.py",
+      "bytes": 1566,
+      "sha256": "599929ed15c714ccfe214cf4d0a408d1a98fff72382d10b47fb16356a0311015"
+    },
+    {
+      "path": "C:\\IALD\\Central de Patentes\\work\\filmes_v7_20261024\\adendo_h_v404\\test_finalizer_guards.py",
+      "bytes": 7959,
+      "sha256": "9d5ea637e8f92bec11fa868faf4468c932ce4ae38dd6500d18f9022b35d3cffa"
+    },
+    {
+      "path": "C:\\IALD\\Central de Patentes\\work\\filmes_v7_20261024\\adendo_h_v404\\context.py",
+      "bytes": 4695,
+      "sha256": "77aa01490ce55535296b2955a26f5b94196b909ee61a47e50d6277e8e051c642"
+    },
+    {
+      "path": "C:\\IALD\\Central de Patentes\\work\\filmes_v7_20261024\\adendo_h_v404\\PARENT_DATA_REVIEW.json",
+      "bytes": 2900,
+      "sha256": "05cb210ca38936f1a9124dcff87104a97781edd2e0af8f1344244118512ad58f"
+    },
+    {
+      "path": "C:\\IALD\\Central de Patentes\\work\\filmes_v7_20261024\\adendo_h_v404\\AUDIO_RESULT_REVIEW.json",
+      "bytes": 677733,
+      "sha256": "2d9bdbebe08176dd262d67802bf8a894381be306bff28d1b14f8aeea62b3986f"
+    },
+    {
+      "path": "C:\\IALD\\Central de Patentes\\work\\filmes_v7_20261024\\adendo_h_v404\\INTEGRATION_REVIEW.json",
+      "bytes": 4136,
+      "sha256": "a6d9fc49058b15ef11e71606b1d5a95f0ca152a2c9a56621e642022dbbbfd29e"
+    },
+    {
+      "path": "C:\\IALD\\Central de Patentes\\work\\filmes_v7_20261024\\adendo_h_v404\\INTEGRATION_PROJECTIONS_COMPLETED.json",
+      "bytes": 1700,
+      "sha256": "76000129e82da0071ae2e97c9ff137910172946e715928780c109db337148c5c"
+    },
+    {
+      "path": "C:\\IALD\\Central de Patentes\\work\\filmes_v7_20261024\\adendo_h_v404\\MEDIA_DATA_READY.json",
+      "bytes": 3701,
+      "sha256": "ec172708717ab5a0ece4c59868f110e95fea245b5dfe33a3c06db7a09374a508"
+    },
+    {
+      "path": "C:\\IALD\\Central de Patentes\\work\\filmes_v7_20261024\\adendo_h_v404\\MEDIA_AUDIO_READY.json",
+      "bytes": 574,
+      "sha256": "f843254e2b2f521f07b8e04b031aa157e783ec51f6207ff02893c3c8b3ed1fab"
+    },
+    {
+      "path": "C:\\IALD\\Central de Patentes\\work\\filmes_v7_20261024\\adendo_h_v404\\MEDIA_AUDIO_BINDING.json",
+      "bytes": 8801,
+      "sha256": "6e95766ec6cac72c402ef8cd175b4514db66b50a7222955c987c3d41c36b7f2e"
+    },
+    {
+      "path": "C:\\IALD\\Central de Patentes\\work\\filmes_v7_20261024\\adendo_h_v404\\MEDIA_V404_BASELINE.json",
+      "bytes": 15507,
+      "sha256": "d3b50f35667dd33cf5cf9cca9c47625e17af988f229331f258f29fce0ab95d03"
+    },
+    {
+      "path": "C:\\IALD\\Central de Patentes\\work\\filmes_v7_20261024\\adendo_h_v404\\RENDER_INTENT.json",
+      "bytes": 12419,
+      "sha256": "e07930ff0276e5c70de8f8f7531d97ef524c960698b953dd9d57f9ef4a3cd256"
+    },
+    {
+      "path": "C:\\IALD\\Central de Patentes\\work\\filmes_v7_20261024\\adendo_h_v404\\SOURCE_CAPTURE.json",
+      "bytes": 4309,
+      "sha256": "f9bd83c8b1600c032bab3673a524a810882474f10bbeb0d50ef6eacdbd97e674"
+    },
+    {
+      "path": "C:\\IALD\\Central de Patentes\\work\\filmes_v7_20261024\\adendo_h_v404\\AUDIO_PLAN.json",
+      "bytes": 38614,
+      "sha256": "b4d4e56509628dd2e81d685f27f448ae92fc6a7e067e0bba6ef5340f0cde4e66"
+    },
+    {
+      "path": "C:\\IALD\\Central de Patentes\\work\\filmes_v7_20261024\\adendo_h_v404\\media_v404_worker.py",
+      "bytes": 24177,
+      "sha256": "ee795fe7c02928692eebd7255f5da2b5d893a0d735868ad649073b8419795301"
+    },
+    {
+      "path": "C:\\IALD\\Artigo\\Haja_Luz\\A Ponte e o Um\\video_um\\delivery_v7\\make_v7.py",
+      "bytes": 18476,
+      "sha256": "e53542974e15d8d25dc895fba6cd3a691cb903f76b4f778ac05d1f327b5f9ec1"
+    },
+    {
+      "path": "C:\\IALD\\Artigo\\Haja_Luz\\A Ponte e o Um\\video_um\\make_v7.py",
+      "bytes": 139,
+      "sha256": "5a966d09bcb3450b88c70fa40dad52ee804a3fc394069af72b942ab4f02b1c92"
+    },
+    {
+      "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TUNEL\\PARA_CHATGPT\\ORDEM_022_ADENDO_G_render_v404_e_frases_do_gate.md",
+      "bytes": 6399,
+      "sha256": "8d71e12cc87d510fa32ee893e370681f79faa0fffb458281ba6876010c4c09e0"
+    },
+    {
+      "path": "C:\\IALD\\Central de Patentes\\Chatgpt\\TUNEL\\PARA_CHATGPT\\ORDEM_022_ADENDO_H_duas_sinteses_adicionais_autorizadas.md",
+      "bytes": 2498,
+      "sha256": "d012dafc79df543becf7a17133b06640e02f46a66eb7dd94dc82e27c8aa09556"
+    }
+  ],
+  "execution_limits": {
+    "finalizer_executed": false,
+    "renderer_executed": false,
+    "browser_used": false,
+    "TTS_calls": 0,
+    "um_or_Lean_executed": false,
+    "worker_interference": false,
+    "writes_to_V": false,
+    "mission_states_changed": false,
+    "only_output": "C:\\IALD\\Central de Patentes\\work\\filmes_v7_20261024\\adendo_h_v404\\FINALIZER_INDEPENDENT_REVIEW.json"
+  },
+  "pending": "Aguardar parent informar artefatos completos. Nenhuma revisão final de mídia, full decode, observação UI, aceite ou publicação inferida; sem polling."
+}

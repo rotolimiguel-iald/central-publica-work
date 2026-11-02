@@ -73,7 +73,8 @@ def pii_forte(t):
 
 # valores que o OPERADOR declarou não serem credencial (por sha256 do valor, sem repetir o literal): a frase do autoteste do ACOM Crypto
 # (acom_crypto_auth.py, _selftest) — «É diferente — publique», resposta do operador em 22/10/2026 à pergunta se era a frase-chave de acesso
-APROVADOS = {"c521b24d2889ff6204f5c7b1c76a9524306dc2cdba8cd807c6cd64a69b72d8ab"}
+# (02/11/2026, custódia v405) rótulo de fluxo do Codex, sem segredo: chave authorization em filmes_v7_20261024/adendo_h_v404 (MEDIA_GO.json, release_media.py); valor lido e aceito pela gerência c1, não pelo operador
+APROVADOS = {"c521b24d2889ff6204f5c7b1c76a9524306dc2cdba8cd807c6cd64a69b72d8ab", "d1e00e0d2979f7f78e31b374bb718939733768bc9480b6d9b5ce96a634b4d9e1"}
 
 
 def cred(t):

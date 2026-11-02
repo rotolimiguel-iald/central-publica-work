@@ -1,0 +1,37 @@
+# -*- coding: utf-8 -*-
+"""Registra no Mapa de Rotas a ROTA nova do treino v4 da IALD Nativa (um.py v404), em preparacao; consulta previa: 0 rotas para
+'treino', 'phase factor', 'bake'. Verbatim do operador lido do disco; hashes por script."""
+import hashlib, json, subprocess, sys
+from pathlib import Path
+sys.stdout.reconfigure(encoding="utf-8")
+C = Path("C:/IALD/Central de Patentes"); W = C / "work/treino_nativa_v4_20261029"
+V = C / "work/cunhagens_13out/OPERADOR_29out_treino_nativa_um_py_v404_verbatim.txt"
+sha = lambda p: hashlib.sha256(Path(p).read_bytes()).hexdigest()
+UM = Path("C:/IALD/Artigo/Haja_Luz/A Ponte e o Um/Nós/um.py"); assert sha(UM).startswith("3820476c83267f61"), "um.py nao e a v404"
+MEM = Path("C:/Users/rotol/.claude/projects/c--IALD-Central-de-Patentes/memory/iald-nativa-v3-treino.md")
+PROTO3 = Path("C:/IALD/TGL_IALD_NATIVE_QWEN5090/10_reports/COMO_SE_FAZ_TREINO_HIBRIDO.md")
+SEAL3 = Path("C:/IALD/TGL_IALD_NATIVE_QWEN5090/05_lora_adapters/iald_native_v3_Qwen3.6-35B-A3B_r32/train_seal_v3.json")
+reg = [{
+ "tipo": "ROTA", "rota_id": "infra.treino_iald_nativa_v4_um_py_v404", "dominio": "INFRA",
+ "titulo": "Treino v4 da IALD Nativa sobre o um.py v404 inteiro (termos, kernel Lean, estrutura logica; sem os resultados numericos), com salvaguardas de energia e phase factor — ordem do operador de 29/10/2026",
+ "pergunta": "A IALD Nativa (Qwen3.6-35B-A3B, LoRA hibrida) pode ser treinada no um.py v404 completo — Python sem o kernel embutido, 1435 modulos Lean, cartoes por declaracao e por verbete do Atlas — com retomada garantida apos queda de energia, e sair servida com o phase factor assado?",
+ "dados": ["verbatim do operador 29/10 (sha256 %s)" % sha(V),
+           "um.py v404 sha16 3820476c83267f61: 256650 linhas; Python sem kernel embutido 137379 linhas / 27,8 M chars, dos quais 12,5 M chars sao blobs base64 (fora); kernel Lean 1435 .lean / 10,99 MB; axiom_report 29484 termos [REAL, medido 29/10]",
+           "treino v3 (11-13/09): Qwen3.6-35B-A3B, carga hibrida sem overcommit, 866 passos, 8,95 M tokens, 42h30, 17,1 ms/token, pico VRAM 6,98 GiB, 0 nvlddmkm [REAL, train_seal_v3.json]",
+           "web 29/10: nenhum sucessor na classe 35B-A3B; Qwen3.8-27B (ago/2026) e DENSO de 64 camadas, Apache-2.0, VL; Qwen3.8-Flash-Next 125B-A6B; Qwen4 anunciado, nao lancado [DECLARADO, blogs + model cards HF]",
+           "estacao 29/10: RTX 5090 32607 MiB (llama-server v3 ocupa 24,4 GiB a 131k), RAM livre 173 GB, C: 218 GB livres, D: 1553 GB livres [REAL]"],
+ "metodo": "reaproveitar o pipeline v3 (01_build_dataset/02_train_lora/run_total/supervisor/bake mk4) em copias v4, nunca editando o v3: corpus v4 por blocos pre-registrados (A um.py sem kernel e sem payload + A2 cartoes de def/classe; B kernel .lean + B2 cartoes por declaracao com axiom_report; E Atlas/indice + E2 cartoes por verbete; C documentos canonicos; H identidade com kernel v13; G memorial; F memoria-nucleo/desenho; D resultados EXCLUIDO por ordem; I patentes e J v6 = rodada 2); fatiamento por tokens em ctx 2048; holdout estratificado >= 200; fumaca 5 passos + retomada antes de qualquer tarefa de auto-retomada; flag SAFE_TO_TRAIN; checkpoints a cada 10 passos com espelho em D: e escolha do ultimo checkpoint integro na retomada; merge/F16 em D:; bake mk5 (= mk4 sem input(), block_count lido do GGUF, mesma matematica, beta em runtime); portao de release por significado (beta por tolerancia numerica, nome da teoria, axioma) com reversao para a v3; eval por HTTP, nunca carregando o merged na GPU",
+ "resultado": "EM PREPARACAO (29/10, noite): levantamento concluido; dois agentes Sonnet constroem o corpus v4 e o pipeline v4; nenhum passo de GPU executado; demo :8081 (v3) no ar",
+ "veredito": "TGL_IALD_NATIVE_V4_TRAINING__ORDERED_BY_OPERATOR_20261029__MODEL_KEPT_QWEN3P6_35B_A3B__CORPUS_UM_PY_V404_WITHOUT_RESULTS__IN_PREPARATION__NO_GPU_STEP_RUN",
+ "estatuto": "INPUT (a ordem); REAL (medidas do corpus, do treino v3 e da estacao); DECLARADO (estado dos modelos na web); PILOTO (o phase factor: a auditoria de 07/2026 o mediu computacionalmente inerte; entra por ordem do operador)",
+ "status": "EM_CURSO", "olhou_dados": False,
+ "defeito": "a v3 tinha holdout de 13 amostras (nao mede nada) e portao de release por substring (a v2 passava com o axioma errado); o modelo degenera em digitos (numero e verbatim vem do RAG, nunca dos pesos); LoRA r32 absorve estrutura e vocabulario, nao memoriza 188 mil linhas; a demo fica fora do ar durante o treino",
+ "nao_refazer": "nao reabrir a receita de carga (hybrid_safe_loader e a joia: 0 TDR em 42 h); nao treinar com carga pinada; nao registrar tarefa de auto-retomada antes da fumaca aprovada; nao rodar eval que carregue o merged na GPU; nao usar o kernel v5 como system de treino; nao incluir segredos nem o protocolo de colapso no corpus servido ao publico",
+ "proximo_passo": "corpus v4 medido em tokens reais -> revisao da gerencia -> fumaca (GPU exclusiva) -> flag SAFE -> supervisor v4 + tarefa de retomada -> treino -> merge/F16 (D:) -> bake mk5 -> Q4 -> eval HTTP -> portao -> lancar com reversao -> registrar (Mapa RESULTADO, quadro, ACOM, memoria, PROTOCOLO_PADRAO_DE_TREINO)",
+ "onde": "C:/IALD/TGL_IALD_NATIVE_QWEN5090 (11_scripts/*_v4.py, 03_dataset/v4, 12_logs/*v4*, 10_reports/PROTOCOLO_PADRAO_DE_TREINO_IALD_NATIVA.md); work/treino_nativa_v4_20261029",
+ "artefatos": [str(V), str(UM), str(MEM), str(PROTO3), str(SEAL3)],
+ "refs": ["infra.memoria_organismo.atividade_20261016"],
+ "nota": "Neural = ilustracao, nao prova (setor fisico). O treino nao move gate, kernel, selo nem um.py. NOT_FALSIFIED nunca e CONFIRMED."}]
+pj = W / "rota_mapa_treino_v4_29out.json"; pj.write_text(json.dumps(reg, ensure_ascii=False, indent=1), encoding="utf-8")
+r = subprocess.run([sys.executable, "-X", "utf8", "C:/IALD/MAPA_DE_ROTAS/rotas.py", "registrar", str(pj), "--quem", "claude-c1"], capture_output=True, text=True, encoding="utf-8", errors="replace")
+print(r.stdout[-700:], r.stderr[-300:], "rc", r.returncode)

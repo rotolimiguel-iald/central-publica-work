@@ -2179,6 +2179,8 @@ def t45_auditor_l04_llms_index_e_ordem_da_camada_de_texto():
     escreve("11762", "11.762", "11.731")          # o L04 da v398: secoes/07 citada com 11.762 (o real é 11.731) — no llms.txt e no index.md, que o regex antigo não via
     d = espelho.auditar_numeros_citados(ctx)
     assert sorted((x["superficie"], x["arquivo"], x["citado"], x["real"]) for x in d) == [("SITE:index.md", "secoes/07-o-programa-um-py.md", 11762, 11731), ("SITE:llms.txt", "secoes/07-o-programa-um-py.md", 11762, 11731)], d
+    assert [x["superficie"] for x in espelho.auditar_numeros_citados(ctx, espelho.CITADAS_DO_E08)] == ["SITE:llms.txt"], "o E08 audita o que ele escreve; o index.md é do E15 (lição 24)"
+    assert [x["superficie"] for x in espelho.auditar_numeros_citados(ctx, espelho.CITADAS_DO_E15)] == ["SITE:index.md"]
     # a ORDEM: o laço de E08 roda gerar_secoes ANTES do read-brief, do llms e do head, em CADA passada, até o ponto fixo
     c2 = Caminhos({"TB": str(tb), "SITE": str(site_d)})
     ctx2 = motor.Ctx(c=c2, versao="v398")
@@ -2198,6 +2200,7 @@ def t45_auditor_l04_llms_index_e_ordem_da_camada_de_texto():
     assert r["passadas"] == 3 and so.count("gerar_secoes.py") == 3, (r, so)
     assert _ordem_da_camada_de_texto_certa(so), so
     assert so[-1] == "gerar_portas.py", "a última coisa de cada passada é o gerar_portas (hash final do read-brief)"
+    assert seq[-1] == "git add", "depois do último gerar_portas vem o git add -A: o carimbo gerado_utc não fica fora do índice (lição 27)"
     # o verificador de ordem DISCRIMINA: a ordem da v398 feita à mão (camada de texto antes de gerar_secoes) é reprovada
     errada = ["gerar_portas.py", "gerar_read_brief.py", "gerar_llms_site.py", "gerar_head_camada_texto.py", "gerar_secoes.py", "gerar_portas.py"]
     assert not _ordem_da_camada_de_texto_certa(errada)

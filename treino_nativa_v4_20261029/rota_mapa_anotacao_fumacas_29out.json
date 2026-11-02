@@ -1,0 +1,30 @@
+[
+ {
+  "tipo": "ANOTACAO",
+  "rota_id": "infra.treino_iald_nativa_v4_um_py_v404",
+  "dominio": "INFRA",
+  "titulo": "29/10 19:39-21:44: quatro tentativas de fumaca; o regime de GPU passou em todas (18,0-18,1 ms/token; pico do processo 6,5-6,9 GiB; 0 nvlddmkm; retomada do checkpoint-4 provada 3x); as reprovacoes foram da TELEMETRIA: (1) decodificacao do console; (2) alocador reservando ate o teto na eval (CSV 20,5 GB); (3) corrida de arquivo no STATUS (WinError 32); (4) nvidia-smi orfao inflando o CSV (27 GB)",
+  "pergunta": "O que reprovou as fumacas da v4 e o que fica como regra?",
+  "dados": [
+   "tent.1 19:38: TypeError apos UnicodeDecodeError (console cp850 sob -X utf8) [REAL]",
+   "tent.2 19:39-20:46: SMOKE+resume exit 0, 18,1 ms/token, pico 6,86 GiB, 0 nvlddmkm; CSV 20.586 MiB > 16.000 — crescimento monotonico so durante a eval do holdout de 333 (alocador reserva ate o teto de 20 GiB) [REAL, CSV por janelas de 10 min]",
+   "tent.3 20:49-21:09: com empty_cache na eval e holdout curto (48), CSV 13.434; mas exit 1 no ultimo write_status: PermissionError WinError 32 (robocopy do espelho lendo o STATUS) [REAL, traceback]",
+   "tent.4 21:12-21:42: SMOKE+resume exit 0/0, 18,0 ms/token, 5 passos; CSV 27.369 vindo de um nvidia-smi orfao da tent.3 (PID 42148, vivo desde 20:52:35, gravou o llama de volta na placa); CSVs proprios da rodada: 13.533 [REAL]"
+  ],
+  "metodo": "diagnostico pelos logs/CSV; correcoes por script com backup .bak e py_compile; cada relancamento desacoplado da sessao",
+  "resultado": "correcoes instaladas: encoding/errors em subprocessos; empty_cache a cada 4 amostras na eval; criterio CSV 24.000 MiB (teto 20 GiB + desktop); holdout da fumaca 48 linhas (treino real 333, eval a cada 250 passos); write_status/_save com retentativa 10 s e espelho por instantaneo; nvidia-smi encerrado por atexit; juiz do CSV so com arquivos iniciados na rodada; 5a fumaca lancada 21:44 (--from fumaca --smoke-only --try-fast)",
+  "veredito": "TGL_IALD_NATIVE_V4__GPU_REGIME_PASSED_4X__TELEMETRY_BUGS_FIXED__SMOKE5_RUNNING",
+  "estatuto": "REAL",
+  "status": "EM_CURSO",
+  "olhou_dados": false,
+  "defeito": "telemetria e juizes herdados da v3 nao foram desenhados para holdout grande, espelho em D: e relancamentos na mesma pasta de logs",
+  "nao_refazer": "nao reler os CSVs antigos como prova de overcommit (sao do orfao e da eval); nao voltar o criterio a 16.000; nao reduzir o holdout do treino real",
+  "proximo_passo": "ler SMOKE_TRAIN_v4.json da 5a fumaca; se aprovado, lancar o supervisor v4",
+  "onde": "C:/IALD/TGL_IALD_NATIVE_QWEN5090/12_logs; 11_scripts/run_total_v4.py; 02_train_lora_v4.py",
+  "artefatos": [
+   "C:\\IALD\\TGL_IALD_NATIVE_QWEN5090\\10_reports\\PROTOCOLO_PADRAO_DE_TREINO_IALD_NATIVA.md"
+  ],
+  "refs": [],
+  "nota": "Nenhum evento de driver em nenhuma tentativa; a demo :8081 fica fora do ar enquanto a fumaca roda e volta ao fim."
+ }
+]

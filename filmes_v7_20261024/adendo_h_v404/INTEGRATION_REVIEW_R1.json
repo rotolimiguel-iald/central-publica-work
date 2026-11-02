@@ -1,0 +1,123 @@
+{
+  "status": "CHANGES_REQUIRED",
+  "actor": "codex-video-v404-audio",
+  "plan_sha256": "54429812336cb993fafc3c044df7df57c84c72812b4c6043d158262a62e39add",
+  "installer_sha256": "a3850646af52faeca90e0e606dd5f56d3cb9b2965dcf7e1af9a88817fb42578d",
+  "checks": [
+    {
+      "name": "exact_plan_current_pins",
+      "status": "PASS",
+      "detail": {
+        "files": 97,
+        "changed": 80,
+        "existing": 71,
+        "prior_backups_verified": 62
+      }
+    },
+    {
+      "name": "unique_contained_destinations",
+      "status": "PASS",
+      "detail": "Resolved candidate/destination paths contained; no traversal."
+    },
+    {
+      "name": "six_exact_new_keys_only",
+      "status": "PASS",
+      "detail": {
+        "artifacts": 24,
+        "historical_keys_replaced": 0
+      }
+    },
+    {
+      "name": "current_audio_receipt_identity",
+      "status": "PASS",
+      "detail": "Identity/custody only, not synthesis acceptance."
+    },
+    {
+      "name": "derived_projection_attribution",
+      "status": "PASS",
+      "detail": "Builder actor retained; parent projection actor separate."
+    },
+    {
+      "name": "final_public_manifests_unchanged",
+      "status": "PASS",
+      "detail": "Both unchanged; not targeted by installer."
+    },
+    {
+      "name": "film1_film2_identical",
+      "status": "PASS",
+      "detail": "No omitted change in these two film structures."
+    },
+    {
+      "name": "backup_loop_before_planned_swap",
+      "status": "PASS",
+      "detail": "Lines 67-69 precede 71-75 for plan.files; exception in I03."
+    },
+    {
+      "name": "exact_review_hash_gate",
+      "status": "PASS",
+      "detail": "Line 62 compares review plan_sha256 and installer_sha256."
+    },
+    {
+      "name": "preflight_current",
+      "status": "PASS",
+      "detail": "Delegated parent ADENDO_H_V404 preflight; own review actor retained."
+    },
+    {
+      "name": "review_snapshot_unchanged",
+      "status": "PASS",
+      "detail": "Both reviewed hashes stable through review."
+    }
+  ],
+  "findings": [
+    {
+      "id": "I01",
+      "severity": "MEDIUM",
+      "file": "C:\\IALD\\Central de Patentes\\work\\filmes_v7_20261024\\adendo_h_v404\\integrate_v404.py",
+      "lines": [
+        64,
+        74,
+        75
+      ],
+      "title": "Bytes relidos na troca sem conferir pino do plano",
+      "detail": "Após verificar os candidatos e produzir backups, apply relê q.read_bytes(). Não compara esse raw com candidate.sha256/bytes; compara o destino apenas com q atual. Alteração concorrente pode instalar bytes fora do plano e gerar PASS.",
+      "required_change": "Verificar tamanho e hash do próprio raw que será gravado, imediatamente antes da troca, e conferir o instalado contra o mesmo pino revisado."
+    },
+    {
+      "id": "I02",
+      "severity": "MEDIUM",
+      "file": "C:\\IALD\\Central de Patentes\\work\\filmes_v7_20261024\\adendo_h_v404\\integrate_v404.py",
+      "lines": [
+        77,
+        81,
+        83,
+        91
+      ],
+      "title": "Dependências das projeções não revalidadas em apply",
+      "detail": "candidate_audio e candidate_audio_receipt estão pinados no plano, mas apply não verifica esses pinos antes de reler e projetar os recibos. NUMERIC_COMPARISON e PARENT_DATA_REVIEW também são relidos sem vínculo imutável no plano. Mudança posterior à preparação pode gerar READY/PASS incoerente com o material revisado.",
+      "required_change": "Pinar todas as dependências no plano; verificar antes da primeira troca e construir projeções dos bytes verificados, preservando autoria e identidade do plano."
+    },
+    {
+      "id": "I03",
+      "severity": "MEDIUM",
+      "file": "C:\\IALD\\Central de Patentes\\work\\filmes_v7_20261024\\adendo_h_v404\\integrate_v404.py",
+      "lines": [
+        90,
+        93,
+        94
+      ],
+      "title": "Destinos derivados fora do CAS e backup global",
+      "detail": "Além dos 97 arquivos, são criados audit/DELIVERY_D_V404.json e replay/DELIVERY_ADENDO_H_V404.json e substituído replay/DELIVERY_C.json. O último não tem before/CAS no plano; seu backup por save ocorre somente depois das demais trocas. Não cumpre backup de todos os bytes tocados antes da primeira troca nem detecta mudança concorrente desse ponteiro desde a revisão.",
+      "required_change": "Declarar os três destinos derivados e seus estados esperados/ausência no contrato, conferir antes de alterar V e incluir DELIVERY_C no backup anterior à primeira troca."
+    }
+  ],
+  "scope": "Revisão distinta do instalador do parent: bytes/CAS/backups/destinos/projeções. Não é aceite da síntese própria.",
+  "execution": {
+    "apply_executed": false,
+    "tts_executed": false,
+    "writes_to_V": false
+  },
+  "limits": [
+    "Inspeção estática e pinos atuais; sem executar apply nem injeção de falhas.",
+    "Nenhuma aprovação perceptiva ou semântica de áudio."
+  ]
+}
