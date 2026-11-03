@@ -19,6 +19,6 @@ Ordem do operador: `OPERADOR_01nov_concordo_com_tudo_deixe_tudo_pronto_isso_e_a_
 | S6b_aplicar | True | 2026-11-02T00:24:23 | {"evento": "1416", "hash": "9af96c0353286eec"} |
 | S6c_religamento | True | 2026-11-02T00:24:35 | {"rc": 0, "porta": true} |
 | S6c_chain_10c_14 | True | 2026-11-02T00:33:56 | {"rc": 0, "de": "10c", "ate": "14", "cauda": ""} |
-| S7_g1 | False | 2026-11-02T02:08:14 | {"planejar": 1, "executar": 20, "auditar": 0, "nota": "5 = só decisões do operador"} |
+| S7_g1 | False | 2026-11-02T04:11:12 | {"planejar": 1, "executar": 20, "auditar": 0, "nota": "5 = só decisões do operador"} |
 
 Estado inteiro: `orquestrador/ESTADO.json`; logs ao lado. Nada aqui move o gate; `NOT_FALSIFIED` nunca é `CONFIRMED`.

@@ -1,0 +1,92 @@
+--- v405/bancada_B3_servico/conferir_exigencias_servico_v405.py
++++ v406/bancada_B3_servico/conferir_exigencias_servico_v406.py
+@@ -2,3 +2,4 @@
+-"""conferir_exigencias_servico_v405.py -- SO LEITURA E SO ESTATICO (ast + texto): NADA e' executado (nem parada, nem religamento, nem evento).
+-Confere nos tres scripts derivados da v405 (evento_c1_b3_v405.py, recibo_parada_v405.py, recibo_religamento_v405.py):
+-  (a) parada e religamento EXIGEM V405_AUTORIZACAO_OPERADOR: a atribuicao `AUT = os.environ.get("V405_AUTORIZACAO_OPERADOR", "").strip()` e o `assert AUT, ...` seguinte sao as UNICAS coisas
++# [A ADAPTAR v406] SUBIDA MECANICA DE ROTULO (v405->v406, v404->v405) do molde v405/bancada_B3_servico/conferir_exigencias_servico_v405.py; o CORPO e' o da v405 (esperados,autorizacao_e_ordem_do_operador_da_v405); nada rodou; ver BUMP_v406_NOTAS.md e bump/bancada_B3_servico__conferir_exigencias_servico_v406.py.diff
++"""conferir_exigencias_servico_v406.py -- SO LEITURA E SO ESTATICO (ast + texto): NADA e' executado (nem parada, nem religamento, nem evento).
++Confere nos tres scripts derivados da v406 (evento_c1_b3_v406.py, recibo_parada_v406.py, recibo_religamento_v406.py):
++  (a) parada e religamento EXIGEM V406_AUTORIZACAO_OPERADOR: a atribuicao `AUT = os.environ.get("V406_AUTORIZACAO_OPERADOR", "").strip()` e o `assert AUT, ...` seguinte sao as UNICAS coisas
+@@ -6,5 +7,5 @@
+-  (b) o evento le o candidato_sha16 de ESPERADOS_v405.json em tempo de execucao: o `assert os.path.isfile(ESP)` e o assert do candidato vem ANTES do subprocess.run que anota no quadro; nenhum hash literal;
+-      ESPERADOS_v405.json NAO existe agora (medido), logo o evento abortaria no assert;
+-  (c) as chaves e a ordem do dict `rec` dos dois recibos = as dos recibos REAIS da v404 (RECIBO_PARADA_v404.json, RECIBO_RELIGAMENTO_v404.json);
+-  (d) os recibos da v405 ainda NAO existem (nada foi executado); os insumos que os scripts leem existem (RECIBO_RELIGAMENTO_v404.json e o recibo do B(n) da v404).
+-Grava CONFERENCIA_EXIGENCIAS_SERVICO_v405.json ao lado (nao sobrescreve). uso: python -I -B -X utf8 conferir_exigencias_servico_v405.py"""
++  (b) o evento le o candidato_sha16 de ESPERADOS_v406.json em tempo de execucao: o `assert os.path.isfile(ESP)` e o assert do candidato vem ANTES do subprocess.run que anota no quadro; nenhum hash literal;
++      ESPERADOS_v406.json NAO existe agora (medido), logo o evento abortaria no assert;
++  (c) as chaves e a ordem do dict `rec` dos dois recibos = as dos recibos REAIS da v405 (RECIBO_PARADA_v405.json, RECIBO_RELIGAMENTO_v405.json);
++  (d) os recibos da v406 ainda NAO existem (nada foi executado); os insumos que os scripts leem existem (RECIBO_RELIGAMENTO_v405.json e o recibo do B(n) da v405).
++Grava CONFERENCIA_EXIGENCIAS_SERVICO_v406.json ao lado (nao sobrescreve). uso: python -I -B -X utf8 conferir_exigencias_servico_v406.py"""
+@@ -23 +24 @@
+-V14 = os.path.join(os.path.dirname(V), "v404")
++V14 = os.path.join(os.path.dirname(V), "v405")
+@@ -62 +63 @@
+-    return u == 'os.environ.get("V405_AUTORIZACAO_OPERADOR", "").strip()'
++    return u == 'os.environ.get("V406_AUTORIZACAO_OPERADOR", "").strip()'
+@@ -72,2 +73,2 @@
+-reais = {"recibo_parada_v405.py": os.path.join(V14, "bancada_B3_servico", "RECIBO_PARADA_v404.json"), "recibo_religamento_v405.py": os.path.join(V14, "bancada_B3_servico", "RECIBO_RELIGAMENTO_v404.json")}
+-saidas = {"recibo_parada_v405.py": "RECIBO_PARADA_v405.json", "recibo_religamento_v405.py": "RECIBO_RELIGAMENTO_v405.json"}
++reais = {"recibo_parada_v406.py": os.path.join(V14, "bancada_B3_servico", "RECIBO_PARADA_v405.json"), "recibo_religamento_v406.py": os.path.join(V14, "bancada_B3_servico", "RECIBO_RELIGAMENTO_v405.json")}
++saidas = {"recibo_parada_v406.py": "RECIBO_PARADA_v406.json", "recibo_religamento_v406.py": "RECIBO_RELIGAMENTO_v406.json"}
+@@ -75 +76 @@
+-for nome in ("recibo_parada_v405.py", "recibo_religamento_v405.py"):
++for nome in ("recibo_parada_v406.py", "recibo_religamento_v406.py"):
+@@ -81 +82 @@
+-    chk(nome + ": ha a atribuicao AUT = os.environ.get(V405_AUTORIZACAO_OPERADOR).strip()", i_atrib is not None, i_atrib)
++    chk(nome + ": ha a atribuicao AUT = os.environ.get(V406_AUTORIZACAO_OPERADOR).strip()", i_atrib is not None, i_atrib)
+@@ -86,3 +87,3 @@
+-    chk(nome + ": V405_AUTORIZACAO_OPERADOR aparece 2 vezes (leitura e mensagem do assert)", txt.count("V405_AUTORIZACAO_OPERADOR") == 2, txt.count("V405_AUTORIZACAO_OPERADOR"), 2)
+-    chk(nome + ": nenhum nome da versao anterior sobrou (V404_AUTORIZACAO_OPERADOR, RECIBO_*_v404.json como saida)", "V404_AUTORIZACAO_OPERADOR" not in txt and ('"%s"' % saidas[nome].replace("v405", "v404")) not in txt,
+-        ["V404_AUTORIZACAO_OPERADOR" in txt, ('"%s"' % saidas[nome].replace("v405", "v404")) in txt], [False, False])
++    chk(nome + ": V406_AUTORIZACAO_OPERADOR aparece 2 vezes (leitura e mensagem do assert)", txt.count("V406_AUTORIZACAO_OPERADOR") == 2, txt.count("V406_AUTORIZACAO_OPERADOR"), 2)
++    chk(nome + ": nenhum nome da versao anterior sobrou (V405_AUTORIZACAO_OPERADOR, RECIBO_*_v405.json como saida)", "V405_AUTORIZACAO_OPERADOR" not in txt and ('"%s"' % saidas[nome].replace("v406", "v405")) not in txt,
++        ["V405_AUTORIZACAO_OPERADOR" in txt, ('"%s"' % saidas[nome].replace("v406", "v405")) in txt], [False, False])
+@@ -93,2 +94,2 @@
+-    chk(nome + ": chaves do dict rec (ordem) = chaves do recibo REAL da v404", k_novo == k_real, [k_novo, k_real], "listas iguais")
+-    chk(nome + ": o recibo da v405 ainda nao existe (nada foi executado)", not os.path.exists(os.path.join(HERE, saidas[nome])), os.path.exists(os.path.join(HERE, saidas[nome])), False)
++    chk(nome + ": chaves do dict rec (ordem) = chaves do recibo REAL da v405", k_novo == k_real, [k_novo, k_real], "listas iguais")
++    chk(nome + ": o recibo da v406 ainda nao existe (nada foi executado)", not os.path.exists(os.path.join(HERE, saidas[nome])), os.path.exists(os.path.join(HERE, saidas[nome])), False)
+@@ -96,2 +97,2 @@
+-pe, te, ae = corpo("evento_c1_b3_v405.py")
+-arquivos["evento_c1_b3_v405.py"] = {"path": pe, "sha256": sha(pe), "bytes": os.path.getsize(pe)}
++pe, te, ae = corpo("evento_c1_b3_v406.py")
++arquivos["evento_c1_b3_v406.py"] = {"path": pe, "sha256": sha(pe), "bytes": os.path.getsize(pe)}
+@@ -111 +112 @@
+-chk("evento: ESP = ..\\ESPERADOS_v405.json e le o campo candidato_sha16", 'os.path.join(D, "..", "ESPERADOS_v405.json")' in te and '["candidato_sha16"]' in te, True)
++chk("evento: ESP = ..\\ESPERADOS_v406.json e le o campo candidato_sha16", 'os.path.join(D, "..", "ESPERADOS_v406.json")' in te and '["candidato_sha16"]' in te, True)
+@@ -113,3 +114,3 @@
+-chk("evento: V405_AUTORIZACAO_OPERADOR nao e usada (o evento nao exige a variavel; so' parada e religamento)", "V405_AUTORIZACAO_OPERADOR" not in te, "V405_AUTORIZACAO_OPERADOR" in te, False)
+-chk("evento: versao v405, acao sincronizacao, unidade F0.6, tipo SINCRONIZACAO_BANCADA", '"versao": "v405"' in te and '"acao": "sincronizacao"' in te and '"unidade": "F0.6"' in te and '"SINCRONIZACAO_BANCADA"' in te, True)
+-esp_p = os.path.join(V, "ESPERADOS_v405.json")
++chk("evento: V406_AUTORIZACAO_OPERADOR nao e usada (o evento nao exige a variavel; so' parada e religamento)", "V406_AUTORIZACAO_OPERADOR" not in te, "V406_AUTORIZACAO_OPERADOR" in te, False)
++chk("evento: versao v406, acao sincronizacao, unidade F0.6, tipo SINCRONIZACAO_BANCADA", '"versao": "v406"' in te and '"acao": "sincronizacao"' in te and '"unidade": "F0.6"' in te and '"SINCRONIZACAO_BANCADA"' in te, True)
++esp_p = os.path.join(V, "ESPERADOS_v406.json")
+@@ -118 +119 @@
+-chk("ESPERADOS_v405.json AUSENTE (o evento abortaria no assert os.path.isfile) ou presente com o um.py do Nos AINDA NAO igual ao candidato dele (abortaria no assert do candidato): em qualquer dos dois estados o evento aborta ANTES de anotar no quadro", cand16_ is None or um_nos16_ != cand16_, [cand16_, um_nos16_], "ausente, ou diferentes")
++chk("ESPERADOS_v406.json AUSENTE (o evento abortaria no assert os.path.isfile) ou presente com o um.py do Nos AINDA NAO igual ao candidato dele (abortaria no assert do candidato): em qualquer dos dois estados o evento aborta ANTES de anotar no quadro", cand16_ is None or um_nos16_ != cand16_, [cand16_, um_nos16_], "ausente, ou diferentes")
+@@ -120,7 +121,7 @@
+-rel8 = os.path.join(V14, "bancada_B3_servico", "RECIBO_RELIGAMENTO_v404.json")
+-bn8 = sorted(glob.glob(os.path.join(V14, "bancada_B3", "RECIBO_SINCRONIZACAO_v404_*.json")))
+-chk("insumo da parada: RECIBO_RELIGAMENTO_v404.json existe", os.path.isfile(rel8), rel8)
+-chk("insumo do religamento: um unico RECIBO_SINCRONIZACAO_v404_*.json em v404\\bancada_B3", len(bn8) == 1, [os.path.basename(x) for x in bn8], 1)
+-bn9 = sorted(glob.glob(os.path.join(V, "bancada_B3", "RECIBO_SINCRONIZACAO_v405_*.json")))
+-chk("o recibo do B(n) da v405 ainda nao existe (v405\\bancada_B3 vazia de recibo)", len(bn9) == 0, [os.path.basename(x) for x in bn9], [])
+-res = {"contrato": "CONFERENCIA_EXIGENCIAS_SERVICO_v405", "como": "estatica (ast + texto); nada foi executado; a producao nao foi tocada", "script": {"path": os.path.abspath(__file__), "sha256": sha(os.path.abspath(__file__))},
++rel8 = os.path.join(V14, "bancada_B3_servico", "RECIBO_RELIGAMENTO_v405.json")
++bn8 = sorted(glob.glob(os.path.join(V14, "bancada_B3", "RECIBO_SINCRONIZACAO_v405_*.json")))
++chk("insumo da parada: RECIBO_RELIGAMENTO_v405.json existe", os.path.isfile(rel8), rel8)
++chk("insumo do religamento: um unico RECIBO_SINCRONIZACAO_v405_*.json em v405\\bancada_B3", len(bn8) == 1, [os.path.basename(x) for x in bn8], 1)
++bn9 = sorted(glob.glob(os.path.join(V, "bancada_B3", "RECIBO_SINCRONIZACAO_v406_*.json")))
++chk("o recibo do B(n) da v406 ainda nao existe (v406\\bancada_B3 vazia de recibo)", len(bn9) == 0, [os.path.basename(x) for x in bn9], [])
++res = {"contrato": "CONFERENCIA_EXIGENCIAS_SERVICO_v406", "como": "estatica (ast + texto); nada foi executado; a producao nao foi tocada", "script": {"path": os.path.abspath(__file__), "sha256": sha(os.path.abspath(__file__))},
+@@ -128 +129 @@
+-       "exigem_V405_AUTORIZACAO_OPERADOR": {"recibo_parada_v405.py": True, "recibo_religamento_v405.py": True} if all(c["ok"] for c in checks if "AUT" in c["nome"] or "V405_AUTORIZACAO_OPERADOR" in c["nome"]) else "VER condicoes",
++       "exigem_V406_AUTORIZACAO_OPERADOR": {"recibo_parada_v406.py": True, "recibo_religamento_v406.py": True} if all(c["ok"] for c in checks if "AUT" in c["nome"] or "V406_AUTORIZACAO_OPERADOR" in c["nome"]) else "VER condicoes",
+@@ -130 +131 @@
+-dest = os.path.join(HERE, "CONFERENCIA_EXIGENCIAS_SERVICO_v405.json")
++dest = os.path.join(HERE, "CONFERENCIA_EXIGENCIAS_SERVICO_v406.json")
+@@ -136 +137 @@
+-print("%d/%d condicoes ok" % (res["n_condicoes_ok"], res["n_condicoes"]), "| exigem:", res["exigem_V405_AUTORIZACAO_OPERADOR"])
++print("%d/%d condicoes ok" % (res["n_condicoes_ok"], res["n_condicoes"]), "| exigem:", res["exigem_V406_AUTORIZACAO_OPERADOR"])

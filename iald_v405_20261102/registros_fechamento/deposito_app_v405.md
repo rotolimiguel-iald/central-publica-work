@@ -1,0 +1,10 @@
+02/11/2026: o app foi da v404 para a v405 (backend compartilhado; não há build nova de cliente). A release está em `work\iald_v405_20261102`.
+- **Haiku55, base compacta redesenhada (a lição da v404 não coube esperar a v406):** a cápsula `kernel_formalization` tinha 645061 B no prefixo instalado; agora 31425 B. 9843 indicadores TRUE das famílias `ext_`/`red_` vão ao catálogo, com contagem e hash; 467 TRUE e 4 FALSE ficam literais; `declaration_sources_v394` passa a ponteiro. Folga 28640 → 172998 tokens, com os tópicos `_v404` e `_v405` integrais (`EXPAND_OVERRIDE = None`).
+- **Recuperação:** a cápsula ensina a busca; catalogados 9843 amostra 700 semente 20261102 achados 699 falhas ['ext_no_symmetric_kernel_proved'].
+- **Revisão:** o revisor independente recusou a r1 (F1: a regra só lexical deixava `gpf_H2=false` literal e tirava `gpc_H2=true`) e aceitou a r3. Implantação 43/43, verificação 18/18. Ressalvas BAIXAS R3-1 e R3-2, com o conserto escrito em `LICOES_v405.md`, para aplicar ao copiar a pasta.
+- **Instalação:** 1472 arquivos; web 69428→92204 sob o supervisor 38024; /login 200; nenhuma chamada paga de geração; JEV v405.
+- **Torre:** `TORRE_v405.json` tinha nascido às 04:09 com o JEV `null`, antes do app; rodei `torre.py gerar` (backup `TORRE_v405.json.bak_20261102_084051`) e o contrato do JEV ficou pinado. Fica para a v406: a G1 só gera a Torre quando falta o arquivo; depois da C21 precisa regenerar.
+- **Próxima parede, medida:** janela dos outros motores. Os tópicos `_v405` pesam 104 KB no `shared`; folga Kimi 95720 B, MiMo 92348 B, DeepSeek 74747 B (reserva declarada). A release só coube pela saída de `declaration_sources_v394`. Uma v406 do mesmo porte não cabe sem decidir a janela P2 antes do finalize.
+- **Não medido:** resposta de modelo ao vivo citando a v405; celular físico.
+- **Custódia v405:** C21 `ok`; C19, C20 e C17C seguem à espera da F0.3 (Codex). Organismo: 7 DEFASADO, sendo 2 da fila, 1 do `TGL_ATLAS.md` em curso da c1 e 4 da Torre (agregado + 3 antigos).
+- Quadro: `F9.APP_V405_20261102` ENTREGUE; AUDITADA é ato da c1. Rota `app.release.v405`.

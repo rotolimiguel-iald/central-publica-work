@@ -1,0 +1,42 @@
+--- v405/bancada_B3_servico/recibo_parada_v405.py
++++ v406/bancada_B3_servico/recibo_parada_v406.py
+@@ -1 +1,2 @@
+-"""10-bis-a da v405: recibo da parada do servico da Bancada Um (porta 18777), no molde do recibo_parada_v404.py."""
++# [A ADAPTAR v406] SUBIDA MECANICA DE ROTULO (v405->v406, v404->v405) do molde v405/bancada_B3_servico/recibo_parada_v405.py; o CORPO e' o da v405 (autorizacao_e_ordem_do_operador_da_v405); nada rodou; ver BUMP_v406_NOTAS.md e bump/bancada_B3_servico__recibo_parada_v406.py.diff
++"""10-bis-a da v406: recibo da parada do servico da Bancada Um (porta 18777), no molde do recibo_parada_v405.py."""
+@@ -9,2 +10,2 @@
+-AUT = os.environ.get("V405_AUTORIZACAO_OPERADOR", "").strip()
+-assert AUT, "defina V405_AUTORIZACAO_OPERADOR com a ordem do operador que cobre este ato (data e texto): o script nao presume autorizacao"
++AUT = os.environ.get("V406_AUTORIZACAO_OPERADOR", "").strip()
++assert AUT, "defina V406_AUTORIZACAO_OPERADOR com a ordem do operador que cobre este ato (data e texto): o script nao presume autorizacao"
+@@ -21,8 +22,8 @@
+-rel404 = json.load(open(os.path.join(D, "..", "..", "v404", "bancada_B3_servico", "RECIBO_RELIGAMENTO_v404.json"), encoding="utf-8"))
+-pid_ultimo = rel404["pid"]
+-# emenda da gerencia c1 (28/10/2026, antes do uso): o numero corrige a frase -- o PID registrado e o LIDO DA PORTA antes da parada (V405_PID_PARADO), nao o do ultimo recibo da v404,
+-# porque o servico foi religado de novo depois daquele recibo (o processo da porta foi criado em outra hora); o PID da v404 fica ao lado, como referencia.
+-PIDP = os.environ.get("V405_PID_PARADO", "").strip()
+-assert PIDP.isdigit(), "defina V405_PID_PARADO com o PID lido da porta 18777 antes da parada (linha de comando conferida): o script nao presume o PID"
+-CRIADO = os.environ.get("V405_PID_PARADO_CRIADO", "").strip()
+-assert CRIADO, "defina V405_PID_PARADO_CRIADO com a data/hora de criacao do processo parado (lida de Win32_Process antes da parada)"
++rel405 = json.load(open(os.path.join(D, "..", "..", "v405", "bancada_B3_servico", "RECIBO_RELIGAMENTO_v405.json"), encoding="utf-8"))
++pid_ultimo = rel405["pid"]
++# emenda da gerencia c1 (28/10/2026, antes do uso): o numero corrige a frase -- o PID registrado e o LIDO DA PORTA antes da parada (V406_PID_PARADO), nao o do ultimo recibo da v405,
++# porque o servico foi religado de novo depois daquele recibo (o processo da porta foi criado em outra hora); o PID da v405 fica ao lado, como referencia.
++PIDP = os.environ.get("V406_PID_PARADO", "").strip()
++assert PIDP.isdigit(), "defina V406_PID_PARADO com o PID lido da porta 18777 antes da parada (linha de comando conferida): o script nao presume o PID"
++CRIADO = os.environ.get("V406_PID_PARADO_CRIADO", "").strip()
++assert CRIADO, "defina V406_PID_PARADO_CRIADO com a data/hora de criacao do processo parado (lida de Win32_Process antes da parada)"
+@@ -33 +34 @@
+-       "pid_estado": "PID lido da porta 18777 antes da parada (processo criado em %s; linha de comando conferida), parado pelo PID; conferido aqui que ja nao existe; o ultimo recibo da v404 (religamento, %s/%s) trazia o PID %s, que difere porque o servico foi religado de novo depois daquele recibo" % (CRIADO, rel404["hora_recibo"][8:10], rel404["hora_recibo"][5:7], pid_ultimo),
++       "pid_estado": "PID lido da porta 18777 antes da parada (processo criado em %s; linha de comando conferida), parado pelo PID; conferido aqui que ja nao existe; o ultimo recibo da v405 (religamento, %s/%s) trazia o PID %s, que difere porque o servico foi religado de novo depois daquele recibo" % (CRIADO, rel405["hora_recibo"][8:10], rel405["hora_recibo"][5:7], pid_ultimo),
+@@ -38,2 +39,2 @@
+-       "nota": ("nenhum processo um_bancada.py vivo e a porta 18777 fechada, conferidos por este script no momento do recibo; o script nao para nada: o servico foi religado no passo %s da v404 (PID %s) e de novo depois (o PID parado, %s, e o lido da porta), "
+-                "e a parada que precede este recibo e feita pelo PID (nunca por nome), nao por este script; quem a executou e sob que ordem do operador consta em autorizacao_do_operador" % (rel404.get("passo"), pid_ultimo, PIDP)),
++       "nota": ("nenhum processo um_bancada.py vivo e a porta 18777 fechada, conferidos por este script no momento do recibo; o script nao para nada: o servico foi religado no passo %s da v405 (PID %s) e de novo depois (o PID parado, %s, e o lido da porta), "
++                "e a parada que precede este recibo e feita pelo PID (nunca por nome), nao por este script; quem a executou e sob que ordem do operador consta em autorizacao_do_operador" % (rel405.get("passo"), pid_ultimo, PIDP)),
+@@ -42 +43 @@
+-p = os.path.join(D, "RECIBO_PARADA_v405.json")
++p = os.path.join(D, "RECIBO_PARADA_v406.json")
+@@ -46 +47 @@
+-print("ok", p, "pid_parado", PIDP, "pid_ultimo_recibo_v404", pid_ultimo, "processos", n_proc)
++print("ok", p, "pid_parado", PIDP, "pid_ultimo_recibo_v405", pid_ultimo, "processos", n_proc)

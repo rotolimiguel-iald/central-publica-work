@@ -1,0 +1,68 @@
+--- v405/bancada_B3_servico/controle_negativo/mutar_conferidor_v405.py
++++ v406/bancada_B3_servico/controle_negativo/mutar_conferidor_v406.py
+@@ -2,7 +2,8 @@
+-"""mutar_conferidor_v405.py -- CONTROLE NEGATIVO do conferidor estatico (conferir_exigencias_servico_v405.py). NADA do servico e' executado e nenhum script real e' alterado.
+-Copia os tres scripts derivados da v405 para uma pasta TEMPORARIA, aplica tres mutacoes e roda uma copia do conferidor apontada para elas; o conferidor tem de FALHAR (rc 1) em cada mutacao:
+-  M1  recibo_parada_v405.py      : o `assert AUT` passa para DEPOIS da criacao do socket (E/S antes da exigencia da autorizacao);
+-  M2  recibo_religamento_v405.py : a leitura da variavel de ambiente volta a V404_AUTORIZACAO_OPERADOR (nome da versao anterior sobrando);
+-  M3  evento_c1_b3_v405.py       : o `assert os.path.isfile(ESP)` passa para o FIM, depois do subprocess.run que anota no quadro.
+-Grava RESULTADO_CONTROLE_NEGATIVO_v405.json ao lado (nao sobrescreve) com os diffs das mutacoes e as condicoes que falharam. Nao deixa nenhum script mutado em disco (a pasta temporaria some).
+-uso: python -I -B -X utf8 mutar_conferidor_v405.py"""
++# [A ADAPTAR v406] SUBIDA MECANICA DE ROTULO (v405->v406, v404->v405) do molde v405/bancada_B3_servico/controle_negativo/mutar_conferidor_v405.py; o CORPO e' o da v405 (esperados,autorizacao_e_ordem_do_operador_da_v405); nada rodou; ver BUMP_v406_NOTAS.md e bump/bancada_B3_servico__controle_negativo__mutar_conferidor_v406.py.diff
++"""mutar_conferidor_v406.py -- CONTROLE NEGATIVO do conferidor estatico (conferir_exigencias_servico_v406.py). NADA do servico e' executado e nenhum script real e' alterado.
++Copia os tres scripts derivados da v406 para uma pasta TEMPORARIA, aplica tres mutacoes e roda uma copia do conferidor apontada para elas; o conferidor tem de FALHAR (rc 1) em cada mutacao:
++  M1  recibo_parada_v406.py      : o `assert AUT` passa para DEPOIS da criacao do socket (E/S antes da exigencia da autorizacao);
++  M2  recibo_religamento_v406.py : a leitura da variavel de ambiente volta a V405_AUTORIZACAO_OPERADOR (nome da versao anterior sobrando);
++  M3  evento_c1_b3_v406.py       : o `assert os.path.isfile(ESP)` passa para o FIM, depois do subprocess.run que anota no quadro.
++Grava RESULTADO_CONTROLE_NEGATIVO_v406.json ao lado (nao sobrescreve) com os diffs das mutacoes e as condicoes que falharam. Nao deixa nenhum script mutado em disco (a pasta temporaria some).
++uso: python -I -B -X utf8 mutar_conferidor_v406.py"""
+@@ -21,3 +22,3 @@
+-SRV = os.path.dirname(HERE)                         # ...\v405\bancada_B3_servico
+-V = os.path.dirname(SRV)                            # ...\cadeia_de_selo\v405
+-V14 = os.path.join(os.path.dirname(V), "v404")
++SRV = os.path.dirname(HERE)                         # ...\v406\bancada_B3_servico
++V = os.path.dirname(SRV)                            # ...\cadeia_de_selo\v406
++V14 = os.path.join(os.path.dirname(V), "v405")
+@@ -25 +26 @@
+-NOMES = ("evento_c1_b3_v405.py", "recibo_parada_v405.py", "recibo_religamento_v405.py")
++NOMES = ("evento_c1_b3_v406.py", "recibo_parada_v406.py", "recibo_religamento_v406.py")
+@@ -43 +44 @@
+-    t = originais["recibo_parada_v405.py"]
++    t = originais["recibo_parada_v406.py"]
+@@ -48,2 +49,2 @@
+-    t = originais["recibo_religamento_v405.py"]
+-    a = 'os.environ.get("V405_AUTORIZACAO_OPERADOR"'
++    t = originais["recibo_religamento_v406.py"]
++    a = 'os.environ.get("V406_AUTORIZACAO_OPERADOR"'
+@@ -51 +52 @@
+-    m2 = t.replace(a, 'os.environ.get("V404_AUTORIZACAO_OPERADOR"', 1)
++    m2 = t.replace(a, 'os.environ.get("V405_AUTORIZACAO_OPERADOR"', 1)
+@@ -53 +54 @@
+-    t = originais["evento_c1_b3_v405.py"]
++    t = originais["evento_c1_b3_v406.py"]
+@@ -57,2 +58,2 @@
+-    muts = {"M1_assert_AUT_depois_do_socket": ("recibo_parada_v405.py", m1), "M2_nome_da_versao_anterior_na_variavel": ("recibo_religamento_v405.py", m2),
+-            "M3_assert_do_ESPERADOS_depois_do_subprocess": ("evento_c1_b3_v405.py", m3)}
++    muts = {"M1_assert_AUT_depois_do_socket": ("recibo_parada_v406.py", m1), "M2_nome_da_versao_anterior_na_variavel": ("recibo_religamento_v406.py", m2),
++            "M3_assert_do_ESPERADOS_depois_do_subprocess": ("evento_c1_b3_v406.py", m3)}
+@@ -63,2 +64,2 @@
+-    # o conferidor: copia apontada para a pasta temporaria (HERE) e para as pastas reais v405 (V) e v404 (V14); a saida JSON cai na pasta temporaria
+-    c = ler(os.path.join(SRV, "conferir_exigencias_servico_v405.py"))
++    # o conferidor: copia apontada para a pasta temporaria (HERE) e para as pastas reais v406 (V) e v405 (V14); a saida JSON cai na pasta temporaria
++    c = ler(os.path.join(SRV, "conferir_exigencias_servico_v406.py"))
+@@ -68 +69 @@
+-    a = 'V14 = os.path.join(os.path.dirname(V), "v404")'
++    a = 'V14 = os.path.join(os.path.dirname(V), "v405")'
+@@ -73 +74 @@
+-    saida = json.load(open(os.path.join(tmp, "CONFERENCIA_EXIGENCIAS_SERVICO_v405.json"), encoding="utf-8"))
++    saida = json.load(open(os.path.join(tmp, "CONFERENCIA_EXIGENCIAS_SERVICO_v406.json"), encoding="utf-8"))
+@@ -77,3 +78,3 @@
+-        por_mutacao[k] = [f["nome"] for f in falhas if f["nome"].startswith(n.replace("_v405.py", "")) or (n.startswith("evento") and f["nome"].startswith("evento"))]
+-res = {"contrato": "RESULTADO_CONTROLE_NEGATIVO_v405", "script": {"path": os.path.abspath(__file__), "sha256": sha(open(os.path.abspath(__file__), "rb").read())},
+-       "conferidor": {"path": os.path.join(SRV, "conferir_exigencias_servico_v405.py"), "sha256": sha(open(os.path.join(SRV, "conferir_exigencias_servico_v405.py"), "rb").read())},
++        por_mutacao[k] = [f["nome"] for f in falhas if f["nome"].startswith(n.replace("_v406.py", "")) or (n.startswith("evento") and f["nome"].startswith("evento"))]
++res = {"contrato": "RESULTADO_CONTROLE_NEGATIVO_v406", "script": {"path": os.path.abspath(__file__), "sha256": sha(open(os.path.abspath(__file__), "rb").read())},
++       "conferidor": {"path": os.path.join(SRV, "conferir_exigencias_servico_v406.py"), "sha256": sha(open(os.path.join(SRV, "conferir_exigencias_servico_v406.py"), "rb").read())},
+@@ -83 +84 @@
+-dest = os.path.join(HERE, "RESULTADO_CONTROLE_NEGATIVO_v405.json")
++dest = os.path.join(HERE, "RESULTADO_CONTROLE_NEGATIVO_v406.json")

@@ -1,0 +1,60 @@
+--- v405/bateria_pre_selo/derivar_pre_selo_v405.py
++++ v406/bateria_pre_selo/derivar_pre_selo_v406.py
+@@ -2,4 +2,4 @@
+-"""derivar_pre_selo_v405.py -- deriva, dos cinco arquivos da v404 (v404\\bateria_pre_selo; os que GERARAM um recibo pre_selo NOVO em ensaio e que RODARAM de verdade em 28/10), os da v405 por SUBIDA DE VERSAO com fronteira de digitos,
+-numa PASSAGEM UNICA e simultanea (sem encadear): v404 -> v405 (nome da cadeia/saida), v403 -> v404 (o estado de hoje: o Nos e o pino da Bancada), v402 -> v403 (a versao ANTES da anterior, do controle negativo "selo anterior errado"),
+-V13 -> V14 (variavel de caminho da cadeia anterior), SELO_V402/KM_V402 -> SELO_V403/KM_V403, (B12) -> (B13) (o pino da Bancada de producao hoje: B13-v404-20261028-R1) e «em 28/10 -> em 01/11». O sandbox curto SEGUE vb21 (decisao da v405: o orquestrador cobra esse caminho ausente; ele foi limpo pela v404).
+-Contrato desta rodada (o mesmo da v404): o recibo e' GERADO NOVO, antes da instalacao da v405, em ensaio contra a Bancada de producao que ja' pina a v404 (B13) -- passo simples v404 -> v405.
++"""derivar_pre_selo_v406.py -- deriva, dos cinco arquivos da v405 (v405\\bateria_pre_selo; os que GERARAM um recibo pre_selo NOVO em ensaio e que RODARAM de verdade em 28/10), os da v406 por SUBIDA DE VERSAO com fronteira de digitos,
++numa PASSAGEM UNICA e simultanea (sem encadear): v405 -> v406 (nome da cadeia/saida), v403 -> v405 (o estado de hoje: o Nos e o pino da Bancada), v402 -> v403 (a versao ANTES da anterior, do controle negativo "selo anterior errado"),
++V13 -> V14 (variavel de caminho da cadeia anterior), SELO_V402/KM_V402 -> SELO_V403/KM_V403, (B12) -> (B14) (o pino da Bancada de producao hoje: B14-v405-20261102-R1) e «em 28/10 -> em 01/11». O sandbox curto SEGUE vb21 (decisao da v406: o orquestrador cobra esse caminho ausente; ele foi limpo pela v405).
++Contrato desta rodada (o mesmo da v405): o recibo e' GERADO NOVO, antes da instalacao da v406, em ensaio contra a Bancada de producao que ja' pina a v405 (B14) -- passo simples v405 -> v406.
+@@ -7,2 +7,2 @@
+-Entrada: so' a v404\\bateria_pre_selo\\ (leitura). Saida: os arquivos novos (nao sobrescreve) + DERIVACAO_PRE_SELO_v405.json. Nada e' executado aqui (so' ast.parse). Molde: v404\\bateria_pre_selo\\derivar_pre_selo_v404.py.
+-uso: python -I -B -X utf8 derivar_pre_selo_v405.py"""
++Entrada: so' a v405\\bateria_pre_selo\\ (leitura). Saida: os arquivos novos (nao sobrescreve) + DERIVACAO_PRE_SELO_v406.json. Nada e' executado aqui (so' ast.parse). Molde: v405\\bateria_pre_selo\\derivar_pre_selo_v405.py.
++uso: python -I -B -X utf8 derivar_pre_selo_v406.py"""
+@@ -21,5 +21,5 @@
+-FONTE = os.path.join(CS, "v404", "bateria_pre_selo")
+-ARQ = [("gerar_pino_recibo_pre_selo_v404.py", "gerar_pino_recibo_pre_selo_v405.py"),
+-       ("conferir_recibo_pre_selo_v404.py", "conferir_recibo_pre_selo_v405.py"),
+-       ("snap_producao_v404.py", "snap_producao_v405.py"),
+-       ("rodar_ensaio_1_pre_selo_v404.sh", "rodar_ensaio_1_pre_selo_v405.sh"),
++FONTE = os.path.join(CS, "v405", "bateria_pre_selo")
++ARQ = [("gerar_pino_recibo_pre_selo_v405.py", "gerar_pino_recibo_pre_selo_v406.py"),
++       ("conferir_recibo_pre_selo_v405.py", "conferir_recibo_pre_selo_v406.py"),
++       ("snap_producao_v405.py", "snap_producao_v406.py"),
++       ("rodar_ensaio_1_pre_selo_v405.sh", "rodar_ensaio_1_pre_selo_v406.sh"),
+@@ -27,2 +27,2 @@
+-MAPA = {"v404": "v405", "v403": "v404", "v402": "v403"}
+-RE_V = re.compile(r"(?<![0-9A-Za-z])v(402|403|404)(?![0-9])")
++MAPA = {"v405": "v406", "v403": "v405", "v402": "v403"}
++RE_V = re.compile(r"(?<![0-9A-Za-z])v(402|403|405)(?![0-9])")
+@@ -38 +38 @@
+-rel = {"contrato": "DERIVACAO_PRE_SELO_v405", "quando": time.strftime("%Y-%m-%dT%H:%M:%S%z"), "mapa_de_versoes": MAPA, "script": None, "entradas": {}, "saidas": {}, "contagens_medidas": {}, "ast_parse": {}}
++rel = {"contrato": "DERIVACAO_PRE_SELO_v406", "quando": time.strftime("%Y-%m-%dT%H:%M:%S%z"), "mapa_de_versoes": MAPA, "script": None, "entradas": {}, "saidas": {}, "contagens_medidas": {}, "ast_parse": {}}
+@@ -48,2 +48,2 @@
+-    assert set(RE_V_QUALQUER.findall(txt)) <= {"402", "403", "404"}, (src_nome, sorted(set(RE_V_QUALQUER.findall(txt))))
+-    assert not RE_V14.search(txt) and "v405" not in txt, ("a fonte ja cita V14 ou v405", src_nome)
++    assert set(RE_V_QUALQUER.findall(txt)) <= {"402", "403", "405"}, (src_nome, sorted(set(RE_V_QUALQUER.findall(txt))))
++    assert not RE_V14.search(txt) and "v406" not in txt, ("a fonte ja cita V14 ou v406", src_nome)
+@@ -66 +66 @@
+-    cont["(B12)_para_(B13)"] = txt.count("(B12)"); txt = txt.replace("(B12)", "(B13)")
++    cont["(B12)_para_(B14)"] = txt.count("(B12)"); txt = txt.replace("(B12)", "(B14)")
+@@ -69 +69 @@
+-    assert set(RE_V_QUALQUER.findall(txt)) <= {"403", "404", "405"}, (dst_nome, sorted(set(RE_V_QUALQUER.findall(txt))))
++    assert set(RE_V_QUALQUER.findall(txt)) <= {"403", "405", "406"}, (dst_nome, sorted(set(RE_V_QUALQUER.findall(txt))))
+@@ -71 +71 @@
+-    for velho, novo in (("PINOS_BN_v403.json", "PINOS_BN_v404.json"), ("PINOS_BATERIA_v403.json", "PINOS_BATERIA_v404.json")):
++    for velho, novo in (("PINOS_BN_v403.json", "PINOS_BN_v405.json"), ("PINOS_BATERIA_v403.json", "PINOS_BATERIA_v405.json")):
+@@ -74,2 +74,2 @@
+-        # o selo e o manifesto do kernel ANTERIORES (v404) saem de V\base_v404 (a raiz da cadeia); o da versao antes da anterior (v403) de V14\base_v403 (= v404\base_v403)
+-        assert txt.count('os.path.join(V, "base_v404"') == 2 and txt.count('os.path.join(V14, "base_v403"') == 2, ("bases anteriores", txt.count('os.path.join(V, "base_v404"'), txt.count('os.path.join(V14, "base_v403"'))
++        # o selo e o manifesto do kernel ANTERIORES (v405) saem de V\base_v405 (a raiz da cadeia); o da versao antes da anterior (v403) de V14\base_v403 (= v405\base_v403)
++        assert txt.count('os.path.join(V, "base_v405"') == 2 and txt.count('os.path.join(V14, "base_v403"') == 2, ("bases anteriores", txt.count('os.path.join(V, "base_v405"'), txt.count('os.path.join(V14, "base_v403"'))
+@@ -78 +78 @@
+-        assert txt.count("--versao v404 --fase pre_selo --modo ensaio") == 1, ("lancador: versao do ensaio", txt.count("--versao v404 --fase pre_selo --modo ensaio"))
++        assert txt.count("--versao v405 --fase pre_selo --modo ensaio") == 1, ("lancador: versao do ensaio", txt.count("--versao v405 --fase pre_selo --modo ensaio"))
+@@ -96 +96 @@
+-dst = os.path.join(HERE, "DERIVACAO_PRE_SELO_v405.json")
++dst = os.path.join(HERE, "DERIVACAO_PRE_SELO_v406.json")

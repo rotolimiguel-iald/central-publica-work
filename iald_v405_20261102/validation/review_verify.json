@@ -1,0 +1,475 @@
+{
+  "revisor": "sonnet-app-v405-revisor-d",
+  "timestamp_utc": "2026-11-02T11:45:08.325933+00:00",
+  "tarefa": "verify",
+  "unidade": "F9.APP_V405_20261102",
+  "missao_revisao_na_revisao": 18,
+  "status": "PASS",
+  "veredito": "PASS",
+  "escopo": "Revisão independente do passo `verify` da v405, pelo mesmo revisor que aceitou o deploy (sonnet-app-v405-revisor-d), distinto de quem submeteu (claude-gerencia-a7), do construtor e do revisor do pacote. ACEITA O QUE FOI DECLARADO: carregadores em processo novo + hashes + login + processo vivo. NÃO cobre: resposta viva do app citando a v405 (0 chamadas a provedor), memórias atualizadas com recibos, distinção backend x build nas evidências, inspeção física do celular. Somente leitura: psutil de consulta (nenhum processo tocado); varredura somente-stat de todo R (84052 arquivos, nenhum aberto pela varredura); re-hash dos 1472 destinos, dos 7 backups e dos 171 arquivos de código; única rede = UM GET http://127.0.0.1:8082/login; carregadores NÃO repetidos (reuso de d2_out.json); nenhuma escrita em R; nenhuma chamada a provedor; sem um.py/Lean. Escrevi só em W\\review\\revisor_sonnet-app-v405-revisor-d\\ e W\\validation\\ (mais o accept da missão, por ordem).",
+  "leitura_para_o_operador": "O que esta revisão decide: os dois arquivos de evidência são os pinados na missão e dizem a verdade sobre o instalado (mesmos números que medi), o login responde 200 agora e o mesmo processo web segue de pé sob o mesmo supervisor. O que NÃO decide: se o app, de fato, responde citando a v405; se as memórias foram atualizadas; nada sobre o celular. Um negativo seria defeito medido da verificação (hash, número ou processo diferentes), não física; aceitar este passo não declara 'uso efetivo' verificado.",
+  "respostas": {
+    "V1": {
+      "ok": true,
+      "checks": [
+        1,
+        2,
+        8,
+        9,
+        10,
+        13
+      ],
+      "resposta": "SIM. Os dois arquivos têm hoje exatamente o sha256 PINADO na missão (recibo v405-verify-submit, revisão 18): INSTALLED_VERIFICATION.json 8739094853ba667c67103b44f75daa92f2a7e0e756a1661c67d9056f481270e8 e LOGIN_CHECK_v405.json b2afc70d058706b4edaf97b762cff9cca01b4247d5779b90933e9a4085f32723; nenhum foi regravado (sem .bak_). INSTALLED_VERIFICATION.json bate campo a campo com o que MEUS carregadores mediram em processo novo, com audit hook (d2_out.json, 08:32:53): status PASS; 1472 arquivos; identidade v405 (source 0030242565cc13f6dbac57a6f1f98fdef69c1b3efe5eb052c359cdb3bf21f053, cluster 717cff19b3b658cd…, núcleo 1b70e21235b6b2e8…) = deployment_identity do plano; commit 6a2138d73c1ab2dac4817793c7eb0502208b21c9 = manifesto = RELEASE; haiku55 808047 tokens/1504531 B; haiku 386417/780493 B; native 52409 B; prompt público 858881 B; JEV v405 (jev_control_v405.json presente, sha 1ff58c1eaa44e1ba… = pino do manifesto; 1446 fontes do kernel). Não repeti os carregadores (ordem); como o arquivo foi gerado antes do claim, re-hasheei AGORA as entradas deles: os 1472 destinos = sha do plano, os 7 backups, os 171 arquivos de código do runtime (só o manifesto difere) e o manifesto ativo = manifest_install revisado; logo a medição de 08:32:53 ainda descreve os arquivos de hoje. LOGIN_CHECK_v405.json: login_http_status 200 em 2026-11-02T08:16:40, depois da instalação e do restart e antes do claim; GET NOVO agora em http://127.0.0.1:8082/login = 200 (igual)."
+    },
+    "V2": {
+      "ok": true,
+      "checks": [
+        3,
+        4,
+        5,
+        6,
+        7,
+        16,
+        17,
+        18
+      ],
+      "resposta": "SIM, o escopo declarado é honesto, e ele é ESTREITO. Declarado nas duas evidências: carregadores em processo novo + hashes + login; sem resposta de modelo ao vivo (0 chamadas a provedor); sem inspeção física do celular. Nada nas evidências diz que houve resposta do app, atualização de memória ou distinção backend x build. Precedente conferido: o critério de verify é o mesmo da v404 e lá foi aceito com o mesmo escopo declarado (revisão 19 da missão da v404). provider_calls=0 e science_executed=false são CONSTANTES literais de verify_installed.py (não instrumentadas); corroboro por: a mesma cadeia de carregadores no meu processo com audit hook não tentou rede/subprocesso/escrita (0 eventos bloqueados) e nenhum livro de gasto/job/carteira/reserva/cadastro foi escrito depois de 08:16:39 (wallet 02/11 06:45, jobs/gasto público/métricas 30/10 20:19, reservas 07/10 e 02/10, usuários 22/10). Os logs web não provam 'sem uso': meu GET /login e o da gerência não deixaram linha neles. O heartbeat local (nativa) gravou telemetria às 08:17:48, depois da verificação: não é resposta ao usuário nem chamada paga e não o inspecionei. BACKEND x BUILD: nenhum dos 1472 destinos do plano é arquivo de cliente — extensões {'.txt': 4, '.md': 9, '.json': 12, '.lean': 1442, '.toml': 1, '(sem)': 1, '.tex': 2, '.py': 1}; raízes tocadas ['(raiz de R)', '.iald_runtime', 'canonical_releases']; nada sob iald-app, iald_web, static/templates/www/public/assets, nenhuma extensão de cliente; runtime_python_changes=0 e a varredura de todo R não achou mudança em iald-app. É mudança de backend compartilhado, sem necessidade de build de cliente; que web/iOS/Android compartilham esse backend é afirmação do coordenador, não verificada por mim. Ordem: as evidências foram feitas fora de ordem (08:16:39-40, antes do meu aceite do deploy e do claim do verify, 21-22 min), só leitura, e por isso as refiz. Varredura somente-stat de todo R: nenhum destino/backup tocado depois da minha revisão do deploy; só logs vivos mudaram."
+    },
+    "V3": {
+      "ok": true,
+      "checks": [
+        11,
+        12,
+        14,
+        15
+      ],
+      "resposta": "SIM. Agora (08:45:06): o filho web 92204 é o único processo python.exe iald_web_server.py e o único ouvinte da 8082, ppid 38024, supervisor com create_time idêntico ao de restart.json/maintenance.json (2026-10-28T13:38:55.728232), start_iald_web.ps1 sem -NoSupervise, nenhum suspenso; create_time do filho idêntico ao que registrei na revisão do deploy (02/11 08:16:04, uptime 29.0 min): não reiniciou desde a instalação. O GET não alterou nada. Extra: nativa 8081 (pid 72904) e Bancada Um 18777 (pid 93536) seguem escutando, criadas antes da janela."
+    }
+  },
+  "nao_cobre": [
+    "RESPOSTA VIVA DO APP citando a v405 (0 chamadas a provedor): NÃO coberta. O critério da missão a cita; as evidências a excluem. Ainda não há uso efetivo medido: que o processo web tenha a v405 na memória é indireto (nasceu depois da instalação; o log de partida declara release=v405; carregadores de processo novo aceitam o instalado).",
+    "MEMÓRIAS ATUALIZADAS COM RECIBOS: NÃO cobertas. Segundo o coordenador serão feitas depois do aceite; não verifiquei nenhum arquivo de memória nem recibo delas.",
+    "DISTINÇÃO BACKEND x BUILD: não consta nas evidências submetidas. Confirmei de forma independente que nenhum destino do plano é arquivo de cliente e que nada em iald-app mudou; a topologia de backend compartilhado é afirmação do coordenador.",
+    "INSPEÇÃO FÍSICA DO CELULAR / lojas: NÃO coberta (nenhuma build nova de cliente nesta release).",
+    "Esta aceitação vale para o escopo DECLARADO (carregadores + hashes + login + processo vivo), como a da v404 (mesmo critério, mesmo escopo declarado); as partes do critério da missão listadas acima ficam com a gerência e não passam a ser lidas como verificadas por este parecer."
+  ],
+  "ressalvas": [
+    "PIDs e create_time são fotografia do momento da revisão; se o supervisor reiniciar o filho depois, os PIDs mudam sem invalidar a verificação.",
+    "Os carregadores não foram repetidos (ordem do coordenador): reutilizei a medição de processo novo da revisão do deploy e re-hasheei as entradas agora. A folga/contagem de tokens segue recibo do construtor [DECLARADO].",
+    "Os recibos de claim do deploy e do verify trazem uma nota herdada do pacote (\"Parecer r1 do revisor independente recusou: a frase da capsula valia so pelo nome (F1)...\") que não tem relação com estas tarefas: ruído de rastreabilidade (INFO), sem efeito.",
+    "Fora de R só foi visto por stat o tglc_ledger.json (na revisão do deploy). A publicação remota do commit não foi verificada aqui (sem rede), como na revisão do deploy.",
+    "Não inscrevi sessão ACOM própria; usei a referência da missão só via mission_step.py."
+  ],
+  "n_checks": 18,
+  "n_ok": 18,
+  "n_falha": 0,
+  "checks": [
+    {
+      "n": 1,
+      "V": "V1",
+      "grupo": "A_SUBMISSAO",
+      "descricao": "recibo v405-verify-submit: verify review_pending, submetido por claude-gerencia-a7 (distinto de mim), depende de deploy; as evidencias sao exatamente INSTALLED_VERIFICATION.json e LOGIN_CHECK_v405.json e o sha256 PINADO na missao = sha256 dos bytes de hoje (recomputado agora)",
+      "ok": true,
+      "achado": {
+        "pinado": {
+          "INSTALLED_VERIFICATION.json": "8739094853ba667c67103b44f75daa92f2a7e0e756a1661c67d9056f481270e8",
+          "LOGIN_CHECK_v405.json": "b2afc70d058706b4edaf97b762cff9cca01b4247d5779b90933e9a4085f32723"
+        },
+        "bytes_hoje": {
+          "INSTALLED_VERIFICATION.json": "8739094853ba667c67103b44f75daa92f2a7e0e756a1661c67d9056f481270e8",
+          "LOGIN_CHECK_v405.json": "b2afc70d058706b4edaf97b762cff9cca01b4247d5779b90933e9a4085f32723"
+        },
+        "stale": [],
+        "claim_lease_owner": "claude-gerencia-a7",
+        "note_do_submit": "",
+        "note_do_claim": "Parecer r1 do revisor independente recusou: a frase da capsula valia so pelo nome (F1). Reconstrucao r2 com a regra por familia."
+      }
+    },
+    {
+      "n": 2,
+      "V": "V1",
+      "grupo": "A_SUBMISSAO",
+      "descricao": "pre-condicao: deploy SATISFEITO pela minha revisao (reviewed_by = eu; submitted_by = gerencia) e TODAS as evidencias pinadas do aceite (deployment/maintenance/restart/plano e meu review_deploy.json) continuam com os bytes de quando foram aceitas; verify e a unica etapa ativa; revisao da missao 18",
+      "ok": true,
+      "achado": {
+        "deploy": "satisfied",
+        "reviewed_by": "sonnet-app-v405-revisor-d",
+        "stale": [],
+        "active": {
+          "verify": "review_pending"
+        },
+        "revision": 18,
+        "review_deploy_sha256": "4f78d7b18ba972880dcbba27757e6215b4b66d58b9ff7459bf1175b0156399b2"
+      }
+    },
+    {
+      "n": 3,
+      "V": "V2",
+      "grupo": "A_SUBMISSAO",
+      "descricao": "ordem temporal DECLARADA como fora de ordem: as 2 evidencias foram feitas (08:16:39-40) ANTES do meu aceite do deploy e do claim do verify (21 e 22 min depois), nunca regravadas (sem .bak_); por isso nao as confiei: refiz as medidas (abaixo) e o que bate hoje e o estado de hoje, nao so o de 08:16",
+      "ok": true,
+      "achado": [
+        [
+          "installed_at",
+          "08:15:59.112"
+        ],
+        [
+          "restart.json",
+          "08:16:18.925"
+        ],
+        [
+          "INSTALLED_VERIFICATION.json",
+          "08:16:39.814"
+        ],
+        [
+          "LOGIN_CHECK_v405.json",
+          "08:16:40.115"
+        ],
+        [
+          "meu accept do deploy",
+          "08:37:35.700"
+        ],
+        [
+          "claim do verify",
+          "08:38:59.412"
+        ],
+        [
+          "submit do verify",
+          "08:39:02.606"
+        ]
+      ]
+    },
+    {
+      "n": 4,
+      "V": "V2",
+      "grupo": "B_ESCOPO",
+      "descricao": "o escopo declarado e honesto no que EXCLUI: LOGIN_CHECK_v405.json (\"sem resposta de modelo ao vivo (0 chamadas a provedor...); sem inspecao fisica do celular\") e INSTALLED_VERIFICATION.json (\"not live model response or physical mobile inspection\") dizem o que nao fizeram; o criterio da missao cita \"resposta do app citando a v405\" e \"memorias atualizadas com recibos\" e \"distinguir backend e build\" -> essas 3 partes NAO sao cobertas pelas evidencias (declarado, nao escondido)",
+      "ok": true,
+      "achado": {
+        "escopo_login_check": "carregadores em processo novo + hashes + login; sem resposta de modelo ao vivo (0 chamadas a provedor, como na v401/v402/v404); sem inspeção física do celular",
+        "scope_installed_verification": "Fresh-process installed loaders and hashes; not live model response or physical mobile inspection",
+        "criterio": "Verificar o uso efetivo do pacote v405 (login 200, release no manifest, resposta do app citando a v405), integridade após a implantação e memórias atualizadas com recibos; distinguir alteração de backend e necessidade real de build."
+      }
+    },
+    {
+      "n": 5,
+      "V": "V2",
+      "grupo": "B_ESCOPO",
+      "descricao": "\"provider_calls: 0\" e \"science_executed: false\" em INSTALLED_VERIFICATION.json sao CONSTANTES literais do verify_installed.py (nao instrumentadas); a corroboracao independente e que a mesma cadeia de carregadores rodou no meu processo com audit hook (sem socket/subprocess/escrita: 0 eventos bloqueados) e que nenhum livro do app (carteira, gasto publico, jobs, reservas) foi escrito desde 08:16:39 (abaixo); o script nao importa SDK de provedor",
+      "ok": true,
+      "achado": {
+        "audit": {
+          "blocked_events_attempted": [],
+          "open_events_seen": 1669
+        },
+        "verify_installed.py_sha256": "95c0074df47c57c3"
+      }
+    },
+    {
+      "n": 6,
+      "V": "V2",
+      "grupo": "B_ESCOPO",
+      "descricao": "precedente (so o que verifiquei): o criterio de verify e textualmente o mesmo da v404 (tirada a versao), aceito la (status satisfied, revisao 19 da missao, revisor da v404) com o MESMO escopo declarado: INSTALLED_VERIFICATION.json com as mesmas chaves e o mesmo \"scope\"; LOGIN_CHECK da v404 exclui resposta viva e celular com as mesmas palavras",
+      "ok": true,
+      "achado": {
+        "v404_accept_revisao": 19,
+        "v404_reviewed_by": "sonnet-app-v404-revisor",
+        "v404_scope": "Fresh-process installed loaders and hashes; not live model response or physical mobile inspection",
+        "v405_scope": "Fresh-process installed loaders and hashes; not live model response or physical mobile inspection"
+      }
+    },
+    {
+      "n": 7,
+      "V": "V2",
+      "grupo": "B_ESCOPO",
+      "descricao": "backend x build: NENHUM dos 1472 destinos do plano e arquivo de cliente — nenhum sob iald-app (casca Capacitor iOS/Android), iald_web, static/templates/www/public/assets e nenhum com extensao de cliente (.html .js .css .apk .aab .ipa imagem fonte .xml .plist .gradle .java .kt); os destinos sao so dados do servidor (release canonica, pacotes de memoria haiku/haiku55, nucleo, pacote do JEV); runtime_python_changes=0 (171 arquivos de codigo com hash de antes); logo e mudanca de BACKEND compartilhado web/iOS/Android, sem necessidade de build de cliente",
+      "ok": true,
+      "achado": {
+        "extensoes_do_plano": {
+          ".txt": 4,
+          ".md": 9,
+          ".json": 12,
+          ".lean": 1442,
+          ".toml": 1,
+          "(sem)": 1,
+          ".tex": 2,
+          ".py": 1
+        },
+        "raizes_de_R_tocadas_pelo_plano": [
+          "(raiz de R)",
+          ".iald_runtime",
+          "canonical_releases"
+        ],
+        "arquivos_de_cliente_no_plano": []
+      }
+    },
+    {
+      "n": 8,
+      "V": "V1",
+      "grupo": "C_EVIDENCIA",
+      "descricao": "as ENTRADAS das minhas medicoes de carregadores (d2_out.json, 08:32) continuam iguais hoje: os 1472 destinos tem o sha256 do plano (recomputado agora; \"integridade apos a implantacao\" que INSTALLED_VERIFICATION declara com files_verified), os 7 backups tem os bytes anteriores, os 171 arquivos de codigo do runtime so diferem no manifesto ativo, e o manifesto ativo e byte a byte o manifest_install revisado",
+      "ok": true,
+      "achado": {
+        "destinos_divergentes": [],
+        "backups_divergentes": [],
+        "runtime_diff": [
+          "iald_nucleo_fixo.json"
+        ],
+        "manifesto_sha256": "ba05d909c6c08b6b44022591fd1d2e1caa067c01c85efc906f716132163b8beb"
+      }
+    },
+    {
+      "n": 9,
+      "V": "V1",
+      "grupo": "C_EVIDENCIA",
+      "descricao": "INSTALLED_VERIFICATION.json (pinado na missao) = o que MEUS carregadores mediram em processo novo com audit hook (d2_out.json): status PASS, 1472 arquivos, identidade (release v405, source 0030242565cc13f6..., cluster, nucleo) = deployment_identity do plano, commit 6a2138d7..., haiku55 e haiku (tokens permanentes e bytes do prefixo), native 52.409 B, prompt publico 858.881 B, JEV v405 com source_sha256 = pino do programa",
+      "ok": true,
+      "achado": {
+        "iv": {
+          "status": "PASS",
+          "files_verified": 1472,
+          "public_commit": "6a2138d73c1ab2dac4817793c7eb0502208b21c9",
+          "native_bytes": 52409,
+          "public_prompt_bytes": 858881,
+          "JEV_release": "v405",
+          "provider_calls": 0,
+          "science_executed": false
+        },
+        "iv_identity": {
+          "release": "v405",
+          "source_sha256": "0030242565cc13f6dbac57a6f1f98fdef69c1b3efe5eb052c359cdb3bf21f053",
+          "cluster_sha256": "717cff19b3b658cd31549b487e7f9228a811a47147148e6c72c7e56c7840e31d",
+          "operational_core_sha256": "1b70e21235b6b2e816e8744cd9e7024dc9c8f7db75f4d76744d416c2f28116bb"
+        },
+        "iv_packages": {
+          "haiku55": {
+            "permanent_tokens": 808047,
+            "prefix_bytes": 1504531
+          },
+          "haiku": {
+            "permanent_tokens": 386417,
+            "prefix_bytes": 780493
+          }
+        },
+        "medido_por_mim": {
+          "haiku55": [
+            808047,
+            1504531
+          ],
+          "haiku": [
+            386417,
+            780493
+          ],
+          "native": 52409,
+          "public": 858881,
+          "jev": "v405",
+          "jev_contract_sha256": "1ff58c1eaa44e1baf6266392a8c528ac13d7a9e12a3ea760b2fd7bfc0977a9a9",
+          "kernel_sources": 1446
+        },
+        "loaders_medidos_em": "08:32:53"
+      }
+    },
+    {
+      "n": 10,
+      "V": "V1",
+      "grupo": "C_EVIDENCIA",
+      "descricao": "o manifesto ativo AINDA aponta active_cluster, operational_core e jev_control para v405, com commit e source sha256 de RELEASE.json; jev_control_v405.json presente com o sha pinado no manifesto",
+      "ok": true,
+      "achado": {
+        "commit": "6a2138d73c1ab2dac4817793c7eb0502208b21c9",
+        "jev_control": "jev_control_v405.json",
+        "jev_sha16": "1ff58c1eaa44e1ba"
+      }
+    },
+    {
+      "n": 11,
+      "V": "V3",
+      "grupo": "D_VIVO",
+      "descricao": "AGORA: PID 92204 e o UNICO processo python.exe iald_web_server.py e o unico ouvinte da 8082, sob o supervisor 38024 (create_time IDENTICO ao de restart.json/maintenance.json), start_iald_web.ps1 sem -NoSupervise, nenhum suspenso",
+      "ok": true,
+      "achado": {
+        "web": [
+          92204
+        ],
+        "listeners": [
+          92204
+        ],
+        "ppid": 38024,
+        "status": [
+          "running",
+          "running"
+        ],
+        "sup_created": "2026-10-28T13:38:55.728232",
+        "agora": "08:45:06"
+      }
+    },
+    {
+      "n": 12,
+      "V": "V3",
+      "grupo": "D_VIVO",
+      "descricao": "o filho 92204 e o MESMO que medi na revisao do deploy (create_time identico ao de d1_out.json: 08:16:04.247): nao reiniciou desde a instalacao, logo e a instancia que nasceu DEPOIS dos arquivos da v405; supervisor identico; nao ha outro processo web",
+      "ok": true,
+      "achado": {
+        "created": "2026-11-02T08:16:04.247271",
+        "uptime_min": 29.0
+      }
+    },
+    {
+      "n": 13,
+      "V": "V1",
+      "grupo": "D_VIVO",
+      "descricao": "GET NOVO agora (unico acesso de rede deste revisor, corpo descartado) http://127.0.0.1:8082/login = 200 = login_http_status do LOGIN_CHECK_v405.json (200, mesma URL local, \"por\" a gerencia, feito DEPOIS da instalacao e do restart e ANTES do claim do verify)",
+      "ok": true,
+      "achado": {
+        "http_agora": 200,
+        "login_check_em": "2026-11-02T08:16:40",
+        "login_check_http": 200
+      }
+    },
+    {
+      "n": 14,
+      "V": "V3",
+      "grupo": "D_VIVO",
+      "descricao": "depois do GET: mesmo PID, mesmo create_time, mesmo supervisor, mesmo ouvinte (o servidor nao reiniciou durante esta revisao)",
+      "ok": true,
+      "achado": {
+        "pid": 92204
+      }
+    },
+    {
+      "n": 15,
+      "V": "V3",
+      "grupo": "D_VIVO",
+      "descricao": "continuidade dos outros servicos (nao pedido, barato): nativa 8081 e Bancada Um 18777 seguem escutando, criados antes da janela, nenhum suspenso",
+      "ok": true,
+      "achado": {
+        "llama (nativa)": {
+          "port": 8081,
+          "pid": 72904,
+          "created": "11-02 00:17:31",
+          "created_before_window": true,
+          "suspended": false
+        },
+        "Bancada Um": {
+          "port": 18777,
+          "pid": 93536,
+          "created": "11-02 00:24:23",
+          "created_before_window": true,
+          "suspended": false
+        }
+      }
+    },
+    {
+      "n": 16,
+      "V": "V2",
+      "grupo": "E_ESCOPO",
+      "descricao": "varredura somente-stat de TODO R (84052 arquivos, nenhum aberto): desde a janela do deploy so mudaram os 1472 destinos, os 7 backups e logs vivos; NENHUM destino ou backup foi tocado depois da minha revisao do deploy (o verify e as evidencias dele nao escreveram nada em producao); 0 temporarios .tmp_v380_; nada em iald-app",
+      "ok": true,
+      "achado": {
+        "vistos": 84052,
+        "mudados": 1484,
+        "logs_vivos": [
+          [
+            "logs\\gpu_20261102_001730.csv",
+            "08:45:02.986"
+          ],
+          [
+            "logs\\iald_heartbeat_telemetry.jsonl",
+            "08:17:48.466"
+          ],
+          [
+            "logs\\web-server_20261028_133856_r3.log",
+            "08:16:18.489"
+          ],
+          [
+            "logs\\web-server_20261028_133856_r3.log.err",
+            "08:16:04.245"
+          ],
+          [
+            "logs\\web-supervisor.log",
+            "08:16:04.255"
+          ]
+        ],
+        "destinos_ou_backups_tocados_apos_minha_revisao": []
+      }
+    },
+    {
+      "n": 17,
+      "V": "V2",
+      "grupo": "E_ESCOPO",
+      "descricao": "nenhum livro de gasto/job/carteira/reserva/cadastro foi escrito depois da verificacao (08:16:39): carteira, gasto publico, jobs, metricas, reservas dos provedores e cadastro de usuarios tem mtime ANTERIOR a INSTALLED_VERIFICATION.json — nenhum gasto pago registrado nem job gravado pelo app desde a troca (corroboracao por ausencia; chat com a nativa local, que nao grava esses livros, nao fica excluido). ATENCAO: os logs web-supervisor.log e r3.log NAO servem de prova de \"sem uso\": meu GET /login e o da gerencia tambem nao deixaram linha neles (r3.log segue com 2140 B, mtime 08:16:18), logo requisicao HTTP nao e registrada ali",
+      "ok": true,
+      "achado": {
+        "lojas": [
+          [
+            "wallet.sqlite3",
+            "02/11 06:45"
+          ],
+          [
+            "jobs.sqlite3",
+            "30/10 20:19"
+          ],
+          [
+            "metrics.sqlite3",
+            "30/10 20:19"
+          ],
+          [
+            "public_spend.sqlite3",
+            "30/10 20:19"
+          ],
+          [
+            "iald_uso_claude.json.reservas.sqlite3",
+            "07/10 21:55"
+          ],
+          [
+            "iald_uso_openai.json.reservas.sqlite3",
+            "02/10 05:36"
+          ],
+          [
+            "iald_users.json",
+            "22/10 09:05"
+          ]
+        ],
+        "web-supervisor.log_mtime": "08:16:04.255",
+        "r3.log_mtime": "08:16:18.489",
+        "r3.log_bytes": 2140,
+        "heartbeat_telemetry_mtime(local, nativa)": "08:17:48.466"
+      }
+    },
+    {
+      "n": 18,
+      "V": "V2",
+      "grupo": "E_ESCOPO",
+      "descricao": "na pasta do build, os unicos arquivos novos desde a minha revisao do deploy sao o meu aceite do deploy e os recibos de claim e submit do verify; INSTALLED_VERIFICATION.json e LOGIN_CHECK_v405.json nao foram regravados",
+      "ok": true,
+      "achado": {
+        "novos": [
+          "receipts\\v405-deploy-accept.json",
+          "receipts\\v405-verify-claim.json",
+          "receipts\\v405-verify-submit.json"
+        ],
+        "review_deploy_timestamp": "2026-11-02T11:37:21.953865+00:00"
+      }
+    }
+  ],
+  "processo_vivo_conferido_na_gravacao": {
+    "pid": 92204,
+    "mesmo_da_medicao": true
+  },
+  "evidencias_pinadas_na_missao": {
+    "INSTALLED_VERIFICATION.json": "8739094853ba667c67103b44f75daa92f2a7e0e756a1661c67d9056f481270e8",
+    "LOGIN_CHECK_v405.json": "b2afc70d058706b4edaf97b762cff9cca01b4247d5779b90933e9a4085f32723"
+  },
+  "scripts_sha256": {
+    "v1_verify_review.py": "6d568c8a6ace844da0bf7815c2967d376e2cb1f7caf7ea2024ba444a7cf4e01e",
+    "v9_build_parecer.py": "e1d64324f13058e5608e8b6756047097d8cc9459170bb39880a973b657b78669",
+    "d2_loaders.py": "b8f0b7d42cd981e3154326670dc40979f6f08138bbf86b30b05ef32e1d988862",
+    "d1_deploy_review.py": "a305aa7d29829f03e832ee2d6646b11eb142d68275f9615ee63235c7dcde3ecf"
+  },
+  "saidas_sha256": {
+    "v1_out.json": "05d7e13268b4e0b15e46a7105bae882c007f3bacfa6f701157bec8081b4278bf",
+    "d2_out.json": "baa94b454eed1b28fe74fc4264fab0c257982770afd37e81404845799054f07d",
+    "d1_out.json": "7e74ba0bf4d9c7f4433c72d5924032b1fba84be9147479a5e59fb27c5deff71d"
+  },
+  "parecer_do_deploy_sha256": "4f78d7b18ba972880dcbba27757e6215b4b66d58b9ff7459bf1175b0156399b2"
+}

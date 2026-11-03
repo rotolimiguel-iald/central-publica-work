@@ -1,0 +1,39 @@
+--- v405/fim_de_cadeia_v405.sh
++++ v406/fim_de_cadeia_v406.sh
+@@ -2 +2 @@
+-# fim_de_cadeia_v405.sh -- o que vem DEPOIS de refazer_candidato_v405.sh --regerar, numa ordem so', parando na primeira falha VISIVEL (os scripts do B(n) mascaram falha por pipe; aqui o resultado e' conferido por grep e pelos JSON):
++# fim_de_cadeia_v406.sh -- o que vem DEPOIS de refazer_candidato_v406.sh --regerar, numa ordem so', parando na primeira falha VISIVEL (os scripts do B(n) mascaram falha por pipe; aqui o resultado e' conferido por grep e pelos JSON):
+@@ -4,2 +4,2 @@
+-# Nao toca o Nos nem a producao, nao instala, nao roda o rito. A purga corre por fora (python -I -B -X utf8 purga_v405.py --listar > purga_out_v405.txt), porque leva 20 min. uso: sh ./fim_de_cadeia_v405.sh > fim_de_cadeia_out_v405.txt 2>&1
+-V="/c/IALD/Central de Patentes/work/cadeia_de_selo/v405"
++# Nao toca o Nos nem a producao, nao instala, nao roda o rito. A purga corre por fora (python -I -B -X utf8 purga_v406.py --listar > purga_out_v406.txt), porque leva 20 min. uso: sh ./fim_de_cadeia_v406.sh > fim_de_cadeia_out_v406.txt 2>&1
++V="/c/IALD/Central de Patentes/work/cadeia_de_selo/v406"
+@@ -10 +10 @@
+-for a in bateria_pre_selo/ensaio_1 bateria_pre_selo/prova_producao bateria_pre_selo/conferencia_pelo_esboco_v405.json bateria_pre_selo/LIMPEZA_SANDBOX_vb21.json bateria_pre_selo/etapa1_stdout.txt PROVA_PRODUCAO_INTACTA_v405_pre_selo.json PINO_RECIBO_PRE_SELO_v405.json bancada_B3_servico/CONFERENCIA_EXIGENCIAS_SERVICO_v405.json bancada_B3_servico/controle_negativo/RESULTADO_CONTROLE_NEGATIVO_v405.json; do
++for a in bateria_pre_selo/ensaio_1 bateria_pre_selo/prova_producao bateria_pre_selo/conferencia_pelo_esboco_v406.json bateria_pre_selo/LIMPEZA_SANDBOX_vb21.json bateria_pre_selo/etapa1_stdout.txt PROVA_PRODUCAO_INTACTA_v406_pre_selo.json PINO_RECIBO_PRE_SELO_v406.json bancada_B3_servico/CONFERENCIA_EXIGENCIAS_SERVICO_v406.json bancada_B3_servico/controle_negativo/RESULTADO_CONTROLE_NEGATIVO_v406.json; do
+@@ -22,2 +22,2 @@
+-( cd bateria_pre_selo && sh ./rodar_bn_pre_selo_v405.sh > bn_pre_selo_out_v405.txt 2>&1; echo "RC_BN=$?" >> bn_pre_selo_out_v405.txt )
+-if grep -q "Traceback\|ja existe, nao\|NAO RODO" bateria_pre_selo/bn_pre_selo_out_v405.txt || ! grep -q "PRECONDICOES v405: TODAS PASSARAM" bateria_pre_selo/bn_pre_selo_out_v405.txt || ! grep -q "RC_BN=0" bateria_pre_selo/bn_pre_selo_out_v405.txt; then echo "FALHOU: B(n) pre-selo (ver bateria_pre_selo/bn_pre_selo_out_v405.txt)"; grep -n "Traceback\|ja existe, nao\|NAO RODO\|FALHOU" bateria_pre_selo/bn_pre_selo_out_v405.txt | head; exit 1; fi
++( cd bateria_pre_selo && sh ./rodar_bn_pre_selo_v406.sh > bn_pre_selo_out_v406.txt 2>&1; echo "RC_BN=$?" >> bn_pre_selo_out_v406.txt )
++if grep -q "Traceback\|ja existe, nao\|NAO RODO" bateria_pre_selo/bn_pre_selo_out_v406.txt || ! grep -q "PRECONDICOES v406: TODAS PASSARAM" bateria_pre_selo/bn_pre_selo_out_v406.txt || ! grep -q "RC_BN=0" bateria_pre_selo/bn_pre_selo_out_v406.txt; then echo "FALHOU: B(n) pre-selo (ver bateria_pre_selo/bn_pre_selo_out_v406.txt)"; grep -n "Traceback\|ja existe, nao\|NAO RODO\|FALHOU" bateria_pre_selo/bn_pre_selo_out_v406.txt | head; exit 1; fi
+@@ -26,2 +26,2 @@
+-$PY bancada_B3_servico/conferir_exigencias_servico_v405.py | tail -2 || exit 1
+-$PY bancada_B3_servico/controle_negativo/mutar_conferidor_v405.py | tail -1 || exit 1
++$PY bancada_B3_servico/conferir_exigencias_servico_v406.py | tail -2 || exit 1
++$PY bancada_B3_servico/controle_negativo/mutar_conferidor_v406.py | tail -1 || exit 1
+@@ -29 +29 @@
+-( cd pos_rito && $PY gerar_derivacao_pos_rito_v405.py | tail -1 )
++( cd pos_rito && $PY gerar_derivacao_pos_rito_v406.py | tail -1 )
+@@ -31,2 +31,2 @@
+-( cd pos_rito && $PYN harness_textos_ensaio_v405.py --manter-copias > harness_textos_out_v405.txt 2>&1; echo "RC_HT=$?" >> harness_textos_out_v405.txt )
+-grep -q "RC_HT=0" pos_rito/harness_textos_out_v405.txt || { echo "FALHOU: harness dos textos"; grep -n "PROBLEMA" pos_rito/harness_textos_out_v405.txt | head -12 | cut -c1-300; exit 1; }
++( cd pos_rito && $PYN harness_textos_ensaio_v406.py --manter-copias > harness_textos_out_v406.txt 2>&1; echo "RC_HT=$?" >> harness_textos_out_v406.txt )
++grep -q "RC_HT=0" pos_rito/harness_textos_out_v406.txt || { echo "FALHOU: harness dos textos"; grep -n "PROBLEMA" pos_rito/harness_textos_out_v406.txt | head -12 | cut -c1-300; exit 1; }
+@@ -34 +34 @@
+-$PY pos_rito/gerar_x_custodia_v405.py --nos 'C:\t\h405\harness_saida_v405\nos_emulado' | tail -2 | cut -c1-200
++$PY pos_rito/gerar_x_custodia_v406.py --nos 'C:\t\h406\harness_saida_v406\nos_emulado' | tail -2 | cut -c1-200
+@@ -36,2 +36,2 @@
+-( cd pos_rito && $PYN harness_fechar_sandbox_v405.py > harness_fechar_out_v405.txt 2>&1; echo "RC_HF=$?" >> harness_fechar_out_v405.txt )
+-grep -q "RC_HF=0" pos_rito/harness_fechar_out_v405.txt || { echo "FALHOU: harness do fechar"; grep -n "PROBLEMA" pos_rito/harness_fechar_out_v405.txt | head -12 | cut -c1-300; exit 1; }
++( cd pos_rito && $PYN harness_fechar_sandbox_v406.py > harness_fechar_out_v406.txt 2>&1; echo "RC_HF=$?" >> harness_fechar_out_v406.txt )
++grep -q "RC_HF=0" pos_rito/harness_fechar_out_v406.txt || { echo "FALHOU: harness do fechar"; grep -n "PROBLEMA" pos_rito/harness_fechar_out_v406.txt | head -12 | cut -c1-300; exit 1; }
