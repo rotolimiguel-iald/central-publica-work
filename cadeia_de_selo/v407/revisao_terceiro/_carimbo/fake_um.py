@@ -1,0 +1,10 @@
+import sys, time
+sys.stdout.reconfigure(encoding="utf-8")
+inp = sys.stdin.read()
+print("linha 1 acentuada: ψ Ω « »", flush=False)
+sys.stderr.write("erro no meio\n")
+print("linha 2 com CRLF\r")
+sys.stdout.write("x" * 200000 + "\n")
+time.sleep(0.3)
+print("ultima sem terminador", end="")
+sys.exit(int(sys.argv[1]) if len(sys.argv) > 1 else 0)

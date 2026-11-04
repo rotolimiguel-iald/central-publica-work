@@ -1,0 +1,131 @@
+{
+ "aprovada": true,
+ "candidato_sha16": "a5df4c573328465c",
+ "revisor": "Claude Sonnet (agente revisor de terceiro; nao construi a v407; mesma familia da revisao de 02/11, outra instancia)",
+ "rodada": "R1",
+ "quando": "2026-11-03T14:15:04",
+ "n_alto": 0,
+ "n_medio": 0,
+ "n_baixo": 9,
+ "achados": [
+  {
+   "sev": "BAIXO",
+   "onde": "pedra/Par.lean:26-27 (cabecalho, lista \"O que esta pedra PROVA\")",
+   "achado": "A lista PROVA diz «em theta = pi o par volta a si (cos 2pi = 1, sin 2pi = 0)». O termo (the_pair_is_read_by_the_graviton, .2) prova que a polarizacao ePlus do setor TT (Fin 4, R) volta a si; o que volta nao e' o par de Bell (Fin 2 x Fin 2, C). O proprio cabecalho diz, em NAO afirma (l.35-38), que a leitura pelo graviton e' a face de helicidade JUSTAPOSTA a face ligada e que a conjuncao nao e' identificacao; a frase da lista de PROVA contradiz essa linha. As demais superficies (artigo PT/EN, paragrafo do README, DL.RESPOSTAS_DO_OPERADOR) dizem certo: «o retorno de fase e' a volta em theta = pi», sem «o par volta a si».",
+   "evidencia": "Par.lean:26-27 e 35-38; lemma do kernel (#check): (rotZ pi)^T * ePlus * rotZ pi = ePlus; artigo_pt_v407.pysnip, l. da secao «O par».",
+   "como_corrigir": "Na proxima versao do modulo: «e ePlus volta a si em theta = pi». Nao trava: o modulo esta' pinado por sha256 no bundle (mexer nele pede novo build do kernel); aceitar como esta' e registrar a ressalva, ou corrigir na v408."
+  },
+  {
+   "sev": "BAIXO",
+   "onde": "pedra/OUmInscrito.lean:19 e 56-57 (APONTADO a gerencia em guarda_frases_v407.APONTADAS_A_GERENCIA); mais o artigo PT/EN (secao «As sete pedras», l.31 do pysnip)",
+   "achado": "Julgamento pedido: «em UMA particula, o unico autovetor do boost e o zero» e' VERDADEIRO no setor de 1 particula como enunciado de B0_no_eigen (nenhum f != 0 em H1 tem B0 s f = c(s) f com ‖c(s)‖ = 1 para todo s; compilei o #check: ∀ f, (∀ s, ∃ c, ‖c‖=1 ∧ B0 s f = c • f) → f = 0). Imprecisao de redacao: «autovetor do boost» e' autovetor COMUM do grupo {B0 s} (para um unico B0 0 = id todo vetor e' autovetor) e «o zero» nao e' autovetor por definicao. O aviso BASTA quanto ao escopo: o cabecalho (l.19-22) diz «em UMA particula», «valia so em uma particula» e que autovetores com fase nos setores n >= 1 NAO sao excluidos por este termo; o teorema do composto diz «vetor fixo». Restam dois reparos: (i) a revisao de 02/11 pediu rotular [ONTO] uma vez «Um inscrito = vacuo» e «o zero, o abstrato inominado» — nao aplicado (grep ONTO em OUmInscrito.lean: 0); (ii) o artigo diz «sob a hipotese nomeada» sem nomear hipotese alguma (a pedra diz «sem hipotese» no Fock concreto; a unica ressalva real e' a de B0 como boost «da luz», [KNOWN, a conferir] no docstring de B0 em TheImportedSecondQuantization.lean).",
+   "evidencia": "OUmInscrito.lean:19-25, 56-57; REVISAO_PEDRAS_CANDIDATAS_02nov_SONNET.md («Respostas a pergunta 4», 4o item); artigo_pt_v407.pysnip:31 e artigo_en_v407.pysnip:31 («sob a hipotese nomeada» / «under the named hypothesis»); axiom_report: B0_no_eigen no trio.",
+   "como_corrigir": "Artigo (barato, nao toca o kernel): trocar «sob a hipotese nomeada» por «no Fock concreto, com B0 lido como o boost da luz [KNOWN, a conferir]» e acrescentar «‘Um inscrito = vacuo’ e’ leitura do operador [ONTO]». Pedra: na proxima versao, «nenhum vetor nao nulo e’ autovetor comum do grupo B0 em H1»."
+  },
+  {
+   "sev": "BAIXO",
+   "onde": "pedra/PsionCanto.lean:39, 60-61, 104; pedra/OUmInscrito.lean:8-10; pedra/OIgual.lean:9; pedra/APonteDoAtrito.lean:7-10; delta_v407.py:260 (RESSALVAS_V407[3]) e :289 (ERRATA_E19); paragrafo do README, item (4) das ressalvas",
+   "achado": "Aspas « » sobre texto que nao e' substring exata da fala. Operador: PsionCanto.lean:39 «vira a chave de conjectura para provado» (a fala e' «virar essa chave de conjectura para provado»); :60-61 «o psion e o Nome da Luz» (a cunhagem no kernel e' «ψ é o Nome da Luz», 16/09); :104 «funciona sob compressao» (a fala: «funcionar sob compressão»); OUmInscrito.lean:8-10 transliterado sem acentos E com pontuacao inserida (a fala de 02/11 nao tem ':' nem ';'); OIgual.lean:9 aspas curvas viram retas; APonteDoAtrito: sem acentos. Nao-operador: «psi+ psi- cancelado = vacuo» e «|G> como produto nao emaranhado» (E19, ressalva 4, README) sao resumos do levantamento do acervo [DECLARADO] — o acervo diz «Par cancelado», «ψ₊ψ₋ = Aniquilacao (vacuo)» e «posto de Schmidt 1 (nao emaranhado)». Todas as citacoes do operador nos TEXTOS (artigo PT: 10 de 10; textos rendidos: 302, 0 nao-substring de operador; paragrafo do README: verificar_paragrafo_v407 sem falhas) sao exatas.",
+   "evidencia": "revisao_terceiro/e_citacoes.py e e2_citacoes_textos_rendidos.py (saidas e_citacoes_out.txt); OPERADOR_02nov_a_luz_tem_autovetor... e OPERADOR_02nov_a_passagem_para_o_continuo... (verbatim).",
+   "como_corrigir": "Sem aspas quando for parafrase; com aspas so' o trecho exato (acento e pontuacao do original) ou dizer «transliterado, pontuacao da gerencia». Para E19/ressalva 4: tirar as « » dos dois resumos ou citar o trecho exato do acervo."
+  },
+  {
+   "sev": "BAIXO",
+   "onde": "um_v407_candidato.py:247848 (testemunha_estatica_v396, campo fock_face.reading, ramo _hab406t_ verdadeiro); runtime/DL: errata E18",
+   "achado": "A funcao testemunha_estatica_v396 so' mudou na chave (correto: diff de fonte so' nas linhas 40-42; texto antigo guardado em reading_v396 e em elo_v407.reading_v396_v406; errata E18/E20 ao lado). Mas o campo `reading` (nao rotulado como antigo) segue emitindo, no registro selado da v407, «...; no lemma identifies psion C with the psionCorner of this stone» ao lado de linked_to_the_corner_by_a_lemma = True e de elo_v407. A qualificacao «of this stone» (o modulo TestemunhaEstatica) mantem a frase literalmente verdadeira, e a E18 e o artigo («leia-se: era o estado da data») cobrem; ainda assim e' contradicao visivel dentro do mesmo dict (a mesma classe de lacuna que a E20 corrige nas checagens). Executei a funcao viva sobre o core do ensaio: chave True; sem o lema no kernel, chave False e elo_v407.lemma None (fail-closed).",
+   "evidencia": "k_funcoes_vivas.py/k_funcoes_vivas_out.txt (campo reading impresso); a_intocados_out.txt (diff).",
+   "como_corrigir": "Na proxima regeneracao: ramificar `reading` por _v407_elo_lido(kf_) (quando True, dizer que o lema esta' em TGLExt.PsionCanto e que a frase antiga e' a de v396-v406). Nao exige nova rodada de revisao so' por isto."
+  },
+  {
+   "sev": "BAIXO",
+   "onde": "runtime_v407.py:105 (checagem c16 de psion_canto_v407) e _V407_PSION_CONTRACT.teste_d",
+   "achado": "c16 («o teste (d) so' consta por CITACAO... nenhum resultado no um.py») le de fato o manifesto: fd_.get('sha256') == td_['manifesto_sha256'] contra a fonte EMBUTIDA (_V407_FONTES) — isso e' leitura. Mas `so_citado is True` e `resultado_no_um_py is None` sao literais do proprio contrato: a checagem passaria mesmo que um resultado do teste D fosse embutido em outro lugar do um.py. Autoafirmacao parcial (confirmado: mutar o contrato reprova; mutar o resto nao).",
+   "evidencia": "c_fail_closed.py: «teste D com resultado no um.py», «teste D nao so citado», «manifesto sha != fonte embutida» reprovam; nada varre o core por chave de resultado de D.",
+   "como_corrigir": "Descrever c16 como declaratoria (quanto aos dois booleanos), ou fazer a checagem varrer o core por qualquer chave/veredito de resultado do teste D e exigir ausencia."
+  },
+  {
+   "sev": "BAIXO",
+   "onde": "artigo_pt_v407.pysnip (secoes «A condicao, lida sob compressao» e «O lema das duas faces»); delta_v407.py RESSALVAS_V407[0]; README paragrafo; pedra/PsionCanto.lean:37-39",
+   "achado": "Regra do Posto (partitura): os textos dizem o que o lema NAO identifica (Omega != Phi+, face de Fock do par [OPEN], ponte Bell-TT, K(O)) e que nao e' teste com a natureza. Nao dizem, na lingua do operador, o que torna o resultado de «funcionar sob compressao» inevitavel: P·Δ^{it}·P = P e ⟨ψ,Δ^{it}ψ⟩ = 1 decorrem de o vacuo Ω ser fixo pelo fluxo modular (psion_is_fixed_by_the_light, ja' no kernel) e de qualquer projecao de posto 1 escalarizar qualquer operador; «o motor comprimido devolve o canto» vale para QUALQUER projetor (e·U·e = e); e o lema e' a conjuncao de duas instancias paralelas do mesmo molde, sem aplicacao entre as faces. Logo o «teste da condicao» nao tinha desfecho negativo possivel — o que a ressalva «elo de estrutura» sugere mas nao diz. A pedra ainda escreve que isso e' «o que, no kernel, vira a chave de conjectura para provado», leitura [ONTO] da fala dele sem rotulo (hedge presente: «como VALIDADE... nunca como creditacao»). Nao e' engano (nada e' induzido a negativo; nenhum texto afirma teste de natureza), mas e' a outra face da assimetria de leitura: um positivo que nao podia ser negativo.",
+   "evidencia": "PsionCanto.lean:97-108 (provas por psion_is_fixed_by_the_light, inner_psion_psion, proj_mul_jonesU); psionCorner_reads_the_contraction usa so' psionCorner.idem.",
+   "como_corrigir": "Acrescentar uma linha a ressalva 1 e ao «nao_diz»: «o resultado sob compressao decorre de Ω ser fixo pela luz e de o canto ser projecao de posto 1; vale para qualquer vetor unitario fixo; o lema nao relaciona as duas faces por uma aplicacao, so' mostra o mesmo molde nas duas; nao havia negativo possivel». Rotular [ONTO] a ligacao com «virar essa chave de conjectura para provado»."
+  },
+  {
+   "sev": "BAIXO",
+   "onde": "delta_v407.py RESSALVAS_V407[7]; artigo PT/EN («O que fica fora, dito»); paragrafo do README, item (8)",
+   "achado": "O teste (d): a ressalva traz o poder de planejamento (3,7 a 3,9 sigma com 10 eventos; 2,1 a 3,2 sigma com a incerteza do vies) e a regra (c) do operador, mas nao junta as duas: ambos os intervalos estao ABAIXO de 5 sigma (parede medida, nao falsificacao, na PARTITURA_D_03nov.md), e pela (c) o teste so' entra com poder. Os numeros conferem com PARTITURA_D_03nov.md (linhas 6, 18, 20) e com PODER_RAMO_B_ANTES_DE_ABRIR.json, ambos pinados no MANIFESTO_PARAMETRIZACAO_03nov.json; o proprio PODER diz que o poder de planejamento e' < 5 sigma em todas as leituras e que o veredito seria NOT_FALSIFIED_UNDERPOWERED qualquer que seja o valor central. Os numeros ficam [DECLARADO] (calculo do agente da parametrizacao), como o texto diz.",
+   "evidencia": "conjunto_D_20261029/parametrizacao_03nov/PARTITURA_D_03nov.md:6,18,20; PODER_RAMO_B_ANTES_DE_ABRIR.json[leitura]; ambos em MANIFESTO_PARAMETRIZACAO_03nov.json[arquivos].",
+   "como_corrigir": "Dizer na ressalva: «os dois intervalos ficam abaixo de 5 sigma: parede medida, nao falsificacao; por (c) o resultado nao entra; entra so' a citacao do pre-registro»."
+  },
+  {
+   "sev": "BAIXO",
+   "onde": "pedra/PsionCanto.lean:154 e pedra/Par.lean:78 (docstrings «nome provisorio»); pedra/Par.lean:38-39 e artigo PT/EN («[KNOWN/ONTO]» para a ponte Bell-TT)",
+   "achado": "Redacao: os dois docstrings chamam de «nome provisorio» o NOME DO TEOREMA (the_psion_is_the_corner_on_both_faces / o_par_de_psions_e_o_graviton) quando os nomes ratificados sao os dos modulos — leitura ambigua depois da ratificacao; e o teorema o_par_de_psions_e_o_graviton, pelo nome, le-se como identidade («o par de psions E o graviton») enquanto o corpo e' a conjuncao de a, a', a'', b (o docstring do modulo explica, o nome nao). A etiqueta [KNOWN/ONTO] para a ponte Bell-TT nao cita fonte [KNOWN].",
+   "evidencia": "PsionCanto.lean:154, Par.lean:78, 36-39.",
+   "como_corrigir": "Na proxima versao: tirar «nome provisorio» dos dois docstrings; manter o nome do teorema (e' ancora do contrato) mas repetir no docstring «conjuncao, nao identificacao»; trocar [KNOWN/ONTO] por [ONTO] ate' haver citacao."
+  },
+  {
+   "sev": "BAIXO",
+   "onde": "orquestrador/pos_treino_v407.py:s1b_revisao (l.~200)",
+   "achado": "S1b exige aprovada is True e candidato_sha16 == sha16 do candidato em disco (testado: reprova aprovada False, aprovada 'true' string e sha16 de outro candidato; ficou esperando). Nao confere os hashes dos textos revisados: se um pysnip/runtime/delta mudar sem mudar o candidato (o candidato embute todos, entao em teoria muda; os textos de pos_rito NAO entram no candidato), a revisao seguiria 'valendo'. O pedido do proprio revisor diz que a revisao deixa de valer se algum mudar.",
+   "evidencia": "l_orquestrador_out.txt; REVISAO_TERCEIRO_v407.json['arquivos_revisados'].",
+   "como_corrigir": "S1b comparar REVISAO['arquivos_revisados'] (sha16) com o disco para os arquivos de pos_rito e orquestrador, que nao entram no candidato."
+  }
+ ],
+ "ressalvas": [
+  "R1 e' o escopo declarado: reli INTEIROS os nove .lean (docstrings e enunciados; as provas so' pelo #print axioms e pelo diff contra a origem), runtime_v407.py, registros_v407.py, delta_v407.py, o artigo PT (pysnip) e o paragrafo do README renderizado por mim; o EN so' por diff de estrutura e paridade com o PT (mesmas secoes, mesmos estatutos, mesmas contagens); NAO reli o EN frase a frase.",
+  "NAO examinei: as provas Lean por dentro; o build do kernel (tomei o KERNEL_RECIBO + o audit.log e COMPILEI eu mesmo um arquivo com #print axioms das 76 ancoras + um exemplo proprio: 77 no trio, 0 sorryAx; o unico erro do meu arquivo foi um nome meu errado de B0_no_eigen no fim — conferi esse teorema no axiom_report do ensaio, trio); instalar_v407.py, reverter_v407.py, rito_v407.sh, chain_pos_rito_v407.sh, os scripts bateria_pre_selo/bancada_B3_servico, a G1 (custodiar.py), os gerenciadores de memoria/Atlas/handoff alem do que o harness rendeu (varri os textos rendidos por guardas e por citacoes, nao os li inteiros); a fisica; os PDFs; o rito (nao rodei); a correcao da custodia.",
+  "Independencia: mesma familia de modelo (Sonnet) da revisao de 02/11 das tres pedras, outra instancia; a compilacao e' minha; os scripts a_*.py...n_*.py sao meus. O orquestrador foi lido e exercitado so' em --plano e --ensaio (com ORQ redirecionado para minha pasta: nada escrito fora de revisao_terceiro/).",
+  "O candidato NAO mudou durante a revisao: sha16 a5df4c573328465c no inicio e no fim, mtime 13:28:02, 43.054.851 bytes. Em segundo plano a cadeia regravou ESPERADOS_v407.json (13:42), ensaio_a_seco_v407.json (13:42), PINOS_BN_v407.json (13:45) e PRECONDICOES_v407.json (13:45) com a mesma substancia; reexecutei f_hashes.py depois (todas as conferencias ok, ver f_hashes_out.txt).",
+  "PRECONDICOES_v407.json esta' com ok False por UM pendente que e' da gerencia, nao desta revisao: o MEMORY.md real nao comporta a linha nova do handoff (185 linhas, 23.834 B; limite bytes+900 < 24.000); a superficie do pos-rito recusa com rc 3 e a gerencia decide o que sai do indice. Se S1 do orquestrador exigir PREPARACAO_v407_PRONTA.json com pronta == true, isto pode segurar o S1.",
+  "A revisao de terceiro de 02/11 (tres pedras) e a minha (nove pedras, esta rodada) nao eliminam o rotulo [DECLARADO] dos textos publicos sobre o poder do teste D nem o das falas do acervo de 2025: ficam como estao ditos.",
+  "As ressalvas (6) e (11) do README dizem que quatro das sete pedras de 02/11 «NAO tiveram revisao de terceiro ate' esta preparacao»: depois desta revisao (e se aprovada) a frase fica verdadeira so' como historia; a gerencia decide se atualiza o texto na superficie (nao e' defeito: a data esta' na frase)."
+ ],
+ "rotas_examinadas": [
+  "consultar «v407» e «psion» no Mapa de Rotas (so' leitura): 8 rotas v407 (kernel.v407_preparacao_03nov, kernel.psion_canto_r1_03nov, kernel.o_par_de_psions_r1_03nov, kernel.motor_continuo_pilar_levantamento_03nov, custodia.v406, umpy.v406.selada...). Nada contradiz esta revisao; «nao reabrir cancelado = vacuo» e «conjuncao, nao identificacao: Bell (C^4) e TT (R^4)» foram respeitados.",
+  "a_intocados.py + a2_mudados.py: 8 funcoes intocadas AST+fonte iguais a base; 25 nomes mudados (= COMPARACAO), 15 novos, 0 removidos; 25 'expected_ladder' 11860->11958 so' eles (26 no candidato: +1 no contrato novo); testemunha_estatica_v396 e v406_fechamento_mechanics com diff de fonte so' no que o pedido diz; _V406_SPECS: 17 diferencas = u7 + E20 e h2/h3/h6/h8 + errata.",
+  "d_kernel.py + f_hashes.py + n_hashes_digitados.py: 9 embutidos == sandbox == pedra/ == BUNDLE; origem x normalizado: so' cabecalho/namespace/#print axioms (nenhuma prova tocada); raiz = raiz v406 + 9 imports; Audit identico; 1746 herdados intactos; 55 conferencias de hash sem falha; 12 tokens hex digitados nos textos novos, todos prefixo de sha256 de arquivo real.",
+  "axiomas_terceiro.lean (lake env lean, um processo, 283 s): 76 ancoras + exemplo proprio revisorLemaNoHabitante no trio, 0 sorryAx; m_flags_audit.py: as 98 bandeiras ext_psi407_* apontam para declaracoes do audit.log, no trio, no modulo esperado.",
+  "c_fail_closed.py (159 casos, 0 falha): _v407_elo_lido e psion_canto_v407 fail-closed (nome ausente, fora do trio, proveniencia errada, sha256 errado, fonte embutida adulterada, kernel recusado, contrato adulterado, 76 ancoras ausentes uma a uma, respostas do operador, raiz sem import, teste D, falas adulteradas); k_funcoes_vivas.py (14 casos): a chave le True com o lema e False sem ele; fechamento_v406 c8 e specs selam e recusam como devem.",
+  "e_citacoes.py, e2_citacoes_textos_rendidos.py, h_paragrafo_e_guardas.py: guardas P18 e v407 sobre 60 arquivos (so' achados: o proprio texto das regras no runtime e um comentario do gerador de handoff); paragrafo do README renderizado por mim: verificar_paragrafo_v407 sem falha, 11 de 11 ressalvas inteiras, controle negativo (ressalva cortada) reprova; a regra do 4,44: toda ocorrencia traz p e a linha dos 5 sigma.",
+  "l_orquestrador.py: --plano e --ensaio (ORQ redirecionado): caso positivo + 8 negativos do S10 ok; ordem no main S0,S1,S1b,S2,S3,S4,S5,S6,S7,S10,S8; AUT cita b89e4c909f37e163 e b5717ff445a883cd (frases conferidas nos verbatims); sem taskkill/Stop-Process por nome (so' Stop-Process -Id lido da porta 18777, com conferencia de linha de comando); nenhum git push/commit; publicacao so' via custodiar.py (G1); S1b fail-closed."
+ ],
+ "candidato_mudou_durante_a_revisao": false,
+ "candidato_sha16_no_inicio": "a5df4c573328465c",
+ "candidato_bytes": 43054851,
+ "arquivos_revisados": {
+  "um_v407_candidato.py": "a5df4c573328465c",
+  "CANDIDATO_v407.json": "2f349acf68d3d199",
+  "ESPERADOS_v407.json": "9014dd0a342a7e1e",
+  "PINOS_BN_v407.json": "3a0c5ba2d27b9309",
+  "BUNDLE_v407.json": "eca69ad840df85b7",
+  "FORMAL_MAP_v407.json": "a8d6968383d14083",
+  "MANIFESTO_INSUMOS_v407.json": "a860850095012dfa",
+  "kernel/KERNEL_RECIBO_v407.json": "da854cc2a3747a21",
+  "PINO_MEMORIA_PY_v407.json": "3c1ada3c6e4ede79",
+  "v407_pins.py": "e0195fc9fb5e1c82",
+  "runtime_v407.py": "c3517cb473cdf911",
+  "delta_v407.py": "08523b565ded2e28",
+  "registros_v407.py": "84449cac12c83e31",
+  "artigo_pt_v407.pysnip": "300c2c3bc5d1155f",
+  "artigo_en_v407.pysnip": "333a51acbd063e8e",
+  "guarda_frases_v407.py": "15a373c3a499fd2d",
+  "guarda_p18_v407.py": "aad2f6704557f7b4",
+  "pos_rito/textos_v407.py": "a21a7961b58b909a",
+  "pos_rito/textos_v407_novo.pysnip": "17e574b7ffa19d28",
+  "pos_rito/textos_custodia_handoff_v407_03nov.py": "7ed72c3682a066ca",
+  "orquestrador/pos_treino_v407.py": "71f5b44bc8ba7ffd",
+  "orquestrador/ORDEM_RELEASE_APP_TEMPLATE.md": "2a0a1d616fcd17d6",
+  "base_v406/um.py": "ddcb91930982d614",
+  "pedra/AChaveDaGuarda.lean": "135361a9105e11de",
+  "pedra/APonteDoAtrito.lean": "f9b4872516e8fe5c",
+  "pedra/KEhATangente.lean": "fe263ee12920e04f",
+  "pedra/LeituraPreservada.lean": "aeab7e30d907f562",
+  "pedra/OGuarda.lean": "d1362e297540b159",
+  "pedra/OIgual.lean": "91fa7896ea49b058",
+  "pedra/OUmInscrito.lean": "2a85f16fa6b9344d",
+  "pedra/Par.lean": "2835b54fe440c52f",
+  "pedra/PsionCanto.lean": "f4a8e81c75dd1bb3"
+ },
+ "nota": "aprovada: true so' com 0 ALTO e 0 MEDIO. Se qualquer arquivo de arquivos_revisados mudar, esta revisao nao vale para ele."
+}

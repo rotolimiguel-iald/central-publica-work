@@ -1,0 +1,70 @@
+--- v406/instalar_v406.py
++++ v407/instalar_v407.py
+@@ -2,5 +2,6 @@
+-"""instalar_v406.py -- instala o candidato v406 no canonico (ato da gerencia c1; adaptado em 02/11/2026 para o BUNDLE do fecho, NAO executado na preparacao). Molde: instalar_v405.py (a lista dos modulos e' a do bundle de 301, como no instalar_v394.py). Fail-closed:
+-  * o canonico tem de ser a v405 selada (ESPERADOS_v406.origem_sha16 == CANDIDATO_v406.base_v405_sha16, lido do arquivo) e o candidato o de ESPERADOS e do registro;
+-  * o recibo pre_selo do B(n) (PINO_RECIBO_PRE_SELO_v406.json) tem de existir, estar pinado (sha256 do arquivo == o do pino), ser UTILIZAVEL e ser do um.py que esta no Nos agora (a licao da v405: o recibo e' gerado e pinado ANTES da instalacao; aqui GERADO NOVO, em ensaio contra a Bancada que JA pina a v405) e a Bancada de producao tem de seguir pinando o que o recibo diz (o sha256 do manifesto dela == o do pino);
+-  * o cache do pilar tem de guardar o resultado reaproveitado (o mesmo que a v406 reaproveita pela chave);
+-  * nenhum processo um.py ou trabalhador do pilar rodando (a v406 traz 301 modulos novos de kernel em TGLExt/F1Fecho394 [o BUNDLE do fecho: os 300 da bancada do ChatGPT e a candidata CanonicalFullTGLWitnessR1 da gerencia; o nome desta e' provisorio, os das pedras sao do operador]; o numero e a lista sao lidos de kernel_modulos_novos_v406.json e conferidos contra ESPERADOS.bundle_sha256: o proprio rito os materializa a partir do corpo embutido);
++# [A ADAPTAR v407] SUBIDA MECANICA DE ROTULO (v406->v407) do molde v406/instalar_v406.py; o CORPO e' o da v406 (bundle de 301 modulos, fechamento_v406, quatro chaves); nada rodou; ver bump/instalar_v407.py.diff
++"""instalar_v407.py -- instala o candidato v407 no canonico (ato da gerencia c1; adaptado em 02/11/2026 para o BUNDLE do fecho, NAO executado na preparacao). Molde: instalar_v406.py (a lista dos modulos e' a do bundle de 301, como no instalar_v394.py). Fail-closed:
++  * o canonico tem de ser a v406 selada (ESPERADOS_v407.origem_sha16 == CANDIDATO_v407.base_v406_sha16, lido do arquivo) e o candidato o de ESPERADOS e do registro;
++  * o recibo pre_selo do B(n) (PINO_RECIBO_PRE_SELO_v407.json) tem de existir, estar pinado (sha256 do arquivo == o do pino), ser UTILIZAVEL e ser do um.py que esta no Nos agora (a licao da v406: o recibo e' gerado e pinado ANTES da instalacao; aqui GERADO NOVO, em ensaio contra a Bancada que JA pina a v406) e a Bancada de producao tem de seguir pinando o que o recibo diz (o sha256 do manifesto dela == o do pino);
++  * o cache do pilar tem de guardar o resultado reaproveitado (o mesmo que a v407 reaproveita pela chave);
++  * nenhum processo um.py ou trabalhador do pilar rodando (a v407 traz 301 modulos novos de kernel em TGLExt/F1Fecho394 [o BUNDLE do fecho: os 300 da bancada do ChatGPT e a candidata CanonicalFullTGLWitnessR1 da gerencia; o nome desta e' provisorio, os das pedras sao do operador]; o numero e a lista sao lidos de kernel_modulos_novos_v407.json e conferidos contra ESPERADOS.bundle_sha256: o proprio rito os materializa a partir do corpo embutido);
+@@ -8 +9 @@
+-  * COPIA DE BYTES do resultado do pilar no cache para o pacote (pilar_anterior_v405_<ts>/);
++  * COPIA DE BYTES do resultado do pilar no cache para o pacote (pilar_anterior_v406_<ts>/);
+@@ -15,2 +16,2 @@
+-ESP = json.load(open(os.path.join(HERE, "ESPERADOS_v406.json"), encoding="utf-8")); CM = json.load(open(os.path.join(HERE, "CANDIDATO_v406.json"), encoding="utf-8"))
+-CAND = os.path.join(HERE, "um_v406_candidato.py")
++ESP = json.load(open(os.path.join(HERE, "ESPERADOS_v407.json"), encoding="utf-8")); CM = json.load(open(os.path.join(HERE, "CANDIDATO_v407.json"), encoding="utf-8"))
++CAND = os.path.join(HERE, "um_v407_candidato.py")
+@@ -25 +26 @@
+-assert h16(raw0) == ESP["origem_sha16"] == CM["base_v405_sha16"], "o canonico nao e a v405 selada (%s)" % h16(raw0)
++assert h16(raw0) == ESP["origem_sha16"] == CM["base_v406_sha16"], "o canonico nao e a v406 selada (%s)" % h16(raw0)
+@@ -28,2 +29,2 @@
+-_pino_p = os.path.join(HERE, "PINO_RECIBO_PRE_SELO_v406.json")
+-assert os.path.exists(_pino_p), "falta PINO_RECIBO_PRE_SELO_v406.json: o recibo pre_selo do B(n) tem de ser gerado e pinado ANTES da instalacao -- nao instalo"
++_pino_p = os.path.join(HERE, "PINO_RECIBO_PRE_SELO_v407.json")
++assert os.path.exists(_pino_p), "falta PINO_RECIBO_PRE_SELO_v407.json: o recibo pre_selo do B(n) tem de ser gerado e pinado ANTES da instalacao -- nao instalo"
+@@ -32 +33 @@
+-assert PINO["utilizavel_como_recibo_pre_selo_do_B_n"] is True and PINO["versao_nos"] == "v405" and PINO["um_py_sha16_do_nos"] == h16(raw0), "o recibo pre_selo nao e' utilizavel ou nao e' do um.py que esta no Nos -- nao instalo"
++assert PINO["utilizavel_como_recibo_pre_selo_do_B_n"] is True and PINO["versao_nos"] == "v406" and PINO["um_py_sha16_do_nos"] == h16(raw0), "o recibo pre_selo nao e' utilizavel ou nao e' do um.py que esta no Nos -- nao instalo"
+@@ -34 +35 @@
+-assert hashlib.sha256(_bmb).hexdigest() == PINO["valido_enquanto"]["bancada_pina"]["manifesto_sha256"] and _bm["canonical"].get("version") == "v405" == PINO["valido_enquanto"]["bancada_pina"]["version"], "a Bancada de producao nao pina mais o que o recibo pre_selo diz (re-pino antes do B(n)): o recibo ficou obsoleto -- nao instalo"
++assert hashlib.sha256(_bmb).hexdigest() == PINO["valido_enquanto"]["bancada_pina"]["manifesto_sha256"] and _bm["canonical"].get("version") == "v406" == PINO["valido_enquanto"]["bancada_pina"]["version"], "a Bancada de producao nao pina mais o que o recibo pre_selo diz (re-pino antes do B(n)): o recibo ficou obsoleto -- nao instalo"
+@@ -37,2 +38,2 @@
+-# v406: (a) as pedras anteriores (o criterio binario, a rede de Fock, o tempo, Psibit, TestemunhaEstatica, Token, Sonico, AfinacaoDasCordas, FalsidadeDaInercia, PonteDaEscalaDual, QuedaSemGeometria, EsperancaCondicional, Caminho, Vida, VerdadeAdendo, ProjecaoTransversalDaMeiaNat, Jo8v32 e as OITO da v405: PonteDaMassa, MassaTensaoPura, Identidade, ObservadorTerminal, LeiDoDiminuto, TonicaDoHamiltoniano, DiscoDeEuler e PontoZeroDoPsion) JA estao no kernel do Nos (a base instalada e' a v405 selada); (b) os 301 modulos novos da v406 (o bundle do fecho em TGLExt/F1Fecho394) NAO estao la ainda.
+-# A lista dos modulos novos vem de kernel_modulos_novos_v406.json (campo 'novos', uma LISTA); o numero e' o comprimento dela, conferido contra ESPERADOS. Fail-closed em tudo.
++# v407: (a) as pedras anteriores (o criterio binario, a rede de Fock, o tempo, Psibit, TestemunhaEstatica, Token, Sonico, AfinacaoDasCordas, FalsidadeDaInercia, PonteDaEscalaDual, QuedaSemGeometria, EsperancaCondicional, Caminho, Vida, VerdadeAdendo, ProjecaoTransversalDaMeiaNat, Jo8v32 e as OITO da v406: PonteDaMassa, MassaTensaoPura, Identidade, ObservadorTerminal, LeiDoDiminuto, TonicaDoHamiltoniano, DiscoDeEuler e PontoZeroDoPsion) JA estao no kernel do Nos (a base instalada e' a v406 selada); (b) os 301 modulos novos da v407 (o bundle do fecho em TGLExt/F1Fecho394) NAO estao la ainda.
++# A lista dos modulos novos vem de kernel_modulos_novos_v407.json (campo 'novos', uma LISTA); o numero e' o comprimento dela, conferido contra ESPERADOS. Fail-closed em tudo.
+@@ -40,6 +41,6 @@
+-assert all(os.path.exists(os.path.join(NOS, "tgl_kernel", "TGLExt", n_ + ".lean")) for n_ in _PEDRAS_ANTERIORES) and os.path.exists(os.path.join(NOS, "tgl_kernel", "TGLExt", "F1Fecho394", "NetworkProofAuditR8.lean")), "as pedras anteriores (v394 a v405, as oito da v405 inclusive) nao estao no kernel do Nos -- nao instalo"
+-_nj = json.load(open(os.path.join(HERE, "kernel_modulos_novos_v406.json"), encoding="utf-8"))
+-assert isinstance(_nj["novos"], list), "kernel_modulos_novos_v406.json tem de trazer a LISTA em 'novos'"
+-NOVOS_V406 = list(_nj["novos"]); _N = len(NOVOS_V406)
+-assert _N == len(set(NOVOS_V406)) == ESP["kernel"]["modulos_novos"] == len(ESP["bundle_sha256"]) == 301 and set(NOVOS_V406) == set(ESP["bundle_sha256"]) and all(x_.startswith("TGLExt/F1Fecho394/") and x_.endswith(".lean") for x_ in NOVOS_V406), ("a lista dos modulos novos nao e' a do ESPERADOS (o bundle de 301)", _N)
+-assert not [rel for rel in NOVOS_V406 if os.path.exists(os.path.join(NOS, "tgl_kernel", *rel.split("/")))], "algum dos modulos novos (v406) ja esta no kernel do Nos -- nao instalo"
++assert all(os.path.exists(os.path.join(NOS, "tgl_kernel", "TGLExt", n_ + ".lean")) for n_ in _PEDRAS_ANTERIORES) and os.path.exists(os.path.join(NOS, "tgl_kernel", "TGLExt", "F1Fecho394", "NetworkProofAuditR8.lean")), "as pedras anteriores (v394 a v406, as oito da v406 inclusive) nao estao no kernel do Nos -- nao instalo"
++_nj = json.load(open(os.path.join(HERE, "kernel_modulos_novos_v407.json"), encoding="utf-8"))
++assert isinstance(_nj["novos"], list), "kernel_modulos_novos_v407.json tem de trazer a LISTA em 'novos'"
++NOVOS_V407 = list(_nj["novos"]); _N = len(NOVOS_V407)
++assert _N == len(set(NOVOS_V407)) == ESP["kernel"]["modulos_novos"] == len(ESP["bundle_sha256"]) == 301 and set(NOVOS_V407) == set(ESP["bundle_sha256"]) and all(x_.startswith("TGLExt/F1Fecho394/") and x_.endswith(".lean") for x_ in NOVOS_V407), ("a lista dos modulos novos nao e' a do ESPERADOS (o bundle de 301)", _N)
++assert not [rel for rel in NOVOS_V407 if os.path.exists(os.path.join(NOS, "tgl_kernel", *rel.split("/")))], "algum dos modulos novos (v407) ja esta no kernel do Nos -- nao instalo"
+@@ -47 +48 @@
+-rec["modulos_novos_v406"] = {"fonte": "kernel_modulos_novos_v406.json[novos]", "n": _N, "lista": NOVOS_V406}   # o reverter usa ESTA lista (a que o instalar conferiu)
++rec["modulos_novos_v407"] = {"fonte": "kernel_modulos_novos_v407.json[novos]", "n": _N, "lista": NOVOS_V407}   # o reverter usa ESTA lista (a que o instalar conferiu)
+@@ -50 +51 @@
+-            os.path.join("tgl_kernel", "TGLExt.lean"), os.path.join("tgl_kernel", "TGL", "Audit.lean")):   # (licao 2 da v405: o rito reescreve o manifesto do kernel; ele entra nos backups e o reverter o restaura)
++            os.path.join("tgl_kernel", "TGLExt.lean"), os.path.join("tgl_kernel", "TGL", "Audit.lean")):   # (licao 2 da v406: o rito reescreve o manifesto do kernel; ele entra nos backups e o reverter o restaura)
+@@ -54 +55 @@
+-_dst = os.path.join(HERE, "pilar_anterior_v405_" + ts); os.makedirs(_dst); rec["pilar_anterior_v405"] = {"de": _cdir, "para": _dst, "arquivos": {}}
++_dst = os.path.join(HERE, "pilar_anterior_v406_" + ts); os.makedirs(_dst); rec["pilar_anterior_v406"] = {"de": _cdir, "para": _dst, "arquivos": {}}
+@@ -59,3 +60,3 @@
+-        rec["pilar_anterior_v405"]["arquivos"][f_] = {"bytes": len(data), "sha256": hashlib.sha256(data).hexdigest()}
+-assert rec["pilar_anterior_v405"]["arquivos"]["result.json"]["sha256"] == ESP["pilar"]["result_sha256"]
+-tmp = um + ".tmp_instalar_v406_" + ts; open(tmp, "wb").write(cand)
++        rec["pilar_anterior_v406"]["arquivos"][f_] = {"bytes": len(data), "sha256": hashlib.sha256(data).hexdigest()}
++assert rec["pilar_anterior_v406"]["arquivos"]["result.json"]["sha256"] == ESP["pilar"]["result_sha256"]
++tmp = um + ".tmp_instalar_v407_" + ts; open(tmp, "wb").write(cand)

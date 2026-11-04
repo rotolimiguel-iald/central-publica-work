@@ -1,0 +1,115 @@
+{
+ "aprovada": true,
+ "candidato_sha16": "833121339e649f71",
+ "candidato_sha16_no_inicio": "833121339e649f71",
+ "candidato_bytes": 43065098,
+ "revisor": "Claude Sonnet (agente revisor de terceiro; rodada R5; nao construi a v407; mesma familia da R1 a R4 e da revisao de 02/11, outra instancia)",
+ "rodada": "R5",
+ "quando": "2026-11-03T18:45:00",
+ "n_alto": 0,
+ "n_medio": 0,
+ "n_baixo": 5,
+ "achados": [
+  {
+   "sev": "BAIXO",
+   "onde": "[DITO pela gerencia: a ordem de intercalacao de stderr nunca foi contrato; a copia fiel e' o contrato] rito_v407.sh:255 (linha de lancamento com o carimbador) e o comentario das l. 251-253",
+   "achado": "(i) O carimbador e' fiel: gravou byte a byte o que recebeu, com o jsonl coerente (soma dos bytes por linha == bytes_total == tamanho do arquivo; sha256 do registro final == sha256 do arquivo; ultima linha sem terminador marcada), preservou UTF-8, CR e a ultima linha sem \\n, e o RC do subshell foi 0 e 7 como o do processo (pipefail). Testei com um um.py FALSO na pasta _carimbo, reproduzindo a linha do rito; o rito nao foi executado. Sem PYTHONUNBUFFERED o arquivo sai IDENTICO ao `> arquivo 2>&1` da v406. (ii) COM `PYTHONUNBUFFERED=1` (que o rito poe de proposito) a ORDEM relativa das linhas de stderr e stdout muda em relacao a forma antiga (stdout em bloco): mesmas linhas, ordem cronologica em vez da ordem de descarga. Portanto «o stdout canonico segue IDENTICO em bytes» vale para a copia do carimbador, nao para a comparacao com o stdout da v406; e a variavel e' herdada pelos subprocessos python do um.py (so' bufferizacao; o um.py nao despeja o ambiente). (iii) `set -o pipefail` e' extensao do bash sob `#!/bin/sh`: aqui sh == bash 5.2 (msys), funciona; em um sh POSIX estrito (dash) o subshell nao lancaria o um.py. (iv) O mata_um mata a arvore do subshell pelo PID nativo (taskkill /T): pega o um.py e o carimbador.",
+   "evidencia": "revisao_terceiro/_carimbo/ (fake_um.py, out_0.txt, out_7.txt, ref.txt, out_nounbuf.txt, t_*.jsonl); `sh -c 'set -o pipefail; false | true; echo $?'` -> 1; `sh --version`: GNU bash 5.2.37 (x86_64-pc-msys).",
+   "como_corrigir": "Dizer no comentario do rito que a ordem de stderr/stdout passa a ser cronologica (e que o stdout da v406 nao e' comparavel byte a byte neste ponto) e que o rito exige bash. Nao trava."
+  },
+  {
+   "sev": "BAIXO",
+   "onde": "[CARREGADO da R4, nao tocado nesta rodada] pos_rito/textos_v407.py (bytes): fins de linha",
+   "achado": "O diff contra o .bak_r3_baixos e' exatamente o declarado ao nivel de TEXTO (1 linha: [KNOWN/ONTO] -> [ONTO]). Ao nivel de BYTES ha' uma mudanca nao declarada: o arquivo tinha 1088 CRLF e 46 LF isolados (as 10 primeiras linhas de comentario e 36 linhas em branco) e agora tem 1134 CRLF e 0 LF isolados (o patch normalizou os fins de linha). Sem efeito semantico (o import normaliza \\n; ignorando o fim de linha so' 1 linha difere), mas e' a mudanca que o pedido nao listou.",
+   "evidencia": "contagem de b'\\r\\n' e b'\\n' nos dois arquivos (113521 -> 113561 bytes); difflib sobre o texto normalizado: 2 linhas (-/+) = a linha 1099.",
+   "como_corrigir": "Dizer no caderno (ja' esta' aqui). Nao trava."
+  },
+  {
+   "sev": "BAIXO",
+   "onde": "[CARREGADO da R4, nao tocado nesta rodada] orquestrador/pos_treino_v407.py:s1b_revisao (l. 220-224)",
+   "achado": "A trava S1b agora compara o sha16 de cada arquivo de arquivos_revisados com o disco (ensaiada por mim em _orq_sandbox: com os 5 arquivos integros abre; com um arquivo de pos_rito alterado fecha; com o proprio pos_treino alterado fecha; aprovada 'true' string, sha16 de outro candidato e aprovada False fecham). Mas e' ABERTA por omissao em tres casos: (i) revisao sem o campo arquivos_revisados, (ii) arquivos_revisados vazio, (iii) arquivo listado que nao existe no disco ((PK / k).is_file() falso e' ignorado) ou caminho com '..'. O pedido da R2 chama o campo OBRIGATORIO; a trava nao o exige.",
+   "evidencia": "revisao_terceiro/r2_l_s1b.py e r2_l_s1b_out.txt, casos 7-10 (ABRE).",
+   "como_corrigir": "Exigir arquivos_revisados nao vazio com o candidato e pos_treino_v407.py entre as chaves; tratar arquivo ausente como alterado (ruim), nao como ignorado; recusar chaves com '..'. Nao trava: a revisao desta rodada traz o campo completo."
+  },
+  {
+   "sev": "BAIXO",
+   "onde": "[CARREGADO da R4, nao tocado nesta rodada] runtime_v407.py:105 (c16 de psion_canto_v407)",
+   "achado": "O c16 passou a varrer o core, como pedido: chave de TOPO contendo «conjunto_d», «teste_d_» ou «ramo_b» + («resultado»|«veredito») reprova (testei 5 variantes, inclusive maiusculas: c16 False e all_verified False; a chave existente ramo_b_preregistration_v386 nao reprova: base c16 True). O limite: so' chaves de topo. Um resultado do teste D ANINHADO (ex.: ramo_b_preregistration_v386.resultado) ou so' no valor (veredito NOT_FALSIFIED_UNDERPOWERED num campo qualquer) passa. Os dois booleanos do contrato (so_citado, resultado_no_um_py) continuam literais do proprio contrato.",
+   "evidencia": "revisao_terceiro/r2_c16_reading.py / r2_c16_reading_out.txt (casos (limite) aninhado e valor: c16 True).",
+   "como_corrigir": "Descrever o c16 como «nenhuma chave de topo do core...» (a descricao diz «nenhuma chave do core») ou varrer recursivamente. Nao trava."
+  },
+  {
+   "sev": "BAIXO",
+   "onde": "[CARREGADO da R4, nao tocado nesta rodada] RESIDUAL da R1 (aspas): pedra/PsionCanto.lean:33, 62-63, 106; pedra/Par.lean:23 e 33; registros_v407.py:234 (ao_lado_de da E19, selado no candidato, linha 221750)",
+   "achado": "Corrigidos (verificados contra os verbatims): PsionCanto.lean:39 («virar essa chave de conjectura para provado»), OUmInscrito.lean:8 (cunhagem de 02/11 verbatim com acento e sha16 25010b04c17e8ce1), OIgual.lean:10 (curvas, sha16 1c05c03070544839), APonteDoAtrito.lean:7-10 (verbatim, sha16 e36df7f1245c7f16), delta RESSALVAS_V407[3] e ERRATA_E19 (sem « » nos resumos do acervo, rotulados [DECLARADO]), paragrafo do README (4). NAO corrigidos: «funciona sob compressão» (a fala e' «funcionar sob compressão»), «o psíon é o Nome da Luz» (a cunhagem no kernel e' «ψ é o Nome da Luz»), e os dois resumos do acervo com « » em Par.lean («ψ₊ψ₋ cancelado = vácuo»; «|G⟩ como produto não emaranhado») e em registros_v407.py:234 («psi+ psi- cancelado = vacuo»; «|G> como produto nao emaranhado»), que o acervo nao traz assim (traz «par cancelado», «ψ₊ψ₋ = Aniquilação (vácuo)», «posto de Schmidt 1 (não emaranhado)»). O resumo entre « » parece citacao exata e e' do agente de leitura.",
+   "evidencia": "r2_e_citacoes_out.txt (NAO: PsionCanto «funciona sob compressão», «o psíon é o Nome da Luz»; Par «ψ₊ψ₋ cancelado = vácuo», «|G⟩ como produto não emaranhado»; registros «psi+ psi- cancelado = vacuo»); grep -F no candidato: «psi+ psi- cancelado = vacuo» (1) e «ψ₊ψ₋ cancelado = vácuo» (1) presentes; o segundo resumo de registros_v407.py:234 atravessa uma quebra de linha de string no candidato; PSION_NO_ACERVO_03nov.md.",
+   "como_corrigir": "Sem « » nos resumos (como ja' se fez em delta/README); nas duas citacoes do operador, o trecho exato («funcionar sob compressão»; «ψ é o Nome da Luz») ou sem aspas. Nas pedras, so' na proxima versao do modulo; em registros_v407.py:234 exige regenerar o candidato, entao fica dito. Nao trava."
+  }
+ ],
+ "baixos_da_r4": [
+  {
+   "onde": "R4-1. pos_treino_v407.py:recibo_do_app: RESULTADO que e' JSON valido mas nao objeto derrubava o S10",
+   "estado": "ATENDIDO",
+   "evidencia": "Diff contra pos_treino_v407.py.bak_r5_s10_robustez_20261103_184309 (sha16 a6e4fc944a83120b == o da R4): `if not isinstance(rj, dict): continue` logo depois do jload. r5_s10.py / r5_s10_out.txt: lista `[1,2]`, string, `null` e numero -> recibo False SEM excecao (antes: AttributeError). _ensaio_s10(): `negativo_resultado_nao_objeto` true, sem Traceback."
+  },
+  {
+   "onde": "R4-2. recibo_do_app: o nome do arquivo bastava mesmo com o campo `ordem` contradizendo",
+   "estado": "ATENDIDO",
+   "evidencia": "Agora `_ord = str(rj.get('ordem','') or '').strip()`; com `_ord` nao vazio manda a regex ORDEM_<num> sobre o campo; so' sem o campo vale o nome. Testado: 002_RESULTADO.json com ordem ORDEM_020 -> False (antes True); 999_RESULTADO.json com ordem ORDEM_002 -> True (o campo manda); ordem null, '' e '   ' + nome certo -> True (campo ausente/vazio: vale o nome); ORDEM_020 no campo e nome 020 -> False (nao confunde 2 com 20); ordem inteiro 2 -> False (conservador). Os 3 outros elos seguem exigidos (release errada e pino errado fecham mesmo com `cumprida`). _ensaio_s10(): `negativo_resultado_ordem_divergente` true; 12 de 12, ok true."
+  },
+  {
+   "onde": "R4-3. rito_v407.sh:255 carimbador com PYTHONUNBUFFERED: stdout canonico nao e' comparavel byte a byte com o da v406 (ordem de stderr)",
+   "estado": "DITO",
+   "evidencia": "Decisao da gerencia: a ordem de intercalacao de stderr nunca foi contrato; o contrato e' a copia fiel do que o um.py emite neste rito (que o carimbador garante, sha256 e tamanho conferidos). rito_v407.sh nao mudou desde a R4 (sha16 igual). Fica carregado em `achados`."
+  }
+ ],
+ "ressalvas": [
+  "R5 confinada a orquestrador/pos_treino_v407.py. Nao repeti nada do que a R4 aprovou e nao mudou (candidato, kernel, hashes, guardas, README, carimbador, fila_memoria).",
+  "O orquestrador original NAO foi executado (so' importado, com ORQ/LOG/ESTADO redirecionados para _orq_sandbox e nada de main; _ensaio_s10 roda em dirs sinteticos). O comportamento do S10 com o app real (TUNEL_CLAUDE_APP) nao foi medido por mim.",
+  "arquivos_revisados: as 32 chaves da R4 com os sha16 atuais. Se qualquer arquivo listado mudar, esta revisao nao vale para ele. Os 5 BAIXOS que restam ficam escritos e nenhum impede a aprovacao. A frase selada «0 alto e 0 medio em todas as rodadas» segue verdadeira (R1 0/0/9, R2 0/0/8, R3 0/0/5, R4 0/0/7, R5 0/0/5)."
+ ],
+ "rotas_examinadas": [
+  "A (diff == declarado): orquestrador/pos_treino_v407.py contra o .bak_r5_*: 3 hunks: (1) recibo_do_app, linha 441 -> 4 linhas (isinstance + `_ord` + `desta`); (2) _ensaio_s10: `montar(..., resultado_json=None)` e o ramo que escreve o texto bruto de NNN_RESULTADO.json; (3) dois `montar(...)` negativos novos (lista JSON; nome 002 com campo ORDEM_020 = num + 18) e os dois res[...]. `s1b_revisao` e o resto NAO foram tocados. compile() limpo.",
+  "B (os meus dois casos da R4): r5_s10.py (copia da r4_s10.py com expectativas atualizadas, dirs sinteticos em _orq_sandbox, nunca o TUNEL real): _ensaio_s10() 12 de 12 (ok true: positivo, positivo_resultado_json e os 10 negativos), 28 casos meus, 0 inesperados; os dois pontos da R4 agora FECHAM sem excecao.",
+  "C (S1b): so' orquestrador/pos_treino_v407.py mudou entre os 32 arquivos_revisados da R4 (sha16 a6e4fc944a83120b -> o atual, lido do arquivo); o candidato (833121339e649f71, 43.065.098 B), o gerador, o carimbador, o rito, o template, a fila_memoria, as pedras, o runtime, o registros/delta/pysnips e os textos do pos_rito: sha16 IGUAIS aos da R4. r5_l_s1b.py / r5_s1b_real_out.txt: com os arquivos_revisados novos ABRE; com a REVISAO da R4 em bytes FECHA (pos_treino mudou); com qualquer arquivo de pos_rito, orquestrador, carimbador, rito, fila ou template alterado FECHA."
+ ],
+ "arquivos_revisados": {
+  "um_v407_candidato.py": "833121339e649f71",
+  "base_v406/um.py": "ddcb91930982d614",
+  "BUNDLE_v407.json": "6121ff5a51334dc3",
+  "kernel/KERNEL_RECIBO_v407.json": "210ad396fc6494cf",
+  "runtime_v407.py": "bd623db2bf04c136",
+  "registros_v407.py": "016106f0ccc29019",
+  "delta_v407.py": "58f280bc19863cf3",
+  "artigo_pt_v407.pysnip": "a80f672d8f3c7ec7",
+  "artigo_en_v407.pysnip": "38203865cb7900d6",
+  "gerar_candidato_v407.py": "9d2638e63c8dc94a",
+  "comparar_v406_v407.py": "4651222591e4f708",
+  "ensaio_a_seco_v407.py": "46443cde4b6272b6",
+  "preparar_bundle_v407_03nov.py": "27947dc318ba0170",
+  "guarda_frases_v407.py": "15a373c3a499fd2d",
+  "guarda_p18_v407.py": "aad2f6704557f7b4",
+  "pos_rito/textos_v407.py": "12c37a2a1fc786bf",
+  "pos_rito/textos_v407_novo.pysnip": "3239e6431925eb4b",
+  "pos_rito/textos_custodia_handoff_v407_03nov.py": "7ed72c3682a066ca",
+  "orquestrador/pos_treino_v407.py": "72fa39f7c8f9b151",
+  "pedra/PsionCanto.lean": "55f30fe7d63e88c6",
+  "pedra/Par.lean": "fa4945d78e1a9f6c",
+  "pedra/APonteDoAtrito.lean": "bd8ae49e7341fcdb",
+  "pedra/OUmInscrito.lean": "acae38720f7e9204",
+  "pedra/KEhATangente.lean": "fe263ee12920e04f",
+  "pedra/AChaveDaGuarda.lean": "135361a9105e11de",
+  "pedra/OGuarda.lean": "d1362e297540b159",
+  "pedra/LeituraPreservada.lean": "aeab7e30d907f562",
+  "pedra/OIgual.lean": "b60fa5c49d8b0a79",
+  "carimbar_stdout_v407.py": "f0763c383795f3af",
+  "rito_v407.sh": "7464bc49ee85af41",
+  "orquestrador/ORDEM_RELEASE_APP_TEMPLATE.md": "acad498e56e4840d",
+  "pos_rito/fila_memoria_v407.py": "c799e8e34de67528"
+ },
+ "arquivos_que_mudaram_desde_a_R4": [
+  "orquestrador/pos_treino_v407.py"
+ ],
+ "candidato_mudou_durante_a_revisao": false,
+ "nota": "aprovada: true so' com 0 ALTO e 0 MEDIO e o candidato integro do inicio ao fim. R4 guardada em bytes: REVISAO_TERCEIRO_v407.R4.json/.R4.md (R3, R2 e R1 em .R3.*, .R2.*, .R1.*). Os 5 BAIXOS que restam ficam escritos (1 DITO pela gerencia, 4 carregados); nenhum impede a aprovacao. Se qualquer arquivo de arquivos_revisados mudar, esta revisao nao vale para ele."
+}

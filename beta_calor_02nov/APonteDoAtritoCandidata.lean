@@ -4,10 +4,10 @@ set_option autoImplicit false
 /-!
 Candidata da gerencia c1 (02/11/2026). Nome provisorio: o nome e do operador. Fora do kernel selado.
 
-Pergunta do operador (02/11/2026): «Consegue derivar a ponte agora?» — a ponte atrito → temperatura da cadeia dele
-«tensao → atrito → temperatura → magnetismo» (registrada em `MassaTensaoPura`), com a leitura dele:
-«[parcela que mantem o balanco fechado a cada observacao ciclica] = equilibrio … o atrito constante gera a viscosidade,
-que impede o zero absoluto, porque seu efeito e calor e isso fractaliza o Um absoluto pelo decaimento de seu expoente».
+Pergunta do operador (02/11/2026, verbatim sha16 e36df7f1245c7f16, em work\cunhagens_13out): «Consegue derivar a ponte agora?» — a ponte atrito → temperatura da cadeia dele,
+tensao → atrito → temperatura → magnetismo (registrada em `MassaTensaoPura`, sem aspas: e a sequencia, nao uma frase dele), com a leitura dele, verbatim:
+«[parcela que mantém o balanço fechado a cada observação cíclica]=equilíbrio» e «o Atrito constante gera a viscosidade, que impede o zero absoluto, porque seu efeito é calor e isso
+fractaliza o Um absoluto pelo decaimento de seu expoente».
 
 O que esta pedra faz, por termo, sobre o que o kernel ja tem (nada do dado; nenhum gate se move):
 * A TEMPERATURA DERIVADA `T := 1/P` e `κ/2π` no periodo fiel (`reciprocal_temperature`), e e positiva.

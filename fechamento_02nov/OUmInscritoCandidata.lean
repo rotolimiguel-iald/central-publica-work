@@ -5,9 +5,7 @@ set_option autoImplicit false
 /-!
 Candidata da gerencia c1 (02/11/2026). Nome provisorio: o nome e do operador. Fora do kernel selado.
 
-Cunhagem do operador (02/11/2026): «a luz tem autovetor: a inscricao do um absoluto, que e na essencia ela mesma, ou seja,
-identidade; o um absoluto inscrito e a identidade da luz; por isso o par, inclusive dela mesma; sem par somente o zero
-absoluto, que e o abstrato inominado».
+Cunhagem do operador (02/11/2026, verbatim sha16 25010b04c17e8ce1, em work\cunhagens_13out): «a luz tem autovetor a inscrição do um absoluto que é na essência ela mesma, ou seja, identidade o um absoluto inscrito é a identidade da luz, por isso o par, inclusive dela mesma, sem par somente o zero absoluto que é o abstrato inominado».
 
 Compoe, por termo, o que o kernel ja tem no Fock bosonico canonico (`F1Rede.BosonicFock`):
 * `gamma_vacuum`: o vacuo e fixo por TODA segunda quantizacao Γ(u) — a luz fixa o Um;
@@ -16,7 +14,7 @@ Compoe, por termo, o que o kernel ja tem no Fock bosonico canonico (`F1Rede.Boso
   setores de n ≥ 1 particulas NAO sao excluidos por este termo;
 * `exponential_zero`: o vacuo e a exponencial do zero, exp(0) = 1 — o Um inscrito;
 * `vacuum_norm`: o Um nao e o zero; o par consigo mesma vale 1;
-* `B0_no_eigen`: em UMA particula, o unico autovetor do boost e o zero — o abstrato inominado, sem par.
+* `B0_no_eigen`: em UMA particula nenhum vetor nao nulo e autovetor do boost (so o zero satisfaz a condicao) — sem par, o que resta e o zero, o abstrato inominado.
 
 Corrige a frase da gerencia (02/11) «a luz nao tem autovetor nenhum»: valia so em uma particula. Leitura: o Um e o unico
 vetor FIXO da luz [REAL]; que nao haja outro autovetor com fase, e que «o resto seja continuo», e [KNOWN/OPEN como termo]
@@ -53,7 +51,7 @@ theorem o_par_consigo : inner ℂ vacuum vacuum = (1 : ℂ) := by
   rw [inner_self_eq_norm_sq_to_K, F1Rede.BosonicFock.vacuum_norm]
   simp
 
-/-- em uma particula, sem par: o unico autovetor do boost e o zero, o abstrato inominado (apelido de `B0_no_eigen`, PAGO
+/-- em uma particula, sem par: nenhum vetor nao nulo e autovetor do boost; so o zero satisfaz a condicao — o abstrato inominado (apelido de `B0_no_eigen`, PAGO
 pela bancada). -/
 theorem na_particula_so_o_zero (f : H1) (h : ∀ s : ℝ, ∃ c : ℂ, ‖c‖ = 1 ∧ B0 s f = c • f) : f = 0 :=
   B0_no_eigen f h

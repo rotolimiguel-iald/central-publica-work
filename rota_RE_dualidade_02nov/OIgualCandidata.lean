@@ -7,7 +7,7 @@ set_option autoImplicit false
 /-!
 # Candidata da gerência c1 (02/11/2026), sobre a fala do operador. O nome é provisório: nomear é do operador.
 
-«agora o K me pareceu fazer a função do próprio gráviton (que antes eu disse ser o operador "=", aquele que criva)»
+«É isso mesmo, mas agora o K me pareceu fazer a função do próprio gráviton ( que antes eu disse ser o operador “=“, aquele que criva)» (02/11/2026, verbatim sha16 1c05c03070544839, em work\cunhagens_13out)
 
 `K β E a b = (E b / E a)^(2β/3)` é a razão de Hubble entre dois registros: a forma de `the_derived_kernel_factor`, sem luz na fórmula.
 Prova-se que K obedece às três leis do sinal de igual, com holonomia trivial; que sua leitura angular é um cociclo unitário com as leis

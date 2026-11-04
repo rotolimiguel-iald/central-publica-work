@@ -1,0 +1,180 @@
+TUNEL_APP = Path(r"C:\IALD\TUNEL_CLAUDE_APP")        # a pasta de ordens do orquestrador app (o app Claude em modo work)
+APP = Path(r"C:\IALD\projetos_pyhton\IALD")            # o app/web server da IALD: iald_nucleo_fixo.json diz a release instalada (C21 só CONFERE)
+TEMPLATE_ORDEM = ORQ / "ORDEM_RELEASE_APP_TEMPLATE.md"
+ESPERA_APP_S = 24 * 3600                                 # sem recibo em 24 h: parada visível (nunca «ok»)
+SONDA_APP_S = 300
+
+
+def _git_head(repo):
+    """HEAD curto do repositório local (só leitura); 'indisponivel' se o git falhar: o texto da ordem diz o que leu."""
+    try:
+        r = subprocess.run(["git", "-C", str(repo), "rev-parse", "--short=8", "HEAD"], capture_output=True, text=True, timeout=60)
+        return r.stdout.strip() if r.returncode == 0 and r.stdout.strip() else "indisponivel"
+    except Exception:  # noqa: BLE001
+        return "indisponivel"
+
+
+def _proximo_num_ordem(tunel):
+    nums = [int(m.group(1)) for p in Path(tunel).glob("ORDEM_*.md") for m in [re.match(r"ORDEM_(\d+)_", p.name)] if m]
+    return (max(nums) + 1) if nums else 1
+
+
+def _pasta_release_anterior(vant, work=None):
+    work = Path(work) if work else CEN / "work"
+    c = sorted(work.glob("iald_%s_*" % vant)) or sorted(work.glob("iald_v4*_*"))
+    return c[-1] if c else None
+
+
+def renderizar_ordem(num, selo, work=None, hoje=None, commit_espelho=None, commit_central=None):
+    """A ORDEM de release do app, a partir do molde, com a versão e o pino LIDOS do selo (nunca digitados). Devolve o texto; recusa se sobrar placeholder."""
+    vn = selo["um_version"]
+    assert re.fullmatch(r"v\d{3,}", vn), vn
+    pin = selo["sha256"]["um.py"]
+    assert re.fullmatch(r"[0-9a-f]{64}", pin), pin
+    vant = "v%d" % (int(vn[1:]) - 1)
+    pa = _pasta_release_anterior(vant, work)
+    tpl = TEMPLATE_ORDEM.read_text(encoding="utf-8")
+    vals = {"NUM": "%03d" % num, "VN": vn, "VANT": vant, "PIN": pin, "PIN16": pin[:16], "DATA": hoje or dt.date.today().strftime("%d/%m/%Y"),
+            "SHA16_ORDEM": sha16(ORDEM), "COMMIT_ESPELHO": commit_espelho or _git_head(Path(r"C:\IALD\Artigo\the_boundary")), "COMMIT_CENTRAL": commit_central or _git_head(CEN),
+            "PASTA_ANTERIOR": ("`%s`" % pa) if pa else "(nenhuma pasta iald_v4xx encontrada; peça à gerência)"}
+    for k, v in vals.items():
+        tpl = tpl.replace("{{%s}}" % k, v)
+    assert "{{" not in tpl, "placeholder sem valor na ordem de release do app"
+    return tpl
+
+
+def recibo_do_app(ordem_path, num, vn, pin, app=None, work=None, tunel=None):
+    """O RECIBO do app, conferido NA FONTE (devolve (ok, dict)). Quatro elos, todos exigidos: (a) RELATORIO_*.md na pasta de ordens, escrito DEPOIS da ordem e citando ORDEM_<num>; (b) INSTALLED_VERIFICATION.json de work\\iald_<vn>_*,
+    depois da ordem, status PASS, identity.release == vn e source_sha256 == o pino; (c) o contrato jev_control_<vn>.json existe no caminho que o app declara e o sha256 do arquivo é o que o app declara; (d) iald_nucleo_fixo.json do app:
+    operational_core.current_release == vn e release_source_sha256 == o pino; jev_control.release == vn e source_sha256 == o pino. Nada é aceito pela palavra do relatório."""
+    app = Path(app) if app else APP; work = Path(work) if work else CEN / "work"; tunel = Path(tunel) if tunel else TUNEL_APP
+    t0 = Path(ordem_path).stat().st_mtime
+    d = {"relatorio": None, "installed_verification": None, "jev_control": None, "nucleo_fixo": None}
+    rel_ok = []
+    for p in tunel.glob("RELATORIO_*.md"):
+        if p.stat().st_mtime > t0 and re.search(r"ORDEM[_ ]?0*%d(?![0-9])" % num, p.read_text(encoding="utf-8", errors="replace")):
+            rel_ok.append(p.name)
+    d["relatorio"] = rel_ok or None
+    iv_ok = False
+    ivs = sorted(work.glob("iald_%s_*/INSTALLED_VERIFICATION.json" % vn), key=lambda p: p.stat().st_mtime)
+    if ivs and ivs[-1].stat().st_mtime > t0:
+        try:
+            iv = jload(ivs[-1]); ident = iv.get("identity") or {}
+            iv_ok = iv.get("status") == "PASS" and ident.get("release") == vn and str(ident.get("source_sha256", "")).startswith(pin[:16]) and (len(str(ident.get("source_sha256", ""))) < 64 or ident.get("source_sha256") == pin)
+            d["installed_verification"] = {"path": str(ivs[-1]), "status": iv.get("status"), "release": ident.get("release"), "ok": iv_ok}
+        except Exception as ex:  # noqa: BLE001
+            d["installed_verification"] = {"erro": str(ex)[:200]}
+    nuc_ok = False; jc_ok = False
+    try:
+        nuc = jload(app / "iald_nucleo_fixo.json"); oc = nuc.get("operational_core") or {}; jc = nuc.get("jev_control") or {}
+        nuc_ok = oc.get("current_release") == vn and oc.get("release_source_sha256") == pin and jc.get("release") == vn and jc.get("source_sha256") == pin
+        jp = Path(str(jc.get("path", "")))
+        import hashlib
+        jc_ok = bool(jp.name == "jev_control_%s.json" % vn and jp.exists() and hashlib.sha256(jp.read_bytes()).hexdigest() == jc.get("sha256"))
+        d["nucleo_fixo"] = {"current_release": oc.get("current_release"), "release_source_sha256_ok": oc.get("release_source_sha256") == pin, "jev_release": jc.get("release"), "ok": nuc_ok}
+        d["jev_control"] = {"path": str(jp), "existe": jp.exists(), "sha256_confere": jc_ok}
+    except Exception as ex:  # noqa: BLE001
+        d["nucleo_fixo"] = {"erro": str(ex)[:200]}
+    ok = bool(rel_ok) and iv_ok and nuc_ok and jc_ok
+    d["ok"] = ok
+    return ok, d
+
+
+def s10_app(e):
+    """S10 (NOVO na v407): escreve a ORDEM de release do app e do contrato JEV em TUNEL_CLAUDE_APP (versão e pino LIDOS do selo) e ESPERA o recibo conferido na fonte (até 24 h; depois, PARADA visível), e só então confere na G1 que o C21 fechou.
+    Vai depois da publicação (S7), para que o app leia o commit do espelho; o C21 da custódia só CONFERE o que o app fez (a G1 nunca constrói a perna do app)."""
+    if feito(e, "S10_app"):
+        return True
+    try:
+        selo = jload(NOS / "um_absoluto_selo.json")
+        vn = selo["um_version"]; pin = selo["sha256"]["um.py"]
+        assert vn == "v407", ("o selo do Nós não é a v407", vn)
+        st = e.setdefault("s10", {})
+        if not st.get("ordem"):
+            num = _proximo_num_ordem(TUNEL_APP)
+            nome = "ORDEM_%03d_release_%s_do_app.md" % (num, vn)
+            destino = TUNEL_APP / nome
+            assert not destino.exists(), ("a ordem de release já existe e não foi escrita por esta corrida", nome)
+            texto = renderizar_ordem(num, selo)
+            destino.write_text(texto, encoding="utf-8", newline="\n")
+            st.update(ordem=nome, num=num, escrita_em=dt.datetime.now().isoformat(timespec="seconds"), ordem_sha16=sha16(destino), espera_ate=(dt.datetime.now() + dt.timedelta(seconds=ESPERA_APP_S)).isoformat(timespec="seconds"))
+            gravar(e)
+            log("S10: ordem de release do app escrita: %s (sha16 %s); espero o recibo até %s" % (nome, st["ordem_sha16"], st["espera_ate"]))
+        ordem = TUNEL_APP / st["ordem"]
+        t0 = dt.datetime.fromisoformat(st["escrita_em"]); voltas = 0
+        while True:
+            if parar_pedido():
+                log("PARAR pedido — saio da espera do app sem marcar ok"); return False
+            ok, d = recibo_do_app(ordem, st["num"], vn, pin)
+            if ok:
+                break
+            if (dt.datetime.now() - t0).total_seconds() > ESPERA_APP_S:
+                marcar(e, "S10_app", False, motivo="sem recibo do app conferido na fonte em 24 h; PARADA visível: a gerência decide (nada foi marcado ok)", ordem=st["ordem"], ultimo_estado=d); return False
+            voltas += 1
+            if voltas % 6 == 1:
+                log("S10: aguardando o recibo do app (%s): %s" % (st["ordem"], json.dumps(d, ensure_ascii=False)[:300]))
+            time.sleep(SONDA_APP_S)
+        base = [PY, "-X", "utf8", str(CEN / "tools" / "custodiar.py")]
+        comum = ["--versao", vn, "--ator", ATOR, "--coautor", COAUTOR, "--ordem", str(ORDEM)]
+        rc = run(base + ["planejar"] + comum + ["--seco"], CEN, ORQ / "g1_c21_out.txt", 1800)
+        txt = (ORQ / "g1_c21_out.txt").read_text(encoding="utf-8", errors="replace")
+        m = re.search(r"(?m)^\s+C21\s+(ok|sup|rel)\b", txt)
+        marcar(e, "S10_app", bool(m), recibo=d, c21_na_g1=(m.group(1) if m else "NAO_APLICADO"), planejar_rc=rc, ordem=st["ordem"])
+        return bool(m)
+    except Exception:  # noqa: BLE001
+        marcar(e, "S10_app", False, erro=traceback.format_exc()[-600:]); return False
+
+
+def _ensaio_s10():
+    """ENSAIO a seco do S10 (não toca TUNEL_CLAUDE_APP, o app, o Nós nem o estado): renderiza a ordem com um selo SINTÉTICO derivado do CANDIDATO, e exercita recibo_do_app contra um app sintético (um caso positivo e seis controles negativos)."""
+    import hashlib, shutil
+    out = ORQ / "ensaio_s10"
+    if out.exists():
+        shutil.rmtree(out)
+    (out / "tunel").mkdir(parents=True); (out / "app").mkdir(); (out / "work" / "iald_v407_ens").mkdir(parents=True)
+    cand = jload(PK / "CANDIDATO_v407.json"); pin = cand["sha256"]; assert len(pin) == 64
+    selo = {"um_version": "v407", "sha256": {"um.py": pin}}
+    (out / "tunel" / "ORDEM_001_x.md").write_text("x", encoding="utf-8")
+    num = _proximo_num_ordem(out / "tunel"); assert num == 2
+    texto = renderizar_ordem(num, selo, work=out / "work", commit_espelho="ESPELHO00", commit_central="CENTRAL00")
+    ordem = out / "tunel" / ("ORDEM_%03d_release_v407_do_app.md" % num); ordem.write_text(texto, encoding="utf-8", newline="\n")
+    assert pin in texto and "v407" in texto and "{{" not in texto
+    time.sleep(1.1)
+    jv = out / "app" / "jev_control_v407.json"; jv.write_text("{}", encoding="utf-8")
+    def montar(release="v407", srcsha=pin, status="PASS", jev_sha=None, relatorio=True, jev_nome=True):
+        for p in (out / "tunel").glob("RELATORIO_*.md"):
+            p.unlink()
+        if relatorio:
+            (out / "tunel" / "RELATORIO_20261103.md").write_text("relatorio da ORDEM_%03d" % num, encoding="utf-8")
+        (out / "work" / "iald_v407_ens" / "INSTALLED_VERIFICATION.json").write_text(json.dumps({"status": status, "identity": {"release": release, "source_sha256": srcsha}}), encoding="utf-8")
+        jp = jv if jev_nome else out / "app" / "outro.json"
+        jp.write_text("{}", encoding="utf-8")
+        (out / "app" / "iald_nucleo_fixo.json").write_text(json.dumps({"operational_core": {"current_release": release, "release_source_sha256": srcsha}, "jev_control": {"release": release, "source_sha256": srcsha, "path": str(jp), "sha256": jev_sha or hashlib.sha256(jp.read_bytes()).hexdigest()}}), encoding="utf-8")
+    res = {}
+    montar(); ok, d = recibo_do_app(ordem, num, "v407", pin, app=out / "app", work=out / "work", tunel=out / "tunel"); res["positivo"] = ok
+    for nome, kw in (("release_errada", dict(release="v405")), ("pino_errado", dict(srcsha="0" * 64)), ("verificacao_falhou", dict(status="FAIL")), ("sha_do_contrato_errado", dict(jev_sha="0" * 64)), ("sem_relatorio", dict(relatorio=False)), ("contrato_com_outro_nome", dict(jev_nome=False))):
+        montar(**kw); okn, _ = recibo_do_app(ordem, num, "v407", pin, app=out / "app", work=out / "work", tunel=out / "tunel"); res["negativo_" + nome] = (okn is False)
+    montar(); os.utime(out / "tunel" / "RELATORIO_20261103.md", (ordem.stat().st_mtime - 100, ordem.stat().st_mtime - 100))
+    okn, _ = recibo_do_app(ordem, num, "v407", pin, app=out / "app", work=out / "work", tunel=out / "tunel"); res["negativo_relatorio_anterior_a_ordem"] = (okn is False)
+    res["ordem_renderizada"] = {"bytes": len(texto.encode("utf-8")), "sha16": sha16(ordem), "pino_no_texto": pin in texto, "caminho": str(ordem)}
+    res["ok"] = res["positivo"] is True and all(v is True for k, v in res.items() if k.startswith("negativo_"))
+    (ORQ / "ENSAIO_S10_v407.json").write_text(json.dumps(res, ensure_ascii=False, indent=1), encoding="utf-8")
+    print(json.dumps(res, ensure_ascii=False, indent=1))
+    return res["ok"]
+
+
+def _plano():
+    """O PLANO (só leitura): os passos na ordem, o estado de cada um no ESTADO.json e o que cada um exige; não age."""
+    e = carregar()
+    passos = ["S0_treino", "S1_prep", "S1b_revisao", "S2_prevoo", "S3_instalar", "S4_rito", "S5_cadeia_0_10", "S6a_parada", "S6a_chain", "S6b_aplicar", "S6c_religamento", "S6c_chain_10c_14", "S7_g1", "S10_app", "S8_nativa"]
+    print("PLANO do orquestrador pos_treino_v407 (nada é executado):")
+    for p in passos:
+        print("  %-20s %s" % (p, "feito" if feito(e, p) else "pendente"))
+    pr = PK / "PREPARACAO_v407_PRONTA.json"; rv = REV
+    print("PREPARACAO_v407_PRONTA.json:", ("pronta=%s" % jload(pr).get("pronta")) if pr.exists() else "ausente")
+    print("REVISAO_TERCEIRO_v407.json:", ("aprovada=%s candidato=%s" % (jload(rv).get("aprovada"), jload(rv).get("candidato_sha16"))) if rv.exists() else "ausente")
+    faltam = [str(x) for x in (ORDEM, PK / "instalar_v407.py", PK / "rito_v407.sh", PK / "pos_rito" / "chain_pos_rito_v407.sh", PK / "bancada_B3_servico" / "recibo_parada_v407.py", PK / "bancada_B3_servico" / "recibo_religamento_v407.py", PK / "bancada_B3_servico" / "evento_c1_b3_v407.py", TEMPLATE_ORDEM, PK / "um_v407_candidato.py", PK / "ESPERADOS_v407.json") if not Path(x).exists()]
+    print("arquivos que o orquestrador usa e NÃO existem:", faltam or "nenhum")
+    return not faltam
+
+

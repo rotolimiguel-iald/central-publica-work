@@ -1,0 +1,308 @@
+# -*- coding: utf-8 -*-
+"""comparar_v406_v407.py -- NADA DA v406 PERDIDO: compara, no=a=no (AST), a v406 SELADA (base_v406\\um.py) com o candidato v407: todo no nomeado da v406 existe no candidato IGUAL, ou foi mudado por um PATCH declarado (EXPLICACOES abaixo, uma por no), ou foi REMOVIDO de proposito
+(nenhum: a v407 nao remove nome algum). Todo no mudado SEM explicacao, todo no removido, todo no anonimo perdido ou novo reprovam (rc 1). Os nos NOVOS esperados sao so' os da v407: o registro com funcao `psion_canto_v407` e a mecanica dele (`v407_psion_mechanics`, 16 checagens), a leitura do lema (`_v407_elo_lido`),
+o miolo (`_v407_formal`, `_v407_chaves`, `_v407_guarda_frases`), o contrato, o texto, as fontes, as falas de 03/11, os registros por spec `cunhagens_v407` e `kh_n1_cobertura_v407` e o `_v407_rodar_specs`. A v407 e' um BUNDLE PEQUENO de nove modulos de kernel em `TGLExt/` (PsionCanto, Par e as sete pedras de 02/11 de nome ratificado), nao um conjunto de funcoes de pedra: nao ha funcao de pedra nova.
+ADAPTADO a v407 (03/11/2026, a partir do comparar_v405_v406.py): os 40 patches do `CANDIDATO_v407.json` (campo `patches`) sao mapeados aos nos que eles mudam (PATCH_PARA_NOS): o conjunto de ids tem de ser IGUAL ao do candidato e a uniao dos nos tem de ser IGUAL ao conjunto dos nos mudados, nem um a mais nem um a menos.
+Os 25 patches `C12_expected_ladder#i` (a escada 11860 -> 11958) sao mapeados AOS NOS pela contagem das entradas `expected_ladder` da BASE na ordem do corpo (derivada do AST, nunca digitada), e cada um desses nos e' conferido: com as constantes inteiras da escada antiga trocadas pela nova, o no da base e' IGUAL ao do candidato (so' a escada muda).
+O que tem de ficar IGUAL (conferido): o gate (evaluate_quantum_gravity_closure e prove_qg_closure_gate), prove_neutrino_mass_gravitational (a errata do angulo e' AO LADO), ramo_b_preregistration_v386 e ledger_errata_v386 (o V1 e o livro nao sao reescritos), prove_ga_mass_audit, prove_joint_coincidence_result_v3, GA_WINDOW_STATUS, o run_um (onde o
+witness_layers e' medido sobre o kf do rito), a funcao do kernel (verify_tgl_kernel_formalization), o registro `fechamento_v406` com o seu miolo (`_v406_formal`, `_v406_chaves`, `_v406_certificado_habitado`) e as funcoes `rede_fock_v394` e `psibit_v395` (os vereditos delas NAO mudam de prefixo); so' a mecanica `v406_fechamento_mechanics` (SO' a checagem c8), o contrato `_V406_FECHO_CONTRACT` (SO' a escada), os specs `_V406_SPECS` (cunhagens_v406 u7; kh_n1_cobertura_v406 h2/h3/h6/h8; uma errata a mais em cada) e o `testemunha_estatica_v396` (SO' a chave `linked_to_the_corner_by_a_lemma` e o campo novo `elo_v407`) mudam, pelos patches C12, C13, C19 e C20 declarados.
+Refinamentos (alem do no=a=no): cada no mudado de forma ESTRUTURAL (raiz e modulos embutidos, bandeiras, ledger, ext_flags, versao, main, artigo, .md, selo) e' conferido por AST: o que a base tem esta' no candidato, e o que o candidato acrescenta e' so' o declarado.
+Escreve COMPARACAO_V406_v407.json. Os numeros das explicacoes sao LIDOS de CANDIDATO_v407.json e de delta_v407, nunca digitados.
+uso: python -I -B -X utf8 comparar_v406_v407.py"""
+import ast, copy, hashlib, json, os, sys
+sys.stdout.reconfigure(encoding="utf-8")
+HERE = os.path.dirname(os.path.abspath(__file__)); sys.path.insert(0, HERE)
+import delta_v407 as DL  # noqa: E402
+A = ast.parse(open(os.path.join(HERE, DL.BASE_DIR, "um.py"), "rb").read().decode("utf-8")); B = ast.parse(open(os.path.join(HERE, DL.CANDIDATO), "rb").read().decode("utf-8"))
+CM = json.load(open(os.path.join(HERE, "CANDIDATO_v407.json"), encoding="utf-8"))
+E_ANT, E_NOVA = CM["escada"]; NB = CM["n_bandeiras"]; NM = CM["kernel"]["modulos_novos"]
+h = lambda n: hashlib.sha256(ast.dump(n).encode()).hexdigest()[:12]
+EXPL_CONTRATO = "C12: expected_ladder %d -> %d" % (E_ANT, E_NOVA)
+RAIZ_REL = "TGLExt.lean"   # a chave da raiz do kernel no dict dos modulos embutidos (o unico arquivo da base que o candidato muda)
+EXPLICACOES = {
+    "UM_VERSION": "W01: a constante unica de versao %s -> %s" % (DL.BASE_VERSION, DL.UM_VERSION),
+    "_EMBEDDED_KERNEL_FILES": "K00/K01: a raiz TGLExt.lean regenerada (+ os %d imports dos modulos novos; o Audit nao muda) e +%d modulos Lean em TGLExt/ (PsionCanto, Par e as sete pedras de 02/11 de nome ratificado); nenhum arquivo da base some e nenhum muda alem da raiz" % (NM, NM),
+    "_LEAN_THEOREM_FLAGS": "V01: +%d bandeiras %s0001..%s%04d (so' declaracao nomeada)" % (NB, DL.FLAG_PREFIX, DL.FLAG_PREFIX, NB),
+    "prove_external_ladder": "V02: a lista ext_flags ganha as %d bandeiras (a escada %d -> %d); nada mais no corpo da funcao muda" % (NB, E_ANT, E_NOVA),
+    "_ESQUELETO_STONES": "V03: o ledger de pedras ganha os %d modulos do bundle (rotulo %s)" % (NM, DL.UM_VERSION),
+    "_V394_FORMAL_CONTRACT": EXPL_CONTRATO, "_V394_QUADRATIC_CONTRACT": EXPL_CONTRATO, "_V394_NETWORK_CONTRACT": EXPL_CONTRATO, "_V395_PSIBIT_CONTRACT": EXPL_CONTRATO,
+    "_V396_TESTEMUNHA_CONTRACT": EXPL_CONTRATO, "_V398_SONICO_CONTRACT": EXPL_CONTRATO, "_V398_AFINACAO_CONTRACT": EXPL_CONTRATO, "_V401_FALSIDADE_CONTRACT": EXPL_CONTRATO,
+    "_V402_CONTRACTS": EXPL_CONTRATO + " nos tres contratos da v402 (ponte, queda, esperanca)", "_V403_CONTRACTS": EXPL_CONTRATO + " nos tres contratos de pedra da v403 (caminho, vida, adendo da verdade; o do gate fica None)",
+    "_V404_CONTRACTS": EXPL_CONTRATO + " nos dois contratos de pedra da v404 (projecao, jo8v32; o da errata de F2b fica None)", "_V405_CONTRACTS": EXPL_CONTRATO + " nos oito contratos de pedra da v405",
+    "_V406_FECHO_CONTRACT": EXPL_CONTRATO + " no contrato do fechamento_v406 (o unico contrato nascido na v406)",
+    "_V406_SPECS": "C13 (errata E20): cunhagens_v406 u7 falso -> verdadeiro (descricao «ate' a v406»; a antiga fica como registro) e kh_n1_cobertura_v406 h2/h3/h6 -> pisos e h8 -> tamanho minimo (a igualdade exata da v407 esta' em kh_n1_cobertura_v407); +1 errata em cada spec; os vereditos nao mudam",
+    "v406_fechamento_mechanics": "C20 (errata E20): a checagem c8 do fechamento_v406 deixa de cobrar False no lema que ligava as duas faces e passa a exigir a chave LIDA do kernel (igual a `_v407_elo_lido`); as outras checagens e o veredito do registro NAO mudam",
+    "testemunha_estatica_v396": "C19 (errata E18): fock_face.linked_to_the_corner_by_a_lemma deixa de ser o literal False e passa a LEITURA do kernel (`_v407_elo_lido(kf_)`), com o campo novo elo_v407; C19b (R2, 03/11): fock_face.reading ramifica pela MESMA chave lida (prefixo «since v407 the lemma ... is a term» so' quando o lema e' lido) e guarda a frase antiga, verbatim, como operando direito; os demais campos e o veredito NAO mudam",
+    "main": "N00/N02: a chamada do `psion_canto_v407` e dos registros por spec da v407 (logo depois do bloco do fechamento_v406 e dos specs da v406, antes de emit_figures; try/AVISO) e as chaves novas do selo (psion_canto_v407, registros_v407); nada do que existia muda",
+    "build_pt": "W04: a secao «O psíon e o canto: a passagem sob compressão e o par» do artigo PT, antes da secao v406 (o quadro «O Teste da Unica Palavra» do topo NAO muda)",
+    "build_en": "W05: the section «The psion and the corner: the passage under compression, and the pair» of the EN article, before the v406 section (the box at the top does NOT change)",
+    "emit_canonical_md": "W09: a linha «O psíon, o canto e o par (v407, 03/11/2026)» no .md canonico, antes da linha da v406 (o quadro do topo NAO muda)",
+}
+# cada patch do CANDIDATO_v407.json -> os nos nomeados da base que ele muda (W02 so' ACRESCENTA nos novos: nenhum no da base). Os C12_expected_ladder#i entram abaixo, derivados do AST da base.
+PATCH_PARA_NOS = {"W01_versao": ["UM_VERSION"], "K00_TGLExt.lean": ["_EMBEDDED_KERNEL_FILES"], "K01_modulos_novos": ["_EMBEDDED_KERNEL_FILES"], "V01_bandeiras": ["_LEAN_THEOREM_FLAGS"], "V02_escada": ["prove_external_ladder"], "V03_ledger": ["_ESQUELETO_STONES"],
+                  "W09_md": ["emit_canonical_md"], "W04_artigo_PT": ["build_pt"], "W05_artigo_EN": ["build_en"], "W02_runtime_v407": [],
+                  "C13_specs_v406_u7_e_pisos": ["_V406_SPECS"], "C19_testemunha_linked_vira_leitura": ["testemunha_estatica_v396"], "C19b_testemunha_reading_ramifica": ["testemunha_estatica_v396"], "C20_fechamento_v406_c8": ["v406_fechamento_mechanics"],
+                  "N00_main_psion_canto": ["main"], "N02_selo": ["main"]}
+FUNCOES_QUE_NAO_PODEM_MUDAR = tuple(CM["gate_nao_se_move"]["funcoes_identicas_a_base"])   # lidas do candidato (o gerador conferiu); abaixo, a lista minima que a v406 ja' exigia
+FUNCOES_MINIMAS = ("evaluate_quantum_gravity_closure", "prove_qg_closure_gate", "prove_neutrino_mass_gravitational", "ramo_b_preregistration_v386", "ledger_errata_v386", "prove_ga_mass_audit", "prove_joint_coincidence_result_v3", "GA_WINDOW_STATUS")
+MAIS_QUE_NAO_PODEM_MUDAR = ("run_um", "verify_tgl_kernel_formalization", "fechamento_v406", "_v406_formal", "_v406_chaves", "_v406_certificado_habitado", "rede_fock_v394", "psibit_v395", "_V406_FECHO_TEXT")   # (v407: o registro herdado e os dois que o fechamento_v406 reescreveu na v406 seguem como estao)
+NOVOS_ESPERADOS = set(DL.REGISTROS_FUNCAO) | {"v407_psion_mechanics", "_v407_elo_lido", "_v407_chaves", "_v407_formal", "_v407_guarda_frases", "_V407_PSION_CONTRACT", "_V407_PSION_TEXT", "_V407_FONTES", "_V407_VERBATINS2", "_V407_RECUSA",
+                                              "_V407_NOMES_REGISTROS", "_V407_REGISTROS_FUNCAO", "_V407_SPECS", "_v407_rodar_specs"}
+MEXIDOS_DA_V406_DECLARADOS = {"_V406_FECHO_CONTRACT": "C12", "_V406_SPECS": "C13", "v406_fechamento_mechanics": "C20"}   # os UNICOS nos nascidos na v406 que a v407 muda (E20)
+
+
+def nm(n):
+    if isinstance(n, (ast.FunctionDef, ast.ClassDef)):
+        return n.name
+    if isinstance(n, ast.Assign) and len(n.targets) == 1 and isinstance(n.targets[0], ast.Name):
+        return n.targets[0].id
+    return None
+
+
+def todos(tree, nome):
+    return [n for n in tree.body if nm(n) == nome]
+
+
+da = {nm(n): n for n in A.body if nm(n)}; db = {nm(n): n for n in B.body if nm(n)}
+mud = []
+for k in da:
+    if k not in db:
+        continue
+    la, lb = todos(A, k), todos(B, k)
+    if [h(x) for x in la] != [h(x) for x in lb]:
+        mud.append(k)
+ig = [k for k in da if k in db and k not in mud]
+rem = [k for k in da if k not in db]; nov = sorted(k for k in db if k not in da)
+anon_a = [n for n in A.body if not nm(n)]; anon_b = [n for n in B.body if not nm(n)]
+sa, sb = {}, {}
+for n in anon_a:
+    sa.setdefault(h(n), []).append(n)
+for n in anon_b:
+    sb.setdefault(h(n), []).append(n)
+anon_perdidos = [n for k, v in sa.items() for n in v[len(sb.get(k, [])):] if len(sb.get(k, [])) < len(v)]
+anon_novos = [n for k, v in sb.items() for n in v[len(sa.get(k, [])):] if len(sa.get(k, [])) < len(v)]
+anon_novos_txt = [ast.unparse(n)[:160] for n in anon_novos]
+# os nos anonimos novos esperados: so' os dois `update` que entregam as fontes e as falas da v407 ao motor de registros (v392)
+anon_novos_ok = len(anon_novos_txt) == 2 and sum("_V392_FONTES.update(_V407_FONTES)" in x for x in anon_novos_txt) == 1 and sum("_V392_VERBATINS2.update(_V407_VERBATINS2)" in x for x in anon_novos_txt) == 1
+
+
+# ---- os 25 patches C12: a contagem das entradas {'expected_ladder': <escada antiga>} por no da BASE, na ordem do corpo (derivada do AST)
+def n_escada(n):
+    return sum(1 for x in ast.walk(n) if isinstance(x, ast.Dict) for k_, v_ in zip(x.keys, x.values) if isinstance(k_, ast.Constant) and k_.value == "expected_ladder" and isinstance(v_, ast.Constant) and v_.value == E_ANT)
+
+
+ordem_c12 = []
+for n in A.body:
+    k_ = nm(n)
+    if k_ and n_escada(n):
+        ordem_c12 += [k_] * n_escada(n)
+for i_, k_ in enumerate(ordem_c12, 1):
+    PATCH_PARA_NOS["C12_expected_ladder#%d" % i_] = [k_]
+
+
+def troca_escada(node):
+    class T(ast.NodeTransformer):
+        def visit_Constant(self, c):
+            if isinstance(c.value, int) and not isinstance(c.value, bool) and c.value == E_ANT:
+                return ast.copy_location(ast.Constant(E_NOVA), c)
+            return c
+    return T().visit(copy.deepcopy(node))
+
+
+so_a_escada = {k_: bool(ast.dump(troca_escada(da[k_])) == ast.dump(db[k_])) for k_ in sorted(set(ordem_c12))}   # com a escada antiga trocada pela nova, o no da base e' IGUAL ao do candidato
+
+
+# ---- refinamentos estruturais (por AST): o que a base tem esta' no candidato; o que o candidato acrescenta e' so' o declarado
+def pares(d):
+    assert isinstance(d, ast.Dict)
+    return [(k.value if isinstance(k, ast.Constant) else ast.dump(k), v) for k, v in zip(d.keys, d.values)]
+
+
+def dump_eq(x, y):
+    return ast.dump(x) == ast.dump(y)
+
+
+def mascara(fn, pred):
+    """a funcao com o no que satisfaz `pred` trocado por um marcador; devolve (dump, [nos que satisfazem])."""
+    achados = []
+    c = copy.deepcopy(fn)
+
+    class T(ast.NodeTransformer):
+        def generic_visit(self, node):
+            if pred(node):
+                achados.append(node)
+                return ast.copy_location(ast.Constant("<<MASCARA>>"), node)
+            return super().generic_visit(node)
+    c = T().visit(c)
+    return ast.dump(c), achados
+
+
+def r_versao():
+    return ast.literal_eval(da["UM_VERSION"].value) == DL.BASE_VERSION and ast.literal_eval(db["UM_VERSION"].value) == DL.UM_VERSION
+
+
+def r_embutidos():
+    a, b = pares(da["_EMBEDDED_KERNEL_FILES"].value), pares(db["_EMBEDDED_KERNEL_FILES"].value)
+    ka, kb, ad, bd = [k for k, _ in a], [k for k, _ in b], dict(a), dict(b)
+    novas = [k for k in kb if k not in ad]
+    mudadas = [k for k in ka if k in bd and not dump_eq(ad[k], bd[k])]
+    raiz_a, raiz_b = ast.literal_eval(ad[RAIZ_REL]), ast.literal_eval(bd[RAIZ_REL])
+    sufixo = DL.ROOT_SUFFIX.replace("\r\n", "\n")
+    sha_novas = {k: hashlib.sha256(ast.literal_eval(bd[k]).encode("utf-8")).hexdigest() for k in novas}
+    sha_ok = all(sha_novas.get(rel) == DL.BUNDLE_POR_REL[rel]["sha256"] == CM["kernel"]["bundle"][rel]["sha256"] for rel in DL.BUNDLE_RELS)
+    return {"nenhum_arquivo_da_base_some": not [k for k in ka if k not in bd], "so_a_raiz_muda": mudadas == [RAIZ_REL], "ordem_da_base_preservada": [k for k in kb if k in ad] == ka,
+            "novos_sao_exatamente_o_bundle": sorted(novas) == sorted(DL.BUNDLE_RELS) and len(novas) == NM, "raiz_nova_e_a_antiga_mais_os_imports": raiz_b.replace("\r\n", "\n") == raiz_a.replace("\r\n", "\n") + sufixo,
+            "sha256_dos_novos_igual_ao_do_BUNDLE_e_ao_do_candidato": sha_ok, "raiz_sha16_antiga_igual_ao_candidato": hashlib.sha256(raiz_a.encode("utf-8")).hexdigest()[:16] == CM["kernel"]["raiz_v406_sha16"],
+            "raiz_sha16_nova_igual_ao_candidato": hashlib.sha256(raiz_b.encode("utf-8")).hexdigest()[:16] == CM["kernel"]["raiz_sha16"]}
+
+
+def r_bandeiras():
+    a, b = pares(da["_LEAN_THEOREM_FLAGS"].value), pares(db["_LEAN_THEOREM_FLAGS"].value)
+    ka, kb, bd = [k for k, _ in a], [k for k, _ in b], dict(b)
+    novas = kb[len(ka):]
+    return {"a_base_e_prefixo_igual": kb[:len(ka)] == ka and all(dump_eq(v, bd[k]) for k, v in a), "n_novas": len(novas), "n_novas_igual_ao_candidato": len(novas) == NB, "todas_com_o_prefixo_da_v407": all(k.startswith(DL.FLAG_PREFIX) for k in novas), "sem_repeticao": len(set(kb)) == len(kb)}
+
+
+def r_ledger():
+    a, b = da["_ESQUELETO_STONES"].value.elts, db["_ESQUELETO_STONES"].value.elts
+    novas = [ast.literal_eval(x) for x in b[len(a):]]
+    return {"a_base_e_prefixo_igual": len(b) >= len(a) and all(dump_eq(x, y) for x, y in zip(a, b)), "n_novas": len(novas), "n_novas_igual_ao_bundle": len(novas) == NM,
+            "as_novas_sao_o_bundle_na_ordem": [t[2] for t in novas] == list(DL.BUNDLE_RELS), "rotulo_da_versao": all(t[0] == DL.UM_VERSION for t in novas)}
+
+
+def r_ext_flags():
+    fa, fb = da["prove_external_ladder"], db["prove_external_ladder"]
+    pred = lambda n: isinstance(n, ast.Assign) and len(n.targets) == 1 and isinstance(n.targets[0], ast.Name) and n.targets[0].id == "ext_flags"
+    ma, aa = mascara(fa, pred); mb, bb = mascara(fb, pred)
+    la, lb = aa[0].value.elts, bb[0].value.elts
+    novas = [ast.literal_eval(x) for x in lb[len(la):]]
+    return {"resto_da_funcao_igual": ma == mb, "uma_atribuicao_ext_flags": len(aa) == len(bb) == 1, "a_lista_antiga_e_prefixo": all(dump_eq(x, y) for x, y in zip(la, lb)) and len(lb) >= len(la), "n_novas": len(novas), "n_novas_igual_ao_candidato": len(novas) == NB, "novas_com_o_prefixo_da_v407": all(x.startswith(DL.FLAG_PREFIX) for x in novas)}
+
+
+def r_specs():
+    a, b = da["_V406_SPECS"].value.elts, db["_V406_SPECS"].value.elts
+    out = {"mesmo_numero_de_specs": len(a) == len(b)}
+    for sa_, sb_ in zip(a, b):
+        pa, pb = pares(sa_), pares(sb_); ad, bd = dict(pa), dict(pb)
+        nome = ast.literal_eval(ad["nome"])
+        chaves_iguais = [k for k, _ in pa] == [k for k, _ in pb]
+        dif = [k for k, v in pa if not dump_eq(v, bd[k])]
+        ca, cb = ad["checks"].elts, bd["checks"].elts
+        ids = lambda es: [ast.literal_eval(pares(e)[0][1]) for e in es]
+        ch_dif = [ids(ca)[i] for i in range(min(len(ca), len(cb))) if not dump_eq(ca[i], cb[i])]
+        ea, eb = ad["erratas"].elts, bd["erratas"].elts
+        out[nome] = {"mesmas_chaves": chaves_iguais, "chaves_que_mudam": sorted(dif), "checks_com_mesmos_ids": ids(ca) == ids(cb), "checks_que_mudam": ch_dif, "erratas_a_base_e_prefixo": len(eb) == len(ea) + 1 and all(dump_eq(x, y) for x, y in zip(ea, eb))}
+    esperado = {"cunhagens_v406": ["u7"], "kh_n1_cobertura_v406": ["h2", "h3", "h6", "h8"]}
+    out["ok"] = bool(out["mesmo_numero_de_specs"] and set(esperado) <= set(out) and all(out[n_]["mesmas_chaves"] and out[n_]["chaves_que_mudam"] == ["checks", "erratas"] and out[n_]["checks_com_mesmos_ids"] and out[n_]["checks_que_mudam"] == v_ and out[n_]["erratas_a_base_e_prefixo"] for n_, v_ in esperado.items()))
+    return out
+
+
+def r_c8():
+    fa, fb = da["v406_fechamento_mechanics"], db["v406_fechamento_mechanics"]
+    pred = lambda n: isinstance(n, ast.List) and n.elts and all(isinstance(e, ast.Dict) and any(isinstance(k, ast.Constant) and k.value == "id" for k in e.keys) for e in n.elts)
+    ma, aa = mascara(fa, pred); mb, bb = mascara(fb, pred)
+    ida = lambda e: ast.literal_eval(pares(e)[0][1])
+    ca, cb = aa[0].elts, bb[0].elts
+    return {"uma_lista_de_checagens": len(aa) == len(bb) == 1, "resto_da_funcao_igual": ma == mb, "mesmos_ids": [ida(e) for e in ca] == [ida(e) for e in cb], "ids_que_mudam": [ida(x) for x, y in zip(ca, cb) if not dump_eq(x, y)]}
+
+
+def r_linked():
+    fa, fb = da["testemunha_estatica_v396"], db["testemunha_estatica_v396"]
+    pred = lambda n: isinstance(n, ast.Dict) and any(isinstance(k, ast.Constant) and k.value == "linked_to_the_corner_by_a_lemma" for k in n.keys)
+    ma, aa = mascara(fa, pred); mb, bb = mascara(fb, pred)
+    pa, pb = pares(aa[0]), pares(bb[0]); ad, bd = dict(pa), dict(pb)
+    novas = [k for k, _ in pb if k not in ad]
+    mudam = [k for k, _ in pa if not dump_eq(ad[k], bd[k])]
+    return {"um_dict_fock_face": len(aa) == len(bb) == 1, "resto_da_funcao_igual": ma == mb, "chaves_da_base_preservadas": [k for k, _ in pa] == [k for k, _ in pb if k in ad], "so_a_chave_do_lema_e_o_reading_mudam": sorted(mudam) == sorted(["linked_to_the_corner_by_a_lemma", "reading"]),   # [R2, 03/11] C19 + C19b
+            "reading_novo_guarda_o_antigo_como_operando_direito": isinstance(bd["reading"], ast.BinOp) and isinstance(bd["reading"].op, ast.Add) and dump_eq(bd["reading"].right, ad["reading"]),
+            "reading_novo_ramifica_pela_chave_lida": isinstance(bd["reading"], ast.BinOp) and isinstance(bd["reading"].left, ast.IfExp) and ast.unparse(bd["reading"].left.test) == "_v407_elo_lido(kf_)" and isinstance(bd["reading"].left.orelse, ast.Constant) and bd["reading"].left.orelse.value == "",
+            "antes_o_literal_False": isinstance(ad["linked_to_the_corner_by_a_lemma"], ast.Constant) and ad["linked_to_the_corner_by_a_lemma"].value is False, "agora_a_leitura_do_kernel": ast.unparse(bd["linked_to_the_corner_by_a_lemma"]) == "_v407_elo_lido(kf_)",
+            "unica_chave_nova_elo_v407": novas == ["elo_v407"]}
+
+
+def insercoes(nome, esperadas):
+    """diff por instrucao do corpo da funcao `nome`: a base e' subsequencia do candidato; `esperadas` = [(ponto,)...] verificado pelos chamadores."""
+    import difflib
+    a, b = da[nome].body, db[nome].body
+    sm = difflib.SequenceMatcher(None, [ast.dump(x) for x in a], [ast.dump(x) for x in b], autojunk=False)
+    return a, b, [op for op in sm.get_opcodes() if op[0] != "equal"]
+
+
+def r_artigo(nome, secao, ancora_velha):
+    a, b, ops = insercoes(nome, None)
+    ok_um_insert = len(ops) == 1 and ops[0][0] == "insert" and ops[0][1] == ops[0][2]
+    novas = b[ops[0][3]:ops[0][4]] if ok_um_insert else []
+    txt = "\n".join(ast.unparse(x) for x in novas)
+    seguinte = ast.unparse(a[ops[0][1]]) if ok_um_insert and ops[0][1] < len(a) else ""
+    return {"um_unico_bloco_inserido_e_nada_removido": ok_um_insert, "n_instrucoes_inseridas": len(novas), "traz_a_secao_da_v407": secao in txt, "traz_o_registro_da_v407": "psion_canto_v407" in txt, "a_instrucao_seguinte_e_a_da_v406": ancora_velha in seguinte}
+
+
+def r_md():
+    a, b, ops = insercoes("emit_canonical_md", None)
+    ok1 = len(ops) == 1 and ops[0][0] == "insert" and ops[0][1] == ops[0][2] and ops[0][4] - ops[0][3] == 1
+    txt = ast.unparse(b[ops[0][3]]) if ok1 else ""
+    seguinte = ast.unparse(a[ops[0][1]]) if ok1 else ""
+    return {"uma_linha_inserida_e_nada_removido": ok1, "traz_o_texto_da_v407": "O psíon, o canto e o par (v407" in txt, "a_linha_seguinte_e_a_da_v406": "(v406" in seguinte}
+
+
+def r_main():
+    a, b, ops = insercoes("main", None)
+    ins = [o for o in ops if o[0] == "insert"]; rep = [o for o in ops if o[0] == "replace"]
+    ok_ins = len(ins) == 1 and ins[0][4] - ins[0][3] == 1 and ins[0][1] == ins[0][2]
+    txt = ast.unparse(b[ins[0][3]]) if ok_ins else ""
+    anterior = ast.unparse(a[ins[0][1] - 1]) if ok_ins else ""
+    seguinte = ast.unparse(a[ins[0][1]]) if ok_ins else ""
+    sel = {}
+    if len(rep) == 1 and rep[0][2] - rep[0][1] == 1 and rep[0][4] - rep[0][3] == 1:
+        sa_, sb_ = a[rep[0][1]], b[rep[0][3]]
+        eh_seal = lambda s: isinstance(s, ast.Assign) and len(s.targets) == 1 and isinstance(s.targets[0], ast.Name) and s.targets[0].id == "seal" and isinstance(s.value, ast.Dict)
+        if eh_seal(sa_) and eh_seal(sb_):
+            pa, pb = pares(sa_.value), pares(sb_.value); ad, bd = dict(pa), dict(pb)
+            novas = [k for k, _ in pb if k not in ad]
+            sel = {"e_o_dict_seal": True, "chaves_da_base_preservadas_na_ordem": [k for k, _ in pb if k in ad] == [k for k, _ in pa], "valores_da_base_iguais": all(dump_eq(v, bd[k]) for k, v in pa), "chaves_novas": novas}
+    return {"um_unico_bloco_inserido": ok_ins, "o_bloco_chama_psion_canto_v407_e_os_specs": "psion_canto_v407(core)" in txt and "_v407_rodar_specs(core)" in txt, "logo_depois_do_bloco_da_v406": "_v406_rodar_specs" in anterior or "fechamento_v406" in anterior or "_v405_rodar_specs" in anterior,
+            "logo_antes_do_emit_figures": "emit_figures" in seguinte, "um_unico_selo_trocado": bool(sel) and sel.get("e_o_dict_seal") is True, "selo": sel, "o_selo_so_ganha_as_duas_chaves_da_v407": bool(sel) and sel["chaves_da_base_preservadas_na_ordem"] and sel["valores_da_base_iguais"] and sorted(sel["chaves_novas"]) == sorted(["psion_canto_v407", "registros_v407"]), "n_operacoes_alem_disso": len(ops) - len(ins) - len(rep)}
+
+
+REFINAMENTOS = {"UM_VERSION": r_versao(), "_EMBEDDED_KERNEL_FILES": r_embutidos(), "_LEAN_THEOREM_FLAGS": r_bandeiras(), "_ESQUELETO_STONES": r_ledger(), "prove_external_ladder": r_ext_flags(), "_V406_SPECS": r_specs(), "v406_fechamento_mechanics": r_c8(), "testemunha_estatica_v396": r_linked(),
+                "build_pt": r_artigo("build_pt", "O psíon e o canto: a passagem sob compressão e o par", "_rg406"), "build_en": r_artigo("build_en", "The psion and the corner: the passage under compression, and the pair", "_rg406"), "emit_canonical_md": r_md(), "main": r_main(), "contratos_da_escada_so_a_escada_muda": so_a_escada}
+
+
+def tudo_verdadeiro(x):
+    if isinstance(x, dict):
+        return all(tudo_verdadeiro(v) for k, v in x.items() if not k.startswith("n_") and k not in ("selo", "chaves_novas", "ids_que_mudam", "checks_que_mudam", "chaves_que_mudam"))
+    if isinstance(x, bool):
+        return x
+    return True
+
+
+REF_OK = {k: bool(tudo_verdadeiro(v)) for k, v in REFINAMENTOS.items()}
+REF_OK["_V406_SPECS"] = bool(REFINAMENTOS["_V406_SPECS"]["ok"])
+REF_OK["v406_fechamento_mechanics"] = bool(REFINAMENTOS["v406_fechamento_mechanics"]["uma_lista_de_checagens"] and REFINAMENTOS["v406_fechamento_mechanics"]["resto_da_funcao_igual"] and REFINAMENTOS["v406_fechamento_mechanics"]["mesmos_ids"] and REFINAMENTOS["v406_fechamento_mechanics"]["ids_que_mudam"] == ["c8"])
+REF_OK["main"] = bool(all(v for k, v in REFINAMENTOS["main"].items() if k not in ("selo", "n_operacoes_alem_disso")) and REFINAMENTOS["main"]["n_operacoes_alem_disso"] == 0)
+REF_OK["contratos_da_escada_so_a_escada_muda"] = bool(so_a_escada) and all(so_a_escada.values())
+
+sem_explicacao = [k for k in mud if k not in EXPLICACOES]
+explicados_sem_mudar = [k for k in EXPLICACOES if k not in mud]
+intactas = {f: bool(todos(A, f) and [h(x) for x in todos(A, f)] == [h(x) for x in todos(B, f)]) for f in sorted(set(FUNCOES_QUE_NAO_PODEM_MUDAR) | set(FUNCOES_MINIMAS) | set(MAIS_QUE_NAO_PODEM_MUDAR))}
+# TODO no que NASCEU na v406 (registro com funcao, miolo `_v406_*`, constantes `_V406_*`, a mecanica) segue IGUAL, salvo os tres declarados (C12 no contrato, C13 nos specs, C20 na mecanica); idem o que nasceu na v405
+herdados_v406 = sorted(k for k in da if k.startswith("_v406") or k.startswith("v406_") or k.endswith("_v406") or k.startswith("_V406_"))
+v406_mexidos = [k for k in herdados_v406 if k in mud]
+herdados_v405 = sorted(k for k in da if (k.startswith("_v405") or k.startswith("v405_") or k.endswith("_v405") or k.startswith("_V405_")) and k not in ("_V405_CONTRACTS", "_V405_SPECS"))
+v405_mexidos = [k for k in herdados_v405 if k in mud]
+# os patches do candidato == os patches mapeados; a uniao dos nos == os nos mudados
+ids_cand = sorted(p["id"] for p in CM["patches"]); ids_map = sorted(PATCH_PARA_NOS)
+nos_dos_patches = sorted({n_ for v in PATCH_PARA_NOS.values() for n_ in v})
+patches_ok = bool(ids_cand == ids_map and len(ids_cand) == CM["n_patches"] and nos_dos_patches == sorted(mud))
+res = {"nos_nomeados_v406": len(da), "iguais": len(ig), "mudados": {k: EXPLICACOES.get(k, "SEM EXPLICACAO") for k in mud}, "n_mudados": len(mud), "removidos": rem, "novos": nov, "n_novos": len(nov), "novos_esperados": sorted(NOVOS_ESPERADOS),
+       "anonimos_perdidos": [ast.unparse(n)[:160] for n in anon_perdidos], "anonimos_novos": anon_novos_txt, "os_dois_anonimos_novos_sao_os_update_das_fontes_e_das_falas_v407": anon_novos_ok,
+       "mudados_sem_explicacao": sem_explicacao, "explicacao_sem_mudanca": explicados_sem_mudar, "funcoes_intactas": intactas, "o_gate_nao_se_move_e_a_v386_nao_e_reescrita": all(intactas.values()),
+       "herdados_da_v406_conferidos": len(herdados_v406), "herdados_da_v406_mexidos": v406_mexidos, "herdados_da_v406_mexidos_declarados": MEXIDOS_DA_V406_DECLARADOS, "herdados_da_v405_conferidos": len(herdados_v405), "herdados_da_v405_mexidos": v405_mexidos,
+       "refinamentos": REFINAMENTOS, "refinamentos_ok": REF_OK,
+       "patches": {"n_no_candidato": CM["n_patches"], "n_mapeados": len(ids_map), "n_C12": len(ordem_c12), "ordem_C12_derivada_do_AST": ordem_c12, "ids_so_no_candidato": sorted(set(ids_cand) - set(ids_map)), "ids_so_no_mapa": sorted(set(ids_map) - set(ids_cand)), "nos_mudados_sem_patch": sorted(set(mud) - set(nos_dos_patches)), "nos_de_patch_nao_mudados": sorted(set(nos_dos_patches) - set(mud)), "ok": patches_ok},
+       "candidato_sha16": CM["sha16"]}
+res["ok"] = bool(not sem_explicacao and not rem and set(nov) == NOVOS_ESPERADOS and not anon_perdidos and anon_novos_ok and not explicados_sem_mudar and all(intactas.values()) and sorted(v406_mexidos) == sorted(MEXIDOS_DA_V406_DECLARADOS) and not v405_mexidos and patches_ok
+                 and all(REF_OK.values()) and set(FUNCOES_MINIMAS) <= set(FUNCOES_QUE_NAO_PODEM_MUDAR) and hashlib.sha256(open(os.path.join(HERE, DL.CANDIDATO), "rb").read()).hexdigest()[:16] == CM["sha16"])
+json.dump(res, open(os.path.join(HERE, "COMPARACAO_V406_v407.json"), "w", encoding="utf-8"), ensure_ascii=False, indent=1)
+print(json.dumps({k: (v if not isinstance(v, (dict, list)) else (len(v) if k not in ("mudados_sem_explicacao", "removidos", "anonimos_perdidos", "novos", "explicacao_sem_mudanca", "funcoes_intactas", "herdados_da_v406_mexidos", "herdados_da_v405_mexidos", "patches", "refinamentos_ok") else v)) for k, v in res.items()}, ensure_ascii=False)); print("mudados:", sorted(mud))
+sys.exit(0 if res["ok"] else 1)

@@ -1,0 +1,58 @@
+--- v406/pos_rito/b3_recibo_v406.py
++++ v407/pos_rito/b3_recibo_v407.py
+@@ -2,4 +2,5 @@
+-# [ADAPTADO v406, 02/11/2026] sobre a subida mecanica da v405 FINAL (derivar_encanamento_v406.py, lote F) por adaptar_pos_rito_v406.py: o conteudo e' o da v406 (O FECHAMENTO: bundle de 301 modulos, UM registro com funcao fechamento_v406, quatro chaves de testemunha lidas do kernel); a gerencia revisa antes do rito (nao e' versao selada).
+-"""b3_recibo_v406.py -- confere o que o sincronizar_bancada.py (o elo B(n), esboco R3.5: PASSO SIMPLES v405 -> v406, SEM salto e SEM cadeia de selos) imprimiu: a ULTIMA linha JSON do stdout cita o recibo; o recibo e' aberto,
+-o seu sha256 confere com o impresso, e (R3, Remissao 4) a bateria PASSA, a versao alvo e' v406, a fase e' pos_selo e o modo e' o pedido.
+-Passo simples (a Bancada de producao pina a v405, B14, deployment B14-v405-20261102-R1, e o Nos passou a v406; o rito grava a geracao B15 -- o numero e' LIDO do recibo, nunca digitado aqui): (1) manifesto_anterior.version == v405 e a sua geracao (B<m>, lida do proprio recibo) bate com a do recibo pre_selo pinado em PINOS_BN_v406.json (o manifesto anterior
++# [A ADAPTAR v407] SUBIDA MECANICA DE ROTULO (v406->v407) do molde v406/pos_rito/b3_recibo_v406.py; o CORPO e' o da v406 (bundle de 301 modulos, fechamento_v406, quatro chaves); nada rodou; ver bump/pos_rito__b3_recibo_v407.py.diff
++# [ADAPTADO v407, 02/11/2026] sobre a subida mecanica da v406 FINAL (derivar_encanamento_v407.py, lote F) por adaptar_pos_rito_v407.py: o conteudo e' o da v407 (O FECHAMENTO: bundle de 301 modulos, UM registro com funcao fechamento_v406, quatro chaves de testemunha lidas do kernel); a gerencia revisa antes do rito (nao e' versao selada).
++"""b3_recibo_v407.py -- confere o que o sincronizar_bancada.py (o elo B(n), esboco R3.5: PASSO SIMPLES v406 -> v407, SEM salto e SEM cadeia de selos) imprimiu: a ULTIMA linha JSON do stdout cita o recibo; o recibo e' aberto,
++o seu sha256 confere com o impresso, e (R3, Remissao 4) a bateria PASSA, a versao alvo e' v407, a fase e' pos_selo e o modo e' o pedido.
++Passo simples (a Bancada de producao pina a v406, B15, deployment B15-v406-20261103-R1, e o Nos passou a v407; o rito grava a geracao B16 -- o numero e' LIDO do recibo, nunca digitado aqui): (1) manifesto_anterior.version == v406 e a sua geracao (B<m>, lida do proprio recibo) bate com a do recibo pre_selo pinado em PINOS_BN_v407.json (o manifesto anterior
+@@ -7,2 +8,2 @@
+-REPINADA_B<n>__APLICADA__SERVICO_DEVE_SER_REINICIADO_COM_RECIBO (aplicar), sem __SALTO_; (4) o recibo NAO declara salto nem cadeia de selos; (5) manifesto_novo.deployment_id comeca por B<n>-v406-; (6) no aplicar, a pos_conferencia
+-diz ok, versao v406 e o sha do manifesto novo; (7) os pinos da versao da bateria sao os da v406, conferidos contra o Nos lido; (8) o recibo pre_selo do recibo e' o pinado.
++REPINADA_B<n>__APLICADA__SERVICO_DEVE_SER_REINICIADO_COM_RECIBO (aplicar), sem __SALTO_; (4) o recibo NAO declara salto nem cadeia de selos; (5) manifesto_novo.deployment_id comeca por B<n>-v407-; (6) no aplicar, a pos_conferencia
++diz ok, versao v407 e o sha do manifesto novo; (7) os pinos da versao da bateria sao os da v407, conferidos contra o Nos lido; (8) o recibo pre_selo do recibo e' o pinado.
+@@ -10 +11 @@
+-uso: python -I -B -X utf8 b3_recibo_v406.py <arquivo com o stdout do esboco> ensaio|aplicar      (SEM terceiro argumento: nao ha cadeia de selos)
++uso: python -I -B -X utf8 b3_recibo_v407.py <arquivo com o stdout do esboco> ensaio|aplicar      (SEM terceiro argumento: nao ha cadeia de selos)
+@@ -25 +26 @@
+-        print("uso: b3_recibo_v406.py <stdout> ensaio|aplicar   (sem terceiro argumento: a v406 e' um passo simples, sem cadeia de selos)"); return 1
++        print("uso: b3_recibo_v407.py <stdout> ensaio|aplicar   (sem terceiro argumento: a v407 e' um passo simples, sem cadeia de selos)"); return 1
+@@ -44 +45 @@
+-    if r.get("versao_alvo") != "v406" or r.get("fase") != "pos_selo" or r.get("modo") != argv[2]:
++    if r.get("versao_alvo") != "v407" or r.get("fase") != "pos_selo" or r.get("modo") != argv[2]:
+@@ -52,2 +53,2 @@
+-    if ma.get("version") != "v405":
+-        prob.append("a Bancada de producao nao pinava a v405 (manifesto_anterior.version = %r): o passo da v406 e' simples v405 -> v406" % (ma.get("version"),))
++    if ma.get("version") != "v406":
++        prob.append("a Bancada de producao nao pinava a v406 (manifesto_anterior.version = %r): o passo da v407 e' simples v406 -> v407" % (ma.get("version"),))
+@@ -56 +57 @@
+-        pinos = json.load(open(os.path.join(PK, "PINOS_BN_v406.json"), encoding="utf-8")); pr = pinos["recibo_pre_selo"]
++        pinos = json.load(open(os.path.join(PK, "PINOS_BN_v407.json"), encoding="utf-8")); pr = pinos["recibo_pre_selo"]
+@@ -58 +59 @@
+-            prob.append("PINOS_BN_v406.json traz o pino cadeia_de_selos: a v406 nao tem salto")
++            prob.append("PINOS_BN_v407.json traz o pino cadeia_de_selos: a v407 nao tem salto")
+@@ -72 +73 @@
+-        prob.append("nao li o recibo pre_selo pinado em PINOS_BN_v406.json: %r" % (e,))
++        prob.append("nao li o recibo pre_selo pinado em PINOS_BN_v407.json: %r" % (e,))
+@@ -79 +80 @@
+-        prob.append("o recibo declara salto ou cadeia de selos: o passo da v406 e' simples (a Bancada pinava a v405)")
++        prob.append("o recibo declara salto ou cadeia de selos: o passo da v407 e' simples (a Bancada pinava a v406)")
+@@ -82,2 +83,2 @@
+-    if n is not None and not str(mn.get("deployment_id") or "").startswith("B%d-v406-" % n):
+-        prob.append("manifesto_novo.deployment_id=%r (esperado B%s-v406-...)" % (mn.get("deployment_id"), n))
++    if n is not None and not str(mn.get("deployment_id") or "").startswith("B%d-v407-" % n):
++        prob.append("manifesto_novo.deployment_id=%r (esperado B%s-v407-...)" % (mn.get("deployment_id"), n))
+@@ -89,2 +90,2 @@
+-        elif not (pc.get("ok") is True and pc.get("canonical_version") == "v406" and pc.get("canonical_manifest_sha256") == mn.get("sha256")):
+-            prob.append("a pos_conferencia do aplicar nao diz ok, versao v406 e o sha do manifesto novo: %r" % {k: pc.get(k) for k in ("ok", "canonical_version", "canonical_manifest_sha256")})
++        elif not (pc.get("ok") is True and pc.get("canonical_version") == "v407" and pc.get("canonical_manifest_sha256") == mn.get("sha256")):
++            prob.append("a pos_conferencia do aplicar nao diz ok, versao v407 e o sha do manifesto novo: %r" % {k: pc.get(k) for k in ("ok", "canonical_version", "canonical_manifest_sha256")})
+@@ -95,2 +96,2 @@
+-    if pv.get("versao") != "v406" or pv.get("declarados") is not True or pv.get("conferidos_contra_o_nos_lido") is not True:
+-        prob.append("os pinos da versao da bateria nao sao os da v406 conferidos contra o Nos lido: %r" % {k: pv.get(k) for k in ("declarados", "versao", "conferidos_contra_o_nos_lido")})
++    if pv.get("versao") != "v407" or pv.get("declarados") is not True or pv.get("conferidos_contra_o_nos_lido") is not True:
++        prob.append("os pinos da versao da bateria nao sao os da v407 conferidos contra o Nos lido: %r" % {k: pv.get(k) for k in ("declarados", "versao", "conferidos_contra_o_nos_lido")})

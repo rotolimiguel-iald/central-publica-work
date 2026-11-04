@@ -18,6 +18,6 @@ Ordem do operador: `OPERADOR_02nov_quando_terminar_compile_v406_rode_publique_at
 | S6b_aplicar | True | 2026-11-03T01:52:49 | {"evento": "1443", "hash": "06ea87583f3500a7"} |
 | S6c_religamento | True | 2026-11-03T01:53:02 | {"rc": 0, "porta": true} |
 | S6c_chain_10c_14 | True | 2026-11-03T02:03:39 | {"rc": 0, "de": "10c", "ate": "14", "cauda": "", "decisao_da_gerencia": "a primeira rodada parou no import de delta_v406.py (_bancada_pina_hoje exigia a base v405; a Bancada ja pinava B15-v406 depois do 10b): defeito do delta, corrigido com errata ao lado (aceita base ou esta versao; BANCADA_JA_APLI |
-| S7_g1 | False | 2026-11-03T02:39:42 | {"planejar": 1, "executar": 20, "auditar": 20, "nota": "5 = só decisões do operador"} |
+| S7_g1 | True | 2026-11-03T06:15:55 | {"planejar": 1, "executar": 20, "auditar": 0, "nota": "5 = só decisões do operador", "decisao_da_gerencia": "custodia v406 PUBLICADA (espelho a381c4d1 = origin/main; Central 42f3b0c9 = origin/main; site v406 no ar: subidas verificadas 20261103_025919 e 20261103_055922, esta com os 83 arquivos da Cen |
 
 Estado inteiro: `orquestrador/ESTADO.json`; logs ao lado. Nada aqui move o gate; `NOT_FALSIFIED` nunca é `CONFIRMED`.
