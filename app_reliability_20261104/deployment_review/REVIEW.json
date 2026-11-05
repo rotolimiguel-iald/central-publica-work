@@ -1,0 +1,247 @@
+{
+  "status": "CHANGES_REQUESTED_BEFORE_INSTALL",
+  "role": "INDEPENDENT_DEPLOYMENT_SCRIPT_REVIEW",
+  "utc": "2026-11-04T22:56:46.133003+00:00",
+  "sources": [
+    {
+      "path": "C:\\IALD\\Central de Patentes\\work\\app_reliability_20261104\\install_release.py",
+      "sha256": "45242a3e76e667dda1c0f2c730466c39db019a714fe8ebb62170037d6b5e2166"
+    },
+    {
+      "path": "C:\\IALD\\Central de Patentes\\work\\app_reliability_20261104\\prepare_release.py",
+      "sha256": "6598fa01720db49a4adafc2ffb2284c381268a6c9a0444e756b4e9399d11cc1c"
+    }
+  ],
+  "current_sources_unchanged": true,
+  "r2": {
+    "manifest_sha256": "8ca88f2d60b371494d5e894948b92f7a0ae3c337f0cfa0f23fe89c5ba5fe554b",
+    "candidate": "R2",
+    "artifacts_checked": 18,
+    "mismatches": [],
+    "author_tests": 38,
+    "author_replay_of_review_probes": 9,
+    "independent_r2_acceptance": "NOT_PERFORMED_BY_THIS_REVIEW"
+  },
+  "no_production_execution": true,
+  "no_credentials_read": true,
+  "scripts_modified": false,
+  "probes": [
+    {
+      "case": "success",
+      "optimize": 0,
+      "error": null,
+      "events": [
+        "preflight",
+        "web_stopped",
+        "quiesced",
+        "quiesced",
+        "supervisor_resumed",
+        "restart_checked"
+      ],
+      "files": {
+        "first.py": "installed",
+        "second.py": "installed"
+      },
+      "receipts": [
+        "DEPLOYMENT.json",
+        "INSTALL_PLAN.json",
+        "MAINTENANCE.json",
+        "RESTART.json"
+      ]
+    },
+    {
+      "case": "write_failure",
+      "optimize": 0,
+      "error": "OSError",
+      "events": [
+        "preflight",
+        "web_stopped",
+        "quiesced",
+        "quiesced",
+        "supervisor_resumed",
+        "restart_checked"
+      ],
+      "files": {
+        "first.py": "original",
+        "second.py": "original"
+      },
+      "receipts": [
+        "INSTALL_PLAN.json",
+        "MAINTENANCE.json",
+        "RESTART.json",
+        "ROLLBACK.json"
+      ]
+    },
+    {
+      "case": "rollback_conflict",
+      "optimize": 0,
+      "error": "AssertionError",
+      "events": [
+        "preflight",
+        "web_stopped",
+        "quiesced",
+        "supervisor_resumed",
+        "restart_checked"
+      ],
+      "files": {
+        "first.py": "other",
+        "second.py": "original"
+      },
+      "receipts": [
+        "INSTALL_PLAN.json",
+        "MAINTENANCE.json",
+        "RESTART.json"
+      ]
+    },
+    {
+      "case": "interrupt_second",
+      "optimize": 0,
+      "error": "KeyboardInterrupt",
+      "events": [
+        "preflight",
+        "web_stopped",
+        "quiesced",
+        "quiesced",
+        "supervisor_resumed",
+        "restart_checked"
+      ],
+      "files": {
+        "first.py": "installed",
+        "second.py": "original"
+      },
+      "receipts": [
+        "INSTALL_PLAN.json",
+        "MAINTENANCE.json",
+        "RESTART.json"
+      ]
+    },
+    {
+      "case": "stale_receipt",
+      "optimize": 0,
+      "error": "FileExistsError",
+      "events": [
+        "preflight",
+        "web_stopped",
+        "supervisor_resumed",
+        "restart_checked"
+      ],
+      "files": {
+        "first.py": "original",
+        "second.py": "original"
+      },
+      "receipts": [
+        "INSTALL_PLAN.json",
+        "MAINTENANCE.json",
+        "RESTART.json"
+      ]
+    },
+    {
+      "case": "optimized_rejected_review",
+      "optimize": 1,
+      "error": null,
+      "events": [
+        "web_stopped",
+        "quiesced",
+        "quiesced",
+        "supervisor_resumed",
+        "restart_checked"
+      ],
+      "files": {
+        "first.py": "installed",
+        "second.py": "installed"
+      },
+      "receipts": [
+        "DEPLOYMENT.json",
+        "INSTALL_PLAN.json",
+        "MAINTENANCE.json",
+        "RESTART.json"
+      ]
+    },
+    {
+      "case": "restart_failure",
+      "optimize": 0,
+      "error": "RuntimeError",
+      "events": [
+        "preflight",
+        "web_stopped",
+        "quiesced",
+        "quiesced",
+        "supervisor_resumed",
+        "restart_checked"
+      ],
+      "files": {
+        "first.py": "installed",
+        "second.py": "installed"
+      },
+      "receipts": [
+        "DEPLOYMENT.json",
+        "INSTALL_PLAN.json",
+        "MAINTENANCE.json"
+      ]
+    }
+  ],
+  "findings": [
+    {
+      "id": "D1",
+      "severity": "HIGH",
+      "file": "install_release.py",
+      "lines": [
+        68,
+        72,
+        83
+      ],
+      "finding": "Interrupted installation or rollback conflict resumes supervisor with a partial release.",
+      "evidence": "interrupt_second leaves first installed/second original; rollback_conflict resumes with first other/second original; both invoke restart.",
+      "proposal": "Durable intent and explicit release state; handle cancellation before resuming; complete verified rollback, otherwise keep admissions stopped with actionable recovery receipt. Do not unconditionally resume partial/conflicted runtime."
+    },
+    {
+      "id": "D2",
+      "severity": "MEDIUM",
+      "file": "install_release.py",
+      "lines": [
+        38,
+        41,
+        42
+      ],
+      "finding": "Safety and approval checks use assert and disappear under Python optimization.",
+      "evidence": "Optimized AST accepted REJECTED review and installed both fixture files, without executing task preflight.",
+      "proposal": "Use explicit if/raise; at minimum reject sys.flags.optimize before any mutating path and document invocation."
+    },
+    {
+      "id": "D3",
+      "severity": "MEDIUM",
+      "file": "install_release.py",
+      "lines": [
+        52,
+        86
+      ],
+      "finding": "Existing evidence filenames are not preflighted before stopping web.",
+      "evidence": "Existing MAINTENANCE.json causes FileExistsError only after web_stopped; supervisor then resumes and restart runs.",
+      "proposal": "Check all receipt destinations before maintenance or use immutable attempt directories and a resumable intent; protect receipts with temp/verify/atomic publication."
+    },
+    {
+      "id": "D4",
+      "severity": "MEDIUM",
+      "file": "install_release.py",
+      "lines": [
+        85,
+        86
+      ],
+      "finding": "Restart health failure leaves installed files and only restart_pending, without a durable failure/recovery receipt.",
+      "evidence": "restart_failure leaves both new files and DEPLOYMENT/MAINTENANCE, no RESTART or recovery record.",
+      "proposal": "Record restart failure with installed pins/process state and defined recovery path; never report successful availability from INSTALLED alone."
+    }
+  ],
+  "positives": [
+    "Current prepare checks deadlines before/after hashes",
+    "Current source list pins maintenance.py and transaction.py",
+    "Reviewed plan/installer hashes checked before maintenance in normal interpreter",
+    "Normal fixture write failure restores original bytes",
+    "Protected temp/backup ACL-before-write design and server preamble not persisted in staging"
+  ],
+  "limits": [
+    "AST installer functions with injected maintenance, storage ACL and process boundaries",
+    "No actual plan generation, production import, service stop, runtime write, key read, HTTP or API call",
+    "R2 integrity confirmation does not replace Socrates final semantic review"
+  ]
+}

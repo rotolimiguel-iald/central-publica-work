@@ -67,6 +67,20 @@ def texto_pdf(b):
         return None
 
 
+def _sem_b64_zip(t):
+    """O texto sem os blocos base64 longos que decodificam para ZIP (PK): esses são varridos por dentro por varrer_zip (05/11/2026)."""
+    if len(t) < 1000:
+        return t
+
+    def _tira(m):
+        try:
+            bb = base64.b64decode(m.group(0) + "=" * (-len(m.group(0)) % 4))
+        except (binascii.Error, ValueError):
+            return m.group(0)
+        return " " if bb[:2] == b"PK" else m.group(0)
+    return re.sub(r"[A-Za-z0-9+/]{1000,}={0,2}", _tira, t)
+
+
 def pii_forte(t):
     return bool(CPF.search(t) or RG.search(t) or FONE.search(t) or ENDERECO.search(t))
 
@@ -160,13 +174,18 @@ for p in _todos():
         continue
     if e in TXT_EXT or b[:1] in (b"{", b"[", b"#"):
         t = b.decode("utf-8", "replace")
-        if CPF.search(t) or RG.search(t):
+        # ERRATA AO LADO (05/11/2026, custódia v408, claude-site-custodia, em nome próprio): as cinco regras de PII abaixo liam também o texto
+        # cru dos blocos base64 que embutem ZIP, e a regra de quadra/lote casou num trecho aleatório do base64 (8 *_FINAL.py da v408). Esses
+        # blocos são varridos POR DENTRO por varrer_zip com as mesmas regras (pii_forte + EMAIL_PESSOAL), logo saem só do texto cru; bloco
+        # base64 que não é ZIP segue varrido cru, como antes. TERC, Escritório e credencial não mudam. Antes: as regras liam `t`.
+        t_pii = _sem_b64_zip(t)
+        if CPF.search(t_pii) or RG.search(t_pii):
             marca("CPF/RG sem máscara", rel)
-        if FONE.search(t):
+        if FONE.search(t_pii):
             marca("telefone sem máscara", rel)
-        if EMAIL_PESSOAL.search(t):
+        if EMAIL_PESSOAL.search(t_pii):
             marca("e-mail pessoal sem máscara", rel)
-        if ENDERECO.search(t):
+        if ENDERECO.search(t_pii):
             marca("endereço, CEP ou nascimento sem máscara", rel)
         if TERC is not None and TERC.search(t):
             marca("identificador de terceiro sem máscara", rel)

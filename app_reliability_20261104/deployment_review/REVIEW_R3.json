@@ -1,0 +1,224 @@
+{
+  "status": "PASS",
+  "scope": "D1-D4 and success only; isolated independent fault injection",
+  "utc": "2026-11-04T23:03:40.964819+00:00",
+  "tests": 7,
+  "passed": 7,
+  "probes": [
+    {
+      "case": "success",
+      "passed": true,
+      "optimize": 0,
+      "error": null,
+      "events": [
+        "preflight",
+        "suspend_1",
+        "suspend_2",
+        "web_stopped",
+        "backup_first.py",
+        "backup_second.py",
+        "resume_1",
+        "restart_checked"
+      ],
+      "files": {
+        "first.py": "installed",
+        "second.py": "installed"
+      },
+      "receipts": {
+        "DEPLOYMENT.json": "INSTALLED",
+        "INSTALL_INTENT.json": "PREPARED",
+        "MAINTENANCE.json": null,
+        "RESTART.json": "PASS"
+      },
+      "supervisor_suspended": false
+    },
+    {
+      "case": "write_failure",
+      "passed": true,
+      "optimize": 0,
+      "error": "OSError",
+      "events": [
+        "preflight",
+        "suspend_1",
+        "suspend_2",
+        "web_stopped",
+        "backup_first.py",
+        "backup_second.py",
+        "resume_1",
+        "restart_checked"
+      ],
+      "files": {
+        "first.py": "original",
+        "second.py": "original"
+      },
+      "receipts": {
+        "INSTALL_INTENT.json": "PREPARED",
+        "MAINTENANCE.json": null,
+        "RECOVERY.json": "ROLLED_BACK",
+        "RESTART.json": "PASS"
+      },
+      "supervisor_suspended": false
+    },
+    {
+      "case": "rollback_conflict",
+      "passed": true,
+      "optimize": 0,
+      "error": "RuntimeError",
+      "events": [
+        "preflight",
+        "suspend_1",
+        "suspend_2",
+        "web_stopped",
+        "backup_first.py",
+        "backup_second.py"
+      ],
+      "files": {
+        "first.py": "other",
+        "second.py": "original"
+      },
+      "receipts": {
+        "INSTALL_INTENT.json": "PREPARED",
+        "MAINTENANCE.json": null,
+        "RECOVERY.json": "HOLD_FOR_RECOVERY"
+      },
+      "supervisor_suspended": true
+    },
+    {
+      "case": "interrupt_second",
+      "passed": true,
+      "optimize": 0,
+      "error": "KeyboardInterrupt",
+      "events": [
+        "preflight",
+        "suspend_1",
+        "suspend_2",
+        "web_stopped",
+        "backup_first.py",
+        "backup_second.py",
+        "resume_1",
+        "restart_checked"
+      ],
+      "files": {
+        "first.py": "original",
+        "second.py": "original"
+      },
+      "receipts": {
+        "INSTALL_INTENT.json": "PREPARED",
+        "MAINTENANCE.json": null,
+        "RECOVERY.json": "ROLLED_BACK",
+        "RESTART.json": "PASS"
+      },
+      "supervisor_suspended": false
+    },
+    {
+      "case": "stale_receipt",
+      "passed": true,
+      "optimize": 0,
+      "error": "RuntimeError",
+      "events": [
+        "preflight"
+      ],
+      "files": {
+        "first.py": "original",
+        "second.py": "original"
+      },
+      "receipts": {
+        "MAINTENANCE.json": null
+      },
+      "supervisor_suspended": false
+    },
+    {
+      "case": "optimized_rejected_review",
+      "passed": true,
+      "optimize": 1,
+      "error": "RuntimeError",
+      "events": [],
+      "files": {
+        "first.py": "original",
+        "second.py": "original"
+      },
+      "receipts": {},
+      "supervisor_suspended": false
+    },
+    {
+      "case": "restart_failure",
+      "passed": true,
+      "optimize": 0,
+      "error": "RuntimeError",
+      "events": [
+        "preflight",
+        "suspend_1",
+        "suspend_2",
+        "web_stopped",
+        "backup_first.py",
+        "backup_second.py",
+        "resume_1",
+        "restart_checked"
+      ],
+      "files": {
+        "first.py": "installed",
+        "second.py": "installed"
+      },
+      "receipts": {
+        "DEPLOYMENT.json": "INSTALLED",
+        "INSTALL_INTENT.json": "PREPARED",
+        "MAINTENANCE.json": null,
+        "RESTART.json": "FAILED"
+      },
+      "supervisor_suspended": false
+    }
+  ],
+  "plan_sha256": "7deb5a820a4a88309be78347916b148266f05bfa15f58b059e2aea1f159da61b",
+  "installer_sha256": "7db6018da0b79fff74d2b83315da7ec8add3e05a824bb6eb612041938889dbaf",
+  "sources": [
+    {
+      "path": "C:\\IALD\\Central de Patentes\\work\\app_reliability_20261104\\install_release.py",
+      "sha256": "7db6018da0b79fff74d2b83315da7ec8add3e05a824bb6eb612041938889dbaf"
+    },
+    {
+      "path": "C:\\IALD\\Central de Patentes\\work\\app_reliability_20261104\\maintenance_safe.py",
+      "sha256": "949c59a71bc581546eb3f7e50ee9837681652f15bd23d3128f73d2a98e8c1414"
+    },
+    {
+      "path": "C:\\IALD\\Central de Patentes\\work\\app_reliability_20261104\\prepare_release.py",
+      "sha256": "6a5472490d741755a0f7d8395d1cd8136b21b389d432fb1512ce69b9508c4219"
+    },
+    {
+      "path": "C:\\IALD\\Central de Patentes\\work\\app_reliability_20261104\\INSTALL_PLAN.json",
+      "sha256": "7deb5a820a4a88309be78347916b148266f05bfa15f58b059e2aea1f159da61b"
+    }
+  ],
+  "pinned_plan_sources": 9,
+  "pin_mismatches": [],
+  "current_sources_unchanged": true,
+  "resolved": [
+    "D1: BaseException rollback checks every target, including replace-before-bookkeeping; unknown bytes preserved and supervisor held",
+    "D2: explicit optimized execution refusal before mission check or mutation",
+    "D3: all five receipt and temp paths preflighted; fsynced temporary receipt published no-clobber by hardlink; intent before maintenance",
+    "D4: restart exception recorded durably as RESTART.json status FAILED, never availability PASS"
+  ],
+  "limits": [
+    "Actual installer and maintenance function ASTs executed with synthetic filesystem and process objects; no production imports, writes, process control, key reads, network or API",
+    "ACL command execution and actual supervisor/HTTP startup not exercised; protected bytes writer substituted",
+    "Uncatchable process kill/power failure and hostile privileged concurrent writers remain outside these seven comparable probes; durable intent supports manual recovery",
+    "This scoped review does not replace final release approval or a real post-install verification"
+  ],
+  "scripts_modified": false,
+  "revision": "R3",
+  "execution_environment": "Same seven probes rerun with require_escalated; synthetic files/processes only",
+  "prior_environment_failure": {
+    "path": "C:\\IALD\\Central de Patentes\\work\\app_reliability_20261104\\deployment_review\\REVIEW_R2_SANDBOX_BLOCK.json",
+    "sha256": "1182804f35b6fee70a65fc918519c1185a15d8673447cc8d8719c7f1402c8182",
+    "passed": 2,
+    "tests": 7,
+    "reason": "PermissionError at os.link before maintenance; independent reproduction errno=13 winerror=5 Acesso negado"
+  },
+  "diagnosis": {
+    "path": "C:\\IALD\\Central de Patentes\\work\\app_reliability_20261104\\deployment_review\\HARDLINK_SANDBOX_DIAGNOSIS.json",
+    "sha256": "d94a3619bc53701ceb03fa461b45b2f5078eba57636290b9d74c44b4bb13c88f"
+  },
+  "probe": {
+    "path": "C:\\IALD\\Central de Patentes\\work\\app_reliability_20261104\\deployment_review\\probe_r2.py",
+    "sha256": "527f28faae2e4862d033427bdbf184910b62b865f0067183def6582ace0879a1"
+  }
+}

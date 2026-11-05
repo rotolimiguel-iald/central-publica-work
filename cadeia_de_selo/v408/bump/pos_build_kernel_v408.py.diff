@@ -1,0 +1,160 @@
+--- v407/pos_build_kernel_v407.py
++++ v408/pos_build_kernel_v408.py
+@@ -2,2 +2,3 @@
+-# [ADAPTADO v407] o bundle e' de 9 modulos de TGLExt/ (PsionCanto, Par e as sete pedras de 02/11); ancoras = os #print axioms das candidatas; bandeiras ext_psi407_*
+-"""pos_build_kernel_v407.py -- DEPOIS de construir_kernel_v407.sh (build a FRIO dos 9 modulos novos de TGLExt/ no sandbox C:\\t\\k407c\\final): (1) monta kernel/build_full.log no formato do molde;
++# [A ADAPTAR v408] SUBIDA MECANICA DE ROTULO (v407->v408) do molde v407/pos_build_kernel_v407.py; o CORPO e' o da v407 (bundle de 9 modulos, psion_canto_v407, a chave do lema lida do kernel); nada rodou; ver bump/pos_build_kernel_v408.py.diff
++# [ADAPTADO v408] o bundle e' de 9 modulos de TGLExt/ (PsionCanto, Par e as sete pedras de 02/11); ancoras = os #print axioms das candidatas; bandeiras ext_psi407_*
++"""pos_build_kernel_v408.py -- DEPOIS de construir_kernel_v408.sh (build a FRIO dos 9 modulos novos de TGLExt/ no sandbox C:\\t\\k408c\\final): (1) monta kernel/build_full.log no formato do molde;
+@@ -5,5 +6,5 @@
+-cabecalho dos .olean = Lean 4.31.0); (3) le do log do Audit (SO' dele) as linhas TGL_DECL_SOURCE (declaracao -> modulo emitido pelo compilador) e o axiom_report EFETIVO com as funcoes do PROPRIO um.py v406 selado
+-(parse_lean_axioms_v394/parse_lean_provenance_v394, extraidas por ast de base_v406\\um.py: a MESMA logica que o um.py v407 usara), confere as ANCORAS das 9 pedras (delta_v407.ANCORAS) e deriva FLAGS_v407.json (as declaracoes
+-NOMEADAS publicas dos 9 modulos, politica da v394: UMA serie ext_psi407_NNNN, ordenada por (modulo, nome)); (4) copia a ARVORE so-fontes para C:\\t\\k407c\\arvore e varre os tokens proibidos RECURSIVAMENTE com a funcao de varredura do
+-PROPRIO um.py v406 (por ast); (5) mede os criterios; (6) escreve KH_N1_v407.json, KERNEL_RECIBO_v407.json (contrato KERNEL_RECIBO_R3_2: uma entrada por modulo do bundle), vinculo/CRITERIOS_v407.json (x19 = 'nao': nenhum modulo do
+-recibo e' a LightNetStandardWedgeDataBGL, que ja' esta no kernel desde a v392), kernel/POS_BUILD_v407.json e kernel/LOGS_COPIADOS_v407.json. A Bancada JA pina a v406 (B15): o ANTES do recibo e' o kernel da v406.
++cabecalho dos .olean = Lean 4.31.0); (3) le do log do Audit (SO' dele) as linhas TGL_DECL_SOURCE (declaracao -> modulo emitido pelo compilador) e o axiom_report EFETIVO com as funcoes do PROPRIO um.py v407 selado
++(parse_lean_axioms_v394/parse_lean_provenance_v394, extraidas por ast de base_v407\\um.py: a MESMA logica que o um.py v408 usara), confere as ANCORAS das 9 pedras (delta_v408.ANCORAS) e deriva FLAGS_v408.json (as declaracoes
++NOMEADAS publicas dos 9 modulos, politica da v394: UMA serie ext_psi408_NNNN, ordenada por (modulo, nome)); (4) copia a ARVORE so-fontes para C:\\t\\k408c\\arvore e varre os tokens proibidos RECURSIVAMENTE com a funcao de varredura do
++PROPRIO um.py v407 (por ast); (5) mede os criterios; (6) escreve KH_N1_v408.json, KERNEL_RECIBO_v408.json (contrato KERNEL_RECIBO_R3_2: uma entrada por modulo do bundle), vinculo/CRITERIOS_v408.json (x19 = 'nao': nenhum modulo do
++recibo e' a LightNetStandardWedgeDataBGL, que ja' esta no kernel desde a v392), kernel/POS_BUILD_v408.json e kernel/LOGS_COPIADOS_v408.json. A Bancada JA pina a v407 (B16): o ANTES do recibo e' o kernel da v407.
+@@ -11 +12 @@
+-Molde: v394/pos_build_kernel_v394.py (bundle) e v406/pos_build_kernel_v406.py (o mais recente).   Uso: python -I -B -X utf8 pos_build_kernel_v407.py"""
++Molde: v394/pos_build_kernel_v394.py (bundle) e v407/pos_build_kernel_v407.py (o mais recente).   Uso: python -I -B -X utf8 pos_build_kernel_v408.py"""
+@@ -15 +16 @@
+-import delta_v407 as DL  # noqa: E402
++import delta_v408 as DL  # noqa: E402
+@@ -76 +77 @@
+-    # ------------------------------------------------------------------ a base (v406 selada): o um.py, o core, o manifesto
++    # ------------------------------------------------------------------ a base (v407 selada): o um.py, o core, o manifesto
+@@ -79 +80 @@
+-    chk("a base_v406\\um.py e' a v406 SELADA (sha16 da ordem da gerencia, lido do arquivo)", sha(um_b)[:16] == DL.BASE_SHA16_DA_ORDEM, [sha(um_b)[:16], DL.BASE_SHA16_DA_ORDEM])
++    chk("a base_v407\\um.py e' a v407 SELADA (sha16 da ordem da gerencia, lido do arquivo)", sha(um_b)[:16] == DL.BASE_SHA16_DA_ORDEM, [sha(um_b)[:16], DL.BASE_SHA16_DA_ORDEM])
+@@ -82 +83 @@
+-        exec(compile(ast.get_source_segment(um_src, fn[nome]), "<base_v406:%s>" % nome, "exec"), _ns)
++        exec(compile(ast.get_source_segment(um_src, fn[nome]), "<base_v407:%s>" % nome, "exec"), _ns)
+@@ -89,2 +90,2 @@
+-    chk("a lista dos modulos novos (kernel_modulos_novos_v407.json) == os 9 do delta (PsionCanto, Par e as sete pedras de 02/11), sem repeticao",
+-        N_NOVOS == 9 and len(NEWMODS) == 9 and sorted(json.load(open(os.path.join(HERE, "kernel_modulos_novos_v407.json"), encoding="utf-8"))["novos"]) == nov and DL.MODULO_TESTEMUNHA in NEWRELS, N_NOVOS)
++    chk("a lista dos modulos novos (kernel_modulos_novos_v408.json) == os 9 do delta (PsionCanto, Par e as sete pedras de 02/11), sem repeticao",
++        N_NOVOS == 9 and len(NEWMODS) == 9 and sorted(json.load(open(os.path.join(HERE, "kernel_modulos_novos_v408.json"), encoding="utf-8"))["novos"]) == nov and DL.MODULO_TESTEMUNHA in NEWRELS, N_NOVOS)
+@@ -120 +121 @@
+-    # ------------------------------------------------------------------ o log do Audit: leitura SO' dele (licao KH-N1) com as funcoes do um.py v406 selado
++    # ------------------------------------------------------------------ o log do Audit: leitura SO' dele (licao KH-N1) com as funcoes do um.py v407 selado
+@@ -134 +135 @@
+-    # ------------------------------------------------------------------ a raiz e o Audit: o sandbox == o Nos v406 selado + os nove imports
++    # ------------------------------------------------------------------ a raiz e o Audit: o sandbox == o Nos v407 selado + os nove imports
+@@ -137,2 +138,2 @@
+-    chk("a raiz do sandbox == a raiz do Nos (v406 selada) + os NOVE imports do delta (ROOT_SUFFIX), em bytes", sb_root == nos_root + DL.ROOT_SUFFIX.encode("utf-8"), [len(sb_root), len(nos_root), len(DL.ROOT_SUFFIX)])
+-    chk("o Audit do sandbox == o Audit do Nos (bytes): o Audit NAO muda na v407", sb_aud == nos_aud, [len(sb_aud), len(nos_aud)])
++    chk("a raiz do sandbox == a raiz do Nos (v407 selada) + os NOVE imports do delta (ROOT_SUFFIX), em bytes", sb_root == nos_root + DL.ROOT_SUFFIX.encode("utf-8"), [len(sb_root), len(nos_root), len(DL.ROOT_SUFFIX)])
++    chk("o Audit do sandbox == o Audit do Nos (bytes): o Audit NAO muda na v408", sb_aud == nos_aud, [len(sb_aud), len(nos_aud)])
+@@ -144,2 +145,2 @@
+-    chk("as %d ANCORAS das 9 pedras (delta_v407.ANCORAS) existem no Audit, no trio, com proveniencia TGL_DECL_SOURCE == o modulo esperado" % len(DL.ANCORAS), not anc_bad and len(DL.ANCORAS) == sum(len(v_) for v_ in DL.ANCORAS_POR_MODULO.values()) > 0, anc_bad[:3])
+-    # ------------------------------------------------------------------ FLAGS: a politica da v394 (so' declaracao NOMEADA); UMA serie ext_psi407_NNNN ordenada por (modulo, nome)
++    chk("as %d ANCORAS das 9 pedras (delta_v408.ANCORAS) existem no Audit, no trio, com proveniencia TGL_DECL_SOURCE == o modulo esperado" % len(DL.ANCORAS), not anc_bad and len(DL.ANCORAS) == sum(len(v_) for v_ in DL.ANCORAS_POR_MODULO.values()) > 0, anc_bad[:3])
++    # ------------------------------------------------------------------ FLAGS: a politica da v394 (so' declaracao NOMEADA); UMA serie ext_psi408_NNNN ordenada por (modulo, nome)
+@@ -150 +151 @@
+-    # (os 9 modulos do bundle moram em TGLExt/ (nao ha subpasta nova): o invariante e' que os 9 NAO existiam no Nos v406 e que todo modulo emitido pelo compilador fora do bundle e' ANTIGO, isto e', existe no Nos)
++    # (os 9 modulos do bundle moram em TGLExt/ (nao ha subpasta nova): o invariante e' que os 9 NAO existiam no Nos v407 e que todo modulo emitido pelo compilador fora do bundle e' ANTIGO, isto e', existe no Nos)
+@@ -153 +154 @@
+-    chk("nenhum dos %d modulos do bundle existia no kernel do Nos v406 (todos NOVOS: nada e' sobrescrito)" % N_NOVOS, not ja_no_nos, ja_no_nos[:3])
++    chk("nenhum dos %d modulos do bundle existia no kernel do Nos v407 (todos NOVOS: nada e' sobrescrito)" % N_NOVOS, not ja_no_nos, ja_no_nos[:3])
+@@ -156 +157 @@
+-    chk("o compilador so' emite declaracoes dos %d modulos do bundle ou de modulos ANTIGOS (os %d fora do bundle existem todos no Nos v406)" % (N_NOVOS, len(fora_do_bundle)), not novos_fora, novos_fora[:3])
++    chk("o compilador so' emite declaracoes dos %d modulos do bundle ou de modulos ANTIGOS (os %d fora do bundle existem todos no Nos v407)" % (N_NOVOS, len(fora_do_bundle)), not novos_fora, novos_fora[:3])
+@@ -165 +166 @@
+-    flags_v407 = []
++    flags_v408 = []
+@@ -170 +171 @@
+-            i_ += 1; flags_v407.append(["%s%04d" % (DL.FLAG_PREFIX, i_), n, mod, DL.ORIGEM_DE_BANDEIRA])
++            i_ += 1; flags_v408.append(["%s%04d" % (DL.FLAG_PREFIX, i_), n, mod, DL.ORIGEM_DE_BANDEIRA])
+@@ -172,3 +173,3 @@
+-    chk("as chaves das flags novas (%s*) nao colidem com as da base v406 (_LEAN_THEOREM_FLAGS) e sao unicas; os NOMES nao repetem os de uma bandeira existente e sao unicos" % DL.FLAG_PREFIX,
+-        len({f[0] for f in flags_v407}) == len(flags_v407) and not ({f[0] for f in flags_v407} & set(base_flags)) and not ({f[1] for f in flags_v407} & set(base_flags.values())) and len({f[1] for f in flags_v407}) == len(flags_v407), len(flags_v407))
+-    chk("toda bandeira nova esta no axiom_report, no trio, e e' declaracao NOMEADA publica (a politica)", all(f[1] in axm and set(axm[f[1]]) <= TRIO and DL.classe(f[1]) == "nomeada" and not f[1].startswith("_private.") for f in flags_v407), len(flags_v407))
++    chk("as chaves das flags novas (%s*) nao colidem com as da base v407 (_LEAN_THEOREM_FLAGS) e sao unicas; os NOMES nao repetem os de uma bandeira existente e sao unicos" % DL.FLAG_PREFIX,
++        len({f[0] for f in flags_v408}) == len(flags_v408) and not ({f[0] for f in flags_v408} & set(base_flags)) and not ({f[1] for f in flags_v408} & set(base_flags.values())) and len({f[1] for f in flags_v408}) == len(flags_v408), len(flags_v408))
++    chk("toda bandeira nova esta no axiom_report, no trio, e e' declaracao NOMEADA publica (a politica)", all(f[1] in axm and set(axm[f[1]]) <= TRIO and DL.classe(f[1]) == "nomeada" and not f[1].startswith("_private.") for f in flags_v408), len(flags_v408))
+@@ -177 +178 @@
+-    chk("declaracoes NOVAS dos modulos novos (publicas + privadas, por proveniencia, menos as reatribuidas) == TOTAL(v407) - TOTAL(v406); as reatribuidas sao auxiliares (sem bandeira)",
++    chk("declaracoes NOVAS dos modulos novos (publicas + privadas, por proveniencia, menos as reatribuidas) == TOTAL(v408) - TOTAL(v407); as reatribuidas sao auxiliares (sem bandeira)",
+@@ -179,3 +180,3 @@
+-    chk("os nomes do axiom_report da v406 (core da base) seguem todos no axiom_report de agora (nada se perde), com a MESMA lista", all(n in axm and axm[n] == axr0[n] for n in axr0), [len(axr0), sum(1 for n in axr0 if n not in axm)])
+-    chk("o axiom_report de agora tem exatamente os nomes da v406 mais as declaracoes dos modulos novos", set(axm) == set(axr0) | set(novas_todas), [len(axm), len(axr0), len(novas_todas)])
+-    chave_de = {f[1]: f[0] for f in flags_v407}
++    chk("os nomes do axiom_report da v407 (core da base) seguem todos no axiom_report de agora (nada se perde), com a MESMA lista", all(n in axm and axm[n] == axr0[n] for n in axr0), [len(axr0), sum(1 for n in axr0 if n not in axm)])
++    chk("o axiom_report de agora tem exatamente os nomes da v407 mais as declaracoes dos modulos novos", set(axm) == set(axr0) | set(novas_todas), [len(axm), len(axr0), len(novas_todas)])
++    chave_de = {f[1]: f[0] for f in flags_v408}
+@@ -186,4 +187,4 @@
+-    salvar_json(os.path.join(KD, "FLAGS_v407.json"), {
+-        "politica": "so' declaracao NOMEADA tem bandeira (a pratica selada da v392 a v406); as auxiliares geradas pelo compilador (ultimo componente _proof_N, _simp_N, match_N, _sunfold, eq_N, eq_def, congr_simp) ficam fora; "
+-                    "UMA serie de chaves %sNNNN, ordenada por (modulo, nome), para os %d modulos do bundle de TGLExt/ (decisao da gerencia c1, v407: bundle como a v406; o numero e' MEDIDO do Audit desta geracao)" % (DL.FLAG_PREFIX, N_NOVOS),
+-        "flags": flags_v407, "n_flags": len(flags_v407), "n_decl_audit": len(axm), "por_origem": {DL.ORIGEM_DE_BANDEIRA: len(flags_v407)}, "por_grupo_bandeiras": {DL.GRUPO_BUNDLE: len(flags_v407)},
++    salvar_json(os.path.join(KD, "FLAGS_v408.json"), {
++        "politica": "so' declaracao NOMEADA tem bandeira (a pratica selada da v392 a v407); as auxiliares geradas pelo compilador (ultimo componente _proof_N, _simp_N, match_N, _sunfold, eq_N, eq_def, congr_simp) ficam fora; "
++                    "UMA serie de chaves %sNNNN, ordenada por (modulo, nome), para os %d modulos do bundle de TGLExt/ (decisao da gerencia c1, v408: bundle como a v407; o numero e' MEDIDO do Audit desta geracao)" % (DL.FLAG_PREFIX, N_NOVOS),
++        "flags": flags_v408, "n_flags": len(flags_v408), "n_decl_audit": len(axm), "por_origem": {DL.ORIGEM_DE_BANDEIRA: len(flags_v408)}, "por_grupo_bandeiras": {DL.GRUPO_BUNDLE: len(flags_v408)},
+@@ -236 +237 @@
+-    # ------------------------------------------------------------------ as entradas ANTIGAS: o Audit da v406 (ANTES) e o axiom_report EFETIVO da v406 contra o EFETIVO de agora
++    # ------------------------------------------------------------------ as entradas ANTIGAS: o Audit da v407 (ANTES) e o axiom_report EFETIVO da v407 contra o EFETIVO de agora
+@@ -241 +242 @@
+-    chk("as entradas antigas do Audit v406 (nomes distintos) com a MESMA lista de axiomas do axiom_report v406", iguais_ant == len(nomes_antigos) and len(nomes_antigos) > 0, [iguais_ant, len(nomes_antigos)])
++    chk("as entradas antigas do Audit v407 (nomes distintos) com a MESMA lista de axiomas do axiom_report v407", iguais_ant == len(nomes_antigos) and len(nomes_antigos) > 0, [iguais_ant, len(nomes_antigos)])
+@@ -243 +244 @@
+-    chk("NADA da v406 se perde: todo nome do axiom_report da v406 segue no de agora, no trio", not perdidos and all(set(axm.get(n, ["?"])) <= TRIO for n in axr0), [len(axr0), len(perdidos), exatas])
++    chk("NADA da v407 se perde: todo nome do axiom_report da v407 segue no de agora, no trio", not perdidos and all(set(axm.get(n, ["?"])) <= TRIO for n in axr0), [len(axr0), len(perdidos), exatas])
+@@ -254 +255 @@
+-    chk("ANTES (raiz, Audit) == formal_files_sha256 do manifesto v406 pinado (e == o embutido no um.py da base)", ff.get("TGLExt.lean") == raiz0 == sha(emb0["TGLExt.lean"].encode("utf-8")) and ff.get("TGL/Audit.lean") == aud0 == sha(aud_antes.encode("utf-8")), [raiz0[:16], aud0[:16]])
++    chk("ANTES (raiz, Audit) == formal_files_sha256 do manifesto v407 pinado (e == o embutido no um.py da base)", ff.get("TGLExt.lean") == raiz0 == sha(emb0["TGLExt.lean"].encode("utf-8")) and ff.get("TGL/Audit.lean") == aud0 == sha(aud_antes.encode("utf-8")), [raiz0[:16], aud0[:16]])
+@@ -273 +274 @@
+-    chk("o sha256 de cada um dos %d modulos na arvore == o que o preparo do bundle pinou (BUNDLE_v407.json)" % N_NOVOS, not sha_bad, sha_bad[:3])
++    chk("o sha256 de cada um dos %d modulos na arvore == o que o preparo do bundle pinou (BUNDLE_v408.json)" % N_NOVOS, not sha_bad, sha_bad[:3])
+@@ -282 +283 @@
+-               "entradas_antigas_exatas_no_efetivo": exatas, "nomes_v406_perdidos": len(perdidos), "novas_no_trio": all(set(axm[n]) <= TRIO for n in novas_todas), "sorryAx_no_log_do_audit": AL.count("sorryAx"),
++               "entradas_antigas_exatas_no_efetivo": exatas, "nomes_v407_perdidos": len(perdidos), "novas_no_trio": all(set(axm[n]) <= TRIO for n in novas_todas), "sorryAx_no_log_do_audit": AL.count("sorryAx"),
+@@ -284 +285 @@
+-               "audit_log_bytes": len(rd(os.path.join(KD, "audit.log"))), "audit_log_sha256": sha(rd(os.path.join(KD, "audit.log"))), "n_bandeiras": len(flags_v407), "decl_dos_modulos_novos": len(novas_todas), "decl_novas_dos_modulos": len(novas_reais), "reatribuidas_as_pedras": reatribuidas,
++               "audit_log_bytes": len(rd(os.path.join(KD, "audit.log"))), "audit_log_sha256": sha(rd(os.path.join(KD, "audit.log"))), "n_bandeiras": len(flags_v408), "decl_dos_modulos_novos": len(novas_todas), "decl_novas_dos_modulos": len(novas_reais), "reatribuidas_as_pedras": reatribuidas,
+@@ -286,2 +287,2 @@
+-               "quando": datetime.datetime.now(datetime.timezone.utc).isoformat(timespec="seconds"), "estatuto": "[REAL] medido por pos_build_kernel_v407.py sobre o log do Audit do sandbox; fora do selo"}
+-    salvar_json(os.path.join(KD, "KH_N1_v407.json"), kh_json)
++               "quando": datetime.datetime.now(datetime.timezone.utc).isoformat(timespec="seconds"), "estatuto": "[REAL] medido por pos_build_kernel_v408.py sobre o log do Audit do sandbox; fora do selo"}
++    salvar_json(os.path.join(KD, "KH_N1_v408.json"), kh_json)
+@@ -293 +294 @@
+-    # ------------------------------------------------------------------ os logs copiados (o construir_kernel_v407.sh escreve DIRETO em kernel\: nada e' copiado, so' CONFERIDO e pinado)
++    # ------------------------------------------------------------------ os logs copiados (o construir_kernel_v408.sh escreve DIRETO em kernel\: nada e' copiado, so' CONFERIDO e pinado)
+@@ -298 +299 @@
+-    salvar_json(os.path.join(KD, "LOGS_COPIADOS_v407.json"), logs_cop)
++    salvar_json(os.path.join(KD, "LOGS_COPIADOS_v408.json"), logs_cop)
+@@ -300 +301 @@
+-    recibo = {"contrato": "KERNEL_RECIBO_R3_2", "versao": "v407", "rc": rc_med, "sorry": n_sorry, "erros": n_err,
++    recibo = {"contrato": "KERNEL_RECIBO_R3_2", "versao": "v408", "rc": rc_med, "sorry": n_sorry, "erros": n_err,
+@@ -309 +310 @@
+-              "nos_kernel_impressao": {"definicao": "sha256 do JSON canonico de formal_files_sha256 do Nos (manifesto pinado pelo selo v406)", "antes": imp(ff), "depois": imp(ff)},
++              "nos_kernel_impressao": {"definicao": "sha256 do JSON canonico de formal_files_sha256 do Nos (manifesto pinado pelo selo v407)", "antes": imp(ff), "depois": imp(ff)},
+@@ -311,2 +312,2 @@
+-              "nota": "gerado por pos_build_kernel_v407.py (preparacao, 03/11/2026); NAO conferido por verificar_kernel_recibo do B(n) (precisa do selo v407 e do manifesto novo); a arvore de varredura e' a copia so-fontes " + abs_fw(ARV) + " (MANTIDA: o recibo pos-selo precisa dela); "
+-                      "o build do sandbox C:/t/k407c/final foi INCREMENTAL no que e' antigo (copia do kernel do NOS v406 compilado pelo rito de 03/11) e A FRIO nos " + str(N_NOVOS) + " modulos novos (PsionCanto, Par e as sete pedras de 02/11; linha Built em cada um); logs em kernel\\; o rito real do Nos compila tudo a frio"}
++              "nota": "gerado por pos_build_kernel_v408.py (preparacao, 03/11/2026); NAO conferido por verificar_kernel_recibo do B(n) (precisa do selo v408 e do manifesto novo); a arvore de varredura e' a copia so-fontes " + abs_fw(ARV) + " (MANTIDA: o recibo pos-selo precisa dela); "
++                      "o build do sandbox C:/t/k408c/final foi INCREMENTAL no que e' antigo (copia do kernel do NOS v407 compilado pelo rito de 03/11) e A FRIO nos " + str(N_NOVOS) + " modulos novos (PsionCanto, Par e as sete pedras de 02/11; linha Built em cada um); logs em kernel\\; o rito real do Nos compila tudo a frio"}
+@@ -314,3 +315,3 @@
+-    salvar_json(os.path.join(KD, "KERNEL_RECIBO_v407.json"), recibo)
+-    crit = {"contrato": "CRITERIOS_R3_1", "versao": "v407", "preenchido": True, "x19": x19, "esperados": criterios,
+-            "origem": "[DERIVED] preenchido pela PREPARACAO com a medicao de kernel/KERNEL_RECIBO_v407.json (J1 = diferenca dos TOTAIS do KH-N1 v407 - v406, como na v393, v394, v396, v404 e v406). x19='nao': o recibo v407 lista os " + str(N_NOVOS) + " modulos NOVOS de TGLExt/ (PsionCanto, Par e as sete pedras de 02/11) e a "
++    salvar_json(os.path.join(KD, "KERNEL_RECIBO_v408.json"), recibo)
++    crit = {"contrato": "CRITERIOS_R3_1", "versao": "v408", "preenchido": True, "x19": x19, "esperados": criterios,
++            "origem": "[DERIVED] preenchido pela PREPARACAO com a medicao de kernel/KERNEL_RECIBO_v408.json (J1 = diferenca dos TOTAIS do KH-N1 v408 - v407, como na v393, v394, v396, v404 e v407). x19='nao': o recibo v408 lista os " + str(N_NOVOS) + " modulos NOVOS de TGLExt/ (PsionCanto, Par e as sete pedras de 02/11) e a "
+@@ -319 +320 @@
+-    salvar_json(os.path.join(VD, "CRITERIOS_v407.json"), crit)
++    salvar_json(os.path.join(VD, "CRITERIOS_v408.json"), crit)
+@@ -321 +322 @@
+-           "n_flags": len(flags_v407), "n_decl_audit": len(axm), "pedras_sem_declaracao": sem_decl, "riscos_bn": riscos_bn, "n_declaracoes_no_recibo": n_decl_recibo, "inicio": ini, "fim": fim, "githash_lean": hashes_lean, "E406": E0,
++           "n_flags": len(flags_v408), "n_decl_audit": len(axm), "pedras_sem_declaracao": sem_decl, "riscos_bn": riscos_bn, "n_declaracoes_no_recibo": n_decl_recibo, "inicio": ini, "fim": fim, "githash_lean": hashes_lean, "E407": E0,
+@@ -324,2 +325,2 @@
+-    salvar_json(os.path.join(KD, "POS_BUILD_v407.json"), pos)
+-    print("\nPOS-BUILD:", "VERDE" if ok else "FALHOU", "| criterios:", criterios, "| .lean:", n_lean, "| bandeiras:", len(flags_v407), "| escada esperada:", E0 + len(flags_v407), "| TOTAL:", kh_cov, "| delta_vs_v406:", j1[:2],
++    salvar_json(os.path.join(KD, "POS_BUILD_v408.json"), pos)
++    print("\nPOS-BUILD:", "VERDE" if ok else "FALHOU", "| criterios:", criterios, "| .lean:", n_lean, "| bandeiras:", len(flags_v408), "| escada esperada:", E0 + len(flags_v408), "| TOTAL:", kh_cov, "| delta_vs_v406:", j1[:2],
+@@ -338 +339 @@
+-            salvar_json(os.path.join(KD, "POS_BUILD_v407.json"), {"ok": False, "excecao": tb, "sinais": sinais, "backups": BACKUPS})
++            salvar_json(os.path.join(KD, "POS_BUILD_v408.json"), {"ok": False, "excecao": tb, "sinais": sinais, "backups": BACKUPS})

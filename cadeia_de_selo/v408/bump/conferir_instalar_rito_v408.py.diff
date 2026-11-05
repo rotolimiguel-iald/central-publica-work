@@ -1,0 +1,97 @@
+--- v407/conferir_instalar_rito_v407.py
++++ v408/conferir_instalar_rito_v408.py
+@@ -2,2 +2,3 @@
+-"""conferir_instalar_rito_v407.py -- confere, SEM EXECUTAR o instalador, o reverter nem o rito, os scripts instalar_v407.py, reverter_v407.py e rito_v407.sh (derivados dos da v406, adaptados em 03/11/2026 ao BUNDLE PEQUENO de nove modulos em TGLExt/, com as licoes da v406): (1) sintaxe (ast.parse; sh -n);
+-(2) invariantes: cada um traz os marcadores da v407 (nomes da v407, o sidecar nos backups, o recibo pre_selo do B(n) lido do pino, a Bancada que JA pina a v406, a raiz e o Audit da v406 conferidos antes de instalar, os nove modulos em TGLExt/ e nao mais em TGLExt/F1Fecho394/...) e NENHUM rotulo velho onde seria erro; o TEMPO ESPERADO do rito
++# [A ADAPTAR v408] SUBIDA MECANICA DE ROTULO (v407->v408) do molde v407/conferir_instalar_rito_v407.py; o CORPO e' o da v407 (bundle de 9 modulos, psion_canto_v407, a chave do lema lida do kernel); nada rodou; ver bump/conferir_instalar_rito_v408.py.diff
++"""conferir_instalar_rito_v408.py -- confere, SEM EXECUTAR o instalador, o reverter nem o rito, os scripts instalar_v408.py, reverter_v408.py e rito_v408.sh (derivados dos da v407, adaptados em 03/11/2026 ao BUNDLE PEQUENO de nove modulos em TGLExt/, com as licoes da v407): (1) sintaxe (ast.parse; sh -n);
++(2) invariantes: cada um traz os marcadores da v408 (nomes da v408, o sidecar nos backups, o recibo pre_selo do B(n) lido do pino, a Bancada que JA pina a v407, a raiz e o Audit da v407 conferidos antes de instalar, os nove modulos em TGLExt/ e nao mais em TGLExt/F1Fecho394/...) e NENHUM rotulo velho onde seria erro; o TEMPO ESPERADO do rito
+@@ -5,3 +6,3 @@
+-(3) a CONDICAO DO MODULO NOVO (UM): o trecho do instalador que le kernel_modulos_novos_v407.json (a LISTA, de DL.N_BUNDLE elementos: o bundle) e a confere contra ESPERADOS.bundle_sha256 e contra o Nos e' EXTRAIDO por AST e EXECUTADO aqui, isolado, contra os arquivos reais (ele tem de PASSAR com N = DL.N_BUNDLE e RECUSAR se a lista tiver um modulo
+-que o ESPERADOS nao pina, estiver vazia, tiver um a mais, tiver um a menos ou apontar para fora de TGLExt/); o mesmo para a lista do reverter (aceita a lista do bundle; recusa a que difere dos ESPERADOS); o rito so cita a lista. Se o ESPERADOS_v407.json ainda NAO existe (gerar_esperados_v407.py nao rodou), o trecho e' exercitado contra um ESPERADOS SINTETICO derivado de DL.BUNDLE_POR_REL
+-(kernel.modulos_novos e bundle_sha256), dito na saida e em DERIVACAO_v407.json (`esp_sintetico`); o ESPERADOS real e' o que vale e e' conferido na corrida seguinte. Escreve DERIVACAO_v407.json. uso: python -I -B -X utf8 conferir_instalar_rito_v407.py"""
++(3) a CONDICAO DO MODULO NOVO (UM): o trecho do instalador que le kernel_modulos_novos_v408.json (a LISTA, de DL.N_BUNDLE elementos: o bundle) e a confere contra ESPERADOS.bundle_sha256 e contra o Nos e' EXTRAIDO por AST e EXECUTADO aqui, isolado, contra os arquivos reais (ele tem de PASSAR com N = DL.N_BUNDLE e RECUSAR se a lista tiver um modulo
++que o ESPERADOS nao pina, estiver vazia, tiver um a mais, tiver um a menos ou apontar para fora de TGLExt/); o mesmo para a lista do reverter (aceita a lista do bundle; recusa a que difere dos ESPERADOS); o rito so cita a lista. Se o ESPERADOS_v408.json ainda NAO existe (gerar_esperados_v408.py nao rodou), o trecho e' exercitado contra um ESPERADOS SINTETICO derivado de DL.BUNDLE_POR_REL
++(kernel.modulos_novos e bundle_sha256), dito na saida e em DERIVACAO_v408.json (`esp_sintetico`); o ESPERADOS real e' o que vale e e' conferido na corrida seguinte. Escreve DERIVACAO_v408.json. uso: python -I -B -X utf8 conferir_instalar_rito_v408.py"""
+@@ -11 +12 @@
+-import delta_v407 as DL  # noqa: E402
++import delta_v408 as DL  # noqa: E402
+@@ -13,2 +14,2 @@
+-INS, REV, RITO = rd("instalar_v407.py"), rd("reverter_v407.py"), rd("rito_v407.sh")
+-ESPP = os.path.join(HERE, "ESPERADOS_v407.json")
++INS, REV, RITO = rd("instalar_v408.py"), rd("reverter_v408.py"), rd("rito_v408.sh")
++ESPP = os.path.join(HERE, "ESPERADOS_v408.json")
+@@ -26,2 +27,2 @@
+-_DEC_NOVAS = sorted(set(DL.DECISOES) - set(DL.D6.DECISOES), key=lambda k_: int(k_[1:]))   # as decisoes que a v407 acrescenta (D41..D47), lidas de DL
+-_ERR_NOVAS = [e_.split(" --")[0] for e_ in DL.ERRATAS_V407]   # as erratas da v407 (E18..E20), lidas de DL
++_DEC_NOVAS = sorted(set(DL.DECISOES) - set(DL.D6.DECISOES), key=lambda k_: int(k_[1:]))   # as decisoes que a v408 acrescenta (D41..D47), lidas de DL
++_ERR_NOVAS = [e_.split(" --")[0] for e_ in DL.ERRATAS_V408]   # as erratas da v408 (E18..E20), lidas de DL
+@@ -45,6 +46,6 @@
+-exige("instalar_v407.py", INS, ["PINO_RECIBO_PRE_SELO_v407.json", "utilizavel_como_recibo_pre_selo_do_B_n", "kernel_modulos_novos_v407.json", "NOVOS_V407", "modulos_novos_v407", 'ESP["kernel"]["modulos_novos"]', 'CM["kernel"]["modulos_novos"]', "um_absoluto_selo_acom.json", "pilar_anterior_v406_",
+-                              "APLICADO_AO_CANONICO_%s.json", "ESPERADOS_v407.json", "CANDIDATO_v407.json", "um_v407_candidato.py", "canonical_contracts.json", 'PINO["versao_nos"] == "v406"', "base_v406", '"Testemunho"', "base_v406_sha16", 'ESP["bundle_sha256"]', "PonteDaMassa", "PontoZeroDoPsion", "CanonicalFullTGLWitnessR1",
+-                              'x_.startswith("TGLExt/") and x_.count("/") == 1', "raiz_v406_sha16", "audit_v406_sha16", "FalsidadeDaInercia", "PonteDaEscalaDual", "QuedaSemGeometria", "EsperancaCondicional", "ProjecaoTransversalDaMeiaNat", "Jo8v32", "tgl_kernel_proof_manifest.json", '"version") == "v406"'],
+-      ["PINO_RECIBO_PRE_SELO_v406", "kernel_modulos_novos_v406", "NOVOS_V406", "um_v406_candidato", 'ESP["pedras_sha256"]', 'PINO["versao_nos"] == "v405"', 'PINO["versao_nos"] == "v399"', 'PINO["versao_nos"] == "v398"', "base_v398", "Testemunho [nome provisorio]", "[nomes provisorios; o primeiro e' o do Codex, ORDEM 025]",
+-       'x_.startswith("TGLExt/F1Fecho394/")', "== 301", "o bundle de 301", "301 modulos novos", "pilar_anterior_v405", "[A ADAPTAR v407]"])
+-exige("reverter_v407.py", REV, ["APLICADO_AO_CANONICO_*.json", "backup ausente ou alterado", "quarentena_bundle_", "tentativa_v407_rito_falhou_", "RECIBO_REVERSAO_", "rodada_v407_stdout.txt", "ESPERADOS_v407.json", "um_absoluto_selo_acom.json", "tgl_kernel_proof_manifest.json", "modulos_novos_v407", "ESPERADOS_v406.json", "bundle_sha256",
++exige("instalar_v408.py", INS, ["PINO_RECIBO_PRE_SELO_v408.json", "utilizavel_como_recibo_pre_selo_do_B_n", "kernel_modulos_novos_v408.json", "NOVOS_V408", "modulos_novos_v408", 'ESP["kernel"]["modulos_novos"]', 'CM["kernel"]["modulos_novos"]', "um_absoluto_selo_acom.json", "pilar_anterior_v407_",
++                              "APLICADO_AO_CANONICO_%s.json", "ESPERADOS_v408.json", "CANDIDATO_v408.json", "um_v408_candidato.py", "canonical_contracts.json", 'PINO["versao_nos"] == "v407"', "base_v407", '"Testemunho"', "base_v407_sha16", 'ESP["bundle_sha256"]', "PonteDaMassa", "PontoZeroDoPsion", "CanonicalFullTGLWitnessR1",
++                              'x_.startswith("TGLExt/") and x_.count("/") == 1', "raiz_v407_sha16", "audit_v407_sha16", "FalsidadeDaInercia", "PonteDaEscalaDual", "QuedaSemGeometria", "EsperancaCondicional", "ProjecaoTransversalDaMeiaNat", "Jo8v32", "tgl_kernel_proof_manifest.json", '"version") == "v407"'],
++      ["PINO_RECIBO_PRE_SELO_v407", "kernel_modulos_novos_v407", "NOVOS_V407", "um_v407_candidato", 'ESP["pedras_sha256"]', 'PINO["versao_nos"] == "v405"', 'PINO["versao_nos"] == "v399"', 'PINO["versao_nos"] == "v398"', "base_v398", "Testemunho [nome provisorio]", "[nomes provisorios; o primeiro e' o do Codex, ORDEM 025]",
++       'x_.startswith("TGLExt/F1Fecho394/")', "== 301", "o bundle de 301", "301 modulos novos", "pilar_anterior_v405", "[A ADAPTAR v408]"])
++exige("reverter_v408.py", REV, ["APLICADO_AO_CANONICO_*.json", "backup ausente ou alterado", "quarentena_bundle_", "tentativa_v408_rito_falhou_", "RECIBO_REVERSAO_", "rodada_v408_stdout.txt", "ESPERADOS_v408.json", "um_absoluto_selo_acom.json", "tgl_kernel_proof_manifest.json", "modulos_novos_v408", "ESPERADOS_v407.json", "bundle_sha256",
+@@ -52,2 +53,2 @@
+-      ["tentativa_v406_rito_falhou_", "modulos_novos_v406", "rodada_v406_stdout", "pedras_sha256", "quarentena_pedras_", 'x_.startswith("TGLExt/F1Fecho394/")', "== 301", "o bundle de 301", "301 modulos novos", "[A ADAPTAR v407]"])
+-exige("rito_v407.sh", RITO, ["echo 1 | python um.py", "trap 'religar; rm -f", "TEMPO ESPERADO (v407", "kernel_modulos_novos_v407.json", "rodada_v407_stdout.txt", ".rito_v407.pid", "ESPERADOS_v407.json", ".servidor_parado_pelo_rito", "cadeia_de_selo/v406\" \"/c/IALD/Central de Patentes/work/cadeia_de_selo/v407",
++      ["tentativa_v407_rito_falhou_", "modulos_novos_v407", "rodada_v407_stdout", "pedras_sha256", "quarentena_pedras_", 'x_.startswith("TGLExt/F1Fecho394/")', "== 301", "o bundle de 301", "301 modulos novos", "[A ADAPTAR v408]"])
++exige("rito_v408.sh", RITO, ["echo 1 | python um.py", "trap 'religar; rm -f", "TEMPO ESPERADO (v408", "kernel_modulos_novos_v408.json", "rodada_v408_stdout.txt", ".rito_v408.pid", "ESPERADOS_v408.json", ".servidor_parado_pelo_rito", "cadeia_de_selo/v407\" \"/c/IALD/Central de Patentes/work/cadeia_de_selo/v408",
+@@ -57 +58 @@
+-      ["rodada_v406_stdout", ".rito_v406.pid", "rito_v406", "TGLExt/Testemunho, nome PROVISORIO", "do Codex, ORDEM 025", "OS OITO registros com FUNCAO", "8 modulos novos de kernel", "301 modulos novos", "TGLExt/F1Fecho394", "CanonicalFullTGLWitnessR1", "dois imports", "k406c", "1736 s", "2016 s", "15986 s", "[A ADAPTAR v407]"])
++      ["rodada_v407_stdout", ".rito_v407.pid", "rito_v407", "TGLExt/Testemunho, nome PROVISORIO", "do Codex, ORDEM 025", "OS OITO registros com FUNCAO", "8 modulos novos de kernel", "301 modulos novos", "TGLExt/F1Fecho394", "CanonicalFullTGLWitnessR1", "dois imports", "k407c", "1736 s", "2016 s", "15986 s", "[A ADAPTAR v408]"])
+@@ -59 +60 @@
+-for f in ("instalar_v407.py", "reverter_v407.py"):
++for f in ("instalar_v408.py", "reverter_v408.py"):
+@@ -64,2 +65,2 @@
+-r = subprocess.run(["sh", "-n", os.path.join(HERE, "rito_v407.sh")], capture_output=True, text=True)
+-sint["rito_v407.sh"] = "ok" if r.returncode == 0 else "rc=%d %s" % (r.returncode, r.stderr[:200])
++r = subprocess.run(["sh", "-n", os.path.join(HERE, "rito_v408.sh")], capture_output=True, text=True)
++sint["rito_v408.sh"] = "ok" if r.returncode == 0 else "rc=%d %s" % (r.returncode, r.stderr[:200])
+@@ -67 +68 @@
+-    falhas.append("rito_v407.sh: sh -n rc=%d" % r.returncode)
++    falhas.append("rito_v408.sh: sh -n rc=%d" % r.returncode)
+@@ -69 +70 @@
+-    sint["rito_v407.sh"] = "ok (sh -n rc=0)"
++    sint["rito_v408.sh"] = "ok (sh -n rc=0)"
+@@ -71 +72 @@
+-NJ = json.load(open(os.path.join(HERE, "kernel_modulos_novos_v407.json"), encoding="utf-8"))
++NJ = json.load(open(os.path.join(HERE, "kernel_modulos_novos_v408.json"), encoding="utf-8"))
+@@ -83 +84 @@
+-    return ns["_N"], ns["NOVOS_V407"]
++    return ns["_N"], ns["NOVOS_V408"]
+@@ -110,2 +111,2 @@
+-# a raiz e o Audit do Nos tem de ser os da v406 selada: a asserta do instalador e' EXTRAIDA e executada isolada contra os arquivos reais (passa) e contra um hash trocado (recusa)
+-CMJ = json.load(open(os.path.join(HERE, "CANDIDATO_v407.json"), encoding="utf-8"))
++# a raiz e o Audit do Nos tem de ser os da v407 selada: a asserta do instalador e' EXTRAIDA e executada isolada contra os arquivos reais (passa) e contra um hash trocado (recusa)
++CMJ = json.load(open(os.path.join(HERE, "CANDIDATO_v408.json"), encoding="utf-8"))
+@@ -126 +127 @@
+-_ruim = copy.deepcopy(CMJ); _ruim["kernel"]["raiz_v406_sha16"] = "0" * 16
++_ruim = copy.deepcopy(CMJ); _ruim["kernel"]["raiz_v407_sha16"] = "0" * 16
+@@ -132 +133 @@
+-inv["raiz_e_audit_do_Nos_sao_os_da_v406"] = {"passa_com_os_hashes_do_candidato": kn_passa, "recusa_com_hash_trocado": kn_recusa}
++inv["raiz_e_audit_do_Nos_sao_os_da_v407"] = {"passa_com_os_hashes_do_candidato": kn_passa, "recusa_com_hash_trocado": kn_recusa}
+@@ -136 +137 @@
+-rev_idx = re.findall(r"_lista\[0\]|NOVOS_V407\[0\]|nov\[0\]", REV) + re.findall(r"NOVOS_V407\[0\]|_NJ\[\"novos\"\]\[0\]", INS)
++rev_idx = re.findall(r"_lista\[0\]|NOVOS_V408\[0\]|nov\[0\]", REV) + re.findall(r"NOVOS_V408\[0\]|_NJ\[\"novos\"\]\[0\]", INS)
+@@ -143 +144 @@
+-mod_aplic = ast.parse("_aplic = AP.get('modulos_novos_v407') or {}").body[0]
++mod_aplic = ast.parse("_aplic = AP.get('modulos_novos_v408') or {}").body[0]
+@@ -147 +148 @@
+-    ns_rev = {"AP": {"modulos_novos_v407": {"lista": list(lista_ap)}}, "esp": {"bundle_sha256": dict(pedras), "kernel": {"modulos_novos": len(pedras)}}}
++    ns_rev = {"AP": {"modulos_novos_v408": {"lista": list(lista_ap)}}, "esp": {"bundle_sha256": dict(pedras), "kernel": {"modulos_novos": len(pedras)}}}
+@@ -170 +171 @@
+-dv = {"contrato": "DERIVACAO_v407", "executado": False, "arquivos": {f: hashlib.sha256(open(os.path.join(HERE, f), "rb").read()).hexdigest() for f in ("instalar_v407.py", "reverter_v407.py", "rito_v407.sh")}, "invariantes": inv, "sintaxe": sint, "falhas": falhas,
++dv = {"contrato": "DERIVACAO_v408", "executado": False, "arquivos": {f: hashlib.sha256(open(os.path.join(HERE, f), "rb").read()).hexdigest() for f in ("instalar_v408.py", "reverter_v408.py", "rito_v408.sh")}, "invariantes": inv, "sintaxe": sint, "falhas": falhas,
+@@ -172,2 +173,2 @@
+-      "nota": "[REAL] conferido por script SEM executar o instalador, o reverter nem o rito; o trecho da lista foi EXTRAIDO por AST e executado isolado" + ("; ESPERADOS_v407.json AINDA NAO EXISTIA: o trecho foi exercitado contra um ESPERADOS SINTETICO (derivado de DL.BUNDLE_POR_REL); refazer depois do gerar_esperados" if ESP_REAL is None else "")}
+-json.dump(dv, open(os.path.join(HERE, "DERIVACAO_v407.json"), "w", encoding="utf-8"), ensure_ascii=False, indent=1)
++      "nota": "[REAL] conferido por script SEM executar o instalador, o reverter nem o rito; o trecho da lista foi EXTRAIDO por AST e executado isolado" + ("; ESPERADOS_v408.json AINDA NAO EXISTIA: o trecho foi exercitado contra um ESPERADOS SINTETICO (derivado de DL.BUNDLE_POR_REL); refazer depois do gerar_esperados" if ESP_REAL is None else "")}
++json.dump(dv, open(os.path.join(HERE, "DERIVACAO_v408.json"), "w", encoding="utf-8"), ensure_ascii=False, indent=1)

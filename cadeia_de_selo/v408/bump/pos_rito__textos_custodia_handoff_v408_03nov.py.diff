@@ -1,0 +1,85 @@
+--- v407/pos_rito/textos_custodia_handoff_v407_03nov.py
++++ v408/pos_rito/textos_custodia_handoff_v408_03nov.py
+@@ -2,6 +2,7 @@
+-# [ADAPTADO v407, 03/11/2026, claude-prep-v407 / ajudante B1a] sobre a subida mecanica da v406 FINAL: os sete textos e os numeros sao os da v407 (O PSION, O CANTO E O PAR); a infraestrutura (guardas, acrescimo com backup de bytes, re-leitura pelo parser do G1, recibo) e' a da v406. Nao rodou; a gerencia revisa antes (nao e' versao selada).
+-"""03/11/2026, gerencia c1: o orquestrador pode parar em S7 (G1 planejar --seco, rc 20) porque o HANDOFF_v407_CUSTODIA.md nao traz os sete
+-marcadores opcionais da prosa da custodia (TITULO_EN, ENTROU_EN, KERNEL_LEITURA_EN, ABERTOS_EN, ARCO_EN, ARCO_PT, COMMIT); na v406 a gerencia
+-os anexou a mao no fim do handoff («Textos da custodia (gerencia c1, ...)»). Este script faz o mesmo para a v407, SEM molde factual:
+-  1. le os numeros do core selado do Nos (psion_canto_v407, kh_n1_cobertura_v407, cunhagens_v407; fechamento_v406 herdado), do selo e do diario, e CONFERE cada numero citado nos textos contra ESPERADOS_v407.json e delta_v407;
+-  2. passa os sete textos pela guarda de frases da v407 (guarda_frases_v407.violacoes: herda a P18 e as regras da v406 e acrescenta as do par na face de Fock, de Omega = Phi+ e da ponte Bell-TT) e pelo portao do G1
++# [A ADAPTAR v408] SUBIDA MECANICA DE ROTULO (v407->v408) do molde v407/pos_rito/textos_custodia_handoff_v407_03nov.py; o CORPO e' o da v407 (bundle de 9 modulos, psion_canto_v407, a chave do lema lida do kernel); nada rodou; ver bump/pos_rito__textos_custodia_handoff_v408_03nov.py.diff
++# [ADAPTADO v408, 03/11/2026, claude-prep-v408 / ajudante B1a] sobre a subida mecanica da v407 FINAL: os sete textos e os numeros sao os da v408 (O PSION, O CANTO E O PAR); a infraestrutura (guardas, acrescimo com backup de bytes, re-leitura pelo parser do G1, recibo) e' a da v407. Nao rodou; a gerencia revisa antes (nao e' versao selada).
++"""03/11/2026, gerencia c1: o orquestrador pode parar em S7 (G1 planejar --seco, rc 20) porque o HANDOFF_v408_CUSTODIA.md nao traz os sete
++marcadores opcionais da prosa da custodia (TITULO_EN, ENTROU_EN, KERNEL_LEITURA_EN, ABERTOS_EN, ARCO_EN, ARCO_PT, COMMIT); na v407 a gerencia
++os anexou a mao no fim do handoff («Textos da custodia (gerencia c1, ...)»). Este script faz o mesmo para a v408, SEM molde factual:
++  1. le os numeros do core selado do Nos (psion_canto_v407, kh_n1_cobertura_v407, cunhagens_v407; fechamento_v406 herdado), do selo e do diario, e CONFERE cada numero citado nos textos contra ESPERADOS_v408.json e delta_v408;
++  2. passa os sete textos pela guarda de frases da v408 (guarda_frases_v408.violacoes: herda a P18 e as regras da v407 e acrescenta as do par na face de Fock, de Omega = Phi+ e da ponte Bell-TT) e pelo portao do G1
+@@ -12,3 +13,3 @@
+-  5. grava o recibo RECIBO_TEXTOS_CUSTODIA_HANDOFF_v407.json ao lado.
+-Falha em qualquer passo = rc 1 e NADA anexado. O handoff nao e artefato selado (o manifesto de incorporacao nao pina o hash dele; a v406 teve o mesmo
+-acrescimo depois do fechar); a mudanca de hash vai anotada no Mapa de Rotas pela gerencia. A revisao de terceiro (Sonnet, D47) e' lida de revisao_terceiro\\REVISAO_TERCEIRO_v407.json
++  5. grava o recibo RECIBO_TEXTOS_CUSTODIA_HANDOFF_v408.json ao lado.
++Falha em qualquer passo = rc 1 e NADA anexado. O handoff nao e artefato selado (o manifesto de incorporacao nao pina o hash dele; a v407 teve o mesmo
++acrescimo depois do fechar); a mudanca de hash vai anotada no Mapa de Rotas pela gerencia. A revisao de terceiro (Sonnet, D47) e' lida de revisao_terceiro\\REVISAO_TERCEIRO_v408.json
+@@ -22 +23 @@
+-PKG = CEN / "work" / "cadeia_de_selo" / "v407"
++PKG = CEN / "work" / "cadeia_de_selo" / "v408"
+@@ -24 +25 @@
+-V = "v407"
++V = "v408"
+@@ -28,2 +29,2 @@
+-import guarda_frases_v407 as GF  # noqa: E402
+-import delta_v407 as DL  # noqa: E402
++import guarda_frases_v408 as GF  # noqa: E402
++import delta_v408 as DL  # noqa: E402
+@@ -37 +38 @@
+-ESP = json.loads((PKG / "ESPERADOS_v407.json").read_text(encoding="utf-8"))
++ESP = json.loads((PKG / "ESPERADOS_v408.json").read_text(encoding="utf-8"))
+@@ -43,2 +44,2 @@
+-mcab = NOSMOD.RE_CAB.search(diario[diario.find("**v407 SELADA") - 80:])
+-assert mcab and mcab.group("v") == V and mcab.group("pin") == PIN, "cabecalho «v407 SELADA» do diario nao lido"
++mcab = NOSMOD.RE_CAB.search(diario[diario.find("**v408 SELADA") - 80:])
++assert mcab and mcab.group("v") == V and mcab.group("pin") == PIN, "cabecalho «v408 SELADA» do diario nao lido"
+@@ -51,2 +52,2 @@
+-assert N["const"] == ESP["cobertura_kh_n1"]["decl"] and N["teor"] == ESP["cobertura_kh_n1"]["thm"] and [ESC_A, ESC_B] == ESP["escada_v406_e_v407"], N
+-assert N["falas"] == len(DL.VERBATIM_ORIGEM_V407) == len(ESP["cunhagens"]), N
++assert N["const"] == ESP["cobertura_kh_n1"]["decl"] and N["teor"] == ESP["cobertura_kh_n1"]["thm"] and [ESC_A, ESC_B] == ESP["escada_v407_e_v408"], N
++assert N["falas"] == len(DL.VERBATIM_ORIGEM_V408) == len(ESP["cunhagens"]), N
+@@ -55 +56 @@
+-assert ch == ESP["chaves_v407_esperadas"], "as chaves do registro != ESPERADOS"
++assert ch == ESP["chaves_v408_esperadas"], "as chaves do registro != ESPERADOS"
+@@ -60 +61 @@
+-revp = PKG / "revisao_terceiro" / "REVISAO_TERCEIRO_v407.json"
++revp = PKG / "revisao_terceiro" / "REVISAO_TERCEIRO_v408.json"
+@@ -73 +74 @@
+-    "v407, the psion, the corner and the pair. %(modulos)d new kernel modules in `TGLExt` (`PsionCanto`, `Par` and the seven stones of 02/11, every name given or ratified by the "
++    "v408, the psion, the corner and the pair. %(modulos)d new kernel modules in `TGLExt` (`PsionCanto`, `Par` and the seven stones of 02/11, every name given or ratified by the "
+@@ -75 +76 @@
+-    "`PsionCanto` proves, for every Fock certificate and without hypothesis on the inhabitant `physicalFockCertificate` of v406, that the Jones reading of the flow of the light, "
++    "`PsionCanto` proves, for every Fock certificate and without hypothesis on the inhabitant `physicalFockCertificate` of v407, that the Jones reading of the flow of the light, "
+@@ -78 +79 @@
+-    "literal False from v396 to v406, is now READ from the kernel of the rite itself, with the errata E18 beside; the link is one of structure, not of vectors (the Fock vacuum and "
++    "literal False from v396 to v407, is now READ from the kernel of the rite itself, with the errata E18 beside; the link is one of structure, not of vectors (the Fock vacuum and "
+@@ -101 +102 @@
+-    "The custody of v407 (complete round): the psion, the corner and the pair. %(modulos)d new kernel modules (PsionCanto, Par and seven stones of 02/11 with names given or ratified "
++    "The custody of v408 (complete round): the psion, the corner and the pair. %(modulos)d new kernel modules (PsionCanto, Par and seven stones of 02/11 with names given or ratified "
+@@ -107 +108 @@
+-    "A custódia da v407 (rodada completa): o psíon, o canto e o par. %(modulos)d módulos novos no kernel (PsionCanto, Par e sete pedras de 02/11, com nomes dados ou ratificados "
++    "A custódia da v408 (rodada completa): o psíon, o canto e o par. %(modulos)d módulos novos no kernel (PsionCanto, Par e sete pedras de 02/11, com nomes dados ou ratificados "
+@@ -135 +136 @@
+-    guardas[ident] = {"guarda_frases_v407": v1, "portao_g1": v2, "forma": v3, "n_chars": len(t)}
++    guardas[ident] = {"guarda_frases_v408": v1, "portao_g1": v2, "forma": v3, "n_chars": len(t)}
+@@ -142 +143 @@
+-print("guardas: os sete textos passaram (guarda de frases v407, portao do G1, forma do ARCO/COMMIT, sem 4,44)")
++print("guardas: os sete textos passaram (guarda de frases v408, portao do G1, forma do ARCO/COMMIT, sem 4,44)")
+@@ -146 +147 @@
+-       "`pos_rito\\textos_custodia_handoff_v407_03nov.py`, que os conferiu contra ESPERADOS e passou os textos pela guarda de frases da v407 e pelo portão do G1 antes de os anexar; "
++       "`pos_rito\\textos_custodia_handoff_v408_03nov.py`, que os conferiu contra ESPERADOS e passou os textos pela guarda de frases da v408 e pelo portão do G1 antes de os anexar; "
+@@ -170 +171 @@
+-       "motivo": "S7 do orquestrador pode parar em rc 20: faltam os sete marcadores opcionais da prosa da custodia (sem eles, molde factual ou --aceitar-molde); molde da v406: textos da gerencia no fim do handoff",
++       "motivo": "S7 do orquestrador pode parar em rc 20: faltam os sete marcadores opcionais da prosa da custodia (sem eles, molde factual ou --aceitar-molde); molde da v407: textos da gerencia no fim do handoff",
+@@ -172,2 +173,2 @@
+-(HERE / "RECIBO_TEXTOS_CUSTODIA_HANDOFF_v407.json").write_text(json.dumps(rec, ensure_ascii=False, indent=1), encoding="utf-8")
+-print("recibo:", HERE / "RECIBO_TEXTOS_CUSTODIA_HANDOFF_v407.json")
++(HERE / "RECIBO_TEXTOS_CUSTODIA_HANDOFF_v408.json").write_text(json.dumps(rec, ensure_ascii=False, indent=1), encoding="utf-8")
++print("recibo:", HERE / "RECIBO_TEXTOS_CUSTODIA_HANDOFF_v408.json")

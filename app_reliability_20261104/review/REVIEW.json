@@ -1,0 +1,120 @@
+{
+  "status": "CHANGES_REQUIRED",
+  "at": "2026-11-04T22:41:46.100378+00:00",
+  "reviewer": "independent-science-sidecar",
+  "mission_reference": "work\\app_reliability_20261104\\SESSION_REFERENCE.json",
+  "requirement": "recovery",
+  "high_count": 0,
+  "medium_count": 2,
+  "findings": [
+    {
+      "id": "R1",
+      "severity": "MEDIUM",
+      "blocking": true,
+      "title": "Erro operacional ainda emitido como resposta do assistente",
+      "sources": [
+        "server_functions.py:agent_loop erro_stream",
+        "server_functions.py:_chat_externo gerar direto",
+        "iald_auto_recovery.py:Recovery.wrap replacement.response"
+      ],
+      "reproductions": [
+        "test_agent_500_error_must_not_be_assistant",
+        "test_direct_500_error_must_not_be_assistant",
+        "test_direct_timeout_must_not_be_assistant",
+        "test_replacement_error_frame_must_not_be_assistant"
+      ],
+      "evidence": "500 em agente/direto e timeout direto geram choices.delta.content, com um envio e nenhuma reselecao. Replacement sintetico com aviso falha_motor seguido de delta e repassado pelo wrapper.",
+      "scope": "Os tres primeiros exercitam AST real; replacement_failure e um contrato injetado na fronteira, nao uma chamada real do adaptador MiMo. O wrapper nao impede a propagacao desse envelope.",
+      "correction": "Nos produtores de erro, emitir aviso operacional e termino sem choices.delta.content. Aplicar tambem a falha do executor substituto; preservar texto genuino ja recebido e custodia. Nao remover texto do modelo por heuristica lexical, nem introduzir retry em 500/timeout/fallbackfailed. Validar o adaptador substituto real por AST com transporte falso."
+    },
+    {
+      "id": "R2",
+      "severity": "MEDIUM",
+      "blocking": true,
+      "title": "Mudanca para manual durante a segunda decisao JEV nao bloqueia despacho",
+      "sources": [
+        "server_functions.py:_chat_automatico_autorizado",
+        "server_functions.py:_dispatch_guard"
+      ],
+      "reproductions": [
+        "test_manual_switch_during_second_jev_must_block_dispatch"
+      ],
+      "evidence": "on_reselect muda current_motor de automatico para openai; ocorre 1 despacho substituto e RESULTADO. A verificacao de AUTO ocorre antes de choose; a guarda de despacho verifica direitos/consentimentos, mas nao o modo atual.",
+      "correction": "Revalidar modo AUTO apos choose e imediatamente na guarda do envio substituto, junto a identidade/contexto e direitos. Se alterado, encerrar com aviso operacional, liberar reserva sem envio e nao iniciar terceira selecao. Acrescentar teste para alteracao apos choose/antes do transporte."
+    }
+  ],
+  "tests": {
+    "author": {
+      "tests": 31,
+      "failures": 0,
+      "errors": 0
+    },
+    "independent": {
+      "tests": 9,
+      "failures": 5,
+      "errors": 0
+    }
+  },
+  "findsourcepins": {
+    "iald_auto_recovery.py": "8bdb4483d5d0d369354629f84038f6134a7c894adae92bd401c467fafff71273",
+    "iald_motores.py": "2e825bc45dee743f550feb9392a44c9b4a35c80b9895e69c1f6bb476eea504d8",
+    "server_functions.py": "d8e569357d5ea4769d68ac101dff58eed50e4fb120ea17ecd01391fee7cb6ee4",
+    "test_recovery.py": "d46fb2cd857263b69526768fa1cfe8af7c6a901f3807ee89522fc1c653f8319d",
+    "build_staging.py": "1ae70516b7591f9f26ae9737b3ef7d3b53ed144d4a745c9d47ab45451a17951a",
+    "iald_web_server.py.patch": "847a85bf082dd5cf8332d621ba0bb50ed8a6c15821f128c06da42169448a676a",
+    "iald_motores.py.patch": "626ecdeaf695c52e9294265a8576f0110c8c311ac2030afdb60d2787bcd00c42",
+    "BASELINE.json": "edb1ae6c6e3a3419f77a17066b10c18017114a9b9fa48898fb206108a2d6dfbd",
+    "MANIFEST.json": "659de4641ccea3dd4e4efc33a16aa2cea1d5a0bd3ba28a3cb4acc701177c33b0"
+  },
+  "source_stability": {
+    "iald_auto_recovery.py": true,
+    "iald_motores.py": true,
+    "server_functions.py": true,
+    "test_recovery.py": true,
+    "build_staging.py": true,
+    "iald_web_server.py.patch": true,
+    "iald_motores.py.patch": true,
+    "BASELINE.json": true,
+    "MANIFEST.json": true
+  },
+  "ast_verification": {
+    "checks": [
+      {
+        "path": "C:\\IALD\\projetos_pyhton\\IALD\\iald_motores.py",
+        "baseline_sha256": "77e1af0d5f7cc6432bab0efd12da4209790916193ad5daa627836df1d6d2f7c3",
+        "patch_applies": true,
+        "ast_fixture_matches": true,
+        "scope": "whole module"
+      },
+      {
+        "path": "C:\\IALD\\projetos_pyhton\\IALD\\iald_web_server.py",
+        "baseline_sha256": "ef771e621eae576895ccc92e40db7782b51037ef8bb2abe09e19eb36f7685fab",
+        "patch_applies": true,
+        "ast_fixture_matches": true,
+        "scope": 10
+      }
+    ],
+    "server_preamble_emitted": false,
+    "server_imported": false,
+    "patched_source_written": false
+  },
+  "passed_scope": [
+    "Recusa HTTP inicial estrita; sem reselecao apos200/partial/tools/usage/timeout nos casos executados",
+    "Mesma wallet/taskscope/memory no harness; SQLite sintetico sem reserva pendente no teste do autor",
+    "Falha de custodia impede recuperacao; identidade do objeto ACOM preservada no harness",
+    "TTL300 e troca de identidade da configuracao; sem estado persistido do circuito",
+    "Liquidacao/finalizador falho nao causa selecao substituta nos testes"
+  ],
+  "limits": [
+    "Offline com fronteiras injetadas, nao teste live de JEV/ACOM/provedor ou servidor residente",
+    "Sem importacao do web_server, sem emissao do preambulo legado",
+    "Sem rede, edicao de producao ou alteracao ACOM; escritos somente abaixo de review"
+  ],
+  "evidence_pins": {
+    "TEST_RESULT.json": "3c7c05240034b8843f460a0f3c85b7cd42e52a5eac7d66ebab7c2da3691ff1a9",
+    "TEST_LOG.txt": "362a85d88d72ff272f6de49b4b475777f36873ab30f47d529a21a5448acd939c",
+    "AST_VERIFICATION.json": "8b610dd5449fcc8353ee59258bfe212701dee8e133863a65bb06ec010c58eb6c",
+    "run_review.py": "d2b31cc612e0e7de4dc772dbe7e3d3005250d2c3c0f9ad1282cfb8364d2224b0",
+    "check_real_ast.py": "e7a95483e4c80a10034408d0b580afacd642d69d0dfd26d1bcc7203ebc818234"
+  }
+}

@@ -1,0 +1,70 @@
+ENTREGA R2 EM STAGING — candidato à segunda revisão independente, sem implantação.
+
+Escopo
+1. Novo iald_auto_recovery.py; alterações em iald_motores.py e iald_web_server.py.
+2. Apenas AUTO público textual, cuja primeira chamada OpenAI recebeu HTTP com
+   envelope JSON exclusivamente de erro e código exato permitido. Não interpreta
+   mensagens de erro, saída do modelo ou eventos SSE como autorização de reenvio.
+3. expired_secret_key/invalid_api_key em401/403; model_access_denied em403;
+   model_not_found em404; insufficient_quota/billing_hard_limit_reached em429.
+   Somente expired_secret_key foi confirmado no probe real do pai. Demais códigos
+   têm cobertura sintética; códigos de outros provedores não foram inferidos.
+4. A custódia recebe o HTTP completo antes do sinal interno; o mesmo pipeline
+   liquida a reserva recusada em zero e encerra o transporte. Só depois volta ao
+   JEV uma vez, excluindo OpenAI. Falha de custódia/liquidação impede recuperação.
+5. Preserva inscrição/histórico de entrada, job, ACOM, carteira, scope e control.
+   Refaz seleção/admissão, consentimentos/direitos/orçamento; recusa mudança de
+   contrato/fonte científica, carteira, binding de memória ou escolha manual.
+   bind_scope refaz o plano sobre as capacidades originais do mesmo scope.
+6. HTTP200 sela a tentativa, mesmo vazio. Timeout,5xx,SSE parcial,usage,ferramenta,
+   segunda chamada ao mesmo provedor e erros desconhecidos nunca autorizam retry.
+7. Circuito de300s, apenas AUTO, por identidade da configuração carregada;
+   renovação da configuração por substituição/início de processo o invalida.
+   Não lê nem guarda chave. Renovar in-place pode exigir até300s. Não é persistente
+   nem coordena vários processos. Requisições concorrentes já selecionadas não
+   são retroativamente canceladas. Não altera seleção manual de Luiz/privado MiMo.
+
+Arquivos e aplicação pelo pai
+- BASELINE.json: hashes originais e esperados; MANIFEST.json: dependências,
+  artefatos, probe do pai, status científico e verificação final dos originais.
+- iald_motores.py é cópia modificada. Servidor é fornecido em diff e funções AST
+  para testes: não se copiou seu preâmbulo com segredo legado. Nunca executar
+  server_functions.py como servidor; fixture sem imports/estado global.
+- build_staging.py só grava nesta pasta. preserve_unchanged_bytes conserva bytes
+  das linhas não alteradas, inclusive CRLF/LF mistos. server_patch(textoLF) gera
+  a modificação em memória; comparar hash com BASELINE antes de instalar.
+- Revisor independente deve revisar os2diffs+módulo, compatibilidade de kwargs,
+  reserva/cleanup e scopes. Depois, pai confere baseline/CAS, faz backup imediato
+  de bytes e aplica os3destinos numa única entrega. Nunca instalar só1dos2patches.
+- Renovação da chave é tarefa independente do pai. Nenhum segredo é necessário
+  para estes testes. Reinício/reload controlado e ensaio autenticado ficam com
+  o pai depois da revisão; não iniciar chamada para repetir o401 histórico.
+- Sem recursos novos de cliente/mobile; nenhuma compilação ou distribuição aqui.
+
+Validação e limites
+- test_recovery.py: funções reais da rota AUTO, agent_loop, gerar direto/agente,
+  transporte, custódia Response e contas isoladas por AST; APIs/conexões injetadas.
+  Carteira/SpendingGuard/Guard reais em SQLite temporário: hold recusado0 e uma
+  cobrança sintética0,02 na mesma tarefa, sem pendências. Não é gasto real.
+- Rede bloqueada no processo de teste, servidor nunca importado; memória/quadro
+  só lidos. TEST_RESULT.json/TEST_LOG.txt são o resultado final.
+- Dois negativos de fixture preservados: comparação str/float e fechamento de
+  conexão SQLite do teste. Corrigidos nos testes; nenhum deles era falha live.
+- NÃO é teste end-to-end de web_server inteiro, middleware/selo/cliente/mobile;
+  não comprova disponibilidade dos provedores, reparo da chave ou custo real.
+- Recuperação a partir de Kimi/MiMo/DeepSeek/Claude e anexos NÃO implementada.
+  Seus transportes exigem provas próprias de recusa e testes antes de ampliar.
+- Logs de Evaluation ainda podem classificar tentativa recusada como interrupted;
+  atividade HTTP recebe o recibo RECEIVED/401 e o novo JEV recebe novo routing_id.
+  Não há novo esquema/contrato de observabilidade ou promoção científica.
+- R2: erros operacionais tipados no AUTO encerram com aviso e[DONE], sem
+  delta.content sintético. Frames comuns e texto real já recebido são preservados;
+  palavras como401/expired_secret_key no texto do modelo não viram controle.
+  Campos estruturados de consentimento/cota dos avisos permanecem.
+- R2: _dispatch_guard confere o modoAUTO imediatamente antes de cada envio,
+  incluindo após a segunda decisãoJEV. Trocar para manual bloqueia o envio.
+- HTTP500/timeout não ganharam retry; falha da alternativa não dispara3a seleção.
+  Os9probes deSocrates foram reexecutados PELO AUTOR emREVIEW_PROBES_R2.json;
+  isso não substitui a segunda revisão independente. R1 preservado emR1/.
+- Loader da chave nova NÃO incluído. Pai adicionará patch separado sobre
+  iald_motores.py após revisarR2; qualquer integração muda os pinos finais.

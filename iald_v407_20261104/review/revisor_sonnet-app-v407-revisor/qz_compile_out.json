@@ -1,0 +1,355 @@
+{
+ "findings": [
+  {
+   "severity": "BAIXO",
+   "id": "B1",
+   "text": "Cobertura do escopo medido (Q9-iv): 19 candidatos a estado ou cliente existem em C:\\IALD\\projetos_pyhton\\IALD e ficam FORA da medição de transaction.py: vínculo do dono (owner_private\\apple, DPAPI), privacidade/consentimento do chat (owner_private\\chat_privacy), saldos e razões de uso (iald_saldo_claude/openai.json, iald_uso_claude/openai.json), pedidos de acesso (iald_pedidos_acesso.json, iald_access_requests.json, iald_contract_requests.json), atividade e artefatos de tarefa (.iald_runtime\\task_runs, \\task_artifacts), iald_sync_central_estado.json, iald_deadlines.json, iald_memoria.json, e o cliente web de fato servido (app\\, iald_chat.html, sw.js, manifest.json, icons\\; iald-app\\www é o espelho de app\\). A árvore medida como cliente, iald_web\\app, é a reescrita modular abandonada de julho (diz o comentário de tgl_cripto.py; nenhum código de runtime a referencia). O plano NÃO escreve em nenhum desses caminhos (plan_overlap vivo vazio; nenhum destino dentro de qualquer candidato), e a varredura de janela do D4 reescrito continua cobrindo a árvore inteira; por isso BAIXO. Mas o campo 'accounts_modified' será lido como 'contas, carteira e consentimentos intactos' e hoje só diz 'os 120 arquivos medidos'.",
+   "evidence": {
+    "candidates": {
+     "conta_vinculo_do_dono (Apple, DPAPI)": {
+      "files": 38,
+      "measured": false,
+      "plan_writes_inside": false
+     },
+     "consentimento/privacidade do chat": {
+      "files": 15,
+      "measured": false,
+      "plan_writes_inside": false
+     },
+     "carteira_saldo_claude": {
+      "files": 1,
+      "measured": false,
+      "plan_writes_inside": false
+     },
+     "carteira_saldo_openai": {
+      "files": 1,
+      "measured": false,
+      "plan_writes_inside": false
+     },
+     "razao_de_uso_claude": {
+      "files": 1,
+      "measured": false,
+      "plan_writes_inside": false
+     },
+     "razao_de_uso_openai": {
+      "files": 1,
+      "measured": false,
+      "plan_writes_inside": false
+     },
+     "pedidos_de_acesso (contas)": {
+      "files": 1,
+      "measured": false,
+      "plan_writes_inside": false
+     },
+     "access_requests": {
+      "files": 1,
+      "measured": false,
+      "plan_writes_inside": false
+     },
+     "contract_requests": {
+      "files": 1,
+      "measured": false,
+      "plan_writes_inside": false
+     },
+     "atividade/execucoes de tarefa (task_runs)": {
+      "files": 87,
+      "measured": false,
+      "plan_writes_inside": false
+     },
+     "artefatos de tarefa (task_artifacts)": {
+      "files": 63,
+      "measured": false,
+      "plan_writes_inside": false
+     },
+     "estado do sync central": {
+      "files": 1,
+      "measured": false,
+      "plan_writes_inside": false
+     },
+     "prazos": {
+      "files": 1,
+      "measured": false,
+      "plan_writes_inside": false
+     },
+     "memoria do operador": {
+      "files": 1,
+      "measured": false,
+      "plan_writes_inside": false
+     },
+     "cliente web servido (app/)": {
+      "files": 126,
+      "measured": false,
+      "plan_writes_inside": false
+     },
+     "cliente web servido (iald_chat.html)": {
+      "files": 1,
+      "measured": false,
+      "plan_writes_inside": false
+     },
+     "cliente web servido (sw.js)": {
+      "files": 1,
+      "measured": false,
+      "plan_writes_inside": false
+     },
+     "cliente web servido (manifest.json)": {
+      "files": 1,
+      "measured": false,
+      "plan_writes_inside": false
+     },
+     "cliente web servido (icons/)": {
+      "files": 3,
+      "measured": false,
+      "plan_writes_inside": false
+     }
+    },
+    "recomendacao": "acrescentar às tuplas SCOPE_STATE_*/SCOPE_CLIENT_*: owner_private, .iald_runtime\\task_runs, \\task_artifacts, os 4 JSON de saldo/uso, os 3 JSON de pedidos, iald_sync_central_estado.json, app, iald_chat.html, sw.js, manifest.json, icons; trocar iald_web\\app por app. Qualquer mudança em transaction.py muda o transaction_sha256 pinado em review_final.json (novo review_app.py). Enquanto não for feito: ler os três campos como 'dentro do conjunto medido' e manter a varredura de janela do D4."
+   }
+  },
+  {
+   "severity": "BAIXO",
+   "id": "B2",
+   "text": "Q9-ii: nome de arquivo com substituto Unicode solitário (ex.: U+D800) numa árvore medida faz scope_compare levantar UnicodeEncodeError (em _scope_aggregate, .encode('utf-8')). A chamada fica em apply_plan DEPOIS da escrita do plano e fora de qualquer try: a instalação ficaria feita, sem deployment.json (o finally do deploy_controlled ainda reinicia o web). Reproduzido em raiz de brinquedo (RAISED UnicodeEncodeError: 'utf-8' codec can't encode character '\\ud800' in position 129: ). Probabilidade ~0 (o conjunto medido vivo roda sem exceção: scope_compare vivo ok; NTFS aceita o nome, mas o app grava mídia por nome de hash), por isso BAIXO. Mitigação sem tocar no arquivo: rodar scope_snapshot/scope_compare vivos imediatamente antes de pedir o reinício (eu rodei hoje). Correção de uma linha: encode('utf-8', 'surrogatepass') ou try/except em torno da chamada.",
+   "evidence": {
+    "brinquedo": {
+     "created_file_with_lone_surrogate_name": true,
+     "snapshot": "ok",
+     "compare": "RAISED UnicodeEncodeError: 'utf-8' codec can't encode character '\\ud800' in position 129: surrogates not allowed"
+    }
+   }
+  },
+  {
+   "severity": "BAIXO",
+   "id": "B3",
+   "text": "Q3: a folga mínima declarada caiu de 41975 B (v406) para 11856 B (DeepSeek; Kimi 15245, MiMo 11873). Positiva, mas o `shared` cresceu 29323 B e tirar `_v402` poupou só 2721 B (de 27501 para 24780): o bloco aposentado mantém limites/diz/nao_diz e os campos epistêmicos, e `ponte_da_escala_dual_v402` nem compacta (a cápsula pouparia menos de 50 B). A premissa 'sai `_v402`, libera ~27 KB' não se confirmou. Capacidade de conversa estimada antes da recusa visível do runtime (fórmulas de check_window/output_budget; bytes contados como tokens, margem deliberadamente folgada): Kimi 32829 B (v406 62948), MiMo 29457 B (59576), DeepSeek 144000 B (174119). Uma v408 do mesmo porte (+29 KB) já não cabe; retirar `_v403` pouparia ~3 KB, não 31 KB; a alavanca da janela está quase esgotada (o maior bloco é `_v405`, 106216 B no shared).",
+   "evidence": {
+    "bytes_por_sufixo_shared_v407": {
+     "older": 369668,
+     "v401": 16503,
+     "v402": 24780,
+     "v403": 31321,
+     "v404": 25673,
+     "v405": 106216,
+     "v406": 25597,
+     "v407": 21684
+    },
+    "bytes_por_sufixo_shared_v406_instalada": {
+     "older": 368286,
+     "v401": 16600,
+     "v402": 27501,
+     "v403": 31320,
+     "v404": 25670,
+     "v405": 106209,
+     "v406": 25340
+    }
+   }
+  },
+  {
+   "severity": "BAIXO",
+   "id": "B4",
+   "text": "Q5b: o alcance da F1. No haiku55 59 de 59 registros planos de estatuto ≤ 500 B estão literais (+8528 B em 39 tópicos de fonte inalterada). No `shared` e no `sonnet_public` só 27 de 59: a F1 só chega aos tópicos regenerados; os blocos reaproveitados do baseline ficam como na v406 instalada (3 tópicos mudaram, +737 B). A fonte tem 158 registros planos de estatuto > 500 B (129 entre 501 e 1000 B, somando 88861 B); 148 deles (130286 B; o maior, the_fold_through_J/statuses, 6137 B) seguem só por ponteiro no haiku55. Nenhuma folha de qualificador virou só-ponteiro em lugar algum (Q5c global: 0 novas nos 3 pacotes).",
+   "evidence": {
+    "size_buckets": {
+     "<=500": 59,
+     "501-1000": 129,
+     "1001-2000": 23,
+     ">2000": 6
+    },
+    "bytes_by_bucket": {
+     "501-1000": 88861,
+     "1001-2000": 32047,
+     ">2000": 17686
+    },
+    "nested_non_flat_le_500": 6
+   }
+  },
+  {
+   "severity": "INFO",
+   "id": "I1",
+   "text": "Git: a conferência remota (ls-remote) NÃO foi repetida (sem rede). O ref local origin/main, o HEAD local e o commit pinado são o mesmo (bf9017157406); o remoto declarado pelo construtor (sources_verified: remote_checked) e a conferência final da custódia (13 de 13, com 'GitHub raw: um.py = pino') são [DECLARADO]; recomputei os 10 blobs públicos e as URLs no objeto git local."
+  },
+  {
+   "severity": "INFO",
+   "id": "I2",
+   "text": "CUSTODIA_v407_ESTADO.json do construtor está defasado: o plano G1 andou (sha16 12933273a94a2879 para 83669ea38ae74adb; pendentes de 8 para 2: C19, C17C; C21 = esta release, do operador). Direção correta; só o registro do construtor ficou para trás."
+  },
+  {
+   "severity": "INFO",
+   "id": "I3",
+   "text": "Blocos que mudaram contra a v406 instalada (tópicos de fonte inalterada), todos explicados: shared e sonnet_public {'F1_GAIN_ONLY': 2, 'F1_GAIN_AND_REPRESENTATION': 1, 'v402_retired': 3}; haiku55 {'F1_GAIN_ONLY': 39, 'window_shift_v405_haiku55': 11}. 70 tópicos têm fonte alterada no selado v407 (restauram igual ao selado), mais os 3 novos (psion_canto_v407, cunhagens_v407, kh_n1_cobertura_v407). nivel2_rite virou cápsula no shared (a F1 engordou o bloco antes da compactação) e deixou de trazer resultado_sha256 literal (não epistêmico). Os 46 blocos de síntese em prosa (TEXT, não restauráveis por máquina): 42 de fonte inalterada com corpo igual ao da v406 instalada; 4 de fonte alterada (gw_angular_rite, h2_reproduction_result, small_diamond_lattice_v364, d1_camb_v3_pipeline) mudaram só `/runtime_s` (metadado de tempo) e o corpo é idêntico ao instalado."
+  },
+  {
+   "severity": "INFO",
+   "id": "I4",
+   "text": "Contagem de palavras-qualificador no haiku55 caiu (CREDITATION 63 para 58, UNINHABITED 12 para 10, HILBERT 115 para 114) porque os tópicos _v405 saíram da expansão (nomes de teoremas deixam de ser literais); a presença (o critério do briefing) está em todos os prefixos e as chaves de qualificador da janela seguem literais."
+  },
+  {
+   "severity": "INFO",
+   "id": "I5",
+   "text": "Recuperação por nome (Q4): 604 nomes (semente 407407407); 604 de 604 por texto, 603 de 604 pela métrica estrita (a janela cobre a posição da bandeira dentro de kernel_formalization). A única falha estrita, ext_v318_profile026_profile_state_one_kernel_proved, aparece também em external_ladder: os 5 resultados trouxeram a ocorrência de external_ladder (texto achado) e a janela do resultado de kernel_formalization termina 239 caracteres antes da bandeira (o offset do resultado não é a posição da bandeira). Com limit 10 ou 20 a janela certa aparece. Os 4 nomes não-ASCII do catálogo foram recuperados pela consulta literal e pela escapada."
+  },
+  {
+   "severity": "INFO",
+   "id": "I6",
+   "text": "O plano instala um um.py sob canonical_releases\\v407_...\\release (cópia imutável de dado, igual ao plano da v406); nenhum .py de runtime é substituído e runtime_python_changes é 0."
+  },
+  {
+   "severity": "INFO",
+   "id": "I7",
+   "text": "Contagens nativas (6 pedidos, 0 geração, recibo do construtor) não foram repetidas (sem rede, sem chave); conferi pins, orçamento, ausência de contexto do operador e do Atlas privado em cada native_count.json."
+  }
+ ],
+ "numbers": {
+  "pino_um_py_sha16": "833121339e649f71",
+  "commit": "bf9017157406afa6b4dc05c6a9d566129e6a6ee4",
+  "review_final_sha256": "33dd393f24d01f6f2ba7e82f7c20c3371c6eace4abd82f813b383a8f3542a815",
+  "q1": {
+   "checks": 29,
+   "artifacts_recomputed": 36,
+   "public_blobs": 10,
+   "git_refs": {
+    "HEAD": "bf9017157406afa6b4dc05c6a9d566129e6a6ee4",
+    "origin_main_local_ref": "bf9017157406afa6b4dc05c6a9d566129e6a6ee4",
+    "pinned": "bf9017157406afa6b4dc05c6a9d566129e6a6ee4"
+   }
+  },
+  "q2": {
+   "topics": 477,
+   "window": {
+    "n": 30,
+    "by_suffix": {
+     "_v403": 6,
+     "_v404": 5,
+     "_v405": 13,
+     "_v406": 3,
+     "_v407": 3
+    }
+   },
+   "retired": {
+    "_v401": 3,
+    "_v402": 5
+   },
+   "qualifier_keys_checked_shared": 224,
+   "lit3_checked_shared": 114,
+   "unchanged_source_topics": 404,
+   "changed_source_topics": 70,
+   "new_topics": [
+    "psion_canto_v407",
+    "cunhagens_v407",
+    "kh_n1_cobertura_v407"
+   ],
+   "block_changes_vs_v406": {
+    "shared": {
+     "F1_GAIN_ONLY": 2,
+     "F1_GAIN_AND_REPRESENTATION": 1,
+     "v402_retired": 3
+    },
+    "sonnet_public": {
+     "F1_GAIN_ONLY": 2,
+     "F1_GAIN_AND_REPRESENTATION": 1,
+     "v402_retired": 3
+    },
+    "haiku_expanded": {
+     "F1_GAIN_ONLY": 39,
+     "window_shift_v405_haiku55": 11
+    }
+   },
+   "v402_block_bytes": {
+    "installed_v406_shared": 27501,
+    "v407_shared": 24780
+   },
+   "shared_bytes": {
+    "v407": 841658,
+    "installed_v406": 812335
+   }
+  },
+  "q3": {
+   "folga_declarada": {
+    "kimi": 15245,
+    "mimo": 11873,
+    "deepseek": 11856
+   },
+   "folga_v406_declarada": {
+    "kimi": 45364,
+    "mimo": 41992,
+    "deepseek": 41975
+   },
+   "haiku55_remaining_tokens": 173418,
+   "shared_remaining_tokens": 565216,
+   "conversation_capacity_bytes": {
+    "v407:kimi": 32829,
+    "v407:mimo": 29457,
+    "v407:deepseek": 144000,
+    "v406:kimi": 62948,
+    "v406:mimo": 59576,
+    "v406:deepseek": 174119
+   },
+   "min_folga": 11856
+  },
+  "q4": {
+   "catalog_true": 11719,
+   "moved_to_literal_vs_old_rule": 16,
+   "recovery": {
+    "seed": 407407407,
+    "sample": 604,
+    "found_text": 604,
+    "found_in_topic": 603,
+    "first_hit_ok": 394
+   },
+   "non_ascii": 4
+  },
+  "q5": {
+   "flat_status_records_le_500B": 59,
+   "bytes": 17853,
+   "literal_by_package": {
+    "haiku_expanded": 59,
+    "shared": 27,
+    "sonnet_public": 27
+   },
+   "f1_bytes_in_unchanged_source_topics": {
+    "shared": 737,
+    "sonnet_public": 737,
+    "haiku_expanded": 8528
+   },
+   "f1_topics": {
+    "shared": 3,
+    "sonnet_public": 3,
+    "haiku_expanded": 39
+   },
+   "self_test": 11
+  },
+  "q7": {
+   "plan_files": 1782,
+   "under_target": 1774,
+   "elsewhere": 8
+  },
+  "q9": {
+   "fuzz_pairs": 20000,
+   "fuzz_raised": 0,
+   "fuzz_differs_from_oracle": 0,
+   "live_seconds": [
+    0.268,
+    0.242,
+    0.242
+   ],
+   "live_state_files": 120,
+   "live_client_files": 266,
+   "coverage_gaps": 19
+  }
+ },
+ "transparency": [
+  "Q1: três defeitos do MEU script corrigidos depois da primeira execução: conjunto 'safe' do percent-encoding (o construtor usa %28/%29, igual a urllib.parse.quote padrão), candidato de selo (peguei uma cópia arquivada mais funda no git) e a leitura de 'ok' da conferência final (é contagem 13 de 13). A defasagem do plano G1 virou INFO (o plano andou).",
+  "Q2: troquei 'aposentado => cápsula' (critério meu, herdado do molde) por 'literal presente e igual', depois de ver que compact() não compacta quando a cápsula poupa menos de 50 B (ponte_da_escala_dual_v402 fica íntegro, com todos os literais). Troquei também 'bloco decodificado igual à v406 instalada, exceto _v402' por uma classificação (IDÊNTICO, _v402, deslocamento da janela do haiku55, F1) depois de ver 3 blocos do shared mudarem por efeito da F1; um bloco sem explicação seria FAIL.",
+  "Q5: o gate 'todos os 59 registros literais' ficou só no haiku55 (escopo do briefing e da F1); no shared/sonnet_public deu 27 de 59 e virou achado B4, não gate, depois de eu ver o número.",
+  "Q6: a contagem de palavras-qualificador não-decrescente (critério meu) virou INFO (o briefing pede presença); 3 contextos de 'CONFIRMADA' em snake_case escaparam do meu regex de palavra e foram lidos a mão (79 contextos distintos lidos).",
+  "Q7: 'nenhum destino .py' virou 'nenhum .py de runtime substituído' (o briefing), porque o um.py sob canonical_releases é dado e igual ao plano da v406.",
+  "Q9: duas conferências ficaram como achados BAIXOS por julgamento meu de severidade (cobertura B1 e nome com substituto B2), não como gates."
+ ],
+ "limits": [
+  "Não instalei, não implantei, não reiniciei nada; não rodei prepare.py, finalize.py, count_final_public.py, validate_plan.py, deploy_controlled.py, verify_installed.py nem teste_escopo_v407.py.",
+  "Sem rede: o remoto do git e as contagens nativas ficam [DECLARADO pelo construtor/custódia]; confiro o objeto git local e o ref origin/main local.",
+  "A mudança de listener (porta 18765/18766) foi simulada (substituí a função que lê listeners): não inicio processo. A leitura real de listeners foi exercida no listener vivo da porta 8081.",
+  "Não executei apply_plan nem o D4 sobre a produção; entreguei d4_check.py (função pura) e a prova de que ele é executável em raiz de brinquedo (limpo passa, 6 perturbações falham, log do supervisor é esperado).",
+  "Não avaliei resposta de modelo ao vivo, celular físico nem valor científico; as sínteses em prosa (46 blocos TEXT) foram comparadas byte a byte com a v406 instalada (todas iguais; 42 de fonte inalterada e 4 que só mudaram `/runtime_s`), não reconstruídas da fonte.",
+  "O protocolo de memória ACOM (init/transition) não foi escrito por mim: a ordem de escrita limitava-me à minha pasta e a dois JSON de validação; o recibo do aceite fica em W\\receipts."
+ ]
+}
