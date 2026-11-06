@@ -1,0 +1,27 @@
+def traducao_turing_v409(core):
+    """v409 -- TRADUCAO AS CLASSES DE TURING (a ordem do operador, 05/11/2026: «Prossigamos para a próxima verão do um.py; concordo com todos os nomes que foram dados»; a ordem da traducao: «fechar o que ficou ainda em aberto em relação à identificação das classes de turing dentro do nosso dicionário»): lido no PONTO REAL do main, depois dos registros da v408.
+    Le do kernel do PROPRIO rito as 82 ancoras das DUAS pedras (TraducaoTuring e ParNaFaceDeFock), os modulos por sha256, as falas de 05/11 por sha256; confere as respostas do operador pelos teoremas da pedra; faz as 20 checagens (a instancia de brinquedo fixa, as solucoes calculadas; beta em runtime; gate congelado; escada exata; guardas; beta = alfa sqrt e).
+    O alcance: P = nP e' teorema da TGL no modo selecao, RELATIVO AO LEITOR; a maquina sem leitor fica fora. Nenhuma chave antiga muda. Fail-closed em cada elo; excecao vira recusa visivel; nao move o gate. Validade no kernel nao e' creditacao; as ressalvas vao no registro."""
+    c_ = _V409_TRADUCAO_CONTRACT; t_ = _V409_TRADUCAO_TEXT
+    f_ = _v409_formal(core, c_, t_)
+    beta_rt_, beta_rel_, dois_nomes_, beta_ok_ = _v398_beta(core)
+    out_ = {"all_verified": False, "estatuto": t_["estatuto"], "exact_ladder": f_["exact_ladder"], "anchors": f_["anchors"], "embedded_sources_ok": f_["embedded_sources_ok"], "embedded_sources_n_ok": f_["embedded_sources_n_ok"], "inscriptions": f_["inscriptions"],
+            "beta_ok": beta_ok_, "beta_core_rel_diff": beta_rel_, "alpha_two_names_same": dois_nomes_, "ancora_principal": c_["ancora_principal"], "ancoras_principais": list(c_["ancoras_principais"]), "ancoras_de_secao": list(c_["ancoras_de_secao"]), "pedras": list(c_["bundle"]["pedras"]),
+            "nomes_ratificados": dict(c_["bundle"]["nomes_ratificados"]), "chaves_antigas_que_mudam": list(c_["chaves"]), "ressalvas": list(c_["ressalvas"]), "fica_false_por_teorema": list(c_["fica_false_por_teorema"]), "fica_aberto": dict(c_["fica_aberto"]),
+            "fechado_nesta_versao": dict(c_.get("fechado_nesta_versao") or {}), "ancora_par": c_.get("ancora_par"), "alcance": c_["alcance"], "instancia_sim": dict(c_["instancia_sim"]), "instancia_nao": dict(c_["instancia_nao"]), "acervo_v407_repinado": dict(c_["acervo_v407_repinado"]),
+            "runtime_executed": False, "does_not_gate_core": True, "scope": t_["escopo"], "limites": t_["limites"], "diz": t_["diz"], "nao_diz": t_["nao_diz"], "guarda_violacoes": f_["guarda"][:5]}
+    out_.update(t_["extras"])
+    if not f_["formal"]:
+        out_["verdict"] = _V409_RECUSA % "FORMAL_OR_SOURCE_EVIDENCE"
+    elif not beta_ok_:
+        out_["verdict"] = _V409_RECUSA % "BETA_IS_NOT_ALPHA_SQRT_E"
+    else:
+        try:
+            mec_ = v409_traducao_mechanics(beta_rt_, core, c_)
+            out_.update(runtime_executed=True, mechanics={"passed": mec_["passed"], "n_checks": mec_["n_checks"], "checks": mec_["checks"]}, values=mec_["values"], all_verified=bool(mec_["passed"]))
+            out_["verdict"] = (t_["veredito_ok"] if mec_["passed"] else _V409_RECUSA % "MECHANICS_CHECK_FAILED")
+        except Exception as e_:   # noqa: BLE001
+            out_.update(runtime_executed=True, error=repr(e_)[:300])
+            out_["verdict"] = _V409_RECUSA % "RUNTIME_ERROR"
+    core["traducao_turing_v409"] = out_
+    return out_

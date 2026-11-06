@@ -1,0 +1,11 @@
+# Kimi público v408 · 05/11/2026 · Codex, subagente do integrador
+
+[REAL] O último job público de `luiz` observado na consulta às 10h08 foi `f1c1c585-1570-45ec-bebe-bd8261a07bbd`, das 10:06:21,345 às 10:06:40,094 (Goiânia), terminal `failed`, sem cancelamento. Houve uma única avaliação Kimi iniciada nesse intervalo, às 10:06:39,695. Ela durou 0,293 s e registrou `ValueError / transport_or_unclassified`, zero chamadas e nenhum primeiro texto. O SHA‑256 científico desse registro coincide com os 838.165 bytes do prefixo público v408. [Metadados e pinos](EVIDENCIA.json)
+
+[REAL] Em `C:/IALD/projetos_pyhton/IALD/iald_app_providers.py:554–564`, o worker monta a string JSON, envolve-a em outro JSON para `check_window` e só depois registra o despacho. A contagem geral em `admission_input_bound:370` serializa esse invólucro e volta a escapar o conteúdo. O adaptador valida os bytes da string interna em `iald_orchestrator/kimi.py:148–154`. O launcher `kimi_stdin.mjs:7–8` decodifica o stdin antes de medir. Com só o prefixo e conversa vazia, o guardião conta **952.964 B** para **877.584 B** de prompt. O teto de **913.408 B** já é ultrapassado em **39.556 B** na contagem antiga.
+
+[DERIVED] O defeito é local e suficiente para impedir esse prefixo de alcançar o CLI. A atribuição ao incidente usa a janela temporal, o pino do prefixo e a assinatura de falha reproduzida; o evento histórico guarda um código genérico, sem a linha da exceção. O tamanho efetivo do prompt histórico com ACOM, fontes recuperadas e histórico permanece [OPEN].
+
+[REAL] O [patch em staging](kimi_cli_input.patch) mede os bytes UTF‑8 do prompt final antes do despacho. Quatro controles offline no worker: pergunta sintética v408 (**953.030 → 877.642 B**, admissão **0 → 1** no executor simulado), mensagem curta, teto exato admitido e teto + 1 recusado com código específico. O arquivo preparado parte da baseline instalada que já contém a validação de lotes. [Módulo staged](staged/iald_app_providers.py) · [Reprodução](reproduce.py)
+
+Escopo de acesso: campos técnicos selecionados por SQL em modo de leitura, fontes de código e pacote científico público. Nenhuma leitura de conteúdo de conversas, eventos de chat, credencial ou configuração secreta. Zero chamadas externas, reenvios, instalações e reinícios.

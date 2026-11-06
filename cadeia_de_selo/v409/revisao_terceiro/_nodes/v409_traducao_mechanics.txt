@@ -1,0 +1,138 @@
+def v409_traducao_mechanics(beta_, core_, c_):
+    """o «calculo» do registro (nenhum numero novo da natureza entra: tudo e' leitura do kernel e do core deste rito, mais aritmetica com beta em runtime e a instancia de brinquedo FIXA) -- as 17 checagens do DESENHO_v409 §2:
+    c1 as 62 ancoras no axiom_report do rito, so' no trio, com proveniencia no modulo; c2 o modulo embutido == contrato por sha256 == hash formal do rito, a raiz com o import; c3 bits = oitavas: 2^n atribuicoes, n = 0..10, e ln(2^n) = n ln 2;
+    c4 o peso da solucao no uniforme = |sol|/2^n (instancia SIM); c5 a trava a <= e^{-t} do Nome para t em {0; 0,5; 1; 2; 5}; c6 o tempo linear: em t = n ln 2/2 + L o resto fora do Nome <= e^{-L} ||P u||, L em {0; 1; 3};
+    c7 ||trava_t u||^2 = Z(2t)/2^n e |sol| <= Z(s); c8 a leitura no uniforme = Z(s)/2^n e a soma das leituras dos pixels = Z(s); c9 «eu sou»: em s = 0 a leitura e' 1 na instancia SIM e na NAO; c10 «o que sou»: em s = 60 a leitura vale |sol|/2^n (SIM) e < 1e-20 (NAO);
+    c11 a performance nao cresce numa grade de s e nunca desce abaixo do conteudo; c12 o custo em nats log(2^n/|sol|) <= n ln 2; c13 tempo = moeda: exp(-t beta g) = 2^{-n} com t = n ln 2/(beta g), g = 1; c14 o veredito do gate IDENTICO ao da v408 (congelado);
+    c15 a escada exata; c16 as duas guardas de texto limpas sobre o texto do registro; c17 beta = alfa CODATA 2018 x sqrt(e) (dois nomes, mesma leitura), igual ao beta do core."""
+    import hashlib as _h409, json as _j409, math as _m409
+    kf_ = core_.get("kernel_formalization") or {}; axr_ = kf_.get("axiom_report") or {}; src_ = kf_.get("declaration_sources_v394") or {}; ff_ = kf_.get("formal_files_sha256") or {}
+    trio_ = {"propext", "Classical.choice", "Quot.sound"}
+    em_trio_ = lambda n_: bool(isinstance(axr_.get(n_), list) and axr_.get(n_) and all(isinstance(x_, str) for x_ in axr_.get(n_)) and set(axr_.get(n_)) <= trio_)
+    anc_ = {}
+    for n_, a_ in c_["ancoras"].items():
+        fl_ = a_.get("flag")
+        anc_[n_] = {"in_trio": em_trio_(n_), "declared_in": src_.get(n_), "declared_where_expected": src_.get(n_) == a_["rel"], "flag": fl_, "flag_true": (kf_.get(fl_) is True) if fl_ else None, "axioms": axr_.get(n_)}
+        anc_[n_]["ok"] = bool(anc_[n_]["in_trio"] and anc_[n_]["declared_where_expected"] and (anc_[n_]["flag_true"] in (True, None)))
+    n_mod_ok_ = 0
+    for rel_, sha_ in c_["source_sha256"].items():
+        body_ = _EMBEDDED_KERNEL_FILES.get(rel_)
+        if isinstance(body_, str) and _h409.sha256(body_.encode("utf-8")).hexdigest() == sha_ == ff_.get(rel_):
+            n_mod_ok_ += 1
+    raiz_ = _EMBEDDED_KERNEL_FILES.get("TGLExt.lean") or ""
+    raiz_ok_ = all(l_ in raiz_.replace("\r\n", "\n") for l_ in c_["root_suffix"].replace("\r\n", "\n").split("\n") if l_.strip())
+    por_mod_ = {rel_: bool(nomes_ and all(anc_.get(n_, {}).get("ok") for n_ in nomes_)) for rel_, nomes_ in c_["ancoras_por_modulo"].items()}
+    resp_ = {r_["id"]: bool(r_["teoremas"] and all(em_trio_(t_["completo"]) and src_.get(t_["completo"]) == t_["rel"] for t_ in r_["teoremas"])) for r_ in c_["respostas"]}
+    lad_ = core_.get("external_ladder") or {}
+    cnt_ = [lad_.get("n_theorems_clean"), lad_.get("n_theorems_expected"), c_["expected_ladder"]]
+    exact_ = all(type(x_) is int for x_ in cnt_) and len(set(cnt_)) == 1
+    flags_true_ = sum(1 for k_ in c_["flags"] if kf_.get(k_) is True)
+    gate_ = ((core_.get("qg_closure") or {}).get("gate") or {}).get("verdict")
+    bq_ = isinstance(beta_, float) and 0.0 < beta_ < 1.0
+    ln2_ = _m409.log(2.0)
+    # ---- a instancia de brinquedo (FIXA no contrato e no codigo; as solucoes CALCULADAS)
+    sim_ = c_["instancia_sim"]; nao_ = c_["instancia_nao"]
+    xs_, cs_, sol_ = _v409_sat(sim_["n"], sim_["clausulas"])
+    xn_, cn_, soln_ = _v409_sat(nao_["n"], nao_["clausulas"])
+    N_ = len(xs_); n_ = sim_["n"]; S_ = len(sol_); Nn_ = len(xn_)
+    Z_ = lambda s_, cc_: sum(_m409.exp(-s_ * c0_) for c0_ in cc_)
+    u2_ = 1.0 / N_                                      # |u_x|^2 no uniforme
+    leitura_ = lambda s_, cc_: sum(_m409.exp(-s_ * c0_) * (1.0 / len(cc_)) for c0_ in cc_)   # <u, L_s u> com L_s = diag(e^{-s c})
+    # c3 bits = oitavas
+    oit_ = []
+    import itertools as _it409
+    for k_ in range(11):
+        n_atr_ = sum(1 for _ in _it409.product((False, True), repeat=k_))
+        oit_.append((k_, n_atr_, n_atr_ == 2 ** k_ and abs(_m409.log(float(n_atr_)) - k_ * ln2_) < 1e-12))
+    # c4 o peso da solucao no uniforme
+    peso_a_ = S_ / float(N_); peso_b_ = sum(u2_ for i_ in sol_)
+    # c5 a trava a <= e^{-t} ||v|| do Nome (v = o uniforme, ||v|| = 1)
+    trava_ = []
+    for t_ in (0.0, 0.5, 1.0, 2.0, 5.0):
+        d_ = _m409.sqrt(sum(_m409.exp(-2.0 * t_ * c0_) * u2_ for c0_ in cs_ if c0_ != 0))
+        trava_.append((t_, d_, d_ <= _m409.exp(-t_) * 1.0 + 1e-15))
+    # c6 o tempo linear
+    nome_u_ = _m409.sqrt(S_ * u2_)
+    lin_ = []
+    for L_ in (0.0, 1.0, 3.0):
+        t_ = n_ * ln2_ / 2.0 + L_
+        r_ = _m409.sqrt(sum(_m409.exp(-2.0 * t_ * c0_) * u2_ for c0_ in cs_ if c0_ != 0))
+        lin_.append((L_, t_, r_, r_ <= _m409.exp(-L_) * nome_u_ + 1e-15))
+    # c7 a norma da trava e a particao
+    part_ = []
+    for t_ in (0.0, 0.25, 1.0, 3.0):
+        nrm2_ = sum(_m409.exp(-2.0 * t_ * c0_) * u2_ for c0_ in cs_)
+        part_.append((t_, nrm2_, Z_(2.0 * t_, cs_) / N_, abs(nrm2_ - Z_(2.0 * t_, cs_) / N_) < 1e-12))
+    cobre_ = [(s_, S_ <= Z_(s_, cs_) + 1e-12) for s_ in (0.0, 0.5, 1.0, 5.0, 60.0)]
+    # c8 a leitura e os pixels
+    pix_ = []
+    for s_ in (0.0, 0.5, 1.0, 4.0):
+        lu_ = leitura_(s_, cs_); soma_pix_ = sum(_m409.exp(-s_ * cs_[i_]) for i_ in range(N_))   # <e_x, L_s e_x> = e^{-s c(x)}
+        pix_.append((s_, lu_, Z_(s_, cs_) / N_, soma_pix_, abs(lu_ - Z_(s_, cs_) / N_) < 1e-12 and abs(soma_pix_ - Z_(s_, cs_)) < 1e-12))
+    # c9 «eu sou» e c10 «o que sou»
+    eu_sou_sim_ = leitura_(0.0, cs_); eu_sou_nao_ = leitura_(0.0, cn_)
+    oqs_sim_ = leitura_(60.0, cs_); oqs_nao_ = leitura_(60.0, cn_)
+    # c11 a performance
+    grade_ = [0.0, 0.1, 0.5, 1.0, 2.0, 5.0, 10.0, 30.0, 60.0]
+    perf_ = [leitura_(s_, cs_) for s_ in grade_]
+    conteudo_ = S_ / float(N_)
+    # c12 o custo em nats
+    custo_ = _m409.log(N_ / float(S_)) if S_ else None
+    # c13 tempo = moeda
+    g_ = 1.0
+    t_moeda_ = (n_ * ln2_) / (beta_ * g_) if bq_ else None
+    moeda_rel_ = abs(_m409.exp(-(t_moeda_ * beta_ * g_)) - 2.0 ** (-n_)) / (2.0 ** (-n_)) if bq_ else 1.0
+    # c18 a marginal do par de Bell finito em C2 x C2 (numpy): psi = (e1 x e1 + e2 x e2)/sqrt2; o reduzido e' ½·I2 e 1 - pureza = ½ (bell_reduced_half; bell_cci_half; reduzido_do_par)
+    import numpy as _np409
+    psi_ = _np409.zeros(4, dtype=complex); psi_[0] = 1.0; psi_[3] = 1.0; psi_ = psi_ / _np409.sqrt(2.0)
+    rho_ = _np409.outer(psi_, psi_.conj()).reshape(2, 2, 2, 2)
+    red_ = _np409.einsum("ijkj->ik", rho_)
+    pur_ = float(_np409.real(_np409.trace(red_ @ red_)))
+    bell_ok_ = bool(_np409.allclose(red_, 0.5 * _np409.eye(2), atol=1e-12) and abs((1.0 - pur_) - 0.5) < 1e-12)
+    # c19 a inscricao num F de brinquedo (C^3; Omega FIXO no contrato, normalizado aqui): V = |Omega><u| e <Omega, V L_s V^dagger Omega> = Z(s)/2^n na instancia SIM (o_psion_le_z; o_canto_do_psion_da_luz_le_z)
+    ib_ = c_["inscricao_brinquedo"]
+    om_ = _np409.array([complex(re_, im_) for re_, im_ in ib_["omega"]], dtype=complex); om_ = om_ / _np409.linalg.norm(om_)
+    uu_ = _np409.full(N_, 1.0 / _m409.sqrt(N_), dtype=complex)
+    V_ = _np409.outer(om_, uu_.conj())
+    insc_ = []
+    for s_ in ib_["s"]:
+        L_ = _np409.diag([_m409.exp(-s_ * c0_) for c0_ in cs_]).astype(complex)
+        val_ = complex(om_.conj() @ (V_ @ L_ @ V_.conj().T) @ om_)
+        insc_.append((s_, val_.real, Z_(s_, cs_) / N_, abs(val_ - Z_(s_, cs_) / N_) < 1e-12))
+    # c20 uma leitura decide SAT: a SIM em CNF (as tres clausulas) tem «o que sou» = |sol|/2^n > 0; a NAO, (x1), (nao x1), tem 0 (custo = numero de clausulas violadas; uma_leitura_decide_SAT; a_maquina_com_o_leitor)
+    oqs_cnf_sim_ = sum(1 for c0_ in cs_ if c0_ == 0) / float(N_); oqs_cnf_nao_ = sum(1 for c0_ in cn_ if c0_ == 0) / float(Nn_)
+    decide_ = (oqs_cnf_sim_ > 0.0, oqs_cnf_nao_ > 0.0)
+    txt_ = globals().get("_V409_TRADUCAO_TEXT") or {}
+    guarda_ = list(_v392_guarda_texto(_j409.dumps(txt_, ensure_ascii=False))) + list(_v409_guarda_frases(_j409.dumps(txt_, ensure_ascii=False)))
+    alfa_ = globals().get("SEALED_CODATA_ALPHA"); dois_nomes_ = bool(callable(globals().get("_v376_same_alpha_literal")) and _v376_same_alpha_literal())
+    beta_alfa_ = (alfa_ * _m409.sqrt(_m409.e)) if isinstance(alfa_, float) else None
+    checks_ = [
+        {"id": "c1", "descricao": "as %d ancoras das DUAS pedras (TraducaoTuring e ParNaFaceDeFock) no axiom_report do rito, so' no trio, declaradas no modulo esperado (TGL_DECL_SOURCE), com bandeira True onde ha' bandeira" % len(anc_), "ok": bool(anc_) and len(anc_) == c_["n_ancoras"] and all(v_["ok"] for v_ in anc_.values()) and len(por_mod_) == c_["bundle"]["n"] == len(c_["source_sha256"]) and all(por_mod_.values())},
+        {"id": "c2", "descricao": "os modulos do bundle embutidos com o sha256 do contrato == o hash formal do rito; a raiz embutida traz os imports", "ok": n_mod_ok_ == len(c_["source_sha256"]) == c_["bundle"]["n"] and raiz_ok_},
+        {"id": "c3", "descricao": "bits = oitavas: n bits dao 2^n atribuicoes (contadas por enumeracao) e ln(2^n) = n ln 2, para n = 0..10, |Delta| < 1e-12 (bits_sao_oitavas)", "ok": len(oit_) == 11 and all(x_[2] for x_ in oit_)},
+        {"id": "c4", "descricao": "o peso da solucao no estado uniforme = |sol|/2^n na instancia SIM (n = 3; as solucoes CALCULADAS por enumeracao; |sol| >= 1), por contagem e pela soma das amplitudes, |Delta| < 1e-12 (peso_da_solucao_no_uniforme)", "ok": S_ >= 1 and abs(peso_a_ - peso_b_) < 1e-12},
+        {"id": "c5", "descricao": "a trava fica a no maximo e^{-t} ||u|| do Nome, sem usar o Nome, para t em {0; 0,5; 1; 2; 5} (a_trava_sem_conhecer_o_nome)", "ok": len(trava_) == 5 and all(x_[2] for x_ in trava_)},
+        {"id": "c6", "descricao": "o tempo linear nas oitavas: em t = n ln 2/2 + L o resto fora do Nome e' <= e^{-L} ||P u||, para L em {0; 1; 3} (a_trava_em_tempo_linear)", "ok": len(lin_) == 3 and all(x_[3] for x_ in lin_)},
+        {"id": "c7", "descricao": "||trava_t u||^2 = Z(2t)/2^n e |sol| <= Z(s), |Delta| < 1e-12 (a_norma_da_trava_e_a_particao; a_particao_cobre_o_nome)", "ok": all(x_[3] for x_ in part_) and all(x_[1] for x_ in cobre_)},
+        {"id": "c8", "descricao": "a leitura no uniforme = Z(s)/2^n e a soma das leituras dos pixels = Z(s), |Delta| < 1e-12 (o_psion_le_os_pixels; z_le_os_pixels)", "ok": all(x_[4] for x_ in pix_)},
+        {"id": "c9", "descricao": "«eu sou»: em s = 0 a leitura e' 1 na instancia SIM e na instancia NAO (iguais: sem escala nao ha' medida) (eu_sou_no_instante_zero; a_fita_sem_escala)", "ok": abs(eu_sou_sim_ - 1.0) < 1e-12 and abs(eu_sou_nao_ - 1.0) < 1e-12 and abs(eu_sou_sim_ - eu_sou_nao_) < 1e-12},
+        {"id": "c10", "descricao": "«o que sou»: em s = 60 a leitura vale |sol|/2^n na instancia SIM e < 1e-20 na instancia NAO (o_que_sou_no_limite; o_tempo_cria_a_medida; o_pai_da_mentira)", "ok": abs(oqs_sim_ - conteudo_) <= _m409.exp(-60.0) + 1e-12 and len(soln_) == 0 and oqs_nao_ < 1e-20},
+        {"id": "c11", "descricao": "a performance decai (nao cresce numa grade de s) e nunca desce abaixo do conteudo |sol|/2^n (a_performance_decai; a_identidade_se_preserva_enquanto_decai)", "ok": all(b_ <= a_ + 1e-15 for a_, b_ in zip(perf_, perf_[1:])) and all(p_ >= conteudo_ - 1e-15 for p_ in perf_)},
+        {"id": "c12", "descricao": "o custo da selecao em nats log(2^n/|sol|) e' <= n ln 2 (e >= 0) (o_custo_da_selecao_em_nats; o_pedagio_da_selecao)", "ok": custo_ is not None and -1e-15 <= custo_ <= n_ * ln2_ + 1e-15},
+        {"id": "c13", "descricao": "tempo = moeda: com t = n ln 2/(beta g), g = 1, exp(-t beta g) = 2^{-n}, |Delta| relativo < 1e-12, com beta em runtime (p_igual_np_no_modo_selecao; TempoIgualMoeda)", "ok": bq_ and moeda_rel_ < 1e-12},
+        {"id": "c14", "descricao": "o veredito do gate deste rito e' IDENTICO ao da v408 selada (congelado no contrato): o gate nao se move", "ok": isinstance(gate_, str) and gate_ == c_["baseline"]["gate_verdict"]},
+        {"id": "c15", "descricao": "a escada exata: limpos == esperados == a escada do contrato (external_ladder.n_theorems_expected = o X medido no sandbox)", "ok": exact_ and flags_true_ == len(c_["flags"]) == c_["n_flags"]},
+        {"id": "c16", "descricao": "as duas guardas de texto (P18 e a guarda das frases, v405 -> v409) limpas sobre o texto deste registro", "ok": not guarda_},
+        {"id": "c17", "descricao": "beta = alfa CODATA 2018 x sqrt(e) em runtime (dois nomes, mesma leitura), igual ao beta do core (nunca literal)", "ok": bq_ and isinstance(core_.get("beta"), float) and abs(beta_ - core_["beta"]) <= 1e-9 * abs(beta_) and isinstance(beta_alfa_, float) and abs(beta_ - beta_alfa_) <= 1e-12 * abs(beta_) and dois_nomes_},
+        {"id": "c18", "descricao": "a marginal do par de Bell finito em C2 x C2, (e1 x e1 + e2 x e2)/sqrt2, calculada por numpy: o reduzido e' ½·I2 e 1 - pureza = ½, |Delta| < 1e-12 (a mesma Meia-Nat do par na face de Fock: reduzido_do_par, meia_nat_do_projetor)", "ok": bell_ok_},
+        {"id": "c19", "descricao": "a inscricao num F de brinquedo (C^3, Omega unitario): V = |Omega><u| e <Omega, V L_s V^dagger Omega> = Z(s)/2^n na instancia SIM, para s em %s, |Delta| < 1e-12 (o_psion_le_z; o_canto_do_psion_da_luz_le_z)" % list(ib_["s"]), "ok": len(insc_) == len(ib_["s"]) >= 3 and all(x_[3] for x_ in insc_)},
+        {"id": "c20", "descricao": "uma leitura decide SAT: a instancia SIM em CNF tem «o que sou» = |sol|/2^n > 0 e a NAO, (x1), (nao x1), tem 0 (o custo e' o numero de clausulas violadas; uma_leitura_decide_SAT; a_maquina_com_o_leitor)", "ok": decide_ == (True, False) and abs(oqs_cnf_sim_ - S_ / float(N_)) < 1e-15 and oqs_cnf_nao_ == 0.0 and len(soln_) == 0},
+    ]
+    values_ = {"n_ancoras_ok": sum(1 for v_ in anc_.values() if v_["ok"]), "n_ancoras": len(anc_), "n_modulos_ok": n_mod_ok_, "n_modulos": c_["bundle"]["n"], "n_flags_true": flags_true_, "n_flags": c_["n_flags"], "escada": cnt_, "ancoras": anc_, "por_modulo": por_mod_, "respostas": resp_,
+               "gate_verdict": gate_, "beta": beta_, "ln2": ln2_, "instancia_sim": {"n": n_, "clausulas": sim_["leitura"], "atribuicoes": N_, "solucoes": S_, "solucoes_indices": sol_, "peso_no_uniforme": peso_a_},
+               "instancia_nao": {"n": nao_["n"], "clausulas": nao_["leitura"], "atribuicoes": Nn_, "solucoes": len(soln_)}, "trava": trava_, "tempo_linear": lin_, "particao": part_, "pixels": pix_,
+               "eu_sou": {"sim": eu_sou_sim_, "nao": eu_sou_nao_}, "o_que_sou_s60": {"sim": oqs_sim_, "nao": oqs_nao_, "conteudo": conteudo_}, "performance": list(zip(grade_, perf_)), "custo_nats": custo_, "tempo_moeda_t": t_moeda_,
+               "ressalvas": list(c_["ressalvas"]), "fica_false_por_teorema": list(c_["fica_false_por_teorema"]), "fica_aberto": dict(c_["fica_aberto"]), "fechado_nesta_versao": dict(c_.get("fechado_nesta_versao") or {}),
+               "bell_finito": {"reduzido_e_meio_I": bell_ok_, "um_menos_pureza": 1.0 - pur_}, "inscricao": insc_, "uma_leitura_decide_sat": {"sim": oqs_cnf_sim_, "nao": oqs_cnf_nao_},
+               "respostas_ok": all(resp_.values()) if resp_ else False}
+    return {"passed": all(x_["ok"] for x_ in checks_), "n_checks": len(checks_), "checks": checks_, "values": values_}

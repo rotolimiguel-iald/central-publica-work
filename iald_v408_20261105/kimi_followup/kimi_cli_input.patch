@@ -1,0 +1,13 @@
+--- a/iald_app_providers.py
++++ b/iald_app_providers.py
+@@ -555,7 +555,9 @@
+                     # Public CLI API buffers the final answer; do not fake token streaming.
+                     projected = router_media_view.project_system_messages(app_memory.project_messages(messages))
+                     prompt = json.dumps({'instructions': projected[0]['content'], 'conversation': projected[1:]}, ensure_ascii=False)
+-                    check_window({'prompt': prompt}, spec['output'])
++                    # The CLI decodes its stdin JSON before measuring the actual prompt.
++                    if len(prompt.encode('utf-8')) > WINDOW - spec['output'] - 4096:
++                        raise ProtocolError('kimi_cli_input_envelope_exceeded')
+                     record['calls'].append({'status': 'dispatched', 'usage': None})
+                     self.save(record)
+                     if cancel.is_set(): raise InterruptedError()

@@ -1,0 +1,21 @@
+def _v409_formal(core, c_, txt_):
+    """A evidencia FORMAL do registro, lida do kernel do PROPRIO rito: a escada exata; as ancoras (trio, proveniencia no modulo esperado, bandeira); a fonte por sha256 (embutida == contrato == hash formal do rito); as falas de 05/11 por sha256 (o trecho da D59 nas duas); as duas guardas de texto."""
+    import hashlib as _h409, json as _j409
+    kf_ = core.get("kernel_formalization") or {}; axr_ = kf_.get("axiom_report") or {}; src_ = kf_.get("declaration_sources_v394") or {}; ff_ = kf_.get("formal_files_sha256") or {}
+    trio_ = {"propext", "Classical.choice", "Quot.sound"}
+    lad_ = core.get("external_ladder") or {}
+    cnt_ = [lad_.get("n_theorems_clean"), lad_.get("n_theorems_expected"), c_["expected_ladder"]]
+    exact_ = all(type(x_) is int for x_ in cnt_) and len(set(cnt_)) == 1
+    em_trio_ = lambda n_: bool(isinstance(axr_.get(n_), list) and axr_.get(n_) and all(isinstance(x_, str) for x_ in axr_.get(n_)) and set(axr_.get(n_)) <= trio_)
+    anc_ = {n_: bool(em_trio_(n_) and src_.get(n_) == a_["rel"] and (a_.get("flag") is None or kf_.get(a_["flag"]) is True)) for n_, a_ in c_["ancoras"].items()}
+    srcs_ = {}
+    for rel_, sha_ in c_["source_sha256"].items():
+        body_ = _EMBEDDED_KERNEL_FILES.get(rel_)
+        srcs_[rel_] = bool(isinstance(body_, str) and _h409.sha256(body_.encode("utf-8")).hexdigest() == sha_ and ff_.get(rel_) == sha_)
+    ver_ = {}
+    for k_ in c_["verbatins"]:
+        v_ = _V409_VERBATINS2.get(k_)
+        ver_[k_] = bool(v_ and _h409.sha256(v_["text"].encode("utf-8")).hexdigest() == v_["sha256"] and all(t_ in v_["text"] for t_ in v_["trechos"]))
+    guarda_ = list(_v392_guarda_texto(_j409.dumps(txt_, ensure_ascii=False))) + list(_v409_guarda_frases(_j409.dumps(txt_, ensure_ascii=False)))
+    formal_ = bool(kf_.get("all_verified") is True and exact_ and anc_ and all(anc_.values()) and srcs_ and all(srcs_.values()) and ver_ and all(ver_.values()) and not guarda_)
+    return {"exact_ladder": exact_, "anchors": anc_, "embedded_sources_ok": all(srcs_.values()), "embedded_sources_n_ok": sum(1 for v_ in srcs_.values() if v_), "inscriptions": ver_, "guarda": guarda_, "formal": formal_}

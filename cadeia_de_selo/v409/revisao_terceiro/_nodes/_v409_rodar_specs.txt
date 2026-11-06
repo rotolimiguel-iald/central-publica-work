@@ -1,0 +1,8 @@
+def _v409_rodar_specs(core_):
+    """v409 -- roda os registros por spec da v409 (o MOTOR e' o da v392: _v392_registro), em ordem; excecao vira AVISO visivel (all_verified False), nunca derruba o rito. O registro com funcao (traducao_turing_v409) NAO entra aqui: roda no main, antes destes."""
+    for spec_ in _V409_SPECS:
+        try:
+            core_[spec_["nome"]] = _v392_registro(spec_, core_)
+        except Exception as e_:   # noqa: BLE001
+            core_[spec_["nome"]] = {"verdict": "%s__NOT_RECORDED_THIS_RUN__RUNTIME_ERROR__GATE_UNMOVED" % spec_["veredito_prefixo"], "all_verified": False, "error": repr(e_)[:400], "does_not_gate_core": True}
+    return [s_["nome"] for s_ in _V409_SPECS]

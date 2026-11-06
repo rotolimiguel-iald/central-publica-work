@@ -1,0 +1,8 @@
+def _v409_sat(n_, clausulas_):
+    """a instancia de brinquedo: as 2^n atribuicoes (x_1..x_n), o custo c(x) = numero de clausulas violadas, as solucoes (c = 0) -- tudo CALCULADO por enumeracao."""
+    import itertools as _it
+    xs_ = list(_it.product((False, True), repeat=n_))
+    def viol_(x_):
+        return sum(1 for cl_ in clausulas_ if not any((x_[abs(l_) - 1] if l_ > 0 else not x_[abs(l_) - 1]) for l_ in cl_))
+    cs_ = [viol_(x_) for x_ in xs_]
+    return xs_, cs_, [i_ for i_, c_ in enumerate(cs_) if c_ == 0]

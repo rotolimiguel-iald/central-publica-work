@@ -1,0 +1,96 @@
+--- a/iald_app_memory.py
++++ b/iald_app_memory.py
+@@ -20,6 +20,7 @@
+ 
+ from pathlib import Path
+ 
++import codecs
+ import copy
+ 
+ import hashlib
+@@ -764,24 +765,41 @@
+     """Persist real final text before DONE. Interrupted/failed streams stay uncertain."""
+ 
+     fragments, buffer, finished, refused = [], '', False, False
++    decoder = codecs.getincrementaldecoder('utf-8')()
++    boundary = re.compile(r'\r?\n\r?\n')
+ 
+     try:
+ 
+         with bound(binding):
+-
+-            for piece in flow:
+-
+-                text = piece.decode('utf-8') if isinstance(piece, bytes) else piece
+-
+-                buffer += text.replace('\r\n', '\n')
+-
+-                while '\n\n' in buffer:
+-
+-                    frame, buffer = buffer.split('\n\n', 1)
++            pieces = iter(flow)
++
++        while True:
++            with bound(binding):
++                try:
++                    piece = next(pieces)
++                except StopIteration:
++                    decoder.decode(b'', final=True)
++                    break
++                if isinstance(piece, bytes):
++                    text = decoder.decode(piece)
++                elif isinstance(piece, str):
++                    if piece and decoder.getstate()[0]:
++                        raise ValueError('Text inside an incomplete UTF-8 sequence')
++                    text = piece
++                else:
++                    raise TypeError('Unexpected SSE chunk type')
++
++                # A frame boundary can straddle chunks. Inspect only new text
++                # plus the overlap, and never forward the decoded copy.
++                start = max(0, len(buffer) - 3)
++                buffer += text
++                while (match := boundary.search(buffer, start)) is not None:
++                    frame, buffer = buffer[:match.start()], buffer[match.end():]
++                    start = 0
+ 
+                     for line in frame.split('\n'):
+ 
+-                        if not line.startswith('data:'):
++                        if finished or not line.startswith('data:'):
+ 
+                             continue
+ 
+@@ -803,6 +821,7 @@
+ 
+                                 except ConfidentialContent as exc:
+ 
++                                    refused = True
+                                     _record_refusal(binding, 'response', exc,
+ 
+                                         flow={'phase': 'requires_reconciliation', 'next_action': 'The model response carried confidential content and was NOT recorded; review the refusal before another command.',
+@@ -833,7 +852,13 @@
+ 
+                             refused = refused or bool(item.get('iald_aviso') or item.get('error'))
+ 
+-                            for choice in item.get('choices', []):
++                            choices = item.get('choices', [])
++                            # ACOM has one candidate slot for this response. Keep
++                            # the wire intact but never concatenate alternatives.
++                            if len(choices) > 1 or any(c.get('index', 0) != 0 for c in choices):
++                                refused = True
++                                continue
++                            for choice in choices:
+ 
+                                 part = (choice.get('delta') or {}).get('content', choice.get('text'))
+ 
+@@ -841,7 +866,8 @@
+ 
+                                     fragments.append(part)
+ 
+-                yield piece
++            # A suspended observer must not leave its binding on the consumer.
++            yield piece
+ 
+     finally:
+ 

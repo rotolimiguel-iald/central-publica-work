@@ -1,0 +1,47 @@
+--- v408/acom_inscrever_prep_v408.py
++++ v409/acom_inscrever_prep_v409.py
+@@ -2,3 +2,4 @@
+-"""Memoria ACOM da PREPARACAO da v408 (gerencia c1, 05/11/2026; molde: acom_inscrever_prep_v407.py): inscreve a fonte original (DESENHO_v408.md, por sha256 lido do arquivo)
+-e grava SESSION_REFERENCE_prep_v408.json. Uso: `acom_inscrever_prep_v407.py` (init + get + transition de abertura + verify) ou `acom_inscrever_prep_v407.py --fechar` (transition de conclusao,
+-que le PREPARACAO_v408_PRONTA.json). Recibos ao lado. Nao autoriza acoes, nao move gate. Molde: acom_inscrever_prep_v407.py."""
++# [A ADAPTAR v409] SUBIDA MECANICA DE ROTULO (v408->v409) do molde v408/acom_inscrever_prep_v408.py; o CORPO e' o da v408 (bundle de 4 modulos, tetelestai_terminal_v408, 48 ancoras); nada rodou; ver bump/acom_inscrever_prep_v409.py.diff
++"""Memoria ACOM da PREPARACAO da v409 (gerencia c1, 05/11/2026; molde: acom_inscrever_prep_v408.py): inscreve a fonte original (DESENHO_v409.md, por sha256 lido do arquivo)
++e grava SESSION_REFERENCE_prep_v409.json. Uso: `acom_inscrever_prep_v408.py` (init + get + transition de abertura + verify) ou `acom_inscrever_prep_v408.py --fechar` (transition de conclusao,
++que le PREPARACAO_v409_PRONTA.json). Recibos ao lado. Nao autoriza acoes, nao move gate. Molde: acom_inscrever_prep_v408.py."""
+@@ -38,3 +39,3 @@
+-OBJ = os.path.join(H, "DESENHO_v408.md")
+-REF = os.path.join(H, "SESSION_REFERENCE_prep_v408.json")
+-ACTOR = {"id": "claude-c1-prep-v408", "kind": "agent"}
++OBJ = os.path.join(H, "DESENHO_v409.md")
++REF = os.path.join(H, "SESSION_REFERENCE_prep_v409.json")
++ACTOR = {"id": "claude-c1-prep-v409", "kind": "agent"}
+@@ -44 +45 @@
+-                    "constraints": {"unit": "preparacao_e_cadeia_de_selo_v408_tetelestai_e_o_terminal", "no_science_gate_credentials_trust_or_user_permission_changes": True,
++                    "constraints": {"unit": "preparacao_e_cadeia_de_selo_v409_tetelestai_e_o_terminal", "no_science_gate_credentials_trust_or_user_permission_changes": True,
+@@ -53,5 +54,5 @@
+-    records = [{"id": "prep-v408-aberta", "kind": "fact", "statute": "REAL",
+-                "text": "Preparacao da v408 (Tetelestai e o terminal): 4 pedras (TetelestaiTerminal, TempoIgualMoeda, PontoDeContradicao, PIgualNP; nomes do operador, ratificados em 04/11) no sandbox k408c; kernel construido e auditado; candidato, ensaio a seco, p00 113/113, B(n) pre-selo e PRONTA 17/17 pelo construtor (agente); revisao de terceiro do Sonnet em curso. Nada instalado no Nos; rito nao rodado; sem commit/push.",
+-                "sources": [S(OBJ), S(os.path.join(H, "BUNDLE_v408.json"))]}]
+-    rc, tj = chamar({"operation": "transition", "reference": REF, "actor": ACTOR, "expected_revision": rev, "event_id": "prep-v408-aberta-05nov",
+-                     "changes": {"records": records, "flow": {"phase": "preparacao_v408__pronta__revisao_de_terceiro", "next_action": "revisao do Sonnet (REVISAO_TERCEIRO_v408.json); fechar_preparacao_v408; a gerencia lanca o orquestrador pos_treino_v408"}}}, "transition")
++    records = [{"id": "prep-v409-aberta", "kind": "fact", "statute": "REAL",
++                "text": "Preparacao da v409 (Tetelestai e o terminal): 4 pedras (TetelestaiTerminal, TempoIgualMoeda, PontoDeContradicao, PIgualNP; nomes do operador, ratificados em 04/11) no sandbox k409c; kernel construido e auditado; candidato, ensaio a seco, p00 113/113, B(n) pre-selo e PRONTA 17/17 pelo construtor (agente); revisao de terceiro do Sonnet em curso. Nada instalado no Nos; rito nao rodado; sem commit/push.",
++                "sources": [S(OBJ), S(os.path.join(H, "BUNDLE_v409.json"))]}]
++    rc, tj = chamar({"operation": "transition", "reference": REF, "actor": ACTOR, "expected_revision": rev, "event_id": "prep-v409-aberta-05nov",
++                     "changes": {"records": records, "flow": {"phase": "preparacao_v409__pronta__revisao_de_terceiro", "next_action": "revisao do Sonnet (REVISAO_TERCEIRO_v409.json); fechar_preparacao_v409; a gerencia lanca o orquestrador pos_treino_v409"}}}, "transition")
+@@ -59,2 +60,2 @@
+-    pronta = os.path.join(H, "PREPARACAO_v408_PRONTA.json")
+-    assert os.path.exists(pronta), "PREPARACAO_v408_PRONTA.json nao existe"
++    pronta = os.path.join(H, "PREPARACAO_v409_PRONTA.json")
++    assert os.path.exists(pronta), "PREPARACAO_v409_PRONTA.json nao existe"
+@@ -62,5 +63,5 @@
+-    records = [{"id": "prep-v408-fechada", "kind": "fact", "statute": "REAL",
+-                "text": "Preparacao da v408 fechada: pronta=%s; candidato %s; falta=%s. Quem constroi nao aprova: a revisao de terceiro e do Sonnet (REVISAO_TERCEIRO_v408.json). Nada instalado; rito nao rodado." % (pj.get("pronta"), pj.get("candidato_sha16"), pj.get("falta")),
+-                "sources": [S(pronta), S(os.path.join(H, "RELATORIO_PREPARACAO_v408.md"))]}]
+-    rc, tj = chamar({"operation": "transition", "reference": REF, "actor": ACTOR, "expected_revision": rev, "event_id": "prep-v408-fechada-%s" % ts,
+-                     "changes": {"records": records, "flow": {"phase": "preparacao_v408__fechada", "next_action": "a gerencia lanca o orquestrador pos_treino_v408.py (instalar, rito, pos-rito, G1 --publicar pela sessao de custodia, S10 app)"}}}, "transition")
++    records = [{"id": "prep-v409-fechada", "kind": "fact", "statute": "REAL",
++                "text": "Preparacao da v409 fechada: pronta=%s; candidato %s; falta=%s. Quem constroi nao aprova: a revisao de terceiro e do Sonnet (REVISAO_TERCEIRO_v409.json). Nada instalado; rito nao rodado." % (pj.get("pronta"), pj.get("candidato_sha16"), pj.get("falta")),
++                "sources": [S(pronta), S(os.path.join(H, "RELATORIO_PREPARACAO_v409.md"))]}]
++    rc, tj = chamar({"operation": "transition", "reference": REF, "actor": ACTOR, "expected_revision": rev, "event_id": "prep-v409-fechada-%s" % ts,
++                     "changes": {"records": records, "flow": {"phase": "preparacao_v409__fechada", "next_action": "a gerencia lanca o orquestrador pos_treino_v409.py (instalar, rito, pos-rito, G1 --publicar pela sessao de custodia, S10 app)"}}}, "transition")

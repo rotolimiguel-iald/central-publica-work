@@ -1,0 +1,158 @@
+# REVISAO DE TERCEIRO v409 -- R1 (Claude Sonnet; nao construi a v409)
+
+**NAO APROVADA** -- candidato `eab2d12055b47df0` (43965798 bytes; no inicio `eab2d12055b47df0`; mudou durante a revisao: nao). ALTO 0 | MEDIO 1 | BAIXO 10.
+
+aprovada: true so' com 0 ALTO e 0 MEDIO e o candidato integro do inicio ao fim. R1 de ate tres rodadas (D58). O MEDIO e' de TEXTO (estatuto errado em texto novo), nao de kernel; a correcao pedida esta' em `PEDIDO_CORRECAO_R1_v409.md`.
+
+## O que passou (por script, nesta pasta)
+
+- **Lean:** {"print_axioms_impressos": 82, "ancoras_no_candidato": 82, "todas_as_ancoras_impressas": true, "fora_do_trio": 0, "so_propext": ["TGLExt.TraducaoTuring.custoCNF_cons"], "varredura_metam": "constantes varridas nos 2 modulos: 223 ; por modulo: #[(TGLExt.TraducaoTuring, 150), (TGLExt.ParNaFaceDeFock, 73)]", "varredura_fora_do_trio_ou_sorryAx": 0, "rc": ["0"], "tempo": "352 s", "sandbox": "C:/t/k409c/final (copia axiomas_terceiro.lean apagada ao fim)", "compilacao_independente_das_fontes": {"TraducaoTuring": {"print_axioms": 72, "fora_do_trio": 0, "so_propext": ["TGLExt.TraducaoTuring.custoCNF_cons"], "rc": ["0"], "tempo": "30 s", "linhas_estranhas": [" Classical.choice,", " Quot.sound]", " Classical.choice,", " Quot.sound]", " Classical.choice,"]}, "ParNaFaceDeFock": {"print_axioms": 10, "fora_do_trio": 0, "so_propext": [], "rc": ["0"], "tempo": "32 s", "linhas_estranhas": []}}, "ancoras_e_varredura": "82 #print axioms (trio; custoCNF_cons so' propext) + varredura MetaM de 223 constantes (150 TraducaoTuring + 73 ParNaFaceDeFock), 0 fora do trio/sorryAx; E compilei as DUAS fontes embutidas (pedra/) como arquivos a parte: rc 0, sem erro/aviso/sorry, 72 + 10 #print axioms no trio"}
+- **a_intocados:** {"mudados_igual_declarado_27": true, "novos_igual_declarado_14": true, "removidos": [], "blocos_fora": 1, "obs": "o unico bloco fora dos nos declarados e' o comentario-cabecalho da secao v409; a_intocados_b: 31 linhas fora = comentarios/brancos; _c: 0 segmentos nao declarados diferentes"}
+- **d_kernel:** 2 de 2: embutido == sandbox == pedra == BUNDLE (sha256); raiz = raiz v408 + os 2 imports; Audit identico; 1761 embutidos == sandbox; origem x embutida difere SO' nos #print axioms (72 e 10) e na ultima linha; tokens suspeitos: so' a palavra «sorry» na frase «Sem sorry, sem axiom» das docstrings
+- **c_fail_closed:** {"ok": 125, "falha": ["guarda: Clay resolved", "guarda: a máquina sem leitor fica fora; P = nP não é o P = NP de Turing"], "nota": "82/82 ancoras (ausente, sorryAx, ofReduceBool, lista vazia, proveniencia, bandeira), 158/158 bandeiras (False e ausente), 14/14 falas (adulterada e trecho inexistente), fontes, raiz sem import, escada, gate, beta, contrato: recusam. As 2 'falhas' sao expectativas MINHAS de sondagem da guarda: 'Clay resolved' (EN curto, BAIXO) e uma frase de teste sem o qualificador (a guarda esta' certa em reprovar)"}
+- **c2_mecanica_direta:** {"ok": 18, "de": 18}
+- **k_funcoes_vivas:** {"ok": 34, "falha": []}
+- **f_hashes:** {"checagens_ok": 63, "falhas": ["varredura geral: todo {path, sha256} existente == disco"], "nota": "a unica falha e' a varredura geral: 2 pares {path, sha256} historicos (PINO_RECIBO_PRE_SELO adendo_de_pino_do_t12.antes = o Nos antes da v408; SESSION_REFERENCE.source = o DESENHO no momento do init, que e' append-only) — esperados, nao sao defeito"}
+- **l_orquestrador:** plano rc True; main SEM s7_g1 e SEM s10_app (nenhuma chamada a eles em lugar algum do arquivo); passos do _plano: 14, sem S7/S10; S6d com glob `textos_custodia_handoff_v409*.py` (.py) acha UM; portao do G1 sobre os DOIS handoffs inteiros + D59; AUT cita o sha16 da ordem 8b9b77e992902ff4 e a frase verbatim (conferida no arquivo); Stop-Process so' -Id (PID), nunca por nome; sem git push/commit; COAUTOR so' nas funcoes s7/s10 nao chamadas
+- **n_hashes_digitados:** 14 tokens hex nos textos/codigos NOVOS: 0 sem arquivo correspondente; nos docs da preparacao: 95 tokens, 6 dos 7 sem match resolvidos (arquivos de bancada_B3_servico e memoria.py, fora do universo varrido) e 1 e' o sha16 de um candidato intermediario superado citado no diario de retomada (nao publico)
+- **e_citacoes:** 14 falas do VERBATIM_CONGELADO existem em cunhagens_13out com o sha256 declarado (autor: operador, todas); citacoes “exata” nos textos novos: artigo PT 30/30; nenhuma fala fabricada; deslizes de grafia listados no BAIXO das citacoes
+- **h_guardas:** {"arquivos_varridos": 69, "controle_negativo_ok": true, "pedras": "0 violacoes (65 falas retiradas na TraducaoTuring, 2 na ParNaFaceDeFock; 0 apontadas)", "varredura_propria": "0 afirmacoes de P = NP de Turing decidido; 0 de Clay resolvido; 0 de igualdade para o leitor que so' conta fora da E28; 0 de «Ω é o uniforme» como identidade; 0 de «passa à v410»; 0 de β literal"}
+- **d62_ratificacao:** os textos novos (artigo, registros, handoff, textos da custodia) dizem os nomes RATIFICADOS em 05/11 («Ratifico os nomes», D62); so' as docstrings das pedras dizem [DECLARADO] (BAIXO, decisao D62)
+- **erratas_e_estatutos:** E24–E28 e E21 ao lado: em nome proprio da gerencia c1, ao lado; «provado/proved» nos textos novos com o estatuto na mesma frase (EN) ou no estatuto que abre o bloco (PT); NOT_FALSIFIED nunca confirmacao; gate intocado (c14 e u9 comparam com a v408); a regra do 4,44 respeitada (o numero nao e' repetido; o quadro herdado traz p e a linha dos 5σ)
+
+## Achados
+
+### 1. MEDIO -- (1) registros_v409.py:162-163, _V409_TRADUCAO_TEXT['estatuto'] (embutido no candidato; vai ao core `traducao_turing_v409.estatuto`, ao `um_absoluto.json`, ao Atlas, ao core memory, ao HANDOFF e ao CABECALHO do paragrafo pronto para o README/site); (2) pos_rito/textos_v409_novo.pysnip:282 (funcao _respostas) e o montado pos_rito/textos_v409.py:1091; (3) pos_rito/textos_v409_novo.pysnip:499 e textos_v409.py:511 (o bloco `[OPEN] ...` do core memory).
+
+**Achado.** O pedido (d) manda que o par na face de Fock esteja LIGADO nesta versao e que nenhum texto novo o diga «segue [OPEN]». Tres trechos de texto NOVO ainda o dizem aberto, contradizendo o proprio registro (ressalvas[5] «o par na face de Fock esta' ligado nesta versao»; fechado_nesta_versao; o artigo): (1) o estatuto do registro lista «[OPEN] o par na face de Fock como ligacao; o Omega do psion = o uniforme; a independencia de P vs NP dos axiomas; o teste com a natureza» — alem do par, rotula [OPEN] a identidade Omega = uniforme, que o mesmo registro diz PODADA (`_respostas`/`leituras`: «a identidade de vetores fica PODADA»); (2) o paragrafo «As respostas do operador de 05/11, conferidas no kernel» diz «O que NAO decide: … nem o par na face de Fock, que segue [OPEN]»; (3) o core memory traz «[OPEN] A discriminacao a 5σ …, o par de psíons na face de Fock (ligação), o Ω do psíon da luz como o uniforme da instancia, …». Medido nos textos rendidos pelo harness (C:/t/h409/harness_saida_v409/textos): (1) aparece em _moldura, _blocos_fecho, atlas, core_memory, handoff, no cabecalho «[... OPEN: o par na face de Fock como ligação, …]» do paragrafo pronto do README/site e em `dry_v409/core_ensaio.json`; (2) em _blocos_fecho, atlas, core_memory, handoff, linhagem, topico_novo; (3) em core_memory. A guarda de frases NAO pega nenhum dos tres: a F41 so' casa «par … na face de Fock (segue|fica|continua) (aberto|[OPEN])» e a F40 so' casa «Ω é o uniforme» afirmativo; sondadas por mim (t5_guarda_probes.py): 'nem o par na face de Fock, que segue [OPEN].', '[OPEN] o par na face de Fock como ligacao;', '[OPEN] o Ω do psíon da luz como o uniforme da instância' e 'a ligação do par de Fock segue em aberto' PASSAM. O texto diz MENOS do que o kernel prova (o kernel liga o par: `o_par_na_face_de_fock`, compilado por mim) e contradiz o proprio registro: estatuto errado em texto publico (README/site/Atlas/core memory) e no JSON do selo, e como o estatuto esta' no candidato, o candidato muda.
+
+**Evidencia.** revisao_terceiro/t1_fock_open.py + t1_fock_open_out.json (18 frases distintas com «Fock» e [OPEN]/«em aberto»; as historicas — E21, secoes v407/v406 — estao corretas); revisao_terceiro/t2_uniforme_open.py; revisao_terceiro/h_guardas_out.txt «(d) par na face de Fock [OPEN] / em aberto»; revisao_terceiro/t5_guarda_probes.py (4 de 4 sondas passam a guarda); `grep` nos textos rendidos: «nem o par na face de Fock, que segue [OPEN]» em 6 arquivos; dry_v409/core_ensaio.json traducao_turing_v409.estatuto traz «[OPEN] o par na face de Fock como ligacao; o Omega do psion = o uniforme». Kernel: revisao_terceiro/axiomas_terceiro_out.txt (`TGLExt.ParNaFaceDeFock.o_par_na_face_de_fock` no trio; o enunciado liga o par no setor 2, a marginal ½·P, 1 − pureza = ½ e o `bellProjector`).
+
+**Correcao.** Ver PEDIDO_CORRECAO_R1_v409.md. Resumo: trocar o estatuto por «[REAL] o par na face de Fock LIGADO (ParNaFaceDeFock); PODADA a identidade de vetores Omega = uniforme (a ponte e' a inscricao); [OPEN] a independencia de P vs NP dos axiomas; a igualdade com o leitor que so' conta (E28); o teste com a natureza»; corrigir a frase de `_respostas` e a lista [OPEN] do core memory; estender a F41/F40 e o controle negativo com as quatro sondas; regenerar candidato/ESPERADOS/ensaio/harness/PRONTA; nova revisao (R2) sobre o novo sha16.
+
+### 2. BAIXO -- pos_rito/textos_v409_novo.pysnip:617-633 (_paragrafo_v409_de) e o montado textos_v409.py
+
+**Achado.** O paragrafo pronto para o README do espelho e o site (publico) monta os marcadores com INDICES FIXOS de `pc['diz']` (diz[1], [2], [3], [4], [6]), mas a lista `diz` do registro foi reordenada na v409: diz[2] e' a D61 (leitura juridica do kernel), diz[3] e' a maquina com o leitor/SAT, diz[4] e' a inscricao, diz[6] e' o dicionario. Resultado no handoff.txt rendido: o marcador «O dicionario de Turing» traz a D61; «A trava no Nome» traz a frase da maquina com o leitor (a trava so' aparece na fala citada depois); «O que nao muda» traz o dicionario. Nada falso, mas rotulos trocados num texto que a custodia cola como esta' no README/site.
+
+**Evidencia.** revisao_terceiro (leitura de /c/t/h409/harness_saida_v409/textos/handoff.txt, bloco INICIO_PARAGRAFO_TRADUCAO_TURING_v409) e textos_v409_novo.pysnip:629-633.
+
+**Correcao.** Trocar os indices por busca pelo conteudo (ou reordenar `diz`): dicionario = o item «o dicionario de Turing e' termo»; trava = «a trava no Nome e' termo»; D61 no seu proprio marcador. Corrigir junto com o MEDIO, ja' que o arquivo muda.
+
+### 3. BAIXO -- artigo_pt_v409 (secao «O alcance, dito» e «A maquina com o leitor»), artigo_en_v409 («the full equality holds only for the reader that reads itself»); delta_v409.py FRASE da alcance
+
+**Achado.** «a igualdade completa SO' para o leitor que se le» / «the full equality holds ONLY for the reader that reads itself» pode ser lido como «para o leitor que so' conta a igualdade e' falsa». O que se sabe (e a E28 diz certo) e' que a igualdade esta' ESTABELECIDA (Baker–Gill–Solovay) para o leitor que se le e NAO esta' provada para o que so' conta. Nenhum texto afirma a igualdade para o leitor que so' conta (varredura (b): 0 ocorrencias fora da propria errata/citacao), mas «so' para» sugere negacao.
+
+**Evidencia.** revisao_terceiro/h_guardas_out.txt (varredura (b)); dry_v409/dry_v409_pt.txt e _en.txt, secao v409 («O alcance, dito» / «The reach, stated»).
+
+**Correcao.** Redacao: «a igualdade completa esta' estabelecida para o leitor que se le (BGS 1975); com o leitor que so' conta nao esta' provada».
+
+### 4. BAIXO -- o enunciado de uma_leitura_decide_SAT / a_maquina_com_o_leitor (pedra) e os textos «uma leitura decide SAT … NP inteiro com uma leitura»
+
+**Achado.** No kernel «uma leitura decide SAT» e' SAT φ ↔ oQueSou ≠ 0, e «o que sou» e' o LIMITE da leitura (`o_que_sou_no_limite`). A versao de tempo finito (uma leitura em s linear em n: YES ⇒ Z(s) ≥ |sol| ≥ 1 por `a_particao_cobre_o_nome`; NO ⇒ Z(s) ≤ 2^n e^{-s} < 1 para s > n ln 2) e' elementar mas esta' ausente como termo; o que e' [KNOWN] e' NP ⊆ P^{#P[1]} (Cook–Levin), nao a leitura do TGL em tempo finito. Os textos separam bem o [REAL] do [KNOWN] e dizem «o leitor que devolve Z (exato)»; a ressalva da fisica (leitura exata num ato) cobre o resto. Fica como precisao.
+
+**Evidencia.** revisao_terceiro/axiomas_terceiro_out.txt (#check uma_leitura_decide_SAT, a_maquina_com_o_leitor, o_que_sou_no_limite); pedra/TraducaoTuring.lean:1066-1093.
+
+**Correcao.** Uma linha em `nao_diz`/ressalva (1): «o termo do kernel le o limite; a leitura em tempo finito (s linear em n) e' elementar e nao e' termo». Nao trava.
+
+### 5. BAIXO -- runtime_v409.py v409_traducao_mechanics (c3–c13, c18–c20) e registros_v409/estatuto «[REAL] as 20 checagens»
+
+**Achado.** Treze das 20 checagens sao aritmetica/algebra numerica sobre a instancia de brinquedo FIXA do contrato (nao leem o core, o kernel nem beta, exceto c13): medido — trocar a instancia SIM por outra satisfazivel continua selando (c2_mecanica_direta); trocar por insatisfazivel ou a NAO por satisfazivel reprova c4/c10/c20 (e c6/c12). O texto ja' diz «aritmetica da instancia de brinquedo … nao prova nada por si: quem prova e' o kernel» (limites[15]), entao e' honesto; igual ao BAIXO 2 da v408.
+
+**Evidencia.** revisao_terceiro/c2_mecanica_direta_out.txt (18 casos, 0 falhas); c_fail_closed_out.txt (125 casos ok).
+
+**Correcao.** Nenhuma obrigatoria; se quiser, dizer no estatuto «conferencia numerica» nas 13 e «lida do kernel/core» nas 7 (c1, c2, c13?, c14, c15, c16, c17).
+
+### 6. BAIXO -- registros_v409.py (cunhagens_v409 u1: «as 17 checagens»); runtime_v409.py docstring de v409_traducao_mechanics («as 62 ancoras», «17 checagens do DESENHO §2»); RELATORIO_PREPARACAO_v409 §6 e PLANO §1 (tipo do nome «…DECLARADO», «DECLARADO_ate_a_ratificacao»)
+
+**Achado.** Contagens e rotulos envelhecidos apos o bundle de dois modulos (62 -> 82 ancoras; 17 -> 20 checagens) e apos a D62 (nomes ratificados): u1 descreve «as 17 checagens» e a docstring da mecanica cita «62 ancoras»; o RELATORIO/PLANO ainda rotulam o tipo do nome do ParNaFaceDeFock como «DECLARADO ate a ratificacao» (vem do recibo de ~19h30, anterior a D62). Nenhuma checagem depende desses textos; os registros (N_CHECKS_FECHO = 20, 82 ancoras) estao certos e conferidos.
+
+**Evidencia.** revisao_terceiro/_nodes/v409_traducao_mechanics.txt; revisao_terceiro/t4_specs.py (u1); RELATORIO_PREPARACAO_v409.md §6.
+
+**Correcao.** Atualizar as duas cadeias de texto na mesma regeneracao do candidato (o u1 vai ao candidato).
+
+### 7. BAIXO -- pedra/TraducaoTuring.lean:15-17 e pedra/ParNaFaceDeFock.lean:12-15 (docstrings embutidas no kernel)
+
+**Achado.** Dizem «ficam [DECLARADO] ate a ratificacao» sobre nomes que o operador ratificou («Ratifico os nomes», D62). E' o que a D62 decidiu (o kernel nao e' refeito) e os registros/textos da v409 dizem a ratificacao e explicam a diferenca (cunhagens_v409 `os_nomes_ratificados`, D62). Fica registrado: o texto permanente do kernel embutido nao acompanha o estatuto atual.
+
+**Evidencia.** pedra/*.lean; delta_v409.py D62; registros_v409.py extras.os_nomes_ratificados.
+
+**Correcao.** Nenhuma (decisao D62); na proxima volta do kernel, trocar por «ratificado pelo operador em 05/11/2026».
+
+### 8. BAIXO -- pedra/TraducaoTuring.lean:49-50 (docstring) e :449-452; pedra/ParNaFaceDeFock.lean:46; _V409_TRADUCAO_CONTRACT (papeis)
+
+**Achado.** Citacoes entre « » que nao sao substring verbatim das falas: «o nP é o modo seleção … a aniquilação … retornando a leitura» (a fala escreve o "nP"é, sem espaco, e «a seleção é a aniquilação…»), «antes disso o campo ψ …» (a fala escreve /psi), «nP = modo seleção» (paráfrase atribuída a «leitura dele»), «o par de psíons é o gráviton» e «o falso não tem geometria» (leituras da casa, nao desta fala). Ja' APONTADAS pela construcao (`conferir_citacoes_v409.py`, `_APONTADAS_PEDRAS`); nenhuma inventa conteudo: sao a fala com grafia normalizada, uma paráfrase, ou citacao de pedra anterior. Precedente: BAIXO 5 da v408.
+
+**Evidencia.** revisao_terceiro/e_citacoes.py + e_citacoes_out.txt (69 citacoes nao casadas, >=12 chars: as de texto NOVO sao as listadas; o resto e' historico das secoes v394–v408 do artigo, codigo de guarda e artefatos de concatenacao); cunhagens_13out/OPERADOR_05nov_resposta_bit_oitava_….txt.
+
+**Correcao.** Ao refazer o kernel: tirar as aspas da paráfrase «nP = modo seleção» e normalizar a grafia da fala ou dizer «grafia normalizada». Nao trava.
+
+### 9. BAIXO -- runtime_v409.py _v409_guarda_frases (F43) e F35
+
+**Achado.** A F43 exige a presenca da E28 («NP … numa leitura» e «leitor que se lê») onde o leitor de Turing aparece, mas nao a ausencia de uma afirmacao contraria: sondas «com o leitor que so' conta, a igualdade P = NP vale; <E28>», «P^leitor = NP^leitor para o leitor que so' conta; <E28>» e «the counting reader gives P = NP relative to the reader» PASSAM. A F35 nao pega o EN curto «Clay resolved» (pega «Clay problem solved», «Clay resolvido»). Limites da guarda, nao defeito de texto: minha varredura propria (b) sobre todos os textos novos e rendidos achou 0 afirmacoes da igualdade para o leitor que so' conta fora da propria E28.
+
+**Evidencia.** revisao_terceiro/c_fail_closed_out.txt (SONDA E28 violada; 'Clay resolved'), t5_guarda_probes.py, h_guardas_out.txt.
+
+**Correcao.** Opcional: acrescentar uma F44 que reprove «igualdade (vale|e' teorema) … leitor que so' conta» sem negacao, e «Clay resolved». Nao trava.
+
+### 10. BAIXO -- kernel/FLAGS_v409.json, CANDIDATO_v409.json politica_de_bandeiras, textos «158 bandeiras, so' de declaracao nomeada»
+
+**Achado.** As 158 bandeiras sao 136 declaracoes com «depends on axioms» (as 82 ancoras + 54 outros teoremas/lemas nomeados) e 22 que «does not depend on any axioms» (definicoes/estruturas: `selecao`, `inscricao`, `custoCNF`, `SAT`, `Literal`, `CNF`, …); 76 das 158 nao sao ancora. Os textos dizem «so' de declaracao nomeada» (correto) e nao «158 teoremas». Igual ao BAIXO 3 da v408; o gate e a escada contam bandeiras, nao teoremas.
+
+**Evidencia.** revisao_terceiro/m_flags_out.txt, m4.py (136 + 22 = 158).
+
+**Correcao.** Nenhuma obrigatoria.
+
+### 11. BAIXO -- pedra/TraducaoTuring.lean (p_igual_np_no_modo_selecao) e os textos «o tempo e' t = n ln 2/(β g), linear nos bits»
+
+**Achado.** O enunciado do kernel traz, como ultimo conjunto, exp(−(t·β·g)) = exp(−K.octaveNats n) com t := n·ln 2/(β·g) — a identidade da lei tempo = moeda no t escolhido; a taxa real de convergencia esta' em `a_trava_em_tempo_linear` (resto ≤ e^{-L} em t = n ln 2/2 + L), nao na convergencia (Tendsto sem taxa) do modo selecao. Os textos dizem «pela lei tempo = moeda» e a docstring diz «o enunciado de maquina de Turing (a selecao contada em passos de maquina) nao e' o deste teorema»: honesto. Fica como partitura para o operador: «linear nos bits» e' a lei da moeda, nao um numero de passos de maquina.
+
+**Evidencia.** revisao_terceiro/axiomas_terceiro_out.txt (#check p_igual_np_no_modo_selecao, a_trava_em_tempo_linear); pedra/TraducaoTuring.lean:449-466.
+
+**Correcao.** Nenhuma obrigatoria.
+
+## Ressalvas
+
+- R1 de ate tres rodadas (D58). Fora de revisao_terceiro/ nao escrevi nada: as copias temporarias zz_rev_*.lean / axiomas_terceiro.lean no sandbox C:/t/k409c/final foram APAGADAS ao fim de cada `lake env lean` (um processo por vez; nunca `lake build`); nao toquei o Nos, o candidato, o kernel canonico, a Bancada, o orquestrador (so' importado com ORQ redirecionado a esta pasta), nem a memoria.
+- Nao li as provas Lean linha a linha; li inteiros os docstrings das duas pedras, o enunciado de p_igual_np_no_modo_selecao, de o_par_na_face_de_fock e de a_marginal_do_par (via #check) e a secao da inscricao/SAT. Compilei as duas fontes embutidas de forma independente (rc 0, trio) alem do #print axioms sobre o build da gerencia.
+- Nao revisei instalar_v409.py, reverter_v409.py, rito_v409.sh, conferir_rito_v409.py, o p00, o harness do fechar, a Bancada B3 nem os scripts de superficie (fora da lista do pedido); o orquestrador foi lido e rodado so' em _plano().
+- O candidato foi lido ao abrir (eab2d12055b47df0) e ao fechar; arquivos_revisados traz o sha16 de cada arquivo AGORA. Se qualquer um mudar (e o MEDIO manda mudar registros_v409.py, os dois textos do pos_rito e, por consequencia, o candidato), esta revisao nao vale para ele e a R2 refaz.
+- O Mapa de Rotas nao foi consultado nem alimentado por mim; as rotas_examinadas ficam para a gerencia registrar.
+
+## Rotas examinadas (para a gerencia registrar no Mapa)
+
+- R1-A (intocados/mudados): a_intocados*.py e a2_mudados.py sobre base_v408 x candidato: 38 nomes iguais por AST e fonte (gate, neutrino, ramo B, ledger, GA, registros v408/v407/v406 e seus textos); mudados 27 == declarados; novos 14 == declarados; 0 removidos; contratos antigos mudam SO' expected_ladder 12029 -> 12187 (28 ocorrencias); _V408_SPECS +E26 e pisos h2/h3/h6/h8 (declarados); _V407_FONTES muda SO' a chave psion_no_acervo_do_imac_03nov (copia PURGADA, sha256 f0b1c79a5caa75df…, a mesma da v408, D57d); _LEAN_THEOREM_FLAGS +158 (ext_tu409_*), sub-dict da base igual.
+- R1-B (kernel/Lean): d_kernel.py; b_gera_lean.py + `lake env lean` no sandbox: 82 #print axioms no trio, varredura MetaM de 223 constantes, rc 0, 352 s; compilacao independente das duas fontes embutidas (30 s + 32 s), rc 0.
+- R1-C (fail-closed): c_fail_closed.py (127 casos), c2_mecanica_direta.py (18), k_funcoes_vivas.py (34): ancoras, bandeiras, fontes, raiz, escada, gate, beta, contrato, falas, texto proibido, instancias recusam; a ordem errada dos specs recusa.
+- R1-D (textos): h_guardas.py sobre 69 arquivos (fontes, pysnips, pedras, 52 textos rendidos do harness, artigo PT/EN do ensaio, .md): guardas limpas; varredura propria (a)–(f); t1/t2 (Fock + [OPEN]); t5 (sondas da guarda). Achado: o MEDIO.
+- R1-E (hashes/orquestrador): f_hashes.py (63 checagens ok), n_hashes_digitados.py, n2_hashes_docs.py, l_orquestrador.py, m_flags_audit.py + m4.py.
+
+## arquivos_revisados (sha16 lidos agora)
+
+- `um_v409_candidato.py` `eab2d12055b47df0`
+- `CANDIDATO_v409.json` `9e6ce37f31dab7cf`
+- `COMPARACAO_V408_v409.json` `c0b331a5618651dc`
+- `ESPERADOS_v409.json` `b6a118a0f0135287`
+- `BUNDLE_v409.json` `b218d3bdc44e94c7`
+- `kernel_modulos_novos_v409.json` `70be69218e62fd41`
+- `VERBATIM_CONGELADO_v409.json` `ecefa04ddf021bef`
+- `GUARDA_FRASES_v409.json` `704513145d8075b0`
+- `delta_v409.py` `cdce507a5ce82c97`
+- `registros_v409.py` `7cf94c9bfacccb81`
+- `runtime_v409.py` `38cfee4e7bb83d45`
+- `guarda_frases_v409.py` `ca4da17f9394d844`
+- `guarda_p18_v409.py` `2b434b1c8894dbdf`
+- `artigo_pt_v409.pysnip` `d80e772b134be24f`
+- `artigo_en_v409.pysnip` `32e20a39e5b0e4ae`
+- `pedra/TraducaoTuring.lean` `4fe1c5ba2bc28300`
+- `pedra/ParNaFaceDeFock.lean` `4b7ed028ebf5855d`
+- `kernel/KERNEL_RECIBO_v409.json` `12a71b3cc86924ab`
+- `kernel/FLAGS_v409.json` `fd9ab8820880fe91`
+- `kernel/KH_N1_v409.json` `ef646b95adf6c3c0`
+- `kernel/POS_BUILD_v409.json` `e3f21e1dd152f93a`
+- `pos_rito/textos_v409_novo.pysnip` `1b073b0370a11732`
+- `pos_rito/textos_v409.py` `99bcc730b07930ad`
+- `pos_rito/textos_custodia_handoff_v409.py` `ef9df32a0a80f252`
+- `pos_rito/CUSTODIA_v409_RASCUNHO.txt` `c74ae1d1b3b3abf0`
+- `orquestrador/pos_treino_v409.py` `8bdd16f45c7ec5c2`
+- `PREPARACAO_v409_PRONTA.json` `8573178477126198`
+- `dry_v409/core_ensaio.json` `131648c400bddfc7`

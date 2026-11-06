@@ -1,0 +1,30 @@
+--- a/iald_app_providers.py
++++ b/iald_app_providers.py
+@@ -745,11 +745,22 @@
+             if not calls or round_no == rounds-1: raise ProtocolError('tool_round_limit')
+             if cancel.is_set(): raise InterruptedError()
+             batch = [calls[i] for i in sorted(calls)]
+-            messages.append(dict(role='assistant', content=content, reasoning_content=reasoning, tool_calls=batch))
+-            for position, item in enumerate(batch):
+-                if cancel.is_set(): raise InterruptedError()
++            # Reject an invalid batch before any tool can have an effect.
++            call_ids = set()
++            arguments = []
++            for item in batch:
++                call_id = item['id']
+                 name = item['function']['name']
+                 args = json.loads(item['function']['arguments'])
+-                if name not in names or not item['id'] or not isinstance(args, dict): raise ProtocolError('tool_not_allowed')
++                if name not in names or not isinstance(args, dict) or not isinstance(call_id, str) or not call_id.strip():
++                    raise ProtocolError('tool_not_allowed')
++                if call_id in call_ids:
++                    raise ProtocolError('duplicate_tool_call_id')
++                call_ids.add(call_id)
++                arguments.append(args)
++            messages.append(dict(role='assistant', content=content, reasoning_content=reasoning, tool_calls=batch))
++            for position, (item, args) in enumerate(zip(batch, arguments, strict=True)):
++                if cancel.is_set(): raise InterruptedError()
++                name = item['function']['name']
+                 emit({'iald_status': {'fase': 'ferramenta', 'tool': name, 'rotulo': ('Executando etapa da tarefa' if name in task_names else 'Consultando fontes da TGL'),
+                                      'loop': round_no+1, 'max_loops': rounds}})
+
