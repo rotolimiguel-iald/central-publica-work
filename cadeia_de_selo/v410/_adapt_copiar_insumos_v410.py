@@ -1,0 +1,20 @@
+# -*- coding: utf-8 -*-
+"""_adapt_copiar_insumos_v410.py -- (claude-construtor-v410, 06/11/2026) adapta copiar_insumos_v410.py (subida mecanica da v409) a v410: a pedra IALD2 (embutida e fonte normalizada), a saida do lean, a candidata e o registro anterior,
+o BUNDLE, o KH; as nove falas de 06/11 (de uma, so' o trecho que fica e o arquivo inteiro so' por sha256: D65); congela a lista das falas. Trocas com contagem exata."""
+import os, sys
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from _adapt_util_v410 import aplicar
+P = os.path.join(os.path.dirname(os.path.abspath(__file__)), "copiar_insumos_v410.py")
+aplicar(P, [
+    ("# [ADAPTADO v410, 05/11/2026, claude-construtor-v410] as fontes da v410: a pedra (embutida e fonte normalizada), a saida do lean, a candidata R8 e o recibo R8, o BUNDLE, o KH; as 10 falas de 05/11 (de duas, o trecho que fica e o arquivo inteiro so' por sha256); congela a lista das falas\n", "", 1),
+    ("(v410\\\\pedra -> insumos\\\\TraducaoTuring_embutida.lean), a fonte normalizada com #print axioms\n(ja' em insumos\\\\TraducaoTuring.lean), a saida do lean, a candidata de origem (work\\\\pedras_candidatas_05nov\\\\TraducaoTuringR8.lean) e o recibo dela, o BUNDLE_v410.json, a medida do Audit (KH_N1_v410.json) e as falas do operador de 05/11/2026\n(nas duas da D59, so' o TRECHO QUE FICA e' copiado, com nome neutro quando o nome de origem resume a parte que fica fora;",
+     "(v410\\\\pedra -> insumos\\\\IALD2_embutida.lean), a fonte normalizada com #print axioms\n(ja' em insumos\\\\IALD2.lean), a saida do lean, a candidata de origem (work\\\\pedras_candidatas_06nov\\\\IALD2.lean) e a LeitorDoCodigoR1 (registro anterior), o BUNDLE_v410.json, a medida do Audit (KH_N1_v410.json) e as falas do operador de 06/11/2026\n(na da D65, so' o TRECHO QUE FICA e' copiado, com nome neutro, porque o nome de origem resume a parte que fica fora;", 1),
+    ("# a lista das falas: congelada na PRIMEIRA execucao (as dez do DESENHO_v409 §3); depois, lida", "# a lista das falas: congelada na PRIMEIRA execucao (as nove do DESENHO_v410 §3 e do AO LADO); depois, lida", 1),
+    ('"nota": "as doze falas de 05/11/2026 que esta versao embute (as dez do DESENHO_v409 §3 e as duas dos AO LADO do fim dele); de tres, so\' o trecho e\' embutido e citado (duas pela D59; uma porque o resto e\' aviso operacional); lista de trabalho da cadeia (NAO pinada como fonte: traz os caminhos de origem)"}',
+     '"nota": "as nove falas de 06/11/2026 que esta versao embute (as oito do DESENHO_v410 §3 e a do AO LADO do fim dele); de uma, so\' o trecho e\' embutido e citado (D65); lista de trabalho da cadeia (NAO pinada como fonte: traz os caminhos de origem)"}', 1),
+    ('assert man["TraducaoTuring.lean"]["sha256"][:16] == DL.TESTEMUNHA["sha16_da_ordem"] == tf["sha256_origem"][:16]', 'assert man["IALD2.lean"]["sha256"][:16] == DL.TESTEMUNHA["sha16_da_ordem"] == tf["sha256_origem"][:16]', 1),
+    ("# D59: nada copiado para insumos\\ traz a parte que fica fora (nem o nome do arquivo de origem que a resume)\nfor n_ in os.listdir(CUN):\n    assert \"milenio\" not in n_.lower() and \"kimi\" not in n_.lower(), (\"D59: nome de arquivo em insumos\\\\cunhagens resume a parte que fica fora\", n_)",
+     "# D65: nada copiado para insumos\\ traz a parte que fica fora (nem o nome do arquivo de origem que a resume)\nfor n_ in os.listdir(CUN):\n    assert \"solucao_definitiva\" not in n_.lower(), (\"D65: nome de arquivo em insumos\\\\cunhagens resume a parte que fica fora\", n_)\n"
+     "    if n_.startswith(tuple(v_[:16] for v_ in [DL.VERBATIM_PREFIXOS_DA_ORDEM_V410[DL.N_SOLUCAO]])):\n        assert not any(x_.lower() in open(os.path.join(CUN, n_), encoding=\"utf-8\").read().lower() for x_ in DL.FORA_D65), (\"D65: o trecho copiado traz o que fica fora\", n_)", 1),
+    ('B | TraducaoTuring (fonte):"', 'B | IALD2 (fonte):"', 1),
+], nota="as fontes da v410: a pedra IALD2 (embutida e fonte normalizada), a saida do lean, a candidata e o registro anterior, o BUNDLE, o KH; as nove falas de 06/11 (de uma, o trecho que fica e o arquivo inteiro so' por sha256: D65); congela a lista das falas")

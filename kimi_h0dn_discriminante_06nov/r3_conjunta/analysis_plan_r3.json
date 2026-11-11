@@ -1,0 +1,165 @@
+{
+  "schema": "TGL_H0DN_BG1_R3_JOINT_PREREGISTRATION_V1",
+  "status": "CANDIDATE_BLOCKED_NOT_FROZEN",
+  "title": "R3 — discriminação conjunta H0DN × BG1 com nulo exato e compatibilidade TGL",
+  "created_local_date": "2026-11-06",
+  "opening": {
+    "enabled": false,
+    "opening_allowed_now": false,
+    "single_observed_opening_only_after_all_gates": true,
+    "observed_fit_performed": false,
+    "observed_results_file_forbidden_before_freeze": "OBSERVED_RESULTS_R3.json",
+    "historical_public_centers_known": true,
+    "new_observed_center_read_for_this_preregistration": false
+  },
+  "scientific_question": "Does the frozen H0DN × BG1 network reject the zero local/background log-H offset at one-sided five sigma while remaining compatible with the frozen TGL shift at bilateral 95%?",
+  "primary_model": "free_cepheid_host_differential_bias",
+  "secondary_diagnostic_model": "published_baseline",
+  "model_selection_by_result": false,
+  "primary_rule": {
+    "joint": "z_null_exact_bg >= q_primary AND abs(z_tgl) <= compatibility_halfwidth",
+    "q_primary": "RECOMPUTE_AFTER_PHYSICAL_COVARIANCE_CLOSES",
+    "compatibility_halfwidth": 1.959963984540054,
+    "null_tail": "one_sided_positive",
+    "null_alpha": 2.866515718791933e-07,
+    "compatibility_coverage": 0.95,
+    "compatibility_gradient": "Separate grad(logH+logK), preserving its covariance with grad(logH), as in frozen R2"
+  },
+  "secondary_rule": {
+    "joint": "z_null_exact_bg >= q_secondary AND abs(z_tgl) <= compatibility_halfwidth",
+    "q_secondary": "RECOMPUTE_AFTER_PHYSICAL_COVARIANCE_CLOSES",
+    "role": "Diagnostic only; cannot overturn, replace or improve the primary verdict"
+  },
+  "exact_background": {
+    "physical_model": "Gaussian H0 from pinned BG1; no clipping, redraw or fitting",
+    "score": "z_null_exact_bg = (hhat - (log10(H0+dH0)-log10(H0))) / sd_null",
+    "threshold_method": "Numerically integrate the exact physical-H0 background tail and solve q so the marginal null tail equals null_alpha",
+    "quadrature_interval_standard_deviations": [-12, 12],
+    "quadrature_epsabs": 1e-17,
+    "positive_H0_required": true,
+    "r2_reference_only": {
+      "published_baseline_q_over_sd0": 5.00360498452007,
+      "free_cepheid_host_differential_bias_q_over_sd0": 5.001955991015191,
+      "warning": "Reference values are not R3 thresholds and must not be reused after covariance changes"
+    }
+  },
+  "verdicts": {
+    "DISCRIMINATED_NULL_AND_COMPATIBLE_TGL_AT_5SIGMA": "Primary joint rule passes, all covariance/systematic gates pass, and route-selection accounting is valid. One determination only, not final physical confirmation.",
+    "NULL_REJECTED_BUT_NOT_DISCRIMINATED": "Primary exact null rule passes but abs(z_tgl) exceeds compatibility_halfwidth.",
+    "TGL_COMPATIBLE_NULL_NOT_REJECTED": "Primary exact null rule does not pass and abs(z_tgl) is within compatibility_halfwidth; report power and never upgrade to detection.",
+    "NOT_DISCRIMINATED": "Primary exact null rule does not pass and abs(z_tgl) exceeds compatibility_halfwidth.",
+    "INCONCLUSIVE_SYSTEMATICS": "A required covariance, custody, support, calibration or prespecified physical-sensitivity condition fails or reverses the verdict.",
+    "EXPLORATORY_ONLY": "Route-selection or cross-route multiplicity accounting is not adequate for confirmatory use."
+  },
+  "confirmation_policy": {
+    "single_route_is_one_determination_only": true,
+    "two_autonomous_determinations_required_for_crediting": true,
+    "independent_systematics_required": true,
+    "combine_significances_naively": false,
+    "gate_effect_before_external_crediting": "NONE"
+  },
+  "power_gate": {
+    "minimum_primary_exact_joint_power_for_confirmatory_opening": 0.9,
+    "power_must_be_analytic_and_MC": true,
+    "MC_wilson_interval_required": true,
+    "if_below_gate": "No confirmatory opening. A separately labelled diagnostic opening requires operator decision and can never yield DISCRIMINATED_NULL_AND_COMPATIBLE_TGL_AT_5SIGMA.",
+    "current_r2_reference_exact_joint_power": 0.59984,
+    "current_r2_reference_secondary_exact_joint_power": 0.9411,
+    "linear_planning_reference": {
+      "required_D_for_90pct_joint": 6.439531470940509,
+      "network_sigma_reduction_fraction": 0.19229400290175236,
+      "independent_external_cepheid_prior_sd_mag": 0.014239601079504718,
+      "status": "Planning only; recompute exactly after covariance closure; no such external measurement is asserted"
+    }
+  },
+  "required_gates": [
+    {
+      "id": "G1_AGGREGATION",
+      "status": "OPEN",
+      "requirement": "Recover and independently validate the light-curve-to-55-row aggregation operator, including all 26 multi-curve calibrators, with source pins and numerical fixtures."
+    },
+    {
+      "id": "G2_IDENTIFIERS",
+      "status": "OPEN",
+      "requirement": "Resolve eight absent IDs and validate or reject the two candidate aliases by primary sources before outcomes; no name-similarity guessing."
+    },
+    {
+      "id": "G3_PHYSICAL_DECOMPOSITION",
+      "status": "OPEN",
+      "requirement": "Separate SN-only, Cepheid-host and peculiar-velocity components; demonstrate no duplicated Cepheid, SN or velocity information."
+    },
+    {
+      "id": "G4_COVARIANCE_GEOMETRY",
+      "status": "OPEN",
+      "requirement": "Freeze full joint covariance, verify PSD/support/rank and design columns, reject substantive negative eigenvalues, ambiguous rank, diagonalization and ridge fixes."
+    },
+    {
+      "id": "G5_ROUTE_SELECTION",
+      "status": "OPEN",
+      "requirement": "Freeze route-selection and cross-route multiplicity accounting or an independent reserved confirmation; retrospective best-route selection is prohibited."
+    },
+    {
+      "id": "G6_THRESHOLD_AND_TAIL",
+      "status": "OPEN",
+      "requirement": "Recompute exact background thresholds and verify the marginal and joint null tails analytically and by importance sampling with relative standard error <= 0.01."
+    },
+    {
+      "id": "G7_POWER",
+      "status": "OPEN",
+      "requirement": "Reach primary exact joint power >= 0.90 under the frozen physical covariance and all required robustness models."
+    },
+    {
+      "id": "G8_INDEPENDENT_REVIEW",
+      "status": "OPEN",
+      "requirement": "Independent review of covariance, aggregation, estimator, route selection, power and refusal guards by an agent that did not construct them."
+    },
+    {
+      "id": "G9_BLIND_CUSTODY",
+      "status": "OPEN",
+      "requirement": "New R3 seeds and scores after covariance closure; hash scores before labels; independent acknowledgment before unblinding; one observed opening only."
+    },
+    {
+      "id": "G10_SECOND_DETERMINATION",
+      "status": "OPEN",
+      "requirement": "Identify and preregister the second autonomous determination with independent systematics before any claim beyond one determination."
+    }
+  ],
+  "synthetic_validation": {
+    "new_R2_scores_for_verdict": false,
+    "new_R3_scores_required_after_covariance_closure": true,
+    "ordinary_independent_per_hypothesis": 100000,
+    "importance_independent_per_model": 100000,
+    "importance_max_relative_standard_error": 0.01,
+    "paired_models_and_stress_scenarios": true,
+    "labels_open_only_after_scores_pinned": true,
+    "ordinary_zero_exceedances_not_a_tail_proof": true
+  },
+  "prespecified_sensitivity": {
+    "fixed_cepheid_bias_mag": [-0.05, 0.05],
+    "extra_cepheid_sd_mag": [0.01, 0.03, 0.05, 0.10],
+    "status": "Stress coordinates inherited from R2, not measured priors",
+    "physical_cross_covariance": "Must be estimated or bounded by admitted primary-source evidence before R3 trials; adversarial signs are sensitivity only, never a falsification or model-selection device",
+    "verdict_conflict": "Any verdict reversal across physically admitted and prespecified sensitivity models yields INCONCLUSIVE_SYSTEMATICS"
+  },
+  "forbidden_post_unblinding_changes": [
+    "threshold or compatibility halfwidth",
+    "primary model or route",
+    "aggregation weights, IDs or aliases",
+    "covariance components or estimator weights",
+    "external Cepheid prior or power target",
+    "trial exclusion, loss handling or observed-fit rule",
+    "selection of the most favorable model or sensitivity"
+  ],
+  "sources": [
+    "C:\\IALD\\Central de Patentes\\work\\kimi_h0dn_discriminante_06nov\\DISCRIMINANTE_CONJUNTO.json",
+    "C:\\IALD\\Central de Patentes\\work\\kimi_h0dn_discriminante_06nov\\MARGENS_DISCRIMINANTE_CONJUNTA.json",
+    "C:\\IALD\\Central de Patentes\\work\\kimi_h0dn_discriminante_06nov\\COVARIANCA_COMPONENTES.json",
+    "C:\\IALD\\Central de Patentes\\work\\kimi_h0dn_discriminante_06nov\\covariancia_componentes.npz",
+    "C:\\IALD\\Central de Patentes\\work\\kimi_h0dn_discriminante_06nov\\r3_conjunta\\R3_DIAGNOSTICO_ESCORES_R2.json",
+    "C:\\IALD\\Central de Patentes\\work\\astra_bell_fock_tt_05nov\\h0dn_bg1_06nov\\ENTREGA_H0DN_BG1.json",
+    "C:\\IALD\\Central de Patentes\\work\\astra_bell_fock_tt_05nov\\h0dn_bg1_06nov\\estimator.py",
+    "C:\\IALD\\Central de Patentes\\work\\astra_bell_fock_tt_05nov\\h0dn_bg1_06nov\\background\\BG1.json"
+  ],
+  "nature_verdict": false,
+  "gate_effect": "NONE"
+}

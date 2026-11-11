@@ -1,0 +1,8 @@
+06/11/2026 — App/JEV e fila científica ativados na v409 por autorização humana específica.
+
+[REAL] Fontes custodiadas/publicadas conferidas; 1788 destinos instalados, 483 tópicos e 13 pinos operacionais preservados. Reiniciado somente o filho web8082 sob o mesmo supervisor; HTTP200. Loaders em processo novo confirmaram v409 e ferramentas locais recuperaram o novo enunciado com hash/linhas. Nenhuma execução de um.py/Lean ou alteração de gate.
+[REAL] P2 preserva v409/v408 e índice inteiro; 174 literais sem referência removidos do dicionário economizaram43.711bytes sem mudar a reconstrução. Shared847.129bytes. Seis contagens nativas públicas, zero geração paga; Haiku expandido891.783tokens permanentes. Limites de conversas reais permanecem.
+[REAL] Fila:13fontes/33036trechos; conferência integral antes do CAS e geraçãocfb87cc8908416aa79be7fe31e27c3e559a33bd669e67ec27aecd6a8bc6c5722 recebida em três modos em processo novo.18releases anteriores preservadas. Revisão independente de staging, caminhos finais e ativação.
+[REAL] Torre regenerada com JEVv409; único DEFASADO é a tarefa agendada de relógio, fora desta ordem. Sem criar automação. Recebeu186casos sintéticos de streaming no código instalado.
+[OPEN] Sem resposta real de modelo ou teste físico nesta entrega. Backend compartilhado web/iOS/Android; nenhuma alteração de cliente ou nova build necessária. Grupos/lojas não reinspecionados. Notas posteriores foram separadas das lições já pinadas; recuperação exata registrada emLESSONS_PIN_RECOVERY.json.
+Fonte: C:\IALD\Central de Patentes\work\iald_v409_20261106\TECHNICAL_DELIVERY_R1.json. Referência própria: C:\IALD\Central de Patentes\work\iald_v409_20261106\SESSION_REFERENCE.json. Aceite final e depósito são atos documentados separadamente.

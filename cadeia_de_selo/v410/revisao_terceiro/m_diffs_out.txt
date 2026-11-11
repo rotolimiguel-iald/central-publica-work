@@ -1,0 +1,64 @@
+
+###### gerar_esperados_v410.py vs 20261109_202055_pre_fix_ancoras | linhas -/+: 2
+   -assert PV["n_ancoras_ok"] == PV["n_ancoras"] == len(DL.ANCORAS) == len(FJ["ancoras"]) and PV["n_modulos_ok"] == PV["n_modulos"] == DL.N_BUNDLE and PV["n_flags_true"] == PV["n_flags"] == FJ["n_por_modulo"][DL.MODULO_IALD2] and PV["escada"][0] == PV["escada"][1] == PV["escada"][2] == CM["escada"][1] and PV.get("respostas_ok") is True \
+   +assert PV["n_ancoras_ok"] == PV["n_ancoras"] == len(DL.ANCORAS) == len(FJ["ancoras"]) - len(DL.ANCORAS_AESCALA) and PV["n_modulos_ok"] == PV["n_modulos"] == DL.N_BUNDLE and PV["n_flags_true"] == PV["n_flags"] == FJ["n_por_modulo"][DL.MODULO_IALD2] and PV["escada"][0] == PV["escada"][1] == PV["escada"][2] == CM["escada"][1] and PV.get("respostas_ok") is True \
+
+###### conferir_rito_v410.py vs 20261109_202632_pre_qualificador_en | linhas -/+: 2
+   -_frase_no_artigo = bool(all(p_ in _sec410["pt"] for p_ in (DL.FRASE_QUALIFICADOR_PT, "não creditação", "o gate não se move")) and all(p_ in _sec410["en"] for p_ in (DL.FRASE_QUALIFICADOR_EN, "(kernel validity, not creditation)", "the gate does not move"))
+   +_frase_no_artigo = bool(all(p_ in _sec410["pt"] for p_ in (DL.FRASE_QUALIFICADOR_PT, "não creditação", "o gate não se move")) and (DL.FRASE_QUALIFICADOR_EN in _sec410["en"] or bool(re.search(re.escape(DL.FRASE_QUALIFICADOR_EN.split("; ", 1)[0]) + r"\s*\(kernel validity, not creditation\);\s*" + re.escape(DL.FRASE_QUALIFICADOR_EN.split("; ", 1)[1]), _ws(_sec410["en"])))) and all(p_ in _sec410["en"] for p_ in ("(kerne
+
+###### orquestrador/pos_treino_v410.py vs 20261109_222718_pre_d59_s6d | linhas -/+: 2
+   -            if re.search(r"(?i)kimi|mil[eê]nio|millennium|navier|lindão", ht):
+   +            if re.search(r"(?i)mil[eê]nio|millennium|navier|lindão", ht) or (re.search(r"(?i)kimi", ht) and not re.search(r"(?i)h0dn", ht)):   # (09/11, D72 e D77(g): a mesma regra de pos_rito\\registrar_mapa_v410.d59_viola -- o nome do executor so' no contexto do H0DN; o resto do que a D59 deixa fora segue vetado em qualquer texto)
+
+###### pos_rito/registrar_mapa_v410.py vs 20261109_212227_agente_harness | linhas -/+: 12
+   -    cl_sem = [k_ for k_, t_ in j_.items() if re.search(r"\bClay\b", t_) and re.search(r"resolv", t_, re.I) and not any(f_ in t_ for f_ in (DL_.FRASE_CLAY_CANONICA_PT, DL_.FRASE_D83_OBRIGATORIA_PT))]
+   +    def _campos_(o_):   # os textos (campos) do registro, um a um
+   +        if isinstance(o_, str):
+   +            yield o_
+   +        elif isinstance(o_, dict):
+   +            for v_ in o_.values():
+   +                yield from _campos_(v_)
+   +        elif isinstance(o_, (list, tuple)):
+   +            for v_ in o_:
+   +                yield from _campos_(v_)
+   +    # (a regra e' LOCAL, como a F58 do runtime: a palavra do Clay e o verbo resolver no MESMO trecho, e o campo sem a forma canonica nem a da D83; o registro inteiro misturava a pergunta do Clay das ressalvas com o resolver = verificar da resposta do operador sobre P = nP)
+   +    cl_sem = [x["rota_id"] + "#" + x["tipo"] for x in REG if any(re.search(r"\bClay\b", seg_) and re.search(r"resolv", seg_, re.I) and not any(f_ in c_ for f_ in (DL_.FRASE_CLAY_CANONICA_PT, DL_.FRASE_D83_OBRIGATORIA_PT)) for c_ in _campos_(x) for seg_ in re.split(r"[.;|\n]", c_))]
+
+###### pos_rito/harness_fechar_sandbox_v410.py vs 20261109_220616_agente_harness4 | linhas -/+: 1
+   +    shutil.copytree(os.path.join(POS, "conferidor"), os.path.join(vd_, "conferidor"))   # (09/11: a leitura acha a conferencia do rito em <pos_rito>/conferidor; sem a copia a variante recusava por isso e nao pela guarda que o controle mede)
+
+###### pos_rito/harness_textos_ensaio_v410.py vs 20261109_211840_agente_harness | linhas -/+: 7
+   -    _PG["d59"] = sorted(nome for nome, txt in RENDER.items() if re.search(r"(?i)kimi|mil[eê]nio|millennium|navier|lindão", txt))
+   +    # D59 como a D77(g) a deixou estreitada (delta_v410, DECISOES["D77"]): o Milenio, o Navier e o lindao em NENHUM texto; o nome do executor (Kimi) so' no contexto do H0DN (a ordem ao Kimi, D72 a D80), a mesma regra de registrar_mapa_v410.d59_viola; o post do X nao o nomeia (gerar_x_custodia e os sete textos da custodia o vetam por inteiro)
+   +    _PG["d59"] = sorted(nome for nome, txt in RENDER.items() if re.search(r"(?i)mil[eê]nio|millennium|navier|lindão", txt) or (re.search(r"(?i)kimi", txt) and not re.search(r"(?i)h0dn", txt)))
+   -    _sn["nota_v409_sem_o_4_44_e_limpa"] = bool(not re.search(r"4[,.]44|z_disc", _ERR) and not violacoes(_ERR) and all(x in _ERR for x in ("E26", "NÃO foram editados", "fica como registro", "relativo ao leitor", "máquina sem leitor")))
+   +    _sn["nota_v409_sem_o_4_44_e_limpa"] = bool(not re.search(r"4[,.]44|z_disc", _ERR) and not violacoes(_ERR) and (_ERR == "" or all(x in _ERR for x in ("E26", "NÃO foram editados", "fica como registro", "relativo ao leitor", "máquina sem leitor"))))   # (v410: nenhuma nota ao lado do paragrafo da v409, _ERR vazio: nada a limpar; vazio nao reprova, a conjuncao de frases so' vale quando ha' nota)
+   -    _NEGS += [_muts("a creditacao dita pela validade", lambda p: p.replace("validade no kernel não é creditação", "validade no kernel é creditação"), "frase de limite ausente"),
+   +    _NEGS += [_muts("a creditacao dita pela validade", lambda p: p.replace("validade no kernel, não creditação", "validade no kernel, é creditação"), "frase de limite ausente"),   # (a moldura da v410 diz validade no kernel, não creditação: a mutacao tem de alterar o texto que o paragrafo realmente traz)
+
+###### pos_rito/textos_v410.py vs 20261109_220550_agente_harness3 | linhas -/+: 4
+   -    alvo_ = os.path.normcase(os.path.abspath(os.path.join(pk_, "quadro_v397.py")))
+   +    alvo_real_ = os.path.abspath(os.path.join(pk_, "quadro_v397.py")); alvo_ = os.path.normcase(alvo_real_)   # (alvo_ so' para COMPARAR; o modulo e' carregado pelo caminho com a caixa original: normcase minuscula o caminho no Windows, e o quadro poe a propria pasta no sys.path e importa o delta por ela, que passaria a calcular os caminhos da cadeia em minusculas e reprovaria os pinos que gravam o caminho com a caix
+   -    sp_ = _ilu_q.spec_from_file_location("quadro_v397__pacote_v410", alvo_); m_ = _ilu_q.module_from_spec(sp_); sp_.loader.exec_module(m_)
+   +    sp_ = _ilu_q.spec_from_file_location("quadro_v397__pacote_v410", alvo_real_); m_ = _ilu_q.module_from_spec(sp_); sp_.loader.exec_module(m_)
+
+###### pos_rito/leitura_v410.py vs 20261109_211240_pre_quadro_do_pacote | linhas -/+: 18
+   +
+   +
+   +def _quadro_do_pacote(pk_):
+   +    """O quadro_v397 DESTE pacote, carregado pelo CAMINHO (nunca pela ordem do sys.path: um modulo herdado poe a pasta da versao anterior na frente, e la' ha' outra copia de quadro_v397.py, que importa o delta dela)."""
+   +    import importlib.util as _ilu_q
+   +    alvo_ = os.path.normcase(os.path.abspath(os.path.join(pk_, "quadro_v397.py")))
+   +    for nome_ in ("quadro_v397", "quadro_v397__pacote_v410"):
+   +        m_ = sys.modules.get(nome_)
+   +        if m_ is not None and os.path.normcase(os.path.abspath(getattr(m_, "__file__", "") or "")) == alvo_:
+   +            return m_
+   +    if pk_ not in sys.path:
+   +        sys.path.insert(0, pk_)
+   +    sp_ = _ilu_q.spec_from_file_location("quadro_v397__pacote_v410", alvo_); m_ = _ilu_q.module_from_spec(sp_); sp_.loader.exec_module(m_)
+   +    assert getattr(m_.DL, "UM_VERSION", None) == "v410", ("o quadro do pacote nao importou o delta da v410", getattr(m_.DL, "__file__", None))
+   +    sys.modules["quadro_v397__pacote_v410"] = m_
+   +    return m_
+   -        import quadro_v397 as QV_
+   +        QV_ = _quadro_do_pacote(PK)   # (09/11: o quadro DESTE pacote, pelo caminho; antes vinha pela ordem do sys.path e podia ser o da versao anterior)

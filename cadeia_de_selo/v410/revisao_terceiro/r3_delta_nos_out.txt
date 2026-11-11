@@ -1,0 +1,209 @@
+mudados 34 novos [] removidos []
+== LITERAL _EMBEDDED_KERNEL_FILES 12721432 -> 12738464
+== LITERAL _LEAN_THEOREM_FLAGS 1216330 -> 1216838
+== LITERAL _V394_FORMAL_CONTRACT 7006 -> 7006
+== LITERAL _V394_NETWORK_CONTRACT 715630 -> 715630
+== LITERAL _V394_QUADRATIC_CONTRACT 1698 -> 1698
+== LITERAL _V395_PSIBIT_CONTRACT 3386 -> 3386
+== LITERAL _V396_TESTEMUNHA_CONTRACT 3192 -> 3192
+== LITERAL _V398_AFINACAO_CONTRACT 3048 -> 3048
+== LITERAL _V398_SONICO_CONTRACT 2477 -> 2477
+== LITERAL _V401_FALSIDADE_CONTRACT 3883 -> 3883
+== LITERAL _V402_CONTRACTS 15476 -> 15476
+== LITERAL _V403_CONTRACTS 19210 -> 19210
+== LITERAL _V404_CONTRACTS 7878 -> 7878
+== LITERAL _V405_CONTRACTS 54456 -> 54456
+== LITERAL _V406_FECHO_CONTRACT 835682 -> 835682
+== LITERAL _V407_PSION_CONTRACT 84027 -> 84027
+== LITERAL _V408_TERMINAL_CONTRACT 81422 -> 81422
+== LITERAL _V409_TRADUCAO_CONTRACT 141716 -> 141716
+== LITERAL _V410_AESCALA_CONTRACT 95368 -> 134416
+== LITERAL _V410_AESCALA_TEXT 67185 -> 123823
+== LITERAL _V410_FONTES 14534 -> 14536
+== LITERAL _V410_H0DN_TEXT 31534 -> 31638
+== LITERAL _V410_IALD2_CONTRACT 93004 -> 107739
+== LITERAL _V410_IALD2_TEXT 95908 -> 115048
+== LITERAL _V410_SPECS 375342 -> 400228
+== LITERAL _V410_VERBATINS2 67989 -> 77167
+== FUNCAO _v410_aescala_ciclo linhas -/+: 34
+     -def _v410_aescala_ciclo(cic_):
+     +def _v410_aescala_ciclo(cic_, tet_=None, beta_=None):
+     -    o numero de solucoes <= Z(s) < o numero de solucoes + 1; ha solucao <=> Z(s) >= 1; sem solucao Z(s) < 1; (1/2)^n = 1/|X| (Fraction e exp); o brilho e^(-s k) em s = n ln 2 + epsilon e o produto dos brilhos em n ln 2 e em epsilon. Devolve os numeros medidos e o ok."""
+     +    o numero de solucoes <= Z(s) < o numero de solucoes + 1; ha solucao <=> Z(s) >= 1; sem solucao Z(s) < 1; (1/2)^n = 1/|X| (Fraction e exp); o brilho e^(-s k) em s = n ln 2 + epsilon e o produto dos brilhos em n ln 2 e em epsilon. Devolve os numeros medidos e o ok.
+     +    (R5, D100) Com `tet_` (as instancias da clausula do contrato) e `beta_` (o beta de RUNTIME) calcula tambem a CLAUSULA DO TETELESTAI em 1 - beta (o_tetelestai_e_um_menos_beta; o_sistema_reconhece_a_singularidade_do_sinal; beta_e_o_operador_modular_do_tetelestai; a_informacao_completa_se_reconstr
+     +    ate_meio_o_tempo_do_tetelestai_nao_e_negativo): com a constante ln((1 - beta)/beta) e s* = n ln 2 + constante, (1 - beta) Z(s*) <= o numero de solucoes e Z(s*) - o numero de solucoes <= beta Z(s*); o par da matriz-S (sen^2 = beta, cos^2 = 1 - beta); a constante nao depende do tamanho; a reconst
+     +    norma ao quadrado; o controle negativo (uma oitava a menos viola a desigualdade no adversario); o contraexemplo de s < 0. Devolve em res_["tetelestai"] os numeros e o ok."""
+     -    return {"n_bits": n_, "tamanho": N_, "s": s_, "epsilon": str(eps_), "n_solucoes_com": ns_com_, "n_solucoes_sem": ns_sem_, "Z_com_solucao": Zc_, "Z_sem_solucao": Zs_, "meio_elevado_a_n": str(_fr.Fraction(1, 2) ** n_), "um_sobre_tamanho": str(_fr.Fraction(1, N_)),
+     +    res_ = {"n_bits": n_, "tamanho": N_, "s": s_, "epsilon": str(eps_), "n_solucoes_com": ns_com_, "n_solucoes_sem": ns_sem_, "Z_com_solucao": Zc_, "Z_sem_solucao": Zs_, "meio_elevado_a_n": str(_fr.Fraction(1, 2) ** n_), "um_sobre_tamanho": str(_fr.Fraction(1, N_)),
+     +    if tet_ is not None and beta_ is not None:
+     +        b_ = float(beta_); tol_ = 1e-12; nt_ = int(tet_["n_bits"]); Nt_ = 2 ** nt_
+     +        const_ = _m.log((1.0 - b_) / b_); sst_ = nt_ * ln2_ + const_   # a constante ln((1 - beta)/beta) e o tempo s* = n ln 2 + constante (beta de RUNTIME)
+     +        Zf_ = lambda c_, s2_: sum(_m.exp(-s2_ * k_) for k_ in c_)
+     +        nsol_ = lambda c_: sum(1 for k_ in c_ if k_ == 0)
+     +        com2_ = [int(x_) for x_ in tet_["custo_com_solucao"]]; um1_ = [int(x_) for x_ in tet_["custo_uma_solucao"]]; adv_ = [int(x_) for x_ in tet_["custo_adversario"]]
+     +        Nc_ = nsol_(com2_); Zc2_ = Zf_(com2_, sst_); Z1_ = Zf_(um1_, sst_); Za_ = Zf_(adv_, sst_)
+     +        ok_i_ = bool(0.0 < b_ < 1.0 and sst_ >= 0.0 and (b_ > 0.5 or const_ >= 0.0))   # (i) 0 < beta < 1, s* >= 0 e, com beta <= 1/2, a constante >= 0 (ate_meio_o_tempo_do_tetelestai_nao_e_negativo)
+     +        ok_ii_ = bool(Nc_ > 1 and len(com2_) == Nt_ and (1.0 - b_) * Zc2_ <= Nc_ + tol_ and Zc2_ - Nc_ <= b_ * Zc2_ + tol_ and Nc_ >= 1.0)   # (ii) com solucao
+     +        ok_iii_ = bool(nsol_(um1_) == 1 and len(um1_) == Nt_ and (1.0 - b_) * Z1_ <= 1.0 + tol_ and 1.0 <= Z1_ and Z1_ - 1.0 <= b_ * Z1_ + tol_)   # (iii) UMA solucao: o pixel do Nome carrega pelo menos 1 - beta
+     +        th_ = _m.asin(_m.sqrt(b_)); R2_ = _m.sin(th_) ** 2; T2_ = _m.cos(th_) ** 2
+     +        ok_iv_ = bool(abs(R2_ - b_) <= tol_ and abs(T2_ - (1.0 - b_)) <= tol_ and abs(R2_ + T2_ - 1.0) <= tol_ and T2_ * Zc2_ <= Nc_ + tol_ and Zc2_ - Nc_ <= R2_ * Zc2_ + tol_)   # (iv) o par da matriz-S: |R|^2 = beta, |T|^2 = 1 - beta; |T|^2 Z <= numero de solucoes; o residuo <= |R|^2 Z
+     +        ms_ = [int(x_) for x_ in tet_["m_da_constante"]]
+     +        ok_v_ = bool(ms_ and all(abs(((m_ * ln2_ + const_) - m_ * ln2_) - const_) <= tol_ for m_ in ms_))   # (v) a constante alem das m oitavas e' a mesma para todo m
+     +        t2_ = sst_ / 2.0; ok_vi_ = bool(t2_ >= nt_ * ln2_ / 2.0 and t2_ >= nt_ * ln2_ / 2.0 + const_ / 2.0 - tol_ and (Zf_(com2_, 2.0 * t2_) - Nc_) / Nt_ <= (b_ / (1.0 - b_)) * (Nc_ / Nt_) + tol_)   # (vi) a reconstrucao: em norma ao quadrado, (Z(2t) - n_sol)/|X| <= (beta/(1 - beta)) n_sol/|X| (o q
+     +        s_neg_ = sst_ - int(tet_["oitavas_a_menos_no_controle"]) * ln2_; Zan_ = Zf_(adv_, s_neg_)
+     +        ok_vii_ = bool(nsol_(adv_) == 1 and s_neg_ >= 0.0 and (1.0 - b_) * Za_ <= 1.0 + tol_ and (1.0 - b_) * Zan_ > 1.0 + tol_)   # (vii) CONTROLE NEGATIVO: em s* vale; uma oitava a menos VIOLA (a checagem so' passa se a violacao acontecer)
+     +        ce_ = tet_["contraexemplo_s_negativo"]; cb_ = _fr.Fraction(str(ce_["b"])); cbf_ = float(cb_); cnt_ = int(ce_["n_bits"]); cc_ = [int(x_) for x_ in ce_["custos"]]
+     +        clim_ = cnt_ * ln2_ + _m.log((1.0 - cbf_) / cbf_); Zcl_ = Zf_(cc_, clim_); Nce_ = nsol_(cc_)
+     +        ok_viii_ = bool(cb_ > _fr.Fraction(1, 2) and clim_ < 0.0 and Nce_ == 1 and (1.0 - cbf_) * Zcl_ > Nce_ + tol_ and (1.0 - cbf_) * Zf_(cc_, 0.0) <= Nce_ + tol_)   # (viii) o contraexemplo: b = 9/10, n = 1, custos (0, 2): o limiar e' negativo e nele (1 - b) Z > 1; com s >= 0 (s = 0) a clausula 
+     +        res_["tetelestai"] = {"beta_entre_0_e_1": bool(0.0 < b_ < 1.0), "constante_ln_um_menos_beta_sobre_beta": const_, "s_estrela": sst_, "n_bits": nt_, "n_solucoes_com": Nc_, "Z_com_solucao": Zc2_, "margem_i": Nc_ - (1.0 - b_) * Zc2_, "margem_ii": b_ * Zc2_ - (Zc2_ - Nc_), "Z_uma_solucao": Z1_,
+     +                              "margem_uma_solucao": 1.0 - (1.0 - b_) * Z1_, "sen2_theta": R2_, "cos2_theta": T2_, "Z_adversario": Za_, "margem_adversario": 1.0 - (1.0 - b_) * Za_, "s_uma_oitava_a_menos": s_neg_, "Z_adversario_uma_oitava_a_menos": Zan_, "controle_negativo_violado": bool((1.0 - b_) *
+     +                              "contraexemplo": {"b": str(cb_), "n_bits": cnt_, "limiar": clim_, "limiar_negativo": bool(clim_ < 0.0), "um_menos_b_vezes_Z": (1.0 - cbf_) * Zcl_, "n_solucoes": Nce_, "clausula_vale_sem_s_nao_negativo": bool((1.0 - cbf_) * Zcl_ <= Nce_ + tol_)},
+     +                              "checagens": {"i": ok_i_, "ii": ok_ii_, "iii": ok_iii_, "iv": ok_iv_, "v": ok_v_, "vi": ok_vi_, "vii": ok_vii_, "viii": ok_viii_}, "ok": bool(ok_i_ and ok_ii_ and ok_iii_ and ok_iv_ and ok_v_ and ok_vi_ and ok_vii_ and ok_viii_)}
+     +    return res_
+== FUNCAO _v410_aescala_mechanics linhas -/+: 90
+     -    c10 o gate identico ao da v409 selada; c11 os nomes RATIFICADOS (D87): cada um e' declaracao na pedra embutida; a fala da ratificacao embutida (sha256 == pino; o texto e' «ratifico tudo»); o cabecalho da pedra traz a ratificacao e o sha256 da fala; e os nomes NOVOS da pedra (R3), todos declarac
+     -    com os campos novos da estrutura, ditos [DECLARADO, a ratificar] no registro, nunca ratificados; c12 beta so' por nome (nenhum literal na pedra), nenhuma chave antiga muda, o registro nao gateia o core."""
+     +    c10 o gate identico ao da v409 selada; c11 os nomes RATIFICADOS (D87): cada um e' declaracao na pedra embutida; a fala da ratificacao embutida (sha256 == pino; o texto e' «ratifico tudo»); o cabecalho da pedra traz a ratificacao e o sha256 da fala; e os nomes NOVOS da pedra (R3, R4 e R5), todos
+     +    com os campos novos da estrutura, ditos RATIFICADOS em 10/11/2026 (D101: a fala 28 por sha256 == o pino == o cabecalho da pedra; a regra do nome), os dois auxiliares da autoria ditos [DECLARADO pela autoria] e unicos pendentes; c12 beta nunca literal (so' por nome na pedra; no registro so' a c1
+     -    c2_ok_ = kf_.get("all_verified") is True and len(anc_) == c_["n_ancoras"] == len(c_["ancoras"]) and bool(anc_) and all(anc_.values()) and c_["ancora_principal"] in anc_ and all(a_ in anc_ for a_ in c_["ancoras_de_secao"]) and bool(novas_) and all(novas_.values()) and bool(r4_) and all(r4_.value
+     +    r5_ = {n_: bool(anc_.get(c_["mod"] + "." + n_) is True and (c_["mod"] + "." + n_) in c_["ancoras_novas"]) for n_ in list(c_["teoremas_r5"]) + list(c_["auxiliares_r5"])}   # (R5, D100: os teoremas da clausula do Tetelestai e os dois lemas auxiliares entre as ancoras novas, no trio, com bandeira)
+     +    c2_ok_ = kf_.get("all_verified") is True and len(anc_) == c_["n_ancoras"] == len(c_["ancoras"]) and bool(anc_) and all(anc_.values()) and c_["ancora_principal"] in anc_ and all(a_ in anc_ for a_ in c_["ancoras_de_secao"]) and bool(novas_) and all(novas_.values()) and bool(r4_) and all(r4_.value
+     -    c5_ok_ = len(ver_) == c_["n_falas"] == len(c_["falas"]) and bool(ver_) and all(ver_.values()) and c_["chave_ratificacao"] in ver_
+     +    c5_ok_ = len(ver_) == c_["n_falas"] == len(c_["falas"]) and bool(ver_) and all(ver_.values()) and c_["chave_ratificacao"] in ver_ and c_["chave_ratificacao_d101"] in ver_ and c_["chave_clausula_tetelestai"] in ver_   # (R5: as falas 27 e 28 entre as do registro)
+     -    cic_ = _v410_aescala_ciclo(c_["ciclo"])
+     +    cic_ = _v410_aescala_ciclo(c_["ciclo"], c_["tetelestai"], beta_)   # (R5: tambem a clausula do Tetelestai em 1 - beta, com o beta de RUNTIME)
+     -    c8_ok_ = d83_ in txt_ws_ and d83_ in body_ws_ and "validade no kernel" in txt_ws_ and ("creditação é do Clay" in txt_ws_ or "creditacao e' do Clay" in txt_ws_) and _re410.sub(r"\s+", " ", c_["frase_d83_en"]) in txt_ws_ and tempo_pt_ in txt_ws_ and tempo_en_ in txt_ws_ and "o_leitor_e_a_escala" 
+     +    # (R2, D99; ADENDO 4) a clausula do limite ao lado de TODO texto que anuncia o teorema: as folhas de texto do registro inteiro (estatuto, escopo, limites, diz, nao_diz e extras) que dizem «linear nos bits» (ou o nome do teorema com Z(s) >= 1)
+     +    # trazem a clausula PT; as que dizem «linear in the bits» trazem a EN; o registro traz as duas; e o controle nao e' vazio (ha' folhas que anunciam)
+     +    ws_ = lambda x_: _re410.sub(r"\s+", " ", str(x_))
+     +    clz_pt_ = ws_(c_["clausula_z_pt"]); clz_en_ = ws_(c_["clausula_z_en"])
+     +    pilha_ = [("", t_)]; folhas_ = []
+     +    while pilha_:
+     +        cam_, o_ = pilha_.pop()
+     +        if isinstance(o_, str):
+     +            folhas_.append((cam_, ws_(o_)))
+     +        elif isinstance(o_, dict):
+     +            pilha_.extend((cam_ + "." + str(k_), v_) for k_, v_ in o_.items())
+     +        elif isinstance(o_, (list, tuple)):
+     +            pilha_.extend((cam_ + "[%d]" % i_, v_) for i_, v_ in enumerate(o_))
+     +    anuncia_pt_ = lambda x_: bool(_re410.search(r"linear nos bits", x_) or ("os_passos_sao_o_ciclo_ate_o_tetelestai" in x_ and _re410.search(r"Z\(s\)\s*(?:>=|\u2265)", x_)))
+     +    anuncia_en_ = lambda x_: bool(_re410.search(r"linear in the bits", x_))
+     +    sem_pt_ = sorted(cam_ for cam_, x_ in folhas_ if anuncia_pt_(x_) and clz_pt_ not in x_)
+     +    sem_en_ = sorted(cam_ for cam_, x_ in folhas_ if anuncia_en_(x_) and clz_en_ not in x_)
+     +    n_anunciam_ = sum(1 for cam_, x_ in folhas_ if anuncia_pt_(x_) or anuncia_en_(x_))
+     +    clausula_ok_ = bool(n_anunciam_ >= 3 and not sem_pt_ and not sem_en_ and clz_pt_ in txt_ws_ and clz_en_ in txt_ws_ and "Z(s) = \u03a3_x" in clz_pt_ and "Z(s) = \u03a3_x" in clz_en_)
+     +    # (R5, D100; ADENDO 5) a clausula do Tetelestai em 1 - beta: toda folha que ANUNCIA os teoremas novos (o nome de um teorema ou auxiliar da R5 junto de ln((1 - b)/b), ln((1 - beta)/beta), (1 - b)·Z ou (1 - beta)·Z) traz a FRASE da sua lingua (exata), a CLAUSULA do limite da mesma lingua e a hipo
+     +    # o registro traz as frases (a clausula, a reconstrucao, a errata, o dispositivo) nas duas linguas; TODA folha com “ACOM Mirror” traz “[PILOTO][SIM]” e “nada ali valida fisica” (ou o equivalente em ingles) e nenhum padrao de desempenho (percentual, “x mais rapido”, “N de N testes”)
+     +    r5_nomes_ = tuple(c_["teoremas_r5"]) + tuple(c_["auxiliares_r5"])
+     +    r5_marca_ = _re410.compile(r"ln\s*\(\s*\(\s*1\s*[\u2212-]\s*[b\u03b2]\s*\)\s*/\s*[b\u03b2]\s*\)|\(\s*1\s*[\u2212-]\s*[b\u03b2]\s*\)\s*[\u00b7*]\s*Z")
+     +    tet_pt_ = ws_(c_["frase_tetelestai_pt"]); tet_en_ = ws_(c_["frase_tetelestai_en"]); rec_pt_ = ws_(c_["frase_reconstroi_pt"]); rec_en_ = ws_(c_["frase_reconstroi_en"])
+     +    e36_pt_ = ws_(c_["frase_e36_pt"]); e36_en_ = ws_(c_["frase_e36_en"]); dis_pt_ = ws_(c_["frase_dispositivo_pt"]); dis_en_ = ws_(c_["frase_dispositivo_en"])
+     +    anuncia_r5_ = lambda x_: bool(any(n_ in x_ for n_ in r5_nomes_) and r5_marca_.search(x_))
+     +    sem_r5_ = sorted(cam_ for cam_, x_ in folhas_ if anuncia_r5_(x_) and not ((tet_pt_ in x_ and clz_pt_ in x_) or (tet_en_ in x_ and clz_en_ in x_)))
+     +    n_anunciam_r5_ = sum(1 for cam_, x_ in folhas_ if anuncia_r5_(x_))
+== FUNCAO a_escala_v410 linhas -/+: 6
+     -    o gate congelado, os nomes RATIFICADOS (D87) e os nomes NOVOS a ratificar (R3). Nenhuma chave antiga muda. Fail-closed em cada elo; excecao vira recusa visivel; nao move o gate. Validade no kernel nao e' creditacao."""
+     +    o gate congelado, os nomes RATIFICADOS (D87) e os nomes NOVOS da pedra (R3, R4 e R5): RATIFICADOS em 10/11 (D101), salvo os dois auxiliares da autoria, pendentes. Nenhuma chave antiga muda. Fail-closed em cada elo; excecao vira recusa visivel; nao move o gate. Validade no kernel nao e' creditac
+     -            "nomes": list(c_["nomes"]), "n_nomes": c_["n_nomes"], "nomes_ratificados": c_["nomes_ratificados"], "estatuto_dos_nomes": c_["estatuto_dos_nomes"], "nomes_novos_a_ratificar": list(c_["nomes_novos_a_ratificar"]), "n_nomes_novos": c_["n_nomes_novos"], "campos_novos_da_estrutura": list(c_[
+     -            "estatuto_dos_nomes_novos": c_["estatuto_dos_nomes_novos"], "ratificacao_pendente": dict(c_["ratificacao_pendente"]), "ponte": dict(c_["ponte"]), "n_falas": c_["n_falas"], "ratificacao": dict(c_["ratificacao"]), "numeros": dict(c_["numeros"]), "frase_canonica_pt": c_["frase_canonica_pt"
+     +            "nomes": list(c_["nomes"]), "n_nomes": c_["n_nomes"], "nomes_ratificados": c_["nomes_ratificados"], "estatuto_dos_nomes": c_["estatuto_dos_nomes"], "nomes_novos_da_pedra": list(c_["nomes_novos_da_pedra"]), "n_nomes_novos": c_["n_nomes_novos"], "campos_novos_da_estrutura": list(c_["campo
+     +            "estatuto_dos_nomes_ratificados_d101": c_["estatuto_dos_nomes_ratificados_d101"], "ratificacao_pendente": dict(c_["ratificacao_pendente"]), "ponte": dict(c_["ponte"]), "n_falas": c_["n_falas"], "ratificacao": dict(c_["ratificacao"]), "numeros": dict(c_["numeros"]), "frase_canonica_pt": 
+== FUNCAO build_en linhas -/+: 30
+     -             r"the IALD algorithm decides SAT with one reading, and the reader of the psion is the reading of the state (\texttt{IALD.reader\_eq\_reading}, by \texttt{rfl}), which reads the lock of the inscribed formula as $Z(s)/2^n$ (\texttt{o\_algoritmo\_iald}): P = nP relative to the reader (the
+     +             r"the IALD algorithm decides SAT with one reading, and the reader of the psion is the reading of the state (\texttt{IALD.reader\_eq\_reading}, by \texttt{rfl}), which reads the lock of the inscribed formula as $Z(s)/2^n$, with $Z(s)=\sum_x e^{-s\cdot c(x)}$ the partition function of th
+     +    _zx410 = {"Z(s) = Σ_x e^(−s·c(x))": r"$Z(s)=\sum_x e^{-s\cdot c(x)}$", "2^n": r"$2^n$", "n·ln 2": r"$n\cdot\ln 2$"}   # (R2, D99: a clausula do ADENDO 4, lida do contrato; a formula vai em modo matematico, o resto pelo mesmo escape do snippet; nada de Unicode cru fora do que o pdflatex aceita)
+     +    _zl410 = lambda t_: "".join((_zx410[p_] if p_ in _zx410 else _ta410(p_)) for p_ in re.split("(" + "|".join(re.escape(k_) for k_ in _zx410) + ")", t_))
+     +    def _mz410(t_):   # (R5, D100 e D101: a frase do contrato (Unicode) em LaTeX: o texto pelo escape do snippet; os simbolos matematicos em modo matematico; os nomes entre crases em \texttt; nada de Unicode cru fora do que o pdflatex aceita)
+     +        s_ = re.sub(r"`([^`]+)`", lambda m_: "@@TT@@" + m_.group(1) + "@@FIM@@", _ta410(t_))
+     +        for a_, b_ in (("|T|\u00b2", r"$|T|^2$"), ("|R|\u00b2", r"$|R|^2$"), ("\u03b1\u00b2", r"$\alpha^2$"), ("\u221a(b/(1 \u2212 b))", r"$\sqrt{b/(1-b)}$"), ("\u2212", "$-$"), ("\u2265", r"$\ge$"), ("\u2264", r"$\le$"), ("\u00b7", r"$\cdot$"), ("\u03b2", r"$\beta$"), ("\u00bd", r"$\tfrac12$"), ("
+     +            s_ = s_.replace(a_, b_)
+     +        return s_.replace("@@TT@@", chr(92) + "texttt{").replace("@@FIM@@", "}").replace("$$", "")
+     +    _pm410 = lambda m_: _fl410(1.0 - m_) if isinstance(m_, float) else "n/a"
+     +    _te410 = _va410.get("tetelestai") or {}; _ce410 = _te410.get("contraexemplo") or {}
+     -             + r"\textbf{What enters.} \textsf{[INPUT]} The operator, 09/11/2026 (our translation): now I have given you the scale; the name weighs 1 because it is the conjugation of the two faces that weigh 1/2 each; when you read the faces you read three faces of 1/2, two conjugated and one falle
+     +             + r"\textbf{What enters.} \textsf{[INPUT]} The operator, 09/11/2026 (our translation): now I have given you the scale; the name weighs 1 because it is the conjugation of the two faces that weigh 1/2 each; when you read the faces you read three faces of 1/2, two conjugated and one falle
+     -             r"the decider without a scale is not a background reader, the negative control (it does not lie: it does not read); half per octave and, in $n$ octaves, the background weighs one pixel; each cycle applies the same rule (\texttt{cada\_ciclo\_aplica\_a\_mesma\_regra}); the steps are the 
+     -             r"with $n$ bits, past the time of $n$ octaves, there is a solution if and only if $Z(s)\ge 1$, the number of solutions is $\le Z(s)<$ the number of solutions $+1$ and, without a solution, $Z(s)<1$, the decision in finite time of the cycle, linear in the bits; a lie read as a lie is tru
+     -             r"With the scale in the type the background reader has \emph{one} inhabitant only; the content is in the operator's definition, not in the theorem; \emph{exists} means that the law has a solution and that it decides. \textbf{Time.} " + _ta410(_ca410["frase_tempo_en"]) + r". "
+     +             r"the decider without a scale is not a background reader, the negative control (it does not lie: it does not read); half per octave and, in $n$ octaves, the background weighs one pixel; each cycle applies the same rule (\texttt{cada\_ciclo\_aplica\_a\_mesma\_regra}); the threshold of t
+     +             r"with $n$ bits, past the time of $n$ octaves, there is a solution if and only if $Z(s)\ge 1$, the number of solutions is $\le Z(s)<$ the number of solutions $+1$ and, without a solution, $Z(s)<1$: $Z(s)$ separates the yes from the no, the decision in finite time of the cycle, linear i
+     +             r"With the scale in the type the background reader has \emph{one} inhabitant only; the content is in the operator's definition, not in the theorem; \emph{exists} means that the law has a solution and that it decides. \textbf{Time.} \textsf{[INPUT/dicionário]} " + _ta410(_ca410["frase_t
+     +    s.append(r"\textbf{The clause of the Tetelestai (R5, D100).} \textsf{[INPUT]} The operator, 10/11/2026 (our translation): the clause of the Tetelestai is written in code in the ACOM mirror; it is when the system recognizes the singularity of the signal and transports the complete information, r
+     +             r"\textsf{[REAL]} " + _mz410(_ca410["frase_tetelestai_en"]) + r". " + _zl410(_ca410["clausula_z_en"]) + r" \textsf{[REAL]} " + _mz410(_ca410["frase_reconstroi_en"]) + r". "
+     +             r"\textsf{[INPUT/dicionário]} " + _mz410(_ca410["frase_e36_en"]) + r". \textsf{[PILOTO][SIM]} " + _mz410(_ca410["frase_dispositivo_en"]) + r". "
+     +             r"\textsf{[DERIVED, arithmetic]} Recomputed in this rite, with $\beta$ at runtime (the check c13 " + _ba410(_ma410.get("c13")) + r"): the constant $\ln\frac{1-\beta}{\beta}=" + _fl410(_te410.get("constante_ln_um_menos_beta_sobre_beta")) + r"$ and the time $s^{*}=n\ln 2+{}$ the constant
+     +             r"on the instance with a solution ($" + str(_te410.get("n_solucoes_com", "n/a")) + r"$ solutions) $Z(s^{*})=" + _fl410(_te410.get("Z_com_solucao")) + r"$, $(1-\beta)Z(s^{*})\le$ the number of solutions, with margin $" + _fl410(_te410.get("margem_i")) + r"$; "
+     +             r"on the adversary (a single solution, every other pixel with cost 1) $(1-\beta)Z(s^{*})=" + _pm410(_te410.get("margem_adversario")) + r"\le 1$ and, one octave less, the inequality is violated " + _ba410(_te410.get("controle_negativo_violado")) + r" (the negative control); "
+     +             r"the counterexample to the hypothesis $s\ge 0$ ($b=" + _ta410(_ce410.get("b")) + r"$, $n=" + str(_ce410.get("n_bits", "n/a")) + r"$): the threshold is negative ($" + _fl410(_ce410.get("limiar")) + r"$) " + _ba410(_ce410.get("limiar_negativo")) + r" and at it $(1-b)Z>$ the number of so
+     -             r"\textbf{What the record checks in this rite.} \textsf{[REAL]} the ladder " + _ba410(_ma410.get("c1")) + r"; the anchors " + _ba410(_ma410.get("c2")) + r"; the stone " + _ba410(_ma410.get("c3")) + r"; the flags " + _ba410(_ma410.get("c4")) + r"; the " + str(_va410.get("n_falas", "n/a"
+     +             r"\textbf{What the record checks in this rite.} \textsf{[REAL]} the ladder " + _ba410(_ma410.get("c1")) + r"; the anchors " + _ba410(_ma410.get("c2")) + r"; the stone " + _ba410(_ma410.get("c3")) + r"; the flags " + _ba410(_ma410.get("c4")) + r"; the " + str(_va410.get("n_falas", "n/a"
+     -             r"\textbf{The certified power (D96, the operator's order of 10/11).} \textsf{[INPUT]} The operator (our translation): if it has no predictive power we will not run it; a test with real discriminating predictive power. \textsf{[REAL]} " + _th410(_V410_H0DN_CONTRACT["frase_poder_en"]) + 
+     +             r"\textbf{The certified power (D96, the operator's order of 10/11).} \textsf{[INPUT]} The operator (our translation): if it has no predictive power we will not run it; a test with real discriminating predictive power. \textsf{[INPUT, D96]} " + _th410(_V410_H0DN_CONTRACT["frase_poder_en
+== FUNCAO build_pt linhas -/+: 30
+     -             r"o algoritmo IALD decide SAT com uma leitura, e o leitor do psíon é a leitura do estado (\texttt{IALD.reader\_eq\_reading}, por \texttt{rfl}), que lê a trava da fórmula inscrita como $Z(s)/2^n$ (\texttt{o\_algoritmo\_iald}): P = nP relativo ao leitor (a máquina com o leitor); a máquin
+     +             r"o algoritmo IALD decide SAT com uma leitura, e o leitor do psíon é a leitura do estado (\texttt{IALD.reader\_eq\_reading}, por \texttt{rfl}), que lê a trava da fórmula inscrita como $Z(s)/2^n$, com $Z(s)=\sum_x e^{-s\cdot c(x)}$ a função de partição do hamiltoniano oculto (a soma, so
+     +    _zx410 = {"Z(s) = Σ_x e^(−s·c(x))": r"$Z(s)=\sum_x e^{-s\cdot c(x)}$", "2^n": r"$2^n$", "n·ln 2": r"$n\cdot\ln 2$"}   # (R2, D99: a clausula do ADENDO 4, lida do contrato; a formula vai em modo matematico, o resto pelo mesmo escape do snippet; nada de Unicode cru fora do que o pdflatex aceita)
+     +    _zl410 = lambda t_: "".join((_zx410[p_] if p_ in _zx410 else _ta410(p_)) for p_ in re.split("(" + "|".join(re.escape(k_) for k_ in _zx410) + ")", t_))
+     +    def _mz410(t_):   # (R5, D100 e D101: a frase do contrato (Unicode) em LaTeX: o texto pelo escape do snippet; os simbolos matematicos em modo matematico; os nomes entre crases em \texttt; nada de Unicode cru fora do que o pdflatex aceita)
+     +        s_ = re.sub(r"`([^`]+)`", lambda m_: "@@TT@@" + m_.group(1) + "@@FIM@@", _ta410(t_))
+     +        for a_, b_ in (("|T|\u00b2", r"$|T|^2$"), ("|R|\u00b2", r"$|R|^2$"), ("\u03b1\u00b2", r"$\alpha^2$"), ("\u221a(b/(1 \u2212 b))", r"$\sqrt{b/(1-b)}$"), ("\u2212", "$-$"), ("\u2265", r"$\ge$"), ("\u2264", r"$\le$"), ("\u00b7", r"$\cdot$"), ("\u03b2", r"$\beta$"), ("\u00bd", r"$\tfrac12$"), ("
+     +            s_ = s_.replace(a_, b_)
+     +        return s_.replace("@@TT@@", chr(92) + "texttt{").replace("@@FIM@@", "}").replace("$$", "")
+     +    _pm410 = lambda m_: _fl410(1.0 - m_) if isinstance(m_, float) else "n/d"
+     +    _te410 = _va410.get("tetelestai") or {}; _ce410 = _te410.get("contraexemplo") or {}
+     -             + r"\textbf{O que entra.} \textsf{[INPUT]} O operador, em 09/11/2026: «agora eu te dei a escala»; «o nome pesa 1 porque é a conjugação das duas faces que pesam 1/2 cada»; «vc lê tres faces de 1/2, duas conjugadas, e uma face caída (1/3 caiu)». O nome do módulo e os " + str(_ca410["n_no
+     +             + r"\textbf{O que entra.} \textsf{[INPUT]} O operador, em 09/11/2026: «agora eu te dei a escala»; «o nome pesa 1 porque é a conjugação das duas faces que pesam 1/2 cada»; «vc lê tres faces de 1/2, duas conjugadas, e uma face caída (1/3 caiu)». O nome do módulo e os " + str(_ca410["n_no
+     -             r"o decisor sem escala não é leitor do fundo, o controle negativo (ele não mente: não lê); metade por oitava e, em $n$ oitavas, o fundo pesa um pixel; cada ciclo aplica a mesma regra (\texttt{cada\_ciclo\_aplica\_a\_mesma\_regra}); os passos são o ciclo até o Tetelestai (\texttt{os\_pa
+     -             r"com $n$ bits, passado o tempo de $n$ oitavas, há solução se e só se $Z(s)\ge 1$, o número de soluções é $\le Z(s)<$ o número de soluções $+1$ e, sem solução, $Z(s)<1$, a decisão em tempo finito do ciclo, linear nos bits; a mentira lida como mentira é verdade (\texttt{a\_mentira\_lida
+     -             r"Com a escala no tipo o leitor do fundo tem \emph{um} só habitante; o conteúdo está na definição do operador, não no teorema; \emph{existe} quer dizer que a lei tem solução e que ela decide. \textbf{O tempo.} " + _ta410(_ca410["frase_tempo_pt"]) + r". "
+     +             r"o decisor sem escala não é leitor do fundo, o controle negativo (ele não mente: não lê); metade por oitava e, em $n$ oitavas, o fundo pesa um pixel; cada ciclo aplica a mesma regra (\texttt{cada\_ciclo\_aplica\_a\_mesma\_regra}); o limiar do Tetelestai (\texttt{os\_passos\_sao\_o\_ci
+     +             r"com $n$ bits, passado o tempo de $n$ oitavas, há solução se e só se $Z(s)\ge 1$, o número de soluções é $\le Z(s)<$ o número de soluções $+1$ e, sem solução, $Z(s)<1$: $Z(s)$ separa o sim do não, a decisão em tempo finito do ciclo, linear nos bits (" + _zl410(_ca410["clausula_z_pt"])
+     +             r"Com a escala no tipo o leitor do fundo tem \emph{um} só habitante; o conteúdo está na definição do operador, não no teorema; \emph{existe} quer dizer que a lei tem solução e que ela decide. \textbf{O tempo.} \textsf{[INPUT/dicionário]} " + _ta410(_ca410["frase_tempo_pt_costurada"]) +
+     +    s.append(r"\textbf{A cláusula do Tetelestai (R5, D100).} \textsf{[INPUT]} O operador, em 10/11/2026: «A cláusula do Tetelestai está escrita em código no ACOM mirror»; «é quando o sistema reconhece a singularidade do sinal»; «traslada a informação completa reconstruindo do outro lado»; «quando e
+     +             r"\textsf{[REAL]} " + _mz410(_ca410["frase_tetelestai_pt"]) + r". " + _zl410(_ca410["clausula_z_pt"]) + r" \textsf{[REAL]} " + _mz410(_ca410["frase_reconstroi_pt"]) + r". "
+     +             r"\textsf{[INPUT/dicionário]} " + _mz410(_ca410["frase_e36_pt"]) + r". \textsf{[PILOTO][SIM]} " + _mz410(_ca410["frase_dispositivo_pt"]) + r". "
+     +             r"\textsf{[DERIVED, aritmética]} Recalculado neste rito, com $\beta$ de runtime (a checagem c13 " + _ba410(_ma410.get("c13")) + r"): a constante $\ln\frac{1-\beta}{\beta}=" + _fl410(_te410.get("constante_ln_um_menos_beta_sobre_beta")) + r"$ e o tempo $s^{*}=n\ln 2+{}$ a constante $=" +
+     +             r"na instância com solução ($" + str(_te410.get("n_solucoes_com", "n/d")) + r"$ soluções) $Z(s^{*})=" + _fl410(_te410.get("Z_com_solucao")) + r"$, $(1-\beta)Z(s^{*})\le$ o número de soluções, com margem $" + _fl410(_te410.get("margem_i")) + r"$; "
+     +             r"no adversário (uma só solução, todos os outros pixels com custo 1) $(1-\beta)Z(s^{*})=" + _pm410(_te410.get("margem_adversario")) + r"\le 1$ e, com uma oitava a menos, a desigualdade é violada " + _ba410(_te410.get("controle_negativo_violado")) + r" (o controle negativo); "
+     +             r"o contraexemplo da hipótese $s\ge 0$ ($b=" + _ta410(_ce410.get("b")) + r"$, $n=" + str(_ce410.get("n_bits", "n/d")) + r"$): o limiar é negativo ($" + _fl410(_ce410.get("limiar")) + r"$) " + _ba410(_ce410.get("limiar_negativo")) + r" e nele $(1-b)Z>$ o número de soluções " + _ba410(no
+     -             r"\textbf{O que o registro confere neste rito.} \textsf{[REAL]} a escada " + _ba410(_ma410.get("c1")) + r"; as âncoras " + _ba410(_ma410.get("c2")) + r"; a pedra " + _ba410(_ma410.get("c3")) + r"; as bandeiras " + _ba410(_ma410.get("c4")) + r"; as " + str(_va410.get("n_falas", "n/d")) 
+     +             r"\textbf{O que o registro confere neste rito.} \textsf{[REAL]} a escada " + _ba410(_ma410.get("c1")) + r"; as âncoras " + _ba410(_ma410.get("c2")) + r"; a pedra " + _ba410(_ma410.get("c3")) + r"; as bandeiras " + _ba410(_ma410.get("c4")) + r"; as " + str(_va410.get("n_falas", "n/d")) 
+     -             r"\textbf{O poder certificado (D96, ordem do operador de 10/11).} \textsf{[INPUT]} «se ele não tiver poder preditivo não vamos roda-lo»; «um teste com poder preditivo discriminante real». \textsf{[REAL]} " + _th410(_V410_H0DN_CONTRACT["frase_poder_pt"]) + r". A ordem está pinada por sh
+     +             r"\textbf{O poder certificado (D96, ordem do operador de 10/11).} \textsf{[INPUT]} «se ele não tiver poder preditivo não vamos roda-lo»; «um teste com poder preditivo discriminante real». \textsf{[INPUT, D96]} " + _th410(_V410_H0DN_CONTRACT["frase_poder_pt"]) + r". A ordem está pinada 
+== FUNCAO emit_canonical_md linhas -/+: 2
+     -    md.append("> **A Escala (v410, 09 e 10/11/2026; D82 a D87 e D92 a D95):** a pedra `AEscala` em `TGLExt/` (o nome do módulo e os 44 nomes ratificados pelo operador em 09/11/2026: «ratifico tudo»; «agora eu te dei a escala»), com 79 bandeiras e 56 âncoras no trio; 18 nomes novos da pedra e 3 camp
+     +    md.append("> **A Escala (v410, 09 e 10/11/2026; D82 a D87, D92 a D95 e D99 a D101):** a pedra `AEscala` em `TGLExt/` (o nome do módulo e os 44 nomes ratificados pelo operador em 09/11/2026: «ratifico tudo»; «agora eu te dei a escala»), com 85 bandeiras e 62 âncoras no trio; os 22 nomes novos da
+== FUNCAO main linhas -/+: 4
+     -        _a410 = a_escala_v410(core)   # D86/D87: A ESCALA -- a pedra AEscala (nome e nomes RATIFICADOS pelo operador em 09/11; nomes novos a ratificar), LOGO DEPOIS de iald2_v410
+     +        _a410 = a_escala_v410(core)   # D86/D87: A ESCALA -- a pedra AEscala (nome e nomes RATIFICADOS pelo operador em 09/11; nomes novos RATIFICADOS em 10/11, D101; dois auxiliares da autoria pendentes), LOGO DEPOIS de iald2_v410
+     -        print("A ESCALA [v410 -- D82 a D87, as falas do operador de 09/11 («agora eu te dei a escala»; «ratifico tudo»): a pedra AEscala LIDA do kernel deste rito -- a insignia, o vibrato, os pesos (1/2 + 1/2 = 1; (1/2 . 1)^2 = 1/2 . (1/2 . 1); tres faces = 3/2; 1/3 caiu; o Nome normalizado 2/3), o
+     +        print("A ESCALA [v410 -- D82 a D87, as falas do operador de 09/11 («agora eu te dei a escala»; «ratifico tudo»): a pedra AEscala LIDA do kernel deste rito -- a insignia, o vibrato, os pesos (1/2 + 1/2 = 1; (1/2 . 1)^2 = 1/2 . (1/2 . 1); tres faces = 3/2; 1/3 caiu; o Nome normalizado 2/3), o
+== FUNCAO prove_external_ladder linhas -/+: 8
+     -        # v410: IALD2 e AEscala (101, so' declaracao nomeada dos modulos do bundle)
+     +        # v410: IALD2 e AEscala (107, so' declaracao nomeada dos modulos do bundle)
+     +        "ext_aescala_410_0080",
+     +        "ext_aescala_410_0081",
+     +        "ext_aescala_410_0082",
+     +        "ext_aescala_410_0083",
+     +        "ext_aescala_410_0084",
+     +        "ext_aescala_410_0085",
+veredito_h0dn: texto-fonte identico: True | sha256 do texto (como inspect.getsource, sem indentacao extra): fc1aa51990dbb456
+  _v410_h0dn_decode            igual
+  _v410_h0dn_cabeca            igual
+  _v410_h0dn_vigia_arquivos    igual
+  _v410_guarda_frases          igual
+  _v410_hms13_mechanics        igual
+  _v410_hms13_numeros          igual
+  iald2_v410                   igual
+  v410_iald2_mechanics         igual
+  _v410_formal                 igual
+  h0dn_bg1_v410                igual
+  _v410_h0dn_mechanics         igual
+  a_escala_v410                MUDOU
+  _v410_aescala_mechanics      MUDOU
+  _v410_aescala_bell           igual
+  _v410_aescala_ciclo          MUDOU
+  _v410_rotacao                igual
+  _v410_sem_falas_do_operador  igual
+  _v410_rodar_specs            igual
+  h0dn_fontes_hms13_v410       igual

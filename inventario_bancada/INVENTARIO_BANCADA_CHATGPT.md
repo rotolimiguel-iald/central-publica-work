@@ -1,6 +1,6 @@
 # INVENTÁRIO DA BANCADA DO CHATGPT — tudo o que foi examinado e produzido
 
-> Gerado por script em 2026-11-06 01:53:21 a partir da varredura `inventario_bancada.json` (sha16 `23eb6bfc3d1ec99e`), SÓ LEITURA da pasta `Chatgpt\`. Nenhum número digitado.
+> Gerado por script em 2026-11-11 02:38:50 a partir da varredura `inventario_bancada.json` (sha16 `07954bdab31f98b7`), SÓ LEITURA da pasta `Chatgpt\`. Nenhum número digitado.
 > **Ordem do operador (27/09/2026, verbatim):** «Precisamos fazer um inventário de tudo que foi examinado e produzido na bancada do chatgpt pra não nos perdermos mais em serviço já executado, vc está pedindo o que já pediu» e «Depois de inventariar tudo, precisamos indexar ao atlas da tgl para ficar referenciado».
 > **Regra de uso:** ANTES de pedir qualquer construção à bancada ou de construí-la na gerência, procurar aqui (por tema, por nome, por hash). O que é sabido e importável não se prova de novo (regra do operador de 27/08: «prova emprestada»).
 
@@ -17,7 +17,7 @@
 | únicos cujo nome-base JÁ está no kernel canônico | 1844 |
 | únicos com `sorry`/`admit`/`native_decide` fora de comentário | 3 |
 | únicos que declaram `axiom` | 5 |
-| documentos de entrega/quadro/relatório/medida | 2653 |
+| documentos de entrega/quadro/relatório/medida | 2655 |
 
 ## 2. O quadro de estatutos da própria bancada (FECHAMENTO_PARCIAL_016, P1)
 
@@ -8671,6 +8671,8 @@
 | 2026-10-29 18:09 | `TUNEL/DO_CHATGPT/ORDEM_021/2026-10-29_RELATORIO.md` | `0ac899a1501e601d` | ORDEM 021 — relatório diário de 29/10/2026 |
 | 2026-10-30 18:00 | `TUNEL/DO_CHATGPT/ORDEM_021/2026-10-30_RELATORIO.md` | `8751d1e9ba594849` | ORDEM 021 — relatório diário de 30/10/2026 |
 | 2026-11-01 17:59 | `TUNEL/DO_CHATGPT/ORDEM_021/2026-11-01_RELATORIO.md` | `0200b3db2d0ce1ab` | ORDEM 021 - Relatorio de 2026-11-01 |
+| 2026-11-09 09:17 | `TUNEL/DO_CHATGPT/ORDEM_027/ENTREGA_009_CONSULTAS_20261109_121734Z_REFERENCIA.json` | `f40e06ce505d3204` | { |
+| 2026-11-09 09:22 | `TUNEL/DO_CHATGPT/ORDEM_027/ENTREGA_009_CONSULTAS_20261109_121734Z_ADENDO_001_REFERENCIA.json` | `541a784abe6d4a26` | { |
 
 ## 7. Arquivos com `sorry`/`admit` ou `axiom` (NÃO importar sem exame)
 

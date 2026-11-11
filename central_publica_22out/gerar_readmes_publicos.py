@@ -10,6 +10,7 @@ sys.stdout.reconfigure(encoding="utf-8")
 W = Path(__file__).resolve().parent
 sys.path.insert(0, str(W))
 from vinculo_patentario import ler_vinculos  # noqa: E402
+from indice_partes import em_partes, PASTA as PASTA_PARTES, CAB as CAB_PARTES  # noqa: E402  (11/11/2026, v410: o índice acima do teto vai em partes)
 
 RAIZ = Path(sys.argv[1])
 # o pino que vale no README público é o do selo PUBLICADO no the_boundary (HEAD), não o do Nós: o Nós pode estar uma versão à frente da
@@ -99,7 +100,13 @@ for repo, desc in REPOS.items():
                   "Cada pasta `patents/<pedido>_<dispositivo>/` traz o runner (`runner/one_<dispositivo>.py`), o código FINAL autocontido "
                   "(`<dispositivo>_FINAL.py`), as execuções (`results/`) e os selos (`seals/`); o texto técnico de cada pedido (relatório, "
                   "reivindicações, resumo, desenhos) está em `Patentes/`.", ""]
-    corpo.append(COMUM.strip())
+    comum = COMUM.strip()
+    if em_partes(d):   # AO LADO (11/11/2026, custódia v410, claude-site-custodia): acima do teto de arquivo do GitHub, o índice vai em partes
+        frase = "`INDICE_PUBLICO.json` dá o sha256 de cada arquivo publicado;"
+        assert comum.count(frase) == 1, "a frase do índice mudou no texto comum — PARAR"
+        comum = comum.replace(frase, "o índice público, com o sha256 de cada arquivo publicado, vai em partes em `%s/` (`%s` lista as partes, com o "
+                              "sha256 de cada uma e o do índice inteiro, que passaria do limite de 100 MB por arquivo do GitHub);" % (PASTA_PARTES, CAB_PARTES))
+    corpo.append(comum)
     (d / "README.md").write_text("\n".join(corpo) + "\n", encoding="utf-8")
     if repo == "central-publica":
         (d / "PATENTES.md").write_text("# O vínculo patentário da Central\n\n" + TAB + "\n\nPedidos de patente depositados (não concedidos). "

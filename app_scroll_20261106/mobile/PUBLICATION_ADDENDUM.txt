@@ -1,0 +1,49 @@
+Adendo à preparação — APK42/iOS47; não substitui PUBLICATION_MANIFEST.json.
+
+PLAN.json/prepared já gerados e STAGING_CHECK.json aprovado. O estado antigo
+WAITING_PARENT_STAGE_AND_INDEPENDENT_REVIEW fica como retrato anterior.
+Estado atual desta entrega: STAGED_PUBLICATION_SCRIPTS_PENDING_REVIEW_EXECUTION.
+Não houve instalação, build, commit, push, publicação ou acesso Apple.
+
+Novos scripts: publication_guards.py, publish_apk42.py, git_release42.py.
+Somente após aviso humano/parent e recibos reais, criar
+mobile/PARENT_PUBLICATION_READY.json com:
+  parent: codex-app-scroll-01a094df
+  status: PUBLICATION_AUTHORIZED
+  phases: lista explícita dentre apk, commit, push
+  plan_sha256: SHA256 atual de PLAN.json
+  script_pins: objeto nome->SHA256 dos cinco arquivos:
+    publication_guards.py, publish_apk42.py, git_release42.py,
+    release_controls.py, prepare_mobile.py
+  workflow_review: {path, sha256} do parecer distinto com status PASS,
+    reviewer real e script_pins iguais aos cinco pinos acima
+  install: {path, sha256} do recibo local normalizado, status PASS,
+    plan_sha256 e installed exatamente {PLAN.rows.target: PLAN.rows.new}
+  build: {path, sha256} de mobile/release/AUDIT.json
+Se o recibo do instalador tiver outro schema, parent produz adaptador factual
+pinado preservando o original; não fabricar PASS. PARENT_BUILD_READY.json e
+seu parecer de cliente continuam obrigatórios por release_installed().
+Marcadores locais são vínculos de evidência, não autenticação por nome de ator.
+
+Execução posterior, uma fase por vez, C:/Python314/python.exe -B -X utf8:
+  publish_apk42.py
+  git_release42.py commit
+  git_release42.py push
+Executar a partir de mobile ou com caminhos absolutos. Não executar nesta fase.
+
+Cada mutação exige intent exclusivo gravado/fsync antes do efeito e receipt
+posterior. Intent existente bloqueia nova tentativa, inclusive quando o remoto
+já contém o commit. Recuperar estado/resultado manualmente com evidência;
+nunca apagar intent ou repetir para obter recibo. Falha não faz reset/revert.
+APK: rename Windows sem sobrescrita, conferência dos APKs anteriores e hashes;
+download autenticado/recusa anônima continuam verificações futuras do parent.
+Git: seis caminhos fixos também conferidos com PLAN, índice vazio, HEAD/remoto
+baseline, branch exata, blobs revisados sem filtros, URLs fetch/push únicas
+exatamente do repositório privado autorizado. Push explícito, sem force/tags.
+Varredura conservadora recusa possíveis literais de segredo sem imprimir bytes.
+Não é garantia universal de detecção: revisão humana/independente permanece.
+Somente arquivos explicitamente enumerados são adicionados; nunca git add -A.
+
+Validação desta preparação: sintaxe Python e vínculos/hash dos arquivos locais.
+Um negativo aqui seria falha do roteiro; não testa rede, build, Apple ou scroll.
+Nenhuma chamada Git de publicação será feita para testar estes candidatos.

@@ -1,0 +1,13 @@
+**Regra do operador (08/11/2026): da memória ACOM só se guardam as três cópias inteiras mais recentes do banco; as demais são desnecessárias e não vão para o D:.**
+
+**Verbatim** (`work\cunhagens_13out\OPERADOR_08nov_acom_so_as_tres_copias_mais_recentes_verbatim.txt`): «penso que a regra das tres mais novas bastam, pq já existe o backup automatico, então a redundância da segurança já está na própria regra, senão vamos criar uma lixeira de entulho vivo, desnecessário» e, depois da explicação do que são as cópias: «sim, as únicas cópias que merecem ser mantidas são as três mais recentes que acumulam tudo, as demais tornam-se desnecessárias».
+
+**O que são [REAL, lido de `snapshots.py` e medido]:** a memória ACOM (`C:\IALD\MEMORIA_IALD`, banco `memory.sqlite3`, 567 MB) tira sozinha uma cópia do banco inteiro, byte a byte e com `.sha256`, a cada 50 alterações ou 1 hora (só havendo alteração). Cada cópia tem 595 MB. A rotina `prune_and_archive` mantém `KEEP_LOCAL = 3` ao lado do banco e MOVE as mais velhas, com sha256 conferido, para `D:\IALD_ARQUIVO\MEMORIA_IALD\snapshots`. O restauro de uma cópia arquivada foi testado em 05/11 (pasta isolada: sha256 = sidecar, `PRAGMA integrity_check` = ok; `work\custodia_v408_05nov\RESTAURACAO_SNAPSHOT_ACOM_v408.json`).
+
+**Medido em 08/11:** o arquivo do D: tem **485 cópias, 243,4 GB** desde 13/10 (cerca de 9 GB por dia; o D: tinha 1,2 TB livres). Sessões com sandbox não escrevem no D: (`PermissionError 13` em `AVISOS.jsonl`, 5 casos de 26/10 a 05/11): acumulavam 4 e 5 cópias locais e a Torre marcava DEFASADO («≤ 3 cópias»), o que travou o C19 das custódias v408 e v409.
+
+**Feito pela custódia, em cima da ordem:** apagou as 2 cópias locais a mais (07/11 13:02 e 14:02), depois de conferir o sha256 das 3 mais novas (recibo `work\zenodo_v409_08nov\DESCARTE_COPIAS_ACOM_08nov.json`); o D: não foi tocado.
+
+**Pendente, com a gerência c1:** mudar a rotina (código da memória comum) para DESCARTAR as cópias além das 3 mais novas, conferindo o sha256 das que ficam, sem arquivar. Sem isso, o próximo ciclo de cópias volta a passar de 3 e a arquivar no D: (sessões sem sandbox) ou a ficar em 4 e 5 (com sandbox). **Pendente, do operador:** apagar ou não as 485 cópias já arquivadas (243,4 GB) — a regra dele implica apagá-las, mas não foi dita para elas; apagar exige rodar fora da caixa de proteção e é irreversível.
+
+**Why:** o operador não quer acúmulo de redundância desnecessária («lixeira de entulho vivo»); as três mais recentes já acumulam tudo. **How to apply:** nenhuma custódia move cópia ao D:. Antes de apagar qualquer cópia, conferir o sha256 das que ficam contra o `.sha256`. Relacionado: [[licoes-custodia-v408-05nov]] · [[zenodo-um-absoluto]].

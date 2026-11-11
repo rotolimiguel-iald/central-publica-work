@@ -58,6 +58,8 @@ add("esteira_no_work", "repos", [str(W / "atualizar_pasta_no_preparo.py"), str(P
 add("readmes", "repos", [str(W / "gerar_readmes_publicos.py"), str(PUB)], py=PYB)
 for r in REPOS:
     add("indexar_raiz_" + r, "repos", [str(W / "indexar_raiz.py"), str(PUB / r)])
+for r in REPOS:   # AO LADO (11/11/2026, custódia v410): o índice acima do teto de arquivo do GitHub vai ao git em partes; abaixo dele, nada muda
+    add("fatiar_indice_" + r, "repos", [str(W / "indice_partes.py"), str(PUB / r)])
 for r in REPOS:
     add("conferir_delta_" + r, "repos", [str(W / "conferir_delta.py"), str(PUB / r)] + ([] if r == "central-publica" else ["regiao"]))
 for r in REPOS:

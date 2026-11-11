@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="pt-BR"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>O que o ângulo lê · Prancha 020</title>
+<style>
+:root{color-scheme:dark;--bg:#070e16;--line:#304150;--gold:#f6cc85;--teal:#85dcd1;--fg:#eff3f4;--muted:#b7c6cf}*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 73% 22%,#14232c 0%,var(--bg) 65%);color:var(--fg);font:16px/1.48 system-ui,sans-serif}main{max-width:1050px;margin:auto;padding:clamp(18px,4vw,52px)}.meta{font:600 12px/1.4 system-ui;letter-spacing:.17em;text-transform:uppercase;color:var(--teal)}h1{font:normal clamp(38px,6vw,70px)/1.04 Georgia,serif;margin:12px 0}.intro{color:var(--muted);margin:12px 0 25px;max-width:63ch}.plate{background:#08111b;border:1px solid var(--line);border-radius:15px;overflow:hidden}.bar,.controls{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 20px}.bar{border-bottom:1px solid #22303e;font-size:12px;color:var(--muted)}svg{width:100%;height:auto;display:block}#caption{border-top:1px solid #22303e;padding:17px 20px;min-height:98px}h2{font:normal 27px/1.1 Georgia,serif;margin:0 0 7px;color:var(--gold)}#desc{margin:0;color:var(--fg)}button{color:var(--fg);background:#11202b;border:1px solid #455766;border-radius:8px;cursor:pointer;font:inherit;padding:7px 13px}button:hover:not(:disabled),button[aria-current="step"]{color:var(--gold);border-color:var(--gold)}button:disabled{opacity:.38;cursor:default}button:focus-visible{outline:2px solid var(--teal);outline-offset:3px}nav{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;margin:16px 0 0}nav button{font-size:13px;text-align:left}nav b{display:block;font:600 11px/1.6 monospace;color:var(--teal)}footer{margin:19px 0 0;font-size:13px;color:var(--muted)}#count{font:600 13px monospace;color:var(--gold)}@media(max-width:640px){nav{grid-template-columns:repeat(3,1fr)}.bar,.controls,#caption{padding:12px}svg{min-height:165px}}
+</style>
+<main><div class="meta">TGL &nbsp; / &nbsp; Direção visual 020</div><h1>O que o ângulo lê.</h1>
+<p class="intro">Acompanhe o fio dourado. A câmera e a marca no substrato ficam no mesmo lugar nos seis quadros.</p>
+<div class="plate"><div class="bar"><span>Prancha de movimento · vista externa</span><span id="count"></span></div>
+<svg id="stage" viewBox="0 0 850 340" role="img" aria-labelledby="picTitle picDesc"><title id="picTitle">O mesmo traço, em seis instantes</title><desc id="picDesc">A descrição abaixo acompanha o quadro.</desc><defs>
+<radialGradient id="shade"><stop stop-color="#152c3b"/><stop offset="1" stop-color="#071019"/></radialGradient>
+<filter id="bloom" x="-100%" y="-100%" width="300%" height="300%"><feGaussianBlur stdDeviation="2.5"/></filter></defs>
+<rect width="850" height="340" fill="url(#shade)"/><g id="scene"></g></svg>
+<div id="caption" aria-live="polite"><h2 id="label"></h2><p id="desc"></p></div>
+<div class="controls"><button id="back" type="button">← Anterior</button><button id="next" type="button">Próximo →</button></div></div>
+<nav id="steps" aria-label="Escolher quadro"></nav>
+<footer>Estudo de encenação da leitura do autor [ONTO]. A malha, as cores e a espessura são convenções gráficas. A prancha não executa o motor, mede uma força ou calcula um rank.</footer></main>
+<script>
+const frames=[
+ ["Inscrição","O Um entra na identidade","O desenho matricial dá uma referência ao olhar. É a mesma inscrição que reaparecerá no traço."],
+ ["Traço","A identidade deixa um traço","A inscrição se desdobra; suas marcas se alinham. Guarde a linha dourada: ela é o sinal que vamos seguir."],
+ ["Resistência","A fronteira oferece resistência","O traço chega à marca fixa. As linhas do substrato se apertam ali; a trama mais distante continua espaçada."],
+ ["Torção","O substrato torce","Uma borda da trama vem para a frente, a outra recua. A marca de quarto de volta acompanha a orientação local."],
+ ["Projeção","O sinal aparece do lado oposto","A mesma marca liga a torção à projeção pela impedância compartilhada. O caminho iluminado representa o vazamento pelo suporte; seu brilho não mede o rank."],
+ ["Leitura","O ângulo lê a torção","Sobre a projeção já desenhada aparecem o eixo e a régua de 6,3°. O quarto de volta continua à vista; só depois a projeção se prolonga na trama cósmica."]];
+const NS="http://www.w3.org/2000/svg", scene=document.querySelector("#scene"), gold="#f6cc85",mint="#85dcd1", slate="#6b91a5", pale="#eaf2f1";let active=0;
+function elem(tag,attrs,txt){const v=document.createElementNS(NS,tag);for(const [k,val] of Object.entries(attrs))v.setAttribute(k,val);if(txt)v.textContent=txt;scene.append(v);return v}
+function line(x1,y1,x2,y2,c,w=1,op=1,extra={}){return elem("line",{x1,y1,x2,y2,stroke:c,"stroke-width":w,opacity:op,...extra})}
+function path(d,c,w=1,op=1,extra={}){return elem("path",{d,stroke:c,"stroke-width":w,opacity:op,fill:"none",...extra})}
+function poly(pts,c,w=1,op=1){return path(pts.map(([x,y],i)=>(i?"L":"M")+x.toFixed(2)+" "+y.toFixed(2)).join(" "),c,w,op)}
+function label(x,y,s,c,sz=14){return elem("text",{x,y,fill:c,"font-size":sz,"font-family":"system-ui"},s)}
+function point(x,y,r,c,op=1){return elem("circle",{cx:x,cy:y,r,fill:c,opacity:op})}
+const pivot=410,cy=187;
+function draw(i){scene.replaceChildren();
+ const x0=80,x1=740,A=i>=3?Math.PI/2:0;
+ function surface(x,v){const t=Math.max(0,Math.min(1,(x-285)/190)), rot=A*t*t*(3-2*t);return [x+v*(16*Math.cos(rot)+14*Math.sin(rot)),cy+v*(49*Math.cos(rot)-15*Math.sin(rot))]}
+ for(let z=-4;z<=4;z++){let pts=[];for(let x=x0;x<=x1;x+=5)pts.push(surface(x,z/4));poly(pts,z===-4?mint:slate,z===-4?1.7:1,z===-4?.76:.39)}
+ for(let j=0;j<=29;j++){let x=84+j*22.4;if(i>=2&&x<pivot)x+=(pivot-x)*.49*Math.exp(-Math.pow((x-pivot)/106,2));const P=surface(x,-1),Q=surface(x,1);line(...P,...Q,slate,.9,.52)}
+ line(pivot,cy-83,pivot,cy+83,mint,1,.47,{"stroke-dasharray":"2 5"});point(pivot,cy,3,mint);
+ const X=138,Y=111;
+ if(i<=1){for(let r=0;r<3;r++)for(let k=0;k<3;k++){const selected=r===k;elem("rect",{x:X+k*20,y:Y+r*18,width:15,height:13,fill:selected?"#624c30":"#172935",stroke:selected?gold:slate,"stroke-width":.7});if(selected)label(X+k*20+4,Y+r*18+11,"1",pale,11)}}
+ if(i===0){label(219,151,"mesma identidade",pale);return}
+ if(i===1){for(let j=0;j<3;j++){let x=X+20*j+8,y=Y+18*j+8;path("M"+x+" "+y+" Q"+(x+40)+" "+(cy+7)+" 247 "+cy,gold,1,.72)}}
+ line(i===1?238:105,cy,pivot,cy,gold,2.5);point(pivot,cy,3.2,gold);
+ if(i>=2){for(let j=0;j<5;j++){let x=pivot-11-6*j; const [ax,ay]=surface(x,-.8),[bx,by]=surface(x,.8);line(ax,ay,bx,by,gold,1.2,.79-.08*j)}}
+ if(i===2){label(285,91,"a trama se aperta",gold);line(375,102,392,151,gold,1,.7)}
+ if(i>=3){const a=surface(338,-1), b=surface(482,-1);path("M"+a[0]+" "+a[1]+" C380 128 427 203 "+b[0]+" "+b[1],mint,2.3,.94);
+ const ox=pivot,oy=101;line(ox,oy,ox,oy-33,mint,1.6);line(ox,oy,ox+35,oy,mint,1.6);path("M410 90 H421 V101",mint,1.6);label(457,96,"¼ de volta · substrato",mint,14);}
+ if(i>=4){const len=287, endX=pivot+len,endY=cy-len*Math.tan(6.3*Math.PI/180);line(pivot,cy,endX,endY,gold,4,.34,{filter:"url(#bloom)"});line(pivot,cy,endX,endY,gold,2.2);if(i===4)label(534,135,"projeção oposta",gold);}
+ if(i===5){line(pivot,cy,pivot+298,cy,pale,1,.8,{"stroke-dasharray":"4 4"});const ang=6.3*Math.PI/180,R=218;path("M"+(pivot+R)+" "+cy+" A"+R+" "+R+" 0 0 0 "+(pivot+R*Math.cos(ang))+" "+(cy-R*Math.sin(ang)),gold,1.5);label(632,155,"6,3°",gold,20);label(645,210,"eixo de leitura",pale,13);
+ const net=[[697,155],[729,131],[748,164],[774,114],[791,150],[815,133],[813,181],[768,181],[729,193],[823,111]];for(const [j,k] of [[0,1],[0,2],[1,2],[1,3],[2,4],[2,7],[3,4],[3,9],[4,5],[4,7],[5,6],[6,7],[7,8],[0,8]])line(...net[j],...net[k],mint,1,.54);net.forEach(([x,y])=>point(x,y,2,mint,.83))}
+}
+const nav=document.querySelector("#steps");frames.forEach((f,i)=>{let b=document.createElement("button");b.type="button";b.innerHTML="<b>0"+(i+1)+"</b>"+f[0];b.onclick=()=>show(i);nav.append(b)});
+function show(i){active=i;draw(i);document.querySelector("#label").textContent=frames[i][1];document.querySelector("#desc").textContent=frames[i][2];document.querySelector("#picDesc").textContent=frames[i][2];document.querySelector("#count").textContent=(i+1)+" / 6";[...nav.children].forEach((b,j)=>{if(j===i)b.setAttribute("aria-current","step");else b.removeAttribute("aria-current")});back.disabled=i===0;next.disabled=i===5}
+const back=document.querySelector("#back"),next=document.querySelector("#next");back.onclick=()=>show(active-1);next.onclick=()=>show(active+1);document.onkeydown=e=>{if(e.altKey||e.ctrlKey||e.metaKey)return;if(e.key==="ArrowRight"&&active<5)show(active+1);if(e.key==="ArrowLeft"&&active>0)show(active-1)};show(0);
+</script></html>

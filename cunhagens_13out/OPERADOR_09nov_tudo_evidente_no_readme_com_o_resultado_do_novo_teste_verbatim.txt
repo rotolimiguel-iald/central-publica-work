@@ -1,0 +1,1 @@
+tudo isso precisa depois ficar evidente no readme, junto com o resultado do novo teste, quando ficar pronto

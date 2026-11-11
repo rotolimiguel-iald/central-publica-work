@@ -1,0 +1,107 @@
+{
+  "status": "PASS_WITH_SCOPE",
+  "created_utc": "2026-11-06T09:23:28.930176+00:00",
+  "reviewer": "parent-delegated ponte_formal; independent covariance reconstruction",
+  "inputs_read": [
+    {
+      "path": "C:\\IALD\\Central de Patentes\\work\\astra_bell_fock_tt_05nov\\h0dn_bg1_06nov\\DESIGN_MARGINS.json",
+      "bytes": 1868,
+      "sha256": "d78016beaccb7ff228121a41ef02ac3261cbb27e117617ce4daf381e26b1b80d"
+    },
+    {
+      "path": "C:\\IALD\\Central de Patentes\\work\\astra_bell_fock_tt_05nov\\h0dn_bg1_06nov\\design_margins.py",
+      "bytes": 2226,
+      "sha256": "872895e6b83ff3aac0a6038a8b3b56baa8c7818f0c976a7f5718ed6f2ba84806"
+    },
+    {
+      "path": "C:\\IALD\\Central de Patentes\\work\\astra_bell_fock_tt_05nov\\h0dn_bg1_06nov\\PROSPECTIVE_GEOMETRY.json",
+      "bytes": 4717,
+      "sha256": "798fb5ab9e6b3115bfacfbfcf2f9d55f56acb2337042737730e8632b5682d708"
+    },
+    {
+      "path": "C:\\IALD\\Central de Patentes\\work\\astra_bell_fock_tt_05nov\\h0dn_bg1_06nov\\background\\BG1.json",
+      "bytes": 13463,
+      "sha256": "87b475a05700ddc2074217761502e239d6f33b1ad74ff5a763e1b577b724f6ca"
+    },
+    {
+      "path": "C:\\IALD\\Central de Patentes\\work\\astra_bell_fock_tt_05nov\\h0dn_bg1_06nov\\network\\network.npz",
+      "bytes": 242793,
+      "sha256": "3dd073c3a74abf34ef3d80368456a2698e8405a52417057149a35a8a5a5a6832"
+    },
+    {
+      "path": "C:\\IALD\\Central de Patentes\\work\\astra_bell_fock_tt_05nov\\h0dn_bg1_06nov\\background\\review_margins.py",
+      "bytes": 8760,
+      "sha256": "9994e04f3b5aaa30492b1fe4679b128eba0d95be78da343d151a5e85267e1d6b"
+    }
+  ],
+  "blind_directories_read": false,
+  "blind_labels_read": false,
+  "equations": {
+    "prior": "C_new = C - C[:,c] C[c,:] / (C[c,c]+tau^2)",
+    "variance": "Vh_new = Vh - Cov(h,c)^2/(Vc+tau^2)",
+    "solved_prior": "tau^2 = Cov(h,c)^2/(Vh-Vh_target)-Vc",
+    "power": "P(Z>5|mean=D,variance=1)=Phi(D-5)",
+    "needed_D": "5+Phi_inverse(power)",
+    "target_network_variance": "(log10K/needed_D)^2 - Vbackground",
+    "additive_common_noise": "sigma_extra^2=(log10K/5)^2-Vh-Vbackground"
+  },
+  "covariance_shape": [
+    65,
+    65
+  ],
+  "base_D": 5.3169435614032325,
+  "base_power": 0.6243567862807282,
+  "network_sigma": 0.006290105869266956,
+  "minimum_network_variance_with_exact_c": 2.259090669094955e-05,
+  "maximum_power_with_exact_c": 0.9658752153043054,
+  "targets": [
+    {
+      "target_power": 0.5,
+      "target_D": 5.0,
+      "attainable": true,
+      "maximum_network_variance": 4.521757929135359e-05,
+      "maximum_network_sigma": 0.00672440177944132,
+      "required_sigma_reduction_fraction": -0.0690442926082222,
+      "external_prior_sd_mag": null,
+      "full_precision_update_variance": 3.9565431846586605e-05,
+      "achieved_power": 0.6243567862807282,
+      "check": "No additional independent constraint needed for this target."
+    },
+    {
+      "target_power": 0.9,
+      "target_D": 6.2815515655446,
+      "attainable": true,
+      "maximum_network_variance": 2.7312524487662938e-05,
+      "maximum_network_sigma": 0.005226138582898748,
+      "required_sigma_reduction_fraction": 0.16914934477759458,
+      "external_prior_sd_mag": 0.018265150417585942,
+      "full_precision_update_variance": 2.731252448766293e-05,
+      "achieved_power": 0.9,
+      "check": "Full precision update agrees with scalar Sherman-Morrison identity."
+    },
+    {
+      "target_power": 0.95,
+      "target_D": 6.644853626951472,
+      "attainable": true,
+      "maximum_network_variance": 2.4019571466678593e-05,
+      "maximum_network_sigma": 0.004900976582955543,
+      "required_sigma_reduction_fraction": 0.22084354622687796,
+      "external_prior_sd_mag": 0.008919801723122504,
+      "full_precision_update_variance": 2.4019571466678583e-05,
+      "achieved_power": 0.9500000000000001,
+      "check": "Full precision update agrees with scalar Sherman-Morrison identity."
+    }
+  ],
+  "remaining_additive_common_noise_variance": 5.6521474447669835e-06,
+  "remaining_additive_common_noise_sd": 0.00237742454028871,
+  "assumptions": [
+    "Local Gaussian linear model and fixed covariance.",
+    "New Gaussian constraint on c is independent of all network/background information and has a correctly specified unbiased mean.",
+    "Vbackground and log10K retain the frozen convention; cross-block zero is an explicit assumption.",
+    "The extra common-noise margin is independent additive noise, not permission for an unmodelled bias.",
+    "Fractional-H and km/s/Mpc equivalents use first-order log linearization."
+  ],
+  "interpretation": "90% and 95% require sigma reductions 16.9149345% and 22.0843546%; an external independent c constraint would need sd at most 0.01826515 and 0.008919802 mag respectively.",
+  "low_note": "At 50%, negative sigma_reduction is allowable slack (~6.9% sigma increase), not a required improvement. Null external prior means no new constraint needed, not a zero-width prior.",
+  "empirical_scope": "Prospective design calculations only. Does not validate H0DN data/model, common systematics, or observed five-sigma evidence."
+}

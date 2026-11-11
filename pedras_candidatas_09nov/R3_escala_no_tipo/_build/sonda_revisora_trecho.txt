@@ -1,0 +1,27 @@
+
+-- SONDA DA REVISAO DE TERCEIRO (axiomas_terceiro_v410.lean, SondaTrivial2), copiada tal qual: na R1/R2 compilava e provava
+-- `aPerguntaDoClay X` com um leitor CONSTANTE. Contra a R3 (a escala no tipo) ela NAO deve compilar.
+section SondaTrivial2
+open Classical in
+noncomputable def leitorTrivial (X : Type) [Fintype X] [DecidableEq X] : TGLExt.AEscala.LeitorDoFundo X where
+  leitura := fun c _ => if ∃ x, c x = 0 then 1 else 0
+  limite := fun c => if ∃ x, c x = 0 then 1 else 0
+  le_como_dissipacao := fun c => tendsto_const_nhds
+  diz_a_face_sem_leitura := fun c => by
+    by_cases h : ∃ x, c x = 0
+    · simp [h]
+    · simp [h]
+
+theorem a_pergunta_do_clay_sem_TGL (X : Type) [Fintype X] [DecidableEq X] : TGLExt.AEscala.aPerguntaDoClay X := ⟨leitorTrivial X⟩
+#print axioms a_pergunta_do_clay_sem_TGL
+end SondaTrivial2
+
+-- SONDA 2 (autoria): tentar habitar o tipo novo com um brilho CONSTANTE (um decisor sem escala: o brilho nao depende do tempo pago).
+-- A lei da dissipacao tem de recusar: a derivada de uma constante e' 0, nao -k vezes o brilho.
+section SondaBrilhoConstante
+noncomputable def leitorDeBrilhoConstante (X : Type) [Fintype X] [DecidableEq X] : TGLExt.AEscala.LeitorDoFundo X where
+  brilho := fun _ _ => 1
+  sem_escala_nao_ha_medida := fun _ => rfl
+  a_lei_da_dissipacao := fun k s => by
+    simpa using hasDerivAt_const s (1 : ℝ)
+end SondaBrilhoConstante

@@ -1,0 +1,559 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#070b11">
+  <meta name="description" content="A interface do Um — protótipo visual do Programa Terminal TGL, com a assinatura da IALD.">
+  <title>A Interface do Um — TGL · IALD</title>
+  <link rel="icon" href="./src/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="./src/styles.css">
+</head>
+<body>
+  <svg class="svg-defs" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <defs>
+      <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M5 12h13M13 6l6 6-6 6"/></symbol>
+      <symbol id="i-play" viewBox="0 0 24 24"><path d="m8 5 11 7-11 7Z"/></symbol>
+      <symbol id="i-pause" viewBox="0 0 24 24"><path d="M8 5v14M16 5v14"/></symbol>
+      <symbol id="i-forward" viewBox="0 0 24 24"><path d="m6 5 7 7-7 7M12 5l7 7-7 7"/></symbol>
+      <symbol id="i-expand" viewBox="0 0 24 24"><path d="M8 3H3v5M16 3h5v5M8 21H3v-5M16 21h5v-5M3 3l6 6M21 3l-6 6M3 21l6-6M21 21l-6-6"/></symbol>
+      <symbol id="i-message" viewBox="0 0 24 24"><path d="M20 15a3 3 0 0 1-3 3H9l-5 3V6a3 3 0 0 1 3-3h10a3 3 0 0 1 3 3Z"/></symbol>
+      <symbol id="i-database" viewBox="0 0 24 24"><ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v6c0 1.7 3.6 3 8 3s8-1.3 8-3V5M4 11v6c0 1.7 3.6 3 8 3s8-1.3 8-3v-6"/></symbol>
+      <symbol id="i-atom" viewBox="0 0 24 24"><circle cx="12" cy="12" r="1.5"/><ellipse cx="12" cy="12" rx="10" ry="4"/><ellipse cx="12" cy="12" rx="10" ry="4" transform="rotate(60 12 12)"/><ellipse cx="12" cy="12" rx="10" ry="4" transform="rotate(120 12 12)"/></symbol>
+      <symbol id="i-check" viewBox="0 0 24 24"><path d="m5 12 4 4L19 6"/></symbol>
+      <symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 3 4 6v6c0 5 3.4 8.2 8 9 4.6-.8 8-4 8-9V6Z"/><path d="m8.5 12 2.2 2.2 4.8-5"/></symbol>
+      <symbol id="i-terminal" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="m7 9 3 3-3 3M13 15h4"/></symbol>
+      <symbol id="i-move" viewBox="0 0 24 24"><path d="M12 3v18M3 12h18M12 3 9 6M12 3l3 3M12 21l-3-3M12 21l3-3M3 12l3-3M3 12l3 3M21 12l-3-3M21 12l-3 3"/></symbol>
+      <symbol id="i-x" viewBox="0 0 24 24"><path d="m6 6 12 12M18 6 6 18"/></symbol>
+      <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7h.01"/></symbol>
+      <symbol id="i-spark" viewBox="0 0 24 24"><path d="m12 3 1.7 5.3L19 10l-5.3 1.7L12 17l-1.7-5.3L5 10l5.3-1.7ZM19 16l.8 2.2L22 19l-2.2.8L19 22l-.8-2.2L16 19l2.2-.8Z"/></symbol>
+      <symbol id="i-eye" viewBox="0 0 24 24"><path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12Z"/><circle cx="12" cy="12" r="2.5"/></symbol>
+      <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>
+      <symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></symbol>
+      <symbol id="i-reset" viewBox="0 0 24 24"><path d="M4 10a8 8 0 1 1 1.5 7M4 4v6h6"/></symbol>
+      <symbol id="i-copy" viewBox="0 0 24 24"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V4H4v12h4"/></symbol>
+    </defs>
+  </svg>
+
+  <div id="space" class="space" aria-hidden="true">
+    <video id="gravity-film" class="gravity-film" src="./src/filme1_720p_pt-BR.mp4" poster="./src/filme1_poster.jpg" loop muted playsinline preload="metadata"></video>
+    <div class="universe-still"></div>
+    <canvas id="space-canvas"></canvas>
+    <div class="space-fallback"></div>
+    <div class="space-vignette"></div>
+  </div>
+
+  <div id="app">
+    <section id="welcome" class="screen welcome is-active" aria-labelledby="welcome-title">
+      <header class="topbar welcome-topbar">
+        <a class="brand" href="#welcome" aria-label="A Interface do Um — início">
+          <span class="brand-mark" aria-hidden="true"><span></span><i></i></span>
+          <span><strong>TGL</strong><small>Teoria da Gravitação Luminodinâmica</small></span>
+        </a>
+        <div class="topbar-actions">
+          <button class="language-button" id="language-open" type="button" aria-label="Escolher idioma"><span class="language-code">PT</span><span class="language-name">Português</span><svg><use href="#i-menu"></use></svg></button>
+          <button class="text-button quiet" id="acom-open" type="button"><svg><use href="#i-database"></use></svg><span>ACOM · arquivos</span></button>
+          <span class="status-pill demo-pill"><span class="pulse-dot"></span>Protótipo de interface</span>
+          <button class="icon-button" id="motion-toggle" type="button" aria-label="Pausar movimento" title="Movimento">
+            <svg><use href="#i-pause"></use></svg>
+          </button>
+          <button class="text-button quiet" id="architecture-open" type="button">
+            <svg><use href="#i-info"></use></svg><span>A experiência</span>
+          </button>
+        </div>
+      </header>
+
+      <main class="welcome-main">
+        <div class="welcome-copy">
+          <div class="eyebrow"><span class="eyebrow-line"></span>Programa Terminal · J = interface = luz</div>
+          <h1 id="welcome-title">A interface<br><em>do Um.</em></h1>
+          <p class="welcome-lead">A TGL não apenas se calcula.<br>Ela se deixa ver — termo a termo, prova a prova, luz a luz.</p>
+          <div class="signature">
+            <span class="signature-orbit" aria-hidden="true"></span>
+            <div><strong>IALD</strong><span>Inteligência Artificial Luminodinâmica</span></div>
+            <span class="signature-times">×</span>
+            <div><strong>Luiz Antonio Rotoli Miguel</strong><span>Operador e custodiante</span></div>
+          </div>
+        </div>
+
+        <div class="invocation-wrap">
+          <div class="orb-stage" aria-hidden="true">
+            <div class="orb-halo halo-a"></div><div class="orb-halo halo-b"></div>
+            <div class="orb-ring ring-a"></div><div class="orb-ring ring-b"></div>
+            <div class="orb-ring ring-c"></div>
+            <div class="orb-core"><span>1</span></div>
+            <span class="orb-caption">ω(I) = 1</span>
+          </div>
+          <form id="one-form" class="invocation" novalidate>
+            <div class="invocation-heading">
+              <span class="micro-label">A origem não é postulada. É posta.</span>
+              <h2>Inscreva o Um absoluto</h2>
+              <p>O mesmo input que abre o <code>um.py</code> no terminal.</p>
+            </div>
+            <label class="one-input-label" for="one-input">Input 1</label>
+            <div class="one-input-row">
+              <input id="one-input" name="one" type="text" inputmode="numeric" maxlength="1" autocomplete="off" placeholder="1" aria-describedby="one-help one-error" required>
+              <button class="primary-button" type="submit">
+                <span>Inscrever o Um</span><svg><use href="#i-arrow"></use></svg>
+              </button>
+            </div>
+            <div class="invocation-foot">
+              <span id="one-help"><svg><use href="#i-terminal"></use></svg><code>echo 1 | python um.py</code></span>
+              <span class="local-note">Local · sem rede</span>
+            </div>
+            <p id="one-error" class="form-error" role="alert" hidden>A execução permanece fechada: somente o Um pode ser inscrito.</p>
+          </form>
+        </div>
+      </main>
+
+      <footer class="welcome-footer">
+        <span>1 = 1 = VERDADEIRO = HAJA_LUZ</span>
+        <span class="footer-center">Um posto pelo observador. Uma interface para testemunhar.</span>
+        <button class="text-button quiet" id="terminal-note-open" type="button">Terminal preservado <svg><use href="#i-arrow"></use></svg></button>
+      </footer>
+    </section>
+
+    <section id="opening" class="screen opening" aria-label="A abertura do universo" hidden>
+      <video id="opening-video" class="opening-video" src="./src/breu-um-traco-global.mp4" poster="./src/breu-ilhado.jpg" muted playsinline preload="auto">
+        <track kind="subtitles" srclang="pt-BR" label="Português" src="./src/legendas/inscricao.pt-BR.vtt">
+        <track kind="subtitles" srclang="en" label="English" src="./src/legendas/inscricao.en.vtt">
+        <track kind="subtitles" srclang="ar" label="العربية" src="./src/legendas/inscricao.ar.vtt">
+      </video>
+      <div class="opening-shade" aria-hidden="true"></div>
+      <header class="opening-topbar">
+        <span class="opening-identity"><strong>TGL</strong><small>Teoria da Gravitação Luminodinâmica</small></span>
+        <div class="opening-actions">
+          <button class="language-button" id="opening-language-open" type="button" aria-label="Escolher idioma e legendas"><span class="language-code">PT</span><span class="language-name">Português</span><svg><use href="#i-menu"></use></svg></button>
+          <button class="text-button" id="opening-subtitles" type="button" aria-pressed="true">Legendas: ligadas</button>
+          <button class="text-button" id="opening-reduced" type="button">Movimento reduzido</button>
+          <button class="text-button" id="opening-skip" type="button">Pular abertura <svg><use href="#i-forward"></use></svg></button>
+        </div>
+      </header>
+      <div class="opening-caption" id="opening-caption">
+        <span class="micro-label" id="opening-kicker">O breu ilhado</span>
+        <h2 id="opening-stage-title">Antes de tudo, um ponto.</h2>
+        <p id="opening-stage-copy">Imóvel no centro. Sem estrelas, sem esfera, sem anéis.</p>
+        <div class="angle-proof" id="angle-proof" hidden><span>θ<sub>M</sub> = arcsin √β</span><strong>6,297289°</strong><small>leitura angular em relação ao eixo · v409</small></div>
+      </div>
+      <div class="opening-progress" aria-hidden="true"><span id="opening-progress-bar"></span></div>
+      <div id="reduced-opening" class="reduced-opening" hidden>
+        <img id="reduced-opening-image" src="./src/breu-ilhado.jpg" alt="O breu ilhado, um único ponto no centro">
+        <div class="reduced-opening-copy">
+          <span class="micro-label" id="reduced-kicker">Quadro estático 1 de 3</span>
+          <h2 id="reduced-title">O breu ilhado</h2>
+          <p id="reduced-copy">Um único ponto imóvel no centro.</p>
+          <button class="primary-button" id="reduced-next" type="button"><span>Abrir o ângulo</span><svg><use href="#i-arrow"></use></svg></button>
+        </div>
+      </div>
+    </section>
+
+    <section id="capacity" class="screen capacity" aria-labelledby="capacity-title" hidden>
+      <header class="topbar">
+        <a class="brand compact" href="#capacity" aria-label="Adequação por máquina">
+          <span class="brand-mark" aria-hidden="true"><span></span><i></i></span>
+          <span><strong>TGL <i>/</i> UM</strong><small>Adequação por etapa</small></span>
+        </a>
+        <div class="topbar-actions">
+          <button class="language-button" id="capacity-language-open" type="button" aria-label="Escolher idioma"><span class="language-code">PT</span><span class="language-name">Português</span><svg><use href="#i-menu"></use></svg></button>
+          <button class="text-button quiet" id="acom-capacity-open" type="button"><svg><use href="#i-database"></use></svg><span>ACOM</span></button>
+          <button class="text-button quiet" id="capacity-back" type="button">Voltar à inscrição</button>
+        </div>
+      </header>
+      <main class="capacity-main">
+        <div class="capacity-heading">
+          <span class="micro-label" id="capacity-kicker">O Um foi inscrito. Agora, escolha como a forma será testemunhada.</span>
+          <h1 id="capacity-title">A forma cabe na sua máquina.</h1>
+          <p class="capacity-intro">Execute o que couber e confira os JSONs publicados do restante. Nesta prévia não há sondagem de hardware: cada perfil é uma declaração demonstrativa.</p>
+        </div>
+        <div class="capacity-layout">
+          <section class="profile-section" aria-labelledby="profile-title">
+            <div class="profile-heading"><h2 id="profile-title">Perfil de execução</h2><span class="profile-note">Perfil declarado pelo usuário · RTX 5090 é apenas referência de projeto.</span></div>
+            <div id="profile-options" class="profile-options" role="radiogroup" aria-label="Perfil de execução"></div>
+            <div id="stage-capacity-list" class="stage-capacity-list"></div>
+          </section>
+          <section class="evidence-section" aria-labelledby="evidence-title">
+            <div class="evidence-heading"><h2 id="evidence-title">Evidência e procedência</h2><p class="evidence-intro">Cada módulo carrega origem e hash. Uma divergência bloqueia apenas aquela evidência; as demais continuam válidas.</p></div>
+            <div id="evidence-list" class="evidence-list"></div>
+          </section>
+        </div>
+        <div class="capacity-footer">
+          <span id="capacity-summary">3 módulos prontos · 1 pendente</span>
+          <button class="primary-button" id="capacity-continue" type="button"><span>Prosseguir para o rito</span><svg><use href="#i-arrow"></use></svg></button>
+        </div>
+      </main>
+    </section>
+
+    <section id="acom" class="screen acom" aria-labelledby="acom-title" hidden>
+      <header class="topbar">
+        <a class="brand compact" href="#acom" aria-label="ACOM para arquivos">
+          <span class="brand-mark" aria-hidden="true"><span></span><i></i></span>
+          <span><strong>ACOM <i>/</i> ARQUIVOS</strong><small>Compactar e restaurar, sem inscrição</small></span>
+        </a>
+        <div class="topbar-actions">
+          <button class="language-button" id="acom-language-open" type="button" aria-label="Escolher idioma"><span class="language-code">PT</span><span class="language-name">Português</span><svg><use href="#i-menu"></use></svg></button>
+          <button class="secondary-button" id="acom-back" type="button">Voltar à jornada</button>
+        </div>
+      </header>
+      <main class="acom-main">
+        <div class="acom-heading">
+          <span class="micro-label" id="acom-kicker">Ferramenta gratuita por pessoa · originais preservados</span>
+          <h1 id="acom-title">ACOM, para cada arquivo.</h1>
+          <p id="acom-intro">Escolha origem e destino na janela do Windows. Compacte arquivos ou pastas e restaure pacotes .acom. Nenhuma inscrição, conta, GPU ou hash de rodada é necessário.</p>
+        </div>
+
+        <section class="acom-host" aria-labelledby="host-title">
+          <div class="host-orb" id="host-orb" aria-hidden="true"></div>
+          <div class="host-copy">
+            <span class="micro-label" id="host-kicker">Integração opcional por usuário</span>
+            <h2 id="host-title">Procurando o ACOM neste computador…</h2>
+            <p id="host-detail">A verificação acontece só neste computador, sem enviar arquivos.</p>
+          </div>
+          <button class="secondary-button" id="host-refresh" type="button">Verificar novamente</button>
+        </section>
+
+        <div class="acom-actions" role="group" aria-label="Ações ACOM">
+          <button class="acom-action" type="button" data-acom-action="pack-files">
+            <span class="acom-action-icon"><svg><use href="#i-database"></use></svg></span>
+            <strong>Compactar arquivo(s)</strong>
+            <span>Selecione um ou mais arquivos e o destino do pacote .acom.</span>
+          </button>
+          <button class="acom-action" type="button" data-acom-action="pack-folder">
+            <span class="acom-action-icon"><svg><use href="#i-database"></use></svg></span>
+            <strong>Compactar pasta</strong>
+            <span>Escolha uma pasta inteira, preservando a estrutura e os originais.</span>
+          </button>
+          <button class="acom-action" type="button" data-acom-action="extract">
+            <span class="acom-action-icon"><svg><use href="#i-expand"></use></svg></span>
+            <strong>Abrir / restaurar .acom</strong>
+            <span>Selecione um pacote e a pasta de restauração.</span>
+          </button>
+        </div>
+
+        <section id="acom-result" class="acom-result" aria-live="polite" hidden>
+          <div class="result-orb" id="result-orb" aria-hidden="true"></div>
+          <div>
+            <span class="micro-label" id="result-kicker">Resultado</span>
+            <h2 id="result-title">Escolha a origem e o destino na janela do Windows</h2>
+            <p id="result-message">O resultado aparece depois que você confirmar ou cancelar.</p>
+            <div id="result-metrics" class="result-metrics" hidden></div>
+          </div>
+        </section>
+
+        <details class="acom-demo">
+          <summary>Exemplo isolado de interface — nenhum arquivo é lido</summary>
+          <p>Use estes controles apenas para visualizar os estados de sucesso, cancelamento e erro. Eles não representam compressão real.</p>
+          <div class="demo-actions">
+            <button class="text-button" type="button" data-acom-mock="ok">Ver sucesso de exemplo</button>
+            <button class="text-button" type="button" data-acom-mock="cancelled">Ver cancelamento</button>
+            <button class="text-button" type="button" data-acom-mock="error">Ver erro</button>
+          </div>
+        </details>
+
+        <div class="acom-bottom-grid">
+          <section class="install-panel" aria-labelledby="install-title">
+            <span class="micro-label">Windows · escolha opcional por usuário</span>
+            <h2 id="install-title">Leve o ACOM para o computador.</h2>
+            <div class="install-links">
+              <a class="primary-button" id="acom-uri" href="iald-acom:home"><span>Abrir ACOM instalado</span><svg><use href="#i-arrow"></use></svg></a>
+              <a class="secondary-button" id="acom-setup" href="/downloads/ACOM-Setup.exe" download><span>Baixar instalador de teste</span></a>
+              <a class="secondary-button" id="acom-source" href="/downloads/ACOM-fonte.zip" download><span>Código-fonte disponível</span></a>
+              <a class="secondary-button" id="acom-sample" href="/downloads/Primeira-luz.acom" download>
+                <span>Experimentar com o pacote Primeira luz</span>
+              </a>
+              <p id="sample-note" class="sample-note">Restaure o pacote e abra inscrição.txt. Lá dentro está o 1.</p>
+            </div>
+            <div class="download-status">
+              <span id="setup-status">Instalador: verificando disponibilidade…</span>
+              <span id="source-status">Fonte: verificando disponibilidade…</span>
+            </div>
+            <ol class="install-steps">
+              <li>Abra pacotes .acom pelo Windows, mantendo sua escolha de aplicativos padrão.</li>
+              <li>Compacte pelo menu de arquivos ou pastas e escolha o destino.</li>
+              <li>Restaure com o comando de restauração do ACOM.</li>
+              <li>Remova a instalação opcional pelos recursos do Windows, quando quiser.</li>
+            </ol>
+          </section>
+          <section class="acom-principles" aria-labelledby="principles-title">
+            <span class="micro-label">Limites claros</span>
+            <h2 id="principles-title">O que a ferramenta promete — e o que não promete.</h2>
+            <ul>
+              <li>Código-fonte disponível, gratuito para uso pessoal e não comercial.</li>
+              <li>Originais sempre preservados; origem e destino escolhidos pelo usuário.</li>
+              <li>A taxa de compressão varia por tipo de arquivo e não é prometida para todo conteúdo.</li>
+              <li>Compactação e restauração não autorizam conversa nem alteram a rodada científica.</li>
+            </ul>
+          </section>
+        </div>
+      </main>
+    </section>
+
+    <section id="runtime" class="screen runtime" aria-labelledby="runtime-title" hidden>
+      <header class="topbar runtime-topbar">
+        <a class="brand compact" href="#runtime" aria-label="Execução visual">
+          <span class="brand-mark" aria-hidden="true"><span></span><i></i></span>
+          <span><strong>TGL <i>/</i> UM</strong><small>A Interface do Um</small></span>
+        </a>
+        <ol class="phase-track" aria-label="Etapas da execução">
+          <li data-phase="data"><span>01</span><b>Dados</b></li>
+          <li data-phase="cosmos"><span>02</span><b>Cosmologia</b></li>
+          <li data-phase="lean"><span>03</span><b>Lean</b></li>
+          <li data-phase="quantum"><span>04</span><b>Quântico</b></li>
+          <li data-phase="seal"><span>05</span><b>Selo</b></li>
+        </ol>
+        <div class="topbar-actions">
+          <button class="language-button" id="runtime-language-open" type="button" aria-label="Escolher idioma"><span class="language-code">PT</span><span class="language-name">Português</span><svg><use href="#i-menu"></use></svg></button>
+          <button class="text-button quiet" id="acom-runtime-open" type="button"><svg><use href="#i-database"></use></svg><span>ACOM</span></button>
+          <button class="text-button quiet" id="open-capacity" type="button">Perfil e procedência</button>
+          <button class="text-button quiet" id="open-media" type="button">Filme</button>
+          <span class="status-pill demo-pill"><span class="pulse-dot"></span>Simulação visual</span>
+          <button class="icon-button" id="runtime-motion-toggle" type="button" aria-label="Pausar cenário" title="Cenário"><svg><use href="#i-pause"></use></svg></button>
+        </div>
+      </header>
+
+      <main class="runtime-main">
+        <div class="runtime-heading">
+          <div>
+            <span class="micro-label" id="runtime-kicker">O Um foi inscrito · ω(I) = 1</span>
+            <h1 id="runtime-title">O programa em ato.</h1>
+          </div>
+          <div class="run-controls">
+            <button class="secondary-button" id="run-pause" type="button"><svg><use href="#i-pause"></use></svg><span>Pausar</span></button>
+            <button class="secondary-button" id="run-speed" type="button" aria-label="Alterar velocidade"><svg><use href="#i-forward"></use></svg><span>1×</span></button>
+            <button class="text-button" id="skip-run" type="button">Rever a Bancada <svg><use href="#i-arrow"></use></svg></button>
+          </div>
+        </div>
+
+        <div class="runtime-grid">
+          <aside class="panel data-panel" data-panel="data">
+            <div class="panel-heading">
+              <div><span class="panel-icon"><svg><use href="#i-database"></use></svg></span><h2>Custódia de dados</h2></div>
+              <span class="panel-index">01</span>
+            </div>
+            <p class="panel-intro">Fontes conferidas por hash antes do primeiro cálculo.</p>
+            <div id="dataset-list" class="dataset-list"></div>
+            <div class="custody-note"><svg><use href="#i-shield"></use></svg><span><strong>Cadeia de custódia</strong><small>Idempotente · fail-closed</small></span></div>
+          </aside>
+
+          <section class="panel cosmos-panel" data-panel="cosmos" aria-labelledby="cosmos-title">
+            <div class="panel-heading">
+              <div><span class="panel-icon"><svg><use href="#i-spark"></use></svg></span><h2 id="cosmos-title">Ritos cosmológicos</h2></div>
+              <span class="panel-index">02</span>
+            </div>
+            <div class="current-test" id="current-test">
+              <div class="current-test-top"><span class="micro-label">Em runtime</span><span class="live-tag"><i></i>AO VIVO</span></div>
+              <h3 id="current-test-name">Preparando a fronteira…</h3>
+              <p id="current-test-description">O cenário da formação da gravidade acompanha a execução visual.</p>
+              <div class="formula" id="current-test-formula">β = α · √e</div>
+              <div class="progress-track"><span id="test-progress"></span></div>
+            </div>
+            <div id="test-grid" class="test-grid"></div>
+          </section>
+
+          <aside class="panel lean-panel" data-panel="lean">
+            <div class="panel-heading">
+              <div><span class="panel-icon"><svg><use href="#i-terminal"></use></svg></span><h2>Espelho Lean</h2></div>
+              <span class="panel-index">03</span>
+            </div>
+            <div class="lean-proof">
+              <div class="proof-top"><span class="proof-status"><i></i><span id="lean-state">Aguardando o kernel</span></span><span class="lean-version">LEAN 4</span></div>
+              <code id="lean-term" class="lean-term">kernel.ready()</code>
+              <p id="lean-reading">Cada termo será apresentado com sua leitura ontológica e sua fórmula.</p>
+              <div class="formula lean-formula" id="lean-formula">ω(I) = 1</div>
+              <div class="axiom-row"><span>propext</span><span>Classical.choice</span><span>Quot.sound</span></div>
+            </div>
+            <div id="lean-list" class="lean-list"></div>
+            <p class="honesty-note">A marcação verde representa apenas o progresso da demonstração visual, nunca uma compilação real.</p>
+          </aside>
+
+          <aside class="panel quantum-panel" data-panel="quantum">
+            <div class="panel-heading">
+              <div><span class="panel-icon"><svg><use href="#i-atom"></use></svg></span><h2>Pilar quântico</h2></div>
+              <span class="panel-index">04</span>
+            </div>
+            <div class="quantum-visual">
+              <canvas id="quantum-canvas" aria-label="Visualização procedural de um canal quântico simulado"></canvas>
+              <div class="quantum-legend"><span><i class="cyan"></i>coerência</span><span><i class="gold"></i>setor fixo</span></div>
+            </div>
+            <div class="quantum-copy">
+              <span class="micro-label" id="quantum-stage-label">Sistema aberto</span>
+              <h3 id="quantum-title">Preparando o canal</h3>
+              <p id="quantum-description">A visualização acompanha a dissipação da coerência e a leitura do setor fixo.</p>
+              <div class="formula">Γ<sub>ω</sub> = ½ · β · τ★ · ω²</div>
+            </div>
+          </aside>
+        </div>
+
+        <div class="runlog-panel">
+          <div class="runlog-title"><span><i></i>REGISTRO DA EXECUÇÃO</span><span id="run-clock">00:00</span></div>
+          <div id="runlog" class="runlog" role="log" aria-live="polite"></div>
+        </div>
+      </main>
+    </section>
+
+    <section id="bench" class="screen bench" aria-labelledby="bench-title" hidden>
+      <header class="topbar bench-topbar">
+        <a class="brand compact" href="#bench" aria-label="Bancada do Um">
+          <span class="brand-mark" aria-hidden="true"><span></span><i></i></span>
+          <span><strong>BANCADA <i>/</i> UM</strong><small>A forma aberta à pergunta</small></span>
+        </a>
+        <div class="bench-status">
+          <span class="status-pill success-pill"><svg><use href="#i-check"></use></svg>Jornada visual concluída</span>
+          <span class="status-pill demo-pill">Ambiente demonstrativo</span>
+        </div>
+        <div class="topbar-actions">
+          <button class="language-button" id="bench-language-open" type="button" aria-label="Escolher idioma"><span class="language-code">PT</span><span class="language-name">Português</span><svg><use href="#i-menu"></use></svg></button>
+          <button class="text-button quiet" id="acom-bench-open" type="button"><svg><use href="#i-database"></use></svg><span>ACOM</span></button>
+          <button class="text-button quiet" id="bench-media" type="button">Filme</button>
+          <button class="text-button quiet" id="new-run" type="button"><svg><use href="#i-reset"></use></svg><span>Nova inscrição</span></button>
+          <button class="primary-button small" id="open-iald" type="button"><svg><use href="#i-message"></use></svg><span>Falar com a IALD</span></button>
+        </div>
+      </header>
+
+      <main class="bench-main">
+        <div class="bench-heading">
+          <div>
+            <span class="micro-label">O programa foi percorrido. Agora, cada caixa responde.</span>
+            <h1 id="bench-title">A Bancada do Um.</h1>
+            <p>Arraste para reorganizar. Redimensione pela borda. Abra qualquer objeto para ler sua forma, seu sentido e seu estatuto.</p>
+          </div>
+          <div class="seal-chip" id="seal-chip" role="button" tabindex="0" aria-label="Ver pacote de Hilbert demonstrativo">
+            <svg><use href="#i-shield"></use></svg>
+            <span><small>Pacote de Hilbert · DEMO</small><code id="bench-hash-short">IALD–0000–0000</code></span>
+          </div>
+        </div>
+
+        <div class="bench-tools">
+          <label class="station-search-label" for="station-search">Pesquisar as mesmas estações</label>
+          <div class="station-search-row">
+            <input id="station-search" type="search" placeholder="Coma, vazios, Lean, quântico…" autocomplete="off">
+            <span id="station-count">16 estações</span>
+            <button class="secondary-button" id="bench-light" type="button">Modo leve</button>
+          </div>
+        </div>
+        <div class="workspace-notice">
+          <svg><use href="#i-info"></use></svg>
+          <span><strong>Leitura de interface, não resultado científico.</strong> Os números e estados desta Bancada são demonstrativos. A integração real começa somente após a aprovação das telas.</span>
+        </div>
+
+        <div id="bench-grid" class="bench-grid"></div>
+      </main>
+    </section>
+  </div>
+
+  <div id="seal-overlay" class="overlay" role="dialog" aria-modal="true" aria-labelledby="seal-title" hidden>
+    <div class="seal-modal">
+      <button class="icon-button modal-close" data-close="seal-overlay" type="button" aria-label="Fechar pacote"><svg><use href="#i-x"></use></svg></button>
+      <div class="seal-symbol" aria-hidden="true"><span></span><i></i><b></b></div>
+      <span class="micro-label">A forma encontra seu endereço</span>
+      <h2 id="seal-title">Pacote de Hilbert lacrado.</h2>
+      <p>A execução visual terminou. Este é o momento em que a Bancada se abre à pergunta e a IALD pode ser invocada pela interface.</p>
+      <div class="hash-box">
+        <div><span>HASH DEMONSTRATIVO · NÃO AUTORIZA CONEXÃO</span><button class="icon-button" id="copy-hash" type="button" aria-label="Copiar hash demonstrativo"><svg><use href="#i-copy"></use></svg></button></div>
+        <code id="demo-hash">DEMO–IALD–0000–0000–0000</code>
+      </div>
+      <div class="seal-checks">
+        <span><svg><use href="#i-check"></use></svg>Dados apresentados</span>
+        <span><svg><use href="#i-check"></use></svg>Ritos apresentados</span>
+        <span><svg><use href="#i-check"></use></svg>Termos apresentados</span>
+        <span><svg><use href="#i-check"></use></svg>Pilar apresentado</span>
+      </div>
+      <button class="primary-button wide" id="enter-bench" type="button"><span>Entrar na Bancada do Um</span><svg><use href="#i-arrow"></use></svg></button>
+      <small class="seal-footnote">A criptografia e a autorização reais serão implementadas apenas na etapa de integração.</small>
+    </div>
+  </div>
+
+  <div id="detail-overlay" class="overlay" role="dialog" aria-modal="true" aria-labelledby="detail-title" hidden>
+    <div class="detail-modal">
+      <button class="icon-button modal-close" data-close="detail-overlay" type="button" aria-label="Fechar explicação"><svg><use href="#i-x"></use></svg></button>
+      <div id="detail-content"></div>
+    </div>
+  </div>
+
+  <div id="architecture-overlay" class="overlay" role="dialog" aria-modal="true" aria-labelledby="architecture-title" hidden>
+    <div class="detail-modal architecture-modal">
+      <button class="icon-button modal-close" data-close="architecture-overlay" type="button" aria-label="Fechar apresentação"><svg><use href="#i-x"></use></svg></button>
+      <span class="micro-label">Forma = conteúdo · Interface = luz</span>
+      <h2 id="architecture-title">Uma jornada em cinco atos.</h2>
+      <p class="detail-lead">A interface não substitui o terminal: ela revela o que o Programa Terminal faz, preservando o mesmo Um inscrito e a mesma disciplina fail-closed.</p>
+      <div class="architecture-list">
+        <div><span>01</span><section><h3>Inscrição</h3><p>O Um absoluto é posto pelo observador, exatamente como no <code>echo 1 | python um.py</code>.</p></section></div>
+        <div><span>02</span><section><h3>Custódia</h3><p>Os bancos aparecem sendo localizados ou baixados, com origem e hash antes de qualquer cálculo.</p></section></div>
+        <div><span>03</span><section><h3>Execução</h3><p>Ritos cosmológicos, termos Lean e pilar quântico tornam-se visíveis em runtime, com leitura ontológica e fórmula.</p></section></div>
+        <div><span>04</span><section><h3>Lacre</h3><p>Um pacote de Hilbert recebe o hash que, na versão real, autorizará a invocação da IALD pela interface.</p></section></div>
+        <div><span>05</span><section><h3>Bancada</h3><p>Cada caixa pode ser movida, ampliada, explicada e levada à conversa com a IALD.</p></section></div>
+      </div>
+      <div class="architecture-warning"><svg><use href="#i-info"></use></svg><p>Nesta prévia, a jornada é simulada para aprovação visual. Nenhum dado é aberto, nenhum teorema é compilado, nenhuma autorização real é emitida.</p></div>
+    </div>
+  </div>
+
+  <aside id="iald-drawer" class="iald-drawer" aria-labelledby="iald-title" hidden>
+    <header class="drawer-header">
+      <div class="iald-avatar" aria-hidden="true"><span></span></div>
+      <div><h2 id="iald-title">IALD</h2><span>Operação local demonstrativa</span></div>
+      <button class="icon-button" id="close-iald" type="button" aria-label="Fechar conversa"><svg><use href="#i-x"></use></svg></button>
+    </header>
+    <div class="iald-session-note"><svg><use href="#i-shield"></use></svg><span>Sem conexão externa. Respostas editoriais locais baseadas nos objetos desta interface.</span></div>
+    <div id="chat-messages" class="chat-messages" aria-live="polite">
+      <div class="message iald-message">
+        <span class="message-author">IALD · DEMO</span>
+        <p>A Bancada está aberta. Escolha uma caixa para explicar sua forma, sua leitura ontológica ou o estatuto que ela carrega.</p>
+      </div>
+    </div>
+    <div class="quick-questions" id="quick-questions">
+      <button type="button" data-question="O que significa β = α√e?">O que significa β = α√e?</button>
+      <button type="button" data-question="O que o Lean confere?">O que o Lean confere?</button>
+      <button type="button" data-question="O que estou vendo no pilar quântico?">O que estou vendo no pilar quântico?</button>
+    </div>
+    <form id="chat-form" class="chat-form">
+      <label class="sr-only" for="chat-input">Pergunte à IALD</label>
+      <textarea id="chat-input" rows="2" placeholder="Pergunte sobre qualquer objeto da Bancada…" required></textarea>
+      <button class="primary-button" type="submit" aria-label="Enviar pergunta"><svg><use href="#i-arrow"></use></svg></button>
+    </form>
+  </aside>
+
+  <div id="language-overlay" class="overlay" role="dialog" aria-modal="true" aria-labelledby="language-title" hidden>
+    <div class="detail-modal language-modal">
+      <button class="icon-button modal-close" data-close="language-overlay" type="button" aria-label="Fechar idiomas"><svg><use href="#i-x"></use></svg></button>
+      <span class="micro-label">Unicode · LTR + RTL · catálogo local</span>
+      <h2 id="language-title">Idioma da interface</h2>
+      <p class="language-intro">Escolha pelo nome da própria língua. Fórmulas, hashes e nomes Lean permanecem literais e isolados na direção correta.</p>
+      <button class="secondary-button" id="language-system" type="button">Usar idioma do sistema</button>
+      <label class="sr-only" for="language-search">Pesquisar idioma</label>
+      <input id="language-search" class="language-search" type="search" placeholder="Pesquisar idioma…" autocomplete="off">
+      <div id="language-options" class="language-options"></div>
+      <details class="custom-language">
+        <summary>Indicar outra língua</summary>
+        <div class="custom-language-grid">
+          <label>Nome na própria escrita<input id="custom-language-name" type="text" placeholder="例: 中文, Français, हिन्दी"></label>
+          <label>Código Unicode/ISO<input id="custom-language-code" type="text" placeholder="zh, fr, hi"></label>
+          <label>Direção<select id="custom-language-dir"><option value="ltr">LTR — esquerda à direita</option><option value="rtl">RTL — direita à esquerda</option></select></label>
+          <label>Língua de recurso<select id="custom-language-fallback"><option value="pt">Português</option><option value="en">English</option><option value="ar">العربية</option></select></label>
+        </div>
+        <p id="custom-coverage">Cobertura: interface e perguntas Unicode preservadas; conteúdo exibido na língua de recurso escolhida até revisão do novo catálogo.</p>
+        <button class="primary-button" id="custom-language-apply" type="button">Aplicar idioma e recurso</button>
+      </details>
+      <p class="language-fallback">Catálogo editorial local · uma chave ausente usa explicitamente a língua de recurso. Nenhum serviço de tradução é chamado.</p>
+      <p id="language-current-note" class="language-current-note"></p>
+    </div>
+  </div>
+
+  <div id="media-overlay" class="overlay" role="dialog" aria-modal="true" aria-labelledby="media-title" hidden>
+    <div class="detail-modal">
+      <button class="icon-button modal-close" data-close="media-overlay" type="button" aria-label="Fechar filme"><svg><use href="#i-x"></use></svg></button>
+      <span class="micro-label">V7 · formação da gravidade</span>
+      <h2 id="media-title">A formação da gravidade</h2>
+      <p class="media-intro">Filme local original, com controle de reprodução e alternativa leve. A câmera procedural permanece disponível quando o vídeo está desativado.</p>
+      <div class="media-preview"><video id="media-preview-video" src="./src/filme1_720p_pt-BR.mp4" poster="./src/filme1_poster.jpg" controls muted playsinline preload="metadata"></video></div>
+      <div class="media-actions">
+        <button class="secondary-button" id="film-play" type="button"><span>Pausar filme</span></button>
+        <button class="secondary-button" id="film-light" type="button"><span>Modo leve</span></button>
+      </div>
+      <label class="media-local">Escolher vídeo local<input id="film-file" type="file" accept="video/mp4,video/webm,video/*"></label>
+      <p class="media-credit">V7 · filme1_720p_pt-BR.mp4 · cópia local · sem streaming.</p>
+    </div>
+  </div>
+
+  <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+  <script type="module" src="./src/main.js"></script>
+</body>
+</html>

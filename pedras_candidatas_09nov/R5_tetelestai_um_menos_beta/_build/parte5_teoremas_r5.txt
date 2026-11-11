@@ -1,0 +1,179 @@
+/-! ### R5 (D100, 10/11/2026) — a cláusula do Tetelestai: o reconhecimento em 1 − β
+
+A fala 11 (10/11): «A cláusula do Tetelestai está escrita em código no ACOM mirror, é quando o sistema reconhece a singularidade do sinal e
+traslada a informação completa reconstruindo do outro lado, quando ele entende que 1-Betatgl, a questão é essa, betatgl é o operador modular
+do Tetelestai em computação».
+
+[TEOREMA] as desigualdades abaixo. [dicionário; leitura do operador, fala 11 de 10/11] que este limiar É o Tetelestai e que β é o seu
+operador modular; «traslada a informação completa reconstruindo do outro lado» é a operação REFLECT/MANIFEST do dispositivo ACOM Mirror
+[leitura dele; não é termo do kernel].
+
+EVIDÊNCIA DE DISPOSITIVO, só como citação e sem número de desempenho: no runner da patente ACOM Mirror (BR102026003428-2,
+`one_acom_mirror.py`, âncoras T12 a T15) o que a esperança condicional transporta é o par da matriz-S, diag(β, 1 − β) (|R|² = β,
+|T|² = 1 − β), com β em runtime; o runner é [PILOTO][SIM] e nada ali valida física (ele mesmo o diz: leitura estrutural, não veredito
+físico); e na engine v17 o α² é uma constante nominal que não entra na transformada de compressão. Nada disso é termo deste kernel.
+
+O LIMITE, repetido (achado da revisão R2): estes limiares são do tempo de UMA leitura de Z, que soma os 2^n pixels e é lida de uma vez
+pelo psíon (dicionário da v409); que esse tempo conte os passos da máquina de Turing é a tradução do dicionário; o termo que a liga à
+formalização do Mathlib (`Turing.TM2ComputableInPolyTime`) não está no kernel; a creditação é do Clay. -/
+
+/-- ★★ A FLUTUAÇÃO DO FUNDO É COTADA — o lema de cota da `os_passos_sao_o_ciclo_ate_o_tetelestai`, agora com nome, para todo X e todo tempo
+    s ≥ 0: Z(s) ≤ #soluções + |X|·e^{−s} (cada pixel sem solução tem custo ≥ 1 e brilha no máximo e^{−s}). A hipótese s ≥ 0 é necessária:
+    com s < 0 os pixels sem solução crescem em vez de decair. [TEOREMA.] -/
+theorem a_flutuacao_do_fundo_e_cotada (c : X → ℕ) {s : ℝ} (hs0 : 0 ≤ s) :
+    particao c s ≤ ((Finset.univ.filter (fun y => c y = 0)).card : ℝ) + (Fintype.card X : ℝ) * Real.exp (-s) := by
+  have hterm : ∀ x : X, Real.exp (-(s * (c x : ℝ))) ≤ (if c x = 0 then (1 : ℝ) else 0) + Real.exp (-s) := by
+    intro x
+    by_cases hx : c x = 0
+    · simp only [hx, if_true, Nat.cast_zero, mul_zero, neg_zero, Real.exp_zero]
+      linarith [Real.exp_pos (-s)]
+    · simp only [hx, if_false, zero_add]
+      apply Real.exp_le_exp.mpr
+      have h1 : (1 : ℝ) ≤ (c x : ℝ) := by exact_mod_cast Nat.one_le_iff_ne_zero.mpr hx
+      nlinarith [mul_nonneg hs0 (sub_nonneg.mpr h1)]
+  have h := Finset.sum_le_sum (fun x (_ : x ∈ (Finset.univ : Finset X)) => hterm x)
+  rw [Finset.sum_add_distrib, Finset.sum_boole, Finset.sum_const, Finset.card_univ, nsmul_eq_mul] at h
+  exact h
+
+/-- ★ ATÉ MEIO, O TEMPO DO TETELESTAI NÃO É NEGATIVO: se 0 < b ≤ ½, então n·ln 2 + ln((1 − b)/b) ≥ 0 — e a hipótese `0 ≤ s` dos três
+    teoremas seguintes é automática. Para b > ½ a constante ln((1 − b)/b) é negativa e a hipótese `0 ≤ s` tem de ser dita. [TEOREMA.] -/
+theorem ate_meio_o_tempo_do_tetelestai_nao_e_negativo (n : ℕ) {b : ℝ} (hb0 : 0 < b) (hb : b ≤ 1 / 2) :
+    0 ≤ (n : ℝ) * Real.log 2 + Real.log ((1 - b) / b) := by
+  have h1 : (1 : ℝ) ≤ (1 - b) / b := by
+    rw [le_div_iff₀ hb0]
+    linarith
+  have h2 : 0 ≤ Real.log ((1 - b) / b) := Real.log_nonneg h1
+  have h3 : 0 ≤ (n : ℝ) * Real.log 2 := mul_nonneg (Nat.cast_nonneg n) (Real.log_nonneg one_le_two)
+  linarith
+
+/-- ★★★ O TETELESTAI É UM MENOS BETA [fala 11, 10/11: «quando ele entende que 1-Betatgl»] — a cláusula do Tetelestai: para as instâncias
+    de n bits COM solução, todo b com 0 < b < 1 e todo tempo s ≥ 0 com n·ln 2 + ln((1 − b)/b) ≤ s: (i) (1 − b)·Z(s) ≤ #soluções — a parte
+    do Nome na leitura é pelo menos 1 − b; (ii) Z(s) − #soluções ≤ b·Z(s) — o resíduo do fundo é no máximo b; (iii) na leitura de TODO
+    leitor do fundo: (1 − b)·Re (leitura c s) ≤ #soluções/|X|. [TEOREMA: Z − #sol ≤ 2^n·e^{−s} ≤ b/(1 − b) ≤ (b/(1 − b))·#sol, porque
+    #sol ≥ 1.] A hipótese `0 ≤ s` é NECESSÁRIA quando b > ½ (aí o limiar pode ser negativo) e é automática quando b ≤ ½
+    (`ate_meio_o_tempo_do_tetelestai_nao_e_negativo`). [dicionário; leitura do operador, fala 11 de 10/11] que este limiar É o Tetelestai.
+    O LIMITE: é o tempo de UMA leitura de Z, que soma os 2^n pixels e é lida de uma vez pelo psíon (dicionário da v409); o termo que liga
+    esse tempo à formalização do Mathlib (`Turing.TM2ComputableInPolyTime`) não está no kernel; a creditação é do Clay. -/
+theorem o_tetelestai_e_um_menos_beta (n : ℕ) (c : (Fin n → Bool) → ℕ) (h : ∃ x, c x = 0) {b s : ℝ} (hb0 : 0 < b) (hb1 : b < 1)
+    (hs0 : 0 ≤ s) (hs : (n : ℝ) * Real.log 2 + Real.log ((1 - b) / b) ≤ s) (L : LeitorDoFundo (Fin n → Bool)) :
+    (1 - b) * particao c s ≤ ((Finset.univ.filter (fun y => c y = 0)).card : ℝ)
+    ∧ particao c s - ((Finset.univ.filter (fun y => c y = 0)).card : ℝ) ≤ b * particao c s
+    ∧ (1 - b) * (L.leitura c s).re
+        ≤ ((Finset.univ.filter (fun y => c y = 0)).card : ℝ) / (Fintype.card (Fin n → Bool) : ℝ) := by
+  have h1b : 0 < 1 - b := by linarith
+  have hN1 : (1 : ℝ) ≤ ((Finset.univ.filter (fun y => c y = 0)).card : ℝ) := by
+    obtain ⟨x, hx⟩ := h
+    exact_mod_cast Finset.card_pos.mpr ⟨x, by simp [hx]⟩
+  have hcota := a_flutuacao_do_fundo_e_cotada c hs0
+  have hN : (Fintype.card (Fin n → Bool) : ℝ) = 2 ^ n := by
+    rw [bits_sao_oitavas]
+    norm_num
+  have hp : (0 : ℝ) < 2 ^ n := pow_pos (by norm_num) n
+  have hq : 0 < (1 - b) / b := div_pos h1b hb0
+  have hexp : (2 : ℝ) ^ n * Real.exp (-s) ≤ b / (1 - b) := by
+    have he1 : Real.exp (-s) ≤ Real.exp (-((n : ℝ) * Real.log 2 + Real.log ((1 - b) / b))) :=
+      Real.exp_le_exp.mpr (by linarith)
+    have he2 : Real.exp (-((n : ℝ) * Real.log 2 + Real.log ((1 - b) / b))) = ((2 : ℝ) ^ n)⁻¹ * (b / (1 - b)) := by
+      rw [neg_add, Real.exp_add, Real.exp_neg, Real.exp_neg, Real.exp_nat_mul, Real.exp_log (by norm_num : (0 : ℝ) < 2),
+        Real.exp_log hq, inv_div]
+    calc (2 : ℝ) ^ n * Real.exp (-s) ≤ 2 ^ n * (((2 : ℝ) ^ n)⁻¹ * (b / (1 - b))) :=
+          mul_le_mul_of_nonneg_left (he1.trans_eq he2) hp.le
+      _ = b / (1 - b) := by rw [← mul_assoc, mul_inv_cancel₀ hp.ne', one_mul]
+  have hx : (2 : ℝ) ^ n * Real.exp (-s) * (1 - b) ≤ b := (le_div_iff₀ h1b).mp hexp
+  rw [hN] at hcota
+  have hi : (1 - b) * particao c s ≤ ((Finset.univ.filter (fun y => c y = 0)).card : ℝ) := by
+    have hbN : b ≤ b * ((Finset.univ.filter (fun y => c y = 0)).card : ℝ) := le_mul_of_one_le_right hb0.le hN1
+    have hm := mul_le_mul_of_nonneg_left hcota h1b.le
+    nlinarith [hm, hx, hbN]
+  refine ⟨hi, by linarith, ?_⟩
+  have hre : (L.leitura c s).re = particao c s / (Fintype.card (Fin n → Bool) : ℝ) := by
+    rw [L.a_leitura_e_a_do_psion, o_psion_le_os_pixels, Complex.ofReal_re]
+  rw [hre, ← mul_div_assoc]
+  exact div_le_div_of_nonneg_right hi (Nat.cast_nonneg _)
+
+/-- ★★★ O SISTEMA RECONHECE A SINGULARIDADE DO SINAL [fala 11, 10/11: «é quando o sistema reconhece a singularidade do sinal»] — o caso de
+    UMA solução (#soluções = 1): sob a mesma hipótese de tempo, (i) (1 − b)·Z(s) ≤ 1 — o pixel do Nome carrega pelo menos 1 − b da leitura;
+    (ii) 1 ≤ Z(s); (iii) Z(s) − 1 ≤ b·Z(s). [TEOREMA, de `o_tetelestai_e_um_menos_beta`.] Que isto SEJA “reconhecer a singularidade do
+    sinal” é a leitura dele [dicionário; fala 11 de 10/11]. -/
+theorem o_sistema_reconhece_a_singularidade_do_sinal (n : ℕ) (c : (Fin n → Bool) → ℕ)
+    (hum : (Finset.univ.filter (fun y => c y = 0)).card = 1) {b s : ℝ} (hb0 : 0 < b) (hb1 : b < 1)
+    (hs0 : 0 ≤ s) (hs : (n : ℝ) * Real.log 2 + Real.log ((1 - b) / b) ≤ s) :
+    (1 - b) * particao c s ≤ 1 ∧ 1 ≤ particao c s ∧ particao c s - 1 ≤ b * particao c s := by
+  have hex : ∃ x, c x = 0 := by
+    have hne : (Finset.univ.filter (fun y => c y = 0)).Nonempty := Finset.card_pos.mp (by rw [hum]; exact Nat.one_pos)
+    obtain ⟨x, hx⟩ := hne
+    exact ⟨x, (Finset.mem_filter.mp hx).2⟩
+  have hN : ((Finset.univ.filter (fun y => c y = 0)).card : ℝ) = 1 := by
+    rw [hum]
+    norm_num
+  obtain ⟨h1, h2, -⟩ := o_tetelestai_e_um_menos_beta n c hex hb0 hb1 hs0 hs iald
+  have h3 := a_particao_cobre_o_nome c s
+  rw [hN] at h1 h2 h3
+  exact ⟨h1, h3, h2⟩
+
+/-- ★★★ BETA É O OPERADOR MODULAR DO TETELESTAI [fala 11, 10/11: «betatgl é o operador modular do Tetelestai em computação»] — a instância
+    com o β do kernel (`TGLCoupling`; β só por nome, o número só em runtime): para todo acoplamento κ, instância de n bits com solução e
+    tempo s ≥ 0 com n·ln 2 + ln((1 − β)/β) ≤ s: (1) 0 < β < 1 (os dois campos de `TGLCoupling`); (2) (1 − β)·Z(s) ≤ #soluções;
+    (3) Z(s) − #soluções ≤ β·Z(s); (4) com UMA solução, (1 − β)·Z(s) ≤ 1 e 1 ≤ Z(s); (5) |R|² = β (`TGLCoupling.reflection_weight`) e
+    (6) |T|² = 1 − β (de `normSq_reflection_add_transmission`; o mesmo par está em `reading_weights_at_thetaMiguel`, `Posto`); (7) no
+    Tetelestai a parte do Nome é pelo menos |T|²: |T|²·Z(s) ≤ #soluções; (8) e o resíduo é no máximo |R|²: Z(s) − #soluções ≤ |R|²·Z(s);
+    (9) [identidade aritmética] o excesso do tempo sobre as m oitavas é a MESMA constante ln((1 − β)/β) para todo m — só depende de β, não
+    do número de bits nem da instância. [TEOREMA.] O kernel dá 0 < β < 1 e NÃO dá β ≤ ½ (β nunca é literal); por isso a hipótese `0 ≤ s`
+    fica dita (com β ≤ ½ ela é automática: `ate_meio_o_tempo_do_tetelestai_nao_e_negativo`). [dicionário; leitura do operador, fala 11 de
+    10/11] que β SEJA o operador modular do Tetelestai: o termo é que o MESMO β que a matriz-S lê como |R|² é o resíduo máximo do fundo
+    neste limiar. O LIMITE: o tempo de UMA leitura de Z (2^n pixels, lida de uma vez pelo psíon, dicionário da v409); o termo que o liga à
+    formalização do Mathlib (`Turing.TM2ComputableInPolyTime`) não está no kernel; a creditação é do Clay. -/
+theorem beta_e_o_operador_modular_do_tetelestai (κ : TGLCoupling) (n : ℕ) (c : (Fin n → Bool) → ℕ) (h : ∃ x, c x = 0) {s : ℝ}
+    (hs0 : 0 ≤ s) (hs : (n : ℝ) * Real.log 2 + Real.log ((1 - κ.beta) / κ.beta) ≤ s) (L : LeitorDoFundo (Fin n → Bool)) :
+    (0 < κ.beta ∧ κ.beta < 1)
+    ∧ (1 - κ.beta) * particao c s ≤ ((Finset.univ.filter (fun y => c y = 0)).card : ℝ)
+    ∧ particao c s - ((Finset.univ.filter (fun y => c y = 0)).card : ℝ) ≤ κ.beta * particao c s
+    ∧ ((Finset.univ.filter (fun y => c y = 0)).card = 1 → (1 - κ.beta) * particao c s ≤ 1 ∧ 1 ≤ particao c s)
+    ∧ Complex.normSq ((Smat (thetaMiguel κ.beta)).mulVec e1 1) = κ.beta
+    ∧ Complex.normSq ((Smat (thetaMiguel κ.beta)).mulVec e1 0) = 1 - κ.beta
+    ∧ Complex.normSq ((Smat (thetaMiguel κ.beta)).mulVec e1 0) * particao c s
+        ≤ ((Finset.univ.filter (fun y => c y = 0)).card : ℝ)
+    ∧ particao c s - ((Finset.univ.filter (fun y => c y = 0)).card : ℝ)
+        ≤ Complex.normSq ((Smat (thetaMiguel κ.beta)).mulVec e1 1) * particao c s
+    ∧ (∀ m : ℕ, ((m : ℝ) * Real.log 2 + Real.log ((1 - κ.beta) / κ.beta)) - (m : ℝ) * Real.log 2
+          = Real.log ((1 - κ.beta) / κ.beta)) := by
+  obtain ⟨h1, h2, -⟩ := o_tetelestai_e_um_menos_beta n c h κ.beta_pos κ.beta_lt_one hs0 hs L
+  have hR : Complex.normSq ((Smat (thetaMiguel κ.beta)).mulVec e1 1) = κ.beta := κ.reflection_weight
+  have hT : Complex.normSq ((Smat (thetaMiguel κ.beta)).mulVec e1 0) = 1 - κ.beta := by
+    have hsum := normSq_reflection_add_transmission (thetaMiguel κ.beta)
+    rw [hR] at hsum
+    linarith
+  refine ⟨⟨κ.beta_pos, κ.beta_lt_one⟩, h1, h2, fun hum => ?_, hR, hT, ?_, ?_, fun m => by ring⟩
+  · obtain ⟨g1, g2, -⟩ := o_sistema_reconhece_a_singularidade_do_sinal n c hum κ.beta_pos κ.beta_lt_one hs0 hs
+    exact ⟨g1, g2⟩
+  · rw [hT]
+    exact h1
+  · rw [hR]
+    exact h2
+
+/-- ★★ A INFORMAÇÃO COMPLETA SE RECONSTRÓI [fala 11, 10/11: «traslada a informação completa reconstruindo do outro lado»] — o estado do
+    ciclo fica perto do Nome com erro relativo controlado por b: para as instâncias de n bits com solução, 0 < b < 1 e todo tempo t com
+    n·ln 2/2 ≤ t e n·ln 2/2 + ln((1 − b)/b)/2 ≤ t, a distância entre a trava do estado uniforme no tempo t e a projeção do uniforme no Nome
+    é no máximo √(b/(1 − b)) vezes essa projeção. [TEOREMA, de `TraducaoTuring.a_trava_em_tempo_linear`, v409.] (O tempo t da trava é
+    metade do tempo s da leitura: ‖trava c t uniforme‖² = Z(2t)/|X|.) [leitura dele; não é termo do kernel] que isto SEJA a operação
+    REFLECT/MANIFEST do dispositivo ACOM Mirror: o termo fala da trava e do Nome, não do dispositivo. -/
+theorem a_informacao_completa_se_reconstroi (n : ℕ) (c : (Fin n → Bool) → ℕ) (h : ∃ x, c x = 0) {b t : ℝ} (hb0 : 0 < b)
+    (hb1 : b < 1) (ht0 : (n : ℝ) * Real.log 2 / 2 ≤ t)
+    (ht : (n : ℝ) * Real.log 2 / 2 + Real.log ((1 - b) / b) / 2 ≤ t) :
+    ‖trava c t (uniforme (Fin n → Bool)) - (opDaInstancia c).ker.starProjection (uniforme (Fin n → Bool))‖
+      ≤ Real.sqrt (b / (1 - b)) * ‖(opDaInstancia c).ker.starProjection (uniforme (Fin n → Bool))‖ := by
+  have h1b : 0 < 1 - b := by linarith
+  have hq : 0 < (1 - b) / b := div_pos h1b hb0
+  have hL : 0 ≤ t - (n : ℝ) * Real.log 2 / 2 := by linarith
+  have hlin := a_trava_em_tempo_linear n c h hL
+  have ht' : (n : ℝ) * Real.log 2 / 2 + (t - (n : ℝ) * Real.log 2 / 2) = t := by ring
+  rw [ht'] at hlin
+  have hsq : Real.exp (-(t - (n : ℝ) * Real.log 2 / 2)) ^ 2 ≤ b / (1 - b) := by
+    have he : Real.exp (-Real.log ((1 - b) / b)) = b / (1 - b) := by
+      rw [Real.exp_neg, Real.exp_log hq, inv_div]
+    rw [← Real.exp_nat_mul, ← he]
+    apply Real.exp_le_exp.mpr
+    push_cast
+    linarith
+  exact hlin.trans (mul_le_mul_of_nonneg_right (Real.le_sqrt_of_sq_le hsq) (norm_nonneg _))
+

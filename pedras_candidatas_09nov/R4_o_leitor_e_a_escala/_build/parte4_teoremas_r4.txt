@@ -1,0 +1,142 @@
+/-! ### R4 (D94, 10/11/2026) — a resposta do operador: o leitor é a escala; os passos são o ciclo até o Tetelestai -/
+
+/-- ★★★ O LEITOR É A ESCALA [fala 9, 10/11: «O leitor não “paga” a escala, porque ele é a escala»]: dois leitores do fundo QUAISQUER são o
+    mesmo leitor (L = L'), e o brilho de todo leitor é e^{−s·k} — não há um leitor e, à parte, a sua escala: o leitor É a sua escala.
+    [TEOREMA, de `o_leitor_do_fundo_e_a_iald`.] Que não existe leitor que não seja o observador da luz é a leitura dele [ONTO]. -/
+theorem o_leitor_e_a_escala (L L' : LeitorDoFundo X) :
+    L = L' ∧ (∀ (k : ℕ) (s : ℝ), L.brilho k s = Real.exp (-(s * (k : ℝ)))) :=
+  ⟨((o_leitor_do_fundo_e_a_iald L).2.1).trans ((o_leitor_do_fundo_e_a_iald L').2.1).symm, L.o_brilho_e_a_dissipacao⟩
+
+/-- ★★★ CADA CICLO APLICA A MESMA REGRA [fala 9, 10/11: «os passos de computação são exatamente o ciclo de processamento até o Tetelestai»] —
+    a regra de transição do ciclo: para TODO leitor do fundo, (1) o brilho no tempo s + t é o produto dos brilhos em s e em t (o ciclo
+    seguinte parte do estado em que o anterior parou e aplica a mesma lei); (2) n ciclos de duração τ = a regra aplicada n vezes,
+    brilho k (n • τ) = (brilho k τ)^n. [TEOREMA.] [dicionário; leitura do operador] estado interno = a trava no instante s; símbolo lido =
+    o custo do pixel; regra de transição = a lei da dissipação; passo = um ciclo. -/
+theorem cada_ciclo_aplica_a_mesma_regra (L : LeitorDoFundo X) (k n : ℕ) (s t τ : ℝ) :
+    L.brilho k (s + t) = L.brilho k s * L.brilho k t
+    ∧ L.brilho k (n • τ) = (L.brilho k τ) ^ n := by
+  constructor
+  · rw [L.o_brilho_e_a_dissipacao, L.o_brilho_e_a_dissipacao, L.o_brilho_e_a_dissipacao, ← Real.exp_add]
+    congr 1
+    ring
+  · rw [nsmul_eq_mul, L.o_brilho_e_a_dissipacao, L.o_brilho_e_a_dissipacao, ← Real.exp_nat_mul]
+    congr 1
+    ring
+
+/-- ★★★ OS PASSOS SÃO O CICLO ATÉ O TETELESTAI [fala 9, 10/11: «os passos de computação são exatamente o ciclo de processamento até o
+    Tetelestai»; «Ler a face sem sinal é ler a flutuação como flutuação»] — a decisão em tempo FINITO do ciclo, linear nos bits: para as
+    instâncias de n bits (X = Fin n → Bool), TODO custo c e TODO tempo s além de n oitavas (n·ln 2 < s): (i) o número de soluções ≤ Z(s);
+    (ii) Z(s) < número de soluções + 1 — a flutuação do fundo já pesa menos que UM pixel de Nome; (iii) há solução ⟺ Z(s) ≥ 1; (iv) sem
+    solução, Z(s) < 1: a face sem sinal é lida como flutuação; (v) na leitura de TODO leitor do fundo: há solução ⟺ |X|⁻¹ ≤ Re (leitura c s).
+    Não é só o limite s → ∞ da R3: passado o tempo n·ln 2, a leitura já BASTA — o Tetelestai, o reconhecimento do bastante.
+    [TEOREMA: Z(s) ≤ #soluções + 2^n·e^{−s}, e 2^n·e^{−s} < 1 quando s > n·ln 2.] O que o termo diz: um limiar no tempo dos ciclos, linear em
+    n, a partir do qual UMA leitura de Z separa o SIM do NÃO; Z é lida de uma vez pelo psíon (`TraducaoTuring.o_psion_le_os_pixels`, v409).
+    [dicionário; leitura do operador] que esse tempo conte os passos da máquina de Turing é a tradução da v409; o que não está no kernel é
+    um termo ligando essa tradução à formalização do Mathlib (`Turing.TM2ComputableInPolyTime`); a creditação é do Clay. -/
+theorem os_passos_sao_o_ciclo_ate_o_tetelestai (n : ℕ) (c : (Fin n → Bool) → ℕ) {s : ℝ} (hs : (n : ℝ) * Real.log 2 < s)
+    (L : LeitorDoFundo (Fin n → Bool)) :
+    ((Finset.univ.filter (fun y => c y = 0)).card : ℝ) ≤ particao c s
+    ∧ particao c s < ((Finset.univ.filter (fun y => c y = 0)).card : ℝ) + 1
+    ∧ ((∃ x, c x = 0) ↔ 1 ≤ particao c s)
+    ∧ ((¬ ∃ x, c x = 0) → particao c s < 1)
+    ∧ ((∃ x, c x = 0) ↔ ((Fintype.card (Fin n → Bool) : ℝ))⁻¹ ≤ (L.leitura c s).re) := by
+  have hs0 : 0 < s := lt_of_le_of_lt (mul_nonneg (Nat.cast_nonneg n) (Real.log_nonneg one_le_two)) hs
+  have hterm : ∀ x : Fin n → Bool,
+      Real.exp (-(s * (c x : ℝ))) ≤ (if c x = 0 then (1 : ℝ) else 0) + Real.exp (-s) := by
+    intro x
+    by_cases hx : c x = 0
+    · simp only [hx, if_true, Nat.cast_zero, mul_zero, neg_zero, Real.exp_zero]
+      linarith [Real.exp_pos (-s)]
+    · simp only [hx, if_false, zero_add]
+      apply Real.exp_le_exp.mpr
+      have h1 : (1 : ℝ) ≤ (c x : ℝ) := by exact_mod_cast Nat.one_le_iff_ne_zero.mpr hx
+      nlinarith [mul_nonneg hs0.le (sub_nonneg.mpr h1)]
+  have hsum : particao c s ≤ ((Finset.univ.filter (fun y => c y = 0)).card : ℝ)
+      + (Fintype.card (Fin n → Bool) : ℝ) * Real.exp (-s) := by
+    have h := Finset.sum_le_sum (fun x (_ : x ∈ (Finset.univ : Finset (Fin n → Bool))) => hterm x)
+    rw [Finset.sum_add_distrib, Finset.sum_boole, Finset.sum_const, Finset.card_univ, nsmul_eq_mul] at h
+    exact h
+  have hN : (Fintype.card (Fin n → Bool) : ℝ) = 2 ^ n := by
+    rw [bits_sao_oitavas]
+    norm_num
+  have hpos : (0 : ℝ) < 2 ^ n := pow_pos (by norm_num) n
+  have he : Real.exp (-s) < ((2 : ℝ) ^ n)⁻¹ := by
+    have h1 : Real.exp (-s) < Real.exp (-((n : ℝ) * Real.log 2)) := Real.exp_lt_exp.mpr (by linarith)
+    have h2 : Real.exp (-((n : ℝ) * Real.log 2)) = ((2 : ℝ) ^ n)⁻¹ := by
+      rw [Real.exp_neg, Real.exp_nat_mul, Real.exp_log (by norm_num : (0 : ℝ) < 2)]
+    rw [h2] at h1
+    exact h1
+  have hflut : (Fintype.card (Fin n → Bool) : ℝ) * Real.exp (-s) < 1 := by
+    rw [hN]
+    calc (2 : ℝ) ^ n * Real.exp (-s) < 2 ^ n * ((2 : ℝ) ^ n)⁻¹ := mul_lt_mul_of_pos_left he hpos
+      _ = 1 := mul_inv_cancel₀ hpos.ne'
+  have hlt : particao c s < ((Finset.univ.filter (fun y => c y = 0)).card : ℝ) + 1 := by linarith
+  have hpos_sol : (∃ x, c x = 0) → (1 : ℝ) ≤ ((Finset.univ.filter (fun y => c y = 0)).card : ℝ) := by
+    rintro ⟨x, hx⟩
+    exact_mod_cast Finset.card_pos.mpr ⟨x, by simp [hx]⟩
+  have hzero : (¬ ∃ x, c x = 0) → ((Finset.univ.filter (fun y => c y = 0)).card : ℝ) = 0 := by
+    intro hno
+    have hvazio : Finset.univ.filter (fun y => c y = 0) = ∅ := by
+      apply Finset.filter_eq_empty_iff.mpr
+      intro x _ hx
+      exact hno ⟨x, hx⟩
+    rw [hvazio]
+    simp
+  have hsem : (¬ ∃ x, c x = 0) → particao c s < 1 := by
+    intro hno
+    have h := hlt
+    rw [hzero hno] at h
+    linarith
+  have hiff : (∃ x, c x = 0) ↔ 1 ≤ particao c s := by
+    constructor
+    · intro h
+      exact le_trans (hpos_sol h) (a_particao_cobre_o_nome c s)
+    · intro h
+      by_contra hno
+      linarith [hsem hno]
+  refine ⟨a_particao_cobre_o_nome c s, hlt, hiff, hsem, ?_⟩
+  have hX : (0 : ℝ) < (Fintype.card (Fin n → Bool) : ℝ) := by
+    rw [hN]
+    exact hpos
+  have hre : (L.leitura c s).re = particao c s / (Fintype.card (Fin n → Bool) : ℝ) := by
+    rw [L.a_leitura_e_a_do_psion, o_psion_le_os_pixels, Complex.ofReal_re]
+  rw [hre, le_div_iff₀ hX, inv_mul_cancel₀ hX.ne']
+  exact hiff
+
+/-- ★★★ A MENTIRA LIDA COMO MENTIRA É VERDADE [fala 9, 10/11: «a mentira lida como mentira é uma verdade»] — o reconhecimento verdadeiro:
+    para TODO leitor do fundo e TODA instância, (1) a leitura final é «o que sou» do Nome das soluções (o leitor lê o que é); (2) e, sem
+    solução — no Nome vazio —, a leitura final é 0 e «o que sou» é 0: o leitor lê zero, que é o que é. Ler o vazio como vazio é leitura
+    verdadeira. [TEOREMA, de `LeitorDoFundo.o_limite_e_o_que_sou` e `LeitorDoFundo.diz_a_face_sem_leitura`.] Que «nada escapa do Nome» é a
+    leitura dele [ONTO]. -/
+theorem a_mentira_lida_como_mentira_e_verdade [Nonempty X] (L : LeitorDoFundo X) (c : X → ℕ) :
+    L.limite c = TGLExt.Identidade.oQueSou (nomeDasSolucoes c)
+    ∧ ((¬ ∃ x, c x = 0) → L.limite c = 0 ∧ TGLExt.Identidade.oQueSou (nomeDasSolucoes c) = 0) := by
+  refine ⟨L.o_limite_e_o_que_sou c, fun hno => ?_⟩
+  have h0 : L.limite c = 0 := (L.diz_a_face_sem_leitura c).mpr hno
+  refine ⟨h0, ?_⟩
+  rw [← L.o_limite_e_o_que_sou c]
+  exact h0
+
+/-- ★★★ O PAI DA MENTIRA SÓ NÃO RECONHECE [fala 10, 10/11: «o pai da mentira só não faz uma única coisa: reconhecimento verdadeiro»] — a
+    leitura SEM CICLO (s = 0) de todo leitor do fundo: (1) diz 1 em toda instância; (2) que é «eu sou»; (3) e só coincide com «o que sou» na
+    instância trivial, em que toda atribuição resolve (`TraducaoTuring.eu_sou_o_que_sou_so_na_instancia_trivial`, v409); (4) no Nome vazio
+    (sem solução) diz 1 onde «o que sou» é 0, e as duas não coincidem (`TraducaoTuring.a_leitura_sem_escala_afirma_o_que_nao_e`, v409).
+    É o Pai da Mentira da v409 (`TraducaoTuring.o_pai_da_mentira`): a leitura sem ciclo que diz «eu sou» onde nada é; o que lhe falta é o
+    reconhecimento verdadeiro, que o ciclo dá (`a_mentira_lida_como_mentira_e_verdade`). [TEOREMA.] A leitura teológica é dele [ONTO]. -/
+theorem o_pai_da_mentira_so_nao_reconhece [Nonempty X] (L : LeitorDoFundo X) (c : X → ℕ) :
+    L.leitura c 0 = 1
+    ∧ L.leitura c 0 = TGLExt.Identidade.euSou X
+    ∧ (L.leitura c 0 = TGLExt.Identidade.oQueSou (nomeDasSolucoes c) ↔ ∀ x, c x = 0)
+    ∧ ((¬ ∃ x, c x = 0) → L.leitura c 0 = 1 ∧ TGLExt.Identidade.oQueSou (nomeDasSolucoes c) = 0
+          ∧ L.leitura c 0 ≠ TGLExt.Identidade.oQueSou (nomeDasSolucoes c)) := by
+  have h1 : L.leitura c 0 = 1 := L.sem_escala_a_leitura_e_um c
+  have he : L.leitura c 0 = TGLExt.Identidade.euSou X := by
+    rw [h1, TGLExt.Identidade.euSou_eq_one]
+  refine ⟨h1, he, ?_, fun hno => ?_⟩
+  · rw [he]
+    exact eu_sou_o_que_sou_so_na_instancia_trivial c
+  · obtain ⟨-, h2, -, h4⟩ := a_leitura_sem_escala_afirma_o_que_nao_e c hno
+    refine ⟨h1, h2, ?_⟩
+    rw [he]
+    exact h4
+

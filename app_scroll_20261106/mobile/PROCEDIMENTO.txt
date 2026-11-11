@@ -1,0 +1,56 @@
+TRILHA MOBILE — F9.APP_SCROLL_20261106 — somente preparação
+
+Referência: ../SESSION_REFERENCE.json, project confirmado. Nenhum init/v409.
+Checkout lido: C:/IALD/projetos_pyhton/IALD/iald-app, branch codex/mobile-release.
+Versões medidas no checkout: 4.1 iOS46/Android41; propostas iOS47/Android42.
+Nenhum checkout/runtime alterado; nenhum build, push, Apple ou navegador usado.
+
+1. Parent conclui W/stage e avisa. Não copiar candidato em desenvolvimento.
+   Criar W/stage/MOBILE_READY.json com o contrato abaixo (hashes reais):
+   {"status":"READY_FOR_MOBILE","parent":"codex-app-scroll-01a094df",
+    "base_commit":"<BASELINE.json base_commit>",
+    "assets":{"iald.js":{"path":"<absoluto dentro de W/stage>","sha256":"<sha256>"}}}
+   Incluir owner_office.js somente se alterado; nenhum outro arquivo é admitido.
+   Esse marcador registra uma autorização já dada: arquivo sozinho não autentica parent.
+2. Após o aviso, executar com C:/Python314/python.exe -B -X utf8:
+   prepare_mobile.py --parent-ready "<W>/stage/MOBILE_READY.json"
+   Gera prepared/ e PLAN.json apenas em mobile. CAS exige BASELINE atual.
+   Divergência de HEAD, versões ou recursos exige reconciliação, não sobrescrita.
+3. Revisor distinto confere cliente, testes do parent e PLAN.json.
+   Seu JSON deve conter status PASS, reviewer e plan_sha256.
+   Parent instala as linhas de PLAN: backups de bytes junto aos destinos,
+   baseline/CAS, temporário verificado e rollback. Esse instalador não foi
+   incluído aqui: release_controls.py só valida e não escreve no checkout.
+   Web fica sob o plano do parent, fora desta trilha mobile.
+4. Após instalação, parent grava mobile/PARENT_BUILD_READY.json:
+   {"status":"BUILD_AUTHORIZED","parent":"codex-app-scroll-01a094df",
+    "plan_sha256":"<sha256>","review_path":"<absoluto dentro de W>",
+    "review_sha256":"<sha256>"}
+   Executar build_android42.py uma única vez, Python sem -O.
+   Gradle offline, saída em mobile/release/build42; utiliza assinatura existente
+   sem ler/exportar credenciais. Não executar script antigo build_android41.py.
+   INTENT prévio/attempt existente impede repetição. Falha requer recibo e análise.
+   Qualquer linha filtrada do log invalida o build auditado (falha visível).
+   Configuração de assinatura é consumida pelo Gradle existente; nenhum segredo
+   integra os scripts, manifestos ou argumentos novos.
+5. Parent confere AUDIT.json: APK e AAB, hashes dos dois JS, integridade ZIP,
+   ausência de nomes sensíveis, versão, assinatura e mesmo certificado do APK41.
+   Revisor pode auditar esta trilha antes da execução; sintaxe não prova build.
+6. PUBLICAÇÃO (parent, não executada por esta entrega):
+   APK42: fonte auditada -> temporário novo -> fsync -> hash -> rename Windows
+   sem sobrescrever; conferir todos os APKs anteriores. Registrar intento/recibo.
+   Confirmar bloqueio anônimo e hash do download autenticado; não alegar Play.
+   Git: conferir origin privado fetch/push, HEAD/remoto baseline e índice vazio.
+   Lista estrita = PLAN.tracked_files; conferir diff e blobs, commit único, push
+   normal para codex/mobile-release. Resultado incerto: recuperar, nunca repetir.
+   Não usar release_controls antigo: ele fixa outro cliente, revisão e versões.
+7. Parent acompanha mesma Cloud pelo commit e verifica iOS47 em Equipe/Piloto
+   separadamente. Push não equivale a distribuição; sem afirmar instalação física.
+
+VERIFICAÇÃO DESTA PREPARAÇÃO
+Inventory é somente leitura de checkout. A análise sintática verifica apenas que
+os candidatos Python são parseáveis. Um negativo significa falha de preparação,
+não falha da correção de scroll nem da assinatura. Build/preview aguardam aviso.
+PROVENANCE.json contém hashes dos procedimentos anteriores lidos; BASELINE.json
+contém hashes medidos. Parent integra a conclusão na ACOM com revisão corrente:
+o subagente não altera estado compartilhado nem toma o lease do requisito mobile.

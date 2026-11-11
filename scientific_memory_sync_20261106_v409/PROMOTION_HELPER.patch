@@ -1,0 +1,124 @@
+--- C:\IALD\Central de Patentes\work\scientific_memory_sync_20261105_v408\promote_v408.py
++++ C:\IALD\Central de Patentes\work\scientific_memory_sync_20261106_v409\promote_v409.py
+@@ -1,4 +1,4 @@
+-"""Controlled promotion of the reviewed v408 staging. Run each step as a separate process."""
++"""Controlled promotion of the reviewed v409 staging. Run each step as a separate process."""
+ import argparse
+ import copy
+ import hashlib
+@@ -10,11 +10,12 @@
+ import uuid
+ 
+ Q = Path(__file__).resolve().parent
+-P = Q.parent / "iald_v408_20261105"
++P = Q.parent / "iald_v409_20261106"
+ R = Q / "promotion"
+ STAGED_REVIEW = P / "review/QUEUE_RECONSTRUCTION.json"
+ FINAL_REVIEW = P / "review/QUEUE_FINAL_PATHS.json"
+-AUTH = P / "F03_WRITE_V408.json"
++AUTH = P / "APROVACAO_V409.json"
++EXPECTED_APPROVAL_SHA256 = None
+ STAGING = Q / "STAGING_R1.json"
+ UNIT = "F0.3.MEMORIA_CIENTIFICA_SYNC"
+ sys.dont_write_bytecode = True
+@@ -39,7 +40,7 @@
+ 
+ 
+ def encoded(value):
+-    return json.dumps(value, ensure_ascii=False, indent=2).encode("utf-8")
++    return (json.dumps(value, ensure_ascii=False, indent=2) + "\n").encode("utf-8")
+ 
+ 
+ def write_once(path, doc):
+@@ -67,6 +68,9 @@
+                    "complete_documents": summary["documents"], "chunks_verified": summary["chunks"]}
+     require(all(review[k] == v for k, v in comparisons.items()), "Independent staging review differs")
+     require(review["reviewer"] and review["reviewer"] != summary["builder"], "Reviewer required")
++    require(review["promotion_plan_sha256"] == pin(Q/"PROMOTION_PLAN.json")["sha256"]
++            and review["final_manifest_candidate_sha256"] == pin(Q/"MANIFEST_FINAL_CANDIDATE.json")["sha256"],
++            "Reviewed promotion candidate changed")
+     return summary, src, target
+ 
+ 
+@@ -77,6 +81,8 @@
+     for doc in manifest["documents"]:
+         doc["path"] = str(root / doc["name"])
+     manifest_raw = encoded(manifest)
++    require(manifest_raw == (Q/"MANIFEST_FINAL_CANDIDATE.json").read_bytes(),
++            "Final manifest differs from independently reviewed candidate")
+     prep = read(Q / ("PREPARATION_" + target.name + ".json"))
+     dest_prep = copy.deepcopy(prep)
+     dest_prep.update(status="REMAPPED_FROM_REVIEWED_STAGING", target=str(target),
+@@ -88,7 +94,7 @@
+         files[str(Path(d["path"]).relative_to(target))] = d["sha256"]
+     files[str((root/"SEALED_SNAPSHOT.json").relative_to(target))] = manifest["snapshot_manifest_sha256"]
+     files["manifest.json"] = dest_prep["manifest"]["sha256"]
+-    plan = {"release": "v408", "generation": prep["generation"], "epoch": target.name,
++    plan = {"release": "v409", "generation": prep["generation"], "epoch": target.name,
+             "baseline": dest_prep["baseline_active_pin"], "destination": str(target),
+             "manifest": dest_prep["manifest"], "files": files, "staging": pin(STAGING),
+             "stage_review": pin(STAGED_REVIEW), "promotion_cli": pin(__file__)}
+@@ -102,20 +108,28 @@
+ 
+ 
+ def authorization(plan):
+-    auth = read(AUTH)
+-    required = {"scope": "F0.3_v408_materialize_and_activate_after_final_review",
++    require(EXPECTED_APPROVAL_SHA256 is not None and len(EXPECTED_APPROVAL_SHA256) == 64,
++            "Explicit --approval-sha256 required")
++    approval_pin = pin(AUTH)
++    require(approval_pin["sha256"] == EXPECTED_APPROVAL_SHA256, "Approval file pin differs")
++    envelope = read(AUTH)
++    auth = envelope["f03"]
++    required = {"scope": "F0.3_v409_materialize_and_activate_after_final_review",
+                 "epoch": plan["epoch"], "generation": plan["generation"],
+                 "expected_active_sha256": plan["baseline"]["sha256"],
+                 "plan_sha256": pin(R/"PLAN.json")["sha256"],
++                "promotion_cli_sha256": pin(__file__)["sha256"],
++                "reviewed_staging_plan_sha256": pin(Q/"PROMOTION_PLAN.json")["sha256"],
+                 "parent_reference_sha256": pin(P/"SESSION_REFERENCE.json")["sha256"]}
+     require(all(auth.get(k) == v for k, v in required.items()), "Authorization scope or pins differ")
+-    order = auth["operator_order"]
++    order = envelope["operator_order"]
+     p = Path(order["path"])
+     require(p.resolve(strict=True) == p and p.parent == P and p.suffix.lower() == ".txt",
+             "Operator order must be a local text artifact in the parent mission")
+     require(p.stat().st_size and pin(p)["sha256"] == order["sha256"], "Order pin differs")
+     # Human authority is checked by the parent, never inferred from the contents.
+-    return pin(AUTH)
++    require(pin(AUTH) == approval_pin, "Approval changed during validation")
++    return approval_pin
+ 
+ 
+ def assert_tree(target, files):
+@@ -208,7 +222,7 @@
+     write_once(R/"RECEIVED_GENERATION.json", {"check": after, "received": received})
+     files = [STAGING, STAGED_REVIEW, AUTH, FINAL_REVIEW, R/"PLAN.json", R/"MATERIALIZED.json",
+              R/"VERIFY_FINAL_PATHS.json", R/"ACTIVATION.json", R/"RECEIVED_GENERATION.json"]
+-    delivery = {"release": "v408", "status": "ACTIVATED_VERIFIED_CURRENT_RECEIVED_GENERATION_CONFIRMED_NEW_PROCESS",
++    delivery = {"release": "v409", "status": "ACTIVATED_VERIFIED_CURRENT_RECEIVED_GENERATION_CONFIRMED_NEW_PROCESS",
+                 "epoch": target.name, "generation": plan["generation"], "manifest": pin(target/"manifest.json"),
+                 "active_pointer": pin(cm.ACTIVE), "documents": actual["documents"], "chunks": actual["chunks"],
+                 "previous_releases_preserved": summary["production_observed"]["previous_releases"],
+@@ -228,6 +242,8 @@
+         return
+     require(read(R/"PLAN.json") == plan and read(R/"MANIFEST_FINAL.json") == manifest and
+             read(sync.report_path(target.name)) == prep, "Remap plan changed")
++    if op in ("materialize", "verify-final", "activate", "receipt"):
++        authorization(plan)
+     if op == "materialize":
+         materialize(sync, summary, src, target, plan)
+     elif op == "verify-final":
+@@ -255,8 +271,12 @@
+     ap = argparse.ArgumentParser(description=__doc__)
+     ap.add_argument("step", choices=("plan", "materialize", "verify-final", "activate", "receipt"))
+     ap.add_argument("--member")
++    ap.add_argument("--approval-sha256", help="SHA256 lido da aprovacao humana conferida pelo parent")
+     args = ap.parse_args()
+     if args.step in ("materialize", "activate") and not args.member:
+         ap.error("--member must identify the current actual claimant")
++    if args.step != "plan" and not args.approval_sha256:
++        ap.error("--approval-sha256 required outside local plan")
++    EXPECTED_APPROVAL_SHA256 = args.approval_sha256
+     run(args.step, args.member or "read-only")
+     print(args.step, "OK")

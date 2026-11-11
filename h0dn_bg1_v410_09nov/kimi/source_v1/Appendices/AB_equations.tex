@@ -1,0 +1,247 @@
+\section{The system of equations and the covariance matrix}
+\label{app:equations}
+
+The system of equations that constrains the parameters of the {\DN} consists of several different types of equations (some involving only individual sources, others global), constraining a number of optimization parameters. Within the approximations of the present analysis, all equations are linear (or linearized) in these parameters, and all probability distributions are Gaussian in magnitude, distance modulus, or $ \log_{10}(\Hcst) $. The optimization procedure is therefore appropriate to a generalized linear least squares problem, which---within the stated assumptions---provides the Best Linear Unbiased Estimator (BLUE) for the solution \citep{aitken1935}. Given the linearized nature of the equations, different methods of solving the equations generally return the same parameter constraints---computing Bayesian credible intervals using MCMC sampling methods or constructing Frequentist confidence intervals would give the same answers.
+
+Critically, we do include several off-diagonal terms in the covariance matrix of all equations, reflecting the fact that their uncertainties are correlated. The solution process also returns the covariance matrix for the optimized parameters, including the Hubble constant (more precisely, its logarithm).
+
+\subsection {Linearity and Gaussianity}
+
+In our approach, we adopt equations that are linear in distance modulus and linearized in the logarithm of quantities non-linearly related to distances, such as redshifts and $ H_0 $.  We also assume that the probability distribution function of all measured quantities is Gaussian in this description, and therefore is fully described by a (non-diagonal) covariance matrix. Unfortunately, many original papers do not provide a full PDF for the quantities they measure, and they implicitly describe the errors as Gaussian; even if asymmetric confidence intervals are given, the lack of a full description of the PDF makes it challenging to go beyond the Gaussian approximation. However, most measured quantities have small enough fractional errors that the Gaussian approximation is accurate, especially in the aggregate; those with large fractional errors (and typically more non-Gaussian profiles) contribute only little to the final results. Finally, we note that most published data are already processed, incorporating uncertainties e.g. due to the underlying anchor. Therefore, we make sure to include the appropriate (see below) covariances for the published data according to how they were obtained from the original measurements. The most direct validation we have for all of the above approximations is our ability to recover the original results for all the examples considered in Appendix~\ref{sec:comparisons}. We note that the linearization naturally implies that results going out to many $>5\sigma$ should be interpreted with this caveat in mind. However, only slight changes could be introduced by these approximations, and we believe that our qualitative statements remain true even in more careful implementations.
+
+\subsection{Solution procedure}
+
+Given the measured data vector $\mathbf{Y}$ with its associated (non-diagonal) covariance matrix $\mathbf{C}$ we can construct a likelihood function as follows
+\begin{equation}
+    -2 \ln p(\mathbf{Y}|\mathbf{X}) = \chi^2 = (\mathbf{Y - A X})^T \mathbf {C}^{-1} (\mathbf{Y - A X}).\label{eq:chisq_definition}
+\end{equation}
+where $p(\mathbf{Y}|\mathbf{X})$ is the likelihood, and our linear model has the theory prediction of the data as $\mathbf{Y}^\mathrm{theory} = \mathbf{A} \mathbf{X}$ with some coefficient matrix $\mathbf{A}$ that we determine below. We immediately recognize that this is a formulation of a generalized least squares problem, as indicated in the introduction of this Section \ref{app:equations}. For a problem of this kind, it is well known that Bayesian approaches with flat (unbounded) priors will generally give the same results as Frequentist minimum likelihood estimation approaches. Within this work we will mostly follow the Frequentist view, but we stress that, due to the properties of multivariate Gaussian distributions, our conclusions apply equivalently to the Bayesian approach.
+
+The generalized least squares problem seeks to minimize a quadratic form $Q$ in the residuals $ \mathbf {Y - A X} $:
+\begin{equation}
+    Q = (\mathbf {Y-AX})^T \mathbf {W} (\mathbf {Y-AX})
+\end{equation}
+for some positive-definite, symmetric weight matrix $ W $; here $ ()^T $ indicates the transpose.  By the Gauss-Markov theorem, the result of this minimization has the lowest variance if the weight matrix $ \mathbf {W} $ is the inverse of the covariance matrix $ \mathbf C $ of the data \citep{aitken1935}; in this case the quadratic form corresponds to the usual $ \chi^2 $ in Equation~(\ref{eq:chisq_definition}).
+
+However, a difficulty can arise in that the set of these equations is generally not linearly independent. The reason is that the same measured quantities can be combined in different ways to obtain constraints (i.e., equations); if the number of constraints exceeds the number of independent measurements, some of these constraints must be equivalent to a combination of others.  For example, consider the case of Cepheid-related distance constraints based on different anchors. If we have, say, 30 host galaxies with measured intercepts of the Leavitt law, and 3 calibrations based on different anchors, we have a total of 33 independently measured quantities: the apparent magnitude of the intercept in the 30 host galaxies, and the calibrated absolute magnitude of the intercept in the three anchors. However, these result in 90 separate equations for the host distances, one for each \textit{combination} of host and anchor (see also Section \ref{sec:eq_host} below); these equations are by necessity linearly dependent. Other dependencies are more subtle, and result from using the same host distance constraint for different types of calibrators. As a result, the covariance matrix $ \mathbf {C} $, as constructed, is generally singular, as evidenced by extremely small (numerically consistent with zero) elements in the diagonal matrix of its singular-value decomposition. In our baseline case, we have 255 equations, but only 183 distinct  measurements, resulting in 72 superflous/overconstrained equations.
+
+To address the issue, we replace the standard matrix inversion for the covariance matrix with its Moore-Penrose inverse \citep{penrose1956}, also called pseudoinverse, computed, e.g., via the {\tt python} routine {\tt scipy.linalg.pinv} (see, e.g., \citealt{2022zndo....595738G}).  In this implementation, the Moore-Penrose inverse is computed via singular value decomposition, but the singular values that are numerically consistent with zero are ignored, i.e., their inverse is set to zero.  Other languages have similar implementations, and this computation can also be implemented using LAPACK routines (see, e.g., \citealt{2021ascl.soft04020L}). The effect of using the Moore-Penrose inverse of the covariance matrix in Equation~\ref{eq:chisq_definition} is to ignore linearly-dependent equations in the computation of the $ \chi^2 $, and reduce the problem to only linearly independent equations; this obviates the need to carry out a detailed analysis of all constraints. 
+
+We stress, however, that this numerical solution is completely equivalent to analytically making sure that only linearly independent equations are used. However, the current approach has several advantages, such as readability of the code and simplicity of the ensuing system of equations which also simplifies future modifications.
+
+\subsection {Equations and covariance matrix}
+
+Above we have described generally how the problem is set up. Within this section we aim to describe our specific setup of the equations. For this, we introduce a few additional pieces of notation. We minimize the residuals
+\begin{equation}
+    \sum_{j=1}^{N_\mathrm{par}} A_{i_\mathrm{eq} j} X_j - Y_{i_\mathrm{eq}}
+    \label {eq:coefficient_form}
+\end{equation}
+where $ Y_i $ are the $ N_\mathrm{eq} $ data values, corresponding also to the number of equations to be solved, with $ i_\mathrm{eq} = 1, \dots, N_\mathrm{eq} $ the data indices, and $ X_j $ are the $ N_\mathrm{par} $ optimization parameters, and $ j = 1, \dots, N_\mathrm{par} $ the parameter indices.  We note that the matrix $ \mathbf {A} $ is very sparse; each equation typically involves only one or two parameters. For convenience below we write the equations in the form $\mathbf{A} \mathbf{X} = \mathbf{Y}$, understanding that we are actually implementing the least square solution to the corresponding residuals of that equation.
+
+The form of each equation depends on which data and which parameters are involved. We have four main types of equations: host distance equations; host-group equations; calibrator equations; and Hubble flow equations. The host distance equations (Section~\ref{sec:eq_host}) relate the distance of each host to several published measurements, which are typically not independent; their correlations are accounted for in the covariance matrix, as discussed in the following. Host-group equations (Section~\ref{sec:eq_groups}) relate the distance of each host in a group to the common distance of that group (or cluster).  Calibrator equations (Section~\ref{sec:eq_calib}) relate the absolute calibration of one of the secondary distance indicators---such as SNe~Ia, SNe II, Surface brightness fluctuations, Tully-Fisher relation, and so on---to the distance of a host system obtained via the primary calibration method. Hubble Flow equations (Section~\ref{app:sec:eq_hf}) relate the distance (typically a luminosity or angular diameter distance) of a calibrated secondary distance indicator to its redshift, and thus provides the connection to the Hubble constant. Some methods bypass some of these equations; for example, megamaser distances are calibrated directly, and directly provide a Hubble Flow equation without intermediate steps. Similarly, astrophysically calibrated SNe II (using the Expanding Photosphere method) connect directly to the Hubble flow. In such cases, the equations are modified accordingly; for example, Hubble flow equations for directly calibrated distances will not involve a host distance---see also Section \ref{sec:eq_special} for these special cases.
+
+
+\subsubsection {Optimization parameters}\label{sec:optimization_parameters}
+We begin our discussion of the equations by formally writing down the list of all parameters that will be optimized. For this, we quickly revisit the general notation we adopt.
+
+The quantity $ \mu_{\ihost} $ is the distance modulus of the host $ \ihost $.  This is defined on the basis of the geometric luminosity distance alone; the apparent magnitude $ m_{\ihost} $ is expected to follow the simple relation $ m_{\ihost} = M_{\ihost} + \mu_{\ihost} $, with any corrections due to extinction, redshift effects, and other standardization terms absorbed in the definition of the apparent or absolute magnitude, as appropriate. The reference absolute magnitude $ M_{{\rm ref}, \itype} $ for calibrator type $ \itype $ is defined so that for each calibrator $ \icalib $, the observed magnitude $ m_{ \icalib} $ is expressed as 
+\begin{equation}
+     m_{\icalib} = M_{{\rm ref}, \itype[\icalib]} + \mu_{\icalib} .
+\end{equation}
+For a calibrator $\icalib$ within a given host $\ihost[\icalib]$, this equation is used to determine the $\mu_{\mathrm{host},\ihost[\icalib]}$.
+
+The parameters to be optimized include the following:
+
+\begin{itemize}
+   \item $ \mu_{\rm host, \ihost}  \quad (\ihost = 1, \dots, N_{\rm hosts}) $: the distance modulus for each system treated as a host
+   \item $ M_{\rm ref, \itype} \quad (\itype = 1, \dots, N_{\rm types}) $: the reference magnitude for each type of calibrator used in the solution.  
+   Calibrator types include SNe~Ia, SNe II (calibrated empirically), 
+   SBF, and Tully-Fisher. For the sake of brevity, we synonymously refer to these as $M_{\rm Ia}\equiv M_{\rm ref, SNe~Ia}$, $M_{\rm II}\equiv M_{\rm ref, SNe~II}$, $M^\mathrm{off}_{\rm SBF}\equiv M_{\rm ref, SBF}$,  $M^\mathrm{off}_{\rm TF}\equiv M_{\rm ref, TF}$, respectively. 
+   \item $ \mu_{\igroup} $, the distance modulus to any groups ($ \igroup$) included in the host data (see Section~\ref{sec:eq_groups}). 
+   \item $ \mu_{\rm Coma} $ if the FP is used in the \DN.
+   \item $ \log_{10} (H_0) $.
+\end{itemize}
+
+These are collectively indicated as $ X_j $ in Equation~\ref{eq:coefficient_form}. Other parameters---e.g., those describing the metallicity dependence of a class of calibrators, or other standardization parameters---can in principle be included.  However, in the spirit of this study, we generally adopt whatever conventions and standardizations have been used in the original papers, and eschew re-characterizing the behavior of calibrators.
+
+\subsubsection {Host distance equations}
+\label{sec:eq_host}
+
+For every measurements of the distance of a nearby host, we include an equation relating the distance modulus for that host with a specific anchor and method. Separate equations are given for the same host measured by different methods, using different anchors, or by different collaborations/groups (source).  A \textit{method} in this context refers to the combination of a type of primary distance indicator (e.g., Cepheids) observed using a given instrument (e.g., HST). The equations are thus characterized by the method used, the anchors they refer to, and the source of the measurement; collectively we refer to these as \textbf{MAS} (Method, Anchor, Source) and denote them with $\imas[\ieq]$ for the $\ieq$-th equation.  Data with different MAS are considered separately, although they can be correlated. We additionally define the host involved in the $\ieq$-th as $\ihost[\ieq]$ and the anchor as $\ianchor [\ieq]$ -- noting that different equations can have the same $\ihost$ and/or $\ianchor$. Finally, for convenience we also define unique combinations of the host, the method, and the source (HMS) and denote them with $\ihms[\ieq]$ for the $\ieq$-th equation -- where a host calibrated by the same group using the same method but with a different anchor can cause the $\ihms$ of different equations to agree. Only the $\imas$ is unique to the $\ieq$-th equation.
+
+The host equation $\ieq$ can then be written as:
+\begin {equation}
+\mu_{\ihost[\ieq]} = \mu_{\ieq}
+\end{equation}
+with correspondingly $A_{\ieq,j}=\delta_{j, \ihost[\ieq]}$ for this $\ieq$, and $\delta_{ij} =1$ if $i=j$ and 0 otherwise.  In order to construct the covariance for this set of equations, we note that the uncertainty of each measurement combines the measured uncertainty of the distance indicator (e.g., the TRGB magnitude or the Cepheid intercept) in the host, $ \sigma_{\ihost[\ieq]| \ihms[\ieq]} $; the uncertainty of the same measurement in the anchor, $ \sigma_{\ianchor[\ieq]| \imas[\ieq]}$; and the uncertainty in the distance modulus of the anchor itself, $ \sigma_{\ianchor[\ieq]} $. Therefore the diagonal element of the covariance matrix is:
+\begin {equation}
+C_{\ieq, \ieq} = \sigma_{\ihost[\ieq]| \ihms[\ieq]}^2 + \sigma_{\ianchor[\ieq]| \imas[\ieq]}^2 + \sigma_{\ianchor[\ieq]}^2
+\end{equation}
+
+The covariance between different equations $ \ieq, \jeq $ depends on which elements they have in common. If the anchor is the same, then the covariance includes the anchor distance uncertainty. If the MAS $\imas$ is the same, then the uncertainty of the measurement of the distance indicator in the anchor is in common. If two equations share the same host measured by the same method and source ($\ihms$) then the covariance includes the uncertainty of the distance indicator measurement within the host. Therefore:
+\begin{equation}
+    C_{\ieq, \jeq} = \delta_{\ianchor[\ieq], \ianchor[\jeq]} \cdot  \sigma_{\ianchor[\ieq]}^2 + \delta_{\imas[\ieq], \imas[\jeq]} \cdot \sigma_{\ianchor[\ieq]| \imas[\ieq]}^2 + \delta_{\ihms[\ieq], \ihms[\jeq]} \cdot  \sigma_{\ihost[\ieq]| \ihms[\ieq]}^2 
+\end{equation}
+
+
+\subsubsection {Host-group equations}
+\label {sec:eq_groups}
+
+In some cases, especially for the Surface Brightness Fluctuations method, a distance estimate for a calibrator or host can come from its membership in a group or cluster.  Most of the SBF calibrators are either in Fornax or in Virgo; some of them have direct distance estimates from TRGB, others do not.  The assumption is that all objects within each of those clusters are at approximately the same distance, with a dispersion reflecting the estimated spatial extent of the cluster.
+
+This situation can be handled by introducing an additional class of parameters: the distance to a group or cluster.  In keeping with the distance network concept, this distance is estimated from all members of the group with a direct distance measurement, and is applied to the members that do not have a direct measurement.  For the members with a measurement, their distance is also partially constrained by the other group members.  
+
+The equations representing these constraints involve the parameters of the group distance estimate, $ \mu_\igroup  $, and the distance to each member, $ \mu_\ihost $.  If a host $ \ihost $ is a member of a group $ \igroup$, we write the simple equation:
+\begin{equation}
+\mu_{\ihost[\ieq]} - \mu_{\igroup[\ieq]} = 0
+\end {equation}
+with correspondingly $A_{\ieq, j} = \delta_{j, \ihost[\ieq]} - \delta_{j,\igroup[\ieq]}$ and $Y_\ieq=0$ in this case.  The uncertainty associated to this equation is the estimated dispersion $ \sigma_{\ihost, \igroup} $ of the distance modulus of host $ \ihost $ with respect to the distance of the group $ \igroup $. This value can in principle be different for every member of the group; however, currently we assign the same uncertainty $\sigma_\igroup$ to all hosts in the group, and assume the hosts are randomly distributed within that group (no non-diagonal elements in the covariance matrix).  In the current treatment, this type of equation has no covariance with any other equation.
+
+\subsubsection {Calibrator equations}
+\label {sec:eq_calib}
+
+For every calibrator $ \icalib $, we include an equation relating the distance modulus of its host and the quantity being calibrated, the reference magnitude $ M_{\rm ref, \itype} $, with the standardized apparent magnitude $ m_{\icalib } $.  This quantity can be the reference magnitude for TF or SBF, the standardized absolute magnitude of a SN Ia or SN II in the appropriate band, or (in the case of BayesSN) a reference magnitude for the SN. These equations have in general negligible covariance in the data, but it is critical that the intrinsic dispersion in each calibrator's distance estimate (e.g., the intrinsic variance in SNe~Ia absolute magnitude, or the internal dispersion of the TF relation) be included in the uncertainty of each source.  These uncertainties are reduced by using more calibrators. \textit{Distance calibration} uncertainties are propagated from the uncertainty of the host distance modulus, which is derived from the distance network, and therefore are not included in the \textit{data} covariance matrix.
+
+The calibrator equations have the form:
+\begin{equation}
+    \mu_{\ihost} = m_{\icalib}- M_{\rm ref, \itype}
+\end{equation}
+where $ \mu_{\ihost} $ is the distance modulus parameter of the host $ \ihost $ in which the calibrator $ \icalib $ is located, which will be optimized from the global solution of the generalized least-squares problem. This equation can be recast in the form of Equation~\ref{eq:coefficient_form} as follows:
+\begin{equation}
+    M_{\rm ref, \itype[\ieq]} + \mu_{\ihost[\ieq]} = m_{\icalib[\ieq]}.
+\end{equation}
+with correspondingly $A_{\ieq, j} = \delta_{j, \itype[\ieq]} + \delta_{j, \ihost[\ieq]}$.
+
+The variance associated with these quantities includes not only the contribution from the direct measurement process, such as the photometric uncertainty, but also the variance resulting from measurements of the standardization parameters, such as color and light curve width for SNe~Ia, or the velocity width for Tully-Fisher.  Those uncertainties are those reported in the original papers, unless otherwise stated.  Critically, the variance must also include the intrinsic dispersion in that distance indicator---e.g., the scatter in standardized SN luminosities. or the dispersion in the velocity-based luminosity indicator from Tully-Fisher.  This term is not always included explicitly in the  uncertainties provided by the original sources, and in such cases it must be added in quadrature to the stated uncertainties. We assume that these equations have a diagonal covariance structure.
+
+\subsubsection{Hubble flow}\label{app:sec:eq_hf}
+In principle each tracer in the Hubble flow would add its own equation, and with the potentially hundreds to thousands of objects in the Hubble flow, this would greatly increase the size of the problem. Luckily, the additional equations are highly similar, and therefore allow a great simplification of the overall problem. Since the equations for this part of the problem are uncorrelated to the remaining system of equations (the covariance matrix is block-diagonal), this sub-problem can be treated independently. Additionally, the similarity of the equations can be expressed mathematically precisely as a rank deficiency of the coefficient matrix. We therefore first analyze such rank-deficient cases in general, and then apply our knowledge to the Hubble flow tracer equations.
+
+If the coefficient matrix $A$ is rank-one, i.e., $A = b a^T$, then we can write
+\begin{align}
+    \chi^2 & = (A X - Y)^T F (A X - Y) = (X^T a) (b^T F b) (a^T X) - 2 (X^T a) (b^T F Y) + (Y^T F Y) \\ & = (X^T a - y) f (a^T X - y) + \Delta \chi^2~. \label{eq:full_chi2}
+\end{align}
+This establishes the equivalence between the full problem with coefficient matrix $A$, parameter vector $X$ and data vector $Y$ with inverse covariance matrix $F = C^{-1}$ and a smaller condensed problem with coefficient vector $a$ and a single data point $y$ with inverse covariance $f$. Here $f = (b^T F b)$ and $y = (b^T F Y)/(b^T F b)$ are both scalars -- the new condensed covariance matrix and data point. Additionally $\Delta \chi^2 = (Y^T F Y) - f y^2$ is a parameter-independent offset of the $\chi^2$ function and correspondingly does not impact the overall parameter estimation. This means that instead of solving the full problem with many data points $Y$, one can solve the reduced problem with a single data point $y$. Interestingly the value of the scalar $y$ is the solution to the independent $\chi^2$ optimization problem
+\begin{equation}
+    \chi^2 = (b \hat{y} - Y)^T F (b \hat{y} - Y) \label{eq:reduced_chi2}
+\end{equation}
+which has the solution $\mu_{\hat{y}} = y$ and the variance $\sigma^2_{\hat{y}} = f$. As such, we can first solve the reduced problem of Equation~\ref{eq:reduced_chi2}, and then use the mean solution and its variance as inputs for the condensed problem of Equation~\ref{eq:full_chi2}. In summary, a full problem with a rank-deficient coefficient matrix can be decomposed into a separate optimization problem, whose solution can be used to construct only a single additional equation for the original problem.
+
+The equations for tracers in the Hubble flow could generally be expressed as
+\begin{equation}
+    m_i = M_{\mathrm{ref},\itype} + \mu_i = M_{\mathrm{ref},\itype} - 5 \log_{10}(H_0) + 5 f(z_i)\label{eq:hf_original}
+\end{equation}
+with $m_i$ the observed standardized magnitude of the $i$-th tracer, $M_{\mathrm{ref},\itype}$ the common reference absolute magnitude for the tracer type $\itype$, and $\mu_i$ the distance modulus of the $i$-th tracer, which we decompose as $\mu_i = -5 \log_{10}(H_0) + 5 f(z_i)$.
+Therefore, in our case we can identify two parameters $X = \{M_{\mathrm{ref},\itype}, \log_{10}(H_0)\}$ and the data vector $Y_i = 0.2 m_i - f(z_i)$. The rank deficient coefficient matrix is then $A = b a^T$ with $b = 1_\mathrm{N_\mathrm{tracer}}$ being a vector of ones with length equal to the number of tracers (of a given type) in the Hubble flow, and $a^T = \{-0.2, 1\}$ is a vector of length 2. We thus can use the techniques for a rank-deficient matrix and first solve the $\chi^2$-minimization reduced sub-problem with equations of the type
+\begin{equation}
+    a_\itype + 5 = f(z_i) - 0.2 m_i \label{eq:hubble_flow}
+\end{equation}
+where $\hat{y} = a_\itype + 5$ is the so-called Hubble intercept for tracer type $\itype$. For these reduced equations we use in analogy with Equation~\ref{eq:reduced_chi2} the full covariance matrix of the $m_i$ with possible peculiar velocity corrections (see below). For our full problem we can then reduce the additional equation to only
+\begin{equation}
+    \log_{10}(H_0) - 0.2 M_\itype  = a_\itype + 5\label{eq:intercept}
+\end{equation}
+with $A_{\ieq, j} = \delta_{j,\log H_0} - 0.2 \delta_{j, \itype[\ieq]}$, where $a_\itype$ is the solution to the Hubble intercept sub-problem and its covariance is used for the full problem according to Equation~\ref{eq:full_chi2}. Solving the equations determining the Hubble flow then boils down to solving the Hubble flow intercept problem of Equation~\ref{eq:hubble_flow}. We quickly note that the condensation procedure can be repeated independently for the independent tracer types, leading to one additional Hubble intercept equation and one independent Hubble intercept minimization problem per tracer type $\itype$; the form of the equation will differ for SBF and TF because of the form of their luminosity calibration.
+
+\subsubsection{The intercept equations}\label{app:sec:intercept}
+For the intercept Equations~\ref{eq:hubble_flow} we have two distinct cases. When the tracer objects are standard candles (SNIa, SNII, etc) we need to use the luminosity distance for the distance modulus, and for standard ruler objects we can use the same equations, replacing the luminosity distance with the angular diameter distance. Therefore we only treat the case of standard candles below, noting that since the two are assumed to be related as $D_A = D_L /(1+z)^2$, we only need to insert the correct factors of $(1+z)^2$ at relevant locations (which we explicitly indicate below) to treat both cases.
+
+The more problematic aspect of the Hubble flow intercept equations is that the measured redshifts $z_i$ are impacted by Doppler shifting from the peculiar motion of the tracer objects. Albeit this effect can be minimized by choosing corresponding tracer objects that are distant enough to minimize the relative influence on the velocity, we still aim to consistently account for these effects, allowing us to also use relatively nearby tracers such as megamasers.
+
+We note that $\mu_i \propto 5 \log_{10}(D)$ and $D \propto H_0^{-1}$ (where $D$ can be either the luminosity or angular diameter distance), and therefore $f(z_i)$ is by design independent of $H_0$\,, independently of which precise expansion rate a specific model has. While it would also be possible to parameterize the distance functional $f(z)$ using a specific cosmology, we choose a cosmographic expansion for our baseline results due to its model-independence, and given the low redshift range $z<0.15$ we typically consider for the tracers in the Hubble flow.
+
+In general the expression for $f(z_i)$ must take into account also the corrections to the observed redshift from peculiar velocities (both of the earth as well as the individual tracer objects). We therefore differentiate between the cosmological redshift that a comoving object would have $z_{\mathrm{HD},i}$, the actually observed redshift $z_i$, and the redshift corrected into the heliocentric frame (removing earth's peculiar motion) as $z_{\mathrm{hel},i}$. We discuss these corrections further in Section~\ref{app:sec:pec_vel} below. The expression of the distance modulus can then be written as \citet{2011ApJ...741...67D,2017JCAP...01..038C}
+\begin{equation}
+    \mu_i = 5\log_{10}(D(z_i)/\mathrm{Mpc})+25 = 5\log_{10}\left(D(z_{\mathrm{HD},i}) \cdot \frac{1+z_{\mathrm{hel},i}}{1+z_{\mathrm{HD},i}}\right) + 25~.\label{eq:distance_modulus}
+\end{equation}
+Together with Equation~\ref{eq:hf_original} this leads to the expression
+\begin{equation}
+    f(z_i) = \log_{10}\left(\frac{D(z_i) H_0}{\mathrm{km/s}}\right)+5 \label{eq:hf_f_of_z}
+\end{equation}
+
+The distance can further be expressed using a cosmographic expansion within the desired redshift range, namely
+\begin{subequations} \label{eq:distance_taylor}
+\begin{align}
+    D_L(z) & \approx \frac{cz}{H_0} \left[1+\frac{1}{2}(1-q_0) z - \frac{1}{6}(1-q_0 - 3 q_0^2 + j_0) z^2 + \ldots \right] \equiv \frac{v_L(z)}{H_0} \\ 
+    D_A(z) & \approx \frac{cz}{H_0} \left[1-\frac{1}{2}(3+q_0) z + \frac{1}{6}(11+7 q_0 + 3 q_0^2 - j_0) z^2 + \ldots \right] \equiv \frac{v_A(z)}{H_0}
+\end{align}
+\end{subequations}
+leading to the corresponding expansions for $f(z_i)$ that can be used for Equation~\ref{eq:intercept} to compute the intercept.
+Here we have used the acceleration and jerk parameters $q_0$ and $j_0$ defined respectively as the evaluations today of $q(a)=-\ddot{a}a/\dot{a}^2$ and $j(a) = \dddot{a}a^2/\dot{a}^3$, which can be used to re-express the redshift Taylor expansions of the distance expressions.
+According to \citet{2019MNRAS.490.2948D}, this approximation is adequate out to $ z \sim 0.3 $; additional correction for deviations from a flat Universe are negligible.  The use of Equation~\ref{eq:distance_taylor} is the only direct cosmological dependence of our results.  We adopt the fixed values $ q_0 = -0.55 $ and $ j_0 = +1 $, following \citet{2016ApJ...826...56R}; the value for $ q_0 $ differs slightly from that adopted by \citet{2024MNRAS.531...84B} ($q_0 = -0.5275 $).  Changes to $ q_0 $ and $ j_0 $ do not have a significant impact in the resulting value of $ H_0 $; even a change in $ q_0 $ from $ -0.55 $ to $ -0.50 $ would reduce the baseline value of $ H_0 $ by less than $ 0.1 \, \rm km/s/Mpc $.  This description of distances assumes the validity of the cosmological principle, statistical isotropy and homogeneity (effectively a FRWL metric) and the Etherington relation---that is the $(1+z)^2$ scaling for $D_L/D_A$, which of course assumes photon number conservation in General Relativity. We also assume a given level of smoothness of the expansion history within the given redshift range such that the given expansion is applicable.
+
+The variance of each data item $m_i - 5 f(z_i)$ combines: the measurement error for the indicator (typically a photometric error); the variance in the velocity function due to the uncertainty of the redshift (including any uncertainty in the peculiar velocity corrections); and the intrinsic width of the distance indicator, expressed in magnitudes.  These variances are considered uncorrelated and added together. The elements entering the different intercept equations can (and typically do) have correlated errors; for example, uncertainties in the standardization parameter will propagate to all elements $i$ in ways that depend on how their properties were standardized, and sources from the same survey could have survey-systematics in common. However, this information is not always available. We have included covariance terms between SNe~Ia according to the prescriptions of Pantheon+, resulting in a minor impact on the results; the change in $ H_0 $ between including and excluding off-diagonal covariance terms is less than $ 0.1 \, \rm km/s/Mpc $ (see V00 vs V27 in Table~\ref{tab:variants}). In practice, for all secondary distance indicators in use the intrinsic dispersion of the calibration is significantly larger than any systematic covariance terms; only with very large number of sources could these covariances, which are not abated by simply increasing the number of sources, come into play. The uncertainty in the absolute calibration itself is part of the distance network system and is accounted as part of the default system of equations; it need not be included explicitly in the covariance matrix of the separated intercept equations.
+
+\subsubsection{Peculiar velocities}\label{app:sec:pec_vel}
+
+Peculiar velocities are typically on the order of hundreds of km/s. At low redshifts especially (typically below $cz=3000$\,km/s, i.e $z<0.01$), the scatter introduced to the Hubble diagram by peculiar velocities becomes dominant; we generally consider tracers only at $ z > 0.01 $ ($D \gtrsim 40$Mpc), though preferentially at $z>0.023$ ($D \gtrsim 100$Mpc).
+ 
+In the linear regime, a smoothed density field mapped from a galaxy redshift survey can be used to predict the peculiar velocity field, up to a normalization and any influences external to the survey volume (often approximated as a residual bulk flow) \citep{1995PhR...261..271S}. This method has been applied to the 2M++ \citep{2015MNRAS.450..317C} and Two-Micron All-Sky Redshift Survey (2MRS) redshift surveys \citep{2021MNRAS.507.1557L} to predict the density and velocity fields. For the 2M++ model, the normalization parameter and external bulk flow were re-measured by \cite{2020MNRAS.497.1275S} using peculiar velocity measurements from 6dFGS and SDSS, and by \cite{2024MNRAS.531...84B} using peculiar velocity measurements from the Tully-Fisher Cosmicflows-4 catalog. The uncertainty in these model predictions, $\sigma_v$ is dominated  by the residuals between the non-linear observed field and the predicted linear field, and its value spans $\sim$150--250 km/s depending on the specific flow model. 
+
+Peculiar velocity corrections made using these models have previously been successful at reducing scatter in the redshift-distance relation. In this paper, we adopt the 2M++ model for peculiar velocity corrections in the baseline determination of $H_0$\,. Previous studies have found it to be at least as good as other representations. For example, \cite{2023AAS...24142408P} found it produced the smallest uncertainties in cosmological parameters including $H_0$\,. These peculiar velocities are adopted in all intercept equations, as well as for objects directly linked to the Hubble flow.
+
+In all cases we decompose the observed redshift as
+\begin{equation}
+    1+z_i = (1+z_{\mathrm{HD},i}) \cdot (1+z_\mathrm{earth}) \cdot (1+z_{\mathrm{pec},i})
+\end{equation}
+where $z_{\mathrm{HD},i}$ would be the redshift if the object was comoving in the Hubble flow and was measured by a comoving observer, $z_\mathrm{earth}$ is the Doppler redshift due to earth's motion with respect to a comoving frame, and $z_{\mathrm{pec},i}$ is the Doppler redshift caused by the peculiar velocity of the given object with regard to a comoving frame, which can be computed by
+\begin{equation}
+    z_\mathrm{pec} = \sqrt{\frac{1+v_\mathrm{pec}/c}{1-v_\mathrm{pec}/c}}
+\end{equation}
+Finally we denote $z_\mathrm{hel,i}$ as $z_\mathrm{hel,i} = \frac{1+z_i}{1+z_\mathrm{earth}}-1$.
+
+\subsubsection {Special cases} \label{sec:eq_special}
+
+The previous Sections describe the equations associated with a typical distance ladder: distance estimates for nearby (host) galaxies, calibration constraints, and secondary distance indicators applied to objects in the Hubble flow, leading to $ H_0 $ constraints.  However, there are some distance estimates that do not fit neatly into this three-rung scheme, and are discussed in the following.
+
+\paragraph {Direct distance estimates for sources in the Hubble flow}
+
+If the distance of a source far enough to be in the Hubble flow can be estimated directly, then the equivalent of Equation~\ref{eq:distance_taylor} can be written for that source. In such a case the equation will not involve $M_{\rm ref, \itype} $ --- which for other systems is used to estimate the distance on the basis of the observed apparent magnitude. Rather, the directly measured quantity is the distance $D_i$, typically in the form of either a luminosity or an angular diameter distance. The equation can simply be written as
+\begin{equation}
+  \log_{10}(H_0) = \log_{10}(v(z_{\mathrm{HD},i}))-\log_{10}(D_i).\label{eq:HF_direct}
+\end{equation}
+where the coefficient matrix has $A_{\ieq,j} = \delta_{j, \log_{10}(H_0)}$ and $y_\ieq = \log_{10}(v(z_\ieq)) - \log_{10}(D_\ieq)$, where $D_\ieq$ is the object's measured distance and $v(z)$ is either $v_A(z)$ or $v_L(z)$ from Equation~\ref{eq:distance_taylor}, depending on the nature of the object. Note that the redshift needs to be corrected for peculiar velocities, as discussed in Section~\ref{app:sec:pec_vel}.
+
+We include two such categories: megamasers, the distance of which is determined by fitting Keplerian orbital parameters and matching the physical and angular orbital radii (thus yielding an angular diameter distance); and astrophysically-calibrated SNe II, for which the absolute luminosity is estimated from a model of their expanding photosphere, yielding a luminosity distance for each object. In the latter case, all SNe II thus measured share a common modeling uncertainty; however, this term is not clearly defined in the reference material, and is likely small in comparison with the (rather large) internal dispersion of the distance estimate. See Section~\ref{sec:data_appendix} for more details.
+
+\paragraph {The Fundamental Plane of elliptical galaxies and the Coma cluster\label{sec:eq_special:FP}}
+Another special case is the measurement of the parameters of the so-called Fundamental Plane of elliptical galaxies, which is a tight relation between size, surface brightness, and velocity dispersion of bright ellipticals. In this case we make use of the analysis first performed in \citet{2025MNRAS.539.3627S} and updated in \citet{2025ApJ...979L...9S}. We simply re-scale the estimate anchored to Coma by the distance to Coma determined self-consistently from the global solution of the network. For this we primarily implement the following equations:
+\begin{equation}
+    \mu_\mathrm{Coma} + M_{\rm Ia} = m_\ieq
+\end{equation}
+with Coma distance modulus $\mu_\mathrm{Coma}$, SNIa reference magnitude $M_{\rm Ia}$, and individual supernovae magnitudes $m_\ieq$\,, where we use the following list of 13 supernovae as part of the Coma cluster: [2019bkh, 2020ags, 2021dch, 2021lxb, 2022frn, 2023aakj, 2023czd, 2023epj, 2024ana, 2021oat, 2010ai, 2013ag, ASASSN-15jt]. Their absolute magnitude uncertainties include intrinsic dispersion but we do not model their correlations within Coma or with other calibrators.  Following \citet{2025MNRAS.539.3627S}, we consider only the YSE measurement of SN 2021lxb.
+
+In addition to the SNe~Ia-derived distance we also allow for a constraint on the Coma distance from SBF measurements. However, in this case we do not employ the full \DN\ (yet), and simply use the distance modulus value $\mu_\mathrm{SBF, fixed} = 34.98\pm 0.1345$ (see  \citet{2025MNRAS.539.3627S,2025ApJ...979L...9S} for details):  
+\begin{equation}
+    \mu_\mathrm{Coma} = \mu_\mathrm{SBF, fixed}
+\end{equation}
+
+Finally, the Coma distance is coupled to the Hubble flow via the rescaling equation
+\begin{equation}
+    \log_{10}(H_0) + 0.2 \mu_\mathrm{Coma} = \log_{10}([H_0D]_\mathrm{FP}) + 5
+\end{equation}
+with $[H_0D]_\mathrm{FP}$ being the fundamental plane value of $(76.05 \cdot 99.1)$ with a uncertainty assigned to the logarithm of 0.00742, see \citet{2025MNRAS.539.3627S,2025ApJ...979L...9S}. In the future we are planning to directly compute intercept equations also in the case of the FP method.
+
+\paragraph {An {\Hcst} estimate without Hubble flow SNe~Ia}
+
+\cite{2022ApJ...935...83K} published an analysis of measured Cepheid distances to SNe~Ia host galaxies that did not rely on a calibration of SNe~Ia in the Hubble Flow, essentially bypassing secondary distance indicators.  Their solution used a more in-depth analysis of peculiar velocity corrections to mitigate their impact.  While significantly less accurate, their estimate of {\Hcst} had the significant methodological advantage of being independent of any potential systematics in the properties of SNe~Ia.  Since this analysis does not use additional independent data, it is not included in our formalism; however, we note here this approach for methodological completeness.  If direct distances to more distant galaxies are measured in the future, this approach may be worth renewed consideration.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+% \textcolor{red}{any validation necessary?}
+
+% \textcolor{red}{Continue: explicit form of the solution.  Separation of chi2.}
+
+% \newpage
+% \noindent

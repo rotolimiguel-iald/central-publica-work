@@ -1,0 +1,14 @@
+# ADENDO 4 PÓS-CANDIDATO AO DESENHO DA v410 (gerência c1; aberto em 10/11/2026 07:17)
+
+> O DESENHO e os adendos 1, 2 e 3 estão presos ao candidato e não se tocam. Este adendo guarda D99.
+
+**D99 (10/11/2026 07:17)** — a revisão de terceiro R2 (Sonnet; `revisao_terceiro\REVISAO_TERCEIRO_v410.json` sha16 `1bcebf5ec7796585`; pedido de correção sha16 `b6931ae174f8eb07`; candidato revisado `051e727083345b85`) NÃO APROVOU: 0 ALTO, 1 MÉDIO, 5 BAIXO. Os três médios e os baixos da R1 estão atendidos; a sonda da revisora (o leitor constante) não compila mais contra a pedra; o kernel a frio confere (decl 34273, thm 27357, fora do trio 0; 101 bandeiras).
+
+**O MÉDIO da R2 (verdadeiro; a gerência concorda):** os textos públicos (artigo PT/EN, a linha do `.md` canônico, o registro `a_escala_v410`, o handoff e os textos do pós-rito) anunciam o teorema `os_passos_sao_o_ciclo_ate_o_tetelestai` como «a decisão em tempo finito do ciclo, linear nos bits» SEM o limite que a docstring da pedra e o próprio registro já dizem. **Correção:** ao lado dessa frase, em todos esses lugares, a cláusula:
+- PT: “Z(s) = Σ_x e^(−s·c(x)) soma os 2^n pixels e é lida de uma vez pelo psíon: o limiar n·ln 2 é o do tempo de UMA leitura, não o custo de somar os 2^n termos por outra máquina; que esse tempo conte os passos da máquina de Turing é a tradução do dicionário, e o termo que a liga ao Mathlib não está no kernel.”
+- EN: “Z(s) = Σ_x e^(−s·c(x)) sums the 2^n pixels and is read at once by the psion: the threshold n·ln 2 is that of the time of ONE reading, not the cost of summing the 2^n terms on another machine; that this time counts the steps of the Turing machine is the dictionary's translation, and the term linking it to Mathlib is not in the kernel.”
+E `Z(s)` definida na primeira ocorrência do artigo. A frase obrigatória do tempo (D94), os nomes, os enunciados, a pedra, a guarda e a função de veredito NÃO mudam.
+
+**Baixos que entram na mesma rodada:** (1) o registro `a_escala_v410` passa a igualar o número de âncoras novas ao de nomes novos a ratificar; (3) uma cláusula nos textos: a ratificação de 09/11 é dos NOMES; seis deles (LeitorDoFundo, aPerguntaDoClay, iald, a_pergunta_do_clay_tem_resposta, existe_o_algoritmo_e_e_a_iald, a_escala) passaram a ter outro enunciado nas R3/R4 (a escala no tipo; D92, D94); a gerência disse isso ao operador em 10/11 e repete no relatório; (4) etiquetas: a frase do tempo é [INPUT/dicionário], com maiúscula depois do rótulo; a regra do poder é [INPUT, D96]; na lista dos teoremas, o que o termo do Tetelestai prova é o limiar (Z(s) separa o sim do não), e «passos = ciclo» é a leitura do dicionário. **Baixos anotados para depois (sem mudança):** três paráfrases que a guarda F59 não pega e as quatro da R1 (v411); a guarda de finitude da função de veredito (versão que abrir o teste).
+
+A errata correspondente no um.py é a E35.

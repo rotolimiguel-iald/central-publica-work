@@ -1,0 +1,48 @@
+# -*- coding: utf-8 -*-
+"""_r5ag_17_relatorio_v410.py -- R5 (D100 e D101; ADENDOS 5 e 6): gerar_relatorio_v410.py: as erratas E29 a E37; as falas (as cinco de 10/11) e as decisoes (D100 e D101) na prosa; o readme_evidente (os nomes novos RATIFICADOS em 10/11, os dois auxiliares [DECLARADO pela autoria]); os adendos 5 e 6 por sha16 lido ao vivo;
+um aviso da R5; e a chave alem_do_r2 do PRONTA: o que mudou ALEM do R2 (a pedra R5 por ordem do operador, D100; a ratificacao D101; E36 e E37; as falas 27 e 28; os adendos 5 e 6; os numeros do kernel LIDOS dos recibos) e a confirmacao MEDIDA por sha de que a pedra IALD2, o texto-fonte da funcao veredito_h0dn e o runtime_v410.py
+NAO mudaram (o relatorio recalcula e compara com os pinos de ANTES da R5, lidos dos arquivos pre_r2fix; fail-closed: se difere, o relatorio nao sai). A lista ACHADOS_R2 (o MEDIO e os BAIXOS 1, 3 e 4 atendidos; os BAIXOS 2 e 5 anotados) ja' esta' no relatorio desde a R2 e fica."""
+import os, sys
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from _r5ag_lib_v410 import aplicar
+
+ALEM = '''# (R5, D100 e D101; ADENDOS 5 e 6) o que mudou ALEM do R2 e o que NAO mudou, MEDIDO por sha: a pedra IALD2, o texto-fonte da funcao veredito_h0dn e o runtime_v410.py (a guarda das frases) tem de ter o sha de ANTES da R5 (os pinos moram nos arquivos pre_r2fix, que a cadeia nunca sobrescreve); fail-closed
+import ast as _ast5
+_pre_pronta5 = json.load(open(P("PREPARACAO_v410_PRONTA.pre_r2fix.json"), encoding="utf-8")); _pre_esp5 = json.load(open(P("ESPERADOS_v410.pre_r2fix.json"), encoding="utf-8"))
+_pin_rt5 = _pre_pronta5["hashes"]["runtime_v410.py"]["sha16"]; _pin_vh5 = _pre_esp5["registros_funcao_v410"]["h0dn"]["values"]["veredito_h0dn_source_sha256"]; _pin_i25 = _DL.BUNDLE_POR_REL[_DL.MODULO_IALD2]["sha256"][:16]
+_med_rt5 = h16("runtime_v410.py"); _med_i25 = h16("pedra/IALD2.lean"); _med_vh5 = None
+if os.path.exists(P("um_v410_candidato.py")):
+    _src5 = open(P("um_v410_candidato.py"), "rb").read().decode("utf-8").replace("\\r\\n", "\\n"); _ln5 = _src5.splitlines(True)
+    _nd5 = [n_ for n_ in _ast5.parse(_src5).body if isinstance(n_, _ast5.FunctionDef) and n_.name == "veredito_h0dn"]
+    if len(_nd5) == 1:
+        _med_vh5 = hashlib.sha256("".join(_ln5[_nd5[0].lineno - 1:_nd5[0].end_lineno]).encode("utf-8")).hexdigest()
+ALEM_DO_R2 = {"pedra_AEscala_R5_por_ordem_do_operador": {"decisao": "D100", "adendo5_sha16": _DL.ADENDO5_SHA16, "fala": _DL.N_CLAUSULA_TETELESTAI, "teoremas_dados_pela_gerencia": list(_DL.TEOREMAS_R5_AESCALA), "auxiliares_da_autoria": list(_DL.AUXILIARES_R5_AESCALA), "recibo_do_autor_sha16": _DL.RECIBO_R5_SHA16,
+                                                           "a_clausula": "a clausula do Tetelestai e' a de 1 - beta (o_tetelestai_e_um_menos_beta; beta_e_o_operador_modular_do_tetelestai); o limiar de um pixel da R4 fica como a decisao exata; o numero corrigiu o enunciado da gerencia: a hipotese s >= 0 e' dita (E36)"},
+              "ratificacao_D101": {"decisao": "D101", "adendo6_sha16": _DL.ADENDO6_SHA16, "fala": _DL.N_CONFIRMO_TUDO, "sha256": _DL.RATIFICACAO_D101_SHA256, "n_nomes_ratificados": len(_DL.NOMES_RATIFICADOS_D101_AESCALA), "campos_ratificados": list(_DL.CAMPOS_RATIFICADOS_D101_AESCALA),
+                                   "seis_de_enunciado_mudado": list(_DL.NOMES_SEIS_ENUNCIADOS_MUDADOS), "pendentes_da_autoria": list(_DL.NOMES_PENDENTES_AESCALA), "nota": "o adendo 6 previa ratificacao_pendente vazia; a pedra R5 trouxe dois lemas auxiliares cunhados pela autoria DEPOIS da fala: [DECLARADO pela autoria], os unicos pendentes (ordem da gerencia de 10/11, 08:42)"},
+              "erratas_novas": {"E36": _DL.ERRATA_E36, "E37": _DL.ERRATA_E37}, "falas_novas": {"27": _DL.N_CLAUSULA_TETELESTAI, "28": _DL.N_CONFIRMO_TUDO, "n_falas_congeladas": _DL.N_FALAS_V410},
+              "registro_a_escala_v410": {"n_checks": _DL.N_CHECKS_AESCALA, "a_c13": "a clausula do Tetelestai em 1 - beta com beta de runtime, o controle negativo e o contraexemplo de s < 0", "citacao_do_dispositivo": {"runner": dict(_DL.ACOM_MIRROR_RUNNER), "so_com_as_ressalvas": "[PILOTO][SIM]; nada ali valida fisica; nenhum numero de desempenho; nao e' termo do kernel"}},
+              "kernel_lido_dos_recibos": {"decl": _json_k5["linha_TOTAL"]["decl"], "thm": _json_k5["linha_TOTAL"]["thm"], "fora_do_trio": _json_k5["linha_TOTAL"]["fora_do_trio"], "n_bandeiras": _json_k5["n_bandeiras"], "por_modulo": dict(_flags_k5["n_por_modulo"]), "escada_esperada": (CM.get("escada") or ["?", "?"])[1], "build_s": _json_k5["duracao_build_s"], "audit_s": _json_k5["duracao_audit_s"], "pedra_AEscala_sha16": h16("pedra/AEscala.lean")},
+              "o_que_NAO_mudou_medido_por_sha": {"pedra_IALD2": {"sha16_medido": _med_i25, "sha16_pinado_no_bundle": _pin_i25, "igual": _med_i25 == _pin_i25}, "texto_fonte_de_veredito_h0dn": {"sha256_medido_no_candidato": _med_vh5, "sha256_pinado_antes_da_R5": _pin_vh5, "igual": (_med_vh5 == _pin_vh5) if _med_vh5 else None},
+                                                 "runtime_v410_py_a_guarda_das_frases": {"sha16_medido": _med_rt5, "sha16_pinado_antes_da_R5": _pin_rt5, "igual": _med_rt5 == _pin_rt5}}}
+assert ALEM_DO_R2["o_que_NAO_mudou_medido_por_sha"]["pedra_IALD2"]["igual"] and ALEM_DO_R2["o_que_NAO_mudou_medido_por_sha"]["runtime_v410_py_a_guarda_das_frases"]["igual"] and ALEM_DO_R2["o_que_NAO_mudou_medido_por_sha"]["texto_fonte_de_veredito_h0dn"]["igual"] in (True, None), ("a R5 mexeu no que nao podia: ", ALEM_DO_R2["o_que_NAO_mudou_medido_por_sha"])
+AVISOS.append("R5, ADENDOS 5 e 6 (sha16 %s e %s; D100 e D101; E36 e E37): por ordem do operador a pedra AEscala R5 (a clausula do Tetelestai em 1 - beta) entrou na v410 antes da cadeia oficial; as falas 27 e 28 entram nas congeladas (%d falas); a ratificacao de 10/11 faz dos %d nomes novos e dos %d campos RATIFICADOS, pela regra do nome, e deixa pendentes so' os %d auxiliares da autoria ([DECLARADO pela autoria]); "
+              "a c13 do registro a_escala_v410 (beta de runtime, o controle negativo e o contraexemplo de s < 0); a citacao do runner do ACOM Mirror so' com as ressalvas ([PILOTO][SIM]; nada ali valida fisica; nenhum numero de desempenho; pino citado, nao embutido); a pedra IALD2, o texto-fonte da funcao veredito_h0dn e o runtime_v410.py NAO mudaram (medido por sha, em PREPARACAO_v410_PRONTA.json, alem_do_r2)"
+              % (_DL.ADENDO5_SHA16, _DL.ADENDO6_SHA16, _DL.N_FALAS_V410, len(_DL.NOMES_RATIFICADOS_D101_AESCALA), len(_DL.CAMPOS_RATIFICADOS_D101_AESCALA), len(_DL.NOMES_PENDENTES_AESCALA)))
+'''
+HEAD5 = '''_json_k5 = json.load(open(P("kernel/KH_N1_v410.json"), encoding="utf-8")); _flags_k5 = json.load(open(P("kernel/FLAGS_v410.json"), encoding="utf-8"))   # (R5) os numeros do kernel, LIDOS dos recibos
+'''
+
+T = []
+T.append(('''"as erratas E29 a E35 sao da gerencia c1, em nome proprio (a E31,''', '''"as erratas E29 a E37 sao da gerencia c1, em nome proprio (a E31,''', 1))
+T.append(('''sem dizer que seis enunciados mudaram): E29, o Nome finito''',
+          '''sem dizer que seis enunciados mudaram; a E36, a ordem do operador de 10/11 sobre a clausula do Tetelestai, D100: o limiar de um pixel era formalizacao da gerencia, a clausula e' a de 1 - beta e o numero corrigiu o enunciado da gerencia (a hipotese s >= 0 e' dita); a E37, a ratificacao do operador de 10/11, D101: os nomes novos e os campos RATIFICADOS pela regra do nome, os dois auxiliares da autoria pendentes): E29, o Nome finito''', 1))
+T.append(('''e as tres de 10/11, D94 e D96: os passos sao o ciclo ate' o Tetelestai com o leitor que e' a escala, a mentira lida como mentira, o teste sem poder preditivo; a lista anterior, sem as de 10/11, esta' guardada ao lado em VERBATIM_CONGELADO_v410.json.bak_*_antes_r4_agente); de quatro''',
+          '''e as cinco de 10/11, D94, D96, D100 e D101: os passos sao o ciclo ate' o Tetelestai com o leitor que e' a escala, a mentira lida como mentira, o teste sem poder preditivo, a clausula do Tetelestai e a ratificacao dos nomes; as listas anteriores (sem as de 10/11; e com 26 falas, sem a clausula e a ratificacao) estao guardadas ao lado em VERBATIM_CONGELADO_v410.json.bak_*_antes_r4_agente e .bak_*_26_falas_antes_r5_agente); de quatro''', 1))
+T.append(('''(a D99 traz a revisao de terceiro R2 e a clausula do limite do teorema do Tetelestai, e D97 e D98 sao''', '''(a D99 traz a revisao de terceiro R2 e a clausula do limite do teorema do Tetelestai; a D100 e a D101 trazem a clausula do Tetelestai em 1 - beta, por ordem do operador, e a ratificacao dos nomes de 10/11; e D97 e D98 sao''', 1))
+T.append(('''[DERIVED, aritmetica] os numeros e a ponte da escala; [DECLARADO] os nomes novos da pedra, a ratificar; [ONTO]''', '''[DERIVED, aritmetica] os numeros e a ponte da escala; [INPUT] os nomes novos da pedra, ratificados pelo operador em 10/11 (D101); [DECLARADO pela autoria] os dois auxiliares da R5; [ONTO]''', 1))
+T.append(('''"DESENHO_v410_ADENDO_4_POS_CANDIDATO_10nov.md": {"sha16": _DL.ADENDO4_SHA16, "decisoes": "D99; E35"}},''',
+          '''"DESENHO_v410_ADENDO_4_POS_CANDIDATO_10nov.md": {"sha16": _DL.ADENDO4_SHA16, "decisoes": "D99; E35"}, "DESENHO_v410_ADENDO_5_POS_CANDIDATO_10nov.md": {"sha16": _DL.ADENDO5_SHA16, "decisoes": "D100; E36"}, "DESENHO_v410_ADENDO_6_POS_CANDIDATO_10nov.md": {"sha16": _DL.ADENDO6_SHA16, "decisoes": "D101; E37"}},''', 1))
+T.append(('''_arqs_h90 = ("pos_rito/textos_v410.py",''', HEAD5 + ALEM + '''_arqs_h90 = ("pos_rito/textos_v410.py",''', 1))
+T.append(('''"achados_r2": ACHADOS_R2,''', '''"achados_r2": ACHADOS_R2, "alem_do_r2": ALEM_DO_R2,''', 1))
+aplicar("gerar_relatorio_v410.py", T)

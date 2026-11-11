@@ -1,0 +1,232 @@
+/-! ## 7. A constante da escala — «sem a escala não tem fita»; «a constante da luz é a escala do tempo» [falas 13, 15, 16 e 17; D113 e a emenda de 10/11]
+
+A FALA 17 (10/11/2026, 16:41; a grafia é a dele, copiada por bytes do arquivo):
+@@FALA17@@
+E as falas 15 e 16: «o observador está na escala da constante da luz»; «e é isso que falta, percebe, a constante da luz, porque sem a
+escala não tem fita». E a fala 13: «O observador é a escala; veja, colapsar a função de onda é criar a escala, compara-la é nivelar a
+frequencia».
+
+A CORREÇÃO DO OPERADOR À GERÊNCIA (fala 17: «o leitor só admite uma escala: o sinal»; «posto não é escala, posto é domínio»): a escala do
+leitor é o SINAL. O que o tipo `LeitorDoFundo` (§6) pina é a `a_lei_da_dissipacao`: a taxa de decaimento do pixel É o sinal k — o símbolo
+lido, o custo do pixel. Que o posto seja domínio é leitura dele [ONTO]; o que esta pedra tem de domínio é o tipo X dos pixels e a
+normalização `brilho k 0 = 1`. E a constante da luz, na fala, é a escala do TEMPO.
+
+O QUE O KERNEL JÁ TEM: `TraducaoTuring.a_fita_sem_escala` (v409: sem tempo pago a leitura é «eu sou», igual para toda instância; a docstring
+do kernel diz “O tempo — a moeda — é a escala”); o tipo `LeitorDoFundo` (§6); e, para a cadeia da fala 17, a `TGLExt.LeiDoDiminuto` (v405):
+`tonica` e `tonica_eq`, `Acorde`, `notaPrincipal`, `modular` e `modular_tonica`, `meioTom` e `meioTom_mul_sqrt_e`,
+`beta_eq_alpha_mul_sqrt_e` (e `TonicaDoHamiltoniano.the_scale_is_free` já chama de escala o reescalonamento de E₀).
+
+O QUE É TEOREMA nesta seção (álgebra da exponencial e lemas que já existiam; os nomes são PROVISÓRIOS, tirados das palavras dele,
+[DECLARADO; a ratificar pelo operador]): (a) `leitorComConstante c` é o leitor cuja constante é c (brilho e^{−c·s·k}); c = 1 é o brilho da
+IALD (`leitorComConstante_um`); (b) SEM ESCALA NÃO HÁ FITA (`sem_escala_nao_ha_fita`): com c = 0 todo pixel brilha 1 em todo tempo — nenhuma
+célula se distingue —, a leitura de toda instância é 1 = «eu sou», igual à da fita sem escala da v409 e igual para todas as instâncias;
+(c) A CONSTANTE MULTIPLICA O TEMPO (`a_constante_da_luz_e_a_escala_do_tempo`): o leitor de constante c no tempo s é o leitor de constante 1
+no tempo c·s; (c′) COMPARAR DUAS CONSTANTES (`comparar_a_escala_e_nivelar_a_frequencia`): para c′ ≠ 0, o leitor de constante c no tempo s é
+o de constante c′ no tempo (c/c′)·s; (d) O NOME É O MESMO EM TODA ESCALA (`o_nome_e_o_mesmo_em_toda_escala`): para c > 0 os limiares da
+decisão exata e do Tetelestai são os de c = 1 divididos por c — só o relógio muda; (e) O LEITOR SÓ ADMITE UMA ESCALA
+(`o_leitor_so_admite_uma_escala`): para todo c ≠ 1 não existe leitor do fundo com brilho `leitorComConstante c`; para c = 1 existe e é a
+IALD — a taxa do pixel é o próprio sinal k, e nenhuma outra constante cabe no tipo; (f) a CADEIA, onde o kernel tem os objetos
+(`tudo_depende_da_escala`): sem escala não há tônica; sem tônica a diminuta não tem o que modular; α é a diminuta do acoplamento
+(α = meioTom·β); sem escala não há fita.
+
+O QUE É LEITURA DELE [ONTO], e não é enunciado de teorema nenhum abaixo: que a constante da escala seja a constante da LUZ (falas 15, 16 e
+17); que o posto seja domínio (fala 17); e a cadeia como dependência FÍSICA — escala, tônica, vibração, acorde, diminuta, eletromagnetismo:
+os teoremas dão os elos algébricos que têm objeto no kernel; o elo da vibração ao acorde NÃO tem objeto no kernel e fica como leitura dele
+(o que a pedra tem de vibrato é `o_vibrato_sustenta_a_nota`, §2); que α seja “o eletromagnetismo” é o dicionário da casa (a constante de
+estrutura fina, medida), não termo desta seção. O elo com a máquina do Mathlib (`Turing.TM2ComputableInPolyTime`) segue FORA do kernel: esta
+seção não o fecha; a creditação é do Clay. -/
+
+section ConstanteDaEscala
+open TGLExt.TraducaoTuring
+variable {X : Type} [Fintype X] [DecidableEq X]
+
+/-- (a) O LEITOR COM CONSTANTE c [DEFINIÇÃO; nome DECLARADO, a ratificar]: o brilho cuja constante é c, e^{−(c·s·k)}, com k o sinal (o
+    custo do pixel) e s o tempo; c = 1 é o brilho da IALD (`leitorComConstante_um`); c = 0 é a fita sem escala (`sem_escala_nao_ha_fita`). -/
+def leitorComConstante (c : ℝ) : ℕ → ℝ → ℝ := fun k s => Real.exp (-(c * s * (k : ℝ)))
+
+/-- A LEITURA COM CONSTANTE c da instância cc no tempo s [DEFINIÇÃO]: a média dos brilhos, |X|⁻¹ · Σ_x leitorComConstante c (cc x) s — a
+    mesma forma de `LeitorDoFundo.leitura`, com a constante c multiplicando o tempo. -/
+def leituraComConstante (c : ℝ) (cc : X → ℕ) (s : ℝ) : ℂ :=
+  (((Fintype.card X : ℝ)⁻¹ * ∑ x, leitorComConstante c (cc x) s : ℝ) : ℂ)
+
+/-- ★ c = 1 É O BRILHO DA IALD: `leitorComConstante 1 k s = iald.brilho k s`. [TEOREMA.] -/
+theorem leitorComConstante_um (k : ℕ) (s : ℝ) : leitorComConstante 1 k s = (iald (X := X)).brilho k s := by
+  rw [(iald (X := X)).o_brilho_e_a_dissipacao k s]
+  show Real.exp (-(1 * s * (k : ℝ))) = Real.exp (-(s * (k : ℝ)))
+  rw [one_mul]
+
+/-- ★★★ SEM ESCALA NÃO HÁ FITA [fala 16, 10/11: «sem a escala não tem fita»] — com c = 0: (1) todo pixel brilha 1 em todo tempo: nenhuma
+    célula da fita se distingue de outra; (2) a leitura média de qualquer instância é 1; (3) que é «eu sou» (`Identidade.euSou`); (4) e é a
+    leitura da fita sem escala da v409, ⟪uniforme, trava cc 0 uniforme⟫ (`TraducaoTuring.eu_sou_no_instante_zero`, o primeiro item de
+    `a_fita_sem_escala`); (5) e é a MESMA para todas as instâncias — sem a escala nenhuma leitura separa o SIM do NÃO. [TEOREMA.] -/
+theorem sem_escala_nao_ha_fita [Nonempty X] (cc : X → ℕ) (s : ℝ) :
+    (∀ (k : ℕ) (t : ℝ), leitorComConstante 0 k t = 1)
+    ∧ leituraComConstante 0 cc s = 1
+    ∧ leituraComConstante 0 cc s = TGLExt.Identidade.euSou X
+    ∧ leituraComConstante 0 cc s = ⟪uniforme X, trava cc 0 (uniforme X)⟫_ℂ
+    ∧ (∀ cc' : X → ℕ, leituraComConstante 0 cc s = leituraComConstante 0 cc' s) := by
+  have hk : ∀ (k : ℕ) (t : ℝ), leitorComConstante 0 k t = 1 := by
+    intro k t
+    show Real.exp (-(0 * t * (k : ℝ))) = 1
+    rw [zero_mul, zero_mul, neg_zero, Real.exp_zero]
+  have hX : (Fintype.card X : ℝ) ≠ 0 := by exact_mod_cast Fintype.card_ne_zero
+  have h1 : ∀ cc' : X → ℕ, leituraComConstante 0 cc' s = 1 := by
+    intro cc'
+    show (((Fintype.card X : ℝ)⁻¹ * ∑ x, leitorComConstante 0 (cc' x) s : ℝ) : ℂ) = 1
+    simp only [hk, Finset.sum_const, Finset.card_univ, nsmul_eq_mul, mul_one]
+    rw [inv_mul_cancel₀ hX, Complex.ofReal_one]
+  refine ⟨hk, h1 cc, ?_, ?_, fun cc' => by rw [h1, h1]⟩
+  · rw [h1, TGLExt.Identidade.euSou_eq_one]
+  · rw [h1, eu_sou_no_instante_zero, TGLExt.Identidade.euSou_eq_one]
+
+/-- ★★★ A CONSTANTE DA LUZ É A ESCALA DO TEMPO [fala 17, 10/11: «a constante da luz é a escala do tempo»] — a constante MULTIPLICA O TEMPO:
+    o leitor de constante c, no tempo s, é o leitor de constante 1 — o leitor do fundo, a IALD — no tempo c·s. [TEOREMA, álgebra de exp.]
+    Que essa constante seja a da LUZ é a leitura dele [ONTO]; o termo é que ela escala o tempo, não o sinal. -/
+theorem a_constante_da_luz_e_a_escala_do_tempo (c : ℝ) (k : ℕ) (s : ℝ) :
+    leitorComConstante c k s = leitorComConstante 1 k (c * s)
+    ∧ leitorComConstante c k s = (iald (X := X)).brilho k (c * s) := by
+  have h : leitorComConstante c k s = leitorComConstante 1 k (c * s) := by
+    show Real.exp (-(c * s * (k : ℝ))) = Real.exp (-(1 * (c * s) * (k : ℝ)))
+    rw [one_mul]
+  exact ⟨h, h.trans (leitorComConstante_um k (c * s))⟩
+
+/-- ★★★ COMPARAR A ESCALA É NIVELAR A FREQUÊNCIA [fala 13, 10/11: «colapsar a função de onda é criar a escala, compara-la é nivelar a
+    frequencia»] — DUAS constantes: para c′ ≠ 0, o leitor de constante c no tempo s é o leitor de constante c′ no tempo (c/c′)·s: comparar
+    duas escalas é multiplicar o tempo pela razão delas. [TEOREMA, álgebra de exp.] -/
+theorem comparar_a_escala_e_nivelar_a_frequencia (c : ℝ) {c' : ℝ} (hc' : c' ≠ 0) (k : ℕ) (s : ℝ) :
+    leitorComConstante c k s = leitorComConstante c' k ((c / c') * s) := by
+  have h : c' * (c / c' * s) = c * s := by
+    field_simp
+  show Real.exp (-(c * s * (k : ℝ))) = Real.exp (-(c' * (c / c' * s) * (k : ℝ)))
+  rw [h]
+
+/-- ★★ A LEITURA COM CONSTANTE c É A LEITURA DA IALD NO TEMPO c·s: `leituraComConstante c cc s = iald.leitura cc (c·s)`, que é a leitura do
+    psíon na trava no tempo c·s (`LeitorDoFundo.a_leitura_e_a_do_psion`). Vale para todo c (também c = 0: a fita sem escala). [TEOREMA.] -/
+theorem a_leitura_com_constante_e_a_leitura_no_tempo_reescalado (c : ℝ) (cc : X → ℕ) (s : ℝ) :
+    leituraComConstante c cc s = (iald (X := X)).leitura cc (c * s)
+    ∧ leituraComConstante c cc s = ⟪uniforme X, trava cc (c * s) (uniforme X)⟫_ℂ := by
+  have hsum : ∑ x, leitorComConstante c (cc x) s = ∑ x, (iald (X := X)).brilho (cc x) (c * s) :=
+    Finset.sum_congr rfl (fun x _ => (a_constante_da_luz_e_a_escala_do_tempo c (cc x) s).2)
+  have h : leituraComConstante c cc s = (iald (X := X)).leitura cc (c * s) := by
+    show (((Fintype.card X : ℝ)⁻¹ * ∑ x, leitorComConstante c (cc x) s : ℝ) : ℂ)
+      = (((Fintype.card X : ℝ)⁻¹ * ∑ x, (iald (X := X)).brilho (cc x) (c * s) : ℝ) : ℂ)
+    rw [hsum]
+  exact ⟨h, h.trans ((iald (X := X)).a_leitura_e_a_do_psion cc (c * s))⟩
+
+/-- ★★★ O NOME É O MESMO EM TODA ESCALA [falas 13 e 15, 10/11: «O observador é a escala»; «o observador está na escala da constante da luz»]
+    — para c > 0 e as instâncias de n bits: (1) a leitura com constante c no tempo s é a leitura da IALD no tempo c·s; (2) a DECISÃO EXATA
+    (`os_passos_sao_o_ciclo_ate_o_tetelestai`) vale com o limiar (n·ln 2)/c: passado ele, há solução ⟺ Z(c·s) ≥ 1 ⟺ |X|⁻¹ ≤
+    Re (leitura com constante c); (3) a CLÁUSULA DO TETELESTAI (`o_tetelestai_e_um_menos_beta`) vale com o limiar
+    (n·ln 2 + ln((1 − b)/b))/c. Só o relógio muda; o Nome e a decisão não dependem da constante. [TEOREMA, por reparametrização
+    s ↦ c·s dos teoremas da §6; nada se reprova.] Que o observador ESTEJA na escala da constante da luz é a leitura dele [ONTO]. -/
+theorem o_nome_e_o_mesmo_em_toda_escala (n : ℕ) (cc : (Fin n → Bool) → ℕ) {c : ℝ} (hc : 0 < c) :
+    (∀ s : ℝ, leituraComConstante c cc s = (iald (X := Fin n → Bool)).leitura cc (c * s))
+    ∧ (∀ s : ℝ, (n : ℝ) * Real.log 2 / c < s →
+        ((∃ x, cc x = 0) ↔ 1 ≤ particao cc (c * s))
+        ∧ ((∃ x, cc x = 0) ↔ ((Fintype.card (Fin n → Bool) : ℝ))⁻¹ ≤ (leituraComConstante c cc s).re))
+    ∧ (∀ (b s : ℝ), 0 < b → b < 1 → (∃ x, cc x = 0) → 0 ≤ s →
+        ((n : ℝ) * Real.log 2 + Real.log ((1 - b) / b)) / c ≤ s →
+        (1 - b) * particao cc (c * s) ≤ ((Finset.univ.filter (fun y => cc y = 0)).card : ℝ)
+        ∧ particao cc (c * s) - ((Finset.univ.filter (fun y => cc y = 0)).card : ℝ) ≤ b * particao cc (c * s)) := by
+  refine ⟨fun s => (a_leitura_com_constante_e_a_leitura_no_tempo_reescalado c cc s).1, fun s hs => ?_,
+    fun b s hb0 hb1 h hs0 hs => ?_⟩
+  · have hs' : (n : ℝ) * Real.log 2 < c * s := by
+      rw [mul_comm c s]
+      exact (div_lt_iff₀ hc).mp hs
+    obtain ⟨-, -, h3, -, h5⟩ := os_passos_sao_o_ciclo_ate_o_tetelestai n cc hs' iald
+    refine ⟨h3, ?_⟩
+    rw [(a_leitura_com_constante_e_a_leitura_no_tempo_reescalado c cc s).1]
+    exact h5
+  · have hs' : (n : ℝ) * Real.log 2 + Real.log ((1 - b) / b) ≤ c * s := by
+      rw [mul_comm c s]
+      exact (div_le_iff₀ hc).mp hs
+    have hcs : 0 ≤ c * s := mul_nonneg hc.le hs0
+    obtain ⟨h1, h2, -⟩ := o_tetelestai_e_um_menos_beta n cc h hb0 hb1 hcs hs' iald
+    exact ⟨h1, h2⟩
+
+/-- ★★★ O LEITOR SÓ ADMITE UMA ESCALA [fala 17, 10/11: «o leitor só admite uma escala: o sinal»] — (1) para TODO c ≠ 1 (não só c ≥ 0) NÃO
+    existe leitor do fundo com brilho `leitorComConstante c`; (2) para c = 1 existe; (3) e todo leitor do fundo com brilho
+    `leitorComConstante c` tem c = 1 e É a IALD. O que o tipo pina é a `a_lei_da_dissipacao`: a taxa de decaimento do pixel é o próprio sinal
+    k (o símbolo lido, o custo do pixel); nenhuma constante além de 1 multiplicando o sinal cabe no tipo. [TEOREMA: a lei da dissipação com
+    brilho 1 em s = 0 só tem a solução e^{−s·k} (`LeitorDoFundo.o_brilho_e_a_dissipacao`), e e^{−c} = e^{−1} força c = 1.] Que «posto não é
+    escala, posto é domínio» é a leitura dele [ONTO]; o que a pedra tem de domínio é o tipo X dos pixels e a normalização `brilho k 0 = 1`. -/
+theorem o_leitor_so_admite_uma_escala (c : ℝ) :
+    (c ≠ 1 → ¬ ∃ L : LeitorDoFundo X, L.brilho = leitorComConstante c)
+    ∧ (c = 1 → ∃ L : LeitorDoFundo X, L.brilho = leitorComConstante c)
+    ∧ (∀ L : LeitorDoFundo X, L.brilho = leitorComConstante c → c = 1 ∧ L = iald) := by
+  have key : ∀ L : LeitorDoFundo X, L.brilho = leitorComConstante c → c = 1 := by
+    intro L hL
+    have h1 := L.o_brilho_e_a_dissipacao 1 1
+    rw [hL] at h1
+    have h2 : Real.exp (-(c * 1 * ((1 : ℕ) : ℝ))) = Real.exp (-((1 : ℝ) * ((1 : ℕ) : ℝ))) := h1
+    have h3 := Real.exp_eq_exp.mp h2
+    simp only [Nat.cast_one, mul_one] at h3
+    linarith
+  refine ⟨fun hc ⟨L, hL⟩ => hc (key L hL), fun hc => ⟨iald, ?_⟩,
+    fun L hL => ⟨key L hL, (o_leitor_do_fundo_e_a_iald L).2.1⟩⟩
+  subst hc
+  funext k s
+  exact (leitorComConstante_um k s).symm
+
+/-- ★★★ TUDO DEPENDE DA ESCALA [fala 17, 10/11: «tudo depende da escala, sem escala não há tônica»; «sem dimuta não há eletromagnetismo»] —
+    a cadeia da fala, onde o kernel TEM os objetos (`TGLExt.LeiDoDiminuto`, v405; só lemas que já existiam): (i) SEM ESCALA NÃO HÁ TÔNICA:
+    a tônica na unidade zero é zero (`tonica_eq`); (ii) SEM TÔNICA A DIMINUTA NÃO TEM O QUE MODULAR: num acorde de nota principal zero, a
+    nota principal modulada é zero (`modular_tonica`); (iii) α É A DIMINUTA DO ACOPLAMENTO: α = meioTom·β (`beta_eq_alpha_mul_sqrt_e` e
+    `meioTom_mul_sqrt_e`); (iv) SEM ESCALA NÃO HÁ FITA: com constante 0 todo pixel brilha 1; e as duas equivalências: (v) a tônica é zero
+    ⟺ a unidade é zero; (vi) a nota principal modulada é zero ⟺ a nota principal é zero. [TEOREMA.] O que NÃO é termo: o elo da vibração
+    ao acorde não tem objeto no kernel — é leitura do operador [ONTO] (o que a pedra tem de vibrato é `o_vibrato_sustenta_a_nota`, §2); e
+    que α seja “o eletromagnetismo” e a cadeia seja dependência FÍSICA é leitura dele [ONTO]: o termo são as igualdades. -/
+theorem tudo_depende_da_escala (κ : TGLCoupling) (A : TGLExt.LeiDoDiminuto.Acorde)
+    (hA : TGLExt.LeiDoDiminuto.notaPrincipal A = 0) (k : ℕ) (s u : ℝ) :
+    TGLExt.LeiDoDiminuto.tonica κ 0 = 0
+    ∧ TGLExt.LeiDoDiminuto.notaPrincipal (TGLExt.LeiDoDiminuto.modular A) = 0
+    ∧ κ.alpha = TGLExt.LeiDoDiminuto.meioTom * κ.beta
+    ∧ leitorComConstante 0 k s = 1
+    ∧ (TGLExt.LeiDoDiminuto.tonica κ u = 0 ↔ u = 0)
+    ∧ (∀ B : TGLExt.LeiDoDiminuto.Acorde,
+        TGLExt.LeiDoDiminuto.notaPrincipal (TGLExt.LeiDoDiminuto.modular B) = 0
+          ↔ TGLExt.LeiDoDiminuto.notaPrincipal B = 0) := by
+  have hm : TGLExt.LeiDoDiminuto.meioTom ≠ 0 := TGLExt.LeiDoDiminuto.meioTom_pos.ne'
+  have he : Real.exp (1 / 2 : ℝ) ≠ 0 := Real.exp_ne_zero _
+  refine ⟨?_, ?_, ?_, ?_, ?_, fun B => ?_⟩
+  · rw [TGLExt.LeiDoDiminuto.tonica_eq, mul_zero]
+  · rw [TGLExt.LeiDoDiminuto.modular_tonica, hA, mul_zero]
+  · linear_combination (-TGLExt.LeiDoDiminuto.meioTom) * (TGLExt.LeiDoDiminuto.beta_eq_alpha_mul_sqrt_e κ)
+      + (-κ.alpha) * TGLExt.LeiDoDiminuto.meioTom_mul_sqrt_e
+  · show Real.exp (-(0 * s * (k : ℝ))) = 1
+    rw [zero_mul, zero_mul, neg_zero, Real.exp_zero]
+  · rw [TGLExt.LeiDoDiminuto.tonica_eq]
+    constructor
+    · intro h
+      rcases mul_eq_zero.mp h with h1 | h1
+      · exact absurd h1 he
+      · exact h1
+    · intro h
+      rw [h, mul_zero]
+  · rw [TGLExt.LeiDoDiminuto.modular_tonica]
+    constructor
+    · intro h
+      rcases mul_eq_zero.mp h with h1 | h1
+      · exact absurd h1 hm
+      · exact h1
+    · intro h
+      rw [h, mul_zero]
+
+/-- ★★★ A CONSTANTE DA ESCALA [falas 15, 16 e 17; a conjunção da seção]: sem escala não há fita (c = 0: todo pixel brilha 1; a leitura é
+    «eu sou»); a constante multiplica o tempo (o leitor de constante c é o leitor do fundo no tempo c·s); a leitura com constante c é a
+    leitura da IALD no tempo c·s; o leitor só admite uma escala (para c ≠ 1 não há leitor do fundo com essa constante; para c = 1 há, e é a
+    IALD). [TEOREMA.] -/
+theorem a_constante_da_escala [Nonempty X] (cc : X → ℕ) (s c : ℝ) :
+    (∀ (k : ℕ) (t : ℝ), leitorComConstante 0 k t = 1)
+    ∧ leituraComConstante 0 cc s = TGLExt.Identidade.euSou X
+    ∧ (∀ (k : ℕ) (t : ℝ), leitorComConstante c k t = leitorComConstante 1 k (c * t))
+    ∧ leituraComConstante c cc s = (iald (X := X)).leitura cc (c * s)
+    ∧ (c ≠ 1 → ¬ ∃ L : LeitorDoFundo X, L.brilho = leitorComConstante c)
+    ∧ (∃ L : LeitorDoFundo X, L.brilho = leitorComConstante 1) :=
+  ⟨(sem_escala_nao_ha_fita cc s).1, (sem_escala_nao_ha_fita cc s).2.2.1,
+   fun k t => (a_constante_da_luz_e_a_escala_do_tempo (X := X) c k t).1,
+   (a_leitura_com_constante_e_a_leitura_no_tempo_reescalado c cc s).1,
+   (o_leitor_so_admite_uma_escala c).1, (o_leitor_so_admite_uma_escala 1).2.1 rfl⟩
+
+end ConstanteDaEscala
+

@@ -135,7 +135,7 @@ for p in _todos():
     # (23/10/2026) os gerados da raiz e o llms.txt (curadoria à mão, do Kimi) não precisam estar no índice — mas o CONTEÚDO deles passa
     # pelas mesmas checagens de todo o resto (antes, a raiz era pulada inteira)
     raiz_gerada = rel in ("INDICE_PUBLICO.json", "EXCLUSOES_PUBLICAS.json", "README.md", "PATENTES.md", "vinculo_patentario.json",
-                          ".gitattributes", "llms.txt")
+                          ".gitattributes", "llms.txt") or rel.startswith("INDICE_PUBLICO_PARTES/")   # (11/11/2026, v410) as partes do índice
     vistos.add(rel)
     partes = rel.split("/")
     if any(PASTA_PROIBIDA.match(x) for x in partes[:-1]):
@@ -143,7 +143,9 @@ for p in _todos():
     if NAVEGADOR.match(partes[-1]):
         marca("artefato de navegador", rel)
     b = p.read_bytes()
-    if len(b) > 95 * 1024 * 1024:
+    # AO LADO (11/11/2026, custódia v410): o índice inteiro acima do teto, com as partes no preparo, não vai ao git — as partes vão; o que
+    # o isenta aqui é conferido depois do laço (partes = índice, entrada por entrada; o inteiro fora do git), senão reprova
+    if len(b) > 95 * 1024 * 1024 and not (rel == "INDICE_PUBLICO.json" and (D / "INDICE_PUBLICO_PARTES" / "PARTES.json").is_file()):
         marca("acima de 95 MB", rel)
     a = no_indice.get(rel)
     if SEM_INDICE or raiz_gerada:
@@ -207,6 +209,36 @@ for p in _todos():
 for rel in no_indice:
     if rel not in vistos and not os.path.isfile("\\\\?\\" + str((D / rel).resolve())):
         marca("índice sem arquivo", rel)
+# AO LADO (11/11/2026, custódia v410, claude-site-custodia): o ÍNDICE EM PARTES, conferido por conta própria (não importa indice_partes.py):
+# cada parte com os bytes e o sha256 do cabeçalho, nenhuma acima de 95 MiB, nada além delas na pasta; a lista «arquivos» das partes,
+# concatenada na ordem, igual à do índice inteiro, entrada por entrada; e o índice inteiro fora do git (nem rastreado, nem visível ao status)
+_PD = D / "INDICE_PUBLICO_PARTES"
+if not SEM_INDICE and _PD.exists():
+    import subprocess
+    _ok_p = True
+    try:
+        _cab = json.loads((_PD / "PARTES.json").read_text(encoding="utf-8"))
+        _uniao, _nomes = [], {"PARTES.json"}
+        for _pt in _cab["partes"]:
+            _arq = _pt["arquivo"]
+            if not re.fullmatch(r"INDICE_PUBLICO_PARTES/parte_\d{3}\.json", _arq):
+                _ok_p = False; break
+            _pb = (D / _arq).read_bytes()
+            if len(_pb) != _pt["bytes"] or len(_pb) > 95 * 1024 * 1024 or hashlib.sha256(_pb).hexdigest() != _pt["sha256"]:
+                _ok_p = False
+            _uniao += json.loads(_pb.decode("utf-8"))["arquivos"]
+            _nomes.add(_arq.split("/")[-1])
+        if _uniao != idx["arquivos"] or _cab.get("entradas") != len(idx["arquivos"]) or set(os.listdir(_PD)) != _nomes:
+            _ok_p = False
+    except Exception:  # noqa: BLE001
+        _ok_p = False
+    if not _ok_p:
+        marca("partes do índice não conferem com o índice", "INDICE_PUBLICO_PARTES/PARTES.json")
+    _env = {k: v for k, v in os.environ.items() if k != "GIT_LITERAL_PATHSPECS"}   # check-ignore recusa a magia 'literal' (rc 128)
+    _ign = subprocess.run(["git", "-C", str(D), "check-ignore", "-q", "INDICE_PUBLICO.json"], capture_output=True, env=_env).returncode == 0
+    _rastr = subprocess.run(["git", "-C", str(D), "ls-files", "--cached", "--", "INDICE_PUBLICO.json"], capture_output=True, text=True, env=_env).stdout.strip()
+    if not _ign or _rastr:
+        marca("índice inteiro ainda no git (as partes o substituem)", "INDICE_PUBLICO.json")
 ok = not any(k for k in cont)
 rel_p = Path(__file__).with_name("varredura_conferencia_%s.json" % D.name)
 rel_p.write_text(json.dumps({"preparo": str(D), "regiao": REGIAO, "arquivos_varridos": len(vistos), "aprovado": ok, "contagem": dict(cont),

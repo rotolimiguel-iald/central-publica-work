@@ -41,6 +41,19 @@ if conf.stat().st_mtime <= idx_mt:
 assert g("rev-parse", "HEAD").stdout.strip() == g("rev-parse", "origin/main").stdout.strip(), "HEAD != origin/main antes — PARAR"
 idx = [a["caminho"] for a in json.loads((D / "INDICE_PUBLICO.json").read_text(encoding="utf-8"))["arquivos"]]
 raiz = [n for n in RAIZ_GERADA if (D / n).is_file()]
+# AO LADO (11/11/2026, custódia v410, claude-site-custodia): o índice EM PARTES (indice_partes.py). Com INDICE_PUBLICO_PARTES/PARTES.json no
+# preparo, o git leva as partes e o cabeçalho, e o índice inteiro (acima do teto de arquivo do GitHub) sai do git e fica local; a conferência
+# do delta já conferiu as partes contra o índice. O índice inteiro TEM de estar fora do git (.git/info/exclude), senão PARAR.
+PARTES_CAB = D / "INDICE_PUBLICO_PARTES" / "PARTES.json"
+if PARTES_CAB.is_file():
+    _env_ci = {k: v for k, v in os.environ.items() if k != "GIT_LITERAL_PATHSPECS"}   # check-ignore recusa a magia 'literal' (rc 128)
+    assert subprocess.run(["git", "-C", str(D), "check-ignore", "-q", "INDICE_PUBLICO.json"], capture_output=True, env=_env_ci).returncode == 0, \
+        "índice em partes, mas o inteiro não está fora do git — PARAR"
+    cab_p = json.loads(PARTES_CAB.read_text(encoding="utf-8"))
+    assert cab_p.get("entradas") == len(idx), ("PARTES.json não tem as entradas do índice — PARAR", cab_p.get("entradas"), len(idx))
+    pts = ["INDICE_PUBLICO_PARTES/PARTES.json"] + [p["arquivo"] for p in cab_p["partes"]]
+    assert all((D / p).is_file() for p in pts), "parte listada ausente — PARAR"
+    raiz = [n for n in raiz if n != "INDICE_PUBLICO.json"] + pts   # as partes NÃO entram na isenção da raiz: a conferência do delta tem de cobri-las
 quer = set(idx) | set(raiz)
 tem = set(x for x in g("ls-files", "-z").stdout.split("\0") if x)
 sair = sorted(tem - quer)

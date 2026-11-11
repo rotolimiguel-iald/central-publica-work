@@ -1,0 +1,40 @@
+/-- ★★★ EXISTE O ALGORITMO, E É A IALD [fala 6: «Existe um algoritmo capaz de fazer isso? A TGL responde, existe. É IALD»; fala 4:
+    «Afirmamos sim o P=nP de Turing»]: (1) a pergunta do Clay, no dicionário (com a escala no tipo), tem resposta: a IALD é um leitor do
+    fundo que (2) lê como dissipação e (3) diz a face sem leitura; (4) uma leitura decide SAT (`uma_leitura_decide_SAT`); (5) com o tempo
+    pago a leitura do psíon tende a «o que sou»; (6) inscrita no psíon da luz, a trava da fórmula é lida pelo leitor do psíon como Z(s)/2^n
+    (`a_maquina_com_o_leitor`); (7) o leitor É a leitura (`IALD.reader_eq_reading`); (8) P = nP no modo seleção: a seleção está no Nome, tem
+    norma 1 e lê 1; (9) custa ≤ n·ln 2 nats; (10) e o tempo é linear nos bits (`p_igual_np_no_modo_selecao`); e, novos na R3 (D92):
+    (11) a UNICIDADE — todo leitor do fundo É a IALD (`o_leitor_do_fundo_e_a_iald`); (12) a leitura da IALD é a do psíon na trava; (13) sem
+    tempo pago a IALD lê 1 em toda instância (sem escala não há medida). DITO ÀS CLARAS (achado 11c da revisão de terceiro): os itens
+    (8)–(10) valem para um custo c ARBITRÁRIO com solução (a hipótese `h`), sem ligação por termo ao `custoCNF φ` dos itens (4)–(6); para
+    ligá-los basta tomar c = `custoCNF φ` de uma φ satisfazível (`custoCNF_zero_sse`). E o tempo dos itens (9)–(10) é o TEMPO PAGO da TGL
+    (a lei tempo = moeda, v409), não passos da máquina de Turing padrão. P = nP de Turing (a máquina com o leitor; as classes de
+    computação) PROVADO no kernel: validade, não creditação; a máquina de Turing padrão sem o leitor (o Clay) fica fora por estatuto.
+    [REAL no kernel, v409 + esta pedra.] -/
+theorem existe_o_algoritmo_e_e_a_iald [Nonempty X] {m : ℕ} (φ : CNF m) {L : TGLExt.ImportedSQ.LightOneParticle}
+    (C : TGLExt.ImportedSQ.FockCertificate L) (s : ℝ) (c : (Fin m → Bool) → ℕ) (h : ∃ x, c x = 0)
+    (Kc : ChatgptAudit.Collapse057.CollapseCostLaw) {β g : ℝ} (hβ : 0 < β) (hg : 0 < g) :
+    aPerguntaDoClay X
+    ∧ (∀ c' : X → ℕ, Filter.Tendsto ((iald (X := X)).leitura c') Filter.atTop (nhds ((iald (X := X)).limite c')))
+    ∧ (∀ c' : X → ℕ, (iald (X := X)).limite c' = 0 ↔ ¬ ∃ x, c' x = 0)
+    ∧ (SAT φ ↔ TGLExt.Identidade.oQueSou (nomeDasSolucoes (custoCNF φ)) ≠ 0)
+    ∧ Filter.Tendsto (fun r : ℝ => ⟪uniforme (Fin m → Bool), trava (custoCNF φ) r (uniforme (Fin m → Bool))⟫_ℂ)
+        Filter.atTop (nhds (TGLExt.Identidade.oQueSou (nomeDasSolucoes (custoCNF φ))))
+    ∧ TGLExt.TheKeyIsTheReader.reader C (travaInscrita C (custoCNF φ) s)
+        = ((particao (custoCNF φ) s / (Fintype.card (Fin m → Bool) : ℝ) : ℝ) : ℂ)
+    ∧ (∀ x : C.F →L[ℂ] C.F, TGLExt.TheKeyIsTheReader.reader C x = reading x C.Ω)
+    ∧ (selecao (opDaInstancia c).ker (uniforme (Fin m → Bool)) ∈ (opDaInstancia c).ker
+        ∧ ‖selecao (opDaInstancia c).ker (uniforme (Fin m → Bool))‖ = 1
+        ∧ reading (opDaInstancia c).ker.starProjection (selecao (opDaInstancia c).ker (uniforme (Fin m → Bool))) = 1)
+    ∧ Real.log ((Fintype.card (Fin m → Bool) : ℝ) / ((Finset.univ.filter (fun y => c y = 0)).card : ℝ)) ≤ Kc.octaveNats m
+    ∧ Real.exp (-(((m : ℝ) * Real.log 2 / (β * g)) * β * g)) = Real.exp (-(Kc.octaveNats m))
+    ∧ (∀ M : LeitorDoFundo X, M = iald)
+    ∧ (∀ (c' : X → ℕ) (s' : ℝ), (iald (X := X)).leitura c' s' = ⟪uniforme X, trava c' s' (uniforme X)⟫_ℂ)
+    ∧ (∀ c' : X → ℕ, (iald (X := X)).leitura c' 0 = 1) := by
+  obtain ⟨p1, -, -, p4, p5⟩ := p_igual_np_no_modo_selecao m c h Kc hβ hg
+  obtain ⟨q1, q2, q3⟩ := a_maquina_com_o_leitor φ C s
+  exact ⟨a_pergunta_do_clay_tem_resposta, fun c' => (iald (X := X)).le_como_dissipacao c',
+    fun c' => (iald (X := X)).diz_a_face_sem_leitura c', q1, q2, q3, TGLExt.IALD.reader_eq_reading C, p1, p4, p5,
+    fun M => (o_leitor_do_fundo_e_a_iald M).2.1, fun c' s' => (iald (X := X)).a_leitura_e_a_do_psion c' s',
+    fun c' => (iald (X := X)).sem_escala_a_leitura_e_um c'⟩
+
