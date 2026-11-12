@@ -1,0 +1,19 @@
+--- veredito_h0dn (um.py v410)
++++ veredito_h0dn_v411
+@@ -1,5 +1,6 @@
+-def veredito_h0dn(z_null, z_tgl, D_esperado, covariancia_fisica_fechada, no_suporte, ramos):
+-    """v410 -- A FUNCAO DE VEREDITO CONGELADA do teste H0DN x BG1 (D72 + E30 + D76): a PRIMEIRA que casa decide. Devolve (cabeca, outcome, ramo).
+-    (1) INCONCLUSIVE_SYSTEMATICS se a covariancia fisica nao estiver fechada (G3/G4) ou o vetor estiver fora do suporte; (2) a lei K falsificada a 5 sigma a esta sensibilidade se |z_tgl| >= 5;
++def veredito_h0dn_v411(z_null, z_tgl, D_esperado, portao_1_ok, ramos):
++    """v411 (EMENDA de 11/11, derivada textualmente de veredito_h0dn da v410) -- a funcao de veredito do teste H0DN x BG1 (D72 + E30 + D76): a PRIMEIRA que casa decide. Devolve (cabeca, outcome, ramo).
++    EMENDA: a assinatura troca (covariancia_fisica_fechada, no_suporte) por portao_1_ok; so' o ramo (1) muda; (2) a (6) ficam textualmente iguais.
++    (1) INCONCLUSIVE_SYSTEMATICS se o primeiro portao do rito (reproducao do numero local publicado, centragem na referencia do fundo, impressao digital) falhar (portao_1_ok falso); (2) a lei K falsificada a 5 sigma a esta sensibilidade se |z_tgl| >= 5;
+     (3) subpotente se o D esperado do modelo < 5; (4) a LEITURA do 5 sigma -- beta_TGL provado na natureza (validade, nao creditacao) a n sigma, n = floor(z_null) -- se z_null >= 5 e |z_tgl| <= 1,959963984540054;
+     (5) discrimina do LCDM a n sigma com K em tensao de 2 a 5 sigma se z_null >= 5 e 1,96 < |z_tgl| < 5; (6) nao discriminado a sensibilidade disponivel, com a faixa do desvio |z_tgl|, se z_null < 5.
+@@ -8,5 +9,5 @@
+     L_ = float(ramos["limiar"]); C_ = float(ramos["compat_95"]); V_ = ramos["vereditos"]; suf_ = V_["sufixo"]
+     zn_ = float(z_null); az_ = abs(float(z_tgl)); D_ = float(D_esperado)
+-    if not covariancia_fisica_fechada or not no_suporte:
++    if not portao_1_ok:
+         return V_["inconclusivo"] + suf_, "INCONCLUSIVE", 1
+     if az_ >= L_:

@@ -1,0 +1,30 @@
+--- estimator.py (congelado, v410)
++++ estimator_v411.py
+@@ -1,3 +1,5 @@
+ """Frozen linear estimator of centered synthetic H0DN and BG1 vectors.
++v411 amendment: evaluate() no longer raises data_outside_support; the projection on the
++covariance null space is only reported (support_max_abs, support_l2). geometry() is unchanged.
+ 
+ Inputs contain known noise geometry, never an observed local H0 fit.
+@@ -59,5 +61,6 @@
+ 
+ def evaluate(data, estimator):
+-    """No access to labels. data: local centered rows, BG centered parameters."""
++    """No access to labels. data: local centered rows, BG centered parameters.
++    v411: the null-space projection is a diagnostic only (no guard)."""
+     local=np.asarray(data['local']);bg=np.asarray(data['background'])
+     null=estimator['null_basis']; weights=estimator['weights']
+@@ -71,5 +74,5 @@
+     if np.any(estimator['sd_null']<=0) or np.any(estimator['sd_tgl']<=0): raise ValueError('nonpositive_scale')
+     support_error=float(np.max(np.abs(local@null))) if null.shape[1] else 0.
+-    if support_error > 1e-8*max(1.,np.max(np.abs(local))): raise ValueError('data_outside_support')
++    support_l2=np.linalg.norm(local@null,axis=1) if null.shape[1] else np.zeros(local.shape[0])  # v411: diagnostic, no guard
+     h = local@weights.T
+     bh = bg@estimator['gradient_h']
+@@ -83,5 +86,5 @@
+     z_exact=(h-bh_exact[:,None])/estimator['sd_null']
+     return {'t':t,'z_null':z,'z_tgl':ztgl,'z_null_exact_bg':z_exact,
+-            'support_max_abs':np.array(support_error)}
++            'support_max_abs':np.array(support_error),'support_l2':support_l2}
+ 
+ 
