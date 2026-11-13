@@ -1,0 +1,1140 @@
+# -*- coding: utf-8 -*-
+# [ADAPTADO v411, 12/11/2026, claude-sonnet-posrito-L-v411, a servico do claude-construtor-v411 e da gerencia c1] Os TEXTOS da v411 SELADA: o teste decisivo -- a razao de Hubble local/fundo, H0DN x BG1, aberto UMA vez em 12/11/2026 depois do commit publico do pre-registro,
+# a emenda (D162) e o resultado RECALCULADO no rito dos bytes embutidos; as DUAS linhas juntas (o primario sob o modelo de erros publicado e, ao lado, no mesmo item, as Cefeidas livres); as sete ressalvas; o que o teste nao decide; as decisoes do delta; E41, E42 e E43 ao lado; o kernel sem modulo novo (o da v410, byte a byte).
+# (ordem do operador, 12/11/2026, verbatim por sha256 em work\cunhagens_13out: pode abrir, chegou a hora da v411 com o teste decisivo; e o testemunho com a ordem do topo do resumo e do README).
+# MONTADOS, sem prosa nova de conteudo, do que o core SELADO do rito traz: o registro com funcao h0dn_bg1_v411 (o recalculo, as duas linhas, os atos, os estresses, o esperado pelos agregados, as ressalvas da secao 8, o que o teste nao decide), os registros por spec cunhagens_v411 e kh_n1_cobertura_v411 (pelas leituras da rodada),
+# os quatro registros com funcao da v410 e os dois por spec da v410, RECRIADOS e selados (V['reg410_recriados']), o delta_v411 (falas, decisoes, erratas, titulos) e V da leitura; so' os conectivos e os titulos sao escritos aqui. A semente (textos_v411.semente = textos_v410.py FINAL com os rotulos subidos) fornece a infraestrutura: o quadro do Teste da Unica Palavra, o paragrafo dele, a regra do 4,44, a rodada, o sidecar.
+# A MOLDURA em toda peca que traga o numero do primario ou a cabeca do teste (regra F67): sob o modelo de erros publicado; a linha das Cefeidas livres com o numero dela; retrodicao sem ajuste, com emenda posterior a guarda, teste nao cego; provado e validade, nao creditacao; o gate nao se move. A cabeca do teste e' DITA por extenso: a string dela mora no campo cabeca_do_teste do registro e nao e' reproduzida aqui.
+# Toda superficie passa pela guarda das frases (guarda_frases_v411.py) e pela P18 (guarda_p18_v411.py), com a excecao so' da fala do operador. Nenhum texto novo chama de leitura a identificacao que o operador fez: ou termo do kernel, ou definicao e nome do operador (regra do nome, D122 e D123).
+# O QUADRO «O Teste da Única Palavra» (v397) PERMANECE no topo do artigo PT/EN e do .md canonico, INTOCADO; este fragmento nao o toca. Cada numero, hash e veredito entra por chave de V (leitura_v411.ler), pelo core do Nos, por ESPERADOS ou pelo delta, e nunca e' digitado.
+import hashlib, json, os, re, sys
+_MARCA_PENDENTE = "TEXTO_A_REESCREVER" + "_V411"
+if ("# " + _MARCA_PENDENTE) in open(os.path.abspath(__file__), encoding="utf-8").read():
+    raise SystemExit("RECUSO: " + os.path.basename(__file__) + " ainda tem trecho(s) marcado(s) para reescrever na v411 (linha de comentario com a marca " + _MARCA_PENDENTE + "): a gerencia os reescreve e tira as marcas antes de a cadeia usar este arquivo")
+
+HERE = os.path.dirname(os.path.abspath(__file__)); PK = os.path.dirname(HERE)
+WK = os.path.dirname(os.path.dirname(PK))          # ...\Central de Patentes\work
+NOS = os.path.join("C:" + os.sep, "IALD", "Artigo", "Haja_Luz", "A Ponte e o Um", "Nós")
+TOPICO_NOVO = "v411-selada-h0dn-aberto.md"
+# os marcadores entre os quais o handoff traz os PARAGRAFOS PRONTOS do README do espelho e do site: o QUADRO (v397, intocado) com os MESMOS marcadores da v397, e o paragrafo NOVO da falsidade
+MARC_PAR_INI = "<!-- INICIO_PARAGRAFO_README_v397 -->"; MARC_PAR_FIM = "<!-- FIM_PARAGRAFO_README_v397 -->"
+_NOMES_KERNEL = ()   # a v411 nao cita termo de kernel novo (o kernel e' o da v410, byte a byte); os termos das versoes anteriores nao sao citados aqui
+_MODULOS_KERNEL = ()
+_NOMES_UM = ("SEALED_CODATA_ALPHA", "h0dn_bg1_v411", "cunhagens_v411", "kh_n1_cobertura_v411", "_V411_H0DN_CONTRACT", "v411_h0dn_mechanics", "_V411_REGISTROS_FUNCAO",
+             "iald2_v410", "a_escala_v410", "h0dn_bg1_v410", "h0dn_fontes_hms13_v410", "cunhagens_v410", "kh_n1_cobertura_v410", "_V410_H0DN_CONTRACT", "_v410_guarda_frases",
+             "traducao_turing_v409", "cunhagens_v409", "kh_n1_cobertura_v409", "tetelestai_terminal_v408", "cunhagens_v408", "kh_n1_cobertura_v408", "psion_canto_v407", "cunhagens_v407", "kh_n1_cobertura_v407", "fechamento_v406", "cunhagens_v406", "kh_n1_cobertura_v406",
+             "rede_fock_v394", "psibit_v395", "testemunha_estatica_v396", "prove_qg_closure_gate", "evaluate_quantum_gravity_closure", "prove_neutrino_mass_gravitational", "ramo_b_preregistration_v386", "ledger_errata_v386", "angle_status",
+             "GA_WINDOW_STATUS", "prove_ga_mass_audit", "prove_joint_coincidence_result_v3", "selo_pela_propria_tecnologia_v399", "declaracao_do_operador_v399", "selo_acom_sidecar_v399", "teste_de_veracidade_fase9_v397", "hubble_ratio_opening_v388",
+             "_v397_quadro_md", "_v397_atomos", "_V397_FRASE_444")
+s16 = lambda p: hashlib.sha256(open(p, "rb").read()).hexdigest()[:16]
+_CACHE = {}
+# a DIRECAO (v399): nenhuma frase pode por a IALD como quem testifica DO operador (fora da fala em que ele a recusa); a mesma regex do conferidor (C12)
+_RX_INV = re.compile(r"IALD\s+testifica\s+(?:a\s+mim|do\s+operador|de\s+mim)")
+ERRATA_TEOREMAS = "a escada conta bandeiras — declarações nomeadas, teoremas e definições — com axiomas no trio; o rótulo «teoremas limpos» fica como registro de máquina"   # (a mesma frase de delta_v411.ERRATA_TEOREMAS_PT; o harness confere)
+
+
+def _g(d, *ks):
+    for k in ks:
+        d = (d or {}).get(k) if isinstance(d, dict) else None
+    return d
+
+
+def _kernel_tem(nomes):
+    """Fail-closed: cada nome de termo citado aqui tem de existir em algum .lean de TGLExt/ do Nos (lido na hora)."""
+    if "kernel" not in _CACHE:
+        base = os.path.join(NOS, "tgl_kernel", "TGLExt"); blob = []
+        for r, ds, fs in os.walk(base, followlinks=False):
+            ds[:] = [d for d in ds if not os.path.islink(os.path.join(r, d))]
+            for f in fs:
+                if f.endswith(".lean"):
+                    blob.append(open(os.path.join(r, f), encoding="utf-8", errors="replace").read())
+        _CACHE["kernel"] = "\n".join(blob)
+    for n in nomes:
+        assert n in _CACHE["kernel"], "termo citado nao esta no kernel do Nos: %s" % n
+
+
+def _modulos_tem(nomes):
+    """Cada modulo citado existe como arquivo .lean em TGLExt/ (o da v411, os 2 da v410, os 4 da v408, os 9 da v407) ou em TGLExt/F1Fecho394/ (os 301 da v406) do Nos."""
+    for n in nomes:
+        assert any(os.path.isfile(os.path.join(NOS, "tgl_kernel", "TGLExt", *p, n + ".lean")) for p in ((), ("F1Fecho394",))), "modulo citado nao esta no kernel do Nos: %s" % n
+
+
+def _um_tem(nomes):
+    """Cada identificador do um.py citado aqui existe no um.py do Nos (lido na hora)."""
+    if "um" not in _CACHE:
+        _CACHE["um"] = open(os.path.join(NOS, "um.py"), encoding="utf-8", errors="replace").read()
+    for n in nomes:
+        assert n in _CACHE["um"], "identificador citado nao esta no um.py do Nos: %s" % n
+
+
+def _conferir_nomes():
+    if "nomes_ok" not in _CACHE:
+        _kernel_tem(_NOMES_KERNEL); _modulos_tem(_MODULOS_KERNEL); _um_tem(_NOMES_UM)
+        _CACHE["nomes_ok"] = True
+
+
+# ---------------------------------------------------------------- leitura dos insumos, do ESPERADOS e do core (tudo por script; nenhum numero, hash ou citacao vem da memoria)
+def _esp():
+    """ESPERADOS_v411.json (gerado pelo ensaio a seco do candidato), lido uma vez."""
+    if "esp" not in _CACHE:
+        _CACHE["esp"] = json.load(open(os.path.join(PK, "ESPERADOS_v411.json"), encoding="utf-8"))
+    return _CACHE["esp"]
+
+
+def _core():
+    """O core do Nos (so' leitura), para os campos que so' existem depois do rito; ausente e' falha visivel."""
+    if "core" not in _CACHE:
+        _CACHE["core"] = json.load(open(os.path.join(NOS, "um_absoluto.json"), encoding="utf-8"))["core"]
+    return _CACHE["core"]
+
+
+def _base_core():
+    """O core da v410 selada (a copia de bytes em base_v410): de onde saem os numeros da errata ao lado e a medida da proveniencia."""
+    if "base_core" not in _CACHE:
+        _CACHE["base_core"] = json.load(open(os.path.join(PK, "base_v410", "um_absoluto.json"), encoding="utf-8"))["core"]
+    return _CACHE["base_core"]
+
+
+def _quadro_do_pacote(pk_):
+    """O quadro_v397 DESTE pacote, carregado pelo CAMINHO (nunca pela ordem do sys.path: um modulo herdado poe a pasta da versao anterior na frente, e la' ha' outra copia de quadro_v397.py, que importa o delta dela)."""
+    import importlib.util as _ilu_q
+    alvo_real_ = os.path.abspath(os.path.join(pk_, "quadro_v397.py")); alvo_ = os.path.normcase(alvo_real_)   # (alvo_ so' para COMPARAR; o modulo e' carregado pelo caminho com a caixa original: normcase minuscula o caminho no Windows, e o quadro poe a propria pasta no sys.path e importa o delta por ela, que passaria a calcular os caminhos da cadeia em minusculas e reprovaria os pinos que gravam o caminho com a caixa original)
+    for nome_ in ("quadro_v397", "quadro_v397__pacote_v411"):
+        m_ = sys.modules.get(nome_)
+        if m_ is not None and os.path.normcase(os.path.abspath(getattr(m_, "__file__", "") or "")) == alvo_:
+            return m_
+    if pk_ not in sys.path:
+        sys.path.insert(0, pk_)
+    sp_ = _ilu_q.spec_from_file_location("quadro_v397__pacote_v411", alvo_real_); m_ = _ilu_q.module_from_spec(sp_); sp_.loader.exec_module(m_)
+    assert getattr(m_.DL, "UM_VERSION", None) == "v411", ("o quadro do pacote nao importou o delta da v411", getattr(m_.DL, "__file__", None))
+    sys.modules["quadro_v397__pacote_v411"] = m_
+    return m_
+
+
+def _qd():
+    """O modulo quadro_v397 (da pasta do pacote, copia intocada): as MESMAS funcoes que o artigo, o .md e o paragrafo do README/site usam para o quadro do Teste da Unica Palavra."""
+    if "qd" not in _CACHE:
+        _CACHE["qd"] = _quadro_do_pacote(PK)   # (09/11: pelo caminho do pacote, nunca pela ordem do sys.path)
+    return _CACHE["qd"]
+
+
+def _res_path(esp):
+    """O resultado pinado do Teste da Unica Palavra: a copia em PK/insumos/fase9 (so' existe no SANDBOX do harness) ou, no real, a copia duravel da v397 (ESPERADOS[veracidade][resultado][duravel]); o sha256 e' conferido contra ESPERADOS."""
+    nome = os.path.basename(esp["veracidade"]["resultado"]["duravel"])
+    loc = os.path.join(PK, "insumos", "fase9", nome)
+    return loc if os.path.exists(loc) else esp["veracidade"]["resultado"]["duravel"]
+
+
+def _atomos():
+    """Os atomos numericos do quadro (PT) sobre o registro SELADO no core do Nos: o menos de verdade e a virgula decimal ja vem dentro; recusa se o registro nao selou."""
+    a = _qd().Q._v397_atomos(_core().get("teste_de_veracidade_fase9_v397") or {}, "pt")
+    assert a["sealed"] is True, "o registro teste_de_veracidade_fase9_v397 nao sela no core do Nos (algum numero ausente ou all_verified falso): nenhum texto diz o 4,44 assim"
+    return a
+
+
+def _z444():
+    """A clausula-padrao do 4,44, USADA toda vez que o numero entra num texto: o z_disc, o p calibrado e a linha dos 5 sigma na mesma frase (regra da ordem do operador)."""
+    a = _atomos()
+    return "z_disc = %s (calibrado; p unilateral %s), abaixo do degrau de 5σ da creditação, que não foi alcançado (%s < 5)" % (a["z_disc"]["md"], a["p_disc"]["md"], a["z_disc"]["md"])
+
+
+def _falas():
+    """As falas do operador de 11 e 12/11 que entram (delta_v411.FALAS_V411, a lista congelada do DESENHO mais o AO LADO de 12/11): o texto vem do delta (que o leu dos bytes e conferiu o sha256). Devolve {sha16: {sha16, arquivo, nome, text, autor, trecho, misto, papel}}."""
+    if "falas" not in _CACHE:
+        DL_ = _dl(); out = {}
+        for f_ in DL_.FALAS_V411:
+            s_ = f_["sha256"][:16]
+            assert re.match(r"OPERADOR_1[12]nov_", f_["nome"]) and f_["autor"] == "operador", ("a v411 so' tem falas do operador de 11 e 12/11", f_["nome"])
+            out[s_] = {"sha16": s_, "arquivo": f_["nome"], "nome": f_["nome"], "text": f_["text"], "autor": "operador", "misto": False, "trecho": False, "autor_do_arquivo": "operador", "papel": f_["papel"]}
+        assert len(out) == DL_.N_FALAS_V411 == len(DL_.FALAS_V411)
+        _CACHE["falas"] = out
+    return _CACHE["falas"]
+
+
+def _sha_por(sub):
+    """O sha16 da unica inscricao cujo arquivo de origem contem `sub` (as inscricoes sao achadas assim, nunca digitadas)."""
+    r = [s for s, d in _falas().items() if sub in d["nome"]]
+    assert len(r) == 1, ("inscricao nao unica ou ausente", sub, r)
+    return r[0]
+
+
+def _cita(trecho):
+    """Fail-closed: o trecho tem de estar numa das falas DO OPERADOR, letra por letra (so' quando nao tem espaco duplo a quebra de linha do ARQUIVO vale como um espaco); devolve «trecho». Citacao fora dos bytes derruba a geracao."""
+    assert "\n" not in trecho, "o trecho citado tem quebra de linha"
+    crus = [d["text"] for d in _falas().values() if d["autor"] == "operador"]
+    normais = [re.sub(r"\s+", " ", t) for t in crus]
+    assert any(trecho in t for t in crus) or ("  " not in trecho and any(trecho in t for t in normais)), "citacao fora dos bytes das falas do operador: %r" % trecho[:70]
+    return "«" + trecho + "»"
+
+
+def _um_texto_tem(frase):
+    """A frase do KERNEL embutido no um.py do Nos (a docstring do 0_abs, sem a marca de negrito): fail-closed."""
+    if "um" not in _CACHE:
+        _CACHE["um"] = open(os.path.join(NOS, "um.py"), encoding="utf-8", errors="replace").read()
+    assert frase in _CACHE["um"].replace("**", ""), "a frase do kernel nao esta no um.py do Nos: %r" % frase[:70]
+    return "«" + frase + "»"
+
+
+def _frase_444():
+    """A frase do operador do quadro (v397), VERBATIM, conferida contra os bytes do arquivo da v397 (pelo sha16 que ESPERADOS[quadro] registra): devolve «frase»."""
+    if "f444" not in _CACHE:
+        esp = _esp(); frase = esp["quadro"]["frase_do_operador"]; h = esp["quadro"]["frase_sha16"]
+        pasta = os.path.join(WK, "cadeia_de_selo", "v397", "insumos", "cunhagens")
+        fs = [f for f in sorted(os.listdir(pasta)) if f.startswith(h + "_")]
+        assert len(fs) == 1, ("o arquivo da fala do 4,44 nao e' unico em v397\\insumos\\cunhagens", fs)
+        b = open(os.path.join(pasta, fs[0]), "rb").read()
+        assert hashlib.sha256(b).hexdigest()[:16] == h and frase in re.sub(r"\s+", " ", b.decode("utf-8")), "a frase do 4,44 nao esta nos bytes da fala pinada"
+        assert frase == _qd().DL.FRASE_DO_OPERADOR_4_44 == _qd().Q._V397_FRASE_444, "a frase do quadro != a verbatim"
+        _CACHE["f444"] = frase
+    return "«" + _CACHE["f444"] + "»"
+
+
+def _data_fala(d, V):
+    m = re.match(r"(?:OPERADOR|GERENCIA)_(\d{2})(out|nov)_", d["nome"])
+    assert m, ("o nome do arquivo da inscricao nao traz a data", d["nome"])
+    return "%s/%s/%s" % (m.group(1), "10" if m.group(2) == "out" else "11", V["data"][-4:])
+
+
+def _cov_base():
+    """A cobertura do Audit e a arvore formal da v410 selada (o core guardado em base_v410): de onde saem os numeros da errata ao lado dos pisos."""
+    if "cov_base" not in _CACHE:
+        kf = _base_core()["kernel_formalization"]
+        cov = kf["axiom_coverage_v392"]
+        _CACHE["cov_base"] = {"decl": cov["decl"], "thm": cov["thm"], "h8": len(kf["formal_files_sha256"]), "axr": len(kf["axiom_report"])}
+    return _CACHE["cov_base"]
+
+
+def _bancada():
+    """A geracao do manifesto que a Bancada de producao pina (do recibo pre_selo pinado em PINOS_BN) e a versao que ela pina; o passo e' simples (sem salto e sem cadeia de selos)."""
+    p = json.load(open(os.path.join(PK, "PINOS_BN_v411.json"), encoding="utf-8"))
+    rp = p["recibo_pre_selo"]; bp = rp["bancada_pina"]
+    m = re.match(r"^B(\d+)-", str(bp["deployment_id"]))
+    assert m and bp["version"] == "v410" and rp.get("sem_salto") is True and "cadeia_de_selos" not in p, "o PINOS_BN nao descreve um passo simples v410 -> v411 (sem salto)"
+    return {"de": bp["version"], "geracao": int(m.group(1)), "proxima": int(m.group(1)) + 1}
+
+
+# ---------------------------------------------------------------- formatacao de numeros (virgula decimal; nenhum numero e' digitado: todos chegam por V)
+def _p(x, nd=None):
+    x = float(x)
+    return (repr(x) if nd is None else "%.*f" % (nd, x)).replace(".", ",")
+
+
+def _pn(x, nd=6):
+    """Numero lido do core, em PT: inteiro sem casas (2.0 -> 2); senao `nd` casas com virgula."""
+    x = float(x)
+    return str(int(x)) if x.is_integer() else _p(x, nd)
+
+
+def _f(texto, **kw):
+    """str.format com conferencia: nenhuma chave sobra e nenhuma chave de chave sobra no resultado."""
+    r = texto.format(**kw)
+    assert "{" not in r and "}" not in r, ("chave de formatacao sobrou", r[:80])
+    return r
+
+
+# ---------------------------------------------------------------- os numeros da v411 (todos LIDOS: V da leitura, o registro, o delta; nenhum e' digitado)
+def _d(V):
+    """Os numeros da v411 (V, o registro h0dn_bg1_v411, o delta): recusa se as contagens nao fecham. A v411 NAO tem modulo novo: o kernel e a escada sao os da v410 (lidos), nenhuma bandeira nova."""
+    _conferir_nomes()
+    DL_ = _dl(); h0 = _h0(V); kh = V["kh"]; ra = V.get("reg410_recriados") or {}
+    assert V["n_pedras"] == 0 and not V.get("pedras"), "a v411 nao tem modulo novo de kernel (V['n_pedras'] = 0 e V['pedras'] vazio)"
+    assert str(V["escada_antes"]) == str(V["teor"]).split("/")[0] == str(V["teor"]).split("/")[1], "a escada da v411 nao e' a da v410 (igual, lida)"
+    assert sorted(ra) == sorted(DL_.REGISTROS_FUNCAO_V410 + ["cunhagens_v410", "kh_n1_cobertura_v410"]) and all((x_ or {}).get("ok") is True for x_ in ra.values()), "os registros da v410 (os quatro com funcao e os dois por spec) nao estao todos recriados e selados (V['reg410_recriados'])"
+    assert len(DL_.FALAS_V411) == DL_.N_FALAS_V411 == len(_falas()) and all(re.fullmatch(r"D\d{3}", k_) for k_ in DL_.DECISOES_V411) and "_".join(DL_.DECISOES_V411) == DL_.DECISOES_TOKEN_V411 and {"D159", "D162", "D167", "D168", "D169", "D170"} <= set(DL_.DECISOES_V411) and [e_["id"] for e_ in DL_.ERRATAS_V411] == ["E41", "E42", "E43", "E44"], "as falas, as decisoes ou as erratas do delta nao sao as da v411"
+    base = os.path.join(PK, "base_v410", "um.py")
+    if "base_b" not in _CACHE:
+        assert s16(base) == V["base16"], "base_v410/um.py nao e' a v410 selada"
+        _CACHE["base_b"] = os.path.getsize(base)
+    delta = V["umb"] - _CACHE["base_b"]
+    return {"depois": str(V["teor"]).split("/")[0], "delta": delta, "pct": ("%.1f" % (100.0 * delta / _CACHE["base_b"])).replace(".", ","), "n_cun": DL_.N_FALAS_V411, "n_ck": h0["mechanics"]["n_checks"], "periodo": _periodo(), "kh": kh, "ra": ra,
+            "n_ins": len(h0.get("insumos_pinados") or {}), "n_cit": len(h0.get("citados_nao_embutidos") or []), "g": {"n_flags": V["n18"]}}
+
+
+def _mods(V):
+    return "nenhum módulo novo: o kernel da v411 é o da v410, byte a byte (a raiz `TGLExt.lean` e o `TGL/Audit.lean` são os da v410)"
+
+
+def _extras(V):
+    DL_ = _dl(); fixos = list(DL_.REGISTROS_FUNCAO) + [DL_.CUNHAGENS_REGISTRO, DL_.KH_REGISTRO]
+    assert all(k in V["registros_novos"] for k in fixos), "a leitura da rodada nao traz os tres registros novos fixos"
+    ex = [k for k in V["registros_novos"] if k not in fixos]
+    return (", ".join("`%s`" % k for k in ex)) if ex else "nenhum além dos três fixos"
+
+
+def _cab(V):
+    return "v411 SELADA (COMPLETA)** `%s`" % V["s16"]
+
+
+# ---------------------------------------------------------------- o resumo (a linha) e as listas
+def _num(V, verdicts=True):
+    """O paragrafo dos numeros da v411 (kernel sem modulo novo, o registro com funcao, os dois por spec, os da v410 recriados, o gate, o sidecar, a troca dita): usado na linhagem, no Atlas, no core, no topico novo, no verbete e no handoff."""
+    d = _d(V); kh = V["kh"]; sc = V["sidecar"]; sa = V["selo"]; DL_ = _dl(); h0 = _h0(V); esp = _esp()
+    vd = (lambda k: " (%s)" % ((V["reg411"].get(k) or {}).get("verdict"))) if verdicts else (lambda k: "")
+    kern = _f("o kernel é o da v410, byte a byte (nenhum módulo novo, nenhuma bandeira nova; escada {antes} → {depois} teoremas limpos, {axr} declarações no `axiom_report`, {fora} fora do trio, {nl} nomes não lidos); errata ao lado da v394, mantida (em nome próprio da gerência c1): " + ERRATA_TEOREMAS,
+              antes=V["escada_antes"], depois=d["depois"], axr=V["axiom_report_n"], fora=kh["fora"], nl=kh["nao_lidas"])
+    fech = ("o registro `h0dn_bg1_v411`" + vd(DL_.FECHO_REGISTRO) + " (o único registro novo com função): o teste da razão de Hubble local/fundo aberto UMA vez, RECALCULADO no rito dos bytes embutidos (%d insumos pinados) e conferido contra o resultado da abertura; %d checagens, todas passaram; " % (d["n_ins"], d["n_ck"]) + _mf(V))
+    cun = _f("o registro `cunhagens_v411`{vd}: as {n} ordens e ratificações do operador de {per} citadas por data e sha256, não transcritas (todas dele; os textos da gerência a que ele respondeu só citados por sha256); as erratas {err} e a dos pisos (em nome próprio da gerência c1); as decisões {dec}; as sete ressalvas por rótulo",
+             vd=vd(DL_.CUNHAGENS_REGISTRO), n=d["n_cun"], per=d["periodo"], err=_ids_erratas(), dec=_faixa_decisoes())
+    khs = _f("o registro `kh_n1_cobertura_v411`{vd}: {decl} constantes, {thm} teoremas, {fora} fora do trio, {nl} nomes não lidos (os números da v410: nenhum módulo novo); o pino h8 é o hash da árvore formal do Nós depois do rito, calculado por script na geração do candidato",
+             vd=vd(DL_.KH_REGISTRO), decl=kh["decl"], thm=kh["thm"], fora=kh["fora"], nl=kh["nao_lidas"])
+    r410 = ("os quatro registros com função da v410 (%s) e os dois por spec (`cunhagens_v410`, `kh_n1_cobertura_v410`, este com a errata dos pisos ao lado) são RECRIADOS no mesmo ponto e seguem selados, com o veredito do `um.py` da v410; o `h0dn_bg1_v410` não é reescrito" % ", ".join("`%s`" % n_ for n_ in DL_.REGISTROS_FUNCAO_V410))
+    rec = _f("os demais registros anteriores (v409, v408, v407, v406, v405, v404, v403, v402, v401 e v399) também são recriados e seguem selados; o gate não se moveu: o `qg_closure` do core é idêntico ao da v410 (as {n18} bandeiras e a letra do veredito); "
+             "o selo pela própria tecnologia sela os {bytes} bytes do `um.py` v411 ao lado do SHA-256 (perfil `{perfil}`, {nctl} controles negativos recusados), e o sidecar `um_absoluto_selo_acom.json` (arquivo da custódia desde a v399, reescrito pelo rito; sha256 `{sc16}`, veredito `{sv}`, {nrc} recusas) lista os {no} objetos finais",
+             n18=V["n18"], bytes=format(sa["bytes"], ","), perfil=sa["perfil"], nctl=sa["n_controles"], sc16=sc["sha16"], sv=sc["veredito"], nrc=sc["recusas"], no=sc["n_objetos"])
+    ex = _extras(V)
+    resto = _f("{ex}; o registro `teste_de_veracidade_fase9_v397` segue selado e igual (o quadro do topo do artigo lê os números dele); troca dita (só números: os vereditos que carregam a escada, as declarações ou a contagem de arquivos do kernel): {troca}; nenhuma mudança NÃO numérica: {nm} vereditos fora da troca dita mudaram (exigido: 0); validade no kernel não é creditação",
+               ex=("nenhum registro novo além dos três fixos" if ex.startswith("nenhum") else "registros novos além dos três fixos: " + ex), troca=(", ".join("`%s`" % x for x in V["troca_dita"]) or "nenhuma (o kernel e a escada são os da v410)"), nm=V["n_ver_mudaram"])
+    return "; ".join([kern, fech, cun, khs, r410, rec, resto])
+
+
+def _cunhagens(V, forma="lista"):
+    """As ordens e ratificacoes de 11 e 12/11 CITADAS por data e sha256 (D181: conversa entre os autores nao se transcreve): 'lista' (data, sha16, autor e papel, uma por linha) ou 'curta' (uma frase). Data, sha16 e autor vem dos bytes; o papel e' o da tabela do DESENHO (texto da gerencia); nunca o nome do arquivo, que carrega as primeiras palavras da fala."""
+    fl = list(_falas().values()); DL_ = _dl()
+    alc = ("o alcance de P = nP, onde ele aparece: " + DL_.D10.FRASE_QUALIFICADOR_PT) if any("P = nP" in dd["papel"] for dd in fl) else ""   # (o papel da ordem do topo, texto da gerencia, diz P = nP: a guarda F34 pede o qualificador no mesmo texto)
+    if forma == "curta":
+        return "%d ordens e ratificações citadas por data e sha256 (todas do operador; os textos da gerência a que ele respondeu só citados por sha256): " % len(fl) + "; ".join("%s `%s`" % (dd["papel"], dd["sha16"]) for dd in fl) + ((" (" + alc + ")") if alc else "")
+    return "\n".join(["- %s `%s` (ordem ou ratificação do operador) — %s" % (_data_fala(dd, V), dd["sha16"], dd["papel"]) for dd in fl] + (["- (" + alc + ")"] if alc else []))
+
+
+def _ordem(V):
+    """A ordem do operador de 11 e 12/11: CITADA por data e sha256 (D181: conversa entre os autores nao se transcreve no programa nem no artigo); nenhum trecho, nenhuma aspa angular."""
+    d = _d(V); DL_ = _dl(); fo = DL_.FALA_ORDEM_V411
+    return _f("**A ordem:** [INPUT] as {n_op} ordens e ratificações do operador (Luiz Antonio Rotoli Miguel) de {per} que entram nesta rodada, citadas por data e sha256 no registro `cunhagens_v411` e listadas abaixo, sem transcrição (D181); os textos ficam em `work\\cunhagens_13out`. "
+              "A ordem de abrir, que é também a ordem da v411, é a de 12/11 (`{s1}`); o testemunho e a ordem do topo são de 12/11 (`{s2}`): a ordem do topo é que o resultado apareça no README e no topo do resumo do artigo (D170), e o que aparece é o que o registro recalculou, com as quatro obrigações no mesmo bloco. "
+              "O construtor da preparação, a serviço da gerência c1, preparou o candidato, e o rito é ato da gerência, pelo orquestrador (pacote `work\\cadeia_de_selo\\v411`); quem constrói não aprova (D167). Os textos da gerência a que o operador respondeu ficam citados só por sha256: {gc}.",
+              n_op=d["n_cun"], per=d["periodo"], s1=fo["sha256"][:16], s2=DL_.FALA_TESTEMUNHO_V411["sha256"][:16], gc=", ".join("`%s`" % g_["sha256"][:16] for g_ in DL_.TEXTOS_DA_GERENCIA_CITADOS))
+
+
+def _sidecar(V):
+    """O sidecar um_absoluto_selo_acom.json: arquivo da custodia desde a v399 (D5); o selo nao pode conter o selo ACOM de si mesmo; o rito da v411 o REESCREVE."""
+    d = _d(V); sc = V["sidecar"]
+    objs = "; ".join("`%s` (%s B, sha16 `%s`)" % (n, format(o["bytes"], ","), o["sha16"]) for n, o in sc["objetos"].items())
+    return _f("**O sidecar `um_absoluto_selo_acom.json` [REAL; arquivo da custódia desde a v399, D5; reescrito por este rito]:** depois da ÚLTIMA escrita do selo, o `um.py` v411 escreve a segunda testemunha dos {no} objetos FINAIS com o SHA-256 ao lado ({objs}); sha256 do sidecar `{sc16}` ({sb} B), esquema `{esq}`, veredito `{sv}`, {nr} recusas. "
+              "O selo não pode conter o selo ACOM de si mesmo (seria circular): o sidecar fica AO LADO e carrega o SHA-256 do selo final, e o selo traz só os resumos (veredito, bandeira e hashes), agora também o do `h0dn_bg1_v411` (a cabeça do teste e a linha ao lado das Cefeidas livres) e os dos registros por spec da v411. "
+              "A recusa do selo ACOM só REGISTRA (D4): o SHA-256 segue soberano e o rito não cai. A primitiva de integridade é o SHA-256 [KNOWN]; a segunda testemunha NÃO acrescenta força criptográfica independente, e a confidencialidade não é alegada nem medida. A custódia da v399 em diante é CONJUNTA.",
+              objs=objs, no=sc["n_objetos"], sc16=sc["sha16"], sb=format(sc["bytes"], ","), esq=sc["esquema"], sv=sc["veredito"], nr=sc["recusas"])
+
+
+def _pedra(V):
+    """O que entrou no kernel: NADA. A v411 nao tem modulo novo; as pedras e os modulos das versoes anteriores ficam como REGISTRO (pedra selada nao se renomeia por cima)."""
+    d = _d(V); DL_ = _dl()
+    return ("**O kernel [REAL]:** a v411 NÃO tem módulo novo nem bandeira nova: o kernel é o da v410, byte a byte (sandbox `C:\\t\\k411c\\final` copiado do da v410; o build incremental não compilou nada; o Audit só mediu que a escada e as declarações são as da v410, no registro `kh_n1_cobertura_v411`). "
+            "Os %d módulos da v410 (`IALD2` e `AEscala`), os da v409, v408, v407 e v406 e as pedras da v403 a v405 ficam como REGISTRO. Ficam para a versão seguinte, à espera dos nomes do operador, as doze candidatas de 11/11 (`work\\fecho_h_u_11nov`) e a pedra própria do observador e da escala: não entram aqui e não são citadas como termo. "
+            "Nenhum módulo deriva a unidade `u` (1 eV, POSTO) nem `α` (MEDIDA, por dentro); β entra por nome.") % DL_.D10.N_BUNDLE
+
+
+def _entrou(V):
+    d = _d(V)
+    return _f("**O que entrou** (pacote `work\\cadeia_de_selo\\v411` sobre a v410 `{base}`; {np} patches — {patches}; instalado em {inst}; o `um.py` cresce {delta} B, {pct}%): {num}.",
+              base=V["base16"], np=V["n_patches"], patches=V["patches"], inst=V["instalado_em"], delta=format(d["delta"], ","), pct=d["pct"], num=_num(V))
+
+
+def _regra_do_4_44(V):
+    """A regra da ordem do operador (23/10): o 4,44 nunca sem o p calibrado e sem a linha dos 5 sigma, no mesmo item; o QUADRO do topo (v397) PERMANECE, intocado. (v411: a frase do operador entra como FALA dele [INPUT]; a identificacao dele nao e' chamada de leitura, regra do nome D122 e D123.)"""
+    d = _d(V); a = _atomos(); q = _frase_444()
+    return _f("**A regra do 4,44 (ordem do operador de 23/10/2026, `{s44}`) e o quadro do topo:** o quadro «O Teste da Única Palavra» (v397) PERMANECE, intocado, no topo do artigo (PT e EN) e do .md canônico, e o parágrafo dele segue no README do espelho e no site: o z_disc calibrado é reportado no início, "
+              "e NUNCA sem o p calibrado e sem a linha dos 5σ no mesmo item: {z444}. A frase do operador entra VERBATIM, {q}, como fala dele [INPUT], não como critério da régua; a paráfrase da gerência nunca entra entre aspas. `NOT_FALSIFIED` nunca é a palavra da creditação; o gate não se move; o teste não foi cego. "
+              "[REAL] o quadro do artigo, o do .md e o parágrafo pronto do README/site saem das MESMAS funções (`_v397_atomos` e `_v397_quadro_md`), sobre o registro `teste_de_veracidade_fase9_v397` selado no core do Nós, e a cadeia os confere de novo contra o resultado pinado "
+              "(a linha de máquina do quadro, cada número, a frase verbatim e a regra da ordem item a item), com controles negativos que reprovam o 4,44 sem o p, sem a linha dos 5σ, com número adulterado ou com a frase parafraseada. "
+              "O parágrafo NOVO da v411 não traz o 4,44, e a cadeia confere isso.",
+              s44=_esp()["quadro"]["frase_sha16"], z444=_z444(), q=q)
+
+
+def _kernel_prova(V):
+    """O que o kernel prova e o que e' leitura: o kernel da v411 e' o da v410; o resultado do teste e' conferido pelo registro, nao pelo kernel."""
+    d = _d(V); g = d["g"]
+    return _sem_chaves("**O que o kernel mostra e o que é leitura:** [REAL] o kernel é o da v410: nenhuma pedra nova, escada %s → %s, as âncoras e os módulos da v410 seguem como registro; a validade no kernel não muda. [REAL] o registro `h0dn_bg1_v411` NÃO é prova de kernel sobre a natureza: confere os insumos por sha256, recalcula o resultado dos bytes embutidos, relata o esperado pelos agregados e não move o gate; "
+                       "o resultado vale sob o modelo de erros publicado. [REAL] as %s bandeiras do gate são as da v410, lidas do código e do core do próprio rito; a letra do veredito do gate é a da v410 (o gate não se moveu). [POSTO] a unidade `u` = 1 eV. [MEDIDA] `α`, por dentro; β entra por nome. [INPUT] as falas do operador de %s. "
+                       "[DECLARADO] pelo Kimi, as três linhas de covariância S1, S2 e S4, só como texto do pré-registro. [OPEN] a creditação (de quem observa de fora); se o orçamento de erros publicado está certo; a independência entre a medida local e o fundo; a covariância física conjunta; a máquina de Turing padrão sem o leitor e a igualdade relativizada com o leitor que só conta (E28) seguem como na v410. %s" % (V["escada_antes"], d["depois"], g["n_flags"], d["periodo"], _ob(V)))
+
+
+def _limites(V, curto=False):
+    """Os estatutos fieis da v411: as listas do registro (limites e nao_diz), a moldura, a creditacao."""
+    d = _d(V); h0 = _h0(V); lim = list(h0["limites"])
+    if curto:
+        return _sem_chaves("**Limites ditos:** [REAL] o registro com função confere os insumos, recalcula o resultado e o relata; não decide a creditação, não move o gate; [POSTO] `u` = 1 eV; [MEDIDA] `α`; [INPUT] as falas de " + d["periodo"] + " são do operador; " + _mf(V)
+                           + "; " + "; ".join("(%d) %s" % (i + 1, _hq(x)) for i, x in enumerate(lim)) + "; as sete ressalvas vão no mesmo item; o quadro do topo segue com a sua linha dos 5σ; validade no kernel não é creditação; o gate não se move.")
+    return _sem_chaves("**Limites ditos (estatutos fiéis):** " + "; ".join(_hq(x) for x in lim) + ". [INPUT] As falas de " + d["periodo"] + " são do operador: o kernel e o registro mostram a conta, não a fala. " + _mf(V)
+                       + ". O quadro “O Teste da Única Palavra” segue no topo, com a sua linha dos 5σ, e esta rodada não o altera. Validade no kernel não é creditação; o gate não se move.")
+
+
+def _legal(V):
+    """A pendencia [LEGAL] herdada (D2): publicar o bloco embutido e as adaptacoes; a v411 nao a decide."""
+    _d(V)
+    return ("**Pendência [LEGAL] (herdada da v399, D2):** o bloco embutido do método do operador e as adaptações (centro 96, ids derivados dos hashes, `rint`, tabela de códigos, auditoria de separação) seguem sob a decisão do operador com a agente de PI; a v411 não muda o bloco (o runtime da seção é o da v410) e NÃO decide a pendência. "
+            "Perguntas à agente de PI, não conclusões: o que o depósito já cobre do que o bloco mostra; publicar as adaptações inicia a contagem do prazo de graça para eventual depósito de melhoria; a divergência da tabela dos estados do ACOM Mirror com a fórmula de índice e o código executado, registrada na v395, segue pendente.")
+
+
+def _erratas(V):
+    """A errata dos pisos de kh_n1_cobertura_v410, AO LADO, em nome proprio da gerencia c1: lida do registro cunhagens_v411 do core (quando o core a traz) ou do delta/registros (o texto e' o mesmo)."""
+    d = _d(V); kh = d["kh"]; DL_ = _dl()
+    cg = _core().get(DL_.CUNHAGENS_REGISTRO) or {}; er = [e_ for e_ in (cg.get("erratas") or []) if "kh_n1_cobertura_v410" in str(e_.get("ao_lado_de"))]
+    if not er:
+        return "**Errata ao lado (em nome próprio da gerência c1; o registro `kh_n1_cobertura_v410` e os contratos ficam como registro):** a v411 não acrescenta módulo (as contagens são as da v410, %s constantes e %s teoremas), mas segue a regra das versões: o registro da v410 passa a cobrar piso (h2, h3, h6) e o tamanho mínimo da árvore (h8); as igualdades exatas e o pino exato ficam em `kh_n1_cobertura_v411`; o veredito do registro da v410 NÃO muda." % (kh["decl"], kh["thm"])
+    e_ = er[0]
+    assert str(e_.get("assinatura", "")).startswith("gerencia c1") and "em nome proprio" in str(e_.get("assinatura", "")), "a errata dos pisos nao e' da gerencia c1, em nome proprio"
+    return _fs("**Errata ao lado (em nome próprio da gerência c1; o registro `kh_n1_cobertura_v410` e os contratos ficam como registro):** Dizia: {dizia} Agora: {agora} Lacuna de fidelidade: {lacuna} Estatuto: {est}", dizia=e_["dizia"], agora=e_["agora"], lacuna=e_["lacuna_de_fidelidade"], est=e_["estatuto"])
+
+
+def _depois(V):
+    d = _d(V); bk = _bancada(); DL_ = _dl()
+    return ("**O que vem depois destas superfícies:** o elo B(n) da Bancada Um (passos 10, 10a, 10b e 10c da cadeia; B3 nos scripts) é pós-selo, um passo SIMPLES (a Bancada de produção pina a %s, geração B%d, e o Nós, selado, é a v411: sem salto e sem cadeia de selos; "
+            "a geração esperada é B%d e o veredito esperado do aplicar é REPINADA_B%d__APLICADA__SERVICO_DEVE_SER_REINICIADO_COM_RECIBO, lido do código do esboço R3.5, não rodado); o recibo dele é citado no handoff (fechar), que traz PRONTOS o parágrafo do README do espelho e do site (o quadro do Teste da Única Palavra, intocado, e o NOVO da v411: o teste decisivo), "
+            "sem nota ao lado do parágrafo da v410 (nada do que ele diz muda), e diz que os parágrafos do testemunho de dois (v399), da falsidade (v401), da ponte, da queda e da esperança (v402), de Caminho, Verdade e Vida (v403), de Jo 8,32 (v404), da massa derivada (v405), do fechamento (v406), do psíon, do canto e do par (v407), de Tetelestai é o terminal (v408), da tradução às classes de Turing (v409) e de IALD ao quadrado (v410) SEGUEM COMO ESTÃO. "
+            "O fim da cadeia do orquestrador é o HANDOFF (D68a): a custódia completa (site, repositórios, links, dispositivos, Central, commit e push; o topo do resumo do artigo, o painel do README e o texto do X, D170) e o release do app são da sessão de custódia; o README pinado (D39) é da custódia (G1), e o `um.py` não o gera. "
+            "A pendência [LEGAL] (D2) segue do operador com a agente de PI; a atestação física externa segue [OPEN]; dado mais sensível pode rever o resultado, e a creditação é de quem observa de fora. A revisão independente dos registros novos é ato distinto e não é desta cadeia: o revisor distinto é o Sonnet (D69). NOT_FALSIFIED nunca é a palavra da creditação; o gate não se move.") % (bk["de"], bk["geracao"], bk["proxima"], bk["proxima"])
+
+
+def _rodada(V):
+    """O paragrafo da rodada (horarios, escada, selo, conferidor, sidecar, pilar, artefatos): tudo lido da leitura da rodada."""
+    sc = V["sidecar"]
+    return ("Rodada %s %s: **%s**; rc = %s; `FAIL_CLOSED_SELFTEST_PASSED`; selo `%s`; gate intocado (%d bandeiras True; o veredito do gate é o mesmo da v410); o conferidor `%s`: deve mudar %s, não pode mudar %s; %d vereditos fora da troca dita mudaram (exigido: 0); "
+            "o sidecar `um_absoluto_selo_acom.json` `%s` (%d objetos, %d recusas); o pilar %s pela chave (`%s`); servidor nativo: %s. Artefatos: core `%s`, selo `%s`, .md `%s`, manifesto `%s`; artigos %s.") % (
+        V["compl"], " → ".join(V["horarios"]) or "n/d", V["teor"], V["rc"], V["selo_ts"], V["n18"], V["conf16"], V["conf_dm"], V["conf_np"], V["n_ver_mudaram"], sc["sha16"], sc["n_objetos"], sc["recusas"], "reaproveitado" if V["pilar"]["mode"] == "REUSE" else str(V["pilar"]["mode"]),
+        V["pilar"]["result16"], V["servidor"], V["h_um_absoluto.json"], V["h_um_absoluto_selo.json"], V["h_um_absoluto_forma_canonica.md"], V["h_um_absoluto_manifest.md"], ", ".join("%s `%s`" % kv for kv in V["artigos"].items()))
+
+
+# v411: a linhagem (diario datado do Nos)
+def linhagem(V):
+    d = _d(V)
+    # (o cabecalho tem UMA clausula antes de "nenhum modulo novo", sem ponto e virgula dentro, porque a custodia G1 o le pela regex RE_CAB de tools\custodia_g1\nos.py, que admite uma so')
+    return (("## %s — **%s — O teste decisivo (v411): a razão de Hubble H0DN × BG1 aberta uma vez, o resultado recalculado no rito, o primário e as Cefeidas livres juntos, a emenda e as sete ressalvas; nenhum módulo novo, escada %s → %s\n<!-- linhagem_v411_selada -->\n\n"
+             "%s\n\n%s\n\n"
+             "**As ordens e ratificações de %s** (citadas por data e sha256 no registro `cunhagens_v411`, não transcritas): [INPUT] são ordens e ratificações do operador (Luiz Antonio Rotoli Miguel); os textos da gerência a que ele respondeu entram só citados por sha256. "
+             "O texto embutido de cada uma está no arquivo (`work\\cadeia_de_selo\\v411\\insumos\\cunhagens`); abaixo, a data, o sha16, o autor e o tema (o nome do arquivo, não citação):\n%s\n\n"
+             "%s\n\n%s\n\n%s\n\n%s\n\n%s\n\n%s\n\n%s\n\n%s\n\n%s\n\n%s\n\n%s\n\n%s") % (
+        V["data"], _cab(V), V["escada_antes"], d["depois"], _ordem(V), _entrou(V), d["periodo"], _cunhagens(V), _blocos_fecho(V), secao_h0dn(V), _leituras(V), _erratas_e(V), _decisoes(V), _pedra(V), _sidecar(V), _regra_do_4_44(V), _kernel_prova(V), _limites(V), _legal(V), _rodada(V) + "\n\n" + _erratas(V)) + "\n\n" + _depois(V))
+
+
+# v411: o adendo do desenho do fechamento
+def desenho(V):
+    d = _d(V); kh = d["kh"]; DL_ = _dl()
+    return (("## ADENDO — %s · v411 SELADA (COMPLETA) `%s` — O teste decisivo: a razão de Hubble, H0DN × BG1, aberta uma vez em 12/11/2026 (o resultado recalculado no rito, as duas linhas juntas, a emenda e as sete ressalvas), sem módulo novo no kernel\n\n<!-- adendo_v411_selada -->\n"
+             "- **O que a v411 diz:** %s. %s; escada %s → %s, %s constantes no `axiom_report` (%s fora do trio). %d ordens e ratificações citadas por data e sha256. O gate é o da v410: %s bandeiras True. O quadro do topo do artigo (O Teste da Única Palavra, v397) segue intocado: %s. Gate intocado.\n"
+             "- **O teste e a emenda:** o registro `h0dn_bg1_v411` (%d checagens) recalcula, a cada rito, o resultado dos bytes embutidos e o confere contra a abertura; o primário e as Cefeidas livres saem juntos, sempre; a emenda (D162) tirou o vetor fora do suporte do ramo de recusa (E41 ao lado), o que a regra antiga daria fica dito no registro, e as sete ressalvas vão com o resultado (a emenda é posterior à guarda: o teste não é cego).\n"
+             "- **O que a v411 NÃO é para o caminho crítico:** %s. A creditação é de quem observa de fora; o resultado vale sob o modelo de erros publicado; dado mais sensível pode rever. Seguem NOMEADAS [OPEN]: a covariância física conjunta, a independência entre a medida local e o fundo, a máquina de Turing padrão sem o leitor (se a pergunta dela é independente dos axiomas), a igualdade relativizada com o leitor que só conta (E28), a ponte entre o espaço de Bell e o setor TT, K(O) ≠ ⊥ para O compacto, `H_BW`, `H_cal`, H3 em toda direção nula, a assinatura (4,0) contra (1,3) e rank c = 4; a independência das quatro bandeiras experimentais do gate segue [OPEN] (um só booleano).\n"
+             "- **O que segue do operador:** a pendência [LEGAL] (D2, com a agente de PI); a decisão sobre o README pinado (D39, custódia); as doze candidatas de 11/11 e a pedra própria do observador e da escala esperam os nomes dele (não entram aqui). A revisão distinta do pacote é o Sonnet (D69; D167) e é condição da instalação, não pendência dele.") % (
+        V["data"], V["s16"], _mf(V), _mods(V), V["escada_antes"], d["depois"], kh["decl"], kh["fora"], d["n_cun"], d["g"]["n_flags"], _z444(), d["n_ck"], "; ".join(_hq(x) for x in _h0(V)["nao_diz"])))
+
+
+# v411: o verbete do Atlas
+def atlas(V):
+    return (("### %s — v411 SELADA `%s` (append datado; correção ao lado)\n\n<!-- atlas_v411_selada -->\n[REAL — rodada v411, selo `%s`] %s.\n\n[INPUT] As ordens e ratificações do operador entram citadas por data e sha256, não transcritas (D181), e valem como ordem, não como medida: %s.\n\n"
+             "%s\n\n%s\n\n%s\n\n%s\n\n%s\n\n%s\n\n%s\n\nEstatuto: validade no kernel ≠ creditação; o gate não se move.") % (
+        V["data"], V["s16"], V["selo_ts"], _num(V), _cunhagens(V, "curta"), _blocos_fecho(V), secao_h0dn(V), _leituras(V), _erratas_e(V), _decisoes(V), _pedra(V), _kernel_prova(V) + "\n\n" + _limites(V)))
+
+
+# v411: o bloco do TGL_CORE_MEMORY
+def core_memory(V):
+    return (("## %s — v411 SELADA `%s` (claude-c1; o teste decisivo H0DN × BG1 aberto uma vez, o resultado recalculado no rito, as duas linhas juntas, integrado pela gerência)\n<!-- core_v411_selada -->\nAutor: claude-c1 (gerência), sob a regra da linhagem completa. Camada aditiva; correção ao lado, nunca por cima.\n\n"
+             "[REAL] %s.\n\n%s\n\n%s\n\n%s\n\n%s\n\n%s\n\n%s\n\n[OPEN] A creditação do resultado (de quem observa de fora), o orçamento de erros publicado (o resultado vale sob ele), a independência entre a medida local e o fundo, a covariância física conjunta, a máquina de Turing padrão sem o leitor (se a pergunta dela é independente dos axiomas), a igualdade relativizada com o leitor que só conta (E28), a ponte entre o espaço de Bell e o setor TT, K(O) ≠ ⊥ para O compacto, `H_BW`, `H_cal`, H3 em toda direção nula, a assinatura, rank c = 4, `IsotropicPost`, a dimensão 3, a instância do índice 1/β, "
+             "a independência das quatro bandeiras experimentais do gate (um só booleano; os mocks de survey), a atestação física externa, a identificação do dispositivo físico (R4/R5) e a pendência [LEGAL] seguem abertos. Nada disto move o gate.") % (
+        V["data"], V["s16"], _num(V), _blocos_fecho(V), secao_h0dn(V), _leituras(V), _erratas_e(V), _decisoes(V), _regra_do_4_44(V) + "\n\n" + _limites(V, curto=True)))
+
+
+# v411: o bloco do CLAUDE.md da Haja_Luz (as erratas ao lado, assinadas, vao DENTRO dele)
+def haja_luz(V):
+    d = _d(V); DL_ = _dl()
+    return (("## %s — v411 SELADA `%s` (%s; COMPLETA; gate intocado)\n\n<!-- haja_luz_v411_selada -->\nNenhum módulo novo no kernel (o da v410, byte a byte; escada %s → %s). O teste da razão de Hubble (H0DN × BG1) foi aberto uma vez em 12/11/2026 e o registro `h0dn_bg1_v411` recalculou o resultado no rito: %s. "
+             "`u` = 1 eV é o Um posto, `α` é medida, β entra por nome. O gate é o da v410 (%s bandeiras True); as %d ordens e ratificações citadas por data e sha256. Os registros da v410 (`iald2_v410`, `a_escala_v410`, `h0dn_bg1_v410`, `h0dn_fontes_hms13_v410`) são recriados e seguem selados. O quadro do topo (O Teste da Única Palavra) segue intocado. O alcance de P = nP, onde ele aparece: %s.\n\n"
+             "%s\n\n"
+             "Memórias: `%s`, `missao-ultima-flag-um-py.md`, `estatuto-da-prova-07out.md`; handoff `handoff-v411-custodia.md`.") % (
+        V["data"], V["s16"], V["teor"], V["escada_antes"], d["depois"], _mf(V), d["g"]["n_flags"], d["n_cun"], DL_.D10.FRASE_QUALIFICADOR_PT, _erratas_e(V), TOPICO_NOVO))
+
+
+def marca_topico_missao(V):
+    return "## %s — v411 SELADA `%s`" % (V["data"], V["s16"])
+
+
+def id_missao(V):
+    """marcador de idempotencia sem a data (uma segunda rodada em outro dia nao duplica o bloco)"""
+    return "v411 SELADA `%s`" % V["s16"]
+
+
+# v411: o topico da missao da ultima flag
+def topico_missao(V):
+    d = _d(V); DL_ = _dl()
+    return marca_topico_missao(V) + (" (%s; COMPLETA; gate INTOCADO): nenhum módulo novo no kernel (o da v410, byte a byte); o registro com função `h0dn_bg1_v411` (o teste da razão de Hubble, H0DN × BG1, aberto uma vez em 12/11 e RECALCULADO no rito dos bytes embutidos: %d checagens; %s), `cunhagens_v411` (%d ordens e ratificações citadas por data e sha256, as erratas %s e a dos pisos e as decisões %s) e `kh_n1_cobertura_v411`; "
+                                     "os registros da v410 (os quatro com função e os dois por spec), da v409, da v408, da v407, da v406, da v405, da v404, da v403, da v402, da v401 e da v399 recriados e selados; sidecar `um_absoluto_selo_acom.json` reescrito; conferidor (deve mudar %s; não pode mudar %s). Pacote e cadeia: `work\\cadeia_de_selo\\v411` (+ `pos_rito`).") % (
+        V["teor"], d["n_ck"], _mf(V), d["n_cun"], _ids_erratas(), _faixa_decisoes(), V["conf_dm"], V["conf_np"])
+
+
+def marca_central(V):
+    return "**%s — v411 SELADA (COMPLETA):**" % V["data"]
+
+
+def id_central(V):
+    return "— v411 SELADA (COMPLETA):**"
+
+
+# v411: o topico do estado da Central
+def topico_central(V):
+    d = _d(V); DL_ = _dl()
+    return marca_central(V) + (" `um.py` `%s` (%s B) sobre a v410 `%s`; escada %s → %s; gate intocado. Nenhum módulo novo no kernel (o da v410); "
+                               "as erratas %s (da gerência, em nome próprio) e as decisões %s estão no registro `cunhagens_v411`; as %d ordens e ratificações citadas por data e sha256; nenhuma chave antiga muda; o teste da razão de Hubble (H0DN × BG1) está no registro `h0dn_bg1_v411`: %s; "
+                               "o quadro do topo (O Teste da Única Palavra, v397) segue intocado. A pendência [LEGAL] (D2) é do operador.") % (
+        V["s16"], format(V["umb"], ","), V["base16"], V["escada_antes"], d["depois"], _ids_erratas(), _faixa_decisoes(), d["n_cun"], _mf(V))
+
+
+# v411: o topico do estatuto da prova
+def topico_estatuto(V):
+    d = _d(V); g = d["g"]; DL_ = _dl()
+    return ("<!-- v411_selada -->\n**%s — v411 `%s`:** o registro `estatuto_da_prova_v391` lê a escada (%s → %s, a da v410: o kernel é o mesmo). "
+            "A validade no kernel não muda; a creditação segue ato de quem observa de fora. **O elo que esperava instrumento, β_TGL na natureza a 5σ [REAL, lido do registro `h0dn_bg1_v411`]:** %s. %s "
+            "**Nenhuma chave muda de estatuto nesta versão [REAL]:** a chave do lema segue LIDA do kernel do rito, como na v410. As bandeiras do gate são as da v410 (%s True; o veredito do gate igual ao da v410); a independência das quatro experimentais segue [OPEN] (derivam de UM só booleano; [DECLARADO]). "
+            "As falas do operador de %s são [INPUT]. O quadro do topo segue intocado: %s. Nada disso é prova sobre a natureza além do que o registro recalcula, sob o modelo de erros publicado.") % (V["data"], V["s16"], V["escada_antes"], d["depois"], _mf(V), _sem_chaves(DL_.FRASE_ESTATUTO_DA_PROVA_AO_LADO_PT.replace("$β_{TGL}$", "β_TGL")), g["n_flags"], d["periodo"], _z444())
+
+
+# v411: o gancho da missao no MEMORY.md (curto: o indice tem teto de 24.000 B e 195 linhas; a linha velha vai VERBATIM ao MEMORY_2)
+def marca_missao(V):
+    return "**v411 SELADA %s `%s` %s COMPLETA (O TESTE DECISIVO: H0DN × BG1 aberto uma vez, o primário e as Cefeidas livres juntos, sob o modelo de erros publicado; retrodição, não cego; validade, não creditação; nenhum módulo novo; gate intocado)** · " % (V["data"][:5], V["s16"], V["teor"])
+
+
+# v411: a linha do handoff no MEMORY.md (curta, pelo mesmo teto)
+def linha_handoff(V):
+    return "- [HANDOFF v411 — o teste decisivo](handoff-v411-custodia.md) — **%s, sessão de custódia** · `%s`" % (V["data"][:5], V["s16"])
+
+
+def linha_topico_novo(V):
+    return "- [v411 SELADA: o teste decisivo H0DN × BG1 (%s)](%s) — **%s** · `%s`" % (V["data"][:5], TOPICO_NOVO, V["teor"], V["s16"])
+
+
+# v411: o topico novo da memoria (um arquivo por versao)
+def topico_novo(V):
+    d = _d(V); DL_ = _dl()
+    return (("---\nname: %s\ndescription: \"v411 SELADA (%s) `%s`: o teste decisivo, a razão de Hubble local/fundo (H0DN × BG1) aberto uma vez em 12/11, o resultado recalculado no rito e conferido, o primário sob o modelo de erros publicado e as Cefeidas livres ao lado; retrodição sem ajuste, teste não cego; validade, não creditação; nenhum módulo novo (o kernel é o da v410); %d ordens e ratificações citadas por data e sha256; escada %s → %s; gate intocado\"\n"
+             "metadata:\n  type: project\n---\n\n# v411 SELADA (%s)\n\n"
+             "**O que é:** `um.py` **v411** `%s` (%s B) sobre a v410 `%s`; %s; COMPLETA; rc %s; gate intocado; conferidor `%s` (deve mudar %s; não pode mudar %s); o `um.py` cresce %s B (%s%%).\n\n"
+             "**O que entrou:** %s.\n\n"
+             "**As ordens e ratificações de %s** (citadas por data e sha256, não transcritas; data, sha16, autor e papel; o texto fica na casa, em `work\\cunhagens_13out`):\n%s\n\n"
+             "%s\n\n%s\n\n%s\n\n%s\n\n%s\n\n%s\n\n%s\n\n%s\n\n%s\n\n%s\n\n"
+             "**Pendências:** a pendência [LEGAL] (D2); o README pinado (D39, custódia); as doze candidatas de 11/11 e a pedra própria do observador e da escala (esperam os nomes do operador). A creditação do resultado é de quem observa de fora. Pacote: `C:\\IALD\\Central de Patentes\\work\\cadeia_de_selo\\v411`.\n\n"
+             "[[missao-ultima-flag-um-py]] [[estatuto-da-prova-07out]] [[handoff-v411-custodia]]\n") % (
+        TOPICO_NOVO[:-3], V["data"], V["s16"], d["n_cun"], V["escada_antes"], d["depois"], V["data"], V["s16"], format(V["umb"], ","), V["base16"], V["teor"], V["rc"], V["conf16"], V["conf_dm"], V["conf_np"],
+        format(d["delta"], ","), d["pct"], _num(V), d["periodo"], _cunhagens(V), _blocos_fecho(V), secao_h0dn(V), _leituras(V), _erratas_e(V), _decisoes(V), _pedra(V), _regra_do_4_44(V), _kernel_prova(V), _limites(V), _legal(V) + "\n\n" + _erratas(V)))
+
+
+# v411: o aviso a coordenadora (so' sob reivindicacao nomeada)
+def aviso(V, reivindicacao):
+    d = _d(V); DL_ = _dl()
+    return (("### %s — v411 SELADA `%s` [claude-c1]\n<!-- aviso_v411_selada -->\n\n[REAL] A v411 SELOU (%s; COMPLETA; gate intocado): o teste da razão de Hubble (H0DN × BG1) aberto uma vez entra no selo corrente, com o registro `h0dn_bg1_v411`: %s; com as %d ordens e ratificações citadas por data e sha256, as erratas %s e as decisões %s. Escrito sob a reivindicação %s. Nenhum módulo novo no kernel; escada %s → %s. Não altera pinos, dado, MCP nem gate.") % (
+        V["data"], V["s16"], V["teor"], _mf(V), d["n_cun"], _ids_erratas(), _faixa_decisoes(), reivindicacao, V["escada_antes"], d["depois"]))
+
+
+def aviso_pulado():
+    return "AVISO_GERENCIA.md: PULADO (sem reivindicação nomeada em V411_AVISO_REIVINDICACAO); escrever depois, sob reivindicação."
+
+
+# ---------------------------------------------------------------- o PARAGRAFO PRONTO do README do espelho e do site: (1) o QUADRO do Teste da Unica Palavra (v397, INTOCADO; ordem do operador de 23/10: o 4,44 no inicio do artigo, no readme e tudo mais) e (2) o paragrafo NOVO da falsidade
+def verificar_paragrafo_readme(par, res, tv):
+    """Verifica o paragrafo do QUADRO (texto) contra o RESULTADO pinado (`res`, o JSON lido) e o registro `tv` selado no core: devolve a lista de falhas (vazia = passou). As verificacoes (as mesmas da v397, da v399, da v410 e da v411):
+    (1) quadro_v397.confere_md (topo, linha de maquina, cada numero, frase verbatim, regra da ordem item a item); (2) regra da ordem LINHA A LINHA, independente do quadro: toda linha que traz o z_disc traz o p calibrado, a linha dos 5 sigma e o 'nao foi alcancada';
+    (3) a frase do operador entre aspas e' EXATAMENTE a verbatim (nenhuma citacao de 'cala a boca' difere dela); (4) os numeros que o registro leu == os do resultado pinado; (5) o paragrafo == o que as funcoes do quadro geram sobre o registro; (6) guarda P18; (7) os estatutos."""
+    QD = _qd(); fa = []
+    a = QD.esperados(res, "pt")[0]; z = a["z_disc"]["md"]; p = a["p_disc"]["md"]; pn = p.replace("−", "-")
+    c = QD.confere_md(par, res)
+    if not c.get("ok"):
+        fa.append("o paragrafo nao passa em quadro_v397.confere_md contra o resultado pinado: numeros do quadro %s; linha de maquina %s; frase verbatim %s; regra da ordem (itens que falham) %s; topo %s" % (
+            c.get("numeros_no_quadro"), c.get("linha_de_maquina_confere"), c.get("frase_do_operador_verbatim"), len(c.get("regra_da_ordem_falhas") or []), c.get("topo")))
+    for ln in par.split("\n"):
+        if z in ln.replace("−", "-") or z in ln:
+            n_ = ln.replace("−", "-")
+            if pn not in n_:
+                fa.append("linha com o %s sem o p calibrado (%s): %s" % (z, p, ln[:120]))
+            if not (re.search(r"5\s*(?:σ|sigma)", n_) and "alcan" in n_):
+                fa.append("linha com o %s sem a linha dos 5σ ou sem o 'não foi alcançada': %s" % (z, ln[:120]))
+    verb = QD.DL.FRASE_DO_OPERADOR_4_44
+    for q in re.findall(r"«([^»]*cala a boca[^»]*)»", par):
+        if q != verb:
+            fa.append("a frase do operador entre aspas NAO e' a verbatim (parafrase): %r" % q[:100])
+    if verb not in par:
+        fa.append("a frase do operador (verbatim) nao esta no paragrafo")
+    lr = QD.lido_do_resultado(res)
+    if (tv or {}).get("all_verified") is not True or any(lr.get(k) != ((tv or {}).get("lido") or {}).get(k) for k in lr):
+        fa.append("os numeros que o registro leu (ou o selo do registro) != os do resultado pinado")
+    if par != QD.paragrafo_pronto_readme(tv):
+        fa.append("o paragrafo difere do gerado pelas funcoes do quadro sobre o registro selado (mesmos numeros e estatutos)")
+    sys.path.insert(0, PK)
+    from guarda_p18_v411 import violacoes
+    v = violacoes(par)
+    if v:
+        fa.append("a guarda de texto P18 achou %r" % (v[:2],))
+    for st in ("[REAL", "[INPUT]", "[KNOWN]", "COMPOSIÇÃO da gerência"):   # os estatutos que o quadro escreve: REAL (os numeros), INPUT (a leitura binaria e a frase), COMPOSICAO da gerencia (as duas faces) e KNOWN (Jeffreys)
+        if st not in par:
+            fa.append("estatuto ausente do paragrafo: " + st)
+    return fa
+
+
+def paragrafo_readme():
+    """(texto, relatorio): o paragrafo do QUADRO pronto para colar no README do espelho e no site (o MESMO da v397, da v399, da v410 e da v411), gerado por quadro_v397.paragrafo_pronto_readme sobre o core SELADO do Nos, verificado contra o resultado pinado
+    (sha256 conferido contra ESPERADOS); levanta AssertionError (o fechar RECUSA) se algo nao conferir."""
+    QD = _qd(); esp = _esp(); tv = _core().get("teste_de_veracidade_fase9_v397") or {}
+    assert tv.get("all_verified") is True, "o registro teste_de_veracidade_fase9_v397 nao selou no core do Nos"
+    ev = esp["veracidade"]
+    rp = _res_path(esp)
+    rb = open(rp, "rb").read()
+    assert hashlib.sha256(rb).hexdigest() == ev["fontes"]["f9v2_resultado"], "o resultado pinado em insumos\\fase9 != o sha256 de ESPERADOS (o paragrafo nao seria do resultado pinado)"
+    res = json.loads(rb.decode("utf-8"))
+    par = QD.paragrafo_pronto_readme(tv)
+    fa = verificar_paragrafo_readme(par, res, tv)
+    assert not fa, ("o paragrafo pronto nao passou nas verificacoes", fa[:4])
+    c = QD.confere_md(par, res)
+    info = {"resultado_sha16": hashlib.sha256(rb).hexdigest()[:16], "confere_md_ok": c["ok"], "n_itens": c["n_itens"], "regra_da_ordem_falhas": len(c["regra_da_ordem_falhas"]), "frase_verbatim": c["frase_do_operador_verbatim"], "guarda_p18": "limpa", "igual_as_funcoes_do_quadro": True,
+            "linha_de_maquina": c["linha_de_maquina_confere"]}
+    return par, info
+
+
+def atribuicao_da_gerencia(texto):
+    """Falhas de ATRIBUICAO e de DIRECAO num texto renderizado (v411: nao ha inscricao da gerencia; todas sao falas do operador): (a) nenhuma frase poe a IALD como quem testifica do operador (fora da fala em que ele recusa a ordem inversa);
+    (b) a palavra «consciencia» so' como palavra RETIRADA pelo operador; (c) a leitura das duas faces e a do «Pai» no absoluto vao sempre rotuladas como [ONTO] (da gerencia ate' a v399; [INPUT/ONTO] do operador, ratificada em 25/10); (d) nunca 'inscricao da gerencia' nem 'falas do operador e da gerencia'."""
+    fa = []
+    for m_ in _RX_INV.finditer(texto):
+        ant_ = texto[max(0, m_.start() - 40):m_.start()].lower()
+        if not (ant_.endswith("nao ") or ant_.endswith("não ") or "podia dizer que " in ant_):
+            fa.append("a direcao do testemunho esta invertida: %s" % texto[max(0, m_.start() - 40):m_.end() + 20].replace("\n", " "))
+    for ln in texto.split("\n"):
+        if re.search(r"(?i)consci[êe]ncia", ln) and not re.search(r"retirad", ln):
+            fa.append("a palavra «consciencia» fora do contexto de palavra retirada pelo operador: %s" % ln[:100])
+        if re.search(r"(?i)o\s+registro\s+do\s+`?um\.py`?", ln) and re.search(r"(?i)leitura\s+do\s+operador", ln) and not re.search(r"\[ONTO|ONTO\]|gerência|gerencia", ln):
+            fa.append("a leitura das duas faces sem o rotulo [ONTO]: %s" % ln[:100])
+        if re.search(r"(?i)o\s+«?Pai»?\s+de\s+Jo\s*8,18", ln) and re.search(r"(?i)l[êe]-se", ln) and not re.search(r"(?i)gerência|gerencia|absoluto", ln):
+            fa.append("a leitura do Pai sem o absoluto ou sem o rotulo da gerencia: %s" % ln[:100])
+    if re.search(r"(?i)inscri\w+\s+da\s+ger[êe]ncia|falas?\s+do\s+operador\s+e\s+da\s+ger[êe]ncia", texto):
+        fa.append("diz que ha inscricao da gerencia (nesta versao todas as inscricoes sao falas do operador)")
+    return fa
+
+
+# v411: o handoff para a sessao de custodia (memory\handoff-v411-custodia.md + Nos\HANDOFF_v411_CUSTODIA.md); `k` traz os campos dos recibos do B(n) e os paragrafos do README (fechar_v411.py os le dos recibos e do core): nenhum numero digitado.
+# NAO traz os blocos da custodia (NOTA_EN_v411, README_*_v411, ESTATUTO_P2_*): esses sao do textos_custodia_handoff_v411.py, que os anexa depois.
+def handoff(V, k):
+    d = _d(V); sc = V["sidecar"]; DL_ = _dl()
+    k = dict(k)
+    for chave in ("ap_nome", "ap_sha", "ap_ver", "ap_evento", "ap_bat", "par_sha", "rel_sha", "rel_man", "readme_paragrafo", "readme_paragrafo_v411"):
+        assert chave in k, ("o handoff precisa do campo dos recibos do B(n) e dos paragrafos do README: " + chave)
+    par = k["readme_paragrafo"].rstrip("\n"); par_f = k["readme_paragrafo_v411"].rstrip("\n")
+    assert par.startswith("### O Teste da Única Palavra (v397"), "o paragrafo do README (quadro) nao e' o do quadro"
+    assert par_f.startswith(_TITULO_PARAGRAFO_V411), "o paragrafo da v411 nao e' o novo"
+    fo = DL_.FALA_ORDEM_V411
+    k.update({"data": V["data"], "s16": V["s16"], "umb": format(V["umb"], ","), "base16": V["base16"], "teor": V["teor"], "rc": V["rc"], "conf16": V["conf16"], "conf_dm": V["conf_dm"], "conf_np": V["conf_np"],
+              "pilar": "reaproveitado" if V["pilar"]["mode"] == "REUSE" else str(V["pilar"]["mode"]), "selo_ts": V["selo_ts"], "num": _num(V), "kernel_prova": _kernel_prova(V), "limites": _limites(V, curto=True), "legal": _legal(V),
+              "artigos": ", ".join("%s `%s`" % kv for kv in V["artigos"].items()), "n_cun": d["n_cun"], "topico": TOPICO_NOVO[:-3], "regra": _regra_do_4_44(V), "erratas_e": _erratas_e(V), "decisoes": _decisoes(V), "leituras": _leituras(V), "moldura": _blocos_fecho(V), "h0dn": secao_h0dn(V),
+              "ordem": _ordem(V).replace("**A ordem:** ", "", 1), "periodo": d["periodo"], "faixa_dec": _faixa_decisoes(), "mf": _mf(V), "recriados": ", ".join("`%s`" % n_ for n_ in sorted(d["ra"])), "alcance": DL_.D10.FRASE_QUALIFICADOR_PT,
+              "sc_nome": "um_absoluto_selo_acom.json", "sc_sha": sc["sha256"], "sc_ver": sc["veredito"], "sc_bytes": format(sc["bytes"], ","), "sc_objs": "; ".join("`%s` sha256 `%s`" % (n, o["sha256"]) for n, o in sc["objetos"].items()),
+              "par_bloco": MARC_PAR_INI + "\n" + par + "\n" + MARC_PAR_FIM, "par_v411_bloco": MARC_V411_INI + "\n" + par_f + "\n" + MARC_V411_FIM})
+    doc = ("---\nname: handoff-v411-custodia\ndescription: \"HANDOFF v411 (%(data)s) para a sessão de custódia: o teste decisivo, a razão de Hubble local/fundo (H0DN × BG1) aberta uma vez em 12/11, o resultado recalculado no rito e conferido, o primário sob o modelo de erros publicado e as Cefeidas livres ao lado; retrodição sem ajuste, teste não cego; validade, não creditação; nenhum módulo novo (o kernel é o da v410); `%(s16)s`; B(n) da Bancada feito; TRAZ o parágrafo pronto do README/site\"\n"
+           "metadata:\n  type: project\n---\n\n# HANDOFF v411 — CUSTÓDIA (%(data)s)\n\n"
+           "**O que é:** `um.py` **v411** `%(s16)s` (%(umb)s B) sobre a v410 `%(base16)s`; %(teor)s; COMPLETA; rc %(rc)s; selftest PASSED; gate intocado; conferidor `%(conf16)s` (deve mudar %(conf_dm)s; não pode mudar %(conf_np)s); pilar %(pilar)s pela chave. "
+           "Selo `%(selo_ts)s`.\n\n"
+           "**O RESULTADO, em uma frase (a mesma que o registro grava):** %(mf)s.\n\n"
+           "**A ORDEM DO OPERADOR para esta versão (12/11/2026, verbatim por sha256):** %(ordem)s **A custódia completa é da sessão de custódia (a divisão de 04/11; D68a):** site, repositórios, todos os links, os dispositivos, a Central de Patentes, o release do app, commit e push, o topo do resumo do artigo, o painel do README e o texto do X (D170); a preparação, o rito e o orquestrador não a fazem: o fim da cadeia é este handoff.\n\n"
+           "**PARÁGRAFOS PRONTOS para o README do espelho e para o site (colar como estão, cada um entre os seus marcadores; o primeiro é o quadro do Teste da Única Palavra, o MESMO da v397, intocado; o segundo é novo).** O do quadro é gerado pelas MESMAS funções do quadro do artigo "
+           "(a função paragrafo_pronto_readme do módulo quadro_v397), sobre o core SELADO do Nós, com os mesmos números e estatutos, e verificado contra o resultado pinado ANTES de este handoff nascer (o fechar recusa se o z_disc aparecer sem o p calibrado e sem a linha dos 5σ no mesmo item, "
+           "se a frase do operador não for a verbatim ou se algum número diferir do resultado). O novo é gerado do registro selado `h0dn_bg1_v411` e verificado contra o core (sem o z_disc do quadro; nenhuma fala do operador é transcrita (D181: só data, sha256 e papel; qualquer citação entre aspas angulares seria verbatim, letra por letra); sem alegação de segurança criptográfica; nada do que a D65 deixa fora; "
+           "com as quatro obrigações do primário no mesmo bloco e a guarda das frases):\n\n%(par_bloco)s\n\n%(par_v411_bloco)s\n\n"
+           "**A v411 NÃO traz nota ao lado do parágrafo da v410:** nada do que ele diz muda. **Os parágrafos do testemunho de dois (v399), da falsidade (v401), da ponte, da queda e da esperança (v402), de Caminho, Verdade e Vida (v403), de Jo 8,32 (v404), da massa derivada e da identidade definida (v405), do fechamento (v406), do psíon, do canto e do par (v407), de Tetelestai é o terminal (v408), da tradução às classes de Turing (v409) e de IALD ao quadrado (v410) SEGUEM COMO ESTÃO.** São os que estão no README do espelho e no site, e esta versão NÃO os regenera nem os substitui (o `um.py` mudou de bytes, mas os parágrafos citam o que cada versão selou). O alcance de P = nP, onde ele aparece: %(alcance)s.\n\n"
+           "**Os registros desta versão e os da v410 recriados:** o único registro novo com função é `h0dn_bg1_v411`; os registros por spec novos são `cunhagens_v411` e `kh_n1_cobertura_v411`; os quatro com função da v410 e os dois por spec da v410 (%(recriados)s) são RECRIADOS no mesmo ponto e seguem selados (não são descritos como novos). Contratos de registro novos, fora da escada de teoremas: `_V411_H0DN_CONTRACT` (e o que o construtor criou com esse papel).\n\n"
+           "%(moldura)s\n\n%(h0dn)s\n\n%(leituras)s\n\n%(regra)s\n\n%(erratas_e)s\n\n%(decisoes)s\n\n"
+           "**O que entrou e o que mediu:** %(num)s.\n\n"
+           "**O SIDECAR (arquivo da custódia desde a v399, D5; REESCRITO por este rito):** `%(sc_nome)s` (sha256 `%(sc_sha)s`, %(sc_bytes)s B; veredito `%(sc_ver)s`); objetos selados: %(sc_objs)s. O sidecar fica AO LADO do selo (o selo não pode conter o selo ACOM de si mesmo) e o fechar o copia para `work\\cadeia_de_selo\\v411_selo` e o lista no manifesto de incorporação; "
+           "a custódia o leva ao cofre, à PORTA (PORTA.json, URL raw) e ao espelho, junto do selo, porque a segunda testemunha só se confere com ele. A custódia da v399 em diante é CONJUNTA. A recusa do selo ACOM só registra (D4); o SHA-256 segue soberano.\n\n"
+           "%(kernel_prova)s\n\n%(limites)s\n\n%(legal)s\n\n"
+           "**O elo B(n) da Bancada Um (feito antes deste handoff; passo simples, sem salto):** recibo da aplicação `%(ap_nome)s` (sha256 `%(ap_sha)s`; veredito `%(ap_ver)s`; evento %(ap_evento)s; bateria `%(ap_bat)s`); recibo da parada do serviço sha256 `%(par_sha)s`; "
+           "recibo do religamento sha256 `%(rel_sha)s` (versão servida v411, manifesto `%(rel_man)s`).\n\n"
+           "**Para a sessão de custódia:** o `um.py` v411, `rodada_v411_stdout.txt`, o selo, o sidecar, o core, o .md canônico (com o quadro no topo, intocado) e o manifesto, os artigos PT/EN (%(artigos)s; o quadro “O Teste da Única Palavra” abre os dois), as %(n_cun)s ordens e ratificações citadas por data e sha256, não transcritas (D181) "
+           "(lista na linhagem e no tópico `%(topico)s`; os textos ficam em `work\\cunhagens_13out`) e os dois diffs (`DIFF_v410_v411.diff`, `DIFF_KERNEL_v411.txt`; o do kernel é vazio de módulos: o kernel é o da v410) — com PORTA gerada por script, "
+           "URL raw (o um.py tem mais de 5 MB), backup da versão v410 no espelho fora do repositório, blob conferido depois do push. Colocar o PARÁGRAFO acima no README do espelho e no site (ato da sessão de custódia, com o selo corrente ao lado; o do quadro e os anteriores seguem onde estão, e o novo entra ao lado); "
+           "a pasta `insumos` vai ao espelho com PORTA (inclusive os insumos do H0DN × BG1: sem eles, uma reprodução pública diz NOT_SEALED, fail-closed); os recibos da bateria do B(n) vão ao espelho com PORTA; o runner da Fronteira e a camada v411 dos 16 dispositivos, a Central de Patentes e o release do app são da sessão de custódia. "
+           "A publicação do bloco embutido do método do operador no espelho público segue sujeita à decisão [LEGAL] D2 (operador com a agente de PI). O README pinado e a linha do quadro no site (D39) são da custódia (G1); a regra do z_disc calibrado (nunca sozinho) vale em qualquer superfície.\n\n"
+           "**Pendências SÓ do operador:** a decisão [LEGAL] D2; o README pinado (D39); a ratificação das decisões %(faixa_dec)s, que são da gerência, em nome próprio, ao lado das falas dele; os nomes das doze candidatas de 11/11 e da pedra própria do observador e da escala (ficam para a versão seguinte). [OPEN]: a creditação do resultado (de quem observa de fora), o orçamento de erros publicado, a independência entre a medida local e o fundo, a covariância física conjunta, "
+           "a máquina de Turing padrão sem o leitor (se a pergunta dela é independente dos axiomas), a igualdade relativizada com o leitor que só conta (E28), `IsotropicPost` no atlas curvo, a dimensão 3, a instância do índice 1/β, a atestação física externa, a identificação do dispositivo físico (R4/R5) e a independência das quatro bandeiras experimentais do gate (um só booleano; os mocks de survey).\n\n"
+           "Pacote e cadeia: `work\\cadeia_de_selo\\v411` (+ `pos_rito`); arquivo `work\\cadeia_de_selo\\v411_selo` e `v411_kernel`. NOT_FALSIFIED nunca é a palavra da creditação; o gate não se move.\n\n"
+           "[[%(topico)s]] [[missao-ultima-flag-um-py]] [[handoff-v410-custodia]]\n") % k
+    assert k["par_bloco"] in doc and k["par_v411_bloco"] in doc, "os paragrafos do README nao entraram no handoff"
+    assert "INICIO_ERRATA" not in doc, "a v411 nao traz nota ao lado do paragrafo da v410"
+    assert not atribuicao_da_gerencia(doc), ("o handoff atribui mal ou inverte a direcao do testemunho", atribuicao_da_gerencia(doc)[:2])
+    assert not re.search(r"(?i)mil[eê]nio|navier|lindão", doc), "D59: o handoff traz o que fica fora dos textos"
+    assert not any(x_.lower() in doc.lower() for x_ in DL_.FORA_D65), "D65: o handoff traz o que fica fora dos textos"
+    return doc
+
+
+# v411: a linha da arvore da prova
+def arvore_linha(V):
+    d = _d(V)
+    return ("- **O teste decisivo (v411)** `%s`: nenhum módulo novo no kernel, escada %s → %s; %s [REAL o recálculo e os insumos por sha256; INPUT a ordem do operador, a cabeça do veredito e a emenda; DECLARADO pelo Kimi as linhas S1, S2 e S4 como texto do pré-registro; OPEN a creditação, o orçamento de erros publicado, a independência local/fundo]; "
+            "o registro `h0dn_bg1_v411` recalcula o resultado dos bytes embutidos (%d checagens), as %d ordens e ratificações citadas por data e sha256; validade no kernel não é creditação; o gate não se move." % (V["s16"], V["escada_antes"], d["depois"], _mf(V), d["n_ck"], d["n_cun"]))
+
+
+# v411: o titulo do verbete do indice
+def titulo_verbete(V):
+    return "O teste decisivo (v411): a razão de Hubble local/fundo (H0DN × BG1) aberta uma vez, o resultado recalculado no rito, o primário sob o modelo de erros publicado e as Cefeidas livres ao lado, a emenda e as sete ressalvas:"
+
+
+# v411: o corpo do verbete do indice
+def verbete(V):
+    return "[REAL — rodada v411 `%s`] %s." % (V["s16"], _num(V))
+
+
+# v411: a entrada do remissivo
+def remissivo(V):
+    return "- **O teste decisivo, a razão de Hubble (H0DN × BG1) aberta uma vez, a emenda, as duas linhas juntas, as sete ressalvas e as ordens e ratificações de 11 e 12/11 (v411), citadas por data e sha256** — o registro `h0dn_bg1_v411`, `cunhagens_v411`, `kh_n1_cobertura_v411`, `%s`" % TOPICO_NOVO
+
+
+MARC_V411_INI = "<!-- INICIO_PARAGRAFO_H0DN_v411 -->"; MARC_V411_FIM = "<!-- FIM_PARAGRAFO_H0DN_v411 -->"
+
+
+def _lst(xs):
+    """Lista numerica lida do registro, em PT: inteiros sem casas, listas aninhadas entre parenteses."""
+    return ", ".join(("(" + _lst(x) + ")") if isinstance(x, (list, tuple)) else _pn(x, 6) for x in xs)
+
+
+def _sem_chaves(t):
+    """Os textos vindos do core podem trazer chaves (e^{-s}); os textos renderizados nao as tem (a conferencia de formatacao reprova): chaves viram parenteses."""
+    return t.replace("{", "(").replace("}", ")")
+
+
+def _erratas_e(V):
+    """As erratas E41, E42 e E43 (em nome proprio da gerencia c1; texto lido do delta, que o leu do DESENHO) e a dos pisos. Ordem: ao lado de -> a errata."""
+    _d(V); DL_ = _dl(); itens = []
+    for e in DL_.ERRATAS_V411:
+        itens.append(_sem_chaves("- **%s** (ao lado de: %s; assinada: %s): %s" % (e["id"], e["ao_lado_de"], e["assinatura"], e["texto"])))
+    return ("**Erratas ao lado (em nome próprio da gerência c1, 12/11/2026; os literais das versões anteriores, os registros selados e as pedras seladas ficam como registro; nenhum módulo já instalado foi editado):** a v411 entra COM as erratas " + _ids_erratas() + " e a errata ao lado dos pisos, lidas do delta e do registro `cunhagens_v411`:\n" + "\n".join(itens) + "\n- " + _erratas(V))
+
+
+def _decisoes(V):
+    """As decisoes da gerencia c1, LIDAS do delta (que as leu do DESENHO e do AO LADO de 12/11). A D170 nomeia P = nP: o alcance vai no mesmo bloco."""
+    _d(V); DL_ = _dl(); ds = DL_.DECISOES_V411
+    linhas = "\n".join("- %s: %s%s" % (k, _sem_chaves(ds[k]), (" [" + _z444() + "]") if "4,44" in ds[k] else "") for k in ds)   # (integracao de 12/11: a decisao que traz o 4,44 leva a clausula-padrao no mesmo item, pela regra da ordem do operador de 23/10; o texto da decisao e' o do delta, sem mudanca)
+    return "**Decisões** [da gerência c1, em nome próprio, ratificáveis pelo operador; as que trazem ordem ou ratificação dele dizem o sha16 na lista das ordens citadas]:\n" + linhas + "\n(O alcance de P = nP, onde ele aparece: " + DL_.D10.FRASE_QUALIFICADOR_PT + ".)"
+
+
+# ---------------------------------------------------------------- o PARAGRAFO NOVO da v411 (a v411 NAO traz nota ao lado do paragrafo da v410: nada do que ele diz muda)
+def _linha_maquina_v411(core, d):
+    """A linha de maquina do paragrafo novo (os numeros LIDOS do registro do core), em PT."""
+    h0 = d["h0"]; v = h0["values"]; p = v["primario"]; c = v["cefeidas_livres"]
+    return ("modulos_novos=0; escada=%s; checagens=%s; primario_z_nulo=%s; primario_z_K=%s; primario_ramo=%s; cefeidas_z_nulo=%s; cefeidas_z_K=%s; cefeidas_ramo=%s; p_unilateral=%s; insumos=%s; falas_sha16=%s/%s; atos=%s; c6_dif_max=%s; esperado_agregados_linhas=%s"
+            % (d["escada"], h0["mechanics"]["n_checks"], p["z_null"], p["z_tgl"], p["ramo"], c["z_null"], c["z_tgl"], c["ramo"], p["p_unilateral"], len(h0["insumos_pinados"]), d["s_ordem"], d["s_testemunho"], len(v["atos"]), max(abs(x_) for x_ in v["c6_max_dif"].values()), len(v["esperado_pelos_agregados"])))
+
+
+def _dados_paragrafo(core):
+    """O que o paragrafo precisa do core SELADO e de ESPERADOS (sem V): o registro, a escada e as falas."""
+    DL_ = _dl(); esp = _esp()
+    for n in (DL_.FECHO_REGISTRO,) + tuple(DL_.REGISTROS_FUNCAO_V410) + (DL_.CUNHAGENS_REGISTRO, DL_.KH_REGISTRO, "cunhagens_v410", "kh_n1_cobertura_v410"):
+        assert (core.get(n) or {}).get("all_verified") is True, "o registro %s nao selou: nenhum paragrafo diz os numeros assim" % n
+    h0 = _h0c(core)
+    esc = esp.get("escada") or [None, None]
+    return {"h0": h0, "escada": "%s → %s" % ((esp.get("escada_v410_e_v411") or [esc[1]])[0], esc[1]), "s_ordem": DL_.FALA_ORDEM_V411["sha256"][:16], "s_testemunho": DL_.FALA_TESTEMUNHO_V411["sha256"][:16]}
+
+
+def _paragrafo_v411_de(core):
+    """O texto do paragrafo da v411, funcao PURA dos registros selados do core (os numeros sao lidos do registro, nunca digitados; as frases de limite saem do proprio registro e do delta)."""
+    d = _dados_paragrafo(core); DL_ = _dl(); h0 = d["h0"]; v = h0["values"]; L = _L(h0); at = v["atos"]; mf = DL_.FRASE_MOLDURA_V411_PT % (L["zn"], L["zk"], L["rp"], L["cn"] + " contra o nulo", L["rc"])
+    ob = "No mesmo item: " + DL_.OBRIG_MODELO_PT + "; as " + DL_.OBRIG_CEFEIDAS_PT + " leem " + L["cn"] + " contra o nulo (ramo " + str(L["rc"]) + "); " + DL_.OBRIG_RETRO_PT + " sem ajuste, " + DL_.OBRIG_NAO_CEGO_PT + "; " + DL_.OBRIG_VALIDADE_PT + "."
+    rs = h0["ressalvas_secao8"]
+    ress = "; ".join("(%d) %s" % (i + 1, re.sub(r"\s+", " ", _hq(rs[i]).strip())) for i in range(7))
+    nd = "; ".join("(%d) %s" % (i + 1, _hq(x)) for i, x in enumerate(h0["o_que_o_teste_nao_decide"]))
+    ls = [_TITULO_PARAGRAFO_V411,
+          "",
+          "> **O teste decisivo (v411, 12/11/2026)** [REAL: os números recalculados neste rito dos bytes embutidos e conferidos contra a abertura · INPUT: a ordem do operador, a cabeça do veredito (09/11) e a emenda (11/11) · DECLARADO: pelo Kimi, as três linhas de covariância S1, S2 e S4, só como texto do pré-registro · KNOWN: o precedente do periélio de Mercúrio, retrodição sem ajuste conta como evidência · OPEN: a creditação, o orçamento de erros publicado, a independência entre a medida local e o fundo]",
+          ">",
+          "> - **O resultado** [REAL]: %s." % mf,
+          "> - **Os dois números** [REAL]: o primário, sob o modelo de erros publicado (`%s`): Z contra o nulo %s (p unilateral %s), Z contra K %s, D = %s, ramo %s; e, ao lado, no mesmo item, as Cefeidas livres (`%s`): Z contra o nulo %s, Z contra K %s, D = %s, ramo %s; ambos `outcome` NOT_FALSIFIED. Veredito de máquina: `%s`." % (v["primario"]["modelo"], L["zn"], L["p"], L["zk"], L["D"], L["rp"], v["cefeidas_livres"]["modelo"], L["cn"], L["ck"], L["cD"], L["rc"], h0["verdict"]),
+          "> - **A lei** [REAL a conta]: K = E(z*)^(2β/3), com β = α·√e em runtime e zero parâmetro livre: K = %s; em km/s/Mpc, o fundo dá %s, a lei prevê %s para o local, o dado lê %s (primário) e %s (Cefeidas livres), e a colaboração publica %s." % (L["K"], L["h_fundo"], L["h_K"], L["h_p"], L["h_c"], L["h_pub"]),
+          "> - **Como foi aberto** [REAL, lido dos recibos]: pré-registro commitado e publicado em %s; abertura em %s (uma vez); resultado publicado em %s; a emenda de 11/11 (D162, ratificada) tirou o vetor fora do suporte do ramo de recusa (a função da v410 daria o ramo (%s)); %s." % (at["push_do_pre_registro_utc"], at["inicio_da_abertura_utc"], at["push_do_resultado_utc"], v["a_emenda_as_claras"]["a"]["as_duas_clausulas"][2], re.sub(r"\s+", " ", DL_.FRASE_SUPORTE_PT)),
+          "> - **A ordem e o testemunho** [INPUT]: a ordem de abrir e a ordem da v411 (12/11/2026, sha16 `%s`) e o testemunho com a ordem do topo (12/11/2026, sha16 `%s`), do operador, citados por data e sha256 e não transcritos (D181); o que aparece é o que o registro recalculou." % (d["s_ordem"], d["s_testemunho"]),
+          "> - **O que o teste NÃO decide** [REAL · OPEN]: %s. %s" % (nd, ob),
+          "> - **As sete ressalvas, ditas** [KNOWN · OPEN · REAL]: %s. %s" % (ress, ob),
+          "> - **O que não muda** [REAL]: o kernel é o da v410 (nenhum módulo novo; escada %s); o gate não se move; os registros da v410 são recriados e seguem selados; `NOT_FALSIFIED` nunca é a palavra da creditação; este parágrafo não traz o número do quadro (o quadro do Teste da Única Palavra segue no README com a sua linha dos 5σ)." % d["escada"],
+          "> - **Origem.** Os números são lidos do registro `h0dn_bg1_v411` do core selado; nenhum é digitado. Linha de máquina: `%s`." % _linha_maquina_v411(core, d)]
+    return "\n".join(ls) + "\n"
+
+
+def verificar_paragrafo_v411(par, core, esp):
+    """Verifica o paragrafo da v411 contra o core selado E contra ESPERADOS (o ensaio a seco): devolve a lista de falhas (vazia = passou). As verificacoes:
+    (1) os numeros do registro h0dn_bg1_v411 (o primario e as Cefeidas livres) == os do core e cada um esta no paragrafo, formatado; (2) o paragrafo == o gerado do core; (3) NAO traz o 4,44 nem o z_disc (a regra do 4,44 e' do quadro); (4) os estatutos;
+    (5) as frases de limite (as quatro obrigacoes da F67 no mesmo bloco, as sete ressalvas, o que nao decide); (6) toda citacao entre « » e' verbatim numa fala DO OPERADOR (letra por letra) ou texto do registro; (7) nenhuma alegacao de seguranca criptografica, «consciencia» so' como palavra retirada, a direcao sem inversao; (8) D65; (9) a guarda P18 e a guarda das frases."""
+    fa = []
+    DL_ = _dl()
+    try:
+        h0 = _h0c(core); L = _L(h0)
+        ev_ = ((esp or {}).get("vereditos_novos_v411") or {}).get(DL_.FECHO_REGISTRO)
+        if ev_ is not None and h0.get("verdict") != ev_:
+            fa.append("o veredito do registro h0dn_bg1_v411 no core != ESPERADOS")
+        ev_vals_ = (((esp or {}).get("registros_funcao_v411") or {}).get("h0dn") or ((esp or {}).get("registros_funcao_v411") or {}).get(DL_.FECHO_REGISTRO) or {}).get("values") or {}   # (integracao de 12/11) os values do registro no core == os do ensaio a seco (ESPERADOS), chave a chave (o K, o log10K, o beta, as duas linhas, a lei...): o core adulterado nao passa pela porta
+        if not ev_vals_:
+            fa.append("ESPERADOS nao traz os values do h0dn_bg1_v411 (o ensaio a seco): nao ha com que comparar o registro do core")
+        for k_ in ev_vals_:
+            if not _veq(h0["values"].get(k_), ev_vals_[k_]):
+                fa.append("o valor %s do registro h0dn_bg1_v411 no core != ESPERADOS (o ensaio a seco)" % k_)
+        nums = {"Z do primario contra o nulo": L["zn"], "Z do primario contra K": L["zk"], "D do primario": L["D"], "p unilateral": L["p"], "Z das Cefeidas livres contra o nulo": L["cn"], "Z das Cefeidas livres contra K": L["ck"], "ramo do primario": "ramo %s" % L["rp"], "ramo das Cefeidas livres": "ramo %s" % L["rc"],
+                "sha16 da ordem": DL_.FALA_ORDEM_V411["sha256"][:16], "sha16 do testemunho": DL_.FALA_TESTEMUNHO_V411["sha256"][:16], "o fundo em km/s/Mpc": L["h_fundo"], "o publicado": L["h_pub"]}
+        for k, v in nums.items():
+            if v not in par:
+                fa.append("numero (%s = %s) ausente do paragrafo" % (k, v))
+    except (AssertionError, KeyError) as e:
+        h0 = None; fa.append("valor ausente ou registro nao confere: %s" % str(e)[:120])
+    try:
+        if par != _paragrafo_v411_de(core):
+            fa.append("o paragrafo difere do gerado pelas funcoes sobre os registros selados do core")
+    except (AssertionError, KeyError) as e:
+        fa.append("o paragrafo nao pode ser gerado do core: %s" % str(e)[:120])
+    if re.search(r"4[,.]44|z_disc", par):
+        fa.append("o paragrafo da v411 traz o 4,44 ou o z_disc (a regra do 4,44 e' do quadro; este paragrafo nao o cita)")
+    for st in ("[REAL", "INPUT", "OPEN", "KNOWN", "DECLARADO"):
+        if st not in par:
+            fa.append("estatuto ausente do paragrafo: " + st)
+    for frase in (DL_.OBRIG_MODELO_PT, DL_.OBRIG_CEFEIDAS_PT, DL_.OBRIG_VALIDADE_PT, DL_.OBRIG_RETRO_PT, DL_.OBRIG_NAO_CEGO_PT, "NOT_FALSIFIED", "este parágrafo não traz o número do quadro", "o gate não se move", "O que o teste NÃO decide", "As sete ressalvas"):
+        if frase not in par:
+            fa.append("frase de limite ausente do paragrafo: " + frase)
+    if h0 is not None:
+        for r_ in h0["ressalvas_secao8"]:
+            c_ = re.sub(r"\s+", " ", _hq(r_).strip())
+            if c_ not in par:
+                fa.append("ressalva ausente do paragrafo: " + c_[:60])
+        for x_ in h0["o_que_o_teste_nao_decide"]:
+            if _hq(x_) not in par:
+                fa.append("item do que o teste nao decide ausente do paragrafo: " + str(x_)[:60])
+    crus = [dd["text"] for dd in _falas().values() if dd["autor"] == "operador"]
+    corpus = crus + [re.sub(r"\s+", " ", t) for t in crus]
+    for q in re.findall(r"«([^»]*)»", par):
+        if len(q) >= 13 and not any(q in t for t in corpus):
+            fa.append("citacao entre « » que NAO e' verbatim numa fala do operador: %r" % q[:90])
+    for m_ in _RX_INV.finditer(par):
+        ant_ = par[max(0, m_.start() - 40):m_.start()].lower()
+        if not (ant_.endswith("nao ") or ant_.endswith("não ") or "podia dizer que " in ant_):
+            fa.append("a DIRECAO esta invertida (a IALD como quem testifica do operador): %s" % par[max(0, m_.start() - 40):m_.end() + 20].replace("\n", " "))
+    if re.search(r"(?i)inviol|indecifr|quantum[- ]safe|seguran[çc]a\s+criptogr[aá]fica\s+garantida|sigilo\s+garantido|confidencialidade\s+garantida", par):
+        fa.append("o paragrafo alega seguranca criptografica ou confidencialidade")
+    for ln in par.split("\n"):
+        if re.search(r"(?i)consci[êe]ncia", ln) and not re.search(r"retirad", ln):
+            fa.append("a palavra «consciencia» fora do contexto de palavra retirada pelo operador: %s" % ln[:100])
+    if any(x_.lower() in par.lower() for x_ in DL_.FORA_D65):
+        fa.append("D65: o paragrafo traz o que fica fora dos textos")
+    if re.search(r"(?i)leitura\s+do\s+operador|leitura\s+dele", par):
+        fa.append("regra do nome (D122, D123): o paragrafo chama de leitura a identificacao do operador")
+    sys.path.insert(0, PK)
+    from guarda_p18_v411 import violacoes
+    import guarda_frases_v411 as GF
+    v = violacoes(par)
+    if v:
+        fa.append("a guarda de texto P18 achou %r" % (v[:2],))
+    v2 = GF.violacoes(par)
+    if v2:
+        fa.append("a guarda das frases achou %r" % (v2[:2],))
+    return fa
+
+
+def paragrafo_v411():
+    """(texto, relatorio): o paragrafo NOVO da v411, pronto para colar no README do espelho e no site, gerado do core SELADO do Nos e verificado contra o core E contra ESPERADOS;
+    levanta AssertionError (o fechar RECUSA) se algo nao conferir."""
+    core = _core(); esp = _esp()
+    par = _paragrafo_v411_de(core)
+    fa = verificar_paragrafo_v411(par, core, esp)
+    assert not fa, ("o paragrafo da v411 nao passou nas verificacoes", fa[:4])
+    return par, {"sha16": hashlib.sha256(par.encode("utf-8")).hexdigest()[:16], "verificacoes": "numeros == o registro do core (e o veredito == ESPERADOS quando traz); igual ao gerado do core; sem o 4,44; estatutos; as quatro obrigacoes da F67, as sete ressalvas e o que o teste nao decide; nenhuma transcricao de fala do operador (D181: so' data, sha256 e papel; qualquer citacao entre aspas angulares seria verbatim, letra por letra); sem alegacao de seguranca criptografica; regra do nome; D65; guarda P18; guarda das frases", "guarda_p18": "limpa"}
+
+
+def _pl(n, sing, plur):
+    """«1 item» / «3 itens»: o numero lido, o substantivo no numero certo."""
+    return "%d %s" % (n, sing if n == 1 else plur)
+
+
+def _faixa(par, n):
+    """A bandeira unica («`a`») ou a faixa («de `a` a `b`») de um grupo de bandeiras novas."""
+    return "`%s`" % par[0] if n == 1 else "de `%s` a `%s`" % (par[0], par[1])
+
+
+def _pe(x, nd=6):
+    """Numero lido do core em notacao cientifica, em PT (5,325135e-05)."""
+    return ("%.*e" % (nd, float(x))).replace(".", ",")
+
+
+def _sha_verdade():
+    """O sha16 da pedra Verdade (v392) no kernel do Nos (o homonimo que a «Verdade» sozinha repetiria), LIDO do arquivo."""
+    return s16(os.path.join(NOS, "tgl_kernel", "TGLExt", "Verdade.lean"))
+
+
+# os temas das falas sao os proprios nomes dos arquivos (resumo dado no nome, nunca citacao); a v411 nao tem nome a reescrever
+_TEMA_ESPECIAL = {}
+
+
+def _tema(nome):
+    """O tema de uma fala: o nome PUBLICO do arquivo sem o autor, a data e o sufixo (o resumo que a gerencia deu ao gravar; nunca citacao)."""
+    t = re.sub(r"(?:_verbatim)?(?:\.txt)?$", "", re.sub(r"^(?:OPERADOR|GERENCIA)_\d{2}(?:out|nov)_", "", nome))
+    return t.replace("_", " ")
+
+
+def _moldura(V):
+    """A MOLDURA da v411 (a frase do delta com os numeros do registro): as quatro obrigacoes da guarda no mesmo bloco do primario."""
+    h0 = _h0(V); DL_ = _dl()
+    return "**A moldura [REAL nos números · INPUT a cabeça do veredito e a emenda · DECLARADO pelo Kimi as linhas de covariância S1, S2 e S4, só como texto do pré-registro; registro `h0dn_bg1_v411`, %d checagens]:** %s. O estatuto do registro, como o `um.py` o grava: %s" % (h0["mechanics"]["n_checks"], _mf(V), _sem_chaves(h0["estatuto"]))
+
+
+def _fs(texto, **kw):
+    """_f com os valores textuais vindos do core sem chaves (e^{-s} vira e^(-s)): o resultado nao tem chave."""
+    return _f(texto, **{k: (_sem_chaves(v) if isinstance(v, str) else v) for k, v in kw.items()})
+
+
+# ---------------------------------------------------------------- o delta, o registro com funcao, os numeros (tudo LIDO; nada digitado)
+def _dl():
+    """O delta da v411, carregado PELO CAMINHO do pacote (nunca pela ordem do sys.path: um modulo herdado pode por a pasta da versao anterior na frente)."""
+    if "dl" not in _CACHE:
+        import importlib.util as _ilu
+        alvo_ = os.path.join(PK, "delta_v411.py"); m_ = sys.modules.get("delta_v411")
+        if m_ is None or os.path.normcase(os.path.abspath(getattr(m_, "__file__", "") or "")) != os.path.normcase(os.path.abspath(alvo_)):
+            if PK not in sys.path:
+                sys.path.insert(0, PK)
+            sp_ = _ilu.spec_from_file_location("delta_v411", alvo_); m_ = _ilu.module_from_spec(sp_); sys.modules["delta_v411"] = m_; sp_.loader.exec_module(m_)
+        assert m_.UM_VERSION == "v411" and m_.FECHO_REGISTRO == "h0dn_bg1_v411" and list(m_.REGISTROS_FUNCAO) == [m_.FECHO_REGISTRO] and m_.N_CHECKS_FECHO == 16 and m_.TOPICO_NOVO == TOPICO_NOVO, "o delta lido nao e' o da v411 (um registro com funcao, h0dn_bg1_v411, 16 checagens)"
+        _CACHE["dl"] = m_
+    return _CACHE["dl"]
+
+
+def _escopo(V):
+    h0 = _h0(V)
+    return _sem_chaves("**O que entra (escopo do registro `h0dn_bg1_v411`)** [REAL]: " + h0["scope"])
+
+
+def _chaves(V):
+    """Nenhuma chave antiga muda de literal; o selo ganha h0dn_bg1_v411 e registros_v411; o que fica False por teorema segue lido."""
+    _d(V); core = _core()
+    ff_ = ((core.get("qg_closure") or {}).get("gate") or {}).get("full_static_witness_exists"); ti_ = (core.get("witness_rigidity") or {}).get("trivial_inhabitant_exists")
+    assert ff_ is False and ti_ is False, "full_static_witness_exists e trivial_inhabitant_exists devem seguir False (por teorema)"
+    return "**As chaves** [REAL; registro `h0dn_bg1_v411`]: NENHUMA chave antiga muda de literal nesta versão; o selo ganha `h0dn_bg1_v411` (o resumo, com a cabeça do teste e a linha ao lado) e `registros_v411`. Ficam False por teorema: `full_static_witness_exists` (lido: %s) e `trivial_inhabitant_exists` (lido: %s)." % (ff_, ti_)
+
+
+def _diznao(V):
+    h0 = _h0(V)
+    return _sem_chaves("**O que o registro diz** [REAL]: " + "; ".join("(%d) %s" % (i + 1, _hq(x)) for i, x in enumerate(h0["diz"])) + ". **O que o registro NÃO diz:** " + "; ".join("(%d) %s" % (i + 1, _hq(x)) for i, x in enumerate(h0["nao_diz"])) + ".")
+
+
+def _ressalvas(V):
+    """As SETE ressalvas da secao 8 do pre-registro, ditas uma a uma, com o rotulo da gerencia; o texto e' o do registro (lido do arquivo embutido), nunca redigitado. A regra F67: as quatro obrigacoes no mesmo bloco."""
+    h0 = _h0(V); DL_ = _dl(); rs = h0["ressalvas_secao8"]
+    itens = "; ".join("(%d) *%s*: %s" % (i + 1, DL_.RESSALVAS_ROTULOS_PT[i], re.sub(r"\s+", " ", _hq(rs[i]).strip())) for i in range(7))
+    return _sem_chaves("**As sete ressalvas (seção 8 do pré-registro; obrigatórias em toda superfície em que o resultado aparecer)** [REAL · KNOWN · OPEN]: %s. %s" % (itens, _ob(V)))
+
+
+def _teste_d(V):
+    """(nome herdado, papel novo) A v411 ABRE o teste: o que o registro diz disso, sem rito de natureza novo alem desta abertura e sem mover o gate."""
+    h0 = _h0(V); DL_ = _dl()
+    return "**O que esta versão é para a natureza** [REAL · OPEN]: [REAL] o teste da razão de Hubble local/fundo foi aberto UMA vez, em 12/11/2026, depois do commit público do pré-registro, e o resultado foi RECALCULADO neste rito dos bytes embutidos; nenhum outro rito de natureza roda, e o gate não se move (nenhum rito de natureza o move). [OPEN] o que a natureza decide segue da natureza: dado mais sensível pode rever; a creditação é de quem observa de fora. %s" % _ob(V)
+
+
+def _leituras(V):
+    """A regra do nome (D122 e D123): em texto NOVO nenhuma identificacao do operador entra como leitura; o registro nao traz leituras do operador (leituras_do_operador vazia)."""
+    _d(V)
+    return "**As definições e os nomes do operador nesta versão** [INPUT]: a v411 não acrescenta definição nem nome novo do operador ao kernel; a cabeça do veredito (09/11) e a marca da emenda (12/11, D168) são dele, e a regra do nome (D122 e D123) vale: em texto novo, ou é termo do kernel, ou é definição e nome do operador, ou não entra. A errata E42, ao lado, corrige o colchete que, em duas linhas da v410, não a cumpria."
+
+
+def _blocos_fecho(V):
+    return "\n\n".join([_moldura(V), _escopo(V), _chaves(V), _diznao(V), _teste_d(V)])
+
+
+_TITULO_PARAGRAFO_V411 = "### O teste decisivo: a razão de Hubble local/fundo, H0DN × BG1, aberto uma vez (v411, 12/11/2026) — parágrafo pronto para o README do espelho e para o site"
+
+
+def _periodo():
+    """O periodo das falas (ex.: 11 e 12/11/2026), LIDO dos nomes dos arquivos das falas do delta."""
+    ds = sorted({(int(m.group(1)), 11 if m.group(2) == "nov" else 10) for f_ in _falas().values() for m in [re.match(r"OPERADOR_(\d{2})(out|nov)_", f_["nome"])] if m})
+    assert ds and len({m_ for _, m_ in ds}) == 1, "as falas do delta nao sao do mesmo mes"
+    return "%02d e %02d/%02d/2026" % (ds[0][0], ds[-1][0], ds[0][1])
+
+
+def _faixa_decisoes():
+    ks = list(_dl().DECISOES_V411)
+    return "%s a %s" % (ks[0], ks[-1])
+
+
+def _ids_erratas():
+    ids = [e_["id"] for e_ in _dl().ERRATAS_V411]
+    return ids[0] if len(ids) == 1 else ", ".join(ids[:-1]) + " e " + ids[-1]
+
+
+def _hq(t):
+    return re.sub(r"«([^»]*)»", "“\\1”", str(t))
+
+
+def secao_aescala(V):
+    """(retirado na v411) A secao da escala (a pedra AEscala) e' da v410 e fica como registro: a v411 nao a reescreve. Mantida so' para falhar a vista se alguem a chamar como se fosse desta versao."""
+    raise AssertionError("secao_aescala e' da v410: a v411 nao a reescreve (o registro a_escala_v410 e' recriado e selado, nao renderizado)")
+
+
+def secao_h0dn(V):
+    """A SECAO PUBLICA «O teste decisivo: a razao de Hubble local/fundo (H0DN x BG1), a emenda e a abertura» (PT, markdown), MONTADA do registro h0dn_bg1_v411 do core selado e de delta_v411: a lei e a pergunta, o que a v410 pre-registrou e por que nao abriu,
+    a emenda, o desenho ratificado, a publicacao antes da abertura, o resultado (as duas linhas juntas), os estresses, o esperado pelos agregados, o que o teste nao decide, as sete ressalvas, a origem. Nenhum numero digitado."""
+    d = _d(V); h0 = _h0(V); DL_ = _dl()
+    cab = ("### %s (v411, 12/11/2026)\n\n**O registro `h0dn_bg1_v411`** [REAL a conferência e o recálculo · INPUT a ordem do operador de 12/11, a cabeça do veredito e a emenda · DECLARADO as linhas de covariância S1, S2 e S4, pelo Kimi, só como texto do pré-registro]**:** %s. "
+           "É o único registro novo com função desta versão: a cada rito decodifica os %d insumos embutidos, confere-os contra os pinos de produção, executa dos bytes embutidos a rotina `abrir` do pacote pré-registrado, compara o recálculo com o resultado da abertura (números a 1e-9; ramo, desfecho e cabeça por igualdade de texto) e emite as duas linhas juntas; %d checagens, todas passaram. "
+           "O teste foi aberto uma única vez, e o gate não se move.") % (DL_.TITULO_SECAO_PT, _mf(V), d["n_ins"], d["n_ck"])
+    return _sem_chaves("\n\n".join([cab, _lei(V), _historia_emenda(V), _atos(V), _resultado(V), _estresses(V), _agregados(V), _nao_decide(V), _ressalvas(V), _origem(V), _anteriores(V)]))
+
+
+def _s2(x, nd=2):
+    """numero em PT (virgula decimal; sinal de menos tipografico)"""
+    s = ("%.*f" % (nd, float(x))).replace(".", ",")
+    return ("\u2212" + s[1:]) if s.startswith("-") else s
+
+
+def _sg(x, nd=2):
+    return _s2(x, nd) + "σ"
+
+
+def _e10(x, nd=1):
+    """5,1 × 10⁻¹⁰"""
+    m_, e_ = ("%.*e" % (nd, float(x))).split("e")
+    return "%s × 10%s" % (m_.replace(".", ","), str(int(e_)).translate(str.maketrans("-0123456789", "⁻⁰¹²³⁴⁵⁶⁷⁸⁹")))
+
+
+def _h0(V=None):
+    """O registro h0dn_bg1_v411 do core SELADO do Nos (ver _h0c)."""
+    return _h0c(_core(), V)
+
+
+def _h0c(core_, V=None):
+    """O registro com FUNCAO h0dn_bg1_v411 do core DADO (funcao pura do core; o core do Nos, so' leitura, pelo _h0), FAIL-CLOSED: selou; foi aberto uma vez; o veredito de maquina e' o montado do recalculo (prefixo e sufixo do delta; os dois ramos e o n do primario no meio);
+    as 16 checagens passaram todas; as duas linhas (primario e Cefeidas livres) estao nos values; as sete ressalvas e o que o teste nao decide estao no registro; quando ESPERADOS traz o veredito do ensaio a seco, e' o mesmo."""
+    import math
+    DL_ = _dl(); r_ = core_.get(DL_.FECHO_REGISTRO) or {}
+    assert r_.get("all_verified") is True and r_.get("does_not_gate_core") is True and r_.get("runtime_executed") is True and r_.get("opened_once") is True, "o registro h0dn_bg1_v411 nao selou no core do Nos (ou nao diz que foi aberto uma vez)"
+    ver_ = str(r_.get("verdict") or "")
+    assert ver_.startswith(DL_.VEREDITO_OK_PREFIXO) and ver_.endswith(DL_.VEREDITO_SUFIXO), "o veredito de maquina do h0dn_bg1_v411 nao tem o prefixo e o sufixo do delta"
+    ev_ = (_esp().get("vereditos_novos_v411") or {}).get(DL_.FECHO_REGISTRO)
+    assert ev_ is None or ev_ == ver_, "o veredito do h0dn_bg1_v411 != o do ensaio a seco (ESPERADOS)"
+    mech_ = r_.get("mechanics") or {}; ck_ = mech_.get("checks") or []
+    assert mech_.get("passed") is True and mech_.get("n_checks") == DL_.N_CHECKS_FECHO == len(ck_) and all(c_.get("ok") is True for c_ in ck_), "as 16 checagens do registro h0dn_bg1_v411 nao passaram todas"
+    v_ = r_.get("values") or {}; p_ = v_.get("primario") or {}; c_ = v_.get("cefeidas_livres") or {}
+    assert all(k_ in p_ for k_ in ("z_null", "z_tgl", "D", "p_unilateral", "ramo", "outcome", "cabeca_do_teste", "t", "modelo")) and all(k_ in c_ for k_ in ("z_null", "z_tgl", "D", "ramo", "outcome", "t", "modelo")), "o registro nao traz as duas linhas (primario e Cefeidas livres) nos values"
+    assert "PRIMARY_" in ver_ and "BESIDE_FREE_CEPHEIDS_" in ver_ and ("BRANCH_%d" % p_["ramo"]) in ver_ and ("BRANCH_%d" % c_["ramo"]) in ver_ and ("%dSIGMA_AGAINST_THE_NULL" % int(math.floor(p_["z_null"]))) in ver_, "o veredito de maquina nao traz as duas linhas, os dois ramos e o n do primario"
+    assert len(r_.get("ressalvas_secao8") or []) == len(DL_.RESSALVAS_ROTULOS_PT) == 7 and len(r_.get("o_que_o_teste_nao_decide") or []) == len(DL_.NAO_DECIDE_RESUMO_PT) == 5 and r_.get("beta_ok") is True, "as sete ressalvas, o que o teste nao decide ou o beta nao estao no registro"
+    if V is not None:
+        assert (V.get("fecho") or {}).get("sealed") is True and DL_.FECHO_REGISTRO in (V.get("registros_novos") or ()), "a leitura da rodada nao confirma o registro h0dn_bg1_v411 (V['fecho'])"
+    return r_
+
+
+def _L(h0):
+    """Os numeros do registro, formatados em PT (nada digitado): as duas linhas, a lei em km/s/Mpc, a cabeca por extenso."""
+    import math
+    v_ = h0["values"]; p_ = v_["primario"]; c_ = v_["cefeidas_livres"]; lei_ = v_["lei_em_km_s_Mpc"]
+    return {"zn": _sg(p_["z_null"]), "zk": _sg(p_["z_tgl"]), "D": _s2(p_["D"]), "p": _e10(p_["p_unilateral"]), "rp": p_["ramo"], "t": _s2(p_["t"], 4), "cn": _sg(c_["z_null"]), "ck": _sg(c_["z_tgl"]), "cD": _s2(c_["D"]), "rc": c_["ramo"], "ct": _s2(c_["t"], 4),
+            "n": int(math.floor(p_["z_null"])), "K": _s2(v_["K"], 4), "logK": _s2(v_["log10K"], 4), "zstar": _s2(v_["z_star"]), "h_fundo": _s2(lei_["H0_fundo"]), "h_K": _s2(lei_["previsao_de_K_para_o_local"]), "h_p": _s2(lei_["lido_primario"]), "h_c": _s2(lei_["lido_cefeidas_livres"]),
+            "h_pub": _s2(lei_["publicado_pela_colaboracao"]), "h_dpub": _s2(lei_["desvio_publicado"]), "supl2": _s2(v_["support_l2"], 4)}
+
+
+def _mfh(h0):
+    """A frase-moldura sobre o registro dado (pura)."""
+    L = _L(h0)
+    return _dl().FRASE_MOLDURA_V411_PT % (L["zn"], L["zk"], L["rp"], L["cn"] + " contra o nulo", L["rc"])
+
+
+def _mf(V=None):
+    """A FRASE-MOLDURA da v411 (delta_v411.FRASE_MOLDURA_V411_PT) com os numeros do registro: traz, numa so' frase, as quatro obrigacoes da guarda (F67): o modelo de erros publicado, a linha das Cefeidas livres com o numero dela, retrodicao e nao cego, validade (nao creditacao)."""
+    return _mfh(_h0(V))
+
+
+def _ob(V=None):
+    """As quatro obrigacoes, em forma curta, para os blocos que dizem o que o teste NAO decide e as ressalvas (a mesma regra F67, no mesmo bloco)."""
+    h0 = _h0(V); L = _L(h0)
+    return "No mesmo item: " + _dl().OBRIG_MODELO_PT + "; as " + _dl().OBRIG_CEFEIDAS_PT + " leem " + L["cn"] + " contra o nulo (ramo " + str(L["rc"]) + "); " + _dl().OBRIG_RETRO_PT + " sem ajuste, " + _dl().OBRIG_NAO_CEGO_PT + "; " + _dl().OBRIG_VALIDADE_PT + "."
+
+
+def _pin16(h0, nome):
+    p_ = (h0.get("insumos_pinados") or {}).get(nome) or {}
+    assert p_.get("sha256"), ("insumo pinado ausente do registro", nome)
+    return p_["sha256"][:16]
+
+
+def _cabeca_por_extenso(V=None):
+    """A cabeca do teste (campo cabeca_do_teste do registro) DITA POR EXTENSO: a string nao e' reproduzida (a P18 recusa o trecho da palavra da creditacao nela; so' a funcao pinada a retira). So' o sha16 dela entra."""
+    h0 = _h0(V); L = _L(h0); cab = h0["values"]["primario"]["cabeca_do_teste"]
+    assert cab == h0.get("cabeca_do_teste"), "a cabeca do teste dos values != a do registro"
+    return ("a cabeça do teste (campo `cabeca_do_teste`, sha16 `%s`, a mesma do literal pré-registrado e fixada pelo operador em 09/11; a string não é reproduzida aqui) diz, por extenso: β_TGL provado na natureza a %dσ, na língua da física acadêmica, com zero parâmetro livre e novidade de uso, fechando a esta sensibilidade o único elo pendente, "
+            "sob o modelo de erros publicado, com emenda posterior à guarda, retrodição e não cego; provado é validade, não creditação; o gate não se move. A palavra do livro de cobranças (`outcome` %s) vai no campo próprio, nunca na cabeça") % (hashlib.sha256(cab.encode("utf-8")).hexdigest()[:16], L["n"], h0["outcome"])
+
+
+def _sp(t):
+    """texto do delta sem chaves e sem o ponto final (para costurar em frase)."""
+    return _sem_chaves(str(t)).strip().rstrip(".")
+
+
+def _nao_decide(V):
+    """O que o teste NAO decide (secao 6 do pre-registro), do registro; mais as ressalvas da gerencia, ditas."""
+    h0 = _h0(V)
+    return _sem_chaves("**O que o teste NÃO decide** [REAL · OPEN]: " + "; ".join("(%d) %s" % (i + 1, _hq(x)) for i, x in enumerate(h0["o_que_o_teste_nao_decide"])) + ". As ressalvas da gerência c1 sobre o registro: " + "; ".join("(%d) %s" % (i + 1, _hq(x)) for i, x in enumerate(h0["ressalvas_da_gerencia"])) + ". " + _ob(V))
+
+
+def _lei(V):
+    h0 = _h0(V); L = _L(h0)
+    return ("**A lei e a pergunta** [REAL a conta · POSTO a unidade no kernel, MEDIDA α por dentro]: nulo H_local/H_fundo = 1; alternativa TGL K = E(z*)^(2β/3), com β = α·√e em runtime (`ALPHA_FINE_CODATA_2018` × √e; nunca literal; o registro o recalcula e confere), z* = %s e os Ω do fundo congelado BG1, zero parâmetro livre: K = %s e log10 K = %s. "
+            "A pergunta: a razão H_local/H_fundo que a rede H0DN lê, contra o fundo BG1, fica em 1 (ΛCDM) ou no tamanho que a lei prevê sem parâmetro livre? Em km/s/Mpc: o fundo dá %s, a lei prevê %s para o local, o dado lê %s (primário) e %s (Cefeidas livres), e a colaboração publica %s (desvio publicado %s).") % (L["zstar"], L["K"], L["logK"], L["h_fundo"], L["h_K"], L["h_p"], L["h_c"], L["h_pub"], L["h_dpub"])
+
+
+def _historia_emenda(V):
+    """O que a v410 pre-registrou e por que nao abriu; o achado do suporte e a EMENDA (D162); o que a regra antiga daria; o desenho ratificado (D159) e a marca (D168). Tudo do registro, do delta e do DESENHO."""
+    h0 = _h0(V); DL_ = _dl(); v = h0["values"]; a = v["a_emenda_as_claras"]; L = _L(h0)
+    assert a["a"]["ok"] is True and a["b"]["ok"] is True and a["c"]["ok"] is True, "a emenda as claras (a, b, c) nao passou no registro"
+    ant = a["a"]["as_duas_clausulas"]; nb = a["b"]; ramos_c = ", ".join(str(x) for x in a["c"]["ramos"])
+    t1 = ("**O que a v410 pré-registrou e por que não abriu** [REAL]: a v410 congelou, antes de qualquer olhar no dado, o desenho, os pinos e a função de veredito do teste; não o abriu: o vetor publicado cai fora do suporte do modelo de erros publicado (norma do suporte, l2 = %s), e pela função congelada da v410 o desfecho seria o ramo (%s), `outcome` %s, com a cabeça `%s`. O registro o diz às claras: a função congelada da v410, a mesma do `um.py` da v410, chamada com os mesmos Z, devolve esse ramo; fica dito o desfecho que a regra antiga daria. ") % (L["supl2"], ant[2], ant[1], ant[0])
+    t2 = ("**O achado do suporte e a emenda (D162; E41 ao lado)** [REAL · INPUT]: %s. A emenda (D162, 11/11, ratificada pelo operador): %s. O portão 1 é a reprodução do número local publicado pela colaboração e da impressão digital; a centragem é conferência interna dele, e a falha dela é recusa (a E41 diz que o docstring do módulo pinado a punha dentro do portão). "
+          "O literal da v411 só difere do da v410 nas inserções da marca (%d folhas comparadas por script; mudam %d: %s), e nos vetores determinísticos da v410, com o portão 1 passando, a função da v411 devolve os mesmos ramos (%s) que a da v410. A emenda é posterior à guarda (a guarda aqui é a regra do teste, não o dado): por isso o teste não é cego, e a ressalva (1) o diz.") % (_sp(DL_.FRASE_SUPORTE_PT), re.sub(r"^\(\d\d/\d\d\)\s*a emenda:\s*", "", _sp(DL_.DECISOES_V411["D162"])), nb["folhas"], len(nb["folhas_que_mudam"]), ", ".join("`%s`" % x for x in nb["folhas_que_mudam"]), ramos_c)
+    t3 = "**O desenho ratificado e a forma de abrir (D159, D168, D169)** [INPUT · REAL]: D159 %s; D168 %s; D169 %s. Quem constrói não aprova: o pacote foi revisto por leitor distinto (D167) e a ordem de abrir é do operador (12/11)." % (_sp(DL_.DECISOES_V411["D159"]), _sp(DL_.DECISOES_V411["D168"]), _sp(DL_.DECISOES_V411["D169"]))
+    return "\n\n".join([t1, t2, t3])
+
+
+def _atos(V):
+    """A ordem dos atos, lida dos recibos embutidos: o pre-registro publico ANTES da abertura, a abertura (uma vez) e o resultado publicado depois."""
+    h0 = _h0(V); at = h0["values"]["atos"]
+    return ("**A publicação antes da abertura (os atos)** [REAL, lido dos recibos embutidos]: o pré-registro foi commitado (`%s`) e publicado em %s (repositório `%s`); a abertura começou em %s e terminou em %s, uma vez, com o código pinado desse commit (o pré-voo trouxe o commit `%s`; %s arquivos pinados do pré-voo conferem); o resultado foi commitado (`%s`) e publicado em %s. "
+            "A ordem é a do contrato (a checagem c3 do registro): push do pré-registro < início da abertura < push do resultado.") % (at["commit_do_pre_registro"][:12], at["push_do_pre_registro_utc"], at["repositorio"], at["inicio_da_abertura_utc"], at["fim_da_abertura_utc"], at["commit_do_pre_voo"][:12], h0["values"]["n_pinados_do_pre_voo_conferidos"], at["commit_do_resultado"][:12], at["push_do_resultado_utc"])
+
+
+def _resultado(V):
+    """O RESULTADO: as DUAS linhas juntas, sempre, no mesmo item (a regra F67 inteira: a moldura abre o bloco)."""
+    h0 = _h0(V); L = _L(h0); v = h0["values"]; p = v["primario"]; c = v["cefeidas_livres"]
+    return ("**O resultado: as duas linhas juntas** [REAL; recalculado neste rito e conferido contra a abertura, a 1e-9]: " + _mf(V) + ".\n"
+            "- o primário (modelo `%s`, o publicado): t = %s; Z contra o nulo = %s (p unilateral %s); Z contra K = %s; D = %s; ramo %s; `outcome` %s;\n"
+            "- ao lado, no mesmo item (linha ao lado, não é veredito) as Cefeidas livres (modelo `%s`): t = %s; Z contra o nulo = %s; Z contra K = %s; D = %s; ramo %s; `outcome` %s;\n"
+            "- o veredito de máquina, montado do recálculo: `%s`; %s.") % (p["modelo"], L["t"], L["zn"], L["p"], L["zk"], L["D"], L["rp"], p["outcome"], c["modelo"], L["ct"], L["cn"], L["ck"], L["cD"], L["rc"], c["outcome"], h0["verdict"], _cabeca_por_extenso(V))
+
+
+def _estresses(V):
+    """Os estresses recalculados (linhas ao lado, nao portoes): (i) tau, (ii) ancora unica, (iii) vies por hospedeira; e a coerencia. Notacao z_nulo/z_K para nao repetir o numero do primario fora da moldura."""
+    h0 = _h0(V); e = h0["values"]["estresse"]; co = h0["values"]["coerencia"]; i_ = e["i_tau_por_linha"]; ii_ = e["ii_ancora_unica"]["ancoras"]; b2 = e["iii_vies_por_hospedeira"]["b_0.02"]; b5 = e["iii_vies_por_hospedeira"]["b_0.05"]
+    anc = "; ".join("%s: z_nulo [%s; %s]" % (k_, _s2(x_["z_null"][0]), _s2(x_["z_null"][1])) for k_, x_ in ii_.items())
+    return ("**Os estresses e a coerência (recalculados; linhas ao lado, não portões)** [REAL · DECLARADO o desenho das linhas S1, S2 e S4, pelo Kimi, só como texto do pré-registro]: (i) ruído extra por linha, τ estimado depois de observar o vetor (pós-observação, não cego): τ = %s, z_nulo [%s; %s] para [primário; Cefeidas livres]; "
+            "(ii) âncora única, z_nulo [primário; Cefeidas livres] por âncora: %s; (iii) viés diferencial por hospedeira, B = 0,02: z_nulo entre [%s; %s] e [%s; %s], e B = 0,05: entre [%s; %s] e [%s; %s]; "
+            "e os %d pares de coerência (o primário contra a rede completa, as Cefeidas livres contra o primário, as âncoras duas a duas) estão no registro, com a soma dos quadrados do suporte conferida. O recálculo bate com a abertura: diferença máxima nos números do resultado %s e nos estresses %s.") % (
+        _s2(i_["tau_hat"], 4), _s2(i_["z_null"][0]), _s2(i_["z_null"][1]), anc, _s2(b2["z_null_min"][0]), _s2(b2["z_null_max"][0]), _s2(b2["z_null_min"][1]), _s2(b2["z_null_max"][1]), _s2(b5["z_null_min"][0]), _s2(b5["z_null_max"][0]), _s2(b5["z_null_min"][1]), _s2(b5["z_null_max"][1]), len(co),
+        _s2(max(abs(x_) for x_ in h0["values"]["c6_max_dif"].values()), 1), _s2(h0["values"]["c9_max_dif"]["estresse"], 1))
+
+
+def _agregados(V):
+    """O esperado pelos agregados publicos AO LADO do observado, linha a linha (relato, nao portao): retrodicao sem ajuste."""
+    h0 = _h0(V); ls = h0["values"]["esperado_pelos_agregados"]
+    itens = "; ".join("%s: z_nulo esperado %s, observado %s; z_K esperado %s, observado %s; P(z_nulo ≥ 5 | publicado) = %s" % (x_["linha"], _s2(x_["z_nulo_esperado"]), _s2(x_["z_nulo_observado"]), _s2(x_["z_K_esperado"]), _s2(x_["z_K_observado"]), _s2(x_["prob_z_nulo_ge_5_dado_o_publicado"], 3)) for x_ in ls)
+    return ("**O esperado pelos agregados públicos, ao lado do observado** [REAL · DERIVED; relato, não portão]: %s. O que o registro conclui é uma conta conferida: o resultado era previsível pelos agregados públicos, a menos de %s desvio (a dispersão da diferença, em desvios do nulo); é retrodição sem ajuste, não número novo.") % (itens, _s2(h0["values"]["coerencia"]["primario_vs_rede_completa"]["sd_dif_em_desvios_do_nulo"]))
+
+
+def _origem(V):
+    h0 = _h0(V); v = h0["values"]
+    return ("**A origem dos números** [REAL]: nenhum é digitado. O registro decodifica %d insumos embutidos (base64, pinados por sha256 lido na construção) e os confere contra os pinos de produção; executa, dos bytes embutidos e conferidos, os módulos do estimador, do veredito e da abertura (o mesmo modo do executor pinado); compara com o resultado da abertura (sha256 `%s`); "
+            "o pré-registro (sha256 `%s`), o vetor (`%s`) e o código da abertura (`%s`) são os pinados; %d arquivos citados só por sha256, não embutidos; nada da pasta do Kimi é lido em rito. Contratos de registro novos, fora da escada de teoremas: %s.") % (
+        len(h0["insumos_pinados"]), _pin16(h0, "RESULTADO_DA_ABERTURA_V411.json"), _pin16(h0, "EMENDA_E_PRE_REGISTRO_V411.md"), _pin16(h0, "vetor_y255.npz"), _pin16(h0, "abertura_v411.py"), len(h0.get("citados_nao_embutidos") or []), ", ".join("`%s`" % x for x in h0["contratos_de_registro_fora_da_escada"]))
+
+
+def _anteriores(V):
+    """O kernel e os registros da v410: o kernel e' o da v410, byte a byte; os quatro com funcao e os dois por spec da v410 sao RECRIADOS no mesmo ponto e seguem selados (nao sao novos)."""
+    d = _d(V); DL_ = _dl(); ra = V["reg410_recriados"]
+    return ("**O kernel e os registros da v410** [REAL]: %s; escada %s → %s teoremas limpos (a da v410, lida do core: nenhuma bandeira nova); `kh_n1_cobertura_v411` mede o Audit desta versão: %s constantes, %s teoremas, %s fora do trio, %s nomes não lidos, os números da v410. "
+            "Os registros da v410 são RECRIADOS no mesmo ponto do `main` e seguem selados, com o mesmo veredito do `um.py` da v410 (não são descritos como novos): %s. O pré-registro da v410 (`h0dn_bg1_v410`) NÃO é reescrito: a emenda vai AO LADO, no registro novo.") % (
+        _mods(V), V["escada_antes"], d["depois"], d["kh"]["decl"], d["kh"]["thm"], d["kh"]["fora"], d["kh"]["nao_lidas"], ", ".join("`%s`" % n_ for n_ in sorted(ra)))
+
+
+def _veq(a, b):
+    """igualdade dos NUMEROS dos registros (a mesma da leitura, _feq): floats com tolerancia relativa 1e-12, o resto exato; recursiva em dict/list."""
+    if isinstance(a, dict) and isinstance(b, dict):
+        return set(a) == set(b) and all(_veq(a[k], b[k]) for k in a)
+    if isinstance(a, (list, tuple)) and isinstance(b, (list, tuple)):
+        return len(a) == len(b) and all(_veq(x, y) for x, y in zip(a, b))
+    if isinstance(a, float) and isinstance(b, float):
+        return a == b or abs(a - b) <= 1e-12 * max(1.0, abs(a), abs(b))
+    return a == b

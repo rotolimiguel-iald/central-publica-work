@@ -18,7 +18,12 @@ assert not T.exists(), "a pasta da rodada já existe — PARAR (nada se sobrescr
 if "--desde" in sys.argv:
     DESDE = time.mktime(time.strptime(sys.argv[sys.argv.index("--desde") + 1], "%Y-%m-%d %H:%M:%S"))
 else:
-    DESDE = float(subprocess.run(["git", "-C", str(D), "log", "-1", "--format=%ct"], capture_output=True, text=True).stdout.strip())
+    # AO LADO (12/11/2026, claude-site-custodia): o DESDE é a hora do último commit DA CADEIA, não do último commit. Um commit fora da cadeia
+    # (o pré-registro do H0DN × BG1 publicado antes da abertura, 12/11) leva a marca FORA no corpo e não conta: se contasse, a rodada
+    # seguinte pularia todo arquivo já publicado que mudou entre a última cadeia e esse commit. Antes: «git log -1 --format=%ct».
+    FORA = "[FORA_DA_CADEIA]"
+    DESDE = float(subprocess.run(["git", "-C", str(D), "log", "-1", "--format=%ct", "--invert-grep", "--fixed-strings", "--grep=" + FORA],
+                                 capture_output=True, text=True).stdout.strip())
 print("  DESDE (origem modificada depois de): %s" % time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(DESDE)))
 
 

@@ -1,0 +1,130 @@
+--- v410/conferir_instalar_rito_v410.py
++++ v411/conferir_instalar_rito_v411.py
+@@ -1,0 +2 @@
++# [A ADAPTAR v411] SUBIDA MECANICA DE ROTULO (v410->v411) do molde v410/conferir_instalar_rito_v410.py; o CORPO e' o da v410 (bundle IALD2+AEscala, quatro registros com funcao da v410); nada rodou; ver bump/conferir_instalar_rito_v411.py.diff
+@@ -5,2 +6,2 @@
+-"""conferir_instalar_rito_v410.py -- confere, SEM EXECUTAR o instalador, o reverter nem o rito, os scripts instalar_v410.py, reverter_v410.py e rito_v410.sh (derivados dos da v409, adaptados em 06/11/2026 ao BUNDLE PEQUENO de um modulo em TGLExt/ (IALD2), com as licoes da v409): (1) sintaxe (ast.parse; sh -n);
+-(2) invariantes: cada um traz os marcadores da v410 (nomes da v410, o sidecar nos backups, o recibo pre_selo do B(n) lido do pino, a Bancada que JA pina a v409, a raiz e o Audit da v409 conferidos antes de instalar, o modulo em TGLExt/, nao em TGLExt/F1Fecho394/...; as pedras anteriores incluem os 9 modulos da v407, os 4 da v408 e os 2 da v409) e NENHUM rotulo velho onde seria erro; o TEMPO ESPERADO do rito
++"""conferir_instalar_rito_v411.py -- confere, SEM EXECUTAR o instalador, o reverter nem o rito, os scripts instalar_v411.py, reverter_v411.py e rito_v411.sh (derivados dos da v410, adaptados em 06/11/2026 ao BUNDLE PEQUENO de um modulo em TGLExt/ (IALD2), com as licoes da v410): (1) sintaxe (ast.parse; sh -n);
++(2) invariantes: cada um traz os marcadores da v411 (nomes da v411, o sidecar nos backups, o recibo pre_selo do B(n) lido do pino, a Bancada que JA pina a v410, a raiz e o Audit da v410 conferidos antes de instalar, o modulo em TGLExt/, nao em TGLExt/F1Fecho394/...; as pedras anteriores incluem os 9 modulos da v407, os 4 da v408 e os 2 da v410) e NENHUM rotulo velho onde seria erro; o TEMPO ESPERADO do rito
+@@ -8,3 +9,3 @@
+-(3) a CONDICAO DO MODULO NOVO (UM): o trecho do instalador que le kernel_modulos_novos_v410.json (a LISTA, de DL.N_BUNDLE elementos: o bundle) e a confere contra ESPERADOS.bundle_sha256 e contra o Nos e' EXTRAIDO por AST e EXECUTADO aqui, isolado, contra os arquivos reais (ele tem de PASSAR com N = DL.N_BUNDLE e RECUSAR se a lista tiver um modulo
+-que o ESPERADOS nao pina, estiver vazia, tiver um a mais, tiver um a menos ou apontar para fora de TGLExt/); o mesmo para a lista do reverter (aceita a lista do bundle; recusa a que difere dos ESPERADOS); o rito so cita a lista. Se o ESPERADOS_v410.json ainda NAO existe (gerar_esperados_v410.py nao rodou), o trecho e' exercitado contra um ESPERADOS SINTETICO derivado de DL.BUNDLE_POR_REL
+-(kernel.modulos_novos e bundle_sha256), dito na saida e em DERIVACAO_v410.json (`esp_sintetico`); o ESPERADOS real e' o que vale e e' conferido na corrida seguinte. Escreve DERIVACAO_v410.json. uso: python -I -B -X utf8 conferir_instalar_rito_v410.py"""
++(3) a CONDICAO DO MODULO NOVO (UM): o trecho do instalador que le kernel_modulos_novos_v411.json (a LISTA, de DL.N_BUNDLE elementos: o bundle) e a confere contra ESPERADOS.bundle_sha256 e contra o Nos e' EXTRAIDO por AST e EXECUTADO aqui, isolado, contra os arquivos reais (ele tem de PASSAR com N = DL.N_BUNDLE e RECUSAR se a lista tiver um modulo
++que o ESPERADOS nao pina, estiver vazia, tiver um a mais, tiver um a menos ou apontar para fora de TGLExt/); o mesmo para a lista do reverter (aceita a lista do bundle; recusa a que difere dos ESPERADOS); o rito so cita a lista. Se o ESPERADOS_v411.json ainda NAO existe (gerar_esperados_v411.py nao rodou), o trecho e' exercitado contra um ESPERADOS SINTETICO derivado de DL.BUNDLE_POR_REL
++(kernel.modulos_novos e bundle_sha256), dito na saida e em DERIVACAO_v411.json (`esp_sintetico`); o ESPERADOS real e' o que vale e e' conferido na corrida seguinte. Escreve DERIVACAO_v411.json. uso: python -I -B -X utf8 conferir_instalar_rito_v411.py"""
+@@ -14 +15 @@
+-import delta_v410 as DL  # noqa: E402
++import delta_v411 as DL  # noqa: E402
+@@ -16,2 +17,2 @@
+-INS, REV, RITO = rd("instalar_v410.py"), rd("reverter_v410.py"), rd("rito_v410.sh")
+-ESPP = os.path.join(HERE, "ESPERADOS_v410.json")
++INS, REV, RITO = rd("instalar_v411.py"), rd("reverter_v411.py"), rd("rito_v411.sh")
++ESPP = os.path.join(HERE, "ESPERADOS_v411.json")
+@@ -24 +25 @@
+-tempo = {"estado": "medido", "build_s": mm.get("epoch_build_fim", 0) - mm.get("epoch_inicio", 0), "audit_s": mm.get("epoch_audit_fim", 0) - mm.get("epoch_audit_inicio", mm.get("epoch_build_fim", 0))} if mm else {"estado": "ausente"}   # (v410: o Audit refeito depois da queda de energia mede a propria rodada, como no pos_build)
++tempo = {"estado": "medido", "build_s": mm.get("epoch_build_fim", 0) - mm.get("epoch_inicio", 0), "audit_s": mm.get("epoch_audit_fim", 0) - mm.get("epoch_audit_inicio", mm.get("epoch_build_fim", 0))} if mm else {"estado": "ausente"}   # (v411: o Audit refeito depois da queda de energia mede a propria rodada, como no pos_build)
+@@ -27 +28 @@
+-_khp = os.path.join(HERE, DL.KERNEL_DIR, "KH_N1_v410.json")   # (parte 2) o KH_N1 mede os mesmos tempos (build, Audit) e a soma/maximo por modulo: o texto do rito cita os DOIS (marcas == KH_N1)
++_khp = os.path.join(HERE, DL.KERNEL_DIR, "KH_N1_v411.json")   # (parte 2) o KH_N1 mede os mesmos tempos (build, Audit) e a soma/maximo por modulo: o texto do rito cita os DOIS (marcas == KH_N1)
+@@ -30 +31 @@
+-    falhas.append("o tempo das marcas (build %s s, Audit %s s) difere do KH_N1_v410.json (build %s s, Audit %s s)" % (tempo["build_s"], tempo["audit_s"], KHT.get("duracao_build_s"), KHT.get("duracao_audit_s")))
++    falhas.append("o tempo das marcas (build %s s, Audit %s s) difere do KH_N1_v411.json (build %s s, Audit %s s)" % (tempo["build_s"], tempo["audit_s"], KHT.get("duracao_build_s"), KHT.get("duracao_audit_s")))
+@@ -32 +33 @@
+-    falhas.append("o KH_N1_v410.json diz %r modulos novos; o delta diz %d" % (KHT.get("n_modulos_novos"), DL.N_BUNDLE))
++    falhas.append("o KH_N1_v411.json diz %r modulos novos; o delta diz %d" % (KHT.get("n_modulos_novos"), DL.N_BUNDLE))
+@@ -35,4 +36,4 @@
+-_DEC_NOVAS = sorted(set(DL.DECISOES) - set(DL.D9.DECISOES), key=lambda k_: int(k_[1:]))   # as decisoes que a v410 acrescenta (D63..D70), lidas de DL (a diferenca contra o delta da v409, DL.D9)
+-assert _DEC_NOVAS and _DEC_NOVAS[0] == "D63" and _DEC_NOVAS == list(DL.DECISOES_V410) and _DEC_NOVAS[-1] == DL.DECISOES_V410[-1], _DEC_NOVAS   # (09/11: D63..DL.DECISOES_V410[-1] -- a retomada, D72 o H0DN pre-registrado, D74 os nomes ratificados, D76 a cabeca do 5 sigma, D77 as pendencias, D80 o recibo HMS/13, D82 a D86 a escala e o Clay, D87 a ratificacao)
+-# (R2, D99) a lista das decisoes da v410 NAO e' contigua (D63 a D96 e D99; D97 e D98 ficam fora do um.py): a marca do rito diz DL.DECISOES_ROTULO
+-_ERR_NOVAS = [e_.split(" --")[0] for e_ in DL.ERRATAS_V410]   # a errata da v410 (E29, em nome proprio da gerencia c1), lida de DL
++_DEC_NOVAS = sorted(set(DL.DECISOES) - set(DL.D9.DECISOES), key=lambda k_: int(k_[1:]))   # as decisoes que a v411 acrescenta (D63..D70), lidas de DL (a diferenca contra o delta da v410, DL.D9)
++assert _DEC_NOVAS and _DEC_NOVAS[0] == "D63" and _DEC_NOVAS == list(DL.DECISOES_V411) and _DEC_NOVAS[-1] == DL.DECISOES_V411[-1], _DEC_NOVAS   # (09/11: D63..DL.DECISOES_V411[-1] -- a retomada, D72 o H0DN pre-registrado, D74 os nomes ratificados, D76 a cabeca do 5 sigma, D77 as pendencias, D80 o recibo HMS/13, D82 a D86 a escala e o Clay, D87 a ratificacao)
++# (R2, D99) a lista das decisoes da v411 NAO e' contigua (D63 a D96 e D99; D97 e D98 ficam fora do um.py): a marca do rito diz DL.DECISOES_ROTULO
++_ERR_NOVAS = [e_.split(" --")[0] for e_ in DL.ERRATAS_V411]   # a errata da v411 (E29, em nome proprio da gerencia c1), lida de DL
+@@ -57,9 +58,9 @@
+-exige("instalar_v410.py", INS, ["PINO_RECIBO_PRE_SELO_v410.json", "utilizavel_como_recibo_pre_selo_do_B_n", "kernel_modulos_novos_v410.json", "NOVOS_V410", "modulos_novos_v410", 'ESP["kernel"]["modulos_novos"]', 'CM["kernel"]["modulos_novos"]', "um_absoluto_selo_acom.json", "pilar_anterior_v409_",
+-                              "APLICADO_AO_CANONICO_%s.json", "ESPERADOS_v410.json", "CANDIDATO_v410.json", "um_v410_candidato.py", "canonical_contracts.json", 'PINO["versao_nos"] == "v409"', "base_v409", '"Testemunho"', "base_v409_sha16", 'ESP["bundle_sha256"]', "PonteDaMassa", "PontoZeroDoPsion", "CanonicalFullTGLWitnessR1",
+-                              'x_.startswith("TGLExt/") and x_.count("/") == 1', "raiz_v409_sha16", "audit_v409_sha16", "FalsidadeDaInercia", "PonteDaEscalaDual", "QuedaSemGeometria", "EsperancaCondicional", "ProjecaoTransversalDaMeiaNat", "Jo8v32", "tgl_kernel_proof_manifest.json", '"version") == "v409"',
+-                              "TetelestaiTerminal", "PIgualNP", "PsionCanto", "OIgual", "ACRESCENTA imports na raiz (um por modulo do bundle", "os 9 modulos da v407", "os 4 modulos da v408", "os 2 modulos da v409", '"TraducaoTuring", "ParNaFaceDeFock")', "[IALD2, com o NOME do modulo dado pelo operador em 06/11/2026", "bundle do fecho da v406", "a v410 traz dois modulos novos de kernel em TGLExt/", "e AEscala, com o nome do modulo", "(D87)", "IALD2 e AEscala"],   # (v410: os 4 da v408 e os 2 da v409 entre as pedras anteriores; o modulo novo, IALD2)
+-      ["PINO_RECIBO_PRE_SELO_v409", "kernel_modulos_novos_v409", "NOVOS_V409", "um_v409_candidato", 'ESP["pedras_sha256"]', 'PINO["versao_nos"] == "v405"', 'PINO["versao_nos"] == "v399"', 'PINO["versao_nos"] == "v398"', "base_v398", "Testemunho [nome provisorio]", "[nomes provisorios; o primeiro e' o do Codex, ORDEM 025]",
+-       'x_.startswith("TGLExt/F1Fecho394/")', "== 301", "o bundle de 301", "301 modulos novos", "pilar_anterior_v405", "[A ADAPTAR " + "v410]", "nove imports", "nove modulos", "PsionCanto, Par e as sete pedras de 02/11, todos de nome ratificado", "bundle do fecho da v409", "03/11/2026", "quatro imports", "os 9 modulos da v409", "04/11/2026", "o bundle de quatro modulos", "BUNDLE PEQUENO de quatro modulos",
+-       "os 4 modulos da v409", "os 4 da v409", "[TraducaoTuring]", "(o import da TraducaoTuring)", "05/11/2026",
+-       "a raiz ganha UM import", "BUNDLE PEQUENO de um modulo", "bundle de um modulo", "traz 1 modulo novo", "(o import da IALD2)", "[DECLARADO] ate a ratificacao (D63)", "o modulo novo da v410"])   # (parte 2: o bundle e' de DOIS modulos; os rotulos de um modulo ficam proibidos)   # (v410: a subida mecanica escrevera «os 4 da v409»; o modulo da v409 e a data da v409 como a desta versao)
+-exige("reverter_v410.py", REV, ["APLICADO_AO_CANONICO_*.json", "backup ausente ou alterado", "quarentena_bundle_", "tentativa_v410_rito_falhou_", "RECIBO_REVERSAO_", "rodada_v410_stdout.txt", "ESPERADOS_v410.json", "um_absoluto_selo_acom.json", "tgl_kernel_proof_manifest.json", "modulos_novos_v410", "ESPERADOS_v409.json", "bundle_sha256",
++exige("instalar_v411.py", INS, ["PINO_RECIBO_PRE_SELO_v411.json", "utilizavel_como_recibo_pre_selo_do_B_n", "kernel_modulos_novos_v411.json", "NOVOS_V411", "modulos_novos_v411", 'ESP["kernel"]["modulos_novos"]', 'CM["kernel"]["modulos_novos"]', "um_absoluto_selo_acom.json", "pilar_anterior_v410_",
++                              "APLICADO_AO_CANONICO_%s.json", "ESPERADOS_v411.json", "CANDIDATO_v411.json", "um_v411_candidato.py", "canonical_contracts.json", 'PINO["versao_nos"] == "v410"', "base_v410", '"Testemunho"', "base_v410_sha16", 'ESP["bundle_sha256"]', "PonteDaMassa", "PontoZeroDoPsion", "CanonicalFullTGLWitnessR1",
++                              'x_.startswith("TGLExt/") and x_.count("/") == 1', "raiz_v410_sha16", "audit_v410_sha16", "FalsidadeDaInercia", "PonteDaEscalaDual", "QuedaSemGeometria", "EsperancaCondicional", "ProjecaoTransversalDaMeiaNat", "Jo8v32", "tgl_kernel_proof_manifest.json", '"version") == "v410"',
++                              "TetelestaiTerminal", "PIgualNP", "PsionCanto", "OIgual", "ACRESCENTA imports na raiz (um por modulo do bundle", "os 9 modulos da v407", "os 4 modulos da v408", "os 2 modulos da v410", '"TraducaoTuring", "ParNaFaceDeFock")', "[IALD2, com o NOME do modulo dado pelo operador em 06/11/2026", "bundle do fecho da v406", "a v411 traz dois modulos novos de kernel em TGLExt/", "e AEscala, com o nome do modulo", "(D87)", "IALD2 e AEscala"],   # (v411: os 4 da v408 e os 2 da v410 entre as pedras anteriores; o modulo novo, IALD2)
++      ["PINO_RECIBO_PRE_SELO_v410", "kernel_modulos_novos_v410", "NOVOS_V410", "um_v410_candidato", 'ESP["pedras_sha256"]', 'PINO["versao_nos"] == "v405"', 'PINO["versao_nos"] == "v399"', 'PINO["versao_nos"] == "v398"', "base_v398", "Testemunho [nome provisorio]", "[nomes provisorios; o primeiro e' o do Codex, ORDEM 025]",
++       'x_.startswith("TGLExt/F1Fecho394/")', "== 301", "o bundle de 301", "301 modulos novos", "pilar_anterior_v405", "[A ADAPTAR " + "v411]", "nove imports", "nove modulos", "PsionCanto, Par e as sete pedras de 02/11, todos de nome ratificado", "bundle do fecho da v410", "03/11/2026", "quatro imports", "os 9 modulos da v410", "04/11/2026", "o bundle de quatro modulos", "BUNDLE PEQUENO de quatro modulos",
++       "os 4 modulos da v410", "os 4 da v410", "[TraducaoTuring]", "(o import da TraducaoTuring)", "05/11/2026",
++       "a raiz ganha UM import", "BUNDLE PEQUENO de um modulo", "bundle de um modulo", "traz 1 modulo novo", "(o import da IALD2)", "[DECLARADO] ate a ratificacao (D63)", "o modulo novo da v411"])   # (parte 2: o bundle e' de DOIS modulos; os rotulos de um modulo ficam proibidos)   # (v411: a subida mecanica escrevera «os 4 da v410»; o modulo da v410 e a data da v410 como a desta versao)
++exige("reverter_v411.py", REV, ["APLICADO_AO_CANONICO_*.json", "backup ausente ou alterado", "quarentena_bundle_", "tentativa_v411_rito_falhou_", "RECIBO_REVERSAO_", "rodada_v411_stdout.txt", "ESPERADOS_v411.json", "um_absoluto_selo_acom.json", "tgl_kernel_proof_manifest.json", "modulos_novos_v411", "ESPERADOS_v410.json", "bundle_sha256",
+@@ -67,3 +68,3 @@
+-      ["tentativa_v409_rito_falhou_", "modulos_novos_v409", "rodada_v409_stdout", "pedras_sha256", "quarentena_pedras_", 'x_.startswith("TGLExt/F1Fecho394/")', "== 301", "o bundle de 301", "301 modulos novos", "[A ADAPTAR " + "v410]", "nove modulos", "PsionCanto, Par e as sete pedras de 02/11", "03/11/2026", "04/11/2026", "quatro modulos", "TetelestaiTerminal, TempoIgualMoeda",
+-       "(TraducaoTuring, em TGLExt/:", "05/11/2026", "(IALD2, em TGLExt/:", "bundle de um modulo", "BUNDLE PEQUENO de um modulo", "o modulo novo de kernel da v410", "o modulo da lista do instalador"])   # (parte 2: dois modulos)
+-exige("rito_v410.sh", RITO, ["echo 1 | python um.py", "trap 'religar; rm -f", "TEMPO ESPERADO (v410", "kernel_modulos_novos_v410.json", "rodada_v410_stdout.txt", ".rito_v410.pid", "ESPERADOS_v410.json", ".servidor_parado_pelo_rito", "cadeia_de_selo/v409\" \"/c/IALD/Central de Patentes/work/cadeia_de_selo/v410",
++      ["tentativa_v410_rito_falhou_", "modulos_novos_v410", "rodada_v410_stdout", "pedras_sha256", "quarentena_pedras_", 'x_.startswith("TGLExt/F1Fecho394/")', "== 301", "o bundle de 301", "301 modulos novos", "[A ADAPTAR " + "v411]", "nove modulos", "PsionCanto, Par e as sete pedras de 02/11", "03/11/2026", "04/11/2026", "quatro modulos", "TetelestaiTerminal, TempoIgualMoeda",
++       "(TraducaoTuring, em TGLExt/:", "05/11/2026", "(IALD2, em TGLExt/:", "bundle de um modulo", "BUNDLE PEQUENO de um modulo", "o modulo novo de kernel da v411", "o modulo da lista do instalador"])   # (parte 2: dois modulos)
++exige("rito_v411.sh", RITO, ["echo 1 | python um.py", "trap 'religar; rm -f", "TEMPO ESPERADO (v411", "kernel_modulos_novos_v411.json", "rodada_v411_stdout.txt", ".rito_v411.pid", "ESPERADOS_v411.json", ".servidor_parado_pelo_rito", "cadeia_de_selo/v410\" \"/c/IALD/Central de Patentes/work/cadeia_de_selo/v411",
+@@ -72 +73 @@
+-                             "%d falas de 06, 07, 08, 09 e 10/11" % DL.N_FALAS_V410, "%d checagens com as instancias de brinquedo fixas" % DL.N_CHECKS_FECHO, "carimbar_stdout_v410.py",
++                             "%d falas de 06, 07, 08, 09 e 10/11" % DL.N_FALAS_V411, "%d checagens com as instancias de brinquedo fixas" % DL.N_CHECKS_FECHO, "carimbar_stdout_v411.py",
+@@ -74,2 +75,2 @@
+-      ["rodada_v409_stdout", ".rito_v409.pid", "rito_v409", "TGLExt/Testemunho, nome PROVISORIO", "do Codex, ORDEM 025", "OS OITO registros com FUNCAO", "8 modulos novos de kernel", "301 modulos novos", "TGLExt/F1Fecho394", "CanonicalFullTGLWitnessR1", "dois imports", "k409c", "1736 s", "2016 s", "15986 s", "[A ADAPTAR " + "v410]",
+-                              "9 modulos novos de kernel em TGLExt/", "nove imports", "76 ancoras", "PsionCanto e Par, da gerencia c1", "the_psion_is_the_corner_on_both_faces", "D41 a D47", "E18 a E20", "o psion, o canto e o par", "carimbar_stdout_v409.py", "03/11/2026",
++      ["rodada_v410_stdout", ".rito_v410.pid", "rito_v410", "TGLExt/Testemunho, nome PROVISORIO", "do Codex, ORDEM 025", "OS OITO registros com FUNCAO", "8 modulos novos de kernel", "301 modulos novos", "TGLExt/F1Fecho394", "CanonicalFullTGLWitnessR1", "dois imports", "k410c", "1736 s", "2016 s", "15986 s", "[A ADAPTAR " + "v411]",
++                              "9 modulos novos de kernel em TGLExt/", "nove imports", "76 ancoras", "PsionCanto e Par, da gerencia c1", "the_psion_is_the_corner_on_both_faces", "D41 a D47", "E18 a E20", "o psion, o canto e o par", "carimbar_stdout_v410.py", "03/11/2026",
+@@ -77 +78 @@
+-                              "82 ancoras", "D55 a D62", "E24 a E28", "falas de 05/11", "a traducao as classes de Turing)", "05/11/2026", "o registro com FUNCAO traducao_turing_v409", "19 ancoras", "9 falas de 06/11", "15 checagens", "D63 a D70", "e a errata E29 vao", "MEDIDO em 06/11/2026", "[DECLARADO] ate a ratificacao (D63);", "= 507 s", "360 s", "1 modulo(s) novo(s)", "as 15 falas", "D63 a D77", "E29 e E30 vao", "build 507 s"])   # (09/11: os rotulos de 06/11 e os da retomada anterior, anteriores a parte 2, ficam proibidos no rito)   # (v410: o registro novo e' o iald2_v410; o da v409 e' herdado)
++                              "82 ancoras", "D55 a D62", "E24 a E28", "falas de 05/11", "a traducao as classes de Turing)", "05/11/2026", "o registro com FUNCAO traducao_turing_v409", "19 ancoras", "9 falas de 06/11", "15 checagens", "D63 a D70", "e a errata E29 vao", "MEDIDO em 06/11/2026", "[DECLARADO] ate a ratificacao (D63);", "= 507 s", "360 s", "1 modulo(s) novo(s)", "as 15 falas", "D63 a D77", "E29 e E30 vao", "build 507 s"])   # (09/11: os rotulos de 06/11 e os da retomada anterior, anteriores a parte 2, ficam proibidos no rito)   # (v411: o registro novo e' o iald2_v410; o da v410 e' herdado)
+@@ -79 +80 @@
+-for f in ("instalar_v410.py", "reverter_v410.py"):
++for f in ("instalar_v411.py", "reverter_v411.py"):
+@@ -84,2 +85,2 @@
+-r = subprocess.run(["sh", "-n", os.path.join(HERE, "rito_v410.sh")], capture_output=True, text=True)
+-sint["rito_v410.sh"] = "ok" if r.returncode == 0 else "rc=%d %s" % (r.returncode, r.stderr[:200])
++r = subprocess.run(["sh", "-n", os.path.join(HERE, "rito_v411.sh")], capture_output=True, text=True)
++sint["rito_v411.sh"] = "ok" if r.returncode == 0 else "rc=%d %s" % (r.returncode, r.stderr[:200])
+@@ -87 +88 @@
+-    falhas.append("rito_v410.sh: sh -n rc=%d" % r.returncode)
++    falhas.append("rito_v411.sh: sh -n rc=%d" % r.returncode)
+@@ -89 +90 @@
+-    sint["rito_v410.sh"] = "ok (sh -n rc=0)"
++    sint["rito_v411.sh"] = "ok (sh -n rc=0)"
+@@ -91 +92 @@
+-NJ = json.load(open(os.path.join(HERE, "kernel_modulos_novos_v410.json"), encoding="utf-8"))
++NJ = json.load(open(os.path.join(HERE, "kernel_modulos_novos_v411.json"), encoding="utf-8"))
+@@ -103 +104 @@
+-    return ns["_N"], ns["NOVOS_V410"]
++    return ns["_N"], ns["NOVOS_V411"]
+@@ -130,2 +131,2 @@
+-# a raiz e o Audit do Nos tem de ser os da v409 selada: a asserta do instalador e' EXTRAIDA e executada isolada contra os arquivos reais (passa) e contra um hash trocado (recusa)
+-CMJ = json.load(open(os.path.join(HERE, "CANDIDATO_v410.json"), encoding="utf-8"))
++# a raiz e o Audit do Nos tem de ser os da v410 selada: a asserta do instalador e' EXTRAIDA e executada isolada contra os arquivos reais (passa) e contra um hash trocado (recusa)
++CMJ = json.load(open(os.path.join(HERE, "CANDIDATO_v411.json"), encoding="utf-8"))
+@@ -146 +147 @@
+-_ruim = copy.deepcopy(CMJ); _ruim["kernel"]["raiz_v409_sha16"] = "0" * 16
++_ruim = copy.deepcopy(CMJ); _ruim["kernel"]["raiz_v410_sha16"] = "0" * 16
+@@ -152 +153 @@
+-inv["raiz_e_audit_do_Nos_sao_os_da_v409"] = {"passa_com_os_hashes_do_candidato": kn_passa, "recusa_com_hash_trocado": kn_recusa}
++inv["raiz_e_audit_do_Nos_sao_os_da_v410"] = {"passa_com_os_hashes_do_candidato": kn_passa, "recusa_com_hash_trocado": kn_recusa}
+@@ -156 +157 @@
+-rev_idx = re.findall(r"_lista\[0\]|NOVOS_V410\[0\]|nov\[0\]", REV) + re.findall(r"NOVOS_V410\[0\]|_NJ\[\"novos\"\]\[0\]", INS)
++rev_idx = re.findall(r"_lista\[0\]|NOVOS_V411\[0\]|nov\[0\]", REV) + re.findall(r"NOVOS_V411\[0\]|_NJ\[\"novos\"\]\[0\]", INS)
+@@ -163 +164 @@
+-mod_aplic = ast.parse("_aplic = AP.get('modulos_novos_v410') or {}").body[0]
++mod_aplic = ast.parse("_aplic = AP.get('modulos_novos_v411') or {}").body[0]
+@@ -167 +168 @@
+-    ns_rev = {"AP": {"modulos_novos_v410": {"lista": list(lista_ap)}}, "esp": {"bundle_sha256": dict(pedras), "kernel": {"modulos_novos": len(pedras)}}}
++    ns_rev = {"AP": {"modulos_novos_v411": {"lista": list(lista_ap)}}, "esp": {"bundle_sha256": dict(pedras), "kernel": {"modulos_novos": len(pedras)}}}
+@@ -190 +191 @@
+-dv = {"contrato": "DERIVACAO_v410", "executado": False, "arquivos": {f: hashlib.sha256(open(os.path.join(HERE, f), "rb").read()).hexdigest() for f in ("instalar_v410.py", "reverter_v410.py", "rito_v410.sh")}, "invariantes": inv, "sintaxe": sint, "falhas": falhas,
++dv = {"contrato": "DERIVACAO_v411", "executado": False, "arquivos": {f: hashlib.sha256(open(os.path.join(HERE, f), "rb").read()).hexdigest() for f in ("instalar_v411.py", "reverter_v411.py", "rito_v411.sh")}, "invariantes": inv, "sintaxe": sint, "falhas": falhas,
+@@ -192,2 +193,2 @@
+-      "nota": "[REAL] conferido por script SEM executar o instalador, o reverter nem o rito; o trecho da lista foi EXTRAIDO por AST e executado isolado" + ("; ESPERADOS_v410.json AINDA NAO EXISTIA: o trecho foi exercitado contra um ESPERADOS SINTETICO (derivado de DL.BUNDLE_POR_REL); refazer depois do gerar_esperados" if ESP_REAL is None else "")}
+-json.dump(dv, open(os.path.join(HERE, "DERIVACAO_v410.json"), "w", encoding="utf-8"), ensure_ascii=False, indent=1)
++      "nota": "[REAL] conferido por script SEM executar o instalador, o reverter nem o rito; o trecho da lista foi EXTRAIDO por AST e executado isolado" + ("; ESPERADOS_v411.json AINDA NAO EXISTIA: o trecho foi exercitado contra um ESPERADOS SINTETICO (derivado de DL.BUNDLE_POR_REL); refazer depois do gerar_esperados" if ESP_REAL is None else "")}
++json.dump(dv, open(os.path.join(HERE, "DERIVACAO_v411.json"), "w", encoding="utf-8"), ensure_ascii=False, indent=1)

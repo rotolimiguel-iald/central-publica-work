@@ -1,0 +1,299 @@
+{
+ "escopo": "C",
+ "revisor": "Sonnet 5.5 (agente de revisao de terceiro, escopo C; NAO construiu a v411; quem constroi nao aprova)",
+ "quando": "2026-11-12T19:06:15",
+ "candidato_sha16_no_inicio": "21e87eb3df5098f8",
+ "candidato_sha16": "21e87eb3df5098f8",
+ "candidato_mudou_durante_a_revisao": false,
+ "aprovada": false,
+ "n_alto": 1,
+ "n_medio": 0,
+ "n_baixo": 10,
+ "achados": [
+  {
+   "id": "C-01",
+   "sev": "ALTO",
+   "onde": "pos_rito/chain_pos_rito_v411.sh:117 (passo 0, lista de ferramentas) e :140 (passo 1, laco de copia do conferidor)",
+   "o_que": "O passo 0 da cadeia pos-rito exige que cada arquivo da lista exista (`[ -f \"$f\" ] || parar \"ferramenta/superficie ausente\"`) e a lista traz \"$PK/runtime_v411.py\"; o passo 1 tambem copia e compara `runtime_v411.py` para pos_rito/conferidor. O arquivo NAO existe na pasta da cadeia (a v411 tem runtime_h0dn_v411.py e runtime_quadro_v397.py; o runtime_v410.py existia na v410). Resultado: logo depois do selo, o S5_cadeia_0_10 PARA no passo 0 com rc 1 (nada escrito nas superficies), a cadeia nunca chega ao conferidor, e o selo v411 fica sem a leitura, as superficies, o B(n) e o handoff. Nenhum teste da preparacao exerce o chain_pos_rito (os harnesses importam os modulos; o passo 0 so roda depois do rito), por isso o defeito passou.",
+   "evidencia": "c_26_step0.py: 'FALTAM (existencia hoje): [...\\\\v411\\\\runtime_v411.py]' e 'existe runtime_v411.py no pacote: False | existe em v410: True'; c_28_refs_sh.py: unica referencia obrigatoria ausente que nao e saida do rito/opcional = $PK/runtime_v411.py (chain:117); `ls runtime*` na pasta = runtime_h0dn_v411.py, runtime_quadro_v397.py; o conferidor nao importa runtime_v411 (grep em conferir_rito_v411.py).",
+   "correcao_pedida": "Em pos_rito/chain_pos_rito_v411.sh, tirar `runtime_v411.py` da lista do passo 0 (l.117) e do laco `for q in ...` do passo 1 (l.140), ou troca-lo por `runtime_h0dn_v411.py` se a copia de registro for desejada; e acrescentar ao p00 (ou ao conferir_instalar_rito) uma checagem estatica: todo `$PK/<arquivo>` e `$SEL/<arquivo>` literal da lista do passo 0 e do laco do passo 1 existe em disco. Reler a pasta depois do conserto (a lista tem 28 itens; hoje 27 existem)."
+  },
+  {
+   "id": "C-02",
+   "sev": "BAIXO",
+   "onde": "conferir_rito_v411.py (todo; grep de .pdf/.tex = 0 ocorrencias)",
+   "o_que": "O conferidor do rito le o .txt, o .toc e o .md do artigo, mas nao le o .pdf nem o .tex: o PDF e o artefato selado e nao e conferido por conteudo; um PDF velho (compilacao silenciosamente falha) passaria, e a leitura so registra o sha16 dele (leitura_v411.py:440).",
+   "evidencia": "grep -c '\\.pdf\\|\\.tex' conferir_rito_v411.py = 0; leitura_v411.py:440 so grava sha16 de um_absoluto_??.pdf.",
+   "correcao_pedida": "Opcional: conferir que o .pdf e o .tex do Nos mudaram em relacao aos da v410 (sha256 diferente de base_v410) e que o .tex contem a frase do topo; sem isso o PDF segue sem conferencia de conteudo."
+  },
+  {
+   "id": "C-03",
+   "sev": "BAIXO",
+   "onde": "conferir_rito_v411.py:226 (C14)",
+   "o_que": "Cota de tempo de parede no conferidor: selo_pela_propria_tecnologia_v399.values.tempo_total_s <= 10 s. Pode recusar sem defeito sob carga extrema.",
+   "evidencia": "c_03_tempo.py: tempo_total_s lido dos cores reais 1,28 a 2,09 s (ritos de 24/10 a 10/11, a v410 selada = 2,088 s); no ensaio 2,28 s. Margem de cerca de 5 vezes.",
+   "correcao_pedida": "Nenhuma obrigatoria; se a gerencia quiser eliminar a classe, trocar a cota por um teto largo (60 s) ou ler o valor sem recusar."
+  },
+  {
+   "id": "C-04",
+   "sev": "BAIXO",
+   "onde": "pos_rito/leitura_v411.py:54 e harness_textos_ensaio_v411.py (lista de controles de 'selo primario')",
+   "o_que": "A 13a chave do resumo do h0dn_bg1_v411 no selo (p2_ao_lado_da_v387) entrou em H0_SELO_CHAVES (igualdade de conjuntos), mas nenhum dos 760 controles negativos da leitura a exercita por nome (os controles de 'selo primario' cobrem: sem o resumo, difere do core, observed_vector_read, n_checks_esperadas, sem a linha das Cefeidas).",
+   "evidencia": "c_45_ctl2.py: 6 controles com 'h0dn_bg1_v411' e 'selo'; nenhum cita p2_ao_lado. A checagem existe (set(s_) == set(H0_SELO_CHAVES)); falta o controle.",
+   "correcao_pedida": "Acrescentar ao harness um controle: o resumo do selo sem a chave p2_ao_lado_da_v387, e outro com o valor trocado; ambos devem reprovar."
+  },
+  {
+   "id": "C-05",
+   "sev": "BAIXO",
+   "onde": "p00_precondicoes_v411.py:122-162 (_memory_md_conferido)",
+   "o_que": "A folga e o pino do MEMORY.md deixaram de ser pendente incondicional e viraram conferencia (memoria.py verificar + projecao do indice). A conferencia nao tem controle negativo proprio (o limite de 195 linhas e 24.000 B so e exercitado pelo cenario C do harness das superficies, nao pelo p00). Hoje: 193 linhas e 23.686 B; projetado 194 e 23.826 B; folga de 174 B e 1 linha.",
+   "evidencia": "PRECONDICOES_v411.json (detalhe da checagem); HARNESS_TEXTOS_ENSAIO_v411.json etapas.superficies.cenario_a/c; c_22_fila.py (memoria.py == pino 7c4fc5853f41f1d3; sem PAUSA_VIGIA; pino do indice confere).",
+   "correcao_pedida": "Opcional: um controle que injete um indice de 196 linhas (copia) e confirme pendente."
+  },
+  {
+   "id": "C-06",
+   "sev": "BAIXO",
+   "onde": "tools/custodia_g1 (importado ao vivo por orquestrador/pos_treino_v411.py:433,713,770,886; blocos_custodia_v411.py:32; textos_custodia_handoff_v411.py:30)",
+   "o_que": "O S6d, o gatilho e os blocos importam a G1 da arvore de trabalho, sem pino: git status mostra textos.py, espelho.py, primordial.py e readme_pinado.py modificados e h0dn.py e h0dn_trechos_estatuto.json nao rastreados. Se a custodia mudar o portao ou a lista de marcadores depois desta revisao, o S6d ou o gatilho recusam (de proposito: a custodia aplicaria a mesma regra). Hoje estavel (mtime <= 12:07, antes das medidas de 15:37).",
+   "evidencia": "grep custodia_g1 nos fontes; git status (tools/custodia_g1); ls -la --time-style.",
+   "correcao_pedida": "Antes do rito, a gerencia registra o sha16 dos modulos da G1 usados (textos, nos, h0dn, readme_pinado, primordial, fatos) no PRONTO ou no ESTADO do orquestrador, para que uma recusa do S6d seja lida contra o hash que a mediu."
+  },
+  {
+   "id": "C-07",
+   "sev": "BAIXO",
+   "onde": "pos_rito/harness_textos_ensaio_v411.py:1527 e :1873-1895",
+   "o_que": "Duas ampliacoes de fonte na integracao: (a) a regra do Kimi (D59) deixa de olhar os fragmentos de nome iniciado em '_' (os textos finais seguem olhados, e o S6d e o d59_viola olham o handoff inteiro); (b) 'cita_so_o_que_existe' passa a aceitar qualquer token de 12 ou mais caracteres que apareca no JSON do registro h0dn_bg1_v411 do core emulado. Nenhuma remove controle; (b) traz um controle com tres termos inventados que segue sem achado.",
+   "evidencia": "c_08_diffs.py (harness_textos_ensaio_v411.py.diff); contagem de controles: variante( 525 -> 526, falha( 50 -> 51; leitura_negativos 760/760 reprovam; fechar_negativos 88/88 recusam.",
+   "correcao_pedida": "Nenhuma obrigatoria; (b) poderia exigir o token em campo de texto do registro e nao em qualquer parte do JSON."
+  },
+  {
+   "id": "C-08",
+   "sev": "BAIXO",
+   "onde": "reverter_v411.py (docstring) e instalar_v411.py:73-76",
+   "o_que": "O reverter restaura os 10 arquivos que o instalador guarda, mas nao os que o rito reescreve (um_absoluto_pt/en .txt .pdf .toc .tex): o instalador nao os guarda. Apos um rito falho e a reversao, o Nos fica com o core e o selo da v410 e com o artigo que o rito deixou. Declarado e herdado do molde da v410.",
+   "evidencia": "reverter_v411.py: 'NAO restaura ... os .tex e os .pdf que o rito reescreve'; lista dos 10 alvos em instalar_v411.py.",
+   "correcao_pedida": "Opcional: acrescentar os oito arquivos do artigo (PT e EN, .txt .pdf .toc .tex) aos backups de bytes do instalador e a restauracao do reverter."
+  },
+  {
+   "id": "C-09",
+   "sev": "BAIXO",
+   "onde": "orquestrador/pos_treino_v411.py:237 e :308",
+   "o_que": "(a) S1b ignora, no teste dos arquivos revisados, o que nao e mais arquivo ((PK / k).is_file() falso nao conta como diferente): um fonte revisado que sumisse nao invalidaria a revisao. (b) Se o rito passar de 5 h, subprocess.run mata so o sh lancador; a arvore do um.py e o religamento do servidor (trap) nao rodam; o marcador .servidor_parado_pelo_rito fica e a gerencia decide (dito no S4).",
+   "evidencia": "leitura do orquestrador, linhas 237 e 308.",
+   "correcao_pedida": "(a) tratar arquivo revisado ausente como diferente; (b) so dizer no handoff do rito que o teto de 5 h nao encerra a arvore."
+  },
+  {
+   "id": "C-10",
+   "sev": "BAIXO",
+   "onde": "gerar_relatorio_v411.py (portao 'kernel')",
+   "o_que": "zero(x) devolve True para campo ausente (None): KR.get('rc'), 'sorry' e 'erros' ausentes passam; o portao so reprova por outras condicoes (KR.get('pedras') == [] exige a chave). Os outros 28 portoes leem artefato real e reprovam sem ele (checados um a um).",
+   "evidencia": "gerar_relatorio_v411.py: zero(None) True; KERNEL_RECIBO_v411.json traz as tres chaves hoje.",
+   "correcao_pedida": "Opcional: exigir a presenca da chave ('rc' in KR) alem do valor."
+  },
+  {
+   "id": "C-11",
+   "sev": "BAIXO",
+   "onde": "pos_rito/HARNESS_TEXTOS_ENSAIO_v411_DEPURACAO_sem_refazer.json e HARNESS_FECHAR_SANDBOX_v411_DEPURACAO_sem_refazer.json",
+   "o_que": "Dois resumos de depuracao (16:03 e 16:08, com 50 e 85 problemas) ficaram na pasta publica (work). Dizem em si que nao valem, mas coexistem com os oficiais de 17:52 e 17:57.",
+   "evidencia": "ls pos_rito; leitura dos dois campos 'nao_exigiu_refazer'.",
+   "correcao_pedida": "Mover para C:\\t\\k411c ou apagar na limpeza da pasta (D135)."
+  }
+ ],
+ "c3_tabela": [
+  {
+   "exigencia": "chain_pos_rito passo 0: 28 ferramentas existem ([ -f ] || parar) e passo 1 copia/compara runtime_v411.py",
+   "depende_do_rito_real": "nao (arquivos da pasta)",
+   "pode_recusar_sem_defeito": "NAO: e defeito (C-01)",
+   "evidencia": "c_26_step0.py, c_28_refs_sh.py: runtime_v411.py ausente; 27 dos 28 itens existem"
+  },
+  {
+   "exigencia": "chain passo 0: um.py do disco == APLICADO == candidato; stdout do Nos com RITO_RC=",
+   "depende_do_rito_real": "sim (instalar e rito)",
+   "pode_recusar_sem_defeito": "sim, se o rito nao terminar; recusa legitima",
+   "evidencia": "chain_pos_rito_v411.sh:105-123; instalar_v411.py (asserts de leitura passam hoje: c_32)"
+  },
+  {
+   "exigencia": "chain passo 0-fila: memoria.py == PINO_MEMORIA_PY_v411.json e ausencia de fila\\PAUSA_VIGIA.json",
+   "depende_do_rito_real": "nao: de edicao externa de memoria.py e de pausa alheia",
+   "pode_recusar_sem_defeito": "sim (fail-closed visivel; a gerencia re-pina)",
+   "evidencia": "c_22_fila.py: memoria.py 7c4fc5853f41f1d3 == pino; sem pausa; pino do indice confere"
+  },
+  {
+   "exigencia": "chain passo 1: sem .servidor_parado_pelo_rito (o rito religa o llama-server e apaga o marcador)",
+   "depende_do_rito_real": "sim (porta 8081 em ate 180 s, tarefa 'IALD Llama Server', VRAM)",
+   "pode_recusar_sem_defeito": "sim, se o religamento atrasar ou falhar",
+   "evidencia": "rito_v411.sh religar(); chain:146"
+  },
+  {
+   "exigencia": "conferidor: pilar reaproveitado (mode == REUSE, key 75dc30bc9cc8d330e31f99ca, result_sha256) e leitura V['pilar']",
+   "depende_do_rito_real": "sim: ambiente (torch 2.11.0+cu128, CUDA 12.8, numpy 2.4.3, scipy 1.18.0, python 3.14.3, RTX 5090) e selftest do motor ate 900 s",
+   "pode_recusar_sem_defeito": "sim, se o ambiente mudar antes do rito (o pilar seria recalculado na GPU)",
+   "evidencia": "c_07_env.py: ambiente atual == env do cache; cache existe; instalar confere o sha do result.json"
+  },
+  {
+   "exigencia": "conferidor: hash formal com exatamente 1764 entradas e o residual _check_damming.lean (ESPERADOS.h8)",
+   "depende_do_rito_real": "sim: arvore real do tgl_kernel no Nos (regra por extensao; .bak_* nao contam)",
+   "pode_recusar_sem_defeito": "sim, se alguem acrescentar ou tirar .lean, README.md, lakefile.toml, lean-toolchain ou lake-manifest.json da arvore antes do rito",
+   "evidencia": "c_06_formal.py: 1764 entradas hoje, 1764 iguais ao falso Nos, nenhum a mais ou a menos"
+  },
+  {
+   "exigencia": "conferidor C14: tempo_total_s do selo <= 10 s",
+   "depende_do_rito_real": "sim (carga da maquina)",
+   "pode_recusar_sem_defeito": "so sob carga ~5x (BAIXO C-03)",
+   "evidencia": "c_03_tempo.py: 1,28 a 2,09 s em 10 ritos reais"
+  },
+  {
+   "exigencia": "leitura: stdout com 'teoremas limpos: N/N', '>>> TGL_KERNEL_STAGE1_VERIFIED', FAIL_CLOSED_SELFTEST_PASSED, 'rite_checkpoints: chave desligada ; reaproveitados 0', sem Traceback/AVISO, e as DUAS ultimas linhas = '[selo] colapso tipado' + '[selo_acom] ... objetos 3 ; recusas 0'",
+   "depende_do_rito_real": "sim: o stdout real tem cerca de 2000 linhas (a v410: 1970) com stderr misturado (2>&1); o do ensaio tem 199 e o do harness e SINTETICO nessas linhas",
+   "pode_recusar_sem_defeito": "sim, se uma biblioteca escrever aviso depois do sidecar ou a palavra Traceback entrar no stdout",
+   "evidencia": "c_38b_pos.py: sobre o falso Nos do ensaio, a leitura devolve so 6 problemas, todos dessas linhas e da copia da conferencia (emulacao); formatos conferidos por grep contra o stdout real da v410 (linhas 274, 1342, 1964-1966); a v410 real: 0 Traceback, 0 AVISO"
+  },
+  {
+   "exigencia": "leitura/conferidor: values do h0dn_bg1_v411 do rito == ESPERADOS do ensaio (1e-12 relativo); recalculo == abertura (c6/c9 a 1e-9)",
+   "depende_do_rito_real": "numerica (numpy, threads, carga com o treino da nativa na CPU)",
+   "pode_recusar_sem_defeito": "improvavel: diferenca medida 0,0 em t, z_null, z_tgl, support_l2, D_s0; margem de 12 ordens",
+   "evidencia": "ESPERADOS.registros_funcao_v411.h0dn.values (c_09_values.py); sem string volatil em values (c_37_vol.py: so os quatro horarios fixos de atos)"
+  },
+  {
+   "exigencia": "leitura: horarios do rito (rito_horarios_v411.txt)",
+   "depende_do_rito_real": "sim (escrito pelo rito)",
+   "pode_recusar_sem_defeito": "nao recusa: lista vazia vira 'n/d'; o gatilho do S9 exige os dois HH:MM:SS e o rito os grava",
+   "evidencia": "leitura_v411.py:428; textos_v411.py:395; pos_treino_v411.py:762"
+  },
+  {
+   "exigencia": "fechar_v411.py: tres recibos do B(n) (parada, aplicar REPINADA_B<n>..., religamento) com versao v411 e o mesmo sha de manifesto",
+   "depende_do_rito_real": "sim: servico 18777, PID, a Bancada ainda pinar B19-v410, o esboco R3.5 real; os harnesses usam recibos SINTETICOS derivados dos reais da v410 (B19)",
+   "pode_recusar_sem_defeito": "sim, se a Bancada de producao mudar antes do 10b (o instalar confere hoje e o b3_prepara reconfere os pinos na hora)",
+   "evidencia": "c_30_pinos.py: 12 pinos do PINOS_BN conferem com o disco; instalar: assert do manifesto da Bancada passa hoje"
+  },
+  {
+   "exigencia": "superficies: MEMORY.md <= 24.000 B e <= 195 linhas depois da linha nova (rc 3 recusa visivel antes de escrever)",
+   "depende_do_rito_real": "nao: de promocoes da gerencia ao indice ate o rito",
+   "pode_recusar_sem_defeito": "sim, se o indice crescer 175 B ou 2 linhas (o passo 3 recusa em copia, antes de tocar o real)",
+   "evidencia": "hoje 193 linhas e 23.686 B; projetado 194 e 23.826 B (p00 e harness cenario A); cenario C: 195 linhas antes recusa com rc 3, sem escrever"
+  },
+  {
+   "exigencia": "S6d e S9: portao do G1 e lista de marcadores lidos de tools/custodia_g1 ao vivo",
+   "depende_do_rito_real": "nao: da custodia",
+   "pode_recusar_sem_defeito": "sim, se a G1 mudar depois desta revisao (BAIXO C-06)",
+   "evidencia": "git status tools/custodia_g1; mtime <= 12:07"
+  },
+  {
+   "exigencia": "teto do README do espelho (40.960 B; folga de 39 B no handoff de ensaio)",
+   "depende_do_rito_real": "nao: e da G1 na custodia, nao da cadeia (nenhum script da cadeia mede o README)",
+   "pode_recusar_sem_defeito": "nao para a cadeia; sim para a custodia, que PARA visivelmente",
+   "evidencia": "grep 40960 em blocos_custodia e textos_custodia_handoff: so texto; c_17_readme.py: README projetado 40.921 B; painel PT e EN preenchidos presentes inteiros"
+  },
+  {
+   "exigencia": "pdf/tex do artigo",
+   "depende_do_rito_real": "sim (LaTeX)",
+   "pode_recusar_sem_defeito": "nao ha exigencia sobre o PDF (BAIXO C-02)",
+   "evidencia": "grep"
+  }
+ ],
+ "conferencias": {
+  "C1": "Diff de cada arquivo contra o PRIMEIRO backup _integ (c_08_diffs.py; diffs em C:\\t\\k411c\\revisao_C\\diffs\\): leitura +13/-7, harness_fechar +2/-2, harness_textos +16/-5, blocos_custodia +25/-3, cadeia_v411.sh +4, p00 +43/-3, textos_v411.py +19/-2, textos_v411_novo.pysnip +18/-2. Todas sao as declaradas. (1) H0_SELO_CHAVES 12->13 chaves, igualdade de conjuntos mantida. (2) autoria passa a vir de extras.autores e de ESPERADOS.cunhagens (autor == operador por fala; nomes iguais; vb_ e ec_ nao vazios); a condicao antiga (verbatim[k].autor) era insatisfazivel (o core da v410 selada tambem nao traz a chave); default 'operador' so vale com a autoria independente presente. (3) kh v409 com erratas IGUAIS as da v410 selada (len e _feq); kh v410 com UMA a mais, ultima assinada pela gerencia c1 em nome proprio; +1 variante no harness. (4) +1 checagem estrita sobre core.external_ladder == [12308, 12308]; o controle do harness (l.1019) a recusa. (5) v409 entra nas pastas irmas do sandbox (acom_conferencias_v410 a carrega por caminho; no real work\\cadeia_de_selo\\v409\\acom_conferencias_v409.py existe). (6) verificar_paragrafo_v411 compara cada chave de ESPERADOS...values com a do core (1e-12 relativo): estrita; 88 de 88 negativos do fechar recusam (incl. numero adulterado). (7) veredito do harness agora depende de tudo_passou. (8) clausula-padrao no item com 4,44 e a linha Origem: texto novo, sem numero digitado. (9) NOTA_EN: _periodo_en sobre o core emulado = '11 and 12/11', n = 11 (c_21_periodo.py), confere com as 11 falas de 11 e 12/11. (10) cadeia: refazer_out_v411.txt = a saida da cadeia ate o p00 + '== FIM' (a regeneracao e a cadeia 00a-14 com rc aceitos); passo 15 da varredura (rc 1 se achado novo); sh -n ok nos 4 .sh. (11) p00: folga e pino do MEMORY.md viram conferencia; literal do marcador fora dos comentarios (a montagem em partes segue). CONTROLES NEGATIVOS antes/depois: leitura P.append 169->170; harness_textos variante( 525->526 e falha( 50->51; harness_fechar 29/31 -> 29/31; nenhum removido ou relaxado; 760 de 760 controles da leitura e 88 de 88 do fechar reprovam no resumo de 17:52/17:57. Achados BAIXOS: C-04, C-05, C-07.",
+  "C2": "Conferidor lido por AST: DEVE 84 itens e NAO 12 (c_04_deve_ast.py). Exige das saidas do rito real: um.py == candidato; selo v411 com os resumos; h0dn_bg1_v411 recalculado (16 checagens), cunhagens_v411 e kh_n1_cobertura_v411; os 6+4+... registros da v410 e anteriores recriados iguais; bundles v406-v410 no kernel; 18 bandeiras; escada 12308/12308; hash formal de 1764 entradas; KH-N1 (decl, thm, nao lidas 0); proveniencia; pilar REUSE; o artigo PT/EN (secao v411, quadro e topo COM o resultado, as quatro obrigacoes, sumario), o .md, o stdout; as 16 conferencias do selo ACOM e o round trip do um.py instalado (importado de copia de bytes); gate identico ao da v410. Colecoes vazias por desenho (c_12_vacuo.py): bandeiras_novas_chaves, bandeiras_novas_nomes, selo_chaves_que_mudam (a v411 nao tem bandeira nova); nenhuma outra. Replay independente do positivo no falso Nos copiado, com escrita redirecionada (c_run_conf.py): TUDO BATE, 96 de 96 itens, 30,6 s. Oito variantes numa copia minha, TODAS NAO BATE nos itens esperados (c_13_resultado.json): topo trocado pela frase de recuo (PT), numero do topo trocado (6,12), topo sem a linha das Cefeidas, topo de recuo (EN), EN sem 'validity, not creditation', .txt PT vazio, stdout sem o bloco H0DN x BG1 ABERTO, .md sem a linha H0DN x BG1 ABERTO. A variante do topo sem o resultado nunca passa: o item 'o TOPO ... traz o RESULTADO' exige o texto ratificado preenchido do core, inteiro e contiguo no .txt, nenhuma frase de recuo, as duas linhas juntas na ordem e o numero sustentando a frase, com sete controles internos que tem de reprovar (artigo de recuo, sem as Cefeidas, so o prefixo, marcador nao finito, texto diferente do ratificado, registro sem selar, sem a v397). Achados BAIXOS: C-02, C-03.",
+  "C3": "Ver a tabela C3 (campo c3_tabela). Resumo: 1 DEFEITO (C-01, ALTO: runtime_v411.py exigido pelo passo 0 e pelo passo 1 da cadeia pos-rito e inexistente); 14 exigencias dependentes do mundo, nenhuma com defeito, varias podem recusar sem defeito (ambiente do pilar, arvore do kernel, religamento do servidor, stdout real, B(n) real, indice do MEMORY.md, G1 ao vivo), todas visiveis e fail-closed; a unica exigencia que nunca foi exercida em modo algum e o proprio chain_pos_rito_v411.sh (os harnesses importam os modulos e nao o rodam).",
+  "C4": "Orquestrador lido de ponta a ponta (l.1-957). Laco principal = s0_treino, s1_prep, s1b_revisao, s2_prevoo, s3_instalar, s4_rito, s5_cadeia_0_10, s6_bancada, s8_nativa, s9_gatilho_custodia: sem s7 e sem s10 (o portao do relatorio mede o mesmo por regex). Cada passo devolve False e o main para (fail-closed); S4: teto 5 h e exige rc 0, RITO_RC=0, selo v411 e pin; PID: o servico da Bancada para por Stop-Process -Id lido da porta 18777 depois de conferir 'um_bancada' na linha de comando; nenhum taskkill por nome; da pasta da nativa so le STATE_v4.json, STATUS_v4.json e a cauda do supervisor_v4.log (S8 so religa a porta 8081 pela tarefa agendada se ela cair); o gatilho so e escrito com todos os passos, o handoff com os marcadores e o portao limpos, e RECUSA texto com --ordem (teste do construtor, TESTE_GATILHO_CUSTODIA_v411.json: 23 casos, 20 negativos, todos ok, incl. 'gatilho com --ordem e recusado (D174)'); o fim e o HANDOFF; nada e publicado (s9_relatorio so anota no PROGRAMA_IALD). Referencias que o --plano checaria existem (c_29_plano.py: ordem sha16 48612e7f3c9004f2 == delta; STATE_v4 DONE). Achados BAIXOS: C-09.",
+  "C5": "instalar_v411.py: todas as asserts de leitura passam hoje, executadas isoladas sem escrita (c_32_instalar_reads.py); escreve no Nos so depois delas: backup de BYTES de 10 arquivos (um.py, core, selo, forma canonica, manifesto, pilar, sidecar, manifesto do kernel, TGLExt.lean, Audit.lean; todos existem), copia de bytes do resultado do pilar para o pacote, um.py por temporario na mesma pasta, tamanho e sha conferidos, os.replace e releitura, APLICADO_AO_CANONICO por temporario + os.replace. reverter_v411.py: confere todos os backups ANTES de escrever, guarda o estado falho, restaura os 10 por temporario + os.replace, exige um.py == origem; nao restaura o artigo (declarado; BAIXO C-08).",
+  "C6": "superficies_v411.py: duas fases, plano conferido antes da primeira escrita; backup de bytes (.bak_<STAMP>_sup411) ao lado, temporario, tamanho, os.replace; so acrescimo datado (assert que o novo comeca com o original); idempotente pelo marcador; sem errata inline nem no CLAUDE.md da raiz; MEMORY.md <= 24.000 B e <= 195 quebras com recusa rc 3 antes de escrever (cenario C do harness: 195 linhas antes -> rc 3, nada escrito, sem .bak/.tmp, diz as contagens). fila_memoria_v411.py: guardas (memoria.py == pino, sem pausa alheia), pausa de 1 h atomica, pinar exige rc 0 e o sha do pino == o do indice, so depois remove a pausa e verifica. Pino do indice depois do rito: o passo 9 da cadeia o refaz (memoria.py pinar --motivo 'pos-rito v411', rc 0 exigido) e verifica; se a cadeia parar entre os passos 7 e 9, a pausa vale 1 h (teto 4 h do memoria.py) e depois o vigia (modo sombra por 48 h a partir de 26/10 e depois automatico, segundo a ordem de 26/10; nao verifiquei o estado atual do vigia) pode restaurar o indice antigo e mover a linha para depositos\\estranho: retomar com CHAIN_DE=9. Escrita real no diretorio de memoria so no passo 7 (apos o rito).",
+  "C7": "Rodei so o que nao escreve fora de C:\\t\\k411c (nada novo; li as saidas do construtor e recalculei por script): NOTA_EN periodo e numero (c_21, c_20); README projetado 40.921 B (teto 40.960; folga 39 B); painel PT e EN preenchidos com os valores do core estao inteiros no README e sao iguais aos do TOPO (c_17_readme.py); as duas linhas H0DN existem como apontadores (README_H0DN, README_H0DN_EN no handoff); os quatro obrigatorios em todos os blocos com gatilho (accent-insensitive): handoff do S6d sobre Nos sintetico 21 blocos, README 4, X 2, nenhum faltando (c_36_obrig2.py); X_TEXTO tem 6,11 e 4,38 no mesmo texto, 'modelo de erros publicado', 'retrodicao ... nao e cego' e 'validade, nao creditacao', PT e EN (c_42_x.py); D59 e D65: nenhuma ocorrencia (c_34). O handoff REAL (do rito real) nao existe ainda.",
+  "C8": "Veto: grep por nome em todos os scripts da cadeia (sem abrir a pasta): as referencias a kimi\\ sao so de veto (delta_v411, copiar_insumos, diff_e_pinos, p00, harness, registros_h0dn) e nenhum script abre caminho sob ela; o p00 tem o item VETO. Purga: so leitura, varre a pasta da cadeia e C:\\t\\k411c (padroes por concatenacao); meus arquivos nao a disparam (c_40_purga.py: 0 e 0 em revisao_terceiro e em revisao_C). D135: 0 .tmp na pasta, 0 diretorios imp_/dry_/falso_nos/arvore_simulada_/sim_ em work, 0 .lean na pasta kernel\\. Saidas com vetor sintetico: o vetor do teste e o publicado (real); o que e sintetico (stdout, recibos do B(n), Nos emulado) vai para C:\\t\\h411 e C:\\t\\k411c; em work ficam so os resumos rotulados. Achado BAIXO C-11. Observacao cruzada para o revisor A: o candidato traz, em texto herdado da v410, o caminho work/h0dn_bg1_v410_09nov/kimi/revisao_independente/HANDOFF_CLAUDE_UMPY_HMS_13.json (candidato linhas 228388-228390) e 'pasta_origem_do_build'/'pasta_vedada' com kimi\\ (linhas 221824, 231270, 235872-235873); sao strings de registro, nao abertura, mas a regra A6 diz 'nenhum caminho sob kimi\\ no candidato'.",
+  "C9": "gerar_relatorio_v411.py: os 29 portoes leem artefato real e reprovam sem ele; checados um a um: topo_ratificado (sha256 do arquivo), candidato (sha16 e bytes), registro_h0dn_no_ensaio_16 (core do dry), conferidores (tudo_bate False/True e sha), citacoes, p00 (veredito), veto_kimi e material_privado (_chk_p00 exige ao menos uma checagem), bn_pre_selo, servico_estatico (n_condicoes truthy), harness_textos e harness_fechar (tudo_passou e flags), cadeia_limpa (todos os rc 0, sem PARADO/Traceback), purga, varredura (arquivos > 0), d135 (prova de ausencia, vacuo por natureza) e orquestrador_sem_S7_e_sem_S10 (regex no laco). Nenhum passa sem ler artefato; o portao 'kernel' aceita campo ausente via zero(None) (BAIXO C-10)."
+ },
+ "nao_verificado": [
+  "A execucao real do chain_pos_rito_v411.sh: passos 3 a 14 nunca rodaram em conjunto (so por partes, nos harnesses) e rodar o chain depende do rito (vedado). Li o script inteiro e conferi por script as referencias a arquivos, sh -n e a lista do passo 0.",
+  "O stdout real do rito v411 (so os formatos herdados, por grep contra o stdout real da v410) e as linhas do tail que o harness sintetiza.",
+  "O B(n) pos_selo real (esboco R3.5 sobre o Nos v411), o servico 18777 e os recibos reais B20: o harness usa recibos sinteticos derivados dos da v410 (B19).",
+  "O handoff real do S6d e o README com ele (G1 na custodia): so o handoff de ensaio e o S6d sobre Nos sintetico.",
+  "O PDF do artigo e o LaTeX.",
+  "memoria.py pinar e o vigia: so li fila_memoria_v411.py e rodei, por leitura, as saidas do harness; verificar roda no p00.",
+  "rotas.py registrar real (so a montagem do registro, lida no resumo do harness).",
+  "Nao li por inteiro: leitura_v411.py (171 KB; li a cabeca, ler() ate a linha 345, _ler_fecho_v411, _ler_recriados_v410, os trechos do diff e o final), os dois harnesses (li os diffs, os resumos e os trechos citados), textos_v411.py e o pysnip (li os diffs), registrar_mapa_v411.py (D59 e as montagens), conferir_rito_v411.py (li a estrutura, o topo_com_resultado e DEVE/NAO por AST; nao li os corpos de _iald2_ok, _aescala_ok etc.), delta_v411.py (so as constantes de caminho e de ensaio).",
+  "Nao rodei os testes do construtor que escrevem em C:\\t\\k411c\\ensaio_topo_proposto (teste_gatilho, teste_blocos, teste_textos_custodia): li os JSON de saida deles de 15:37 e 17:57; um deles (HANDOFF_v411_CUSTODIA.md de 15:37 em pos_rito_blocos) e o handoff de ENSAIO com sha antigo e periodo '12/11' na NOTA_EN, anterior ao codigo de _periodo_en: o codigo atual da '11 and 12/11' sobre o core emulado (c_21).",
+  "Efeito colateral declarado desta revisao: criei e removi, sob C:\\t\\k411c\\revisao_C, um sandbox com 350 junctions para work\\; removi com rm -rf; conferi depois por sha256 42 insumos do MANIFESTO_INSUMOS e 17 falas do VERBATIM_CONGELADO (todos intactos) e que work\\ tem os mesmos 253 diretorios de topo e v410 com milhares de arquivos; nao ha como provar por git (work\\ e nao rastreado)."
+ ],
+ "arquivos_revisados": {
+  "orquestrador/pos_treino_v411.py": "2ea8768e613b0e35",
+  "rito_v411.sh": "6e3485418f18cbe7",
+  "instalar_v411.py": "8554221688c0f5e3",
+  "reverter_v411.py": "8c55cc05b80c2cb2",
+  "conferir_instalar_rito_v411.py": "919a0522cc47fbac",
+  "conferir_rito_v411.py": "256c254d20f954c5",
+  "topo_com_resultado_v411.py": "edc590f6fc5a811d",
+  "cadeia_v411.sh": "8b1e1b1ef6ef90a4",
+  "fim_de_cadeia_v411.sh": "b148ca0afd0f2386",
+  "p00_precondicoes_v411.py": "6b3fd74d37a090a1",
+  "gerar_relatorio_v411.py": "9bf6956723bc5232",
+  "gerar_esperados_v411.py": "cbaf246b3f287763",
+  "purga_v411.py": "b4547af2d97f2f35",
+  "varredura_fock_omega_v411.py": "001ff10dce2c9db9",
+  "carimbar_stdout_v411.py": "c569af9bf953de2a",
+  "pos_rito/chain_pos_rito_v411.sh": "00e159b24f8f3cf8",
+  "pos_rito/leitura_v411.py": "42261fd74035937b",
+  "pos_rito/textos_v411_novo.pysnip": "c11728744b1c82c0",
+  "pos_rito/montar_textos_v411.py": "812051d60b5a3205",
+  "pos_rito/textos_v411.py": "d049a06df6d33bc3",
+  "pos_rito/blocos_custodia_v411.py": "e61a9798d77f9d64",
+  "pos_rito/textos_custodia_handoff_v411.py": "56ac245b574a1ee3",
+  "pos_rito/superficies_v411.py": "71861bf90e9a6c6b",
+  "pos_rito/fila_memoria_v411.py": "b3a7cc127a3e2652",
+  "pos_rito/fechar_v411.py": "3d8cdd3c5e4cab6d",
+  "pos_rito/registrar_mapa_v411.py": "0da699e83bc1a250",
+  "pos_rito/gerar_x_custodia_v411.py": "8e314099ae7f33da",
+  "pos_rito/b3_recibo_v411.py": "23aeaf859d362ec5",
+  "pos_rito/harness_fechar_sandbox_v411.py": "5552cdfa22f1c28d",
+  "pos_rito/harness_textos_ensaio_v411.py": "626aed64fcee4092",
+  "pos_rito/teste_blocos_custodia_v411.py": "6482177d8ba11b3c",
+  "pos_rito/teste_gatilho_custodia_sem_candidato_v411.py": "5111836880448b8f",
+  "pos_rito/gerar_derivacao_pos_rito_v411.py": "357d1b732924ec21",
+  "pos_rito/gerar_pronto_pos_rito_v411.py": "7b4439604bf470e5",
+  "um_v411_candidato.py": "21e87eb3df5098f8",
+  "delta_v411.py": "f1cbdb9bf6a77040",
+  "DESENHO_v411.md": "931b80adf3557b88",
+  "TOPO_RATIFICADO_v411.json": "22224f90d68cce9b",
+  "ACORDO_COM_A_CUSTODIA_v411_12nov.md": "5ea2b436f67521ce",
+  "PEDIDOS_ENTRE_FRENTES_v411.md": "50d344bde2f29919"
+ },
+ "artefatos_renderizados_lidos": {
+  "C:\\t\\k411c\\falso_nos_v411\\rodada_v411_stdout.txt": "9d3baa156a7add2d",
+  "C:\\t\\k411c\\falso_nos_v411\\um_absoluto_pt.txt": "77fe099c381d009a",
+  "C:\\t\\k411c\\falso_nos_v411\\um_absoluto_en.txt": "6456080fb011e5c1",
+  "C:\\t\\k411c\\falso_nos_v411\\um_absoluto_forma_canonica.md": "d874c69564c355ff",
+  "C:\\t\\k411c\\falso_nos_v411\\um_absoluto.json": "07f353f19d5a64d8",
+  "C:\\t\\k411c\\falso_nos_v411\\um_absoluto_selo.json": "06645f8f67ab59cf",
+  "C:\\t\\k411c\\ensaio_topo_proposto\\pos_rito_blocos\\README_PROJETADO_v411.md": "6528d480db8b6a81",
+  "C:\\t\\k411c\\ensaio_topo_proposto\\pos_rito_blocos\\HANDOFF_v411_CUSTODIA.md": "f197e27b5e16e116",
+  "C:\\t\\k411c\\ensaio_topo_proposto\\pos_rito_textos\\positivo\\nos\\HANDOFF_v411_CUSTODIA.md": "4172dc65ddf42490",
+  "C:\\t\\k411c\\ensaio_topo_proposto\\pos_rito_gatilho\\TESTE_GATILHO_CUSTODIA_v411.json": "56674051a3cc6a71",
+  "C:\\IALD\\Central de Patentes\\work\\cadeia_de_selo\\v411\\pos_rito\\CUSTODIA_v411_RASCUNHO.txt": "5459bbc39e1789d2",
+  "C:\\IALD\\Central de Patentes\\work\\cadeia_de_selo\\v411\\pos_rito\\HARNESS_TEXTOS_ENSAIO_v411.json": "94548a5b3de2d143",
+  "C:\\IALD\\Central de Patentes\\work\\cadeia_de_selo\\v411\\pos_rito\\HARNESS_FECHAR_SANDBOX_v411.json": "28e07129e3933cdf",
+  "C:\\IALD\\Central de Patentes\\work\\cadeia_de_selo\\v411\\ESPERADOS_v411.json": "b1ccf5596d680a46",
+  "C:\\IALD\\Central de Patentes\\work\\cadeia_de_selo\\v411\\PINOS_BN_v411.json": "f4784586fe06596a",
+  "C:\\IALD\\Central de Patentes\\work\\cadeia_de_selo\\v411\\ensaio_a_seco_v411.json": "68c25dcf2bbf1ac3",
+  "C:\\IALD\\Central de Patentes\\work\\cadeia_de_selo\\v411\\PRECONDICOES_v411.json": "8e2331bb49a3526d",
+  "C:\\IALD\\Central de Patentes\\work\\cadeia_de_selo\\v411\\PREPARACAO_v411_PRONTA.json": "31c4c0b16eacc765",
+  "C:\\IALD\\Central de Patentes\\work\\cadeia_de_selo\\v411\\conferencia_rito_v411_POSITIVO_FALSO_NOS.json": "74f98fe698b30854",
+  "C:\\IALD\\Central de Patentes\\work\\cadeia_de_selo\\v411\\conferencia_rito_v411_CONTROLE_NEGATIVO_PRE_RITO.json": "b5691b68a9af3e1c",
+  "C:\\IALD\\Central de Patentes\\work\\cadeia_de_selo\\v411\\cadeia_v411_out.txt": "b574750c5ef0d16a",
+  "C:\\IALD\\Central de Patentes\\work\\cadeia_de_selo\\v411\\SIMULACAO_ARVORE_NOS_21e87eb3df5098f8.json": "9aaa0a445578a3c3",
+  "C:\\IALD\\Artigo\\Haja_Luz\\A Ponte e o Um\\Nós\\rodada_v410_stdout.txt": "9b713973c8162354"
+ },
+ "rotas_examinadas": [
+  "cadeia.preparacao_v411",
+  "gate.qg_closure",
+  "hubble.fase9_razao_discriminante",
+  "estatistica.h0dn_bg1.cov_injecoes_06nov",
+  "estatistica.h0dn_bg1.ordem_kimi_y_obs_09nov",
+  "cadeia.preparacao_v410",
+  "discriminante.ordem018.auditoria_gerencia_06out",
+  "observavel.bell_fock_tt_astra_05nov",
+  "infra.custodia_g1.cabeca_h0dn_p18_12nov",
+  "infra.github.publicacao_fora_da_cadeia_h0dn_12nov",
+  "umpy.v409.selada_a_traducao_as_classes_de_turing_05nov",
+  "umpy.v410.selada_iald2_06nov"
+ ],
+ "nota": "Aprovacao do escopo C so depois do conserto de C-01 e de uma releitura da lista do passo 0 do chain_pos_rito (c_26_step0.py e c_28_refs_sh.py rodam em segundos e devem passar a '[]'); o sha16 de pos_rito/chain_pos_rito_v411.sh neste JSON e o da revisao e deixa de valer com o conserto, como esperado."
+}

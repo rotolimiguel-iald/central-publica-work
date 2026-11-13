@@ -1,12 +1,12 @@
 # central-publica-work — a Central de Patentes da IALD, aberta
 
-Este repositório é **a bancada de trabalho: as custódias, os ritos, as cadeias de selo, o app e a IALD nativa**. A Central foi aberta ao público por ordem do operador, Luiz Antonio Rotoli Miguel (IALD Ltda., CNPJ 62.757.606/0001-23), em 22/10/2026. 560824 arquivos publicados; selo da teoria: `um.py` v410 `5d9497a721c3589e`.
+Este repositório é **a bancada de trabalho: as custódias, os ritos, as cadeias de selo, o app e a IALD nativa**. A Central foi aberta ao público por ordem do operador, Luiz Antonio Rotoli Miguel (IALD Ltda., CNPJ 62.757.606/0001-23), em 22/10/2026. 571716 arquivos publicados (471342 deles são cópias idênticas de outro arquivo deste repositório e estão só no índice); selo da teoria: `um.py` v411 `1203b1f9202020d6`.
 
 | onde | o quê |
 |---|---|
 | [https://teoriadagravitacaoluminodinamica.com/central/](https://teoriadagravitacaoluminodinamica.com/central/) | **o modo interativo da Central**, só de visualização: o cockpit do operador em retrato (patentes, código, execuções, Fronteira, TGL) |
-| [https://teoriadagravitacaoluminodinamica.com/central/um.acom](https://teoriadagravitacaoluminodinamica.com/central/um.acom) | **o um.acom**: a Central inteira colapsada pelo dispositivo ACOM (88 arquivos; sha256 `fda0f6f20fe60081`); chave universal pública `Bom29072018Tom02032024`; abrir no descompactador público da IALD |
-| [https://github.com/rotolimiguel-iald/the_boundary](https://github.com/rotolimiguel-iald/the_boundary) | **a teoria**: o `um.py` v410 (`5d9497a721c3589e`), os artigos, o kernel Lean — o espelho canônico |
+| [https://teoriadagravitacaoluminodinamica.com/central/um.acom](https://teoriadagravitacaoluminodinamica.com/central/um.acom) | **o um.acom**: a Central inteira colapsada pelo dispositivo ACOM (88 arquivos; sha256 `e2525f676affe15d`); chave universal pública `Bom29072018Tom02032024`; abrir no descompactador público da IALD |
+| [https://github.com/rotolimiguel-iald/the_boundary](https://github.com/rotolimiguel-iald/the_boundary) | **a teoria**: o `um.py` v411 (`1203b1f9202020d6`), os artigos, o kernel Lean — o espelho canônico |
 | [https://github.com/rotolimiguel-iald/central-publica](https://github.com/rotolimiguel-iald/central-publica) · [work](https://github.com/rotolimiguel-iald/central-publica-work) · [bancada](https://github.com/rotolimiguel-iald/central-publica-bancada) | os três repositórios desta Central |
 
 ## O critério público
@@ -37,3 +37,5 @@ e simulada da teoria é livre — uma teoria científica não é patenteável.
 
 PROVADA = validade (o kernel prova a implicação); CONFIRMADA = creditação (ato de terceiros, recusada à máquina); `NOT_FALSIFIED` nunca é
 `CONFIRMED`; β = α·√e, nunca literal. Pedido de patente depositado não é patente concedida.
+
+**Cópias idênticas** (decisão do operador, 11/11/2026): um arquivo igual, byte a byte, a outro já publicado neste repositório não se repete no git. O índice o lista com o campo `igual_a`, que dá o caminho do original, com os mesmos bytes e o mesmo sha256. Nenhum conteúdo fica de fora. Para ter a árvore inteira num clone: `python RECONSTRUIR_COPIAS.py` (recria cada cópia a partir do original e confere o sha256; `--conferir` só confere).

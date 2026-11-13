@@ -1,0 +1,118 @@
+--- R3_5/sincronizar_bancada.py
++++ R3_6/sincronizar_bancada.py
+@@ -1,5 +1,14 @@
+ # -*- coding: utf-8 -*-
+-"""sincronizar_bancada.py -- o elo B(n) da cadeia de selo: vincula a Bancada Um ao um.py selado.  REVISAO R3.5 (19/10/2026).
++"""sincronizar_bancada.py -- o elo B(n) da cadeia de selo: vincula a Bancada Um ao um.py selado.  REVISAO R3.6 (13/11/2026).
++
++R3.6 (13/11/2026): um conserto pedido pela gerencia c1 depois que o ensaio do B(n) da v411 (RECIBO_SINCRONIZACAO_v411_20261113_023032.json) deu 12 PASSA, 1 NAO_EXECUTADO e 1 FALHA (T17_LEAN_KERNEL: «recibo do kernel: sem os campos
++['nos_kernel_impressao', 'formal_files_antes']»; nada foi gravado na Bancada). A causa e' mais funda que os dois campos: a v411 e' a PRIMEIRA versao sem modulo Lean novo desde que o B(n) existe (v392 a v410 tiveram pelo
++menos uma pedra), o kernel dela e' o da v410 byte a byte, e a R3.5 nao tem caminho para isso: (1) recusa `pedras` vazias; (2) exige no log do build a linha de job do lake (Built/Replayed) da raiz TGLExt, que o lake nao
++imprime quando nada foi compilado; (3) exige o ANTES do kernel (formal_files_antes, nos_kernel_impressao) que o recibo gerado sem build nao trazia. A R3.6 acrescenta UM contrato novo, explicito e separado: KERNEL_RECIBO_R3_6,
++o do recibo da VERSAO SEM PEDRA NOVA, que declara `versao_sem_pedra_nova: true` e so' vale com `pedras` VAZIA, sem `modulos_de_auditoria`, raiz e Audit com sha antes == depois, o job do lake so' do TGL.Audit (a raiz nao foi
++compilada) e a afirmacao POSITIVA de que a impressao do manifesto do kernel que o selo pina e' a do kernel anterior (formal_files_antes == formal_files_sha256, arquivo a arquivo). O contrato novo nao afrouxa nenhum controle:
++os recibos KERNEL_RECIBO_R3_2 e KERNEL_RECIBO_R3_4 seguem exatamente como na R3.5 (a chave `versao_sem_pedra_nova` num deles e' recusada), com a mesma recusa `pedras vazias`. Nenhuma outra funcao muda (a comparacao por AST
++esta em R3_6/CONTROLES_R3_6.json). O resto e a R3.5, byte a byte.
+ 
+ R3.5 (19/10/2026): um conserto pedido pela revisao independente de 19/10 (EXAME_DELTA_E_R3_4.md, B-M), antes do B(n) da v394: o filtro dos MODULOS DE AUDITORIA da R3.4 era lista de PROIBICAO e deixava passar
+ `Lean.addDecl`, `Lean.modifyEnv` e `Lean.Meta.evalExpr` qualificados, `open IO.FS in` + `writeFile` e `open IO in` + `Process.output`. Agora e lista de PERMISSAO ESTRITA (auditar_fonte_de_auditoria):
+@@ -195,7 +204,7 @@
+ if sys.flags.optimize:
+     raise SystemExit("RECUSO: rodar sem -O / PYTHONOPTIMIZE (asserts sao guardas)")
+ 
+-REVISAO = "R3.5 (19/10/2026)"
++REVISAO = "R3.6 (13/11/2026)"
+ AQUI = Path(__file__).resolve().parent
+ PRODUCAO = Path("C:/IALD/Bancada_Um")
+ NOS_PADRAO = Path("C:/IALD/Artigo/Haja_Luz/A Ponte e o Um/N\u00f3s")
+@@ -256,7 +265,8 @@
+ # N1: o contrato do recibo do kernel (R3\CONTRATO_KERNEL_RECIBO.md)
+ KERNEL_CONTRATO = "KERNEL_RECIBO_R3_4"   # R3.4: + modulos_de_auditoria (a R3_2 segue admitida); R3.2: + varredura_tokens recursiva (12-ter item 3); R3.1: toolchain em lista, pedras com declaracoes, formal_files_antes, criterios so com o medido
+ KERNEL_CONTRATO_R3_2 = "KERNEL_RECIBO_R3_2"
+-KERNEL_CONTRATOS_ADMITIDOS = (KERNEL_CONTRATO_R3_2, KERNEL_CONTRATO)
++KERNEL_CONTRATO_R3_6 = "KERNEL_RECIBO_R3_6"   # R3.6: o recibo da VERSAO SEM PEDRA NOVA (versao_sem_pedra_nova: true, pedras vazias, kernel == o anterior); so existe neste contrato
++KERNEL_CONTRATOS_ADMITIDOS = (KERNEL_CONTRATO_R3_2, KERNEL_CONTRATO, KERNEL_CONTRATO_R3_6)
+ CRITERIOS_CONTRATO = "CRITERIOS_R3_1"     # A3: o arquivo dos ESPERADOS, pinado pela cadeia (R3_1/CRITERIOS_V392.json e o modelo)
+ CRITERIOS_X19 = ("sim", "nao")
+ AXIOMAS_TRIO = frozenset(("propext", "Classical.choice", "Quot.sound"))
+@@ -1731,7 +1741,11 @@
+           da impressao; a impressao de formal_files_antes == o ANTES, e as pedras do recibo sao EXATAMENTE os arquivos formais novos ou
+           mudados do manifesto pinado pelo selo, fora a raiz e o Audit (N1l);
+       (f) os criterios da secao 4 item 6 do plano: o MEDIDO do recibo == o ESPERADO do CRITERIOS_vNNN.json pinado pela cadeia (A3);
+-          esperado no recibo e recusado.
++          esperado no recibo e recusado;
++      (g) R3.6: o contrato KERNEL_RECIBO_R3_6 e o da VERSAO SEM PEDRA NOVA (sem_pedra): exige versao_sem_pedra_nova=true, pedras VAZIA, sem
++          modulos_de_auditoria, raiz e Audit com antes == depois, so o job do lake do TGL.Audit no build log e a afirmacao positiva de que a impressao
++          do manifesto pinado pelo selo == a do kernel anterior (formal_files_antes); a chave versao_sem_pedra_nova so existe neste contrato;
++          os contratos R3_2 e R3_4 seguem como na R3.5.
+     Devolve (passa, detalhe, pino)."""
+     kp = Path(kp)
+     if not kp.is_file():
+@@ -1758,6 +1772,12 @@
+         return falha("nao e um objeto JSON")
+     if k.get("contrato") not in KERNEL_CONTRATOS_ADMITIDOS:
+         return falha("contrato=%r (exigido %s; a %s segue admitida)" % (k.get("contrato"), KERNEL_CONTRATO, KERNEL_CONTRATO_R3_2))
++    # R3.6: o recibo da versao SEM pedra nova tem contrato proprio; a chave que o declara so existe nele
++    sem_pedra = (k.get("contrato") == KERNEL_CONTRATO_R3_6)
++    if not sem_pedra and "versao_sem_pedra_nova" in k:
++        return falha("a chave versao_sem_pedra_nova so existe no contrato %s (o recibo e %r) (R3.6)" % (KERNEL_CONTRATO_R3_6, k.get("contrato")))
++    if sem_pedra and k.get("versao_sem_pedra_nova") is not True:
++        return falha("o contrato %s e o da versao SEM pedra nova e exige versao_sem_pedra_nova=true (veio %r) (R3.6)" % (KERNEL_CONTRATO_R3_6, k.get("versao_sem_pedra_nova")))
+     proibidos = [c for c in KERNEL_CAMPOS_PROIBIDOS if c in k]
+     if proibidos:
+         return falha("campos PROIBIDOS %s: a etapa 2 roda antes do candidato e do rito e nao pode conhece-los" % proibidos)
+@@ -1857,7 +1877,17 @@
+             return falha("%s exige {path=%r, sha256_antes, sha256_depois}" % (campo, rel_esp))
+         itens.append((campo, rel_esp, r["sha256_depois"].lower()))
+     pedras = k["pedras"]
+-    if not isinstance(pedras, list) or not pedras:
++    if sem_pedra:
++        if not isinstance(pedras, list) or pedras:
++            return falha("o contrato %s e o da versao SEM pedra nova: pedras tem de ser a lista VAZIA (veio %r); versao com pedra usa %s ou %s (R3.6)"
++                         % (KERNEL_CONTRATO_R3_6, pedras, KERNEL_CONTRATO_R3_2, KERNEL_CONTRATO))
++        if "modulos_de_auditoria" in k:
++            return falha("o contrato %s nao tem modulos_de_auditoria (sem pedra nao ha modulo a auditar); a chave esta presente (R3.6)" % KERNEL_CONTRATO_R3_6)
++        for campo in ("raiz", "audit"):
++            if k[campo]["sha256_antes"].lower() != k[campo]["sha256_depois"].lower():
++                return falha("versao sem pedra nova: %s.sha256_antes %s != sha256_depois %s (a raiz e o Audit nao mudaram) (R3.6)"
++                             % (campo, k[campo]["sha256_antes"][:16], k[campo]["sha256_depois"][:16]))
++    elif not isinstance(pedras, list) or not pedras:
+         return falha("pedras vazias")
+     vistos = set()
+     for p in pedras:
+@@ -1909,6 +1939,9 @@
+     # listada, para a raiz (TGLExt) e para o Audit (TGL.Audit), e a linha final "Build completed successfully"
+     jobs = set(RE_LAKE_JOB.findall(logs["build_full_log"]))
+     exig_mod = ["TGLExt", "TGL.Audit"] + [p["path"][:-len(".lean")].replace("/", ".") for p in pedras]
++    if sem_pedra:
++        # R3.6: nada foi compilado, o lake nao imprime linha de job para a raiz reproduzida sem saida: so o job do TGL.Audit (que roda o #print axioms) e a linha final
++        exig_mod = ["TGL.Audit"]
+     sem_job = [m_ for m_ in exig_mod if m_ not in jobs]
+     if sem_job:
+         return falha("LOG_DE_BUILD_IMPLAUSIVEL: o build log nao tem a linha de job do lake (Built/Replayed) de %s (R31-4: exigida para cada pedra, a raiz e o Audit; "
+@@ -2002,6 +2035,10 @@
+     nao_novas = sorted(vistos - mudados)
+     if nao_novas:
+         return falha("pedra(s) do recibo que nao sao novas nem mudadas no manifesto pinado pelo selo: %s (N1l)" % nao_novas[:5])
++    # R3.6: na versao sem pedra nova, a afirmacao POSITIVA: o manifesto do kernel que o selo pina E o kernel anterior, arquivo a arquivo (a impressao e a mesma)
++    if sem_pedra and impressao_formal(ff) != imp["depois"].lower():
++        return falha("versao sem pedra nova: a impressao do manifesto do kernel pinado pelo selo %s != nos_kernel_impressao.depois %s: o kernel NAO e o anterior (N1l, R3.6)"
++                     % (impressao_formal(ff)[:16], imp["depois"][:16]))
+     # (f) os criterios: MEDIDO do recibo contra o ESPERADO pinado (A3)
+     cr = k["criterios"]
+     if not isinstance(cr, dict):
+@@ -2033,7 +2070,13 @@
+                 modulos_de_auditoria=dict(lista=sorted(aud_set), n=len(aud_set), fontes_conferidas_por_script=True, contagem_de_comandos=auditorias,
+                                           limite="o corpo do run_cmd e codigo executado na compilacao: o script confere os comandos de topo e um vocabulario FECHADO de permissao no corpo (R3.5); nao prova a inocuidade semantica do corpo"),
+                 criterios=dict(path=criterios.get("path"), sha256=criterios.get("sha256"), x19=criterios.get("x19")),
+-                antes=nota_antes or "cruzado com o recibo pre-selo")
++                antes=nota_antes or "cruzado com o recibo pre-selo", versao_sem_pedra_nova=sem_pedra)
++    if sem_pedra:
++        pino.update(kernel_igual_ao_anterior=dict(impressao_formal=impressao_formal(ff), n_arquivos_formais=len(ff), nos_kernel_impressao_depois=imp["depois"].lower(),
++                                                  formal_files_antes_igual_ao_manifesto_pinado=True))
++        return True, "recibo do kernel %s (%s): versao=%s rc=0 sorry=0 erros=0 (recontados nos logs normalizados); VERSAO SEM PEDRA NOVA (R3.6): pedras vazias, sem modulos de auditoria, raiz e Audit com antes == depois; o kernel e o ANTERIOR: a impressao formal do manifesto %s pinado pelo selo (%s, %d arquivos formais) == nos_kernel_impressao == formal_files_antes, e raiz e Audit == o manifesto e re-hasheados na arvore; build log com o job do lake do TGL.Audit e a linha final (a raiz nao foi compilada: sem job exigido); log do Audit cobre os %d #print axioms distintos por nome; varredura de tokens recursiva (%d .lean, %d em TGLExt/O16) recontada; criterios == CRITERIOS %s (x19=%s); statuses e axiomas no trio; %s" % (
++            pino["sha256"][:16], k["contrato"], versao, str(kinfo.get("sha256"))[:16], impressao_formal(ff)[:16], len(ff), len(nomes_print), n_lean, n_o16, str(criterios.get("sha256"))[:16],
++            criterios.get("x19"), pino["antes"]), pino
+     return True, "recibo do kernel %s (%s): versao=%s rc=0 sorry=0 erros=0 (recontados nos logs normalizados); %d pedras (%d declaracoes no axiom_report, no log e na fonte; %d modulo(s) de auditoria sem declaracoes, fonte conferida por script) + raiz + Audit == manifesto do kernel %s pinado pelo selo e re-hasheados; pedras == diff formal; build log com os jobs do lake das pedras, da raiz e do Audit; log do Audit cobre os %d #print axioms distintos por nome; varredura de tokens recursiva (%d .lean, %d em TGLExt/O16) recontada; criterios == CRITERIOS %s (x19=%s, cruzada com as pedras); statuses e axiomas no trio; %s" % (
+         pino["sha256"][:16], k["contrato"], versao, len(pedras) - len(aud_set), n_decl, len(aud_set), str(kinfo.get("sha256"))[:16], len(nomes_print), n_lean, n_o16, str(criterios.get("sha256"))[:16],
+         criterios.get("x19"), pino["antes"]), pino

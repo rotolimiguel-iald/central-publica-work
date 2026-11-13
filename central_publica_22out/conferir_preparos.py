@@ -125,6 +125,9 @@ idx = {"arquivos": []} if SEM_INDICE else json.loads((D / "INDICE_PUBLICO.json")
 no_indice = {a["caminho"]: a for a in idx["arquivos"]}
 vistos = set()
 _RAIZ = "\\\\?\\" + str(D.resolve())
+# (11/11/2026, claude-site-custodia) RECONSTRUIR_COPIAS.py: o script que recria as cópias referenciadas num clone (a cópia vira referência)
+_RAIZ_NOMES = {"INDICE_PUBLICO.json", "EXCLUSOES_PUBLICAS.json", "README.md", "PATENTES.md", "vinculo_patentario.json", ".gitattributes",
+               "llms.txt", "RECONSTRUIR_COPIAS.py"}
 def _todos():
     for dp, dns, fns in os.walk(_RAIZ):
         dns[:] = [x for x in dns if x != ".git"]
@@ -134,8 +137,7 @@ for p in _todos():
     rel = os.path.relpath(str(p), _RAIZ).replace(os.sep, "/")
     # (23/10/2026) os gerados da raiz e o llms.txt (curadoria à mão, do Kimi) não precisam estar no índice — mas o CONTEÚDO deles passa
     # pelas mesmas checagens de todo o resto (antes, a raiz era pulada inteira)
-    raiz_gerada = rel in ("INDICE_PUBLICO.json", "EXCLUSOES_PUBLICAS.json", "README.md", "PATENTES.md", "vinculo_patentario.json",
-                          ".gitattributes", "llms.txt") or rel.startswith("INDICE_PUBLICO_PARTES/")   # (11/11/2026, v410) as partes do índice
+    raiz_gerada = rel in _RAIZ_NOMES or rel.startswith("INDICE_PUBLICO_PARTES/")   # (11/11/2026, v410) as partes do índice
     vistos.add(rel)
     partes = rel.split("/")
     if any(PASTA_PROIBIDA.match(x) for x in partes[:-1]):
@@ -152,6 +154,8 @@ for p in _todos():
         pass
     elif a is None:
         marca("arquivo fora do índice", rel)
+    elif a.get("igual_a"):                      # (11/11/2026) a cópia referenciada não fica no preparo: o índice aponta o original
+        marca("cópia referenciada ainda no preparo", rel)
     elif a["sha256"] != hashlib.sha256(b).hexdigest():
         marca("sha256 diferente do índice", rel)
     e = p.suffix.lower() if p.suffix else ("." + p.name.lstrip(".")).lower()
@@ -207,8 +211,34 @@ for p in _todos():
             if bb[:2] == b"PK":
                 varrer_zip(bb, rel + "!base64")
 for rel in no_indice:
-    if rel not in vistos and not os.path.isfile("\\\\?\\" + str((D / rel).resolve())):
+    if rel not in vistos and not no_indice[rel].get("igual_a") and not os.path.isfile("\\\\?\\" + str((D / rel).resolve())):
         marca("índice sem arquivo", rel)
+# AO LADO (11/11/2026, claude-site-custodia; decisão do operador: a cópia vira referência, a partir da v411), conferido por conta própria
+# (não importa copias_referencia.py): cada entrada com "igual_a" aponta para uma entrada do MESMO índice que não é referência, com os mesmos
+# bytes e o mesmo sha256, e o arquivo desse original está no preparo com esse sha256 (cada original lido uma vez); a cópia não é arquivo da
+# raiz nem parte do índice; com alguma referência, a raiz traz RECONSTRUIR_COPIAS.py. A cópia física que ficou no preparo é marcada no laço.
+_refs = [a for a in idx["arquivos"] if a.get("igual_a")]
+if _refs:
+    _alvos = {}
+    for a in _refs:
+        o = no_indice.get(a["igual_a"])
+        if (o is None or o.get("igual_a") or a["igual_a"] == a["caminho"] or o["sha256"] != a["sha256"] or o["bytes"] != a["bytes"]
+                or a["caminho"] in _RAIZ_NOMES or a["caminho"].startswith("INDICE_PUBLICO_PARTES/")):
+            marca("referência de cópia não confere com o original", a["caminho"]); continue
+        _alvos[a["igual_a"]] = o["sha256"]
+    for _r, _s in sorted(_alvos.items()):
+        try:
+            _h = hashlib.sha256()
+            with open(_RAIZ + "\\" + _r.replace("/", "\\"), "rb") as _f:
+                for _bl in iter(lambda: _f.read(1 << 20), b""):
+                    _h.update(_bl)
+            _ok_o = _h.hexdigest() == _s
+        except OSError:
+            _ok_o = False
+        if not _ok_o:
+            marca("original de cópia ausente ou diferente do índice", _r)
+    if not (D / "RECONSTRUIR_COPIAS.py").is_file():
+        marca("cópias referenciadas sem RECONSTRUIR_COPIAS.py na raiz", "RECONSTRUIR_COPIAS.py")
 # AO LADO (11/11/2026, custódia v410, claude-site-custodia): o ÍNDICE EM PARTES, conferido por conta própria (não importa indice_partes.py):
 # cada parte com os bytes e o sha256 do cabeçalho, nenhuma acima de 95 MiB, nada além delas na pasta; a lista «arquivos» das partes,
 # concatenada na ordem, igual à do índice inteiro, entrada por entrada; e o índice inteiro fora do git (nem rastreado, nem visível ao status)

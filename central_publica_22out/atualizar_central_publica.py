@@ -55,6 +55,8 @@ desde = ["--desde", a.desde] if a.desde else []
 for tipo in ("nucleo", "work", "Chatgpt"):
     add("incremental_" + tipo, "repos", [str(W / "rodar_incremental.py"), tipo] + desde)
 add("esteira_no_work", "repos", [str(W / "atualizar_pasta_no_preparo.py"), str(PUB / "central-publica-work"), "central_publica_22out"])
+for r in REPOS:   # AO LADO (11/11/2026, decisão do operador: a cópia vira referência, a partir da v411): antes do README, que conta as referências
+    add("referenciar_copias_" + r, "repos", [str(W / "copias_referencia.py"), str(PUB / r)])
 add("readmes", "repos", [str(W / "gerar_readmes_publicos.py"), str(PUB)], py=PYB)
 for r in REPOS:
     add("indexar_raiz_" + r, "repos", [str(W / "indexar_raiz.py"), str(PUB / r)])

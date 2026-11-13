@@ -1,6 +1,6 @@
 # INVENTÁRIO DA BANCADA DO CHATGPT — tudo o que foi examinado e produzido
 
-> Gerado por script em 2026-11-11 02:38:50 a partir da varredura `inventario_bancada.json` (sha16 `07954bdab31f98b7`), SÓ LEITURA da pasta `Chatgpt\`. Nenhum número digitado.
+> Gerado por script em 2026-11-13 04:07:42 a partir da varredura `inventario_bancada.json` (sha16 `403dddb26b6f42f8`), SÓ LEITURA da pasta `Chatgpt\`. Nenhum número digitado.
 > **Ordem do operador (27/09/2026, verbatim):** «Precisamos fazer um inventário de tudo que foi examinado e produzido na bancada do chatgpt pra não nos perdermos mais em serviço já executado, vc está pedindo o que já pediu» e «Depois de inventariar tudo, precisamos indexar ao atlas da tgl para ficar referenciado».
 > **Regra de uso:** ANTES de pedir qualquer construção à bancada ou de construí-la na gerência, procurar aqui (por tema, por nome, por hash). O que é sabido e importável não se prova de novo (regra do operador de 27/08: «prova emprestada»).
 

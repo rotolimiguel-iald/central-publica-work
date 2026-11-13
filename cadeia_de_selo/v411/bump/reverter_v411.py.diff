@@ -1,0 +1,41 @@
+--- v410/reverter_v410.py
++++ v411/reverter_v411.py
+@@ -1,0 +2 @@
++# [A ADAPTAR v411] SUBIDA MECANICA DE ROTULO (v410->v411) do molde v410/reverter_v410.py; o CORPO e' o da v410 (bundle IALD2+AEscala, quatro registros com funcao da v410); nada rodou; ver bump/reverter_v411.py.diff
+@@ -4,4 +5,4 @@
+-"""reverter_v410.py -- REVERSAO da instalacao v410 (ato da gerencia c1; usar so' se o rito falhar; adaptado em 06/11/2026 por claude-construtor-v410 para o BUNDLE PEQUENO de dois modulos em TGLExt/, NAO executado na preparacao). Le o ULTIMO APLICADO_AO_CANONICO_*.json desta pasta (o carimbo dos backups;
+-nada digitado), guarda o estado falho como registro, restaura os 10 backups de BYTES (um.py, core, selo, .md, manifesto, pilar, o sidecar um_absoluto_selo_acom.json, o manifesto do kernel tgl_kernel_proof_manifest.json [licao 2 da v409], TGLExt.lean, TGL/Audit.lean) e poe os modulos novos de kernel da v410 (IALD2 e AEscala, em TGLExt/: a lista que o instalador gravou;
+-o numero e' o comprimento dela, conferido contra ESPERADOS.bundle_sha256) em QUARENTENA (nunca apaga; guarda o caminho relativo). Confere ao fim que o um.py voltou a ser a v409 selada (o sha16 e' LIDO de ESPERADOS_v409.json do pacote anterior, nunca digitado).
+-Fail-closed: backup ausente => para sem tocar o que resta. NAO restaura, como no molde: os .tex e os .pdf que o rito reescreve no Nos ficam como o rito os deixou, e o .lake do kernel nao e' limpo; a proxima rodada os regenera. Recusa -O, como o instalar. Molde: reverter_v409.py."""
++"""reverter_v411.py -- REVERSAO da instalacao v411 (ato da gerencia c1; usar so' se o rito falhar; adaptado em 06/11/2026 por claude-construtor-v411 para o BUNDLE PEQUENO de dois modulos em TGLExt/, NAO executado na preparacao). Le o ULTIMO APLICADO_AO_CANONICO_*.json desta pasta (o carimbo dos backups;
++nada digitado), guarda o estado falho como registro, restaura os 10 backups de BYTES (um.py, core, selo, .md, manifesto, pilar, o sidecar um_absoluto_selo_acom.json, o manifesto do kernel tgl_kernel_proof_manifest.json [licao 2 da v410], TGLExt.lean, TGL/Audit.lean) e poe os modulos novos de kernel da v411 (IALD2 e AEscala, em TGLExt/: a lista que o instalador gravou;
++o numero e' o comprimento dela, conferido contra ESPERADOS.bundle_sha256) em QUARENTENA (nunca apaga; guarda o caminho relativo). Confere ao fim que o um.py voltou a ser a v410 selada (o sha16 e' LIDO de ESPERADOS_v410.json do pacote anterior, nunca digitado).
++Fail-closed: backup ausente => para sem tocar o que resta. NAO restaura, como no molde: os .tex e os .pdf que o rito reescreve no Nos ficam como o rito os deixou, e o .lake do kernel nao e' limpo; a proxima rodada os regenera. Recusa -O, como o instalar. Molde: reverter_v410.py."""
+@@ -16 +17 @@
+-assert ap_p, "nenhum APLICADO_AO_CANONICO_*.json: nada instalado por instalar_v410.py"
++assert ap_p, "nenhum APLICADO_AO_CANONICO_*.json: nada instalado por instalar_v411.py"
+@@ -19,3 +20,3 @@
+-# --- tudo o que decide a reversao e' LIDO ANTES de qualquer escrita (fail-closed): ESPERADOS_v410, a lista dos modulos novos e a ancora do hash da v409 selada
+-esp = json.load(open(os.path.join(CAD, "ESPERADOS_v410.json"), encoding="utf-8"))
+-_aplic = AP.get("modulos_novos_v410") or {}
++# --- tudo o que decide a reversao e' LIDO ANTES de qualquer escrita (fail-closed): ESPERADOS_v411, a lista dos modulos novos e a ancora do hash da v410 selada
++esp = json.load(open(os.path.join(CAD, "ESPERADOS_v411.json"), encoding="utf-8"))
++_aplic = AP.get("modulos_novos_v411") or {}
+@@ -23 +24 @@
+-assert len(_lista) > 0 and len(_lista) == len(set(_lista)) == len(esp["bundle_sha256"]) == esp["kernel"]["modulos_novos"] and set(_lista) == set(esp["bundle_sha256"]) and all(x_.startswith("TGLExt/") and x_.count("/") == 1 and x_.endswith(".lean") for x_ in _lista), ("a lista dos modulos novos da v410 difere de ESPERADOS.bundle_sha256 (o bundle de dois modulos em TGLExt/: IALD2 e AEscala)", len(_lista))
++assert len(_lista) > 0 and len(_lista) == len(set(_lista)) == len(esp["bundle_sha256"]) == esp["kernel"]["modulos_novos"] and set(_lista) == set(esp["bundle_sha256"]) and all(x_.startswith("TGLExt/") and x_.count("/") == 1 and x_.endswith(".lean") for x_ in _lista), ("a lista dos modulos novos da v411 difere de ESPERADOS.bundle_sha256 (o bundle de dois modulos em TGLExt/: IALD2 e AEscala)", len(_lista))
+@@ -25 +26 @@
+-    ANCORA = json.load(open(os.path.join(os.path.dirname(CAD), "v409", "ESPERADOS_v409.json"), encoding="utf-8"))["candidato_sha16"]   # o sha16 do um.py da v409 selada, lido do pacote anterior
++    ANCORA = json.load(open(os.path.join(os.path.dirname(CAD), "v410", "ESPERADOS_v410.json"), encoding="utf-8"))["candidato_sha16"]   # o sha16 do um.py da v410 selada, lido do pacote anterior
+@@ -34 +35 @@
+-reg = os.path.join(CAD, "tentativa_v410_rito_falhou_" + T2)
++reg = os.path.join(CAD, "tentativa_v411_rito_falhou_" + T2)
+@@ -36 +37 @@
+-for a in alvos + ["rodada_v410_stdout.txt"]:
++for a in alvos + ["rodada_v411_stdout.txt"]:
+@@ -50 +51 @@
+-rec["quarentena_fonte"] = "APLICADO_AO_CANONICO.modulos_novos_v410.lista" if _aplic.get("lista") else "ESPERADOS.bundle_sha256"
++rec["quarentena_fonte"] = "APLICADO_AO_CANONICO.modulos_novos_v411.lista" if _aplic.get("lista") else "ESPERADOS.bundle_sha256"
+@@ -58 +59 @@
+-rec["ancora_v409"] = {"fonte": "v409/ESPERADOS_v409.json[candidato_sha16]", "sha16": ANCORA}
++rec["ancora_v410"] = {"fonte": "v410/ESPERADOS_v410.json[candidato_sha16]", "sha16": ANCORA}

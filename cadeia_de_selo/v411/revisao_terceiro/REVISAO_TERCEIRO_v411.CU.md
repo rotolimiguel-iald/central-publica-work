@@ -1,0 +1,156 @@
+# REVISAO DE TERCEIRO v411 -- CONFERENCIA UNICA do conserto da R1 (D109), regravada depois da correcao do CU-1
+
+- aprovada: **SIM**; candidato `1203b1f9202020d6` (46828680 bytes; no inicio `1203b1f9202020d6`; mudou durante a revisao: False)
+- revisor: Sonnet 5.5 (agente de conferencia unica; NAO construiu a v411 nem fez o conserto da R1: quem constroi nao aprova); quando: 2026-11-12T23:45:07
+- abertos: ALTO 0, MEDIO 0, BAIXO 17 (dos BAIXOS, 15 sao ressalvas da R1 que o conserto nao fez, por ordem)
+- a primeira gravacao (reprovada) esta' ao lado: `REVISAO_TERCEIRO_v411.CU.R0.json` (sha16 `4c459e5c37a7f90b`) e `.md` (`87f497ffc6fc768a`)
+
+## Historico
+- 2026-11-12T23:40:26: primeira gravacao desta conferencia: aprovada false por um achado MEDIO dentro do escopo (CU-1: comentario no meio da linha 112 de gerar_relatorio_v411.py desligou tres condicoes do portao kernel); bytes guardados em REVISAO_TERCEIRO_v411.CU.R0.json e .md (sha16 4c459e5c37a7f90b e 87f497ffc6fc768a)
+- 2026-11-12T23:45:07: a gerencia c1 aplicou a correcao minima pedida (o comentario foi para o fim da expressao, nenhuma condicao mudada; gerar_relatorio_v411.py 155670de1d7dc22e -> 3a252f63cd372b75) e o revisor a reconferiu SO' nesse item (escopo fechado, nada novo); nenhum ALTO nem MEDIO resta no escopo
+
+## Nota
+Aprovada, depois da reconferencia unica do CU-1. A primeira gravacao reprovou por um MEDIO: um comentario no meio da linha 112 de gerar_relatorio_v411.py desligara PB.ok, os criterios do POS_BUILD e n_modulos_compilados no portao kernel do relatorio. A gerencia moveu o comentario para o fim e eu reconferi: so' as linhas 112 e 113 mudaram, o portao volta a ter as 12 condicoes de antes do conserto mais a das chaves (13), o arquivo compila e o --seco da 30/30. Tudo o que eu conferi nos itens A, B, C, D e F continua limpo e nao foi refeito; o candidato e' o mesmo (1203b1f9202020d6). Esta e' a unica conferencia (D109): ficam os BAIXOS abertos, que nao bloqueiam; as ressalvas e o que NAO fiz continuam valendo; a decisao final do que se instala e' da gerencia e do operador.
+
+## Achados da conferencia, resolvidos
+### CU-1 -- MEDIO, RESOLVIDO
+- **o que era:** O conserto C-10 acrescentou all(k_ in KR for k_ in (rc, sorry, erros)), mas pos um comentario inline “# (C-10 da revisao de terceiro: ...)” no MEIO da expressao: tudo o que vem depois do “#” na mesma linha virou comentario, e com ele três condicoes: PB.get(ok) is True, all(PB.get(criterios).values()) e PB.get(n_modulos_compilados) == 0. Medido por AST (cu_e2.py): o portao tinha 12 condicoes e tem 10; sairam essas tres, entrou a das chaves. O arquivo compila, o relatorio passa, e o CONSERTO_R1_v411.md diz so' que o portao passou a exigir as chaves (a regressao nao esta dita). Efeito pratico hoje: nenhum, porque POS_BUILD_v411.json (lido agora) tem ok True, criterios todos True e n_modulos_compilados 0, e o portao p00 repete ok e criterios (p00_precondicoes_v411.py l.47, “nenhum_modulo_compilado” dentro dos criterios). Mesmo assim e' uma condicao que ficou mais frouxa sem ser dita: o item  (texto completo no registro R0)
+- **correcao aplicada:** Comentario do C-10 movido do meio da expressao do portao kernel para o fim dela (depois do ultimo parentese da linha 113), com uma nota do CU-1; nenhuma condicao mudada. gerar_relatorio_v411.py: sha16 155670de1d7dc22e -> 3a252f63cd372b75; backup de bytes gerar_relatorio_v411.py.bak_20261112_234336_cu1fix.
+- **quem aplicou:** a gerencia c1 (nao o construtor, nao o revisor); o candidato nao foi tocado
+- **como conferi:** cu_r2.py e o comando seco: (1) diff do backup _cu1fix contra o de hoje: um unico hunk, linhas 112 e 113 (@@ -112,2 +112,2 @@), e o resto do arquivo igual linha a linha; (2) por AST o portao kernel tem 13 condicoes: as 12 do estado de antes do conserto (backup _r1fix, 9bf6956723bc5232), todas presentes e na mesma ordem (PB.ok, criterios do POS_BUILD e n_modulos_compilados de volta), mais a das chaves do C-10; dos 29 portoes de PORTOES so' o kernel difere do backup; (3) compila em memoria; (4) gerar_relatorio_v411.py --seco: portoes ok 30/30, falta vazio, guarda das frases e P18 limpa, e as datas de PLANO, RELATORIO e PRONTA nao mudaram (nada gravado); (5) o candidato segue 1203b1f9202020d6 e nenhum outro arquivo de arquivos_revisados mudou (34 relidos).
+
+## Achados abertos
+### CU-2 -- BAIXO (dentro do escopo: sim)
+- **onde:** core, cunhagens_v411.extras.textos_da_gerencia_citados[].nome (6 itens) e o candidato (as mesmas 6 cadeias, 2 vezes cada)
+- **o que:** Seis nomes de arquivos GERENCIA_11nov_* e GERENCIA_12nov_* (textos da gerencia a que o operador respondeu) ficam em claro no core. Nao sao falas dele nem transcricao (o texto nao esta' la; so' o nome e o sha256), nao aparecem no artigo, na forma canonica, no manifesto nem na saida do rito, e a decisao D183 manda citar os textos da gerencia por sha256. Mas o nome carrega palavras do tema da conversa, que e' o que a D181 quis tirar nas falas.
+- **correcao pedida:** Citar esses seis textos por sha256 e papel, sem o nome do arquivo, como as onze ordens (decisao da gerencia; nao bloqueia).
+### CU-3 -- BAIXO (dentro do escopo: sim)
+- **onde:** artigo EN, secao nova, paragrafo O achado do suporte e a emenda (quadro_v411.py, texto EN trocado no B-09)
+- **o que:** “the weights frozen on 6 Nov are its (the collaboration's) and give zero weight to that component” e' correto mas duro de ler; o ingles diz o mesmo que o portugues.
+- **correcao pedida:** Opcional: “are the collaboration's and give zero weight to that component”.
+
+Ressalvas da R1 que ficam (BAIXO, fora do escopo): A-B1, A-B2, A-B3, A-B4, A-B5, A-B6, B-05, B-06, B-07, B-09, C-03, C-06, C-07, C-08, C-09.
+
+## Situacao dos achados da R1
+- **A-B1** (BAIXO na R1): fica como ressalva. nao reaberto (pedido secao 4); o escopo A foi aprovado na R1 e so' o delta do conserto foi relido (cu_a1_ast.py, cu_a2_show.py, cu_a3.py, cu_a5.py)
+- **A-B2** (BAIXO na R1): fica como ressalva. nao reaberto (pedido secao 4); o escopo A foi aprovado na R1 e so' o delta do conserto foi relido (cu_a1_ast.py, cu_a2_show.py, cu_a3.py, cu_a5.py)
+- **A-B3** (BAIXO na R1): fica como ressalva. nao reaberto (pedido secao 4); o escopo A foi aprovado na R1 e so' o delta do conserto foi relido (cu_a1_ast.py, cu_a2_show.py, cu_a3.py, cu_a5.py)
+- **A-B4** (BAIXO na R1): fica como ressalva. nao reaberto (pedido secao 4); o escopo A foi aprovado na R1 e so' o delta do conserto foi relido (cu_a1_ast.py, cu_a2_show.py, cu_a3.py, cu_a5.py)
+- **A-B5** (BAIXO na R1): fica como ressalva. nao reaberto (pedido secao 4); o escopo A foi aprovado na R1 e so' o delta do conserto foi relido (cu_a1_ast.py, cu_a2_show.py, cu_a3.py, cu_a5.py)
+- **A-B6** (BAIXO na R1): fica como ressalva. nao reaberto (pedido secao 4); o escopo A foi aprovado na R1 e so' o delta do conserto foi relido (cu_a1_ast.py, cu_a2_show.py, cu_a3.py, cu_a5.py)
+- **B-01** (ALTO na R1): resolvido. cu_c1.py e cu_c2.py sobre o rendido novo (dry_v411, PT e EN, txt e tex, e o PDF extraido): os dois blocos (os estresses; o esperado pelos agregados) terminam com o fecho dos quatro obrigatorios com o Z das Cefeidas livres no formato do topo ($4,38$ no txt, $4{,}38$ no tex, 4.38 no EN; o core diz 4,379645...); todo paragrafo novo ou alterado do tex (36 por idioma) com o primario traz os quatro, salvo O que o teste nao decide (descritivo; ja' era assim na R1, a guarda nao o acusa) e a E44 EN (cita o desenho D159, sem Z); a guarda do construtor sobre o texto inteiro acusa no novo o mesmo numero de paragrafos que no v410 selado (cu_c3.py)
+- **B-02** (MEDIO na R1): resolvido. cu_c4.py: 14 frases minhas, PT e EN, com e sem cifrao, com e sem os quatro, provado na natureza no H0DN e neutras: todas como esperado; runtime_h0dn_v411.py l.54 passou a Z\$?\s+; guarda_frases ganhou 2 proibidas e 2 limpas em TeX (PROIBIDAS 29, LIMPAS 20, lido do modulo)
+- **B-03** (MEDIO na R1): resolvido. cu_c6.py e cu_c7.py: a E44 PT e EN igual ao DESENHO (sha16 79234a941851d20b e 5a468bc7511570ab) no candidato, no core (h0dn erratas e cunhagens_v411.erratas), no tex (apos desfazer o escape), no txt (so' diferem os seis cifroes dos delimitadores de formula, convencao do txt), na linha do .md e no texto extraido do PDF; e' o ultimo paragrafo da secao nova (o seguinte abre a secao IALD ao quadrado)
+- **B-04** (BAIXO na R1): resolvido. cu_c8.py: o fecho vem depois da frase ao lado do estatuto e no item O coracao, 2 de 2 em txt e tex, PT e EN
+- **B-05** (BAIXO na R1): fica como ressalva. nao reaberto (pedido secao 4)
+- **B-06** (BAIXO na R1): fica como ressalva. nao reaberto (pedido secao 4)
+- **B-07** (BAIXO na R1): fica como ressalva. nao reaberto (pedido secao 4)
+- **B-08** (BAIXO na R1): resolvido. a E44 inclui os dois trechos antigos sobre beta a 5 sigma (o paragrafo O que nao se declara, da v392, e a cadeia de maquina da estatuto_da_prova_v391); texto conferido byte a byte em cu_c6.py
+- **B-09** (BAIXO na R1): resolvido em parte; o resto fica como ressalva. cu_c8.py: rotulos legiveis 5 de 5 no PT e no EN (sem chave de maquina); no EN “hers” saiu (its (the collaboration's)) e as datas sao 6 Nov e 11 Nov, sem dd/mm no paragrafo; o resto foi ordenado que ficasse
+- **C-01** (ALTO na R1): resolvido. c_26_step0.py: FALTAM [] (runtime_v411.py saiu, entraram runtime_h0dn_v411.py, conferir_conversa_v411.py, guarda_conversa_v411.py e GUARDA_CONVERSA_BASE_v410.json); c_28_refs_sh.py: 34 ausentes, todos saidas do rito/da cadeia ou opcionais (patch_arvore_indice_v411.py e' guardado por [ -f ]), nenhum insumo obrigatorio; sh -n rc 0 no chain e no rito (cu_d1.py); li a cadeia inteira; os 22 scripts nomeados existem e compilam em memoria; os imports locais deles existem no sys.path que eles montam; os que rodam com -I nao importam nada de fora da stdlib (cu_d2.py); li a checagem estatica do p00 e os tres controles (l.92-143)
+- **C-02** (BAIXO na R1): resolvido. li conferir_conversa_v411.pdf_tex_ok e _controles_pdf_tex: exigem o .tex PT e EN com a abertura do resumo ratificado e o titulo do quadro novo e cada .pdf com tamanho > 0 e mtime >= o inicio do rito, lido de rito_horarios_v411.txt (V411_RITO_HORARIOS, ou o do pacote, que o rito grava nas linhas 248 e 261 do rito_v411.sh, ou o do Nos); os controles (PDF velho, PDF vazio, TeX sem a abertura, TeX sem o titulo, mais base e restaurado) rodam em copia temporaria
+- **C-03** (BAIXO na R1): fica como ressalva. nao reaberto (pedido secao 4)
+- **C-04** (BAIXO na R1): resolvido. diff do harness_textos_ensaio_v411.py: duas variantes novas (sem a chave p2_ao_lado_da_v387; com o valor trocado), variante( 526 -> 531, falha( 53 -> 53 (cu_e4.py)
+- **C-05** (BAIXO na R1): resolvido. diff do p00: _memory_md_conferido(idx_override) e o controle que injeta uma COPIA do indice com 196+ linhas e exige pendente (ver_ok so' relaxa quando ha override, nunca no caminho real); PRECONDICOES_v411.json: 33 de 33 [lido, nao reexecutado]
+- **C-06** (BAIXO na R1): fica como ressalva. nao reaberto (pedido secao 4)
+- **C-07** (BAIXO na R1): fica como ressalva. nao reaberto (pedido secao 4)
+- **C-08** (BAIXO na R1): fica como ressalva. nao reaberto (pedido secao 4)
+- **C-09** (BAIXO na R1): (a) resolvido; (b) fica como ressalva. cu_d4.py: orquestrador/pos_treino_v411.py compila em memoria, o diff contra o backup e' so' a linha 237 (not is_file() or sha16 != v); (b) nao reaberto
+- **C-10** (BAIXO na R1): resolvido (depois da correcao do CU-1 pela gerencia). a primeira conferencia achou que o conserto acrescentou a exigencia das chaves mas desligou tres condicoes por um comentario no meio da expressao (CU-1); a gerencia moveu o comentario para o fim; reconferido: o portao kernel tem 13 condicoes (as 12 de antes do conserto mais a das chaves), o arquivo compila e --seco da 30/30
+- **C-11** (BAIXO na R1): resolvido. cu_d4.py: nenhum *DEPURACAO* em pos_rito; os dois resumos estao em C:\t\k411c\conserto_r1\depuracao com os sha16 declarados (639359d6b18c6f7c e de67be4bab227204)
+
+## Conferencias (itens A a F)
+### A
+Delta por AST de topo entre o candidato revisado na R1 (backup 21e87eb3df5098f8) e o final (1203b1f9202020d6): 1397 -> 1398 nos; 5 removidos (_V411_AB, _V411_FE, _v411_fala_do_autor_tex, _v411_fala_do_autor_md, _V411_FALA_DO_AUTOR), 6 novos (_v411_fecho_blocos, _v411_rotulo_agregado, _v411_errata_e44_tex, _V411_FALAS_CITADAS, _V411_TEXTOS_DA_GERENCIA, _v411_citar_falas), 14 mudados, 1378 iguais, ordem relativa dos comuns igual. Cada no foi lido e e' explicado por O1 a O5, B-01, B-02, B-03/B-08, B-04, B-09 ou D181; fora dos nos so' mudam linhas em branco (3); os tres blobs (_EMBEDDED_KERNEL_FILES, _V411_H0DN_INSUMOS, _V410_H0DN_INSUMOS) sao nos iguais; h0dn_bg1_v411 muda so' o docstring; as funcoes do gate nao estao entre os mudados; main muda so' o print da linha da v411; nenhum beta literal e nenhum numero do teste digitado nas linhas acrescentadas (cu_a3.py, cu_a5.py). No core do ensaio (sha16 faec6bf29a4a2987): h0dn_bg1_v411 com as 16 checagens verdadeiras (c1 a c16), all_verified, opened_once, e os valores iguais, por igualdade exata, ao RESULTADO_DA_ABERTURA_V411.json do clone publico (blob do HEAD == disco, sha16 573fbf87db2ccfe8): t, z_null, z_tgl, D, ramo, cabeca, Cefeidas livres, portao 1, estresses, coerencia e suporte (cu_a4.py a cu_a4c.py).
+### B
+A D181 por meio meu (cu_b1.py; nao importa guarda_conversa_v411): as 11 falas da casa pela lista de VERBATIM_CONGELADO_v411.json (os 11 sha256 conferidos), a ordem da D181 (sha256 93d812a0...) e a fala fora do desenho; agulhas: o texto inteiro, 19 linhas ou frases de 24+ caracteres, 457 janelas de 6 palavras, 26 nomes (e radicais); formas cru, JSON ascii e utf8, repr, ascii(), unicode_escape; alvos: o fonte do candidato (texto cru e as cadeias decodificadas do AST), o core do ensaio (todas as cadeias e as chaves), artigo PT e EN (tex e txt), forma canonica, manifesto, saida do rito, cada um contra o seu correspondente na v410 selada do Nos. Resultado: 0 ocorrencias de texto inteiro ou linha de 24+ (salvo a fala curta de 17 caracteres, indice 10, cuja contagem e' IGUAL a da v410 em todo alvo: fonte 20=20, core 9=9, artigo 1=1; cu_b2.py), 0 nomes de arquivo de fala, 0 janelas de 6 palavras alem da base (a unica janela, da fala de indice 3, aparece 1 vez no candidato e 1 vez na v410; cu_b9.py), 0 informativos no topo. Controles do meu scan: o candidato antigo e' recusado (23 ocorrencias, 24 nomes, 399 janelas), linha plantada em tres formas, seis palavras plantadas, nome plantado recusados, o limpo passa (cu_b2.py). Estrutural (cu_b4.py): o item A fala do autor / The author's words nao esta' em nenhum rendido (PT, EN, md); a linha da v411 no stdout cita data e sha16 48612e7f3c9004f2, sem aspas angulares; o docstring idem; cunhagens_v411 com 11 itens (quando, sha256, papel, autor, citado_por_sha256 True, texto_transcrito False), 11 sha256 iguais aos dos arquivos lidos agora, chave v411_cun_ + sha16, nenhum texto, trecho ou nome de arquivo; veredito com OPERATOR_ORDERS ... CITED_BY_DATE_AND_SHA256_NOT_TRANSCRIBED, dez decisoes (D181 incluida) e quatro erratas (E44 incluida). So' DEPOIS, a guarda do construtor importada em memoria (cu_b6.py, sem gerar base): ok, 0 achados, 21 de 21 controles; concorda com o meu scan e recusa o candidato antigo (33 achados). Nada em rito le arquivo da casa (cu_b7.py: os nos mudados nao abrem arquivo). Aberto: CU-2.
+### C
+Sobre o rendido do ensaio do candidato final (a tabela do pedido confere com o disco: 42 linhas, 0 divergencias, cu_g1.py). C.1 B-01 resolvido (cu_c1.py, cu_c2.py, cu_c3.py, cu_c5.py). C.2 B-02 resolvido (cu_c4.py). C.3 B-03/B-08 resolvido (cu_c6.py, cu_c7.py). C.4 B-04 resolvido (cu_c8.py). C.5 B-09 parte aceita resolvida (cu_c8.py). C.6 traducoes EN lidas (E44, fechos, rotulos, frase do estatuto): fieis; uma miudeza (CU-3). C.7 (cu_c9.py): nos 36 paragrafos novos ou alterados do tex PT e EN nenhum especial TeX nao escapado nos textos novos (o til de O selo pela propria tecnologia e' texto selado antigo, espaco amarrado), chaves balanceadas, cifroes pares, a cauda de cada paragrafo achada no texto extraido do PDF (PyMuPDF); logs do LaTeX: 0 erros, 10 refs indefinidas e 22/23 caixas cheias, iguais as do v410.
+### D
+D.1 C-01 resolvido (ver situacao); chain lida inteira; checagem estatica do p00 lida (so' $PK/ e $SEL/ literais; ver ressalvas). D.2 C-02 resolvido. D.3: C-04, C-05, C-09 (a), C-11 como o conserto declara; C-10 nao: CU-1. D.4, o que o rito REAL pode recusar por causa do conserto: (i) nomes que o conferidor procura no Nos: um.py, um_absoluto.json, um_absoluto_pt/en .txt .toc .tex .pdf, forma canonica, manifesto, selo e tgl_kernel existem hoje (v410); rodada_v411_stdout.txt e rito_horarios_v411.txt nascem do rito (cu_d5.py); (ii) rito_horarios_v411.txt e' gravado pelo proprio rito_v411.sh em $PK (l.248 inicio, l.261 fim) e o conferidor le exatamente ali (V411_RITO_HORARIOS, depois o do pacote, depois o do Nos): o lugar confere; (iii) a guarda da conversa sobre a saida REAL: rodei a mesma guarda, em memoria, sobre os artefatos reais da v410 selada do Nos (fonte 45,9 MB, core 16,5 MB, artigo, forma canonica, manifesto 4,4 MB, saida do rito 278 KB): ok, 0 achados (cu_d3.py); a unica linha curta (12 a 23 caracteres) e' a de 17, com base 0 no stdout da v410 real e 0 no stdout do ensaio, e o stdout real so' acrescenta linhas de kernel; falso positivo nao esperado; (iv) nada novo depende de arquivo que so' existe no ensaio (ESPERADOS, GUARDA_CONVERSA_BASE_v410.json e os arquivos das falas sao da casa e existem; base() nao regera a base porque o JSON confere). Risco residual dito: os controles do PDF/TeX dependem de a abertura e o titulo estarem numa linha so' do .tex (determinista, igual no ensaio); fail-closed se nao.
+### E
+Os 29 arquivos com backup *_r1fix (um por arquivo; o mais antigo e' o unico): diff de cada um contra o de hoje, lido (cu_e1.py); toda mudanca e' explicada por um item do conserto, exceto a regressao CU-1; nenhum assert saiu, nenhuma lista de proibidos encolheu, nenhum teste virou aviso; os controles do conserto so' cresceram (guarda_conversa: o plantio passou a todos os alvos e o fonte tem os literais adjacentes juntados). Contagens declaradas conferidas: guarda_frases 29 proibidas e 20 limpas (lido do modulo); guarda_conversa 6 controles no p00 e 21 nos rendidos (lido; todos True); conferidor 84 -> 89 itens (AST); p00 28 -> 33 (+3 C-01, +1 C-05, +1 D181; PRECONDICOES 33 de 33); harness dos textos variante( 526 -> 531 e falha( 53 -> 53; leitura P.append( 170 -> 170; harness do fechar _recusa_com_core( 57 -> 58. NAO reexecutados (vedado): p00, ensaio a seco, harnesses, testes sem candidato do pos-rito, orquestrador. A regressao CU-1 foi achada aqui e esta' resolvida (ver achados_da_conferencia_resolvidos e historico).
+### F
+Os textos do pos-rito: HARNESS_TEXTOS_ENSAIO_v411.json (2976 cadeias), PRONTO_POS_RITO_v411.json (cadeias, incluindo os blocos do README, o paragrafo, as linhas de estatuto e o X_TEXTO), CUSTODIA_v411_RASCUNHO.txt, o README projetado e o handoff do ensaio: o meu scan (cu_f2.py) acha 0 ocorrencias de texto inteiro, de linha de 24+, de nome de arquivo de fala e 0 janelas de 6 palavras; toda ocorrencia do primario (45) leva a linha das Cefeidas livres com o numero no mesmo item, salvo uma (o item O que o teste nao decide do handoff, que e' descritivo, como no artigo) (cu_f3.py); o README_PROJETADO_v411.md mede 40.921 bytes (arquivo lido agora, gravado 22:08:15, depois do inicio da regeneracao), teto 40.960, folga 39; as fontes dos blocos do README (blocos_custodia_v411.py, as chaves do TOPO) nao mudaram no conserto. Fora do escopo, dito: HARNESS_FECHAR_SANDBOX_v411.json (registro da casa) traz nomes (nao texto) de arquivos de falas.
+
+## Ressalvas (o que NAO fiz)
+- Nao rodei, por vedado: p00, ensaio a seco, harnesses, testes sem candidato do pos-rito, gerar_relatorio, fechar_preparacao, o conferidor do rito, o orquestrador, o rito e a cadeia do pos-rito. Os resultados deles (PRECONDICOES 33 de 33, PREPARACAO pronta true com 30 portoes, harness dos textos 80 etapas, ensaio a seco TUDO PASSOU) foram LIDOS dos recibos e sao [DECLARADO pelo construtor]; o que refiz eu: a AST, os dois scans da D181, a guarda do construtor em memoria, as guardas de frases, a leitura da cadeia e dos diffs. Excecao na reconferencia do CU-1: rodei, so' com --seco e sem gravar nada, o gerar_relatorio_v411.py, a pedido da coordenacao.
+- O item D.4 e' por leitura e por simulacao em memoria sobre a v410 real selada e sobre o ensaio; nao ha como saber sem o rito real o que a saida real do v411 traz alem do que o ensaio emula (o kernel e' o da v410 byte a byte).
+- Nao reli o que o escopo A aceitou na R1 (por ordem do pedido), nem os blobs base64 por dentro (conferi so' que os nos sao iguais por AST; decisao D183).
+- O PDF foi lido so' como texto extraido (PyMuPDF); nao vi as paginas. Nao reproduzi a compilacao do LaTeX.
+- Nao medi o README projetado de novo (nao posso rodar o teste de blocos, que escreve fora das minhas pastas): medi o arquivo projetado que ele grava (40.921 B) e conferi que o conserto nao tocou as fontes dos blocos.
+- O CONSERTO_R1_v411.md fala de 29 arquivos com backup: confere (29 pares); o arquivo pos_rito/textos_v411.py (O4, l.299) nao tem backup proprio, e eu o li so' pelo pysnip (que o gera) e pelos textos rendidos.
+- Nao abri work\h0dn_bg1_v410_09nov\kimi\, nem a pasta da nativa, nem fiz POST na Bancada; o Nos so' foi lido.
+
+## Para a versao seguinte
+- As ressalvas da R1 que ficam (listadas em achados, dentro_do_escopo false).
+- CU-2 (nomes dos seis textos da gerencia no core) e CU-3 (frase EN).
+- A checagem estatica do p00 (C-01) cobre so' os literais $PK/ e $SEL/ do chain: nao cobre os scripts chamados por $TOOLS/ nem os imports locais dos scripts; eu os conferi por fora (cu_d1.py e cu_d2.py) e deram limpo; vale incluir na versao seguinte.
+- O fonte do candidato guarda 87 ocorrencias de nomes OPERADOR_10nov a 12nov de OUTRAS falas (herdadas do texto selado da v410, que tem 158): D181 vale so' para o novo, nenhuma e' nome das 11 nem da ordem; os quatro blobs base64 carregam 5 nomes por dentro (D183).
+- HARNESS_FECHAR_SANDBOX_v411.json (registro da casa em work\, espelhado pela custodia) traz nomes de arquivos de falas (18 ocorrencias, de 12 nomes), sem texto; a regra da casa de 25/10 e o aviso ao operador (pedido secao 4) cobrem work\ em geral.
+- O delta_v411.py le o texto das falas (decidido, D183); o orquestrador le a ordem de abrir para a frase de autorizacao (decidido, D183).
+- Os controles do conferidor do PDF/TeX substituem a abertura e o titulo no .tex cru, e dependem de ela estar numa linha so': determinista no mesmo gerador, fail-closed; um comentario no codigo bastava.
+
+## Rotas examinadas
+- {"consulta": "rotas.py consultar \"cadeia.preparacao_v411\" (feita antes de examinar)", "rota_id": "cadeia.preparacao_v411", "status": "EM_CURSO", "o_que_o_mapa_disse": "v411, frente POS-RITO, D174: o painel do README, a medida de 40921 B com folga de 39 B (README projetado), os harnesses nao rodados; n_registros 6; nao_refazer: a medida esta feita com o renderizador da custodia sobre um handoff de ensaio; proximo passo: a gerencia roda os harnesses"}
+- {"examinado": "a conferencia do conserto da R1 e a D181 (cadeia.preparacao_v411): o delta do candidato por AST, a D181 por dois meios independentes, os achados B-01..B-04, B-08, B-09, C-01, C-02, C-04, C-05, C-09 (a), C-10, C-11, os 29 diffs do conserto, os textos do pos-rito e o que o rito real poderia recusar", "resultado": "um achado MEDIO novo, CU-1 (gerar_relatorio_v411.py l.112), RESOLVIDO pela gerencia e reconferido; tres BAIXOS; todo o resto confere", "registro_no_mapa": "da gerencia (nao registrei)"}
+
+## Criterio
+aprovada true so' se nao restar ALTO nem MEDIO dentro do escopo A a F; achado fora do escopo vai para as ressalvas da versao seguinte e nao bloqueia, salvo um ALTO para o rito. Depois da reconferencia do CU-1: 0 ALTO, 0 MEDIO abertos; os BAIXOS abertos (17, sendo 15 ressalvas da R1 e 2 novos: CU-2, CU-3) nao bloqueiam.
+
+## Arquivos revisados (sha16 lido no fim)
+- `um_v411_candidato.py` `1203b1f9202020d6`
+- `delta_v411.py` `8746e98bafa463f9`
+- `quadro_v411.py` `48bb2f08f81d3d0f`
+- `runtime_h0dn_v411.py` `f9dab163f5d5b7fe`
+- `registros_v411.py` `c3cda65a92ad34d3`
+- `registros_h0dn_v411.py` `c525b52c5b4f3c34`
+- `gerar_candidato_v411.py` `2d60e4b9578b763b`
+- `guarda_frases_v411.py` `a7ddeef3d2fa9b21`
+- `guarda_conversa_v411.py` `4a97e9d7be844fd2`
+- `conferir_conversa_v411.py` `30738ad264c7a632`
+- `GUARDA_CONVERSA_BASE_v410.json` `624955b98a01167f`
+- `conferir_rito_v411.py` `979b10b0c69dd0db`
+- `p00_precondicoes_v411.py` `4815ea861682c82b`
+- `gerar_relatorio_v411.py` `3a252f63cd372b75`
+- `gerar_esperados_v411.py` `c659ea3d27d3a05d`
+- `ensaio_a_seco_v411.py` `bf30e53cef035fe9`
+- `teste_conferidor_positivo_v411.py` `b9141d26e76f78e9`
+- `_teste_quadro_v411.py` `5a6ba8570ff73705`
+- `conferir_instalar_rito_v411.py` `5265be2b8f5f8f8b`
+- `copiar_insumos_v411.py` `ae0ec50c8d17284e`
+- `diff_e_pinos_v411.py` `6759d0c3bafa5c11`
+- `rito_v411.sh` `1a2c658172681e25`
+- `pos_rito/chain_pos_rito_v411.sh` `9297de7f28a8de24`
+- `pos_rito/leitura_v411.py` `d61564af102518e3`
+- `pos_rito/registrar_mapa_v411.py` `7c200186ee13ea46`
+- `pos_rito/harness_textos_ensaio_v411.py` `8687a1ab869dc921`
+- `pos_rito/harness_fechar_sandbox_v411.py` `4cecd0dff3185846`
+- `pos_rito/teste_textos_sem_candidato_v411.py` `ad3f202e6f3a0351`
+- `pos_rito/teste_mapa_sem_candidato_v411.py` `24b0cc4b4b896d29`
+- `pos_rito/textos_v411_novo.pysnip` `e371d11ad941fe4f`
+- `pos_rito/gerar_derivacao_pos_rito_v411.py` `607b022c61d07bd0`
+- `orquestrador/pos_treino_v411.py` `04fe6274461a2fdd`
+- `DESENHO_v411.md` `e85ea69f0dbe11b9`
+- `TOPO_RATIFICADO_v411.json` `f2e3c289a5b63943`
+
+## Artefatos renderizados lidos
+- `C:\t\k411c\dry_v411\dry_v411_pt.tex` `0a69721bc4790d6e`
+- `C:\t\k411c\dry_v411\dry_v411_pt.txt` `1a6f3da75f2ecc2a`
+- `C:\t\k411c\dry_v411\dry_v411_pt.pdf` `4232ef7c87d9bdd5`
+- `C:\t\k411c\dry_v411\dry_v411_en.tex` `29ad9fe863dca9e6`
+- `C:\t\k411c\dry_v411\dry_v411_en.txt` `2745d5b2d9bf7674`
+- `C:\t\k411c\dry_v411\dry_v411_en.pdf` `18c0ec061f0353b9`
+- `C:\t\k411c\dry_v411\core_ensaio.json` `faec6bf29a4a2987`
+- `C:\t\k411c\falso_nos_v411\um_absoluto_forma_canonica.md` `66d6ae04c45a96c0`
+- `C:\t\k411c\falso_nos_v411\um_absoluto_manifest.md` `6887e4a966fdd53a`
+- `C:\t\k411c\falso_nos_v411\rodada_v411_stdout.txt` `cd9108d5354d4647`
+- `C:\IALD\Central de Patentes\work\cadeia_de_selo\v411\pos_rito\HARNESS_TEXTOS_ENSAIO_v411.json` `41350c73f74aae72`
+- `C:\IALD\Central de Patentes\work\cadeia_de_selo\v411\pos_rito\CUSTODIA_v411_RASCUNHO.txt` `790a452d0c353948`
+- `C:\IALD\Central de Patentes\work\cadeia_de_selo\v411\PRONTO_POS_RITO_v411.json` `96e40da5b0863108`
+- `C:\IALD\Central de Patentes\work\cadeia_de_selo\v411\PRECONDICOES_v411.json` `50be8067b34c84ea`
+- `C:\IALD\Central de Patentes\work\cadeia_de_selo\v411\PREPARACAO_v411_PRONTA.json` `c57c1324fd2ae8b1`
+- `C:\t\k411c\ensaio_topo_proposto\pos_rito_blocos\README_PROJETADO_v411.md` `1dd84c222478ef40`
+- `C:\t\k411c\ensaio_topo_proposto\pos_rito_blocos\HANDOFF_v411_CUSTODIA.md` `fd85f673a21a8174`
+- `C:\IALD\Central de Patentes\work\cadeia_de_selo\v411\VERBATIM_CONGELADO_v411.json` `6f8f9460d3c46a0e`
+- `C:\IALD\Central de Patentes\work\cadeia_de_selo\v411\um_v411_candidato.py.bak_20261112_195053` `21e87eb3df5098f8`

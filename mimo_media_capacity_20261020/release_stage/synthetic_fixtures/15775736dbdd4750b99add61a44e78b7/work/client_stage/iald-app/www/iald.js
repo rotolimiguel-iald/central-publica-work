@@ -1,1 +1,0 @@
-candidate iald-app/www/iald.js

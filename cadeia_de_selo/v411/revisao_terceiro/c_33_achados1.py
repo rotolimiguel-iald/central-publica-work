@@ -1,0 +1,10 @@
+import sys, os
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from c_lib import *
+estado_item("C3_achado_ALTO", "chain_pos_rito_v411.sh exige runtime_v411.py (linhas 117 e 140) que nao existe no pacote",
+  achados=[{
+    "id": "C-01", "sev": "ALTO",
+    "onde": "pos_rito/chain_pos_rito_v411.sh:117 (passo 0, lista de ferramentas) e :140 (passo 1, laco de copia do conferidor)",
+    "o_que": "O passo 0 da cadeia pos-rito exige que cada arquivo da lista exista (`[ -f \"$f\" ] || parar \"ferramenta/superficie ausente\"`) e a lista traz \"$PK/runtime_v411.py\"; o passo 1 tambem copia e compara `runtime_v411.py` para pos_rito/conferidor. O arquivo NAO existe na pasta da cadeia (a v411 tem runtime_h0dn_v411.py e runtime_quadro_v397.py; o runtime_v410.py existia na v410). Resultado: logo depois do selo, o S5_cadeia_0_10 PARA no passo 0 com rc 1 (nada escrito nas superficies), a cadeia nunca chega ao conferidor, e o selo v411 fica sem a leitura, as superficies, o B(n) e o handoff. Nenhum teste da preparacao exerce o chain_pos_rito (os harnesses importam os modulos; o passo 0 so roda depois do rito), por isso o defeito passou.",
+    "evidencia": "c_26_step0.py: 'FALTAM (existencia hoje): [...\\\\v411\\\\runtime_v411.py]' e 'existe runtime_v411.py no pacote: False | existe em v410: True'; c_28_refs_sh.py: unica referencia obrigatoria ausente que nao e saida do rito/opcional = $PK/runtime_v411.py (chain:117); `ls runtime*` na pasta = runtime_h0dn_v411.py, runtime_quadro_v397.py; o conferidor nao importa runtime_v411 (grep em conferir_rito_v411.py).",
+    "correcao_pedida": "Em pos_rito/chain_pos_rito_v411.sh, tirar `runtime_v411.py` da lista do passo 0 (l.117) e do laco `for q in ...` do passo 1 (l.140), ou troca-lo por `runtime_h0dn_v411.py` se a copia de registro for desejada; e acrescentar ao p00 (ou ao conferir_instalar_rito) uma checagem estatica: todo `$PK/<arquivo>` e `$SEL/<arquivo>` literal da lista do passo 0 e do laco do passo 1 existe em disco. Reler a pasta depois do conserto (a lista tem 28 itens; hoje 27 existem)."}])

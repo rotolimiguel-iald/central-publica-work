@@ -89,9 +89,12 @@ for repo, desc in REPOS.items():
     if not d.is_dir():
         print("sem preparo:", repo); continue
     idx = json.loads((d / "INDICE_PUBLICO.json").read_text(encoding="utf-8"))
+    n_refs = sum(1 for a in idx["arquivos"] if a.get("igual_a"))   # (11/11/2026) a cópia vira referência (copias_referencia.py)
     corpo = ["# %s — a Central de Patentes da IALD, aberta" % repo, "",
              "Este repositório é **%s**. A Central foi aberta ao público por ordem do operador, Luiz Antonio Rotoli Miguel (IALD Ltda., CNPJ "
-             "62.757.606/0001-23), em 22/10/2026. %d arquivos publicados; selo da teoria: `um.py` %s `%s`." % (desc, idx["n_arquivos"], VER, PIN[:16]),
+             "62.757.606/0001-23), em 22/10/2026. %d arquivos publicados%s; selo da teoria: `um.py` %s `%s`." % (
+                 desc, idx["n_arquivos"], (" (%d deles são cópias idênticas de outro arquivo deste repositório e estão só no índice)" % n_refs) if n_refs else "",
+                 VER, PIN[:16]),
              "", LINKS.strip(), ""]
     if repo == "central-publica":
         corpo += ["## O vínculo patentário", "",
@@ -106,6 +109,11 @@ for repo, desc in REPOS.items():
         assert comum.count(frase) == 1, "a frase do índice mudou no texto comum — PARAR"
         comum = comum.replace(frase, "o índice público, com o sha256 de cada arquivo publicado, vai em partes em `%s/` (`%s` lista as partes, com o "
                               "sha256 de cada uma e o do índice inteiro, que passaria do limite de 100 MB por arquivo do GitHub);" % (PASTA_PARTES, CAB_PARTES))
+    if n_refs:   # AO LADO (11/11/2026, claude-site-custodia; decisão do operador: a cópia vira referência, a partir da v411)
+        comum += ("\n\n**Cópias idênticas** (decisão do operador, 11/11/2026): um arquivo igual, byte a byte, a outro já publicado neste repositório "
+                  "não se repete no git. O índice o lista com o campo `igual_a`, que dá o caminho do original, com os mesmos bytes e o mesmo "
+                  "sha256. Nenhum conteúdo fica de fora. Para ter a árvore inteira num clone: `python RECONSTRUIR_COPIAS.py` (recria cada cópia "
+                  "a partir do original e confere o sha256; `--conferir` só confere).")
     corpo.append(comum)
     (d / "README.md").write_text("\n".join(corpo) + "\n", encoding="utf-8")
     if repo == "central-publica":

@@ -1,1 +1,0 @@
--- SINTETICO (sandbox R3.2): um .lean em TGLExt/O16, fora do manifesto; so para a varredura recursiva

@@ -1,0 +1,37 @@
+{
+ "escopo": "C",
+ "revisor": "Sonnet 5.5 (agente de revisao de terceiro; nao construiu a v411)",
+ "candidato_sha16_no_inicio": "21e87eb3df5098f8",
+ "itens": {
+  "C1_parcial": "diffs de leitura, harness_fechar, harness_textos, blocos, cadeia.sh, p00, textos, pysnip contra o primeiro _integ lidos; contagem de controles negativos: leitura +1 P.append, harness_textos +1 variante +1 falha, harness_fechar igual; nenhum removido",
+  "C3_parcial": "formal hash do Nos real = 1764 entradas = ESPERADOS (c_06); pilar: ambiente atual == env do cache e cache existe (c_07); tempo_total_s real 1.3-2.1 s contra 10 s (c_03)",
+  "C2": "conferidor lido (96 itens: 84 deve_mudar + 12 nao_pode_mudar); positivo no falso Nos copiado: TUDO BATE (c_run_conf.py, 96 OK); 8 variantes do topo/artigo/md/stdout todas NAO BATE nos itens esperados (c_13_neg_conf.py); colecoes vazias por desenho: bandeiras_novas_*, selo_chaves_que_mudam (c_12_vacuo.py); PDF e .tex nao sao lidos (BAIXO)",
+  "C3_parcial2": "h8, pilar, tempo, stdout real; MEMORY.md 193 l/23686 B proj. 194/23826; memoria.py pino confere; G1 uncommitted; README ensaio 40921 B; NOTA_EN periodo '11 and 12/11' confere com o core",
+  "C4": "feito",
+  "C5": "feito",
+  "C3_achado_ALTO": "chain_pos_rito_v411.sh exige runtime_v411.py (linhas 117 e 140) que nao existe no pacote",
+  "C1": "feito (11 mudancas; nenhum controle removido; ver REVISAO_TERCEIRO_v411.R1.C.json)",
+  "C3": "feito (tabela de 15 linhas; ALTO C-01)",
+  "C6": "feito",
+  "C7": "feito (handoff real inexistente; ensaio lido)",
+  "C8": "feito",
+  "C9": "feito (29 portoes lidos)",
+  "ENTREGA": "REVISAO_TERCEIRO_v411.R1.C.json e .md gravados; aprovada=false (1 ALTO, 0 MEDIO, 10 BAIXO)"
+ },
+ "achados": [
+  {
+   "id": "C-01",
+   "sev": "ALTO",
+   "onde": "pos_rito/chain_pos_rito_v411.sh:117 (passo 0, lista de ferramentas) e :140 (passo 1, laco de copia do conferidor)",
+   "o_que": "O passo 0 da cadeia pos-rito exige que cada arquivo da lista exista (`[ -f \"$f\" ] || parar \"ferramenta/superficie ausente\"`) e a lista traz \"$PK/runtime_v411.py\"; o passo 1 tambem copia e compara `runtime_v411.py` para pos_rito/conferidor. O arquivo NAO existe na pasta da cadeia (a v411 tem runtime_h0dn_v411.py e runtime_quadro_v397.py; o runtime_v410.py existia na v410). Resultado: logo depois do selo, o S5_cadeia_0_10 PARA no passo 0 com rc 1 (nada escrito nas superficies), a cadeia nunca chega ao conferidor, e o selo v411 fica sem a leitura, as superficies, o B(n) e o handoff. Nenhum teste da preparacao exerce o chain_pos_rito (os harnesses importam os modulos; o passo 0 so roda depois do rito), por isso o defeito passou.",
+   "evidencia": "c_26_step0.py: 'FALTAM (existencia hoje): [...\\\\v411\\\\runtime_v411.py]' e 'existe runtime_v411.py no pacote: False | existe em v410: True'; c_28_refs_sh.py: unica referencia obrigatoria ausente que nao e saida do rito/opcional = $PK/runtime_v411.py (chain:117); `ls runtime*` na pasta = runtime_h0dn_v411.py, runtime_quadro_v397.py; o conferidor nao importa runtime_v411 (grep em conferir_rito_v411.py).",
+   "correcao_pedida": "Em pos_rito/chain_pos_rito_v411.sh, tirar `runtime_v411.py` da lista do passo 0 (l.117) e do laco `for q in ...` do passo 1 (l.140), ou troca-lo por `runtime_h0dn_v411.py` se a copia de registro for desejada; e acrescentar ao p00 (ou ao conferir_instalar_rito) uma checagem estatica: todo `$PK/<arquivo>` e `$SEL/<arquivo>` literal da lista do passo 0 e do laco do passo 1 existe em disco. Reler a pasta depois do conserto (a lista tem 28 itens; hoje 27 existem)."
+  }
+ ],
+ "conferencias": {
+  "C1_parcial": "c_08_diffs.py, c_10_contagens.py (parcial)",
+  "C3_parcial": "c_03, c_06, c_07",
+  "C2": "c_run_conf.py + c_13_neg_conf.py + c_12_vacuo.py"
+ },
+ "nao_verificado": []
+}

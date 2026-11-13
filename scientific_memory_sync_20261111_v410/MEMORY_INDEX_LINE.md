@@ -1,0 +1,1 @@
+Fila científica v410 ativa e CURRENT (11/11/2026), 13 documentos/34518 trechos, revisão documental distinta e API/CAS; recibo C:\IALD\Central de Patentes\work\scientific_memory_sync_20261111_v410\DELIVERY_TECHNICAL_R1.json.

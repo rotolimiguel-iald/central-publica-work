@@ -1,0 +1,15 @@
+O caminho é fazer o app acompanhar **a última versão selada do `um.py`**, com uma atualização automática verificada.
+
+Hoje, o bloqueio está no modo de empacotar a ciência: o contexto fixo cresce a cada versão e acaba recusado pelo controle de capacidade. **Só aumentar o limite adia o problema.**
+
+Eu recomendo esta arquitetura:
+
+- **Acervo integral por versão:** guardar todo o conteúdo da versão selada, com hashes e versões anteriores preservadas.
+- **Contexto fixo limitado:** manter identidade, axiomas, regras, limites científicos e identificação da versão ativa.
+- **Consulta às fontes durante a resposta:** recuperar do acervo da mesma versão os trechos necessários, com referências e acesso ao conteúdo completo. Isso exige implementar e verificar essa recuperação em cada executor.
+- **Atualização transacional:** detectar novo selo, preparar o acervo, conferir integridade e recuperação, obter revisão independente e só então trocar a versão ativa. Se falhar, conservar a anterior e mostrar a pendência na administração.
+- **Conversas consistentes:** cada chamada usa uma única versão identificada; uma atualização não mistura fontes antigas e novas silenciosamente.
+
+Isso preserva o acervo inteiro, mas **não coloca o acervo inteiro em todo prompt**. Essa distinção precisa ser sua decisão, porque modifica a exigência atual de residência literal.
+
+**Minha recomendação é adotar esse desenho.** Ele enfrenta o crescimento contínuo do `um.py` e reduz a dependência de conseguir comprimir tudo a cada atualização. Hoje, o app continua na **v409**, enquanto a fila científica já está na **v410**.

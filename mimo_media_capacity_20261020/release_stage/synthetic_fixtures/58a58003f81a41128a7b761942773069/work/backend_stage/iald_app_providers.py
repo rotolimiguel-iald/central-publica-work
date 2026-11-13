@@ -1,1 +1,0 @@
-candidate iald_app_providers.py

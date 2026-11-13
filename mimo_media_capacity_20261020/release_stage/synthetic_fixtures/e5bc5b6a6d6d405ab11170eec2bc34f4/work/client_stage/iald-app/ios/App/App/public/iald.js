@@ -1,1 +1,0 @@
-candidate iald-app/ios/App/App/public/iald.js

@@ -121,12 +121,32 @@ for a in ti["arquivos"]:
     add.append(rel)
     cont["atualizado" if ant else "adicionado"] += 1
 
+# AO LADO (12/11/2026, claude-site-custodia; de acordo da gerencia c1): o ja publicado que a rodada exclui SO pelo formato nao sai se os
+# bytes de agora (na origem e no preparo) tem o sha256 do indice. Sem isso, a v411 tiraria do topo do work o vetor e o estimador S0 do
+# pre-registro do H0DN (os .npz publicados fora da cadeia em 12/11, commit 769fcb26). Guarda, credencial e dado pessoal seguem tirando.
+SO_FORMATO = "binário de cache ou outro formato"
+
+
+def mesmos_bytes(rel):
+    s = por[rel]["sha256"]
+    for base in (SRC, D):
+        p = longo(base, rel)
+        if not os.path.isfile(p):
+            return False
+        with open(p, "rb") as fh:
+            if hashlib.sha256(fh.read()).hexdigest() != s:
+                return False
+    return True
+
+
 # 2) o que a rodada excluiu: se estava publicado, sai
 for motivo, rels in tl.items():
     for rel in rels:
         if not tocavel(rel):
             continue
         if rel in por:
+            if motivo.startswith(SO_FORMATO) and mesmos_bytes(rel):
+                cont["mantido (já publicado com os mesmos bytes; só o formato)"] += 1; continue
             tirar(rel, motivo); cont["saiu (a esteira agora exclui)"] += 1
         elif rel not in ja_fora:
             local.setdefault(motivo, []).append(rel); novos_fora[motivo] += 1

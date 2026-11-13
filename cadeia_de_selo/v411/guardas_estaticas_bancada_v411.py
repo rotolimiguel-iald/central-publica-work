@@ -1,0 +1,116 @@
+# -*- coding: utf-8 -*-
+# [ADAPTADO v411, 12/11/2026, claude-construtor-v411 (retomada, fork B)] o corpo serve (so' as linhas unicas de ALPHA_FINE_CODATA_2018 e UM_VERSION sao lidas); o artefato, o manifesto e a saida vem do delta (no ensaio do topo proposto, a pasta de ensaio); o pino do esboco lido de v403\gerar_candidato_v403.py, como o gerador o le, e conferido contra o manifesto se ele o trouxer; a saida por .tmp
+# [ADAPTADO v410, 06/11/2026, claude-construtor-v410] o corpo da v409 serve sem mudanca de logica (so' as linhas unicas de ALPHA_FINE_CODATA_2018 e UM_VERSION sao lidas); o pino do esboco vem do CANDIDATO_v410.json; conferido e adaptado em 06/11/2026 pelo fork B do claude-construtor-v410 (_adapt_forkB_*_v410.py)
+# (nota herdada da v408 [claude-construtor-v408-r2, 04/11/2026], reconferida de versao a versao) o corpo serve SEM mudanca de logica: so' a linha unica de ALPHA_FINE_CODATA_2018 e a de UM_VERSION sao lidas do um.py; nada depende de bundle (a v411 nao tem modulo novo); rotulos v411, contra-alvo v410.
+"""guardas_estaticas_bancada_v411.py -- LICAO da v400, MANTIDA na v411 (so' o rotulo muda: a v411 NAO tem modulo novo de kernel e os UNICOS pontos que estas guardas leem no um.py sao a linha unica de ALPHA_FINE_CODATA_2018 e a de UM_VERSION) (a v399 passou o ensaio a seco e foi recusada pela Bancada: ALPHA_LINHA_NAO_UNICA): o ensaio a seco da cadeia roda, sobre o CANDIDATO e ANTES de instalar, as guardas ESTATICAS do esboco
+R3.5 da Bancada -- as que nao dependem do selo -- chamando a FUNCAO DELE (`ler_nos`), importada do esboco pinado por sha256 (nada copiado, nada reimplementado): a mesma leitura que o B(n) fara no Nos depois do rito.
+Como: monta, em sandbox curto (C:\\t\\vb22\\gate_*), uma pasta com a forma de um Nos (o um.py, um selo MINIMO que o pina e diz a versao, e um core MINIMO com o beta do core real da v399 selada: o alfa nao muda) e chama `ler_nos(pasta, versao)`.
+Cobre: CANONICAL_DECLARATION_MISSING, UM_VERSION_DIFERENTE_DO_ALVO, ALPHA_LINHA_NAO_UNICA, ALPHA_REATRIBUIDA_INDENTADA, UM_VERSION_LINHA_NAO_UNICA, UM_VERSION_REATRIBUIDA_INDENTADA, ALPHA_OUTSIDE_CONTRACT e BETA_CORE_DIVERGE_DO_RUNTIME
+(a mesma funcao); mais as duas regexes do canonical.py INSTALADO na Bancada (a primeira linha de versao e de alfa que ele le tem de ser a do esboco).
+CONTROLES: (i) a v399 SELADA (o defeito real) tem de ser RECUSADA com a mensagem EXATA que o recibo da Bancada registrou (RECUSA_SINCRONIZACAO_v399_*.json); (ii) o candidato com uma segunda linha de alfa na coluna 0, com alfa reatribuido indentado,
+com UM_VERSION duplicado, de outra versao, com alfa fora do contrato e com o beta do core errado tem de ser RECUSADO, cada um pelo codigo certo. Nada e' escrito fora do sandbox e da saida; a producao e o Nos nao sao tocados.
+uso: python -I -B -X utf8 guardas_estaticas_bancada_v411.py [um.py_candidato] [saida.json]   (rc 0 so' se o candidato passa E todos os controles recusam)"""
+import hashlib, json, os, re, shutil, sys
+sys.stdout.reconfigure(encoding="utf-8")
+HERE = os.path.dirname(os.path.abspath(__file__)); sys.path.insert(0, HERE)
+import delta_v411 as DL  # noqa: E402
+import acom_conferencias_v411 as AC  # noqa: E402
+from pathlib import Path  # noqa: E402
+sha = lambda b: hashlib.sha256(b).hexdigest()
+ESBOCO = os.path.join(DL.WK, "bancada_vinculo_12out", "R3_5", "sincronizar_bancada.py")
+# (v411) o pino do esboco e' LIDO do mesmo lugar que o gerar_candidato_v411.py le (o ESBOCO_SHA256 pinado em v403\gerar_candidato_v403.py), nunca digitado; se o manifesto do artefato o trouxer, tem de ser o mesmo;
+# o AC.esboco_da_bancada recusa se o esboco em disco nao tiver este sha256
+ESBOCO_SHA256 = re.search(r'ESBOCO_SHA256 = "([0-9a-f]{64})"', open(os.path.join(os.path.dirname(HERE), "v403", "gerar_candidato_v403.py"), encoding="utf-8").read()).group(1)
+_ge_man = (json.load(open(DL.MANIFESTO_ARQ, encoding="utf-8")).get("guardas_estaticas_da_bancada") or {}) if os.path.exists(DL.MANIFESTO_ARQ) else {}
+assert _ge_man.get("esboco_sha256", ESBOCO_SHA256) == ESBOCO_SHA256, ("o manifesto do artefato pina outro esboco", _ge_man.get("esboco_sha256"))
+RECUSA_V399 = os.path.join(DL.V399, "bancada_B3_ensaio_20261024_162108", "RECUSA_SINCRONIZACAO_v399_20261024_162108.json")
+CANONICAL = os.path.join("C:" + os.sep, "IALD", "Bancada_Um", "bancada", "canonical.py")
+cand_p = sys.argv[1] if len(sys.argv) > 1 else DL.CANDIDATO_ARQ                       # (v411) o candidato, ou, no ensaio do topo proposto, o artefato de ensaio (fora de work)
+saida_p = sys.argv[2] if len(sys.argv) > 2 else DL.saida("GUARDAS_ESTATICAS_BANCADA_v411.json")
+MOD = AC.esboco_da_bancada(ESBOCO, ESBOCO_SHA256)
+RX = AC.regexes_da_bancada(ESBOCO, ESBOCO_SHA256)
+base_um = open(os.path.join(DL.V400, "base_v399", "um.py"), "rb").read()   # a v399 SELADA (o defeito real): copia de bytes guardada pela cadeia v400
+cand = open(cand_p, "rb").read()
+beta_core = json.load(open(os.path.join(HERE, DL.BASE_DIR, "um_absoluto.json"), encoding="utf-8"))["core"]["beta"]
+SB = os.path.join(DL.SANDBOX_CURTO, "gate")
+CRIOU_CURTO = not os.path.exists(DL.SANDBOX_CURTO)   # (v411, a licao do mutar_conferidor: o B(n) pre-selo recusa rodar com C:\t\vb22 existente; o que ESTA corrida criou e ficou vazio sai no fim)
+if os.path.isdir(SB):
+    shutil.rmtree(SB)
+os.makedirs(SB)
+
+
+def montar(nome, um_bytes, versao_no_selo, beta=None):
+    d = os.path.join(SB, nome); os.makedirs(d)
+    open(os.path.join(d, "um.py"), "wb").write(um_bytes)
+    json.dump({"um_version": versao_no_selo, "sha256": {"um.py": sha(um_bytes)}}, open(os.path.join(d, "um_absoluto_selo.json"), "w", encoding="utf-8"))
+    json.dump({"core": {"beta": beta_core if beta is None else beta}}, open(os.path.join(d, "um_absoluto.json"), "w", encoding="utf-8"))
+    return d
+
+
+def rodar(nome, um_bytes, versao_alvo, versao_no_selo=None, beta=None):
+    d = montar(nome, um_bytes, versao_no_selo or versao_alvo, beta)
+    try:
+        info = MOD.ler_nos(Path(d), versao_alvo)
+        return {"passou": True, "recusa": None, "alpha": info["alpha"], "um_version_linhas": info["um_version_linhas"], "UM_VERSION": info["UM_VERSION"], "beta_runtime": info["beta_runtime"], "beta_rel_diff": info["core"]["beta_rel_diff"], "um_py_sha16": info["um_py"]["sha256"][:16]}
+    except MOD.Recusa as e:
+        return {"passou": False, "recusa": str(e), "alpha": None}
+
+
+def com_texto(t, velho, novo):
+    assert t.count(velho) == 1, ("ancora do mutante nao unica", velho[:60], t.count(velho))
+    return t.replace(velho, novo)
+
+
+tc = cand.decode("utf-8")
+ancora_alfa = "ALPHA_FINE_CODATA_2018 = 7.2973525693e-3\r\n"
+res = {"contrato": "GUARDAS_ESTATICAS_BANCADA_v411", "esboco": {"path": ESBOCO, "sha256": ESBOCO_SHA256, "revisao": MOD.REVISAO, "funcao": "ler_nos"}, "candidato": {"path": cand_p, "sha16": sha(cand)[:16], "bytes": len(cand), "rotulo": DL.ROTULO_DO_ARTEFATO}, **DL.MARCA_ENSAIO}
+# 1. o candidato passa a mesma leitura que o B(n) fara (versao v411)
+res["candidato_v411"] = rodar("candidato", cand, "v411")
+# 2. o defeito real: a v399 selada tem de ser recusada com a MENSAGEM EXATA do recibo da Bancada
+rv = json.load(open(RECUSA_V399, encoding="utf-8"))
+res["v399_selada_o_defeito_real"] = rodar("v399", base_um, "v399")
+res["v399_selada_o_defeito_real"]["recusa_do_recibo_da_bancada"] = rv["recusa"]
+res["v399_selada_o_defeito_real"]["mensagem_identica_a_do_recibo"] = res["v399_selada_o_defeito_real"]["recusa"] == rv["recusa"]
+# 3. controles negativos: cada mutante do candidato e' recusado pelo codigo certo
+nulos = {}
+nulos["alfa_segunda_linha_na_coluna_0"] = (rodar("m1", cand + b"ALPHA_FINE_CODATA_2018 = 0.0072973525693\r\n", "v411"), "ALPHA_LINHA_NAO_UNICA")
+nulos["alfa_reatribuido_indentado"] = (rodar("m2", cand + b"if True:\r\n    ALPHA_FINE_CODATA_2018 = 0.0072973525693\r\n", "v411"), "ALPHA_REATRIBUIDA_INDENTADA")
+nulos["alfa_sem_a_linha"] = (rodar("m3", cand.replace(ancora_alfa.encode(), b"ALPHA_X = 7.2973525693e-3\r\n", 1), "v411"), "CANONICAL_DECLARATION_MISSING")
+nulos["um_version_duplicado"] = (rodar("m4", cand + b'UM_VERSION = "v411"\r\n', "v411"), "UM_VERSION_LINHA_NAO_UNICA")
+nulos["um_version_reatribuido_indentado"] = (rodar("m5", cand + b'if True:\r\n    UM_VERSION = "v411"\r\n', "v411"), "UM_VERSION_REATRIBUIDA_INDENTADA")
+nulos["versao_do_um_py_diferente_do_alvo"] = (rodar("m6", cand, "v410", versao_no_selo="v410"), "UM_VERSION_DIFERENTE_DO_ALVO")
+nulos["alfa_fora_do_contrato"] = (rodar("m7", cand.replace(ancora_alfa.encode(), b"ALPHA_FINE_CODATA_2018 = 1.5\r\n", 1), "v411"), "ALPHA_OUTSIDE_CONTRACT")
+nulos["beta_do_core_diverge_do_runtime"] = (rodar("m8", cand, "v411", beta=beta_core * (1 + 1e-6)), "BETA_CORE_DIVERGE_DO_RUNTIME")
+nulos["selo_nao_pina_o_um_py"] = None
+d9 = montar("m9", cand, "v411"); json.dump({"um_version": "v411", "sha256": {"um.py": "0" * 64}}, open(os.path.join(d9, "um_absoluto_selo.json"), "w", encoding="utf-8"))
+try:
+    MOD.ler_nos(Path(d9), "v411"); nulos["selo_nao_pina_o_um_py"] = ({"passou": True, "recusa": None}, "SELO_NAO_PINA_O_UM_PY_DO_DISCO")
+except MOD.Recusa as e:
+    nulos["selo_nao_pina_o_um_py"] = ({"passou": False, "recusa": str(e)}, "SELO_NAO_PINA_O_UM_PY_DO_DISCO")
+res["controles_negativos"] = {k: {"recusa": r["recusa"], "esperado_comeca_por": cod, "ok": (not r["passou"]) and str(r["recusa"]).startswith(cod)} for k, (r, cod) in nulos.items()}
+# 4. as duas regexes do canonical.py INSTALADO na Bancada (a primeira linha que ELE le), contra o candidato
+csrc = open(CANONICAL, "rb").read().decode("utf-8")
+mv = re.search(r"v = re\.search\(r'(.+?)', text, re\.M\)", csrc); ma = re.search(r"a = re\.search\(r'(.+?)', text, re\.M\)", csrc)
+assert mv and ma, "as regexes do canonical.py instalado nao foram achadas"
+cv, ca = re.compile(mv.group(1), re.M).search(tc), re.compile(ma.group(1), re.M).search(tc)
+res["canonical_py_instalado"] = {"path": CANONICAL, "sha256": sha(open(CANONICAL, "rb").read()), "regex_versao": mv.group(1), "regex_alfa": ma.group(1), "le_versao": cv.group(1) if cv else None, "le_alfa": ca.group(1) if ca else None,
+                                 "linha_do_alfa_que_ele_le": (tc[:ca.start()].count("\n") + 1) if ca else None, "igual_ao_do_esboco": bool(cv and ca and cv.group(1) == RX["RE_VERSAO"].search(tc).group(1) and ca.group(1) == RX["RE_ALPHA"].search(tc).group(1))}
+res["canonical_py_instalado"]["ok"] = res["canonical_py_instalado"]["le_versao"] == "v411" and res["canonical_py_instalado"]["le_alfa"] == "7.2973525693e-3" and res["canonical_py_instalado"]["igual_ao_do_esboco"]
+# 5. a unicidade pela contagem direta (as regexes DO esboco), e onde esta a unica linha de alfa
+res["contagem_direta"] = {"alfa_col0": len(RX["RE_ALPHA_LINHAS"].findall(tc)), "alfa_indentada": len(RX["RE_ALPHA_INDENTADA"].findall(tc)), "versao_col0": len(RX["RE_VERSAO_LINHAS"].findall(tc)), "versao_indentada": len(RX["RE_VERSAO_INDENTADA"].findall(tc))}
+res["veredito"] = ("GUARDAS_ESTATICAS_DA_BANCADA__CANDIDATO_PASSA__DEFEITO_REAL_DA_V399_REPRODUZIDO__CONTROLES_NEGATIVOS_TODOS_RECUSAM"
+                   if (res["candidato_v411"]["passou"] and res["candidato_v411"]["alpha"]["n_linhas_nao_indentadas"] == 1 and res["candidato_v411"]["alpha"]["n_reatribuicoes_indentadas"] == 0
+                       and (not res["v399_selada_o_defeito_real"]["passou"]) and res["v399_selada_o_defeito_real"]["mensagem_identica_a_do_recibo"]
+                       and all(v["ok"] for v in res["controles_negativos"].values()) and res["canonical_py_instalado"]["ok"]
+                       and res["contagem_direta"] == {"alfa_col0": 1, "alfa_indentada": 0, "versao_col0": 1, "versao_indentada": 0}) else "REPROVADO")
+shutil.rmtree(SB)
+res["sandbox_apagado"] = not os.path.exists(SB)
+if CRIOU_CURTO and os.path.isdir(DL.SANDBOX_CURTO) and not os.listdir(DL.SANDBOX_CURTO):
+    os.rmdir(DL.SANDBOX_CURTO)
+res["sandbox_curto"] = {"caminho": DL.SANDBOX_CURTO, "criado_aqui": CRIOU_CURTO, "existe_no_fim": os.path.exists(DL.SANDBOX_CURTO)}
+open(saida_p + ".tmp", "w", encoding="utf-8").write(json.dumps(res, ensure_ascii=False, indent=1)); os.replace(saida_p + ".tmp", saida_p)
+print(res["veredito"])
+print("candidato:", {k: res["candidato_v411"][k] for k in ("passou", "alpha", "um_version_linhas", "UM_VERSION", "beta_rel_diff")})
+print("v399 selada:", res["v399_selada_o_defeito_real"]["recusa"], "| identica a do recibo:", res["v399_selada_o_defeito_real"]["mensagem_identica_a_do_recibo"])
+print("controles:", {k: v["ok"] for k, v in res["controles_negativos"].items()})
+sys.exit(0 if res["veredito"] != "REPROVADO" else 1)

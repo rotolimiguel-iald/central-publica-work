@@ -23,6 +23,8 @@ copiados, sairam, presentes = [], [], 0
 novos = []
 for a in idx["arquivos"]:
     rel = a["caminho"]
+    if a.get("igual_a"):          # (11/11/2026) cópia referenciada: sem arquivo por desenho (copias_referencia.py); fica como está
+        novos.append(a); continue
     if os.path.exists(longo(D, rel)):
         presentes += 1; novos.append(a); continue
     s = longo(SRC, rel)

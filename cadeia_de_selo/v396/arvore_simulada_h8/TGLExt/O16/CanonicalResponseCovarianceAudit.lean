@@ -1,2 +1,0 @@
-import TGLExt.ContratoQG_v31_Teoremas
-#print axioms TGLExt.ContratoQGv31.ContratoH3.response_covariant_v31

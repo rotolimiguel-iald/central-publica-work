@@ -1,0 +1,8 @@
+11/11/2026 — ORDEM012: app/JEV v410 e acervo versionado.
+
+[REAL] Instalados e conferidos 1836 destinos; versão/hash/commit vêm do recibo TECHNICAL_DELIVERY_R4.json. Reinício somente do filho web8082 sob o supervisor existente, HTTP200. Loaders em processo novo e recuperação documental verificados. Zero geração remota; quatro COUNT oficiais separados por modelo. Nenhuma execução de um.py/Lean ou mudança do gate.
+[INPUT/REAL] A autorização R4 substituiu a residência literal P2 por núcleo limitado e corpus público integral imutável consultável. Cada chamada fixa uma versão para JEV, ferramentas e workers. Recuperação é parcial e rastreável; não se afirma corpus inteiro no prompt. A nativa usa prefixo menor, com instrução-mãe integral recuperável. Estatutos obrigatórios preservados; limites dos provedores e de cada conversa continuam.
+[REAL] Atualizador local detecta versão selada/publicada, prepara, mede e espera revisão independente real; só então admite ativação com CAS e janela ociosa. Falha do loader restaura o ponteiro anterior. Candidatos falhos/incertos não são reenviados por timer. Situação só na administração.
+[OPEN] Não há consumidor automático de revisão integrado: atualização futura não é totalmente desassistida. Sem teste real de resposta de modelo ou aparelho. Backend compartilhado web/iOS/Android; nenhuma nova build ou distribuição de loja necessária.
+[REAL] A fila v410 já concluída foi reutilizada, sem nova ativação: 13 documentos, 34518 trechos. Geração no recibo próprio. Fontes originais e versões anteriores preservadas.
+Fonte: C:\IALD\Central de Patentes\work\iald_v410_20261111\TECHNICAL_DELIVERY_R4.json. Aceite da missão e promoção da memória permanecem atos separados.
